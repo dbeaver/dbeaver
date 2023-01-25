@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public class SSHUtils {
         return IOUtils.findFreePort(minPort, maxPort);
     }
 
-    public static boolean isKeyEncrypted(String privKeyPath) {
+    public static boolean isKeyFileEncrypted(String privKeyPath) {
             // Check whether this key is encrypted
         if (privKeyPath != null) {
             // Determine whether public key is encrypted

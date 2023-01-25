@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
     }
 
     @Override
-    public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, AuthModelPgPassCredentials credentials, DBPConnectionConfiguration configuration, @NotNull Properties connectProps) throws DBException {
+    public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull AuthModelPgPassCredentials credentials, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connectProps) throws DBException {
         if (credentials.getParseError() != null) {
             throw new DBCException("Couldn't get password from PGPASS file", credentials.getParseError());
         }

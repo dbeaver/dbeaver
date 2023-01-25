@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -143,6 +143,8 @@ public interface PostgreServerExtension {
 
     boolean isAlterTableAtomic();
 
+    // Roles
+
     boolean supportsSuperusers();
 
     boolean supportsRolesWithCreateDBAbility();
@@ -157,6 +159,13 @@ public interface PostgreServerExtension {
      * "These clauses determine whether a role bypasses every row-level security (RLS) policy."
      * */
     boolean supportsRoleBypassRLS();
+
+    /**
+     * Determines whether the database supports syntax like {@code COMMENT ON ROLE roleName IS 'comment'} or not
+     */
+    boolean supportsCommentsOnRole();
+
+    // Data types
 
     /** True if supports serials - serial types are auto-incrementing integer data types */
     boolean supportSerialTypes();
@@ -195,4 +204,10 @@ public interface PostgreServerExtension {
 
     /** True if supports operator families as access methods (System Info) */
     boolean supportsOpFamily();
+
+    /**
+     * Determines whether the database supports syntax
+     * like {@code ALTER TABLE tableName ALTER COLUMN columnName USING columnName::dataTypeName} or not
+     */
+    boolean supportsAlterTableColumnWithUSING();
 }

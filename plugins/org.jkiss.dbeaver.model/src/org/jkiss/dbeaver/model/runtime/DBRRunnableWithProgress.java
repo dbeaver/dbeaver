@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,4 +28,10 @@ public interface DBRRunnableWithProgress {
 
     void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException;
 
+    /**
+     * Cancel execution
+     */
+    default void cancel() {
+        // do nothing by default
+    }
 }

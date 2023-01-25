@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolUIConstants;
 import org.jkiss.dbeaver.ext.exasol.ui.internal.ExasolMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -50,6 +51,7 @@ public class ExasolConnectionPage extends ConnectionPageWithAuth implements IDia
     private Button useBackupHostList;
     private boolean showBackupHosts = false;
     private Button encryptCommunication;
+    private Button useLegacyEncryption;
 
     private Image logoImage;
 
@@ -120,7 +122,12 @@ public class ExasolConnectionPage extends ConnectionPageWithAuth implements IDia
 
             encryptCommunication = UIUtils.createCheckbox(addrGroup, ExasolMessages.label_encrypt, null, false, 2);
 
-
+            useLegacyEncryption = UIUtils.createCheckbox(
+                addrGroup,
+                ExasolMessages.connection_page_checkbox_legacy_encrypt,
+                ExasolMessages.connection_page_checkbox_legacy_encrypt_tip,
+                false,
+                2);
         }
 
         createAuthPanel(control, 1);
@@ -174,8 +181,12 @@ public class ExasolConnectionPage extends ConnectionPageWithAuth implements IDia
 
         String encryptComm = connectionInfo.getProviderProperty(ExasolUIConstants.DRV_ENCRYPT);
 
-        if (encryptComm != null &&  "1".equals(encryptComm)) 
-                this.encryptCommunication.setEnabled(true);
+        if ("1".equals(encryptComm)) {
+            this.encryptCommunication.setEnabled(true);
+        }
+
+        useLegacyEncryption.setSelection(CommonUtils.toBoolean(
+            connectionInfo.getProviderProperty(ExasolConstants.DRV_USE_LEGACY_ENCRYPTION)));
     }
 
     @Override
@@ -191,6 +202,9 @@ public class ExasolConnectionPage extends ConnectionPageWithAuth implements IDia
         connectionInfo.setProviderProperty(ExasolUIConstants.DRV_BACKUP_HOST_LIST, backupHostText.getText());
         if (this.encryptCommunication.getSelection())
             connectionInfo.setProviderProperty(ExasolUIConstants.DRV_ENCRYPT, "1"); //$NON-NLS-1$
+
+        connectionInfo.setProviderProperty(ExasolConstants.DRV_USE_LEGACY_ENCRYPTION,
+            String.valueOf(useLegacyEncryption.getSelection()));
 
         super.saveSettings(dataSource);
     }

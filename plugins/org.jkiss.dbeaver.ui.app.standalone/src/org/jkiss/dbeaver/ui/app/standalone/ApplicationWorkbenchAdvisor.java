@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.app.standalone;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.DefaultScope;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.IPreferenceNode;
@@ -42,15 +43,17 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
+import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
+import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.app.standalone.update.DBeaverVersionChecker;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -84,9 +87,12 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         //"org.eclipse.ui.preferencePages.FileEditors",
         WORKBENCH_PREF_PAGE_ID + "/" + APPEARANCE_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Decorators",
         //WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Workspace",
-        //WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.ContentTypes",
-        //WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Startup",
+        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Workspace/org.eclipse.ui.preferencePages.BuildOrder",
+        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.ContentTypes",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.General.LinkHandlers",
+        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Startup",
+        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.trace.tracingPage",
+        "org.eclipse.ui.internal.console.ansi.preferences.AnsiConsolePreferencePage"
 
         // Team preferences - not needed in CE
         //"org.eclipse.team.ui.TeamPreferences",
@@ -181,7 +187,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         filterPreferencePages();
         filterWizards();
 
-        startVersionChecker();
+        if (!application.isDistributed()) {
+            startVersionChecker();
+        }
     }
 
     @Override
@@ -274,7 +282,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             if (window != null) {
                 if (!MessageDialogWithToggle.NEVER.equals(ConfirmationDialog.getSavedPreference(DBeaverPreferences.CONFIRM_EXIT))) {
                     // Workaround of #703 bug. NEVER doesn't make sense for Exit confirmation. It is the same as ALWAYS.
-                    if (!ConfirmationDialog.confirmAction(DBeaverActivator.getCoreResourceBundle(), window.getShell(), DBeaverPreferences.CONFIRM_EXIT)) {
+                    if (ConfirmationDialog.confirmAction(window.getShell(), DBeaverPreferences.CONFIRM_EXIT, ConfirmationDialog.QUESTION)
+                        != IDialogConstants.YES_ID)
+                    {
                         return false;
                     }
                 }
@@ -313,7 +323,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
                 }
             }
 
-            return closeActiveTransactions();
+            return cancelRunningTasks() && closeActiveTransactions();
         } catch (Throwable e) {
             e.printStackTrace();
             return true;
@@ -326,6 +336,25 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
                 return false;
             }
         }
+        return true;
+    }
+
+    private boolean cancelRunningTasks() {
+        final DBTTaskManager manager = DBWorkbench.getPlatform().getWorkspace().getActiveProject().getTaskManager();
+
+        if (manager.hasRunningTasks()) {
+            final boolean cancel = DBWorkbench.getPlatformUI().confirmAction(
+                CoreApplicationMessages.confirmation_cancel_database_tasks_title,
+                CoreApplicationMessages.confirmation_cancel_database_tasks_message
+            );
+
+            if (cancel) {
+                manager.cancelRunningTasks();
+            }
+
+            return cancel;
+        }
+
         return true;
     }
 

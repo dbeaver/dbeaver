@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,13 +54,13 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
-import java.io.File;
 import java.net.MalformedURLException;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -174,27 +174,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             props.put("requireSSL", sslConfig.getStringProperty(MySQLConstants.PROP_REQUIRE_SSL));
         }
 
-        final String caCertProp;
-        final String clientCertProp;
-        final String clientCertKeyProp;
-
-        if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
-            // Backward compatibility
-            caCertProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CA_CERT);
-            clientCertProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CLIENT_CERT);
-            clientCertKeyProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CLIENT_KEY);
-        } else {
-            caCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT);
-            clientCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT);
-            clientCertKeyProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
-        }
-
         {
             // Trust keystore
-            if (!CommonUtils.isEmpty(caCertProp) || !CommonUtils.isEmpty(clientCertProp)) {
-                byte[] caCertData = CommonUtils.isEmpty(caCertProp) ? null : IOUtils.readFileToBuffer(new File(caCertProp));
-                byte[] clientCertData = CommonUtils.isEmpty(clientCertProp) ? null : IOUtils.readFileToBuffer(new File(clientCertProp));
-                byte[] keyData = CommonUtils.isEmpty(clientCertKeyProp) ? null : IOUtils.readFileToBuffer(new File(clientCertKeyProp));
+            byte[] caCertData = SSLHandlerTrustStoreImpl.readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT, MySQLConstants.PROP_SSL_CA_CERT);
+            byte[] clientCertData = SSLHandlerTrustStoreImpl.readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT, MySQLConstants.PROP_SSL_CLIENT_CERT);
+            byte[] keyData = SSLHandlerTrustStoreImpl.readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, MySQLConstants.PROP_SSL_CLIENT_KEY);
+            if (caCertData != null || clientCertData != null) {
                 securityManager.addCertificate(getContainer(), "ssl", caCertData, clientCertData, keyData);
             } else {
                 securityManager.deleteCertificate(getContainer(), "ssl");
@@ -225,11 +210,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         }
     }
 
-    private String makeKeyStorePath(File keyStorePath) throws MalformedURLException {
+    private String makeKeyStorePath(Path keyStorePath) throws MalformedURLException {
         if (isMariaDB()) {
-            return keyStorePath.getAbsolutePath();
+            return keyStorePath.toAbsolutePath().toString();
         } else {
-            return keyStorePath.toURI().toURL().toString();
+            return keyStorePath.toUri().toURL().toString();
         }
     }
 
@@ -271,8 +256,36 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         super.initialize(monitor);
 
         dataTypeCache.getAllObjects(monitor, this);
-        if (isServerVersionAtLeast(5, 7) && dataTypeCache.getCachedObject(MySQLConstants.TYPE_JSON) == null) {
-            dataTypeCache.cacheObject(new JDBCDataType<>(this, java.sql.Types.OTHER, MySQLConstants.TYPE_JSON, MySQLConstants.TYPE_JSON, false, true, 0, 0, 0));
+        if ((!isMariaDB() && isServerVersionAtLeast(5, 7))
+            && dataTypeCache.getCachedObject(MySQLConstants.TYPE_JSON) == null)
+        {
+            // For MariaDB JSON is an alias for LONGTEXT introduced for compatibility reasons with MySQL's JSON data type.
+            // Even if you through the SQL Editor create a JSON column, it will turn into longtext
+            dataTypeCache.cacheObject(
+                new JDBCDataType<>(
+                    this,
+                    java.sql.Types.OTHER,
+                    MySQLConstants.TYPE_JSON,
+                    MySQLConstants.TYPE_JSON,
+                    false,
+                    true,
+                    0,
+                    0,
+                    0));
+        }
+        if (isMariaDB() && isServerVersionAtLeast(10, 7) && dataTypeCache.getCachedObject(MySQLConstants.TYPE_UUID) == null) {
+            // Not supported by MariaDB driver for now (3.0.8). Waiting for the driver support
+            dataTypeCache.cacheObject(
+                new JDBCDataType<>(
+                    this,
+                    Types.CHAR,
+                    MySQLConstants.TYPE_UUID,
+                    MySQLConstants.TYPE_UUID,
+                    false,
+                    true,
+                    0,
+                    0,
+                    0));
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load basic datasource metadata")) {
             // Read engines

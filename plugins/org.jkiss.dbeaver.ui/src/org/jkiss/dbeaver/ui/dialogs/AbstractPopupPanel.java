@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,9 +34,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
  *
  * @author Serge Rider
  */
-public abstract class AbstractPopupPanel extends Dialog {
+public abstract class AbstractPopupPanel extends BaseDialog {
 
-    private final String title;
     private boolean modeless;
     private static boolean popupOpen;
 
@@ -46,8 +45,14 @@ public abstract class AbstractPopupPanel extends Dialog {
 
     protected AbstractPopupPanel(Shell parentShell, String title)
     {
-        super(parentShell);
-        this.title = title;
+        super(parentShell, title, null);
+    }
+
+    @Override
+    protected Control createContents(Composite parent) {
+        Control contents = super.createContents(parent);
+        Dialog.applyDialogFont(contents);
+        return contents;
     }
 
     @Override
@@ -94,7 +99,7 @@ public abstract class AbstractPopupPanel extends Dialog {
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-        newShell.setText(title);
+        newShell.setText(getTitle());
     }
 
     @Override

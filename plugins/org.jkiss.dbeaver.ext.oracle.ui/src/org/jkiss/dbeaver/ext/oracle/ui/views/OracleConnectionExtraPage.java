@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,6 +57,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     private Button useSimpleConstraints;
     private Button useAlternativeTableMetadataQuery;
     private Button searchInSynonyms;
+    private Button showDateAsDate;
 
     public OracleConnectionExtraPage()
     {
@@ -153,6 +154,23 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             useSysSchemaCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_use_sys_schema,  OracleUIMessages.edit_create_checkbox_content_group_use_sys_schema_description, false, 1);
         }
 
+        {
+            final Group dataGroup = UIUtils.createControlGroup(
+                cfgGroup,
+                OracleUIMessages.pref_page_oracle_group_data,
+                1,
+                GridData.HORIZONTAL_ALIGN_BEGINNING,
+                0
+            );
+
+            showDateAsDate = UIUtils.createCheckbox(
+                dataGroup,
+                OracleUIMessages.pref_page_oracle_checkbox_show_date_as_date,
+                OracleUIMessages.pref_page_oracle_checkbox_show_date_as_date_tip,
+                false,
+                1);
+        }
+
         setControl(cfgGroup);
 
         loadSettings();
@@ -221,6 +239,11 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             providerProperties.get(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS),
             globalPreferences.getBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS)
         ));
+
+        showDateAsDate.setSelection(CommonUtils.getBoolean(
+            providerProperties.get(OracleConstants.PROP_SHOW_DATE_AS_DATE),
+            globalPreferences.getBoolean(OracleConstants.PROP_SHOW_DATE_AS_DATE)
+        ));
     }
 
     @Override
@@ -276,6 +299,8 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
                     OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY,
                     String.valueOf(useAlternativeTableMetadataQuery.getSelection()));
             providerProperties.put(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS, String.valueOf(searchInSynonyms.getSelection()));
+
+            providerProperties.put(OracleConstants.PROP_SHOW_DATE_AS_DATE, String.valueOf(showDateAsDate.getSelection()));
         }
         saveConnectionURL(dataSource.getConnectionConfiguration());
     }

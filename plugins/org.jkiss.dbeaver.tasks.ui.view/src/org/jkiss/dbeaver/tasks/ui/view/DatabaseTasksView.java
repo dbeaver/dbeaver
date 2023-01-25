@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,9 +39,13 @@ import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.views.IViewDescriptor;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPProjectListener;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -80,6 +84,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     private TreeViewer taskRunViewer;
     private ViewerColumnController<?,?> taskRunColumnController;
+    private DBPProjectListener projectListener;
 
     public DatabaseTasksView() {
     }
@@ -103,6 +108,15 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
         loadViewConfig();
         loadTasks();
+        updateViewTitle();
+
+        projectListener = new DBPProjectListener() {
+            @Override
+            public void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue) {
+                refresh();
+            }
+        };
+        DBPPlatformDesktop.getInstance().getWorkspace().addProjectListener(projectListener);
     }
 
     private void createTaskTree(Composite composite) {
@@ -112,7 +126,11 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         getSite().registerContextMenu(TASKS_VIEW_MENU_ID, menuMgr, tasksTree.getViewer());
         getSite().setSelectionProvider(tasksTree.getViewer());
 
-        tasksTree.getViewer().addDoubleClickListener(event -> ActionUtils.runCommand(EDIT_TASK_CMD_ID, getSite().getSelectionProvider().getSelection(), getSite()));
+        tasksTree.getViewer().addDoubleClickListener(event -> {
+            if (ActionUtils.isCommandEnabled(EDIT_TASK_CMD_ID, getSite())) {
+                ActionUtils.runCommand(EDIT_TASK_CMD_ID, getSite().getSelectionProvider().getSelection(), getSite());
+            }
+        });
         tasksTree.getViewer().addSelectionChangedListener(event -> loadTaskRuns());
 
         DatabaseTasksTree.addDragAndDropSourceSupport(tasksTree.getViewer());
@@ -173,14 +191,27 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         final MenuManager menuMgr = new MenuManager();
         menuMgr.setRemoveAllWhenShown(true);
         menuMgr.addMenuListener(manager -> {
+            boolean isVisible = true;
+            DBTTask selectedTask = tasksTree.getSelectedTask();
+            if (selectedTask != null) {
+                isVisible = selectedTask.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
+            }
             manager.add(ActionUtils.makeCommandContribution(getSite(), RUN_TASK_CMD_ID));
-            manager.add(ActionUtils.makeCommandContribution(getSite(), EDIT_TASK_CMD_ID));
-            //manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.FILE_PROPERTIES, "Task properties", null));
-            manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_TASK_CMD_ID));
+            if (isVisible) {
+                manager.add(ActionUtils.makeCommandContribution(getSite(), EDIT_TASK_CMD_ID));
+                manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_TASK_CMD_ID));
+            }
             manager.add(ActionUtils.makeCommandContribution(getSite(), COPY_TASK_CMD_ID));
-            manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.EDIT_DELETE, TaskUIViewMessages.db_tasks_view_context_menu_command_delete_task, null));
-            manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_FOLDER_TASK_CMD_ID));
-            manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_FOLDER_RENAME_CMD_ID));
+            if (isVisible) {
+                manager.add(
+                    ActionUtils.makeCommandContribution(
+                        getSite(),
+                        IWorkbenchCommandConstants.EDIT_DELETE,
+                        TaskUIViewMessages.db_tasks_view_context_menu_command_delete_task,
+                        null));
+                manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_FOLDER_TASK_CMD_ID));
+                manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_FOLDER_RENAME_CMD_ID));
+            }
             manager.add(new Separator());
             manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
             manager.add(new Separator());
@@ -278,6 +309,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     @Override
     public void dispose() {
+        DBPPlatformDesktop.getInstance().getWorkspace().removeProjectListener(projectListener);
         TaskRegistry.getInstance().removeTaskListener(this);
         super.dispose();
     }
@@ -328,13 +360,21 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     private void loadViewConfig() {
         tasksTree.loadViewConfig();
-
     }
 
     public void refresh() {
+        updateViewTitle();
+
         tasksTree.refresh();
 
         loadTaskRuns();
+    }
+
+    private void updateViewTitle() {
+        IViewDescriptor viewDescriptor = PlatformUI.getWorkbench().getViewRegistry().find(VIEW_ID);
+        DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        setPartName(Objects.requireNonNull(viewDescriptor == null ? null : viewDescriptor.getLabel(), "") +
+            " - " + Objects.requireNonNull(activeProject == null ? null : activeProject.getName(), ""));
     }
 
     private void loadTasks() {

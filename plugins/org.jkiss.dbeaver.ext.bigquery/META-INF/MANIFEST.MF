@@ -2,9 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver BigQuery extension
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.bigquery;singleton:=true
-Bundle-Version: 1.0.96.qualifier
-Bundle-Release-Date: 20220926
-Require-Bundle: org.jkiss.dbeaver.ext.generic
+Bundle-Version: 1.0.104.qualifier
+Bundle-Release-Date: 20230123
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: DBeaver Corp
@@ -13,3 +12,7 @@ Automatic-Module-Name: org.jkiss.dbeaver.ext.bigquery
 Export-Package: org.jkiss.dbeaver.ext.bigquery,
  org.jkiss.dbeaver.ext.bigquery.model,
  org.jkiss.dbeaver.ext.bigquery.auth
+Require-Bundle: org.jkiss.dbeaver.ext.generic;visibility:=reexport,
+ com.google.guava;resolution:=optional;visibility:=reexport,
+ com.google.gson;resolution:=optional;visibility:=reexport,
+ org.slf4j.api;visibility:=reexport

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -251,11 +251,13 @@ public class DiagramPart extends PropertyAwarePart {
     @Override
     protected void createEditPolicies()
     {
-        installEditPolicy(EditPolicy.CONTAINER_ROLE, new DiagramContainerEditPolicy());
-        installEditPolicy(EditPolicy.LAYOUT_ROLE, null);
-
-        getDiagram().getModelAdapter().installPartEditPolicies(this);
+        if (!getEditor().isReadOnly()) {
+            installEditPolicy(EditPolicy.CONTAINER_ROLE, new DiagramContainerEditPolicy());
+            installEditPolicy(EditPolicy.LAYOUT_ROLE, null);
+            getDiagram().getModelAdapter().installPartEditPolicies(this);
+        }
     }
+
 
     /**
      * Updates the table bounds in the model so that the same bounds can be

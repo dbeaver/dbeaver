@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.security.KeyStore;
 
 /**
@@ -54,7 +54,11 @@ public interface DBACertificateStorage
 
     KeyStore getKeyStore(DBPDataSourceContainer container, String certType) throws DBException;
 
-    File getKeyStorePath(DBPDataSourceContainer dataSource, String certType);
+    @NotNull
+    Path getStorageFolder();
+
+    @NotNull
+    Path getKeyStorePath(DBPDataSourceContainer dataSource, String certType);
 
     @NotNull
     char[] getKeyStorePassword(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType);

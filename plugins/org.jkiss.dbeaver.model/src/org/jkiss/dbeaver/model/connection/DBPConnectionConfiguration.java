@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -322,28 +323,34 @@ public class DBPConnectionConfiguration implements DBPObject {
     }
 
     public void setHandlers(@NotNull List<DBWHandlerConfiguration> handlers) {
-        this.handlers.clear();
-        this.handlers.addAll(handlers);
+        synchronized (this.handlers) {
+            this.handlers.clear();
+            this.handlers.addAll(handlers);
+        }
     }
 
     public void updateHandler(DBWHandlerConfiguration handler) {
-        for (int i = 0; i < handlers.size(); i++) {
-            if (handlers.get(i).getId().equals(handler.getId())) {
-                handlers.set(i, handler);
-                return;
+        synchronized (handlers) {
+            for (int i = 0; i < handlers.size(); i++) {
+                if (handlers.get(i).getId().equals(handler.getId())) {
+                    handlers.set(i, handler);
+                    return;
+                }
             }
+            this.handlers.add(handler);
         }
-        this.handlers.add(handler);
     }
 
     @Nullable
     public DBWHandlerConfiguration getHandler(String id) {
-        for (DBWHandlerConfiguration cfg : handlers) {
-            if (cfg.getId().equals(id)) {
-                return cfg;
+        synchronized (handlers) {
+            for (DBWHandlerConfiguration cfg : handlers) {
+                if (cfg.getId().equals(id)) {
+                    return cfg;
+                }
             }
+            return null;
         }
-        return null;
     }
 
     ////////////////////////////////////////////////////
@@ -362,7 +369,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         return configurationType;
     }
 
-    public void setConfigurationType(DBPDriverConfigurationType configurationType) {
+    public void setConfigurationType(@NotNull DBPDriverConfigurationType configurationType) {
         this.configurationType = configurationType;
     }
 
@@ -434,7 +441,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     }
 
     @NotNull
-    public DBAAuthModel getAuthModel() {
+    public <T extends DBAAuthCredentials> DBAAuthModel<T> getAuthModel() {
         if (!CommonUtils.isEmpty(authModelId)) {
             DBPAuthModelDescriptor authModelDesc = getAuthModelDescriptor(authModelId);
             if (authModelDesc != null) {
@@ -483,7 +490,11 @@ public class DBPConnectionConfiguration implements DBPObject {
         if (authProperties == null) {
             authProperties = new HashMap<>();
         }
-        this.authProperties.put(name, value);
+        if (value == null) {
+            this.authProperties.remove(name);
+        } else {
+            this.authProperties.put(name, value);
+        }
     }
 
     ///////////////////////////////////////////////////////////

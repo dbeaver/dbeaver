@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import java.util.Map;
 public class TreeNodeChildrenLoading extends TreeNodeSpecial {
 
     private static final Map<Object, Object> loadingFiles = new HashMap<>();
-    private static final Map<Object, Object> placeHolders = new HashMap<>();
+    private static final Map<DBNNode, TreeNodeChildrenLoading> placeHolders = new HashMap<>();
 
     public static final Object LOADING_FAMILY = new Object();
 
@@ -44,17 +44,18 @@ public class TreeNodeChildrenLoading extends TreeNodeSpecial {
         DBeaverIcons.getImage(UIIcon.LOADING7)
     };
 
-    private static String loadingText = UINavigatorMessages.ui_navigator_loading_text_loading;
-    private static String text1 = loadingText + ".."; //$NON-NLS-1$;
-    private static String text2 = loadingText + ".."; //$NON-NLS-1$;
-    private static String text3 = loadingText + "..."; //$NON-NLS-1$;
+    private static final String loadingText = UINavigatorMessages.ui_navigator_loading_text_loading;
+    private static final String text1 = loadingText + ".."; //$NON-NLS-1$;
+    private static final String text2 = loadingText + ".."; //$NON-NLS-1$;
+    private static final String text3 = loadingText + "..."; //$NON-NLS-1$;
 
     private int viewCount = 0;
 
     public static synchronized TreeNodeChildrenLoading createLoadingPlaceHolder(DBNNode parent) {
-        TreeNodeChildrenLoading node = null;
-        if (!placeHolders.containsKey(parent)) {
-            placeHolders.put(parent, node = new TreeNodeChildrenLoading(parent));
+        TreeNodeChildrenLoading node = placeHolders.get(parent);
+        if (node == null) {
+            node = new TreeNodeChildrenLoading(parent);
+            placeHolders.put(parent, node);
         }
         return node;
     }
@@ -87,7 +88,7 @@ public class TreeNodeChildrenLoading extends TreeNodeSpecial {
         return IMG_LOADING[imgIndex];
     }
 
-    public void dispose(Object parent) {
+    public void dispose(DBNNode parent) {
         super.dispose();
 
         loadingFiles.remove(parent);

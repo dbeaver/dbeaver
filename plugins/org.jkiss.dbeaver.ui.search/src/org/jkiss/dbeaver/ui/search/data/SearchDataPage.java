@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,7 +85,6 @@ public class SearchDataPage extends AbstractSearchPage {
 
         Composite searchGroup = UIUtils.createComposite(parent, 1);
         searchGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-        setControl(searchGroup);
 
         searchText = new Combo(searchGroup, SWT.DROP_DOWN);
         searchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -273,6 +272,8 @@ public class SearchDataPage extends AbstractSearchPage {
         }
 
         navigatorTree.setEnabled(true);
+
+        setControl(searchGroup);
     }
 
     @Override

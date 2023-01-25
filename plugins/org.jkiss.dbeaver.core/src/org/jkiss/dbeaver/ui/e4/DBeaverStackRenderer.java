@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,9 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.*;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
+import org.eclipse.ui.menus.CommandContributionItem;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -51,9 +53,16 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerRenameFile;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+
+import java.io.File;
+
 
 public class DBeaverStackRenderer extends StackRenderer {
+
+    private static final Log log = Log.getLog(DBeaverStackRenderer.class);
 
     @Override
     public void showAvailableItems(MElementContainer<?> stack, CTabFolder folder, boolean forceCenter) {
@@ -121,12 +130,29 @@ public class DBeaverStackRenderer extends StackRenderer {
             IFile localFile = EditorUtils.getFileFromInput(editorInput);
             if (localFile != null) {
                 populateFileMenu(menu, workbenchPart, localFile);
-                return;
             }
 
-            if (workbenchPart instanceof SQLEditor) {
+            if (localFile == null && workbenchPart instanceof SQLEditor) {
                 new MenuItem(menu, SWT.SEPARATOR);
                 addActionItem(workbenchPart, menu, IWorkbenchCommandConstants.FILE_SAVE_AS);
+            }
+            
+            if (workbenchPart instanceof SQLEditor) {
+                new MenuItem(menu, SWT.SEPARATOR);
+                MenuItem menuItemDisableSQLSyntaxParser = new MenuItem(menu, SWT.CHECK);
+                menuItemDisableSQLSyntaxParser.setText(SQLEditorMessages.sql_editor_prefs_disable_services_text);
+                menuItemDisableSQLSyntaxParser.setToolTipText(SQLEditorMessages.sql_editor_prefs_disable_services_tip);
+                
+                menuItemDisableSQLSyntaxParser.setSelection(!SQLEditorUtils.isSQLSyntaxParserApplied(editorInput));
+                menuItemDisableSQLSyntaxParser.setEnabled(ActionUtils.isCommandEnabled(SQLEditorCommands.CMD_DISABLE_SQL_SYNTAX_PARSER, workbenchPart.getSite()));
+                
+                menuItemDisableSQLSyntaxParser.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        SQLEditorUtils.setSQLSyntaxParserEnabled(editorInput, !SQLEditorUtils.isSQLSyntaxParserEnabled(editorInput));
+                        menuItemDisableSQLSyntaxParser.setSelection(!SQLEditorUtils.isSQLSyntaxParserApplied(editorInput));
+                    }
+                });
             }
         }
     }
@@ -160,7 +186,7 @@ public class DBeaverStackRenderer extends StackRenderer {
 
         new MenuItem(menu, SWT.SEPARATOR);
 
-        {
+        if (!inputFile.isReadOnly()) {
             if (workbenchPart instanceof SQLEditor) {
                 addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT);
             }
@@ -180,7 +206,6 @@ public class DBeaverStackRenderer extends StackRenderer {
                 });
             }
         }
-
     }
 
     private void populateEditorMenu(@NotNull Menu menu, @NotNull IDatabaseEditorInput input) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
+import org.jkiss.dbeaver.erd.ui.model.ERDDecorator;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.AttributePart;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
@@ -136,7 +137,10 @@ public class AttributeItemFigure extends Figure
     public void updateLabels() {
         getLabel().setText(part.getAttributeLabel());
 
-        if (part.getDiagramPart().getDiagram().hasAttributeStyle(ERDViewStyle.ICONS)) {
+        final EntityDiagram diagram = part.getDiagram();
+        final ERDDecorator decorator = diagram.getDecorator();
+
+        if (decorator.supportsAttributeStyle(ERDViewStyle.ICONS) && diagram.hasAttributeStyle(ERDViewStyle.ICONS)) {
             DBPImage labelImage = part.getAttribute().getLabelImage();
             if (labelImage != null) {
                 getLabel().setIcon(DBeaverIcons.getImage(labelImage));
@@ -146,10 +150,10 @@ public class AttributeItemFigure extends Figure
         if (rightPanel instanceof Label) {
 
             String rightText = "";
-            if (part.getDiagram().hasAttributeStyle(ERDViewStyle.TYPES)) {
+            if (decorator.supportsAttributeStyle(ERDViewStyle.TYPES) && diagram.hasAttributeStyle(ERDViewStyle.TYPES)) {
                 rightText = part.getAttribute().getObject().getFullTypeName();
             }
-            if (part.getDiagram().hasAttributeStyle(ERDViewStyle.NULLABILITY)) {
+            if (decorator.supportsAttributeStyle(ERDViewStyle.NULLABILITY) && diagram.hasAttributeStyle(ERDViewStyle.NULLABILITY)) {
                 if (part.getAttribute().getObject().isRequired()) {
                     rightText += " NOT NULL";
                 }

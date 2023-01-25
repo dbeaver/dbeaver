@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,8 +78,13 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_max_def_column_width;
     public static String pref_page_database_resultsets_label_max_def_column_width_tip;
     public static String pref_page_database_resultsets_link_colors_and_fonts;
+
+    public static String pref_page_database_resultsets_label_image_browser;
+    public static String pref_page_database_resultsets_label_image_browser_tip;
+
     // ResultSetPlainText
     public static String pref_page_database_resultsets_group_plain_text;
+
     public static String pref_page_database_resultsets_label_value_format;
     public static String pref_page_database_resultsets_label_tab_width;
     public static String pref_page_database_resultsets_label_maximum_column_length;
@@ -122,6 +127,8 @@ public class DataEditorsMessages extends NLS {
     public static String complex_object_editor_dialog_menu_remove_element;
     public static String complex_object_editor_dialog_menu_move_up_element;
     public static String complex_object_editor_dialog_menu_move_down_element;
+
+
 
     static {
 		// initialize resource bundle

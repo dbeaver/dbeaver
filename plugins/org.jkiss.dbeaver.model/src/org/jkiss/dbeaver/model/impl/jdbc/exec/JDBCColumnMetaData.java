@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,8 +88,10 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData {
     {
         this.ordinalPosition = ordinalPosition;
 
-        this.label = resultSetMeta.getColumnLabel(ordinalPosition + 1);
-        this.name = resultSetMeta.getColumnName(ordinalPosition + 1);
+        // Some drivers (mysql-connector-java) return null instead of empty strings
+        this.label = CommonUtils.notEmpty(resultSetMeta.getColumnLabel(ordinalPosition + 1));
+        this.name = CommonUtils.notEmpty(resultSetMeta.getColumnName(ordinalPosition + 1));
+
         // TODO: some drivers (DB2) always mark all columns as read only. Dunno why. So let's ignore this property
         // read-only connections are detected separately.
         this.readOnly = false;//resultSetMeta.isReadOnly(ordinalPosition + 1);

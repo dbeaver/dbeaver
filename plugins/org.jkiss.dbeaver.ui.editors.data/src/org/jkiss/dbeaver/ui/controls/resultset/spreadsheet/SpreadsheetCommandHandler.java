@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,14 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
+
+import java.util.HashSet;
 
 /**
  * Spreadsheet command handler.
@@ -32,6 +37,7 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
 
     public static final String CMD_COLUMNS_FIT_VALUE = "org.jkiss.dbeaver.core.resultset.grid.columnsFitValue";
     public static final String CMD_COLUMNS_FIT_SCREEN = "org.jkiss.dbeaver.core.resultset.grid.columnsFitScreen";
+    public static final String CMD_COLUMNS_HIDE_EMPTY = "org.jkiss.dbeaver.core.resultset.grid.columnsHideEmpty";
 
     public static SpreadsheetPresentation getActiveSpreadsheet(ExecutionEvent event)
     {
@@ -62,6 +68,20 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
             case CMD_COLUMNS_FIT_SCREEN:
                 spreadsheet.getSpreadsheet().packColumns(false);
                 break;
+            case CMD_COLUMNS_HIDE_EMPTY: {
+                final var model = spreadsheet.getController().getModel();
+                final var attributes = new HashSet<>(model.getVisibleAttributes());
+                for (ResultSetRow row : model.getAllRows()) {
+                    attributes.removeIf(attribute -> !DBUtils.isNullValue(model.getCellValue(attribute, row)));
+                }
+                if (!attributes.isEmpty()) {
+                    for (DBDAttributeBinding attribute : attributes) {
+                        model.setAttributeVisibility(attribute, false);
+                    }
+                    spreadsheet.refreshData(true, false, true);
+                }
+                break;
+            }
         }
 
         return null;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.ui.dialogs.driver;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -124,7 +121,7 @@ public class DriverDownloadDialog extends WizardDialog
 
     public static boolean downloadDriverFiles(Shell shell, DBPDriver driver, DBPDriverDependencies dependencies, boolean forceDownload) {
         if (shell == null) {
-            shell = UIUtils.getActiveWorkbenchShell();
+            shell = Display.getCurrent().getActiveShell();
         }
         DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, dependencies, false, forceDownload);
         dialog.setMinimumPageSize(100, 100);

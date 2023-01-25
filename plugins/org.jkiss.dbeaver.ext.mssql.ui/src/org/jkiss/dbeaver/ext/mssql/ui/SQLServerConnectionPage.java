@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.mssql.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -25,6 +24,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
@@ -38,7 +38,13 @@ import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+
+
 public class SQLServerConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
+
+    protected static final String GROUP_CONNECTION = "connection"; //$NON-NLS-1$
+    protected static final List<String> GROUP_CONNECTION_ARR = List.of(GROUP_CONNECTION);
 
     private Label hostLabel;
     private Text hostText;
@@ -105,7 +111,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         SelectionAdapter typeSwitcher = new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                setupConnectionModeSelection(urlText, typeURLRadio.getSelection());
+                setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), GROUP_CONNECTION_ARR);
                 updateUrl();
             }
         };
@@ -179,10 +185,10 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             Group secureGroup = new Group(settingsGroup, SWT.NONE);
             secureGroup.setText(SQLServerUIMessages.dialog_setting_connection_settings);
             secureGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            secureGroup.setLayout(new GridLayout(1, false));
+            secureGroup.setLayout(new RowLayout());
 
             if (!isSqlServer) {
-                encryptPassword = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_encrypt_password, SQLServerUIMessages.dialog_setting_encrypt_password_tip, false, 2);
+                encryptPassword = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_encrypt_password, SQLServerUIMessages.dialog_setting_encrypt_password_tip, false, 1);
             }
             if (isDriverAzure || isDriverBabelfish()) {
                 showAllDatabases = UIUtils.createCheckbox(
@@ -190,9 +196,9 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
                     SQLServerUIMessages.dialog_setting_show_all_databases,
                     SQLServerUIMessages.dialog_setting_show_all_databases_tip,
                     false,
-                    2);
+                    1);
             }
-            showAllSchemas = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_show_all_schemas, SQLServerUIMessages.dialog_setting_show_all_schemas_tip, true, 2);
+            showAllSchemas = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_show_all_schemas, SQLServerUIMessages.dialog_setting_show_all_schemas_tip, true, 1);
         }
 
         createDriverPanel(settingsGroup);
@@ -276,14 +282,14 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         }
         showAllSchemas.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS)));
 
-        if (!isSqlServer()) {
+        if (!isSqlServer() && encryptPassword != null) {
             encryptPassword.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_ENCRYPT_PASSWORD)));
         }
         boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
         if (useURL) {
             urlText.setText(connectionInfo.getUrl());
         }
-        setupConnectionModeSelection(urlText, useURL);
+        setupConnectionModeSelection(urlText, useURL, GROUP_CONNECTION_ARR);
         updateUrl();
 
         activated = true;

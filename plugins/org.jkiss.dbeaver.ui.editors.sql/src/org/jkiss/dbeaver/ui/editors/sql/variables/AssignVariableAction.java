@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,15 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.commands.SQLCommandSet;
+import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
@@ -72,6 +76,13 @@ public class AssignVariableAction extends Action {
             isQuery ? SQLEditorMessages.action_result_tabs_assign_variable_sql : SQLEditorMessages.action_result_tabs_assign_variable,
             "")
         {
+            private String varName = null;
+
+            @Nullable
+            @Override
+            public String getResult() {
+                return varName;
+            }
 
             @Override
             protected IDialogSettings getDialogBoundsSettings() {
@@ -110,18 +121,41 @@ public class AssignVariableAction extends Action {
 
             @Override
             protected void okPressed() {
-                if (checkDuplicates) {
-                    String varName = propNameText.getText();
-                    if (editor.getGlobalScriptContext().hasVariable(varName)) {
-                        UIUtils.showMessageBox(getShell(),
-                                SQLEditorMessages.action_assign_variables_error_duplicated_title,
-                                NLS.bind(SQLEditorMessages.action_assign_variables_error_duplicated_info, varName),
-                                SWT.ICON_ERROR);
-                        return;
-                    }
-                }
+                SQLDialect sqlDialect = editor.getSQLDialect();
+                String rawVarName = propNameText.getText().trim();
+                if (ScriptParameterRule.tryConsumeParameterName(sqlDialect, rawVarName, 0) != rawVarName.length()) {
+                    UIUtils.showMessageBox(getShell(),
+                        SQLEditorMessages.action_assign_variables_error_invalid_title,
+                        NLS.bind(SQLEditorMessages.action_assign_variables_error_invalid_info, rawVarName),
+                        SWT.ICON_ERROR);
+                    varName = null;
+                    return;
+                } 
+                String preparedVarName = SQLCommandSet.prepareVarName(sqlDialect, rawVarName);
+
+                if (checkDuplicates && editor.getGlobalScriptContext().hasVariable(preparedVarName)) {
+                    UIUtils.showMessageBox(getShell(),
+                            SQLEditorMessages.action_assign_variables_error_duplicated_title,
+                            NLS.bind(SQLEditorMessages.action_assign_variables_error_duplicated_info, preparedVarName),
+                            SWT.ICON_ERROR);
+                    varName = null;
+                    return;
+                } 
+
+                varName = preparedVarName;
                 varValue = valueEditor.getEditorControl().getText();
                 super.okPressed();
+            }
+            
+            @Override
+            protected void updateButtonsState() {
+                super.updateButtonsState();
+                Button button = getButton(IDialogConstants.OK_ID);
+                if (button != null && propNameText != null && button.getEnabled()) {
+                    String rawVarName = propNameText.getText().trim();
+                    int consumedNameLength = ScriptParameterRule.tryConsumeParameterName(editor.getSQLDialect(), rawVarName, 0);
+                    button.setEnabled(consumedNameLength == rawVarName.length());
+                }
             }
         };
         if (dialog.open() == IDialogConstants.OK_ID) {

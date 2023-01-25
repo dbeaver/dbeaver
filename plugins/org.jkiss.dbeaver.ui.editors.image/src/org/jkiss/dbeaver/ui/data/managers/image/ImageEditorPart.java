@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,15 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.imageview.ImageEditor;
+import org.jkiss.dbeaver.ui.controls.imageview.AbstractImageViewer;
+import org.jkiss.dbeaver.ui.controls.imageview.BrowserImageEditor;
+import org.jkiss.dbeaver.ui.controls.imageview.SWTImageEditor;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
+import org.jkiss.dbeaver.ui.data.IValueController;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,8 +48,13 @@ import java.io.InputStream;
 public class ImageEditorPart extends EditorPart implements IRefreshablePart {
 
     private static final Log log = Log.getLog(ImageEditorPart.class);
+    private final IValueController controller;
 
-    private ImageEditor imageViewer;
+    private AbstractImageViewer imageViewer;
+
+    public ImageEditorPart(IValueController controller) {
+        this.controller = controller;
+    }
 
     @Override
     public void doSave(IProgressMonitor monitor) {
@@ -63,8 +73,7 @@ public class ImageEditorPart extends EditorPart implements IRefreshablePart {
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         //ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         super.dispose();
     }
@@ -81,8 +90,16 @@ public class ImageEditorPart extends EditorPart implements IRefreshablePart {
 
     @Override
     public void createPartControl(Composite parent) {
-        imageViewer = new ImageEditor(parent, SWT.NONE);
 
+        DBPPreferenceStore preferenceStore = controller.getExecutionContext()
+            .getDataSource()
+            .getContainer()
+            .getPreferenceStore();
+        if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER)) {
+            imageViewer = new BrowserImageEditor(parent, SWT.NONE);
+        } else {
+            imageViewer = new SWTImageEditor(parent, SWT.NONE);
+        }
         loadImage();
     }
 
@@ -92,7 +109,7 @@ public class ImageEditorPart extends EditorPart implements IRefreshablePart {
         }
         if (getEditorInput() instanceof IPathEditorInput) {
             try {
-                final IPath absolutePath = ((IPathEditorInput)getEditorInput()).getPath();
+                final IPath absolutePath = ((IPathEditorInput) getEditorInput()).getPath();
                 File localFile = absolutePath.toFile();
                 if (localFile.exists()) {
                     try (InputStream inputStream = new FileInputStream(localFile)) {
@@ -100,8 +117,7 @@ public class ImageEditorPart extends EditorPart implements IRefreshablePart {
                         imageViewer.update();
                     }
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 log.error("Can't load image contents", e);
             }
         }

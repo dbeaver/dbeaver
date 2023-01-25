@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,9 +90,13 @@ public class DriverClassFindJob implements DBRRunnableWithProgress {
     }
 
     private void findDriverClasses(DBRProgressMonitor monitor, ClassLoader findCL, Path libFile) {
-        try {
-            JarFile currentFile = new JarFile(libFile.toFile(), false);
-            monitor.beginTask(libFile.getFileName().toString(), currentFile.size());
+        String jarName = libFile.getFileName().toString();
+        if (!jarName.endsWith(".jar") && !jarName.endsWith(".zip")) {
+            // Dummy file type validation
+            return;
+        }
+        try (JarFile currentFile = new JarFile(libFile.toFile(), false)) {
+            monitor.beginTask(jarName, currentFile.size());
 
             for (Enumeration<?> e = currentFile.entries(); e.hasMoreElements(); ) {
                 {

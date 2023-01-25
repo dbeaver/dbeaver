@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -181,7 +181,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         }
         DBSObjectContainer container = (DBSObjectContainer) session.getDataSource();
         if (names.length == 1) {
-            DBSObject[] selectedObjects = DBUtils.getSelectedObjects(session.getProgressMonitor(), session.getExecutionContext());
+            DBSObject[] selectedObjects = DBUtils.getSelectedObjects(session.getExecutionContext());
             if (selectedObjects.length > 0 && selectedObjects[selectedObjects.length - 1] instanceof DBSObjectContainer) {
                 container = (DBSObjectContainer) selectedObjects[selectedObjects.length - 1];
             }

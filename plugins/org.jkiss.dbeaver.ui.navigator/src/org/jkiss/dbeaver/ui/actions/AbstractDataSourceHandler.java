@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,8 +113,8 @@ public abstract class AbstractDataSourceHandler extends AbstractHandler {
     }
 
     public static DBPDataSourceContainer getDataSourceContainerFromPart(IWorkbenchPart activePart) {
-        if (activePart instanceof IDataSourceContainerProvider) {
-            return ((IDataSourceContainerProvider) activePart).getDataSourceContainer();
+        if (activePart instanceof DBPDataSourceContainerProvider) {
+            return ((DBPDataSourceContainerProvider) activePart).getDataSourceContainer();
         }
         if (activePart instanceof DBPContextProvider) {
             DBCExecutionContext context = ((DBPContextProvider) activePart).getExecutionContext();

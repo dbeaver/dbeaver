@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -206,7 +207,12 @@ public class NewConnectionWizard extends ConnectionWizard
             dataSourceRegistry, dataSourceTpl.getId(), driver, dataSourceTpl.getConnectionConfiguration());
         dataSourceNew.copyFrom(dataSourceTpl);
         saveSettings(dataSourceNew);
-        dataSourceRegistry.addDataSource(dataSourceNew);
+        try {
+            dataSourceRegistry.addDataSource(dataSourceNew);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Create failed", "Error adding new connections", e);
+            return false;
+        }
         return true;
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.app;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -28,8 +29,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBPWorkspaceDesktop extends DBPWorkspaceEclipse {
 
+    @NotNull
     DBPResourceHandler getDefaultResourceHandler();
-    DBPResourceHandlerDescriptor[] getResourceHandlerDescriptors();
+    @NotNull
     DBPResourceHandlerDescriptor[] getAllResourceHandlers();
     @Nullable
     DBPResourceHandler getResourceHandler(IResource resource);
@@ -42,5 +44,10 @@ public interface DBPWorkspaceDesktop extends DBPWorkspaceEclipse {
      * Reloads workspace contents. Creates missing projects, removes unexistent projects
      */
     void refreshWorkspaceContents(DBRProgressMonitor monitor) throws DBException;
+
+    @NotNull
+    DBPProject createProject(@NotNull String name, @Nullable String description) throws DBException;
+
+    void deleteProject(@NotNull DBPProject project, boolean deleteContents) throws DBException;
 
 }

@@ -21,30 +21,14 @@
 <plugin>
     <!-- UI extensions -->
     <extension-point id="org.jkiss.dbeaver.workbenchHandler" name="%extension-point.org.jkiss.dbeaver.workbenchHandler.name" schema="schema/org.jkiss.dbeaver.workbenchHandler.exsd"/>
-
-    <extension point="org.eclipse.core.contenttype.contentTypes">
-        <content-type
-            file-extensions="bm"
-            id="org.jkiss.dbeaver.bookmark"
-            name="%content-type.org.jkiss.dbeaver.bookmark.name"
-            priority="normal"
-            describer="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarkContentTypeDescriber"/>
-
-        <content-type file-extensions="lnk" id="org.jkiss.dbeaver.shortcut" name="Windows Shortcut" priority="normal">
-            <describer class="org.eclipse.core.runtime.content.BinarySignatureDescriber">
-                <!-- http://msdn.microsoft.com/en-us/library/dd871305%28PROT.10%29.aspx -->
-                <parameter name="signature" value="4C,00,00,00,01,14,02,00,00,00,00,00,C0,00,00,00,00,00,00,46"/>
-                <parameter name="offset" value="0"/>
-            </describer>
-        </content-type>
-    </extension>
+    <extension-point id="org.jkiss.dbeaver.clearHistoryHandler" name="%extension-point.org.jkiss.dbeaver.clearHistoryHandler.name" schema="schema/org.jkiss.dbeaver.clearHistoryHandler.exsd"/>
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
             class="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
             id="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
             namespace="org.jkiss.dbeaver.core.datasource"
-            properties="connected,transactional,synchronizable,transactionActive,supportsTransactions,editable"
+            properties="connected,transactional,synchronizable,transactionActive,supportsTransactions,editable,projectResourceEditable,projectResourceViewable"
             type="org.jkiss.dbeaver.model.DBPContextProvider"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.actions.DataSourceContainerPropertyTester"
@@ -162,6 +146,13 @@
         <definition id="org.jkiss.dbeaver.core.ui.querylog.control">
             <with variable="activeFocusControlId">
                 <equals value="org.jkiss.dbeaver.ui.qm.log"/>
+            </with>
+        </definition>
+        <definition id="org.jkiss.dbeaver.core.transactionActive">
+            <with variable="activeEditor">
+                <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                    <test property="org.jkiss.dbeaver.core.datasource.transactionActive" value="true"/>
+                </adapt>
             </with>
         </definition>
 <!--
@@ -303,7 +294,10 @@
                 <with variable="selection">
                     <count value="1"/>
                     <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.navigator.DBNDatabaseNode"/>
+                        <and>
+                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNDatabaseNode"/>
+                            <test property="org.jkiss.dbeaver.core.object.projectResourceEditable"/>
+                        </and>
                     </iterate>
                 </with>
             </enabledWhen>
@@ -354,20 +348,12 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.commit" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCommitHandler">
             <enabledWhen>
-                <with variable="activeEditor">
-                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                        <test property="org.jkiss.dbeaver.core.datasource.transactionActive" value="true"/>
-                    </adapt>
-                </with>
+                <reference definitionId="org.jkiss.dbeaver.core.transactionActive"/>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.rollback" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceRollbackHandler">
             <enabledWhen>
-                <with variable="activeEditor">
-                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                        <test property="org.jkiss.dbeaver.core.datasource.transactionActive" value="true"/>
-                    </adapt>
-                </with>
+                <reference definitionId="org.jkiss.dbeaver.core.transactionActive"/>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.txn.autocommit" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceAutoCommitHandler">
@@ -475,6 +461,9 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.edit.copy.special" class="org.jkiss.dbeaver.ui.controls.querylog.QueryLogCommandHandler">
            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.querylog.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.controls.querylog.QueryLogCommandHandler">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.querylog.control"/></activeWhen>
         </handler>
 
         <!-- Query log view handlers -->
@@ -647,7 +636,9 @@
                     id="org.jkiss.dbeaver.core.menu.select.connection"
                     style="pulldown"
                     mode="FORCE_TEXT">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
+                    <visibleWhen>
+                        <reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/>
+                    </visibleWhen>
                 </command>
                 <command
                     commandId="org.jkiss.dbeaver.ui.tools.select.schema"
@@ -1039,7 +1030,6 @@
 
         <page class="org.jkiss.dbeaver.ui.preferences.PrefPageProjectNetworkProfiles"
               id="org.jkiss.dbeaver.project.settings.networkProfiles"
-              category="org.jkiss.dbeaver.preferences.projectSettings"
               name="%page.org.jkiss.dbeaver.project.settings.networkProfiles.name" >
             <enabledWhen>
                 <adapt type="org.eclipse.core.resources.IProject">
@@ -1205,17 +1195,10 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceHandler">
-        <handler id="default" class="org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl"/>
-        <handler id="projects" class="org.jkiss.dbeaver.ui.resources.ProjectHandlerImpl">
-            <resourceTypeBinding resourceType="org.eclipse.core.resources.IProject"/>
-        </handler>
-        <handler id="bookmarks" class="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl" name="%resourceHandler.bookmarks.name" managable="true" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/bookmark_folder.png">
-            <root folder="Bookmarks"/>
-            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.bookmark"/>
-        </handler>
-        <handler id="shortcuts" class="org.jkiss.dbeaver.ui.resources.shortcuts.ShortcutsHandlerImpl">
-            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.shortcut"/>
-        </handler>
+        <handler type="default" class="org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl"/>
+        <handler type="project" class="org.jkiss.dbeaver.ui.resources.projects.ProjectHandlerImpl"/>
+        <handler type="bookmark" class="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl"/>
+        <handler type="shortcut" class="org.jkiss.dbeaver.ui.resources.shortcuts.ShortcutsHandlerImpl"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
@@ -1264,6 +1247,37 @@
             <hiddenToolBarItem id="org.eclipse.ui.edit.text.gotoNextEditPosition"/>
             <hiddenToolBarItem id="org.eclipse.ui.edit.text.gotoLastEditPosition"/>
         </perspectiveExtension>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.confirmations">
+        <confirmation
+                id="exit"
+                title="%confirm.exit.title"
+                description="%confirm.exit.tip"
+                message="%confirm.exit.message"
+                toggleMessage="%confirm.general.toggleMessage"
+                group="%confirmation.group.general.actions"/>
+        <confirmation
+                id="disconnect_txn"
+                title="%confirm.disconnect_txn.title"
+                description="%confirm.disconnect_txn.tip"
+                message="%confirm.disconnect_txn.message"
+                toggleMessage="%confirm.general.toggleMessage"
+                group="%confirmation.group.general.actions"/>
+        <confirmation
+                id="reconnect_txn"
+                title="%confirm.reconnect_txn.title"
+                description="%confirm.reconnect_txn.tip"
+                message="%confirm.reconnect_txn.message"
+                toggleMessage="%confirm.general.toggleMessage"
+                group="%confirmation.group.general.actions"/>
+        <confirmation
+                id="driver_download"
+                title="%confirm.driver_download.title"
+                description="%confirm.driver_download.tip"
+                message="%confirm.driver_download.message"
+                toggleMessage="%confirm.general.toggleMessage"
+                group="%confirmation.group.general.actions"/>
     </extension>
 
 </plugin>

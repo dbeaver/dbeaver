@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,29 +20,6 @@ import org.eclipse.osgi.util.NLS;
 
 public class ResultSetMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages"; //$NON-NLS-1$
-
-    public static String confirm_order_resultset_title;
-    public static String confirm_order_resultset_message;
-    public static String confirm_order_resultset_toggleMessage;
-
-    public static String confirm_filter_resultset_title;
-    public static String confirm_filter_resultset_message;
-    public static String confirm_filter_resultset_toggleMessage;
-
-    public static String confirm_fetch_all_rows_title;
-    public static String confirm_fetch_all_rows_message;
-    public static String confirm_fetch_all_rows_toggleMessage;
-
-    public static String confirm_close_resultset_edit_title;
-    public static String confirm_close_resultset_edit_message;
-
-    public static String confirm_reset_panels_content_title;
-    public static String confirm_reset_panels_content_message;
-    public static String confirm_reset_panels_content_toggleMessage;
-
-    public static String confirm_keep_statement_open_title;
-    public static String confirm_keep_statement_open_message;
-    public static String confirm_keep_statement_open_toggleMessage;
 
     public static String confirm_modifying_query_message;
     public static String confirm_modifying_query_title;
@@ -243,8 +220,9 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_content_editor_checkbox_edit_long_as_lobs;
     public static String pref_page_content_editor_checkbox_string_editor_for_datetime;
     public static String pref_page_content_editor_checkbox_string_editor_for_datetime_tip;
-    public static String pref_page_content_editor_group_keys;
+    public static String pref_page_content_editor_group_editing;
     public static String pref_page_content_editor_checkbox_keys_always_use_all_columns;
+    public static String pref_page_content_editor_checkbox_disable_editing_if_key_missing;
     public static String pref_page_content_editor_checkbox_new_rows_after;
     public static String pref_page_content_editor_checkbox_refresh_after_update;
     public static String pref_page_content_editor_checkbox_use_navigator_filters;
@@ -409,6 +387,8 @@ public class ResultSetMessages extends NLS {
 
     public static String refs_label;
     public static String refs_no_refs_text;
+    public static String refs_open_target;
+    public static String refs_open_target_tip;
 
     public static String value_viewer_select_view_message;
     public static String value_viewer_hide_panel_message;
@@ -450,6 +430,8 @@ public class ResultSetMessages extends NLS {
 
     public static String generate_ddl_by_result_set_name;
     public static String generate_ddl_by_result_set_tip;
+    public static String meta_data_panel_action_copy_column_text;
+    public static String result_set_viewer_selection_stat_tooltip;
 
     static {
         // initialize resource bundle

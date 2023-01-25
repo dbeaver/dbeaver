@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,7 @@ import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
@@ -103,6 +100,11 @@ public class NavigatorAdapterFactory implements IAdapterFactory
         } else if (IResource.class.isAssignableFrom(adapterType)) {
             if (adaptableObject instanceof DBNResource) {
                 return ((DBNResource) adaptableObject).getAdapter(adapterType);
+            } else if (adaptableObject instanceof DBNNodeWithResource) {
+                final IResource resource = ((DBNNodeWithResource) adaptableObject).getResource();
+                if (adapterType.isInstance(resource)) {
+                    return adapterType.cast(resource);
+                }
             }
         } else if (adapterType == IPropertySource.class) {
             DBPObject dbObject = null;

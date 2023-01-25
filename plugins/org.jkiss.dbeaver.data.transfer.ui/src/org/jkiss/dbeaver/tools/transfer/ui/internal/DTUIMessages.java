@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -212,6 +212,10 @@ public class DTUIMessages extends NLS {
 	public static String data_transfer_event_processor_execute_command_command;
 	public static String data_transfer_event_processor_execute_command_working_directory;
 	public static String data_transfer_event_processor_execute_command_working_directory_title;
+
+	public static String pref_data_transfer_options_title;
+	public static String pref_data_transfer_options_fallback_directory;
+	public static String pref_data_transfer_options_fallback_directory_tip;
 
 	static {
 		// initialize resource bundle

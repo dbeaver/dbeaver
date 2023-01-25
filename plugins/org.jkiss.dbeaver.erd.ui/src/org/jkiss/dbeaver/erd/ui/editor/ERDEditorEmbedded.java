@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -35,6 +34,7 @@ import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -92,7 +92,8 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
     @Override
     public boolean isReadOnly()
     {
-        return false;
+        DBPProject project = this.getDiagramProject();
+        return project != null && !project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
     }
 
     @Override
@@ -187,9 +188,12 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         diagramLoadingJob.schedule();
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBPProject getDiagramProject() {
+        if (getEditorInput() == null) {
+            return null;
+        }
         return getEditorInput().getNavigatorNode().getOwnerProject();
     }
 

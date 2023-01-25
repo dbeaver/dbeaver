@@ -30,12 +30,15 @@
                         icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon.png"
                         iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon_big.png"
                         description="Yandex ClickHouse legacy driver (server version &lt; 21.3)"
+                        supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://github.com/yandex/clickhouse-jdbc"
                         categories="sql,analytic,columns">
                     <replace provider="generic" driver="yandex_clickhouse"/>
                     <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE[0.2.6]" bundle="!drivers.clickhouse"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.clickhouse"/>
                     <file type="jar" path="drivers/clickhouse" bundle="drivers.clickhouse"/>
-
+                    <file type="license" path="drivers/clickhouse/LICENSE.txt" bundle="drivers.clickhouse"/>
+                    <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss[.fffffffff]"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="omit-catalog" value="true"/>
@@ -52,11 +55,15 @@
                     icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon.png"
                     iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon_big.png"
                     description="Yandex ClickHouse driver (server version 21.3+)"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/yandex/clickhouse-jdbc"
                     categories="sql,analytic,columns">
-                    <file type="jar" path="maven:/com.clickhouse:clickhouse-jdbc:RELEASE[0.3.2]" load-optional-dependencies="true" bundle="!drivers.clickhouse_com" />
+                    <file type="jar" path="maven:/com.clickhouse:clickhouse-jdbc:RELEASE[0.3.2-patch11]" load-optional-dependencies="true" bundle="!drivers.clickhouse_com" />
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.clickhouse"/>
                     <file type="jar" path="drivers/clickhouse_com" bundle="drivers.clickhouse_com"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.clickhouse"/>
                     <!-- Disable server timezone as it confuses during timestamp edit -->
+                    <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss[.fffffffff]"/>
                     <property name="use_server_time_zone" value="false"/>
                     <property name="use_time_zone" value="false"/>
 

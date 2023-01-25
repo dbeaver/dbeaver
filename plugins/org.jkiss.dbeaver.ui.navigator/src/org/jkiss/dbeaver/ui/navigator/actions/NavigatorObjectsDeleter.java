@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
@@ -205,7 +207,12 @@ public class NavigatorObjectsDeleter {
                             DBTTaskRegistry.EVENT_BEFORE_PROJECT_DELETE,
                             Map.of(DBTTaskRegistry.EVENT_PARAM_PROJECT, resource.getName())
                         );
-                        ((IProject) resource).delete(deleteContent, true, monitor);
+                        DBPWorkspaceDesktop workspace = DBPPlatformDesktop.getInstance().getWorkspace();
+                        DBPProject project = workspace.getProject((IProject) resource);
+                        if (project == null) {
+                            throw new DBException("Project '" + resource.getName() + "' is not recognized as databae project");
+                        }
+                        workspace.deleteProject(project, deleteContent);
                     } else if (resource != null) {
                         resource.delete(IResource.FORCE | IResource.KEEP_HISTORY, monitor);
                     }

@@ -121,7 +121,9 @@
                     webURL="https://help.sap.com/viewer/0eec0d68141541d1b07893a39944924e/latest/en-US/ff15928cf5594d78b841fbbe649f04b4.html"
                     categories="sql">
                     <file type="jar" path="maven:/com.sap.cloud.db.jdbc:ngdbc:RELEASE" bundle="!drivers.hana"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.hana"/>
                     <file type="jar" path="drivers/hana" bundle="drivers.hana"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.hana"/>
                     <replace provider="generic" driver="sap_hana"/>
                     <parameter name="split-procedures-and-functions" value="true"/>
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM DUMMY"/>
@@ -143,6 +145,7 @@
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.hana.edit.HANATableManager" objectType="org.jkiss.dbeaver.ext.hana.model.HANATable"/>
         <manager class="org.jkiss.dbeaver.ext.hana.edit.HANATableColumnManager" objectType="org.jkiss.dbeaver.ext.hana.model.HANATableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.hana.edit.HANASchemaManager" objectType="org.jkiss.dbeaver.ext.hana.model.HANASchema"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">

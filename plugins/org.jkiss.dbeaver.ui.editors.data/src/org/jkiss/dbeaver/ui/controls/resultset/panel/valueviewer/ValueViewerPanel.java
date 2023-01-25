@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -200,14 +200,7 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
         }
         if (!force && (valueManager == null || valueEditor == null)) {
             force = true;
-        }
-        if (!force && valueManager instanceof ContentValueManager) {
-            final Object value = previewController.getValue();
-            if (value instanceof DBDContent && !ContentUtils.isTextContent((DBDContent) value)) {
-                // Always perform refresh for non-textual data
-                force = true;
-                updateActions = true;
-            }
+            updateActions = true;
         }
         viewValue(force);
         if (updateActions) {

@@ -101,4 +101,15 @@
         <pragma id="export" class="org.jkiss.dbeaver.sql.pragma.SQLPragmaExport"/>
     </extension>
 
+    <extension point="org.eclipse.ui.preferencePages">
+        <page category="org.jkiss.dbeaver.preferences.main.connections" class="org.jkiss.dbeaver.tools.transfer.ui.prefs.PrefPageDataTransfer" id="org.jkiss.dbeaver.preferences.datatransfer" name="%pref.page.name.datatransfer">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.datatransfer"/>
+        </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.core.keyword.datatransfer" label="%keyword.org.jkiss.dbeaver.preferences.datatransfer"/>
+    </extension>
+
 </plugin>

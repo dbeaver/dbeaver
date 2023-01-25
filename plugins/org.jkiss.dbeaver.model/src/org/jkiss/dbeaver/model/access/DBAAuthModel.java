@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -56,7 +56,12 @@ public interface DBAAuthModel<CREDENTIALS extends DBAAuthCredentials> {
      * @throws DBException on error
      * @return auth token. In most cases it is the same credentials object
      */
-    Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, CREDENTIALS credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException;
+    Object initAuthentication(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull CREDENTIALS credentials,
+        @NotNull DBPConnectionConfiguration configuration,
+        @NotNull Properties connProperties) throws DBException;
 
     void endAuthentication(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties);
 
@@ -69,7 +74,15 @@ public interface DBAAuthModel<CREDENTIALS extends DBAAuthCredentials> {
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer dataSource,
         @NotNull DBPConnectionConfiguration configuration,
-        @NotNull CREDENTIALS credentials)
+        @NotNull CREDENTIALS credentials
+    )
         throws DBException;
 
+    /**
+     * Validate that connection contains necessary credentials
+     *
+     * @param project
+     * @param configuration
+     */
+    boolean isDatabaseCredentialsPresent(DBPProject project, DBPConnectionConfiguration configuration);
 }

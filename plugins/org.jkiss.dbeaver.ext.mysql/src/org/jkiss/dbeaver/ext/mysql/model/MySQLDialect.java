@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -204,14 +204,32 @@ public class MySQLDialect extends JDBCSQLDialect {
     
     @NotNull
     @Override
+    protected String quoteIdentifier(@NotNull String str, @NotNull String[][] quoteStrings) {
+        // Escape with first (default) quote string
+        return quoteStrings[0][0] + escapeString(str, quoteStrings[0]) + quoteStrings[0][1];
+    }
+
+    @NotNull
+    @Override
     public String escapeString(String string) {
-        return string.replace("'", "''").replaceAll("\\\\(?![_%?])", "\\\\\\\\");
+        return escapeString(string, null);
+    }
+
+    @NotNull
+    protected String escapeString(@NotNull String string, @Nullable String[] quotes) {
+        if (quotes != null) {
+            string = string.replace(quotes[0], quotes[0] + quotes[0]);
+        } else {
+            string = string.replace("'", "''").replace("`", "``");
+        }
+
+        return string.replaceAll("\\\\(?![_%?])", "\\\\\\\\");
     }
 
     @NotNull
     @Override
     public String unEscapeString(String string) {
-        return string.replace("''", "'").replace("\\\\", "\\");
+        return string.replace("''", "'").replace("``", "`").replace("\\\\", "\\");
     }
 
     @NotNull
@@ -273,5 +291,15 @@ public class MySQLDialect extends JDBCSQLDialect {
     @Override
     public boolean validIdentifierStart(char c) {
         return Character.isLetterOrDigit(c);
+    }
+    
+    @NotNull
+    @Override
+    public String getTypeCastClause(@NotNull DBSTypedObject attribute, @NotNull String expression, boolean isInCondition) {
+        if (isInCondition && attribute.getTypeName().equalsIgnoreCase(MySQLConstants.TYPE_JSON)) {
+            return "CAST(" + expression + " AS JSON)";
+        } else {
+            return super.getTypeCastClause(attribute, expression, isInCondition);
+        }
     }
 }

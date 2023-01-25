@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,20 +18,21 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.internal.resources.Resource;
 import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.fs.DBFRemoteFileStore;
 import org.jkiss.dbeaver.model.fs.nio.NIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -146,9 +147,21 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
         return handler == null || resource == null ? null : handler.getResourceDescription(resource);
     }
 
+    @NotNull
     @Override
-    public DBPImage getNodeIcon()
-    {
+    public DBPImage getNodeIcon() {
+        DBPImage iconImage = this.getResourceNodeIcon();
+
+        DBPProject project = getOwnerProject();
+        if (project != null && !project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+            iconImage = new DBIconComposite(iconImage, false, null, null, null, DBIcon.OVER_LOCK);
+        }
+
+        return iconImage;
+    }
+
+    @NotNull
+    protected DBPImage getResourceNodeIcon() {
         if (resourceImage != null) {
             return resourceImage;
         }
@@ -159,7 +172,11 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
         }
 */
         if (resource == null) {
-            return null;
+            if (this.hasChildren(false)) {
+                return DBIcon.TREE_FOLDER;
+            } else {
+                return DBIcon.TREE_PAGE;
+            }
         }
         switch (resource.getType()) {
             case IResource.FOLDER: return resource.isLinked() ? DBIcon.TREE_FOLDER_LINK : DBIcon.TREE_FOLDER;
@@ -435,7 +452,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     }
 
     @Override
-    @Nullable
+    @NotNull
     public IResource getResource()
     {
         return resource;
@@ -477,32 +494,6 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     public void setResourceImage(DBPImage resourceImage)
     {
         this.resourceImage = resourceImage;
-    }
-
-    public void createNewFolder(String folderName)
-        throws DBException
-    {
-        try {
-            if (resource instanceof IProject) {
-                IFolder newFolder = ((IProject)resource).getFolder(folderName);
-                if (newFolder.exists()) {
-                    throw new DBException("Folder '" + folderName + "' already exists in project '" + resource.getName() + "'");
-                }
-                newFolder.create(true, true, new NullProgressMonitor());
-            } else if (resource instanceof IFolder) {
-                IFolder parentFolder = (IFolder) resource;
-                if (!parentFolder.exists()) {
-                    parentFolder.create(true, true, new NullProgressMonitor());
-                }
-                IFolder newFolder = parentFolder.getFolder(folderName);
-                if (newFolder.exists()) {
-                    throw new DBException("Folder '" + folderName + "' already exists in '" + resource.getFullPath().toString() + "'");
-                }
-                newFolder.create(true, true, new NullProgressMonitor());
-            }
-        } catch (CoreException e) {
-            throw new DBException("Can't create new folder", e);
-        }
     }
 
     public Collection<DBPDataSourceContainer> getAssociatedDataSources()

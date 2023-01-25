@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.fs.nio;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -43,11 +44,16 @@ public final class NIOFolder extends NIOContainer implements IFolder {
     }
 
     public void create(boolean force, boolean local, IProgressMonitor monitor) throws CoreException {
-        throw new FeatureNotSupportedException();
+        create(force ? IResource.FORCE : IResource.NONE, local, monitor);
     }
 
     public void create(int updateFlags, boolean local, IProgressMonitor monitor) throws CoreException {
-        throw new FeatureNotSupportedException();
+        try {
+            Files.createDirectory(getNioPath());
+            NIOMonitor.notifyResourceChange(this, NIOListener.Action.CREATE);
+        } catch (IOException e) {
+            throw new CoreException(GeneralUtils.makeExceptionStatus(e));
+        }
     }
 
     public void createLink(IPath localLocation, int updateFlags, IProgressMonitor monitor) throws CoreException {
@@ -61,6 +67,7 @@ public final class NIOFolder extends NIOContainer implements IFolder {
     public void delete(boolean force, boolean keepHistory, IProgressMonitor monitor) throws CoreException {
         try {
             Files.delete(getNioPath());
+            NIOMonitor.notifyResourceChange(this, NIOListener.Action.DELETE);
         } catch (IOException e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }

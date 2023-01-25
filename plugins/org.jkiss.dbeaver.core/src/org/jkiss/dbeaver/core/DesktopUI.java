@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,25 @@
  */
 package org.jkiss.dbeaver.core;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.operation.ModalContext;
+import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.*;
 import org.eclipse.ui.services.IDisposable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -71,6 +76,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 /**
  * DBeaver UI core
@@ -188,7 +197,7 @@ public class DesktopUI implements DBPPlatformUI {
     }
 
     @Override
-    public UserResponse showError(@NotNull final String title, @Nullable final String message, @NotNull final IStatus status) {
+    public UserResponse showError(@Nullable final String title, @Nullable final String message, @NotNull final IStatus status) {
         IStatus rootStatus = status;
         for (IStatus s = status; s != null; ) {
             if (s.getException() instanceof DBException) {
@@ -213,8 +222,12 @@ public class DesktopUI implements DBPPlatformUI {
         // log.debug(message);
         Runnable runnable = () -> {
             // Display the dialog
-            StandardErrorDialog dialog = new StandardErrorDialog(UIUtils.getActiveWorkbenchShell(),
-                    title, message, status, IStatus.ERROR);
+            StandardErrorDialog dialog = new StandardErrorDialog(
+                UIUtils.getActiveWorkbenchShell(),
+                Objects.requireNonNull(title, "Error"),
+                message,
+                status,
+                IStatus.ERROR);
             dialog.open();
         };
         UIUtils.syncExec(runnable);
@@ -222,7 +235,7 @@ public class DesktopUI implements DBPPlatformUI {
     }
 
     @Override
-    public UserResponse showError(@NotNull String title, @Nullable String message, @NotNull Throwable error) {
+    public UserResponse showError(@Nullable String title, @Nullable String message, @NotNull Throwable error) {
         return showError(title, message, GeneralUtils.makeExceptionStatus(error));
     }
 
@@ -277,6 +290,62 @@ public class DesktopUI implements DBPPlatformUI {
     @Override
     public boolean confirmAction(String title, String message, boolean isWarning) {
         return UIUtils.confirmAction(null, title, message, isWarning ? DBIcon.STATUS_WARNING : DBIcon.STATUS_QUESTION);
+    }
+    
+    @NotNull
+    @Override
+    public UserChoiceResponse showUserChoice(
+        @NotNull String title,
+        @Nullable String message,
+        @NotNull List<String> labels,
+        @NotNull List<String> forAllLabels,
+        @Nullable Integer previousChoice,
+        int defaultChoice
+    ) {
+        final List<Reply> reply = labels.stream()
+            .map(s -> CommonUtils.isEmpty(s) ? null : new Reply(s))
+            .collect(Collectors.toList());
+
+        return UIUtils.syncExec(new RunnableWithResult<UserChoiceResponse>() {
+            public UserChoiceResponse runWithResult() {
+                List<Button> extraCheckboxes = new ArrayList<>(forAllLabels.size());
+                Integer[] selectedCheckboxIndex = { null };
+                MessageBoxBuilder mbb = MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setReplies(reply.stream().filter(Objects::nonNull).toArray(Reply[]::new))
+                    .setPrimaryImage(DBIcon.STATUS_WARNING);
+                
+                if (previousChoice != null && reply.get(previousChoice) != null) {
+                    mbb.setDefaultReply(reply.get(previousChoice));
+                }
+                if (forAllLabels.size() > 0) {
+                    mbb.setCustomArea(pp -> {
+                        SelectionListener selectionListener = SelectionListener.widgetSelectedAdapter(e -> {
+                            int chkIndex = (Integer) e.widget.getData();
+                            if (extraCheckboxes.get(chkIndex).getSelection()) {
+                                selectedCheckboxIndex[0] = chkIndex;
+                                for (int index = 0; index < extraCheckboxes.size(); index++) {
+                                    if (index != chkIndex) {
+                                        extraCheckboxes.get(index).setSelection(false);
+                                    }
+                                }
+                            }
+                        });
+                        for (int index = 0; index < forAllLabels.size(); index++) {
+                            Button chk = UIUtils.createCheckbox(pp, forAllLabels.get(index), false);
+                            chk.setData(index);
+                            chk.addSelectionListener(selectionListener);
+                            extraCheckboxes.add(chk);
+                        }
+                    });
+                }
+                
+                Reply result = mbb.showMessageBox();
+                int choiceIndex = reply.indexOf(result);
+                return new UserChoiceResponse(choiceIndex, selectedCheckboxIndex[0]);
+            }
+        }); 
     }
 
     @Override
@@ -361,8 +430,12 @@ public class DesktopUI implements DBPPlatformUI {
 
     @Override
     public DBNNode selectObject(@NotNull Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes) {
-        Shell shell = (parentShell instanceof Shell ? (Shell)parentShell : UIUtils.getActiveWorkbenchShell());
-        return ObjectBrowserDialog.selectObject(shell, title, rootNode, selectedNode, allowedTypes, resultTypes, leafTypes);
+        DBNNode[] result = new DBNNode[1];
+        UIUtils.syncExec(() -> {
+            Shell shell = (parentShell instanceof Shell ? (Shell)parentShell : UIUtils.getActiveWorkbenchShell());
+            result[0] = ObjectBrowserDialog.selectObject(shell, title, rootNode, selectedNode, allowedTypes, resultTypes, leafTypes);
+        });
+        return result[0];
     }
 
     @Override
@@ -432,6 +505,101 @@ public class DesktopUI implements DBPPlatformUI {
         runnable.run(new VoidProgressMonitor());
     }
 
+    /**
+     * Execute runnable task synchronously while displaying job indeterminate indicator and blocking the UI, when called from the UI thread
+     */
+    @NotNull
+    @Override
+    public <T> Future<T> executeWithProgressBlocking(
+        @NotNull String operationDescription,
+        @NotNull DBRRunnableWithResult<Future<T>> runnable
+    ) {
+        final AbstractJob job = new AbstractJob(operationDescription) {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                monitor.beginTask(operationDescription, IProgressMonitor.UNKNOWN);
+                try {
+                    UIExecutionQueue.blockQueue();
+                    runnable.run(monitor);
+                    return Status.OK_STATUS;
+                } catch (Exception ex) {
+                    return GeneralUtils.makeExceptionStatus(ex);
+                } finally {
+                    UIExecutionQueue.unblockQueue();
+                    monitor.done();
+                }
+            }
+            
+            @Override
+            protected void canceling() {
+                runnable.cancel();
+            }
+        };
+        job.schedule();
+        
+        if (UIUtils.isUIThread()) {
+            Display display = UIUtils.getDisplay();
+            if (!display.isDisposed()) {
+                CompletableFuture<Boolean> shortWaitResult = new CompletableFuture<>();
+                Runnable modalShortWait = () -> {
+                    try {
+                        ModalContext.run(monitor -> { 
+                            try {
+                                shortWaitResult.complete(!job.join(getLongOperationTime(), new NullProgressMonitor()));
+                            } catch (Exception ex) {
+                                shortWaitResult.completeExceptionally(ex);
+                            }
+                        }, true, new NullProgressMonitor(), display);
+                    } catch (Exception ex) {
+                        shortWaitResult.completeExceptionally(ex);
+                    }
+                };
+
+                for (Shell shell : display.getShells()) {
+                    shell.setEnabled(false);
+                }
+                try {
+                    BusyIndicator.showWhile(display, modalShortWait);
+                } finally {
+                    for (Shell shell : display.getShells()) {
+                        shell.setEnabled(true);
+                    }
+                }
+                
+                try {
+                    if (shortWaitResult.get()) {
+                        ProgressMonitorDialog progress = new ProgressMonitorDialog(display.getActiveShell()) {
+                            @Override
+                            protected void cancelPressed() {
+                                job.cancel();
+                                super.cancelPressed();
+                            }  
+                        };
+                        
+                        progress.run(true, runnable != null, new IRunnableWithProgress() {
+                            @Override
+                            public void run(IProgressMonitor monitor) throws InterruptedException {
+                                monitor.beginTask(operationDescription, IProgressMonitor.UNKNOWN);
+                                job.join();
+                                monitor.done();
+                            }
+                        });
+                    }
+                } catch (Exception ex) {
+                    return CompletableFuture.failedFuture(ex);
+                }
+            }
+        }
+
+        try {
+            job.join();
+        } catch (InterruptedException ex) {
+            return CompletableFuture.failedFuture(ex);
+        }
+        
+        return job.getResult().isOK() ? runnable.getResult() : CompletableFuture.failedFuture(job.getResult().getException());
+    }
+    
     @NotNull
     @Override
     public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {
@@ -486,11 +654,23 @@ public class DesktopUI implements DBPPlatformUI {
         Display currentDisplay = Display.getCurrent();
         if (currentDisplay != null) {
             if (!currentDisplay.readAndDispatch()) {
-                currentDisplay.sleep();
+                IWorkbench workbench = PlatformUI.getWorkbench();
+                if (!workbench.isStarting() && !workbench.isClosing()) {
+                    // Do not sleep during startup/shutdown because you may have no chance to get UI event anymore
+                    currentDisplay.sleep();
+                }
             }
             return true;
         } else {
             return false;
+        }
+    }
+    
+    private static long getLongOperationTime() {
+        try {
+            return PlatformUI.getWorkbench().getProgressService().getLongOperationTime();
+        } catch (Exception ex) { // when workbench is not initialized yet during startup
+            return 800; // see org.eclipse.ui.internal.progress.ProgressManager.getLongOperationTime()
         }
     }
 

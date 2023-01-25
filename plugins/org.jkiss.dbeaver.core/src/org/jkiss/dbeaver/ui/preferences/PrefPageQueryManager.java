@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -109,11 +109,11 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
                 public void widgetSelected(SelectionEvent e)
                 {
                     UIUtils.enableWithChildren(textOutputFolder.getParent(), checkStoreLog.getSelection());
+                    UIUtils.enableWithChildren(textHistoryDays, checkStoreLog.getSelection());
                 }
             });
             textOutputFolder = DialogUtils.createOutputFolderChooser(storageSettings, CoreMessages.pref_page_query_manager_logs_folder, null);
             textHistoryDays = UIUtils.createLabelText(storageSettings, CoreMessages.pref_page_query_manager_label_days_to_store_log, "", SWT.BORDER, new GridData(50, SWT.DEFAULT)); //$NON-NLS-2$
-            textHistoryDays.setEnabled(false);
 
             CLabel infoLabel = UIUtils.createInfoLabel(storageSettings, CoreMessages.pref_page_query_manager_log_file_hint);
             infoLabel.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 2, 1));
@@ -147,6 +147,7 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         checkStoreLog.setSelection(store.getBoolean(QMConstants.PROP_STORE_LOG_FILE));
         textOutputFolder.setText(store.getString(QMConstants.PROP_LOG_DIRECTORY));
         UIUtils.enableWithChildren(textOutputFolder.getParent(), checkStoreLog.getSelection());
+        UIUtils.enableWithChildren(textHistoryDays, checkStoreLog.getSelection());
 
         super.performDefaults();
     }
@@ -174,10 +175,10 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         store.setValue(QMConstants.PROP_OBJECT_TYPES, QMObjectType.toString(objectTypes));
         store.setValue(QMConstants.PROP_QUERY_TYPES, CommonUtils.makeString(queryTypes, ','));
         if (historyDays != null) {
-            store.setValue(QMConstants.PROP_HISTORY_DAYS, historyDays);
+            store.setValue(QMConstants.PROP_HISTORY_DAYS, Math.max(1, historyDays));
         }
         if (entriesPerPage != null) {
-            store.setValue(QMConstants.PROP_ENTRIES_PER_PAGE, entriesPerPage);
+            store.setValue(QMConstants.PROP_ENTRIES_PER_PAGE, Math.max(1, entriesPerPage));
         }
         store.setValue(QMConstants.PROP_STORE_LOG_FILE, checkStoreLog.getSelection());
         store.setValue(QMConstants.PROP_LOG_DIRECTORY, textOutputFolder.getText());

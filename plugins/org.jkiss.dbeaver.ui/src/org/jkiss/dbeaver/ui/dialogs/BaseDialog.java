@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
@@ -38,7 +39,6 @@ public class BaseDialog extends Dialog
 
     private String title;
     private DBPImage icon;
-    protected int buttonBarPlaceholderColumns = 2;
 
     public BaseDialog(Shell parentShell, String title, @Nullable DBPImage icon)
     {
@@ -70,15 +70,26 @@ public class BaseDialog extends Dialog
     }
 
     @Override
+    protected Control createContents(Composite parent) {
+        Control contents = super.createContents(parent);
+        applyDialogFont(dialogArea);
+        return contents;
+    }
+
+    @Override
     protected Composite createDialogArea(Composite parent) {
-        return (Composite)super.createDialogArea(parent);
+        Composite dialogArea1 = (Composite) super.createDialogArea(parent);
+
+        return dialogArea1;
     }
 
     @Override
     public void create()
     {
         super.create();
-        getShell().setText(title);
+        if (title != null) {
+            getShell().setText(title);
+        }
         if (icon != null) {
             getShell().setImage(DBeaverIcons.getImage(icon));
         }
@@ -87,11 +98,24 @@ public class BaseDialog extends Dialog
 
     @Override
     protected Control createButtonBar(Composite parent) {
-        final Composite composite = UIUtils.createPlaceholder(parent, this.buttonBarPlaceholderColumns, 0);
+        final Composite composite = UIUtils.createPlaceholder(parent, 2, 0);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-        createButtonsForButtonBar(createButtonBarComposite(composite, SWT.LEAD), SWT.LEAD);
-        createButtonsForButtonBar(createButtonBarComposite(composite, SWT.TRAIL), SWT.TRAIL);
+        final Composite leadingButtonsComposite = createButtonBarComposite(composite, SWT.LEAD);
+        final Composite trailingButtonsComposite = createButtonBarComposite(composite, SWT.TRAIL);
+
+        createButtonsForButtonBar(leadingButtonsComposite, SWT.LEAD);
+        createButtonsForButtonBar(trailingButtonsComposite, SWT.TRAIL);
+
+        if (leadingButtonsComposite.getChildren().length == 0) {
+            ((GridLayout) composite.getLayout()).numColumns -= 1;
+            leadingButtonsComposite.dispose();
+        }
+
+        if (trailingButtonsComposite.getChildren().length == 0) {
+            ((GridLayout) composite.getLayout()).numColumns -= 1;
+            trailingButtonsComposite.dispose();
+        }
 
         return composite;
     }
@@ -118,5 +142,12 @@ public class BaseDialog extends Dialog
         composite.setFont(parent.getFont());
 
         return composite;
+    }
+
+    // Overloaded just to add the @Nullable annotation
+    @Override
+    @Nullable
+    protected Button getButton(int id) {
+        return super.getButton(id);
     }
 }

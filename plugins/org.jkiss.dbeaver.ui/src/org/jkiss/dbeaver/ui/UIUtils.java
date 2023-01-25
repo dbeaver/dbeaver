@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.jface.wizard.IWizardContainer;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.dnd.Clipboard;
@@ -836,8 +837,7 @@ public class UIUtils {
     @Nullable
     public static Shell getActiveShell()
     {
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        return workbench == null ? null : getShell(workbench.getActiveWorkbenchWindow());
+        return getActiveWorkbenchShell();
     }
 
     @Nullable
@@ -884,8 +884,7 @@ public class UIUtils {
         return createPlaceholder(parent, columns, 0);
     }
 
-    public static Composite createComposite(Composite parent, int columns)
-    {
+    public static Composite createComposite(@NotNull Composite parent, int columns) {
         Composite ph = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(columns, false);
         gl.marginWidth = 0;
@@ -894,8 +893,7 @@ public class UIUtils {
         return ph;
     }
 
-    public static Composite createPlaceholder(Composite parent, int columns, int spacing)
-    {
+    public static Composite createPlaceholder(@NotNull Composite parent, int columns, int spacing) {
         Composite ph = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(columns, false);
         gl.verticalSpacing = spacing;
@@ -1465,12 +1463,13 @@ public class UIUtils {
 
     public static void drawMessageOverControl(Control control, GC gc, String message, int offset) {
         Rectangle bounds = control.getBounds();
+        final int height = gc.textExtent(message).y;
         for (String line : message.split("\n")) {
             line = line.trim();
             Point ext = gc.textExtent(line);
             gc.drawText(line,
                 (bounds.width - ext.x) / 2,
-                bounds.height / 2 + offset);
+                (bounds.height - height) / 2 + offset);
             offset += ext.y;
         }
     }
@@ -1500,7 +1499,7 @@ public class UIUtils {
 
     public static void fillDefaultTableContextMenu(IContributionManager menu, final Table table) {
         if (table.getColumnCount() > 1) {
-            menu.add(new Action("Copy " + table.getColumn(0).getText()) {
+            menu.add(new Action(NLS.bind(UIMessages.utils_actions_copy_label, table.getColumn(0).getText())) {
                 @Override
                 public void run() {
                     StringBuilder text = new StringBuilder();
@@ -1515,7 +1514,7 @@ public class UIUtils {
                 }
             });
         }
-        menu.add(new Action("Copy All") {
+        menu.add(new Action(UIMessages.utils_actions_copy_all_label) {
             @Override
             public void run() {
                 StringBuilder text = new StringBuilder();
@@ -1552,7 +1551,7 @@ public class UIUtils {
                 }
             });
         }
-        menu.add(new Action("Copy All") {
+        menu.add(new Action(UIMessages.utils_actions_copy_all_label) {
             @Override
             public void run() {
                 StringBuilder text = new StringBuilder();
@@ -1682,13 +1681,28 @@ public class UIUtils {
 
     @Nullable
     public static Shell getActiveWorkbenchShell() {
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-        if (window != null) {
-            return window.getShell();
-        } else {
-            return Display.getDefault().getActiveShell();
+        if (PlatformUI.isWorkbenchRunning()) {
+            IWorkbench workbench = PlatformUI.getWorkbench();
+            IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+            if (window != null) {
+                Shell shell = window.getShell();
+                if (shell != null && shell.isVisible()) {
+                    return shell;
+                }
+            }
         }
+        Display display = Display.getCurrent();
+        Shell activeShell = display.getActiveShell();
+        if (activeShell != null) {
+            return activeShell;
+        }
+        Shell[] shells = display.getShells();
+        for (Shell shell : shells) {
+            if (shell.isVisible()) {
+                return shell;
+            }
+        }
+        return shells.length > 0 ? shells[0] : null;
     }
 
     public static DBRRunnableContext getDefaultRunnableContext() {
@@ -1946,7 +1960,6 @@ public class UIUtils {
             shellSize.x = Math.max(shellSize.x, compSize.x);
             shellSize.y = Math.max(shellSize.y, compSize.y);
             shell.setSize(shellSize);
-            needsLayout = true;
         }
 
         if (shellLocation.x + shellSize.x > displayArea.width || shellLocation.y + shellSize.y > displayArea.height) {

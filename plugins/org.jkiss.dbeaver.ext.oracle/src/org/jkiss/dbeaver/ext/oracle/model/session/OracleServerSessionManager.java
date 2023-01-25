@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.model.session;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.oracle.internal.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -112,7 +113,11 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
     @Override
     public List<DBAServerSessionDetails> getSessionDetails() {
         List<DBAServerSessionDetails> extDetails = new ArrayList<>();
-        extDetails.add(new AbstractServerSessionDetails("Long Operations", "Displays the status of various operations that run for longer than 6 seconds (in absolute time)", DBIcon.TYPE_DATETIME) {
+        extDetails.add(new AbstractServerSessionDetails(
+            OracleMessages.oracle_server_session_manager_details_name,
+            OracleMessages.oracle_server_session_manager_details_description,
+            DBIcon.TYPE_DATETIME
+        ) {
             @Override
             public List<OracleServerLongOp> getSessionDetails(DBCSession session, DBAServerSession serverSession) throws DBException {
                 try {
@@ -140,7 +145,11 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
                 return OracleServerLongOp.class;
             }
         });
-        extDetails.add(new AbstractServerSessionDetails("Display Exec Plan", "Displays execute plan from dbms_xplan by SqlId and ChildNumber", DBIcon.TYPE_TEXT) {
+        extDetails.add(new AbstractServerSessionDetails(
+            OracleMessages.oracle_server_session_manager_display_exec_plan_name,
+            OracleMessages.oracle_server_session_manager_display_exec_plan_description,
+            DBIcon.TYPE_TEXT
+        ) {
             @Override
             public List<OracleServerExecutePlan> getSessionDetails(DBCSession session, DBAServerSession serverSession) throws DBException {
                 try {

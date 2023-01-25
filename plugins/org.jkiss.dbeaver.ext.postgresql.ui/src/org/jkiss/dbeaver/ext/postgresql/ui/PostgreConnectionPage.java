@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.postgresql.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -25,21 +24,19 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
+import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
@@ -50,14 +47,17 @@ import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
 import java.util.Locale;
 
 /**
  * PostgreConnectionPage
  */
 public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
-    private static final Log log = Log.getLog(PostgreConnectionPage.class);
-
+    
+    protected static final String GROUP_CONNECTION = "connection"; //$NON-NLS-1$
+    protected static final List<String> GROUP_CONNECTION_ARR = List.of(GROUP_CONNECTION);
+    
     private Text urlText;
     private Label hostLabel;
     private Text hostText;
@@ -109,7 +109,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         SelectionAdapter typeSwitcher = new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                setupConnectionModeSelection(urlText, typeURLRadio.getSelection());
+                setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), GROUP_CONNECTION_ARR);
                 updateUrl();
             }
         };
@@ -163,6 +163,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         gd.horizontalSpan = 3;
         dbText.setLayoutData(gd);
         dbText.addModifyListener(textListener);
+        dbText.setMessage(PostgreMessages.dialog_database_name_hint);
         addControlToGroup(GROUP_CONNECTION, dbText);
 
         createAuthPanel(mainGroup, 1);
@@ -178,9 +179,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
                 roleText.setLayoutData(gd);
             }
 
-            if (!DBWorkbench.getPlatform().getApplication().hasProductFeature(DBConstants.PRODUCT_FEATURE_SIMPLE_DATABASE_ADMINISTRATION)
-                && serverType.supportsClient()
-            ) {
+            if (DBWorkbench.hasFeature(DBConnectionConstants.PRODUCT_FEATURE_ADVANCED_DATABASE_ADMINISTRATION) && serverType.supportsClient()) {
                 homesSelector = new ClientHomesSelector(advancedGroup, PostgreMessages.dialog_setting_connection_localClient, false);
                 gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
                 homesSelector.getPanel().setLayoutData(gd);
@@ -255,7 +254,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         if (useURL) {
             urlText.setText(connectionInfo.getUrl());
         }
-        setupConnectionModeSelection(urlText, useURL);
+        setupConnectionModeSelection(urlText, useURL, GROUP_CONNECTION_ARR);
         updateUrl();
         
         activated = true;
@@ -264,8 +263,10 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
-        connectionInfo.setConfigurationType(
-            typeURLRadio.getSelection() ? DBPDriverConfigurationType.URL : DBPDriverConfigurationType.MANUAL);
+        if (typeURLRadio != null) {
+            connectionInfo.setConfigurationType(
+                typeURLRadio.getSelection() ? DBPDriverConfigurationType.URL : DBPDriverConfigurationType.MANUAL);
+        }
         
         if (hostText != null) {
             connectionInfo.setHostName(hostText.getText().trim());
@@ -299,13 +300,13 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
     
     @Override
     protected boolean isCustomURL() {
-        return typeURLRadio.getSelection();
+        return typeURLRadio != null && typeURLRadio.getSelection();
     }
     
     private void updateUrl() {
         DBPDataSourceContainer dataSourceContainer = site.getActiveDataSource();
         saveSettings(dataSourceContainer);
-        if (typeURLRadio.getSelection()) {
+        if (typeURLRadio != null && typeURLRadio.getSelection()) {
             urlText.setText(dataSourceContainer.getConnectionConfiguration().getUrl());
         } else {
             urlText.setText(dataSourceContainer.getDriver().getConnectionURL(site.getActiveDataSource().getConnectionConfiguration()));

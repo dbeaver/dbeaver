@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.preferences;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -24,6 +25,7 @@ import org.eclipse.ui.dialogs.PreferenceLinkArea;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -34,6 +36,8 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
+
+import java.util.List;
 
 /**
  * PrefPageSQLEditor
@@ -46,7 +50,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
     private static final String TEXT_EDITOR_PAGE_ID = "org.eclipse.ui.preferencePages.GeneralTextEditor"; //$NON-NLS-1$
 
-    private Button editorSeparateConnectionCheck;
+    private Combo editorSeparateConnectionCombo;
     private Button connectOnActivationCheck;
     private Button connectOnExecuteCheck;
 
@@ -59,6 +63,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Combo resultsOrientationCombo;
     private Button autoOpenOutputView;
     private Button replaceCurrentTab;
+    private Spinner sizeWarningThreshouldSpinner;
 
     public PrefPageSQLEditor()
     {
@@ -88,6 +93,12 @@ public class PrefPageSQLEditor extends TargetPrefPage
         return true;
     }
 
+    private static final List<SeparateConnectionBehavior> editorUseSeparateConnectionValues = List.of(
+        SeparateConnectionBehavior.ALWAYS,
+        SeparateConnectionBehavior.DEFAULT,
+        SeparateConnectionBehavior.NEVER
+    );
+
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
@@ -95,11 +106,18 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
         {
             Group connectionsGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_connections, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
-            ((GridData)connectionsGroup.getLayoutData()).horizontalSpan = 2;
-            editorSeparateConnectionCheck = UIUtils.createCheckbox(connectionsGroup, SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor, false);
-            if (getDataSourceContainer() != null && getDataSourceContainer().isForceUseSingleConnection()) {
-                editorSeparateConnectionCheck.setEnabled(false);
-            }
+            ((GridData) connectionsGroup.getLayoutData()).horizontalSpan = 2;
+            editorSeparateConnectionCombo = UIUtils.createLabelCombo(
+                UIUtils.createComposite(connectionsGroup, 3),
+                SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor,
+                SWT.READ_ONLY | SWT.DROP_DOWN
+            );
+            editorSeparateConnectionCombo.setToolTipText(
+                NLS.bind(SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor_tip, PrefUtils.collectSingleConnectionDrivers())
+            );
+            ((GridData) editorSeparateConnectionCombo.getLayoutData()).grabExcessHorizontalSpace = false;
+            editorSeparateConnectionCombo.setItems(editorUseSeparateConnectionValues.stream()
+                .map(SeparateConnectionBehavior::getTitle).toArray(String[]::new));
             connectOnActivationCheck = UIUtils.createCheckbox(connectionsGroup, SQLEditorMessages.pref_page_sql_editor_label_connect_on_editor_activation, false);
             connectOnExecuteCheck = UIUtils.createCheckbox(connectionsGroup, SQLEditorMessages.pref_page_sql_editor_label_connect_on_query_execute, false);
         }
@@ -116,7 +134,12 @@ public class PrefPageSQLEditor extends TargetPrefPage
             Composite layoutGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_result_view, 2, GridData.FILL_HORIZONTAL, 0);
             ((GridData)layoutGroup.getLayoutData()).horizontalSpan = 2;
 
-            closeTabOnErrorCheck = UIUtils.createCheckbox(layoutGroup, SQLEditorMessages.pref_page_sql_editor_label_close_results_tab_on_error, null, false, 2);
+            closeTabOnErrorCheck = UIUtils.createCheckbox(
+                layoutGroup,
+                SQLEditorMessages.pref_page_sql_editor_label_close_results_tab_on_error,
+                SQLEditorMessages.pref_page_sql_editor_label_close_results_tab_on_error_tip,
+                false,
+                2);
             replaceCurrentTab = UIUtils.createCheckbox(layoutGroup, SQLEditorMessages.pref_page_sql_editor_label_replace_on_single_query_exec_view, SQLEditorMessages.pref_page_sql_editor_label_replace_on_single_query_exec_view_tip, true, 2);
 
             resultsOrientationCombo = UIUtils.createLabelCombo(layoutGroup, SQLEditorMessages.pref_page_sql_editor_label_results_orientation, SQLEditorMessages.pref_page_sql_editor_label_results_orientation_tip, SWT.READ_ONLY | SWT.DROP_DOWN);
@@ -128,6 +151,10 @@ public class PrefPageSQLEditor extends TargetPrefPage
             }
 
             autoOpenOutputView = UIUtils.createCheckbox(layoutGroup, SQLEditorMessages.pref_page_sql_editor_label_auto_open_output_view, SQLEditorMessages.pref_page_sql_editor_label_auto_open_output_view_tip, false, 2);
+            sizeWarningThreshouldSpinner = UIUtils.createLabelSpinner(layoutGroup,
+                SQLEditorMessages.pref_page_sql_editor_label_size_warning_threshold,
+                SQLEditorMessages.pref_page_sql_editor_label_size_warning_threshold_tip, 20, 2, 200);
+            sizeWarningThreshouldSpinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
 
         {
@@ -150,7 +177,9 @@ public class PrefPageSQLEditor extends TargetPrefPage
     protected void loadPreferences(DBPPreferenceStore store)
     {
         try {
-            editorSeparateConnectionCheck.setSelection(store.getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION));
+            editorSeparateConnectionCombo.select(editorUseSeparateConnectionValues.indexOf(
+                SeparateConnectionBehavior.parse(store.getString(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION))
+            ));
             connectOnActivationCheck.setSelection(store.getBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE));
             connectOnExecuteCheck.setSelection(store.getBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE));
 
@@ -165,6 +194,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
                 DBWorkbench.getPlatform().getPreferenceStore().getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION));
             resultsOrientationCombo.setText(orientation.getLabel());
             autoOpenOutputView.setSelection(store.getBoolean(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW));
+            sizeWarningThreshouldSpinner.setSelection(store.getInt(SQLPreferenceConstants.RESULT_SET_MAX_TABS_PER_QUERY));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -174,7 +204,10 @@ public class PrefPageSQLEditor extends TargetPrefPage
     protected void savePreferences(DBPPreferenceStore store)
     {
         try {
-            store.setValue(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION, editorSeparateConnectionCheck.getSelection());
+            store.setValue(
+                SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION,
+                editorUseSeparateConnectionValues.get(editorSeparateConnectionCombo.getSelectionIndex()).name()
+            );
             store.setValue(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE, connectOnActivationCheck.getSelection());
             store.setValue(SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE, connectOnExecuteCheck.getSelection());
 
@@ -193,6 +226,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
                 }
             }
             store.setValue(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW, autoOpenOutputView.getSelection());
+            store.setValue(SQLPreferenceConstants.RESULT_SET_MAX_TABS_PER_QUERY, sizeWarningThreshouldSpinner.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -205,7 +239,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION);
         store.setToDefault(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE);
         store.setToDefault(SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE);
-
+        store.setToDefault(SQLPreferenceConstants.RESULT_SET_MAX_TABS_PER_QUERY);
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_CHANGE);
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE);
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE);

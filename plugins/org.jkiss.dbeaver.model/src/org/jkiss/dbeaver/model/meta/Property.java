@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -124,9 +124,21 @@ public @interface Property
      */
     boolean password() default false;
 
+    /**
+     * Does not show the field in the connection window of CB when this property is true.
+     */
+    boolean nonSecuredProperty() default false;
+
     int order() default Integer.MAX_VALUE;
 
     String helpContextId() default ""; //NON-NLS-1
+
+    /**
+     * Features list as a string with comma delimiter .
+     *
+     * @return the string
+     */
+    String[] features() default {};
 
     /**
      * Can be used to format numbers and date/time property values

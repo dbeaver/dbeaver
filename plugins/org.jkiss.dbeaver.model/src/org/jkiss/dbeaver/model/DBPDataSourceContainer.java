@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,11 +107,24 @@ public interface DBPDataSourceContainer extends
     // Also hidden connections are excluded from persistence
     boolean isHidden();
 
+    boolean isSharedCredentials();
+
+    void setSharedCredentials(boolean sharedCredentials);
+
     boolean isConnectionReadOnly();
 
+    /**
+     * Flag saying that password value was saved in configuration.
+     * It is a legacy flag, to determine that credentials are really saved use isCredentialsSaved.
+     */
     boolean isSavePassword();
 
     void setSavePassword(boolean savePassword);
+
+    /**
+     * Determines that credentials for this datasource are saved
+     */
+    boolean isCredentialsSaved() throws DBException;
 
     void setDescription(String description);
 
@@ -152,6 +165,12 @@ public interface DBPDataSourceContainer extends
      * Do not check whether underlying connection is alive or not.
      */
     boolean isConnected();
+
+    /**
+     * Returns last connection instantiation error if any
+     */
+    @Nullable
+    String getConnectionError();
 
     /**
      * Connects to datasource.
@@ -233,4 +252,11 @@ public interface DBPDataSourceContainer extends
     boolean isForceUseSingleConnection();
     
     void setForceUseSingleConnection(boolean value);
+
+    /**
+     * Returns the type of required external authorization.
+     * Null - if additional authorization is not required
+     */
+    @Nullable
+    String getRequiredExternalAuth();
 }

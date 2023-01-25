@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.eclipse.ui.INewWizard;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -147,7 +148,10 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
 
         // Generate new ID to avoid session conflicts in QM
         testDataSource.setId(DataSourceDescriptor.generateNewId(dataSource.getDriver()));
-        testDataSource.getPreferenceStore().setValue(ModelPreferences.META_SEPARATE_CONNECTION, false);
+        testDataSource.getPreferenceStore().setValue(
+            ModelPreferences.META_SEPARATE_CONNECTION,
+            SeparateConnectionBehavior.NEVER.name()
+        );
 
         try {
 

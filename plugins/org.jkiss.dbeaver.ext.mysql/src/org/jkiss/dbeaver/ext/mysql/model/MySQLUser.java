@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -45,7 +47,7 @@ import java.util.regex.Matcher;
 /**
  * MySQLUser
  */
-public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSaveableObject
+public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSaveableObject, DBPQualifiedObject
 {
     private static final Log log = Log.getLog(MySQLUser.class);
 
@@ -308,5 +310,11 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
     {
         grants = null;
         return this;
+    }
+
+    @Override
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
+        return DBUtils.getQuotedIdentifier(dataSource, userName, false, true) + "@"
+            + DBUtils.getQuotedIdentifier(dataSource, host, false, true);
     }
 }

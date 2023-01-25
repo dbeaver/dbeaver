@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,13 +50,11 @@ public class URLPreviewEditor extends BaseValueEditor<Browser> {
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
         if (control != null) {
-            final String strValue = valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT);
+            final String strValue = valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.UI);
             if (CommonUtils.equalObjects(lastURL, strValue)) {
                 return;
             }
             lastURL = strValue;
-            control.setUrl("about:blank");
-            control.setText("<div>Loading " + strValue + "...</div>");
             control.setUrl(strValue);
         }
     }

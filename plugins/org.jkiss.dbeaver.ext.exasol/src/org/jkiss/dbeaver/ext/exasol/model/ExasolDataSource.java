@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,11 +125,13 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 		}
 		String schemaSQL = "/*snapshot execution*/ select schema_name as object_name,schema_owner as OWNER,CAST(NULL AS TIMESTAMP) AS created, schema_comment as OBJECT_COMMENT, SCHEMA_OBJECT_ID from SYS.EXA_SCHEMAS s  ";
 		
-		if (exasolCurrentUserPrivileges.getatLeastV6()) {
+		if (exasolCurrentUserPrivileges.getAtLeastV6()) {
 			
 			//additional where clause to filter virtual schemas
 			schemaSQL += " where not  schema_is_virtual ";
 			
+			String vsAdapterExpressionV8 = "'\"' || ADAPTER_SCRIPT_SCHEMA || '\".\"' || ADAPTER_SCRIPT_NAME || '\"' AS ADAPTER_SCRIPT";
+
 			//build virtual schema cache for >V6 databases
 			virtualSchemaCache = new JDBCObjectSimpleCache<>(
 					ExasolVirtualSchema.class,
@@ -137,7 +139,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 					"	s.SCHEMA_NAME as OBJECT_NAME," + 
 					"	s.SCHEMA_OWNER AS OWNER," + 
 					"CAST(NULL AS TIMESTAMP) AS created, " +
-					"	ADAPTER_SCRIPT," + 
+					"	" + (this.exasolCurrentUserPrivileges.getAtLeastV8() ? vsAdapterExpressionV8 : "ADAPTER_SCRIPT") + "," +
 					"	LAST_REFRESH," + 
 					"	LAST_REFRESH_BY," + 
 					"	ADAPTER_NOTES," + 
@@ -177,8 +179,8 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 				+ "	USER_NAME,\n"
 				+ "	CREATED,\n"
 				+ (this.exasolCurrentUserPrivileges.getUserHasDictionaryAccess() ? "	DISTINGUISHED_NAME,\n" : "")
-				+ "	KERBEROS_PRINCIPAL,\n"
-				+ "	PASSWORD,\n"
+				+ (this.exasolCurrentUserPrivileges.getUserHasDictionaryAccess() ? "	KERBEROS_PRINCIPAL,\n" : "")
+				+ (this.exasolCurrentUserPrivileges.getUserHasDictionaryAccess() ? "	PASSWORD,\n" : "")
 				+ priorityColUser
 				+ "	PASSWORD_STATE,\n"
 				+ "	PASSWORD_STATE_CHANGED,\n"
@@ -451,8 +453,10 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	protected Map<String, String> getInternalConnectionProperties(
 		DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException
 	{
-		Map<String, String> props = new HashMap<>();
-		props.putAll(ExasolDataSourceProvider.getConnectionsProps());
+		Map<String, String> props = new HashMap<>(ExasolDataSourceProvider.getConnectionsProps());
+		if (CommonUtils.getBoolean(connectionInfo.getProviderProperty(ExasolConstants.DRV_USE_LEGACY_ENCRYPTION), false)) {
+			props.put(ExasolConstants.DRV_LEGACY_ENCRYPTION, "1");
+		}
 		return props;
 	}
 
@@ -502,7 +506,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	public ExasolSchema getChild(@NotNull DBRProgressMonitor monitor,
 			@NotNull String childName) throws DBException
 	{
-		if (exasolCurrentUserPrivileges.getatLeastV6())
+		if (exasolCurrentUserPrivileges.getAtLeastV6())
 			return getSchema(monitor, childName) != null ? getSchema(monitor,childName) : getVirtualSchema(monitor, childName);
 		return getSchema(monitor, childName);
 	}
@@ -766,12 +770,12 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	
 	public boolean isatLeastV6()
 	{
-		return this.exasolCurrentUserPrivileges.getatLeastV6();
+		return this.exasolCurrentUserPrivileges.getAtLeastV6();
 	}
 
 	public boolean isatLeastV5()
 	{
-		return this.exasolCurrentUserPrivileges.getatLeastV5();
+		return this.exasolCurrentUserPrivileges.getAtLeastV5();
 	}
 	
 	public boolean ishasPartitionColumns()

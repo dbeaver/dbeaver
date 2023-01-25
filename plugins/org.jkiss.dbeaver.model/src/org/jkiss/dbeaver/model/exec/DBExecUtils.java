@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.net.DBWForwarder;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
@@ -755,7 +756,7 @@ public class DBExecUtils {
                             SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getOrdinalPosition());
                             if (selectItem.isPlainColumn()) {
                                 String realColumnName = selectItem.getName();
-                                if (!CommonUtils.equalObjects(realColumnName, columnName)) {
+                                if (!realColumnName.equalsIgnoreCase(columnName)) {
                                     if (DBUtils.isQuotedIdentifier(dataSource, realColumnName)) {
                                         columnName = DBUtils.getUnQuotedIdentifier(dataSource, realColumnName);
                                     } else {
@@ -777,7 +778,15 @@ public class DBExecUtils {
                     if (bindingMeta.getPseudoAttribute() != null) {
                         tableColumn = bindingMeta.getPseudoAttribute().createFakeAttribute(attrEntity, attrMeta);
                     } else if (columnName != null) {
-                        tableColumn = attrEntity.getAttribute(monitor, columnName);
+                        if (sqlQuery == null) {
+                            tableColumn = attrEntity.getAttribute(monitor, columnName);
+                        } else {
+                            SQLSelectItem selectItem = sqlQuery.getSelectItem(columnName);
+                            boolean isAllColumns = sqlQuery.getSelectItemCount() == 1 && sqlQuery.getSelectItemAsteriskIndex() != -1;
+                            if (isAllColumns || (selectItem != null && selectItem.isPlainColumn())) {
+                                tableColumn = attrEntity.getAttribute(monitor, columnName);
+                            }
+                        }
                     }
 
                     if (tableColumn != null) {
@@ -785,7 +794,8 @@ public class DBExecUtils {
                             && (sqlQuery == null || !DBDAttributeBindingMeta.haveEqualsTypes(tableColumn, attrMeta));
 
                         if ((!updateColumnHandler && bindingMeta.getDataKind() != tableColumn.getDataKind())
-                            || !isSameDataTypes(tableColumn, resultSet.getMeta().getAttributes().get(attrMeta.getOrdinalPosition()))) {
+                            || (resultSet != null
+                            && !isSameDataTypes(tableColumn, resultSet.getMeta().getAttributes().get(attrMeta.getOrdinalPosition())))) {
                             // Different data kind. Probably it is an alias which conflicts with column name
                             // Do not update entity attribute.
                             // It is a silly workaround for PG-like databases
@@ -818,7 +828,7 @@ public class DBExecUtils {
                     //monitor.subTask("Find attribute '" + binding.getName() + "' identifier");
                     DBSEntityAttribute attr = binding.getEntityAttribute();
                     if (attr == null) {
-                        bindingMeta.setRowIdentifierStatus("No corresponding table column");
+                        bindingMeta.setRowIdentifierStatus(ModelMessages.no_corresponding_table_column_text);
                         continue;
                     }
                     DBSEntity attrEntity = attr.getParentObject();
@@ -832,7 +842,7 @@ public class DBExecUtils {
                                     entityIdentifier);
                                 locatorMap.put(attrEntity, rowIdentifier);
                             } else {
-                                bindingMeta.setRowIdentifierStatus("Cannot determine unique row identifier");
+                                bindingMeta.setRowIdentifierStatus(ModelMessages.cannot_determine_unique_row_identifier_text);
                             }
                         }
                         bindingMeta.setRowIdentifier(rowIdentifier);

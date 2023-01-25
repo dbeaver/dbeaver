@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,8 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.text.parser.TPWordDetector;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -61,8 +61,9 @@ class SQLOccurrencesHighlighter {
 
     SQLOccurrencesHighlighter(SQLEditorBase editor) {
         this.editor = editor;
-        this.markOccurrencesUnderCursor = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR);
-        this.markOccurrencesForSelection = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
+        final DBPPreferenceStore prefStore = editor.getActivePreferenceStore();
+        this.markOccurrencesUnderCursor = prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR);
+        this.markOccurrencesForSelection = prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
     }
 
     public boolean isEnabled() {
@@ -219,18 +220,22 @@ class SQLOccurrencesHighlighter {
     }
 
     void updateInput(IEditorInput input) {
-        if (SQLEditorBase.isBigScript(input)) {
+        if (!SQLEditorUtils.isSQLSyntaxParserApplied(input)) {
             uninstallOccurrencesFinder();
         } else {
+            final DBPPreferenceStore prefStore = editor.getActivePreferenceStore();
             setMarkingOccurrences(
-                DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR),
-                DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
+                prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR),
+                prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
         }
     }
 
     boolean handlePreferenceStoreChanged(PropertyChangeEvent event) {
         String property = event.getProperty();
-        if (SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR.equals(property) || SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION.equals(property)) {
+        if (SQLEditorUtils.isSQLSyntaxParserEnabled(editor.getEditorInput())
+            && (SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR.equals(property)
+            || SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION.equals(property))
+        ) {
             updateInput(editor.getEditorInput());
             return true;
         }

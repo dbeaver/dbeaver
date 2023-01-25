@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,11 +69,11 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent) {
+    protected Composite createDialogArea(Composite parent) {
         getShell().setText(NLS.bind(UINavigatorMessages.dialog_filter_title, objectTitle));
         //getShell().setImage(DBIcon.EVENT.getImage());
 
-        Composite composite = (Composite) super.createDialogArea(parent);
+        Composite composite = super.createDialogArea(parent);
 
         Composite topPanel = UIUtils.createPlaceholder(composite, globalFilter ? 1 : 2);
         topPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

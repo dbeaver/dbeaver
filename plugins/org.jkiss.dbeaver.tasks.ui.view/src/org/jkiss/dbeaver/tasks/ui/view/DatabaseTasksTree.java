@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
@@ -69,7 +70,6 @@ public class DatabaseTasksTree {
     private final List<DBTTask> allTasks = new ArrayList<>();
     private final List<DBTTaskFolder> allTasksFolders = new ArrayList<>();
 
-    private boolean groupByProject = false;
     private boolean groupByType = false;
     private boolean groupByCategory = false;
 
@@ -247,6 +247,7 @@ public class DatabaseTasksTree {
             }
         });
         taskColumnController.createColumns(true);
+        new DefaultViewerToolTipSupport(taskViewer);
 
         taskViewer.setContentProvider(new TreeListContentProvider());
     }
@@ -277,15 +278,6 @@ public class DatabaseTasksTree {
         return element instanceof DBTTask ? (DBTTask) element : null;
     }
 
-    public boolean isGroupByProject() {
-        return groupByProject;
-    }
-
-    public void setGroupByProject(boolean groupByProject) {
-        this.groupByProject = groupByProject;
-        saveViewConfig();
-    }
-
     public boolean isGroupByType() {
         return groupByType;
     }
@@ -306,7 +298,6 @@ public class DatabaseTasksTree {
 
     public void loadViewConfig() {
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-        groupByProject = preferenceStore.getBoolean("dbeaver.tasks.view.groupByProject");
         groupByCategory = preferenceStore.getBoolean("dbeaver.tasks.view.groupByCategory");
         groupByType = preferenceStore.getBoolean("dbeaver.tasks.view.groupByType");
 
@@ -314,7 +305,6 @@ public class DatabaseTasksTree {
 
     public void saveViewConfig() {
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-        preferenceStore.setValue("dbeaver.tasks.view.groupByProject", groupByProject);
         preferenceStore.setValue("dbeaver.tasks.view.groupByCategory", groupByCategory);
         preferenceStore.setValue("dbeaver.tasks.view.groupByType", groupByType);
         try {
@@ -341,37 +331,33 @@ public class DatabaseTasksTree {
         taskViewer.getTree().setRedraw(false);
         try {
             List<Object> rootObjects = new ArrayList<>();
-            if (groupByProject) {
-                rootObjects.addAll(getTaskProjects(allTasks));
-            } else {
-                // Add task folders as parent elements, task from these folders will be added in children list
-                if (!CommonUtils.isEmpty(allTasksFolders)) {
-                    List<DBTTaskFolder> sortedFoldersWithoutParents = allTasksFolders.stream()
-                        .filter(e -> e.getParentFolder() == null)
-                        .sorted(DBUtils.nameComparatorIgnoreCase())
-                        .collect(Collectors.toList());
-                    rootObjects.addAll(sortedFoldersWithoutParents);
-                }
-
-                // Collect all tasks without folders
-                List<DBTTask> allTasksWithoutFolders = allTasks.stream()
-                    .filter(task -> task.getTaskFolder() == null)
+            // Add task folders as parent elements, task from these folders will be added in children list
+            if (!CommonUtils.isEmpty(allTasksFolders)) {
+                List<DBTTaskFolder> sortedFoldersWithoutParents = allTasksFolders.stream()
+                    .filter(e -> e.getParentFolder() == null)
                     .sorted(DBUtils.nameComparatorIgnoreCase())
                     .collect(Collectors.toList());
-                
-                // Now we need to distribute all tasks without folders
-                if (!CommonUtils.isEmpty(allTasksWithoutFolders)) {
-                    if (groupByCategory) {
-                        for (DBTTaskCategory category : getTaskCategories(null, null, allTasksWithoutFolders)) {
-                            rootObjects.add(new TaskCategoryNode(null, null, category, null));
-                        }
-                    } else if (groupByType) {
-                        for (DBTTaskType type : getTaskTypes(null, null, allTasksWithoutFolders)) {
-                            rootObjects.add(new TaskTypeNode(null, null, type, null));
-                        }
-                    } else {
-                        rootObjects.addAll(allTasksWithoutFolders);
+                rootObjects.addAll(sortedFoldersWithoutParents);
+            }
+
+            // Collect all tasks without folders
+            List<DBTTask> allTasksWithoutFolders = allTasks.stream()
+                .filter(task -> task.getTaskFolder() == null)
+                .sorted(DBUtils.nameComparatorIgnoreCase())
+                .collect(Collectors.toList());
+
+            // Now we need to distribute all tasks without folders
+            if (!CommonUtils.isEmpty(allTasksWithoutFolders)) {
+                if (groupByCategory) {
+                    for (DBTTaskCategory category : getTaskCategories(null, null, allTasksWithoutFolders)) {
+                        rootObjects.add(new TaskCategoryNode(null, null, category, null));
                     }
+                } else if (groupByType) {
+                    for (DBTTaskType type : getTaskTypes(null, null, allTasksWithoutFolders)) {
+                        rootObjects.add(new TaskTypeNode(null, null, type, null));
+                    }
+                } else {
+                    rootObjects.addAll(allTasksWithoutFolders);
                 }
             }
             switch (options) {
@@ -445,17 +431,17 @@ public class DatabaseTasksTree {
         allTasks.clear();
         allTasksFolders.clear();
 
-        for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
-            DBTTaskManager taskManager = project.getTaskManager();
-            DBTTask[] tasks = taskManager.getAllTasks();
-            if (tasks.length != 0) {
-                Collections.addAll(allTasks, tasks);
-            }
-            DBTTaskFolder[] tasksFolders = taskManager.getTasksFolders();
-            if (!ArrayUtils.isEmpty(tasksFolders)) {
-                Collections.addAll(allTasksFolders, tasksFolders);
-            }
+        DBPProject project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        DBTTaskManager taskManager = project.getTaskManager();
+        DBTTask[] tasks = taskManager.getAllTasks();
+        if (tasks.length != 0) {
+            Collections.addAll(allTasks, tasks);
         }
+        DBTTaskFolder[] tasksFolders = taskManager.getTasksFolders();
+        if (!ArrayUtils.isEmpty(tasksFolders)) {
+            Collections.addAll(allTasksFolders, tasksFolders);
+        }
+
         allTasksFolders.sort(Comparator.comparing(DBTTaskFolder::getName));
         allTasks.sort(Comparator.comparing(DBTTask::getName));
     }
@@ -570,16 +556,10 @@ public class DatabaseTasksTree {
                     children.addAll(new ArrayList<>(nestedTaskFolders));
                 }
 
-                List<DBTTask> thisFolderTasks;
-                if (groupByProject) {
-                    folderProject = taskFolder.getProject();
-                    DBPProject finalFolderProject = folderProject;
-                    thisFolderTasks = allTasks.stream().filter(task -> task.getTaskFolder() == taskFolder && finalFolderProject == task.getProject()).collect(Collectors.toList());
-                } else {
-                    thisFolderTasks = allTasks.stream().filter(task -> task.getTaskFolder() == taskFolder).collect(Collectors.toList());
-                    // folderProject will be null in this case. It's ok
-                }
-                thisFolderTasks.sort(DBUtils.nameComparatorIgnoreCase());
+                List<DBTTask> thisFolderTasks = allTasks.stream()
+                    .filter(task -> task.getTaskFolder() == taskFolder)
+                    .sorted(DBUtils.nameComparatorIgnoreCase())
+                    .collect(Collectors.toList());
                 if (groupByCategory) {
                     for (DBTTaskCategory category : getTaskCategories(folderProject, null, thisFolderTasks)) {
                         children.add(new TaskCategoryNode(folderProject, null, category, taskFolder));

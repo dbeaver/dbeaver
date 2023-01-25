@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,13 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         DataTransferSettings[] settings = new DataTransferSettings[1];
         try {
             runnableContext.run(true, true, monitor -> {
-                settings[0] = new DataTransferSettings(monitor, task, log, Collections.emptyMap(), new DataTransferState());
+                settings[0] = new DataTransferSettings(
+                    monitor,
+                    task,
+                    log,
+                    Collections.emptyMap(),
+                    new DataTransferState(),
+                    true);
                 settings[0].loadNodeSettings(monitor);
             });
         } catch (InvocationTargetException e) {
@@ -108,10 +114,12 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         runnableContext.run(true, false, monitor -> {
             monitor.beginTask("Initialize pipes", dataPipes.size());
             try {
+                Object consumerRuntimeParameters = settings.getNodeSettings(settings.getConsumer()).prepareRuntimeParameters();
                 for (int i = 0; i < dataPipes.size(); i++) {
                     DataTransferPipe pipe = dataPipes.get(i);
                     pipe.initPipe(settings, i, dataPipes.size());
                     IDataTransferConsumer<?, ?> consumer = pipe.getConsumer();
+                    consumer.setRuntimeParameters(consumerRuntimeParameters);
                     consumer.startTransfer(monitor);
                     if (enableReferentialIntegrity(consumer, monitor, false)) {
                         indexOfLastPipeWithDisabledReferentialIntegrity[0] = i;

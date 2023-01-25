@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,9 +43,9 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Represents the editable/resizable table which can have columns added,
@@ -78,14 +78,16 @@ public class EntityPart extends NodePart {
      */
     @Override
     protected void createEditPolicies() {
-        final boolean layoutEnabled = isLayoutEnabled();
-        if (layoutEnabled) {
-            installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityConnectionEditPolicy());
-            installEditPolicy(EditPolicy.CONTAINER_ROLE, new EntityContainerEditPolicy());
-            installEditPolicy(EditPolicy.COMPONENT_ROLE, new EntityEditPolicy());
-        }
+        if (!getEditor().isReadOnly()) {
+            final boolean layoutEnabled = isLayoutEnabled();
+            if (layoutEnabled) {
+                installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityConnectionEditPolicy());
+                installEditPolicy(EditPolicy.CONTAINER_ROLE, new EntityContainerEditPolicy());
+                installEditPolicy(EditPolicy.COMPONENT_ROLE, new EntityEditPolicy());
+            }
 
-        getDiagram().getModelAdapter().installPartEditPolicies(this);
+            getDiagram().getModelAdapter().installPartEditPolicies(this);
+        }
     }
 
     @Override
@@ -104,10 +106,8 @@ public class EntityPart extends NodePart {
      *
      * @return is attribute associations possible
      */
-    protected boolean isAttributeAssociationsSupported() {
-        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        return store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)
-            && !ERDAttributeVisibility.isHideAttributeAssociations(store);
+    protected boolean isMixedAssociationSupported() {
+        return false;
     }
 
     public void handleNameChange() {
@@ -285,23 +285,41 @@ public class EntityPart extends NodePart {
 
     @Override
     protected List<ERDAssociation> getModelSourceConnections() {
-        if (isAttributeAssociationsSupported()) {
-            return super.getModelSourceConnections().stream()
-                .filter(erdAssociation -> erdAssociation.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE)
-                .collect(Collectors.toList());
+        if (!supportsAttributeAssociations()) {
+            return super.getModelSourceConnections();
         }
-        return super.getModelSourceConnections();
+        List<ERDAssociation> list = new ArrayList<>();
+        for (ERDAssociation erdAssociation : super.getModelSourceConnections()) {
+            if (erdAssociation.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE
+                || isMixedAssociationSupported() && erdAssociation.getTargetAttributes().size() == 0) {
+                list.add(erdAssociation);
+            }
+        }
+        return list;
+
+    }
+
+    private boolean supportsAttributeAssociations() {
+        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+        return store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)
+               && !ERDAttributeVisibility.isHideAttributeAssociations(store);
     }
 
     @Override
     protected List<ERDAssociation> getModelTargetConnections() {
-        if (isAttributeAssociationsSupported()) {
-            return super.getModelTargetConnections().stream()
-                .filter(erdAssociation -> erdAssociation.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE)
-                .collect(Collectors.toList());
-        } else {
+        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)
+            || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return super.getModelTargetConnections();
         }
+        List<ERDAssociation> list = new ArrayList<>();
+        for (ERDAssociation erdAssociation : super.getModelTargetConnections()) {
+            if (erdAssociation.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE
+                || (isMixedAssociationSupported() && erdAssociation.getTargetAttributes().size() == 0)) {
+                list.add(erdAssociation);
+            }
+        }
+        return list;
     }
 
     @Override

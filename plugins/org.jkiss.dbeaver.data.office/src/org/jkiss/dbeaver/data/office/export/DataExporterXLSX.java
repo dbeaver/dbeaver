@@ -2,7 +2,7 @@
  * DBeaver - Universal Database Manager
  * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
  * Copyright (C) 2017 Adolfo Suarez  (agustavo@gmail.com)
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,10 +76,10 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     private static final String PROP_SPLIT_BYCOL = "splitByColNum";
 
     private static final String PROP_DATE_FORMAT = "dateFormat";
+    private static final String PROP_APPEND_STRATEGY = "appendStrategy";
 
     private static final int EXCEL2007MAXROWS = 1048575;
     private static final int EXCEL_MAX_CELL_CHARACTERS = 32767; // Total number of characters that a cell can contain - 32,767 characters
-    private boolean showDescription;
 
     enum FontStyleProp {NONE, BOLD, ITALIC, STRIKEOUT, UNDERLINE}
 
@@ -92,7 +92,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
     private SXSSFWorkbook wb;
 
-    private boolean printHeader = false;
+    private HeaderFormat headerFormat = HeaderFormat.LABEL;
     private boolean rowNumber = false;
     private String boolTrue = "true";
     private String boolFalse = "false";
@@ -100,10 +100,12 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     private boolean exportSql = false;
     private boolean splitSqlText = false;
     private String dateFormat = "";
+    private AppendStrategy appendStrategy = AppendStrategy.CREATE_NEW_SHEETS;
 
     private int splitByRowCount = EXCEL2007MAXROWS;
     private int splitByCol = 0;
     private int rowCount = 0;
+    private int sheetIndex = 0;
 
     private XSSFCellStyle style;
     private XSSFCellStyle styleDate;
@@ -115,7 +117,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         Map<String, Object> properties = new HashMap<>();
         properties.put(DataExporterXLSX.PROP_ROWNUMBER, false);
         properties.put(DataExporterXLSX.PROP_BORDER, "THIN");
-        properties.put(DataExporterXLSX.PROP_HEADER, true);
+        properties.put(DataExporterXLSX.PROP_HEADER, HeaderFormat.LABEL.value);
         properties.put(DataExporterXLSX.PROP_NULL_STRING, null);
         properties.put(DataExporterXLSX.PROP_HEADER_FONT, "BOLD");
         properties.put(DataExporterXLSX.PROP_TRUESTRING, "true");
@@ -125,6 +127,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         properties.put(DataExporterXLSX.PROP_SPLIT_BYROWCOUNT, EXCEL2007MAXROWS);
         properties.put(DataExporterXLSX.PROP_SPLIT_BYCOL, 0);
         properties.put(DataExporterXLSX.PROP_DATE_FORMAT, "");
+        properties.put(DataExporterXLSX.PROP_APPEND_STRATEGY, AppendStrategy.CREATE_NEW_SHEETS.value);
         return properties;
     }
 
@@ -133,12 +136,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         Map<String, Object> properties = site.getProperties();
         Object nullStringProp = properties.get(PROP_NULL_STRING);
         nullString = nullStringProp == null ? null : nullStringProp.toString();
-
-        try {
-            printHeader = CommonUtils.getBoolean(properties.get(PROP_HEADER), true);
-        } catch (Exception e) {
-            printHeader = false;
-        }
+        headerFormat = HeaderFormat.of(CommonUtils.toString(properties.get(PROP_HEADER)));
 
         try {
             rowNumber = CommonUtils.getBoolean(properties.get(PROP_ROWNUMBER), false);
@@ -189,6 +187,8 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         } catch (Exception e) {
             dateFormat = "";
         }
+
+        appendStrategy = AppendStrategy.of(CommonUtils.toString(properties.get(PROP_APPEND_STRATEGY)));
 
         if (wb == null) {
             wb = new SXSSFWorkbook(ROW_WINDOW);
@@ -273,6 +273,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         }
 
         this.rowCount = 0;
+        this.sheetIndex = 0;
 
         super.init(site);
     }
@@ -332,14 +333,17 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
         columns = getSite().getAttributes();
         decorator = GeneralUtils.adapt(getSite().getSource(), DBDAttributeDecorator.class);
-        // FIXME: we want to avoid UI component dependency. But still want to use its preferences
-        showDescription = session.getDataSource().getContainer().getPreferenceStore()
-                .getBoolean("resultset.show.columnDescription");
     }
 
     private void printHeader(DBCResultSet resultSet, Worksheet wsh) throws DBException {
+        final SXSSFSheet sh = (SXSSFSheet) wsh.getSh();
+
+        if (appendStrategy == AppendStrategy.USE_EXISTING_SHEETS && getPhysicalNumberOfRows(sh) > 0) {
+            return;
+        }
+
         boolean hasDescription = false;
-        if (showDescription) {
+        if (headerFormat.hasDescription()) {
             // Read bindings to extract column descriptions
             boolean bindingsOk = true;
             DBDAttributeBindingMeta[] bindings = new DBDAttributeBindingMeta[columns.length];
@@ -352,11 +356,10 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
                 }
             }
             if (bindingsOk) {
-                DBSEntity sourceEntity = null;
-                if (getSite().getSource() instanceof DBSEntity) {
-                    sourceEntity = (DBSEntity) getSite().getSource();
+                final DBSEntity sourceEntity = GeneralUtils.adapt(getSite().getSource(), DBSEntity.class);
+                if (sourceEntity != null) {
+                    DBExecUtils.bindAttributes(resultSet.getSession(), sourceEntity, resultSet, bindings, null);
                 }
-                DBExecUtils.bindAttributes(resultSet.getSession(), sourceEntity, resultSet, bindings, null);
             }
 
             for (DBDAttributeBinding column : columns) {
@@ -367,43 +370,44 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
             }
         }
 
-        SXSSFSheet sh = (SXSSFSheet) wsh.getSh();
-        Row row = sh.createRow(wsh.getCurrentRow());
+        if (!hasDescription && !headerFormat.hasLabel()) {
+            return;
+        }
+
+        sh.trackAllColumnsForAutoSizing();
 
         int startCol = rowNumber ? 1 : 0;
 
-        sh.trackAllColumnsForAutoSizing();
-        for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
-            DBDAttributeBinding column = columns[i];
+        if (headerFormat.hasLabel()) {
+            Row row = sh.createRow(wsh.getCurrentRow());
+            for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
+                DBDAttributeBinding column = columns[i];
 
-            String colName = column.getLabel();
-            if (CommonUtils.isEmpty(colName)) {
-                colName = column.getName();
+                String colName = column.getLabel();
+                if (CommonUtils.isEmpty(colName)) {
+                    colName = column.getName();
+                }
+                Cell cell = row.createCell(i + startCol, CellType.STRING);
+                cell.setCellValue(colName);
+                cell.setCellStyle(styleHeader);
             }
-            Cell cell = row.createCell(i + startCol, CellType.STRING);
-            cell.setCellValue(colName);
-            cell.setCellStyle(styleHeader);
+            wsh.incRow();
         }
 
         if (hasDescription) {
-            wsh.incRow();
             Row descRow = sh.createRow(wsh.getCurrentRow());
             for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
                 Cell descCell = descRow.createCell(i + startCol, CellType.STRING);
                 String description = columns[i].getDescription();
-                if (CommonUtils.isEmpty(description)) {
-                    description = "";
-                }
-                descCell.setCellValue(description);
+                descCell.setCellValue(CommonUtils.notEmpty(description));
                 descCell.setCellStyle(styleHeader);
+
+                if (CommonUtils.isNotEmpty(description)) {
+                    sh.autoSizeColumn(i);
+                }
             }
+            wsh.incRow();
         }
-
-        for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
-            sh.autoSizeColumn(i);
-        }
-
-        wsh.incRow();
 
         try {
             sh.flushRows();
@@ -432,11 +436,17 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     }
 
     private Worksheet createSheet(DBCResultSet resultSet, Object colValue) throws DBException {
-        Worksheet w = new Worksheet(wb.createSheet(), colValue, 0);
-        if (printHeader) {
-            printHeader(resultSet, w);
+        final Sheet sheet;
+        final Worksheet worksheet;
+        if (appendStrategy == AppendStrategy.USE_EXISTING_SHEETS && sheetIndex < wb.getNumberOfSheets()) {
+            sheet = wb.getSheetAt(sheetIndex++);
+            worksheet = new Worksheet(sheet, colValue, getPhysicalNumberOfRows(sheet));
+        } else {
+            sheet = wb.createSheet();
+            worksheet = new Worksheet(sheet, colValue, 0);
         }
-        return w;
+        printHeader(resultSet, worksheet);
+        return worksheet;
     }
 
     private Worksheet getWsh(DBCResultSet resultSet, Object[] row) throws DBException {
@@ -562,6 +572,10 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         return true;
     }
 
+    private int getPhysicalNumberOfRows(@NotNull Sheet sheet) {
+        return wb.getXSSFWorkbook().getSheetAt(wb.getSheetIndex(sheet)).getPhysicalNumberOfRows();
+    }
+
     private String getPreparedString(String cellValue) {
         if (cellValue.length() > EXCEL_MAX_CELL_CHARACTERS) {
             // We must truncate long strings from our side, otherwise we get the error of the insertion from the apache.poi library
@@ -601,5 +615,59 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         final int g = Integer.parseInt(tokenizer.nextToken().trim());
         final int b = Integer.parseInt(tokenizer.nextToken().trim());
         return new Color(r, g, b);
+    }
+
+    private enum AppendStrategy {
+        CREATE_NEW_SHEETS("create new sheets"),
+        USE_EXISTING_SHEETS("use existing sheets");
+
+        private final String value;
+
+        AppendStrategy(@NotNull String value) {
+            this.value = value;
+        }
+
+        @NotNull
+        public static AppendStrategy of(@NotNull String value) {
+            for (AppendStrategy strategy : values()) {
+                if (strategy.value.equals(value)) {
+                    return strategy;
+                }
+            }
+
+            return CREATE_NEW_SHEETS;
+        }
+    }
+
+    private enum HeaderFormat {
+        LABEL("label"),
+        DESCRIPTION("description"),
+        BOTH("both"),
+        NONE("none");
+
+        private final String value;
+
+        HeaderFormat(@NotNull String value) {
+            this.value = value;
+        }
+
+        @NotNull
+        public static HeaderFormat of(@NotNull String value) {
+            for (HeaderFormat format : values()) {
+                if (format.value.equals(value)) {
+                    return format;
+                }
+            }
+
+            return LABEL;
+        }
+
+        public boolean hasLabel() {
+            return this == LABEL || this == BOTH;
+        }
+
+        public boolean hasDescription() {
+            return this == DESCRIPTION || this == BOTH;
+        }
     }
 }

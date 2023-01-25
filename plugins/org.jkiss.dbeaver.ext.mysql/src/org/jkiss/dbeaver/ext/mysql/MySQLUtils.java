@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.*;
 
 /**
@@ -82,6 +83,7 @@ public class MySQLUtils {
         typeMap.put("geometry", java.sql.Types.BINARY);
         typeMap.put("binary", java.sql.Types.BINARY);
         typeMap.put("varbinary", java.sql.Types.VARBINARY);
+        typeMap.put(MySQLConstants.TYPE_UUID, Types.CHAR);
     }
 
     public static int typeNameToValueType(String typeName)

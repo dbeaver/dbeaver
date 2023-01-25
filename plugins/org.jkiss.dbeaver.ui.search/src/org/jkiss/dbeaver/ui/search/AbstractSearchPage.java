@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.search;
 
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.search.ui.ISearchPage;
 import org.eclipse.search.ui.ISearchPageContainer;
 import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -68,6 +70,12 @@ public abstract class AbstractSearchPage extends DialogPage implements ISearchPa
     @Override
     public void createControl(Composite parent) {
         loadState(DBWorkbench.getPlatform().getPreferenceStore());
+    }
+
+    @Override
+    protected void setControl(Control newControl) {
+        super.setControl(newControl);
+        Dialog.applyDialogFont(newControl.getParent());
     }
 
     @Override

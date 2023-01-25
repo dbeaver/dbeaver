@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
     private List<SQLServerTableIndexColumn> columns;
     private long objectId;
     private String ddl;
+    private boolean isColumnStore;
 
     public SQLServerTableIndex(
         SQLServerTableBase table,
@@ -87,13 +88,20 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
         }
     }
 
-    public SQLServerTableIndex(SQLServerTableBase parent, String indexName, DBSIndexType indexType, ResultSet dbResult) {
+    public SQLServerTableIndex(
+        SQLServerTableBase parent,
+        String indexName,
+        DBSIndexType indexType,
+        ResultSet dbResult,
+        boolean isColumnStore
+    ) {
         super(
             parent.getContainer(),
             parent,
             indexName,
             indexType,
             true);
+        this.isColumnStore = isColumnStore;
         this.objectId = JDBCUtils.safeGetLong(dbResult, "index_id");
         this.unique = JDBCUtils.safeGetInt(dbResult, "is_unique") != 0;
         this.primary = JDBCUtils.safeGetInt(dbResult, "is_primary_key") != 0;
@@ -127,6 +135,11 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
     @Property(viewable = false, order = 6)
     public boolean isPrimary() {
         return primary;
+    }
+
+    @Property(viewable = true, order = 7)
+    public boolean isColumnStore() {
+        return isColumnStore;
     }
 
     @Nullable

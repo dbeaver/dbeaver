@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,13 +30,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ResourceBundle;
 
 
 public class SaveChangesHandler extends AbstractHandler
@@ -106,8 +104,7 @@ public class SaveChangesHandler extends AbstractHandler
                     shell = UIUtils.getActiveWorkbenchShell();
                     saveableName = CommonUtils.toString(saveable);
                 }
-                int confirmResult = ConfirmationDialog.showConfirmDialog(
-                    ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
+                int confirmResult = ConfirmationDialog.confirmAction(
                     shell,
                     NavigatorPreferences.CONFIRM_EDITOR_CLOSE,
                     ConfirmationDialog.QUESTION_WITH_CANCEL,

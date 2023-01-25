@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -168,8 +168,19 @@ public class DialogUtils {
     @NotNull
     public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable String value, @Nullable ModifyListener changeListener)
     {
+        return createOutputFolderChooser(parent, label, null, value, changeListener);
+    }
+
+    @NotNull
+    public static Text createOutputFolderChooser(
+        @NotNull Composite parent,
+        @Nullable String label,
+        @Nullable String tooltip,
+        @Nullable String value,
+        @Nullable ModifyListener changeListener
+    ) {
         final String message = label != null ? label : UIMessages.output_label_directory;
-        UIUtils.createControlLabel(parent, message);
+        UIUtils.createControlLabel(parent, message).setToolTipText(tooltip);
         final TextWithOpen directoryText = new TextWithOpen(parent) {
             @Override
             protected void openBrowser() {

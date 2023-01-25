@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,4 +32,7 @@ public interface RMConstants  {
     String PERMISSION_RM_ADMIN = "rm-admin";
 
     String PERMISSION_DRIVER_MANAGER = "driver-manager";
+    
+    String PERMISSION_PUBLIC = "public";
+    String PERMISSION_CONFIGURATION_MANAGER = "configuration-manager";
 }

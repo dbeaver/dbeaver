@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,13 @@ package org.jkiss.dbeaver.ui.controls.resultset.handler;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
@@ -34,6 +36,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCopySettings;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
@@ -74,7 +77,7 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
         element.setText(ResultSetMessages.actions_spreadsheet_copy_special);
     }
 
-    public static class CopyConfigDialog extends Dialog {
+    public static class CopyConfigDialog extends BaseDialog {
 
         static final String PARAM_COL_DELIMITER = "delimiter";
         static final String PARAM_ROW_DELIMITER = "rowDelimiter";
@@ -90,7 +93,7 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
 
         protected CopyConfigDialog(Shell shell, String dialogId)
         {
-            super(shell);
+            super(shell, ResultSetMessages.copy_special_options, null);
             settings = UIUtils.getDialogSettings(dialogId);
             copySettings = new ResultSetCopySettings();
             copySettings.setColumnDelimiter("\t");
@@ -110,13 +113,11 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
         @Override
         protected void configureShell(Shell newShell) {
             super.configureShell(newShell);
-            newShell.setText(ResultSetMessages.copy_special_options);
         }
 
         @Override
-        protected Control createDialogArea(Composite parent)
-        {
-            Composite group = (Composite)super.createDialogArea(parent);
+        protected Composite createDialogArea(Composite parent) {
+            Composite group = super.createDialogArea(parent);
             ((GridLayout)group.getLayout()).numColumns = 2;
 
             createControlsBefore(group);

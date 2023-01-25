@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,8 +77,8 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
             IEditorInput editorInput = ((IEditorPart) activePart).getEditorInput();
             if (editorInput instanceof IDatabaseEditorInput) {
                 selectedObject = ((IDatabaseEditorInput) editorInput).getDatabaseObject();
-            } else if (activePart instanceof IDataSourceContainerProvider) {
-                selectedObject = ((IDataSourceContainerProvider) activePart).getDataSourceContainer();
+            } else if (activePart instanceof DBPDataSourceContainerProvider) {
+                selectedObject = ((DBPDataSourceContainerProvider) activePart).getDataSourceContainer();
             }
         }
 
@@ -175,6 +175,7 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
                             new ExecuteToolHandler(workbenchWindow, tool),
                             activePart.getSite(),
                             selection,
+                            "execute-tool",
                             tool.getLabel(),
                             tool.getIcon() == null ? null : DBeaverIcons.getImageDescriptor(tool.getIcon()),
                             tool.getDescription());
@@ -230,7 +231,7 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
         }
     }
 
-    public static class DataSourceEditorInput implements IEditorInput, IDataSourceContainerProvider, DBPContextProvider {
+    public static class DataSourceEditorInput implements IEditorInput, DBPDataSourceContainerProvider, DBPContextProvider {
 
         private final DBPDataSource dataSource;
         private final DBPEditorContribution editor;

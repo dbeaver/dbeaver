@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,6 +88,8 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
     private static final String PROP_FLIP_COORDINATES = "gis.flipCoords";
     private static final String PROP_SRID = "gis.srid";
 
+    private volatile boolean browserCreating = false;
+
     private static final Gson gson = new GsonBuilder()
             .registerTypeHierarchyAdapter(DBDContent.class, new DBDContentAdapter()).create();
 
@@ -111,18 +113,23 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
 
         composite = UIUtils.createPlaceholder(parent, 1);
         CSSUtils.setCSSClass(composite, DBStyles.COLORED_BY_CONNECTION_TYPE);
-
+        browserCreating = true;
         try {
             browser = new Browser(composite, SWT.NONE);
         } catch (SWTError error) {
-            log.error("Internal web browser initialization failed", error);
-            for (Control control : composite.getChildren()) {
-                control.dispose();
-            }
+            log.warn("Internal web browser initialization failed", error);
             browser = null;
             if (error.code != SWT.ERROR_NOT_IMPLEMENTED) {
+                for (Control control : composite.getChildren()) {
+                    control.dispose();
+                }
                 throw error;
+            } else {
+                // HACK: Will force SWT to use IE instead. We can't use SWT.DEFAULT because it might resolve to SWT.EDGE
+                browser = new Browser(composite, SWT.WEBKIT);
             }
+        } finally {
+            browserCreating = false;
         }
 
         if (browser != null) {
@@ -463,6 +470,10 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
     @Nullable
     public Browser getBrowser() {
         return browser;
+    }
+
+    public boolean isBrowserCreating() {
+        return browserCreating;
     }
 
     public DBGeometry[] getCurrentValue() {

@@ -15,13 +15,14 @@ jobs:
         with:
           pattern: '^(#\d{3,6}|((Merge|dbeaver|cloudbeaver).+?#\d{3,6})|((DB-|CB-|web-)\d+)).*$'
           excludeDescription: 'true'
+          excludeTitle: 'true'
           error: |
             Each commit message must begin with GitHub or Jira ticket reference. Like:
-            *  #<issue_nember>
-            *  repo#<issue_nember>
-            *  org/repo#<issue_nember>
+            *  #<issue_number>
+            *  repo#<issue_number>
+            *  org/repo#<issue_number>
             *  DB-Number (Jira)
             *  CB-Number (Jira)
 
-            For how to rename your commit message follow this GitHub Doc:
+            For how to rename your commit message, follow this GitHub Doc:
             https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/changing-a-commit-message

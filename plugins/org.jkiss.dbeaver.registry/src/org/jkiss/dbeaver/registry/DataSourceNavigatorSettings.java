@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashMap;
@@ -31,9 +32,21 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     public static final Map<String, Preset> PRESETS = new LinkedHashMap<>();
 
-    public static final Preset PRESET_SIMPLE = new Preset("simple", "Simple", "Shows only tables");
-    public static final Preset PRESET_FULL = new Preset("advanced", "Advanced", "Shows all database objects");
-    public static final Preset PRESET_CUSTOM = new Preset("custom", "Custom", "User configuration");
+    public static final Preset PRESET_SIMPLE = new Preset(
+        "simple",
+        RegistryMessages.navigator_settings_preset_simple_view_name,
+        RegistryMessages.navigator_settings_preset_simple_view_description
+    );
+    public static final Preset PRESET_FULL = new Preset(
+        "advanced",
+        RegistryMessages.navigator_settings_preset_advanced_view_name,
+        RegistryMessages.navigator_settings_preset_advanced_view_description
+    );
+    public static final Preset PRESET_CUSTOM = new Preset(
+        "custom",
+        RegistryMessages.navigator_settings_preset_custom_view_name,
+        RegistryMessages.navigator_settings_preset_custom_view_description
+    );
 
     public static class Preset {
         private final String id;

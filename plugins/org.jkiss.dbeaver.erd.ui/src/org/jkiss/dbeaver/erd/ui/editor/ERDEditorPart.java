@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -803,14 +803,14 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     public void fillAttributeVisibilityMenu(IMenuManager menu)
     {
         MenuManager asMenu = new MenuManager(ERDUIMessages.menu_view_style);
-        asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.ICONS));
-        asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.TYPES));
-        asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.NULLABILITY));
-        asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.COMMENTS));
-        asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.ENTITY_FQN));
-        asMenu.add(new Separator());
-        asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.ALPHABETICAL_ORDER));
-        menu.add(asMenu);
+        for (ERDViewStyle style : ERDViewStyle.values()) {
+            if (decorator.supportsAttributeStyle(style)) {
+                asMenu.add(new ChangeAttributePresentationAction(style));
+            }
+        }
+        if (!asMenu.isEmpty()) {
+            menu.add(asMenu);
+        }
 
         if (getDiagram().getDecorator().supportsAttributeVisibility()) {
             MenuManager avMenu = new MenuManager(ERDUIMessages.menu_attribute_visibility);
@@ -1025,6 +1025,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                         getSite().getShell(),
                         ERDEditorPart.this,
                         ERDPreferencePage.PAGE_ID);
+                    getDiagram().setAttributeStyles(ERDViewStyle.getDefaultStyles(ERDUIActivator.getDefault().getPreferences()));
                 }
             };
             configAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
@@ -1034,7 +1035,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     protected abstract void loadDiagram(boolean refreshMetadata);
 
-    @NotNull
+    @Nullable
     public abstract DBPProject getDiagramProject();
 
     @Override

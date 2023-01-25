@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,8 +28,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -52,8 +55,10 @@ class DiagramCreateWizardPage extends WizardPage {
     private EntityDiagram diagram;
     private DatabaseNavigatorTree contentTree;
     private IStructuredSelection entitySelection;
+    @Nullable
+    private DBPProject project;
 
-    protected DiagramCreateWizardPage(EntityDiagram diagram, IStructuredSelection entitySelection)
+    protected DiagramCreateWizardPage(EntityDiagram diagram, IStructuredSelection entitySelection, @Nullable DBPProject project)
     {
         super(ERDUIMessages.wizard_page_diagram_create_name);
         this.diagram = diagram;
@@ -61,6 +66,8 @@ class DiagramCreateWizardPage extends WizardPage {
 
         setTitle(ERDUIMessages.wizard_page_diagram_create_title);
         setDescription(ERDUIMessages.wizard_page_diagram_create_description);
+        
+        this.project = project;
     }
 
     @Override
@@ -99,7 +106,7 @@ class DiagramCreateWizardPage extends WizardPage {
         gd.horizontalSpan = 2;
         contentLabel.setLayoutData(gd);
 
-        final DBNProject rootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
+        final DBNProject rootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(project);
         if (rootNode == null) {
             setControl(placeholder);
 			return;

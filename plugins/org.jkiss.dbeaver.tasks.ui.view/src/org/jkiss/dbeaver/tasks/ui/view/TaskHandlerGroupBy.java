@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,20 +31,16 @@ import java.util.Map;
 
 public class TaskHandlerGroupBy extends AbstractHandler implements IElementUpdater {
     public enum GroupBy {
-        project,
         category,
         type
     }
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        GroupBy groupBy = CommonUtils.valueOf(GroupBy.class, event.getParameter("group"), GroupBy.project);
+        GroupBy groupBy = CommonUtils.valueOf(GroupBy.class, event.getParameter("group"), GroupBy.category);
         DatabaseTasksView view = (DatabaseTasksView) HandlerUtil.getActivePart(event);
         DatabaseTasksTree tasksTree = view.getTasksTree();
         switch (groupBy) {
-            case project:
-                tasksTree.setGroupByProject(!tasksTree.isGroupByProject());
-                break;
             case category:
                 tasksTree.setGroupByCategory(!tasksTree.isGroupByCategory());
                 break;
@@ -61,13 +57,9 @@ public class TaskHandlerGroupBy extends AbstractHandler implements IElementUpdat
         DatabaseTasksView taskView = (DatabaseTasksView) UIUtils.findView(UIUtils.getActiveWorkbenchWindow(), DatabaseTasksView.VIEW_ID);
         if (taskView != null) {
             DatabaseTasksTree tasksTree = taskView.getTasksTree();
-            GroupBy groupBy = CommonUtils.valueOf(GroupBy.class, (String)parameters.get("group"), GroupBy.project);
+            GroupBy groupBy = CommonUtils.valueOf(GroupBy.class, (String)parameters.get("group"), GroupBy.category);
 
             switch (groupBy) {
-                case project:
-                    element.setChecked(tasksTree.isGroupByProject());
-                    //element.setIcon(DBeaverIcons.getImageDescriptor(DBIcon.PROJECT));
-                    break;
                 case category:
                     element.setChecked(tasksTree.isGroupByCategory());
                     //element.setIcon(DBeaverIcons.getImageDescriptor(DBIcon.TREE_DATABASE_CATEGORY));

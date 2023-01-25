@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -59,6 +60,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.IDataSourceContainerUpdate;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
@@ -76,6 +78,7 @@ import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -369,6 +372,12 @@ public class NavigatorUtils {
                 DatabaseObjectTransfer.getInstance(),
                 FileTransfer.getInstance()
             };
+            
+            if (RuntimeUtils.isGtk()) { 
+                // TextTransfer should be the last on GTK due to platform' DND implementation inconsistency
+                ArrayUtils.reverse(dragTransferTypes);
+            }
+            
             int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
 
             final DragSource source = new DragSource(viewer.getControl(), operations);
@@ -531,13 +540,7 @@ public class NavigatorUtils {
                 }
 
                 private boolean isDropSupported(DropTargetEvent event) {
-                    Object curObject;
-                    if (event.item instanceof Item) {
-                        curObject = event.item.getData();
-                    } else {
-                        curObject = null;
-                    }
-
+                    final Object curObject = getDropTarget(event, viewer);
                     if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType)) {
                         @SuppressWarnings("unchecked")
                         Collection<DBNNode> nodesToDrop = (Collection<DBNNode>) event.data;
@@ -582,12 +585,7 @@ public class NavigatorUtils {
                 }
 
                 private void moveNodes(DropTargetEvent event) {
-                    Object curObject;
-                    if (event.item instanceof Item) {
-                        curObject = event.item.getData();
-                    } else {
-                        curObject = null;
-                    }
+                    final Object curObject = getDropTarget(event, viewer);
                     if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType)) {
                         if (curObject instanceof DBNNode) {
                             Collection<DBNNode> nodesToDrop = TreeNodeTransfer.getInstance().getObject();
@@ -653,6 +651,22 @@ public class NavigatorUtils {
                 }
             });
         }
+    }
+
+    @Nullable
+    private static Object getDropTarget(@NotNull DropTargetEvent event, @NotNull Viewer viewer) {
+        if (event.item instanceof Item) {
+            return event.item.getData();
+        } else {
+            Object input = viewer.getInput();
+            if (input instanceof DatabaseNavigatorContent) {
+                return ((DatabaseNavigatorContent) input).getRootNode();
+            } else if (input instanceof List) {
+                if (!((List<?>) input).isEmpty())
+                    return ((List<?>) input).get(0);
+            }
+        }
+        return null;
     }
 
     private static void dropFilesIntoFolder(DBRProgressMonitor monitor, IFolder toFolder, String[] data) throws Exception {
@@ -732,16 +746,19 @@ public class NavigatorUtils {
     }
 
     public static boolean syncEditorWithNavigator(INavigatorModelView navigatorView, IEditorPart activeEditor) {
-        if (!(activeEditor instanceof IDataSourceContainerProviderEx)) {
+        if (!(activeEditor instanceof IDataSourceContainerUpdate)) {
             return false;
         }
-        IDataSourceContainerProviderEx dsProvider = (IDataSourceContainerProviderEx) activeEditor;
+        IDataSourceContainerUpdate dsProvider = (IDataSourceContainerUpdate) activeEditor;
         Viewer navigatorViewer = navigatorView.getNavigatorViewer();
         if (navigatorViewer == null) {
             return false;
         }
         DBNNode selectedNode = getSelectedNode(navigatorViewer.getSelection());
-        if (!(selectedNode instanceof DBNDatabaseNode)) {
+        DBPProject nodeProject = selectedNode.getOwnerProject();
+        if (!(selectedNode instanceof DBNDatabaseNode)
+            || (nodeProject != null && !nodeProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT))
+        ) {
             return false;
         }
         DBNDatabaseNode databaseNode = (DBNDatabaseNode) selectedNode;
@@ -854,6 +871,11 @@ public class NavigatorUtils {
                 DBCExecutionContext executionContext = ((DBPContextProvider) activePart).getExecutionContext();
                 if (executionContext != null) {
                     activeProject = executionContext.getDataSource().getContainer().getRegistry().getProject();
+                } else if (activePart instanceof DBPDataSourceContainerProvider) {
+                    DBPDataSourceContainer container = ((DBPDataSourceContainerProvider) activePart).getDataSourceContainer();
+                    if (container != null) {
+                        activeProject = container.getProject();
+                    }
                 }
             }
         }

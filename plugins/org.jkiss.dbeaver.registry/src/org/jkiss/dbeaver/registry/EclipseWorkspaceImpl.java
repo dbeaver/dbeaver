@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.utils.ArrayUtils;
@@ -65,12 +66,14 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         try {
             this.getAuthContext().addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
         } catch (DBException e) {
-            log.debug(e);
-            DBWorkbench.getPlatformUI().showMessageBox(
-                "Authentication error",
-                "Error authenticating application user: " +
-                    "\n" + e.getMessage(),
-                true);
+            if (!(e instanceof DBInterruptedException)) {
+                log.debug(e);
+                DBWorkbench.getPlatformUI().showMessageBox(
+                    "Authentication error",
+                    "Error authenticating application user: " +
+                        "\n" + e.getMessage(),
+                    true);
+            }
             dispose();
             System.exit(101);
         }
@@ -101,7 +104,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
     }
 
     protected boolean isDefaultProjectNeeded() {
-        return true;
+        return DBWorkbench.getPlatform().getApplication().getDefaultProjectName() != null;
     }
 
     @Override
@@ -126,7 +129,10 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         }
         for (IProject project : allProjects) {
             if (project.exists() && !project.isHidden() && isProjectAccessible(project)) {
-                LocalProjectImpl projectMetadata = createProjectFrom(project);
+                LocalProjectImpl projectMetadata = projects.get(project);
+                if (projectMetadata == null) {
+                    projectMetadata = createProjectFrom(project);
+                }
                 this.projects.put(project, projectMetadata);
 
                 if (activeProject == null || (!CommonUtils.isEmpty(activeProjectName) && project.getName().equals(activeProjectName))) {
@@ -195,9 +201,6 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
                                     activeProject = projectMetadata;
                                     fireActiveProjectChange(null, activeProject);
                                 }
-                            } else {
-                                // Project not found - report an error
-                                log.error("Project '" + delta.getResource().getName() + "' not found in workspace");
                             }
                         } else {
                             if (delta.getKind() == IResourceDelta.REMOVED) {
@@ -227,7 +230,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
             if (movedToPath != null) {
                 IPath oldPath = delta.getProjectRelativePath();
                 IPath newPath = movedToPath.makeRelativeTo(projectMetadata.getEclipseProject().getFullPath());
-                projectMetadata.updateResourceCache(oldPath, newPath);
+                projectMetadata.moveResourceCache(oldPath, newPath);
             } else {
                 projectMetadata.removeResourceFromCache(delta.getProjectRelativePath());
             }

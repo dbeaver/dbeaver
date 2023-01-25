@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -534,12 +534,11 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     // Load navigator tree
                     DBRProgressMonitor monitor = new VoidProgressMonitor();
                     DBNDatabaseNode rootNode;
+                    DBNDatabaseNode dbNode = DBNUtils.getNodeByObject(monitor, getDatabaseObject().getDatabase(), true);
                     if (isRoleEditor()) {
-                        DBNDatabaseNode dbNode = DBNUtils.getNodeByObject(monitor, getDatabaseObject().getDatabase(), true);
                         rootNode = DBNUtils.getChildFolder(monitor, dbNode, PostgreSchema.class);
                     } else {
-                        DBNDatabaseNode dsNode = DBNUtils.getNodeByObject(monitor, getDatabaseObject().getDataSource(), true);
-                        rootNode = DBNUtils.getChildFolder(monitor, dsNode, PostgreRole.class);
+                        rootNode = DBNUtils.getChildFolder(monitor, dbNode, PostgreRole.class);
                     }
                     if (rootNode == null) {
                         DBWorkbench.getPlatformUI().showError("Object tree", "Can't detect root node for objects tree");

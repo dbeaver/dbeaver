@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,35 +21,55 @@ import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.PublicKey;
+import java.util.List;
 
 public class KnownHostsVerifier extends OpenSSHKnownHosts {
+    private final SSHHostConfiguration actualHostConfiguration;
 
-    private DBPPlatformUI platformUI;
-
-    public KnownHostsVerifier(@NotNull File khFile, @NotNull DBPPlatformUI platformUI) throws IOException {
+    public KnownHostsVerifier(@NotNull File khFile, @NotNull SSHHostConfiguration actualHostConfiguration) throws IOException {
         super(khFile);
-        this.platformUI = platformUI;
+        this.actualHostConfiguration = actualHostConfiguration;
+    }
+
+    @Override
+    public boolean verify(String hostname, int port, PublicKey key) {
+        if (hostname.equals(DBConstants.HOST_LOCALHOST)) {
+            return super.verify(actualHostConfiguration.getHostname(), actualHostConfiguration.getPort(), key);
+        } else {
+            return super.verify(hostname, port, key);
+        }
+    }
+
+    @Override
+    public List<String> findExistingAlgorithms(String hostname, int port) {
+        if (hostname.equals(DBConstants.HOST_LOCALHOST)) {
+            return super.findExistingAlgorithms(actualHostConfiguration.getHostname(), actualHostConfiguration.getPort());
+        } else {
+            return super.findExistingAlgorithms(hostname, port);
+        }
     }
 
     @Override
     protected boolean hostKeyUnverifiableAction(String hostname, PublicKey key) {
         KeyType type = KeyType.fromKey(key);
 
-        boolean isConfirmed = platformUI.confirmAction(SSHJUIMessages.verify_connection_confirmation_title,
+        boolean isConfirmed = DBWorkbench.getPlatformUI().confirmAction(SSHJUIMessages.verify_connection_confirmation_title,
             NLS.bind(SSHJUIMessages.verify_connection_confirmation_message, new String[]{hostname, type.toString(), SecurityUtils.getFingerprint(key)}), true);
 
         if (!isConfirmed) {
             return false;
         } else {
             try {
-                this.entries().add(new HostEntry((Marker)null, hostname, KeyType.fromKey(key), key));
+                this.entries().add(new HostEntry(null, hostname, KeyType.fromKey(key), key));
                 this.write();
-                platformUI.showWarningMessageBox(SSHJUIMessages.warning_title,
+                DBWorkbench.getPlatformUI().showWarningMessageBox(SSHJUIMessages.warning_title,
                     NLS.bind(SSHJUIMessages.known_host_added_warning_message, hostname, type));
                 return true;
             } catch (IOException e) {
@@ -60,10 +80,14 @@ public class KnownHostsVerifier extends OpenSSHKnownHosts {
 
     @Override
     protected boolean hostKeyChangedAction(String hostname, PublicKey key) {
-        KeyType type = KeyType.fromKey(key);
-        String fp = SecurityUtils.getFingerprint(key);
-        String path = this.getFile().getAbsolutePath();
-        platformUI.showWarningMessageBox(SSHJUIMessages.warning_title, NLS.bind(SSHJUIMessages.host_key_changed_warning_message, new String[]{type.toString(), fp, path}));
+        DBWorkbench.getPlatformUI().showWarningMessageBox(
+            SSHJUIMessages.warning_title,
+            NLS.bind(SSHJUIMessages.host_key_changed_warning_message, new String[]{
+                KeyType.fromKey(key).toString(),
+                SecurityUtils.getFingerprint(key),
+                getFile().getAbsolutePath()
+            })
+        );
         return false;
     }
 

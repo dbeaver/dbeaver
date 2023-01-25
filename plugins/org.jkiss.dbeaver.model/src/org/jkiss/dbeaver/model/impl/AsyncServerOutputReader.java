@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,31 +17,38 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionResult;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.io.PrintWriter;
 import java.util.Arrays;
 
 public class AsyncServerOutputReader extends DefaultServerOutputReader {
     private static final Log log = Log.getLog(AsyncServerOutputReader.class);
 
-        @Override
-        public boolean isAsyncOutputReadSupported() {
-            return true;
-        }
+    @Override
+    public boolean isAsyncOutputReadSupported() {
+        return true;
+    }
 
-        @Override
-        public void readServerOutput(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, DBCExecutionResult executionResult, DBCStatement statement, @NotNull PrintWriter output) throws DBCException {
-            if (statement == null) {
-                super.readServerOutput(monitor, context, executionResult, null, output);
-            } else {
-                // Do not read from connection warnings as it blocks statements cancelation and other connection-level stuff.
-                // See #7885
+    @Override
+    public void readServerOutput(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext context,
+        @Nullable DBCExecutionResult executionResult,
+        @Nullable DBCStatement statement,
+        @NotNull DBCOutputWriter output
+    ) throws DBCException {
+        if (statement == null) {
+            super.readServerOutput(monitor, context, executionResult, null, output);
+        } else {
+            // Do not read from connection warnings as it blocks statements cancelation and other connection-level stuff.
+            // See #7885
 /*
                 try {
                     SQLWarning connWarning = ((JDBCSession) statement.getSession()).getWarnings();
@@ -53,11 +60,11 @@ public class AsyncServerOutputReader extends DefaultServerOutputReader {
                 }
 */
 
-                Throwable[] statementWarnings = statement.getStatementWarnings();
-                if (statementWarnings != null && statementWarnings.length > 0) {
-                    dumpWarnings(output, Arrays.asList(statementWarnings));
-                }
+            Throwable[] statementWarnings = statement.getStatementWarnings();
+            if (statementWarnings != null && statementWarnings.length > 0) {
+                dumpWarnings(output, Arrays.asList(statementWarnings));
             }
         }
     }
+}
 

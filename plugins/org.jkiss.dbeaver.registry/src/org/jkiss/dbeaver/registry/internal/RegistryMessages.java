@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,6 +32,13 @@ public class RegistryMessages extends NLS {
     public static String dialog_data_source_synchronization_fail_title;
     public static String dialog_data_source_synchronization_fail_local_message;
     public static String dialog_data_source_synchronization_fail_remote_message;
+
+    public static String navigator_settings_preset_simple_view_name;
+    public static String navigator_settings_preset_simple_view_description;
+    public static String navigator_settings_preset_advanced_view_name;
+    public static String navigator_settings_preset_advanced_view_description;
+    public static String navigator_settings_preset_custom_view_name;
+    public static String navigator_settings_preset_custom_view_description;
 
 
     static {

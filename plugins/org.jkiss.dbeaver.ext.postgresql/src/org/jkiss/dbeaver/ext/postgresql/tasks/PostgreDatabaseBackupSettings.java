@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,14 +29,14 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tasks.nativetool.ExportSettingsExtension;
-import org.jkiss.dbeaver.tasks.nativetool.NativeToolUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings implements ExportSettingsExtension<PostgreDatabaseBackupInfo> {
 
@@ -289,41 +289,15 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
 
     @NotNull
     public File getOutputFile(@NotNull PostgreDatabaseBackupInfo info) {
-        String outputFileName = replaceVars(info, getOutputFilePattern());
+        String outputFileName = resolveVars(info.getDatabase(), info.getSchemas(), info.getTables(), getOutputFilePattern());
         return new File(getOutputFolder(info), outputFileName);
-    }
-
-    private String replaceVars(@NotNull PostgreDatabaseBackupInfo info, String pattern) {
-        return GeneralUtils.replaceVariables(pattern, name -> {
-            switch (name) {
-                case NativeToolUtils.VARIABLE_DATABASE:
-                    return info.getDatabase().getName();
-                case NativeToolUtils.VARIABLE_HOST:
-                    return info.getDatabase().getDataSource().getContainer().getConnectionConfiguration().getHostName();
-                case NativeToolUtils.VARIABLE_CONN_TYPE:
-                    return info.getDatabase().getDataSource().getContainer().getConnectionConfiguration().getConnectionType().getId();
-                case NativeToolUtils.VARIABLE_TABLE:
-                    final Iterator<PostgreTableBase> iterator = info.getTables() == null ? null : info.getTables().iterator();
-                    if (iterator != null && iterator.hasNext()) {
-                        return iterator.next().getName();
-                    } else {
-                        return "null";
-                    }
-                case NativeToolUtils.VARIABLE_TIMESTAMP:
-                    return RuntimeUtils.getCurrentTimeStamp();
-                case NativeToolUtils.VARIABLE_DATE:
-                    return RuntimeUtils.getCurrentDate();
-                default:
-                    return NativeToolUtils.replaceVariables(name);
-            }
-        });
     }
 
     @NotNull
     @Override
     public File getOutputFolder(@NotNull PostgreDatabaseBackupInfo info) {
         if (outputFolder == null || outputFolderNeedsToBeRecreated ) {
-            outputFolder = new File(replaceVars(info, getOutputFolderPattern()));
+            outputFolder = new File(resolveVars(info.getDatabase(), info.getSchemas(), info.getTables(), getOutputFolderPattern()));
         }
         return outputFolder;
     }

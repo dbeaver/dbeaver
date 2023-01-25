@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,7 +100,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
         DBRProgressMonitor monitor,
         DataSourceConfigurationManager configurationManager,
         DBPDataSourceConfigurationStorage configurationStorage,
-        List<DataSourceDescriptor> localDataSources) throws DBException, IOException {
+        List<DataSourceDescriptor> localDataSources
+    ) throws DBException, IOException {
         ByteArrayOutputStream dsConfigBuffer = new ByteArrayOutputStream(10000);
         try (OutputStreamWriter osw = new OutputStreamWriter(dsConfigBuffer, StandardCharsets.UTF_8)) {
             try (JsonWriter jsonWriter = CONFIG_GSON.newJsonWriter(osw)) {
@@ -163,53 +164,12 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     // Network profiles
                     List<DBWNetworkProfile> profiles = registry.getNetworkProfiles();
                     if (!CommonUtils.isEmpty(profiles)) {
-                        jsonWriter.name("network-profiles");
-                        jsonWriter.beginObject();
-                        for (DBWNetworkProfile np : profiles) {
-                            jsonWriter.name(np.getProfileId());
-                            jsonWriter.beginObject();
-                            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_NAME, np.getProfileName());
-                            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_DESCRIPTION, np.getProfileDescription());
-                            jsonWriter.name("handlers");
-                            jsonWriter.beginObject();
-                            for (DBWHandlerConfiguration configuration : np.getConfigurations()) {
-                                if (configuration.hasValuableInfo()) {
-                                    saveNetworkHandlerConfiguration(
-                                        configurationManager, jsonWriter,
-                                        null,
-                                        np,
-                                        configuration);
-                                }
-                            }
-                            jsonWriter.endObject();
-                            jsonWriter.endObject();
-                        }
-                        jsonWriter.endObject();
+                        saveNetworkProfiles(configurationManager, jsonWriter, profiles);
                     }
                     // Auth profiles
                     List<DBAAuthProfile> authProfiles = registry.getAllAuthProfiles();
                     if (!CommonUtils.isEmpty(authProfiles)) {
-                        jsonWriter.name("auth-profiles");
-                        jsonWriter.beginObject();
-                        for (DBAAuthProfile authProfile : authProfiles) {
-                            jsonWriter.name(authProfile.getProfileId());
-                            jsonWriter.beginObject();
-                            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_NAME, authProfile.getProfileName());
-                            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_DESCRIPTION, authProfile.getProfileDescription());
-                            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_AUTH_MODEL, authProfile.getAuthModelId());
-                            if (authProfile.isSavePassword()) {
-                                JSONUtils.field(jsonWriter, RegistryConstants.ATTR_SAVE_PASSWORD, authProfile.isSavePassword());
-                            }
-                            SecureCredentials credentials = new SecureCredentials(authProfile);
-                            if (configurationManager.isSecure()) {
-                                savePlainCredentials(jsonWriter, credentials);
-                            } else {
-                                // Save all auth properties in secure storage
-                                saveSecuredCredentials(null, authProfile, null, credentials);
-                            }
-                            jsonWriter.endObject();
-                        }
-                        jsonWriter.endObject();
+                        saveAuthProfiles(configurationManager, jsonWriter, authProfiles);
                     }
                     // Filters
                     List<DBSObjectFilter> savedFilters = registry.getSavedFilters();
@@ -275,7 +235,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 jsonWriter.flush();
             }
         } catch (IOException e) {
-            log.error("IO error while saving datasources json", e);
+            log.error("IO error while saving datasources configuration", e);
         }
 
         String jsonString = dsConfigBuffer.toString(StandardCharsets.UTF_8);
@@ -289,6 +249,55 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (!configurationManager.isSecure()) {
             saveSecureCredentialsFile(configurationManager, configurationStorage);
         }
+    }
+
+    private void saveNetworkProfiles(DataSourceConfigurationManager configurationManager, JsonWriter jsonWriter, List<DBWNetworkProfile> profiles) throws IOException {
+        jsonWriter.name("network-profiles");
+        jsonWriter.beginObject();
+        for (DBWNetworkProfile np : profiles) {
+            jsonWriter.name(np.getProfileId());
+            jsonWriter.beginObject();
+            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_NAME, np.getProfileName());
+            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_DESCRIPTION, np.getProfileDescription());
+            jsonWriter.name("handlers");
+            jsonWriter.beginObject();
+            for (DBWHandlerConfiguration configuration : np.getConfigurations()) {
+                if (configuration.hasValuableInfo()) {
+                    saveNetworkHandlerConfiguration(
+                        configurationManager, jsonWriter,
+                        null,
+                        np,
+                        configuration);
+                }
+            }
+            jsonWriter.endObject();
+            jsonWriter.endObject();
+        }
+        jsonWriter.endObject();
+    }
+
+    private void saveAuthProfiles(DataSourceConfigurationManager configurationManager, JsonWriter jsonWriter, List<DBAAuthProfile> authProfiles) throws IOException {
+        jsonWriter.name("auth-profiles");
+        jsonWriter.beginObject();
+        for (DBAAuthProfile authProfile : authProfiles) {
+            jsonWriter.name(authProfile.getProfileId());
+            jsonWriter.beginObject();
+            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_NAME, authProfile.getProfileName());
+            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_DESCRIPTION, authProfile.getProfileDescription());
+            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_AUTH_MODEL, authProfile.getAuthModelId());
+            if (authProfile.isSavePassword()) {
+                JSONUtils.field(jsonWriter, RegistryConstants.ATTR_SAVE_PASSWORD, authProfile.isSavePassword());
+            }
+            SecureCredentials credentials = new SecureCredentials(authProfile);
+            if (configurationManager.isSecure()) {
+                savePlainCredentials(jsonWriter, credentials);
+            } else {
+                // Save all auth properties in secure storage
+                saveSecuredCredentials(null, authProfile, null, credentials);
+            }
+            jsonWriter.endObject();
+        }
+        jsonWriter.endObject();
     }
 
     private String loadConfigFile(InputStream stream, boolean decrypt) throws IOException {
@@ -342,16 +351,20 @@ class DataSourceSerializerModern implements DataSourceSerializer
     }
 
     @Override
-    public void parseDataSources(
+    public boolean parseDataSources(
         @NotNull DBPDataSourceConfigurationStorage configurationStorage,
         @NotNull DataSourceConfigurationManager configurationManager,
         @NotNull DataSourceRegistry.ParseResults parseResults,
+        @Nullable Collection<String> dataSourceIds,
         boolean refresh
     ) throws DBException, IOException {
+        var connectionConfigurationChanged = false;
         if (!configurationManager.isSecure()) {
             // Read secured creds file
             InputStream secureCredsData = configurationManager.readConfiguration(
-                DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + configurationStorage.getStorageSubId() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
+                DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + configurationStorage.getStorageSubId()
+                    + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT,
+                dataSourceIds);
             if (secureCredsData != null) {
                 try {
                     String credJson = loadConfigFile(secureCredsData, true);
@@ -372,7 +385,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (configurationStorage instanceof DataSourceMemoryStorage) {
             configData = ((DataSourceMemoryStorage) configurationStorage).getInputStream();
         } else {
-            configData = configurationManager.readConfiguration(configurationStorage.getStorageName());
+            configData = configurationManager.readConfiguration(configurationStorage.getStorageName(), dataSourceIds);
         }
         if (configData != null) {
             String configJson = loadConfigFile(configData, CommonUtils.toBoolean(registry.getProject().isEncryptedProject()));
@@ -384,13 +397,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 String name = folderMap.getKey();
                 String description = JSONUtils.getObjectProperty(folderMap.getValue(), RegistryConstants.ATTR_DESCRIPTION);
                 String parentFolder = JSONUtils.getObjectProperty(folderMap.getValue(), RegistryConstants.ATTR_PARENT);
-                DataSourceFolder parent = parentFolder == null ? null : registry.findFolderByPath(parentFolder, true);
-                DataSourceFolder folder = parent == null ? registry.findFolderByPath(name, true) : parent.getChild(name);
+                DataSourceFolder parent = parentFolder == null ? null : registry.findFolderByPath(parentFolder, true, parseResults);
+                DataSourceFolder folder = parent == null ? registry.findFolderByPath(name, true, parseResults) : parent.getChild(name);
                 if (folder == null) {
                     folder = new DataSourceFolder(registry, parent, name, description);
-                    registry.addDataSourceFolder(folder);
+                    parseResults.addedFolders.add(folder);
                 } else {
                     folder.setDescription(description);
+                    parseResults.updatedFolders.add(folder);
                 }
             }
 
@@ -510,6 +524,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
                 DataSourceDescriptor dataSource = registry.getDataSource(id);
                 boolean newDataSource = (dataSource == null);
+                DataSourceDescriptor oldDataSource = null;
                 if (newDataSource) {
                     DBPDataSourceOrigin origin;
                     Map<String, Object> originProperties = JSONUtils.deserializeProperties(conObject, TAG_ORIGIN);
@@ -532,6 +547,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         driver,
                         new DBPConnectionConfiguration());
                 } else {
+                    oldDataSource = new DataSourceDescriptor(dataSource, registry);
                     // Clean settings - they have to be loaded later by parser
                     dataSource.getConnectionConfiguration().setProperties(Collections.emptyMap());
                     dataSource.getConnectionConfiguration().setHandlers(Collections.emptyList());
@@ -539,13 +555,18 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 }
                 dataSource.setName(JSONUtils.getString(conObject, RegistryConstants.ATTR_NAME));
                 dataSource.setDescription(JSONUtils.getString(conObject, RegistryConstants.TAG_DESCRIPTION));
-                dataSource.setSavePassword(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SAVE_PASSWORD));
+                boolean savePassword = JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SAVE_PASSWORD);
+                dataSource.setSavePassword(savePassword);
+                dataSource.setSharedCredentials(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SHARED_CREDENTIALS));
                 dataSource.setTemplate(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_TEMPLATE));
 
                 DataSourceNavigatorSettings navSettings = dataSource.getNavigatorSettings();
-                navSettings.setShowSystemObjects(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS));
-                navSettings.setShowUtilityObjects(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS));
-                navSettings.setShowOnlyEntities(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES));
+                navSettings.setShowSystemObjects(JSONUtils.getBoolean(conObject,
+                    DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS));
+                navSettings.setShowUtilityObjects(JSONUtils.getBoolean(conObject,
+                    DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS));
+                navSettings.setShowOnlyEntities(JSONUtils.getBoolean(conObject,
+                    DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES));
                 navSettings.setHideFolders(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_FOLDERS));
                 navSettings.setHideSchemas(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS));
                 navSettings.setHideVirtualModel(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_VIRTUAL));
@@ -553,9 +574,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
                 dataSource.setConnectionReadOnly(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_READ_ONLY));
                 final String folderPath = JSONUtils.getString(conObject, RegistryConstants.ATTR_FOLDER);
-                if (folderPath != null) {
-                    dataSource.setFolder(registry.findFolderByPath(folderPath, true));
-                }
+                dataSource.setFolder(folderPath == null ? null : registry.findFolderByPath(folderPath, true, parseResults));
                 dataSource.setLockPasswordHash(CommonUtils.toString(conObject.get(RegistryConstants.ATTR_LOCK_PASSWORD)));
 
                 // Connection settings
@@ -572,9 +591,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             readPlainCredentials(cfgObject) :
                             readSecuredCredentials(dataSource, null, null);
                         config.setUserName(creds.getUserName());
-                        if (dataSource.isSavePassword()) {
+                        if (savePassword) {
                             config.setUserPassword(creds.getUserPassword());
                         }
+                        dataSource.forgetSecrets();
                     }
                     {
                         // Still try to read credentials directly from configuration (#6564)
@@ -591,7 +611,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             JSONUtils.getString(cfgObject, RegistryConstants.ATTR_TYPE), DBPConnectionType.DEFAULT_TYPE));
                     String configurationType = JSONUtils.getString(cfgObject, RegistryConstants.ATTR_CONFIGURATION_TYPE);
                     if (!CommonUtils.isEmpty(configurationType)) {
-                        config.setConfigurationType(DBPDriverConfigurationType.valueOf(configurationType));
+                        config.setConfigurationType(CommonUtils.valueOf(DBPDriverConfigurationType.class, configurationType, DBPDriverConfigurationType.MANUAL));
                     }
                     String colorValue = JSONUtils.getString(cfgObject, RegistryConstants.ATTR_COLOR);
                     if (!CommonUtils.isEmpty(colorValue)) {
@@ -690,8 +710,12 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 // Add to the list
                 if (newDataSource) {
                     parseResults.addedDataSources.add(dataSource);
+                    connectionConfigurationChanged = true;
                 } else {
                     parseResults.updatedDataSources.add(dataSource);
+                    if (!dataSource.equalSettings(oldDataSource)) {
+                        connectionConfigurationChanged = true;
+                    }
                 }
             }
 
@@ -701,6 +725,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 registry.addSavedFilter(filter);
             }
         }
+        return connectionConfigurationChanged;
 
     }
 
@@ -824,10 +849,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
         }
         JSONUtils.field(json, RegistryConstants.ATTR_NAME, dataSource.getName());
         JSONUtils.fieldNE(json, RegistryConstants.TAG_DESCRIPTION, dataSource.getDescription());
-        JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, dataSource.isSavePassword());
-        if (dataSource.isTemplate()) {
-            JSONUtils.field(json, RegistryConstants.ATTR_TEMPLATE, dataSource.isTemplate());
-        }
+        if (dataSource.isSavePassword()) JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, true);
+        if (dataSource.isSharedCredentials()) JSONUtils.field(json, RegistryConstants.ATTR_SHARED_CREDENTIALS, true);
+        if (dataSource.isTemplate()) JSONUtils.field(json, RegistryConstants.ATTR_TEMPLATE, true);
 
         DataSourceNavigatorSettings navSettings = dataSource.getNavigatorSettings();
         if (navSettings.isShowSystemObjects()) JSONUtils.field(json, ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS, true);
@@ -838,7 +862,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (navSettings.isHideVirtualModel()) JSONUtils.field(json, ATTR_NAVIGATOR_HIDE_VIRTUAL, true);
         if (navSettings.isMergeEntities()) JSONUtils.field(json, ATTR_NAVIGATOR_MERGE_ENTITIES, true);
 
-        JSONUtils.field(json, RegistryConstants.ATTR_READ_ONLY, dataSource.isConnectionReadOnly());
+        if (dataSource.isConnectionReadOnly()) JSONUtils.field(json, RegistryConstants.ATTR_READ_ONLY, true);
 
         if (dataSource.getFolder() != null) {
             JSONUtils.field(json, RegistryConstants.ATTR_FOLDER, dataSource.getFolder().getFolderPath());
@@ -861,11 +885,16 @@ class DataSourceSerializerModern implements DataSourceSerializer
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_SERVER, connectionInfo.getServerName());
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_DATABASE, connectionInfo.getDatabaseName());
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_URL, connectionInfo.getUrl());
-            if (connectionInfo.getConfigurationType() != null) {
-                JSONUtils.fieldNE(json, RegistryConstants.ATTR_CONFIGURATION_TYPE, connectionInfo.getConfigurationType().toString());
-            }
+            JSONUtils.fieldNE(json, RegistryConstants.ATTR_CONFIGURATION_TYPE, connectionInfo.getConfigurationType().toString());
 
-            if (configurationManager.isSecure()) {
+            if (dataSource.getProject().isUseSecretStorage()) {
+                // For secured projects save only shared credentials
+                // Others are stored in secret storage
+                if (dataSource.isSharedCredentials()) {
+                    savePlainCredentials(json, new SecureCredentials(dataSource));
+                }
+            } else if (configurationManager.isSecure()) {
+                // Secure manager == save to buffer
                 savePlainCredentials(json, new SecureCredentials(dataSource));
             } else {
                 saveSecuredCredentials(
@@ -1029,7 +1058,16 @@ class DataSourceSerializerModern implements DataSourceSerializer
         ) {
             final SecureCredentials credentials = new SecureCredentials(configuration);
             credentials.setProperties(configuration.getSecureProperties());
-            if (configurationManager.isSecure()) {
+
+            DBPProject project = dataSource != null ? dataSource.getProject() : profile.getProject();
+
+            if (project.isUseSecretStorage()) {
+                // For secured projects save only shared credentials
+                // Others are stored in secret storage
+                if (dataSource == null || dataSource.isSharedCredentials()) {
+                    savePlainCredentials(json, credentials);
+                }
+            } else if (configurationManager.isSecure()) {
                 savePlainCredentials(
                     json,
                     credentials);
@@ -1075,6 +1113,12 @@ class DataSourceSerializerModern implements DataSourceSerializer
         Map<String, Map<String, String>> nodeMap = secureProperties.computeIfAbsent(topNodeId, s -> new LinkedHashMap<>());
         Map<String, String> propMap = nodeMap.computeIfAbsent(subNode, s -> new LinkedHashMap<>());
         saveCredentialsToMap(propMap, credentials);
+        if (propMap.isEmpty()) {
+            nodeMap.remove(subNode);
+        }
+        if (nodeMap.isEmpty()) {
+            secureProperties.remove(topNodeId);
+        }
     }
 
     private void savePlainCredentials(JsonWriter jsonWriter, @NotNull SecureCredentials credentials) throws IOException {

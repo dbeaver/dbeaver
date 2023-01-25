@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -279,6 +279,9 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
 
     abstract boolean supportsTriggers();
 
+    /**
+     * Returns true only in case the table is a table and has clustered columnstore index
+     */
     boolean isClustered(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (isView()) {
             return false;
@@ -286,7 +289,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
         Collection<SQLServerTableIndex> indexes = getIndexes(monitor);
         if (!CommonUtils.isEmpty(indexes)) {
             for (SQLServerTableIndex index : indexes) {
-                if (index.getIndexType() == DBSIndexType.CLUSTERED) {
+                if (index.getIndexType() == DBSIndexType.CLUSTERED && index.isColumnStore()) {
                     return true;
                 }
             }

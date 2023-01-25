@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 /**
@@ -70,7 +72,9 @@ public class NIOFileSystem extends FileSystem {
                             DBNFileSystemRoot fsNodeRoot = fsNode.getRoot(fsRootPath);
                             if (fsNodeRoot != null) {
                                 try {
-                                    path = fsNodeRoot.getPath().resolve(CommonUtils.removeLeadingSlash(relPath));
+                                    relPath = CommonUtils.removeLeadingSlash(relPath);
+                                    relPath = URLDecoder.decode(relPath, StandardCharsets.UTF_8);
+                                    path = fsNodeRoot.getPath().resolve(relPath);
                                 } catch (Exception e) {
                                     log.debug("Error resolving path", e);
                                 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -100,6 +100,9 @@ public class UIMessages extends NLS {
 
     public static String tooltip_restore;
     public static String tooltip_hide;
+
+    public static String utils_actions_copy_label;
+    public static String utils_actions_copy_all_label;
 
     static {
         // initialize resource bundle

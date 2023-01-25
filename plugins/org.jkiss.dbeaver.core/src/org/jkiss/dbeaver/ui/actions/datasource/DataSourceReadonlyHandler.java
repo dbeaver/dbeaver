@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,8 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -50,7 +52,9 @@ public class DataSourceReadonlyHandler extends AbstractDataSourceHandler impleme
         final DataSourceDescriptor dataSourceContainer = currentDescriptor;
         if (dataSourceContainer != null) {
             dataSourceContainer.setConnectionReadOnly(!dataSourceContainer.isConnectionReadOnly());
-            dataSourceContainer.persistConfiguration();
+            if (dataSourceContainer.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
+                dataSourceContainer.persistConfiguration();
+            }
             if (dataSourceContainer.isConnected()) {
                 DBPDataSource dataSource = dataSourceContainer.getDataSource();
                 if (dataSource != null && !DataSourceInvalidateHandler.invalidateDataSource(dataSource)) {

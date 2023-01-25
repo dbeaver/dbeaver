@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -146,12 +146,12 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         this.mappingType = mappingType;
         switch (mappingType) {
             case create:
-                targetName = getSourceLabelOrName(getSource(), true);
+                targetName = getSourceLabelOrName(getSource());
                 break;
         }
     }
 
-    public void updateMappingType(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException {
+    public void updateMappingType(DBRProgressMonitor monitor, boolean forceRefresh, boolean updateAttributesNames) throws DBException {
         if (mappingType == DatabaseMappingType.skip) {
             // We already have mapping for the attribute with the skip type
             return;
@@ -164,7 +164,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         mappingType = DatabaseMappingType.unspecified;
         if (parent.getTarget() instanceof DBSEntity) {
             if (forceRefresh || CommonUtils.isEmpty(targetName)) {
-                targetName = getSourceLabelOrName(source, true);
+                targetName = getSourceLabelOrName(source);
             }
             DBSEntity targetEntity = (DBSEntity) parent.getTarget();
             List<? extends DBSEntityAttribute> targetAttributes = targetEntity.getAttributes(monitor);
@@ -228,15 +228,23 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
             // Case recreate container mapping in the new table or just create
             mappingType = DatabaseMappingType.create;
             if (forceRefresh || CommonUtils.isEmpty(targetName)) {
-                targetName = getSourceLabelOrName(source, true);
+                if (!updateAttributesNames && CommonUtils.isNotEmpty(targetName)) {
+                    // We want to keep targetName in this case. It can be the targetName from a task as example
+                    targetName = getSourceLabelOrName(targetName);
+                } else {
+                    targetName = getSourceLabelOrName(source);
+                }
             }
         }
 
         if (mappingType == DatabaseMappingType.create && !CommonUtils.isEmpty(targetName)) {
             // Convert target name case (#1516)
             DBSObjectContainer container = parent.getSettings().getContainer();
-            if (container != null && !DBUtils.isQuotedIdentifier(container.getDataSource(), targetName)) {
-                targetName = DBObjectNameCaseTransformer.transformName(container.getDataSource(), targetName);
+            if (container != null && container.getDataSource() != null) {
+                DBPDataSource targetDataSource = container.getDataSource();
+                if (!DBUtils.isQuotedIdentifier(targetDataSource, targetName) && !isSkipNameTransformation()) {
+                    targetName = DBObjectNameCaseTransformer.transformName(targetDataSource, targetName);
+                }
             }
         } else if (mappingType == DatabaseMappingType.unspecified && source != null && targetName != null) {
             String sourceLabelOrName = getSourceLabelOrName(source);
@@ -249,10 +257,21 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     }
 
     String getSourceLabelOrName(DBSAttributeBase source) {
-        return getSourceLabelOrName(source, false);
+        return getSourceLabelOrName(getSourceAttributeName(source));
     }
 
-    String getSourceLabelOrName(DBSAttributeBase source, boolean quoteIdentifier) {
+    private String getSourceLabelOrName(String name) {
+        DBSObjectContainer container = parent.getSettings().getContainer();
+
+        if (container != null && !DBUtils.isQuotedIdentifier(container.getDataSource(), name) && !isSkipNameTransformation()) {
+            name = DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
+        }
+
+        return name;
+    }
+
+    @NotNull
+    private String getSourceAttributeName(@NotNull DBSAttributeBase source) {
         String name = null;
         if (source instanceof DBDAttributeBinding) {
             name = ((DBDAttributeBinding) source).getLabel();
@@ -260,17 +279,20 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         if (CommonUtils.isEmpty(name)) {
             name = source.getName();
         }
-        DBSObjectContainer container = parent.getSettings().getContainer();
-
-        if (container != null && !DBUtils.isQuotedIdentifier(container.getDataSource(), name)) {
-            name = DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
-        }
-
-        if (container != null && !CommonUtils.isEmpty(name) && quoteIdentifier) {
-            name = DBUtils.getQuotedIdentifier(container.getDataSource(), name);
-        }
-
         return name;
+    }
+
+    private boolean isSkipNameTransformation() {
+        boolean isSkipNameTransformation = false;
+        if (source instanceof DBSObject) {
+            DBPDataSource sourceDataSource = ((DBSObject) source).getDataSource();
+            String sourceAttributeName = getSourceAttributeName(source);
+            if (sourceDataSource != null && sourceDataSource.getSQLDialect() != null
+                && CommonUtils.isNotEmpty(sourceAttributeName)) {
+                isSkipNameTransformation = sourceDataSource.getSQLDialect().mustBeQuoted(sourceAttributeName, true);
+            }
+        }
+        return isSkipNameTransformation;
     }
 
     @Nullable

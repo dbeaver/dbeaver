@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -607,7 +608,8 @@ public class GenericMetaModel {
         String tableType = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_TYPE);
 
         String tableSchema = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_SCHEM);
-        if (!CommonUtils.isEmpty(tableSchema) && owner.getDataSource().isOmitSchema()) {
+        GenericDataSource dataSource = owner.getDataSource();
+        if (!CommonUtils.isEmpty(tableSchema) && dataSource.isOmitSchema()) {
             // Ignore tables with schema [Google Spanner]
             log.debug("Ignore table " + tableSchema + "." + tableName + " (schemas are omitted)");
             return null;
@@ -635,8 +637,13 @@ public class GenericMetaModel {
             return null;
         }
 
+        DBNBrowseSettings navigatorSettings = dataSource.getContainer().getNavigatorSettings();
         boolean isSystemTable = table.isSystem();
-        if (isSystemTable && !owner.getDataSource().getContainer().getNavigatorSettings().isShowSystemObjects()) {
+        if (isSystemTable && !navigatorSettings.isShowSystemObjects()) {
+            return null;
+        }
+        boolean isUtilityTable = table.isUtility();
+        if (isUtilityTable && !navigatorSettings.isShowUtilityObjects()) {
             return null;
         }
         return table;
@@ -684,6 +691,10 @@ public class GenericMetaModel {
     public boolean isSystemTable(GenericTableBase table) {
         final String tableType = table.getTableType().toUpperCase(Locale.ENGLISH);
         return tableType.contains("SYSTEM");
+    }
+
+    public boolean isUtilityTable(@NotNull GenericTableBase table) {
+        return false;
     }
 
     public boolean isView(String tableType) {
@@ -737,12 +748,12 @@ public class GenericMetaModel {
 
     public JDBCStatement prepareForeignKeysLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent) throws SQLException {
         return session.getMetaData().getImportedKeys(
-                owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-                owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : owner.getSchema().getName(),
-                forParent == null ?
-                        owner.getDataSource().getAllObjectsPattern() :
-                        forParent.getName())
-                .getSourceStatement();
+            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
+            owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : owner.getSchema().getName(),
+            forParent == null ?
+                owner.getDataSource().getAllObjectsPattern() :
+                forParent.getName())
+            .getSourceStatement();
     }
 
     public boolean isFKConstraintWordDuplicated() {

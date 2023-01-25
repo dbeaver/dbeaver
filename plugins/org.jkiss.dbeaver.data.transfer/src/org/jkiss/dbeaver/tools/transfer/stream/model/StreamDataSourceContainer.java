@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -155,6 +155,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
+    public boolean isCredentialsSaved() {
+        return false;
+    }
+
+    @Override
     public void setDescription(String description) {
 
     }
@@ -220,6 +225,12 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @Override
     public boolean isConnected() {
         return false;
+    }
+
+    @Nullable
+    @Override
+    public String getConnectionError() {
+        return null;
     }
 
     @Override
@@ -398,13 +409,23 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
+    public boolean isSharedCredentials() {
+        return false;
+    }
+
+    @Override
+    public void setSharedCredentials(boolean sharedCredentials) {
+
+    }
+
+    @Override
     public boolean isForceUseSingleConnection() {
         return false;
     }
 
     @Override
     public void setForceUseSingleConnection(boolean value) {
-        throw new IllegalStateException("Not supported");   
+        throw new IllegalStateException("Not supported");
     }
 
     @Override
@@ -415,5 +436,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @Override
     public void resolveSecrets(DBSSecretController secretController) throws DBException {
 
+    }
+
+    @Nullable
+    @Override
+    public String getRequiredExternalAuth() {
+        return null;
     }
 }

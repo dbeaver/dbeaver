@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -192,6 +192,7 @@ public class ModelMessages extends NLS {
 	public static String controls_querylog_action_clear_log;
 	public static String controls_querylog_action_copy;
 	public static String controls_querylog_action_copy_all_fields;
+	public static String controls_querylog_action_delete;
 	public static String controls_querylog_action_select_all;
 	public static String controls_querylog_column_duration_name;
 	public static String controls_querylog_column_duration_tooltip;
@@ -237,6 +238,9 @@ public class ModelMessages extends NLS {
 
     public static String jdbc_content_view_error_message_title;
     public static String jdbc_content_view_error_message_hint;
+
+    public static String no_corresponding_table_column_text;
+    public static String cannot_determine_unique_row_identifier_text;
 
 	static {
 		// initialize resource bundle

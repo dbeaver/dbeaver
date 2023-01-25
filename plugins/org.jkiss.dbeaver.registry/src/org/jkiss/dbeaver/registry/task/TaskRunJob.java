@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.*;
-import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
-import org.jkiss.dbeaver.model.task.DBTTaskHandler;
-import org.jkiss.dbeaver.model.task.DBTTaskRunStatus;
-import org.jkiss.dbeaver.model.task.DBTaskUtils;
+import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
@@ -88,6 +84,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         task.addNewRun(taskRun);
 
         try (PrintStream logStream = new PrintStream(Files.newOutputStream(logFile), true, StandardCharsets.UTF_8.name())) {
+            log.debug(String.format("Task '%s' (%s) started", task.getName(), task.getId()));
             taskLog = Log.getLog(TaskRunJob.class);
             Log.setLogWriter(logStream);
             monitor.beginTask("Run task '" + task.getName() + " (" + task.getType().getName() + ")", 1);
@@ -101,6 +98,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                 monitor.done();
                 taskLog.flush();
                 Log.setLogWriter(null);
+                log.debug(String.format("Task '%s' (%s) finished in %s ms", task.getName(), task.getId(), elapsedTime));
 
                 taskRun.setRunDuration(elapsedTime);
                 if (taskError != null) {

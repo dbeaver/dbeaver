@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
@@ -72,7 +73,9 @@ public class NavigatorHandlerConnectionFilter extends AbstractHandler implements
             element.setIcon(DBeaverIcons.getImageDescriptor(
                 navigatorTree.isFilterShowConnected() ? UIIcon.FILTER_RESET : UIIcon.FILTER_APPLY
             ));
-            String actionName = navigatorTree.isFilterShowConnected() ? "Show all" : "Show connected only";
+            String actionName = navigatorTree.isFilterShowConnected()
+                ? UINavigatorMessages.navigator_handler_connections_filter_show_all_text
+                : UINavigatorMessages.navigator_handler_connections_filter_show_connected_text;
             element.setText(actionName);
             element.setTooltip(actionName);
         }

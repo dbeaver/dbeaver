@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -78,6 +79,7 @@ public class PostgreRole implements
     protected int connLimit;
     protected String password;
     protected String validUntil;
+    protected String description;
     protected boolean persisted;
     private MembersCache membersCache = new MembersCache(true);
     private MembersCache belongsCache = new MembersCache(false);
@@ -140,12 +142,22 @@ public class PostgreRole implements
         this.connLimit = JDBCUtils.safeGetInt(dbResult, "rolconnlimit");
         this.password = JDBCUtils.safeGetString(dbResult, "rolpassword");
         this.validUntil = JDBCUtils.safeGetString(dbResult, "rolvaliduntil");
+        this.description = JDBCUtils.safeGetString(dbResult, "description");
     }
 
     @Nullable
     @Override
+    @Property(viewable = true,
+        editable = true,
+        updatable = true,
+        length = PropertyLength.MULTILINE, order = 50,
+        visibleIf = CommentsOnRolesSupportedValidator.class)
     public String getDescription() {
-        return null;
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Nullable
@@ -325,8 +337,9 @@ public class PostgreRole implements
         PostgreDataSource dataSource = getDataSource();
         final PostgreServerExtension extension = dataSource.getServerType();
         StringBuilder ddl = new StringBuilder();
-        ddl.append("-- DROP ROLE ").append(DBUtils.getQuotedIdentifier(this)).append(";\n\n"); //$NON-NLS-1$ //$NON-NLS-2$
-        ddl.append("CREATE ROLE ").append(DBUtils.getQuotedIdentifier(this)).append(" WITH ");
+        String roleName = DBUtils.getQuotedIdentifier(this);
+        ddl.append("-- DROP ROLE ").append(roleName).append(";\n\n"); //$NON-NLS-1$ //$NON-NLS-2$
+        ddl.append("CREATE ROLE ").append(roleName).append(" WITH ");
         if (extension.supportsSuperusers()) {
             addOptionToDDL(ddl, isSuperUser(), "SUPERUSER");
         }
@@ -356,12 +369,30 @@ public class PostgreRole implements
             ddl.append("\tVALID UNTIL '").append(getValidUntil()).append("'");
         }
         ddl.append(";");
-
+        if (CommonUtils.isNotEmpty(description)) {
+            ddl.append("\n\n")
+                .append("COMMENT ON ROLE ")
+                .append(roleName)
+                .append(" IS ")
+                .append(SQLUtils.quoteString(this, description))
+                .append(";");
+        }
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
             ddl.append("\n");
             List<DBEPersistAction> actions = new ArrayList<>();
             PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
             ddl.append("\n").append(SQLUtils.generateScript(dataSource, actions.toArray(new DBEPersistAction[0]), false));
+        }
+        if (isInherit()) {
+            ddl.append("\n");
+            for (PostgreRoleMember member : belongsCache.getAllObjects(monitor, this)) {
+                ddl.append("\n")
+                    .append("GRANT ")
+                    .append(DBUtils.getQuotedIdentifier(member.getOwner(monitor)))
+                    .append(" TO ")
+                    .append(DBUtils.getQuotedIdentifier(this))
+                    .append(";");
+            }
         }
 
         return ddl.toString();
@@ -629,6 +660,13 @@ public class PostgreRole implements
         @Override
         public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
             return !object.isPersisted();
+        }
+    }
+
+    public static class CommentsOnRolesSupportedValidator implements IPropertyValueValidator<PostgreRole, Object> {
+        @Override
+        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+            return object.getDataSource().getServerType().supportsCommentsOnRole();
         }
     }
 }

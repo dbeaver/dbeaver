@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,18 @@ package org.jkiss.dbeaver.ui.data.managers.image;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.controls.imageview.ImageViewer;
+import org.jkiss.dbeaver.ui.controls.imageview.AbstractImageViewer;
+import org.jkiss.dbeaver.ui.controls.imageview.BrowserImageViewer;
+import org.jkiss.dbeaver.ui.controls.imageview.SWTImageViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 
@@ -35,17 +40,27 @@ import java.io.InputStream;
 /**
 * ImagePanelEditor
 */
-public class ImagePanelEditor implements IStreamValueEditor<ImageViewer> {
+public class ImagePanelEditor implements IStreamValueEditor<AbstractImageViewer> {
 
     @Override
-    public ImageViewer createControl(IValueController valueController)
-    {
-        return new ImageViewer(valueController.getEditPlaceholder(), SWT.NONE);
+    public AbstractImageViewer createControl(IValueController valueController) {
+        DBPPreferenceStore preferenceStore = valueController.getExecutionContext()
+            .getDataSource()
+            .getContainer()
+            .getPreferenceStore();
+        if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER)) {
+            return new BrowserImageViewer(valueController.getEditPlaceholder(), SWT.NONE);
+        } else {
+            return new SWTImageViewer(valueController.getEditPlaceholder(), SWT.NONE);
+        }
     }
 
     @Override
-    public void primeEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull ImageViewer control, @NotNull DBDContent value) throws DBException
-    {
+    public void primeEditorValue(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable AbstractImageViewer control,
+        @NotNull DBDContent value
+    ) throws DBException {
         monitor.subTask("Read image value");
         DBDContentStorage data = value.getContents(monitor);
         if (data != null) {
@@ -53,16 +68,14 @@ public class ImagePanelEditor implements IStreamValueEditor<ImageViewer> {
                 if (!(new UITask<Boolean>() {
                     @Override
                     protected Boolean runTask() {
-                        if (!control.isDisposed()) {
+                        if (control != null && !control.isDisposed()) {
                             return control.loadImage(contentStream);
                         } else {
                             return true; // already read
                         }
                     }
-                }).execute())
-                {
-                    throw new DBException("Can't load image: " + control.getLastError().getMessage());
-                }
+                }).runTask());
+
             } catch (IOException e) {
                 throw new DBException("Error reading stream value", e);
             }
@@ -72,18 +85,17 @@ public class ImagePanelEditor implements IStreamValueEditor<ImageViewer> {
     }
 
     @Override
-    public void extractEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull ImageViewer control, @NotNull DBDContent value) throws DBException
-    {
+    public void extractEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull AbstractImageViewer control, @NotNull DBDContent value) throws DBException {
         // Not implemented
     }
 
     @Override
-    public void contributeActions(@NotNull IContributionManager manager, @NotNull final ImageViewer control) throws DBCException {
+    public void contributeActions(@NotNull IContributionManager manager, @NotNull final AbstractImageViewer control) throws DBCException {
         control.fillToolBar(manager);
     }
 
     @Override
-    public void contributeSettings(@NotNull IContributionManager manager, @NotNull ImageViewer control) throws DBCException {
+    public void contributeSettings(@NotNull IContributionManager manager, @NotNull AbstractImageViewer control) throws DBCException {
 
     }
 

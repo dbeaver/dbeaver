@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,44 +16,30 @@
  */
 package org.jkiss.dbeaver.model.rm;
 
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Set;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Resource manager API
  */
 public class RMProject extends RMObject {
 
-    public static final String PREFIX_GLOBAL = "g";
-    public static final String PREFIX_SHARED = "s";
-    public static final String PREFIX_USER = "u";
-    public static final Type[] SHARED_PROJECTS = {Type.GLOBAL, Type.SHARED};
+    private static final RMProjectType[] SHARED_PROJECTS = {RMProjectType.GLOBAL, RMProjectType.SHARED};
 
-    public enum Type {
-        GLOBAL(PREFIX_GLOBAL),
-        SHARED(PREFIX_SHARED),
-        USER(PREFIX_USER);
-
-        private final String prefix;
-
-        Type(String prefix) {
-            this.prefix = prefix;
-        }
-
-        public String getPrefix() {
-            return prefix;
-        }
-    }
     private String id;
     private String description;
-    private Type type;
+    private RMProjectType type;
     private Long createTime;
     private String creator;
-    private Set<String> projectPermissions;
+    private String[] projectPermissions;
+    private RMResourceType[] resourceTypes;
 
     public RMProject() {
     }
@@ -62,10 +48,10 @@ public class RMProject extends RMObject {
         String id,
         String name,
         String description,
-        Type type,
+        RMProjectType type,
         Long createTime,
         String creator,
-        Set<String> projectPermissions
+        String[] projectPermissions
     ) {
         super(name);
         this.id = id;
@@ -80,7 +66,6 @@ public class RMProject extends RMObject {
         super(name);
     }
 
-    @Property
     public String getId() {
         return id;
     }
@@ -89,6 +74,7 @@ public class RMProject extends RMObject {
         this.id = id;
     }
 
+    @Property(viewable = true, order = 1)
     public String getDisplayName() {
         switch (type) {
             case GLOBAL:
@@ -105,11 +91,15 @@ public class RMProject extends RMObject {
         return true;
     }
 
-    @Property
     public boolean isShared() {
         return ArrayUtils.contains(SHARED_PROJECTS, getType());
     }
 
+    public boolean isGlobal() {
+        return getType() == RMProjectType.GLOBAL;
+    }
+
+    @Property(viewable = true, order = 2)
     public String getDescription() {
         return description;
     }
@@ -118,15 +108,16 @@ public class RMProject extends RMObject {
         this.description = description;
     }
 
-    @Property
-    public Type getType() {
+    @Property(viewable = true, order = 3)
+    public RMProjectType getType() {
         return type;
     }
 
-    public void setType(Type type) {
+    public void setType(RMProjectType type) {
         this.type = type;
     }
 
+    @Property(viewable = true, valueRenderer = TimeRenderer.class, order = 10)
     public Long getCreateTime() {
         return createTime;
     }
@@ -135,6 +126,7 @@ public class RMProject extends RMObject {
         this.createTime = createTime;
     }
 
+    @Property(viewable = true, order = 11)
     public String getCreator() {
         return creator;
     }
@@ -158,11 +150,33 @@ public class RMProject extends RMObject {
         return obj instanceof RMProject && CommonUtils.equalObjects(id, ((RMProject) obj).id);
     }
 
-    public void setProjectPermissions(Set<String> projectPermissions) {
+    public String[] getProjectPermissions() {
+        return projectPermissions;
+    }
+
+    public boolean hasProjectPermission(String permission) {
+        return ArrayUtils.contains(projectPermissions, permission);
+    }
+
+    public void setProjectPermissions(String[] projectPermissions) {
         this.projectPermissions = projectPermissions;
     }
 
-    public Set<String> getProjectPermissions() {
-        return projectPermissions;
+    public RMResourceType[] getResourceTypes() {
+        return resourceTypes;
+    }
+
+    public void setResourceTypes(RMResourceType[] resourceTypes) {
+        this.resourceTypes = resourceTypes;
+    }
+
+    public static class TimeRenderer implements IPropertyValueTransformer<RMProject, Object> {
+        @Override
+        public Object transform(RMProject object, Object value) throws IllegalArgumentException {
+            if (!(value instanceof Long)) {
+                return value;
+            }
+            return new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date((Long) value));
+        }
     }
 }

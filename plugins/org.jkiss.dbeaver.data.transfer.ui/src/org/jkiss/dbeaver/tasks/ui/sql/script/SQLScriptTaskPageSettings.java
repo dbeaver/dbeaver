@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,14 +77,14 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
 
-        Composite composite = UIUtils.createComposite(parent, 1);
+        Composite composite = UIUtils.createComposite(parent, 2);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         SQLScriptExecuteSettings dtSettings = getWizard().getSettings();
 
         SashForm mainGroup = new SashForm(composite, SWT.NONE);
         mainGroup.setSashWidth(5);
-        mainGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+        mainGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
         DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(sqlWizard.getProject());
 
@@ -282,14 +282,20 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         }
 
         {
-            Composite settingsGroup = UIUtils.createControlGroup(composite, DTMessages.sql_script_task_page_settings_group_script, 4, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Composite settingsGroup = UIUtils.createControlGroup(
+                composite,
+                DTMessages.sql_script_task_page_settings_group_script,
+                3,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
+                0
+            );
 
             ignoreErrorsCheck = UIUtils.createCheckbox(settingsGroup, DTMessages.sql_script_task_page_settings_option_ignore_errors, "", dtSettings.isIgnoreErrors(), 1);
             dumpQueryCheck = UIUtils.createCheckbox(settingsGroup, DTMessages.sql_script_task_page_settings_option_dump_results, "", dtSettings.isDumpQueryResultsToLog(), 1);
             autoCommitCheck = UIUtils.createCheckbox(settingsGroup, DTMessages.sql_script_task_page_settings_option_auto_commit, "", dtSettings.isAutoCommit(), 1);
-
-            getWizard().createVariablesEditButton(settingsGroup);
         }
+
+        getWizard().createVariablesEditButton(composite);
 
         loadSettings();
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,35 @@
 
 package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
-import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreJobStep;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreScriptObject;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTriggerBase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreViewBase;
+import org.jkiss.dbeaver.ext.postgresql.ui.editors.sql.handlers.SQLEditorHandlerCheckProcedureConsole;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenObjectConsole;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -70,16 +87,42 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
         if (sourceObject instanceof PostgreProcedure) {
             contributionManager.add(new Separator());
             contributionManager.add(ActionUtils.makeActionContribution(
-                new Action("Show header", Action.AS_CHECK_BOX) {
+                new Action(PostgreMessages.source_view_show_header_label, Action.AS_CHECK_BOX) {
                     {
                         setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_PROCEDURE));
-                        setToolTipText("Shows auto-generated function header");
+                        setToolTipText(PostgreMessages.source_view_show_header_description);
                         setChecked(!isInDebugMode());
                     }
                     @Override
                     public void run() {
                         getDatabaseEditorInput().setAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE, !isChecked());
                         refreshPart(PostgreSourceViewEditor.this, true);
+                    }
+                }, true));
+            contributionManager.add(ActionUtils.makeActionContribution(
+                new Action(PostgreMessages.procedure_check_label, Action.AS_PUSH_BUTTON) {
+                    {
+                        setToolTipText(PostgreMessages.procedure_check_description);
+                    }
+                        
+                    @Override
+                    public void run() {
+                        IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+                        List<DBSProcedure> entities = new ArrayList<>();
+                        entities.add((DBSProcedure) sourceObject);
+                        DBRRunnableWithResult<String> generator = SQLEditorHandlerCheckProcedureConsole.checkGenerator(entities);
+                        UIUtils.runInUI(workbenchWindow, generator);
+                        String sql = CommonUtils.notEmpty(generator.getResult());
+                        SQLNavigatorContext navContext = new SQLNavigatorContext(sourceObject);
+                        String procName = ((DBSProcedure) sourceObject).getName();
+                        String title = NLS.bind(PostgreMessages.procedure_check_label2, procName); 
+                        try {
+                            SQLEditorHandlerOpenObjectConsole.openAndExecuteSQLScript(workbenchWindow, navContext, 
+                                title, true, null, sql, true);
+                        } catch (CoreException e) {
+                            DBWorkbench.getPlatformUI().showError(PostgreMessages.message_open_console, 
+                                PostgreMessages.error_cant_open_sql_editor, e);
+                        }
                     }
                 }, true));
         }

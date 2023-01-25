@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -301,8 +301,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
         List<TransferTarget> transferTargets = new ArrayList<>();
         for (DataTransferNodeDescriptor consumer : DataTransferRegistry.getInstance().getAvailableConsumers(objects)) {
-            if (consumer.isAdvancedNode() &&
-                DBWorkbench.getPlatform().getApplication().hasProductFeature(DTConstants.PRODUCT_FEATURE_SIMPLE_DATA_TRANSFER)) {
+            if (consumer.isAdvancedNode() && !DBWorkbench.hasFeature(DTConstants.PRODUCT_FEATURE_ADVANCED_DATA_TRANSFER)) {
                 continue;
             }
             Collection<DataTransferProcessorDescriptor> processors = consumer.getAvailableProcessors(objects);
@@ -323,8 +322,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
         List<TransferTarget> transferTargets = new ArrayList<>();
         for (DataTransferNodeDescriptor producer : DataTransferRegistry.getInstance().getAvailableProducers(objects)) {
-            if (producer.isAdvancedNode() &&
-                DBWorkbench.getPlatform().getApplication().hasProductFeature(DTConstants.PRODUCT_FEATURE_SIMPLE_DATA_TRANSFER)) {
+            if (producer.isAdvancedNode() && !DBWorkbench.hasFeature(DTConstants.PRODUCT_FEATURE_ADVANCED_DATA_TRANSFER)) {
                 continue;
             }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.utils.CommonUtils;
@@ -49,10 +50,11 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
     private final int order;
     private final IResultSetPresentation.PresentationType presentationType;
     private final List<MimeType> contentTypes = new ArrayList<>();
-    private boolean supportsRecordMode;
-    private boolean supportsPanels;
-    private boolean supportsNavigation;
-    private boolean supportsEdit;
+    private final List<ObjectType> adaptsTypes = new ArrayList<>();
+    private final boolean supportsRecordMode;
+    private final boolean supportsPanels;
+    private final boolean supportsNavigation;
+    private final boolean supportsEdit;
 
     protected ResultSetPresentationDescriptor(IConfigurationElement config) {
         super(config);
@@ -76,6 +78,14 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
                 contentTypes.add(contentType);
             } catch (Throwable e) {
                 log.warn("Invalid content type: " + type, e);
+            }
+        }
+        for (IConfigurationElement typeCfg : config.getChildren("adapt")) {
+            String type = typeCfg.getAttribute("type");
+            try {
+                adaptsTypes.add(new ObjectType(type));
+            } catch (Throwable e) {
+                log.warn("Invalid adapter type: " + type, e);
             }
         }
     }
@@ -105,7 +115,7 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
     }
 
     public boolean supportedBy(DBCResultSet resultSet, IResultSetContext context) {
-        return appliesTo(resultSet, context) || matchesContentType(context);
+        return appliesTo(resultSet, context) || matchesContentType(context) || adaptsType(resultSet);
     }
 
     public IResultSetPresentation createInstance() throws DBException {
@@ -116,9 +126,32 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
         return implClass.matchesType(type);
     }
 
+    public <T> T getAdapter(DBCResultSet resultSet, Class<T> type) {
+        for (ObjectType ot : adaptsTypes) {
+            T adapter = DBUtils.getAdapter(type, resultSet.getSession().getDataSource());
+            if (adapter != null) {
+                return adapter;
+            }
+        }
+        return null;
+    }
+
+    private boolean adaptsType(DBCResultSet resultSet) {
+        for (ObjectType ot : adaptsTypes) {
+            Object adapter = DBUtils.getAdapter(ot.getObjectClass(), resultSet.getSession().getDataSource());
+            if (adapter != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean matchesContentType(IResultSetContext context) {
+        if (contentTypes.isEmpty()) {
+            return false;
+        }
         String documentType = context.getDocumentContentType();
-        if (contentTypes.isEmpty() || CommonUtils.isEmpty(documentType)) {
+        if (CommonUtils.isEmpty(documentType)) {
             return false;
         }
         for (MimeType mimeType : contentTypes) {

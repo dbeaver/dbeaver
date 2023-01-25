@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -111,15 +112,22 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
             }
         }
         try {
+            DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
             switch (actionId) {
                 case SQLEditorCommands.CMD_SQL_EDITOR_OPEN:
-                    openEditor(event);
+                    if (activeProject == null || activeProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW)) {
+                        openEditor(event);
+                    }
                     break;
                 case SQLEditorCommands.CMD_SQL_EDITOR_NEW:
-                    openNewEditor(event);
+                    if (activeProject == null || activeProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+                        openNewEditor(event);
+                    }
                     break;
                 case SQLEditorCommands.CMD_SQL_EDITOR_RECENT:
-                    openRecentEditor(event);
+                    if (activeProject == null || activeProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW)) {
+                        openRecentEditor(event);
+                    }
                     break;
             }
         } catch (InterruptedException e) {
@@ -246,8 +254,8 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
     }
 
     private static DBPDataSourceContainer getDataSourceContainers(IWorkbenchPart activePart) {
-        if (activePart instanceof IDataSourceContainerProvider) {
-            return ((IDataSourceContainerProvider) activePart).getDataSourceContainer();
+        if (activePart instanceof DBPDataSourceContainerProvider) {
+            return ((DBPDataSourceContainerProvider) activePart).getDataSourceContainer();
         }
         if (activePart instanceof DBPContextProvider) {
             DBCExecutionContext context = ((DBPContextProvider) activePart).getExecutionContext();
@@ -272,8 +280,12 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
                 openResourceEditor(workbenchWindow, res, editorContext);
             }
         } else {
-            IFile scriptFile = SQLEditorUtils.createNewScript(project, scriptFolder, editorContext);
-            openResource(scriptFile, editorContext);
+            if (project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+                IFile scriptFile = SQLEditorUtils.createNewScript(project, scriptFolder, editorContext);
+                openResource(scriptFile, editorContext);
+            } else {
+                openSQLConsole(workbenchWindow, editorContext, editorContext.getDataSourceContainer().getName(), "");
+            }
         }
     }
 

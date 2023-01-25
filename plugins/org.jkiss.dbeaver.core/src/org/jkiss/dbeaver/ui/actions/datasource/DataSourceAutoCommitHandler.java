@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,9 @@ import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
@@ -107,8 +107,8 @@ public class DataSourceAutoCommitHandler extends AbstractDataSourceHandler imple
                     log.warn(e);
                 }
             }
-        } else if (activeEditor instanceof IDataSourceContainerProvider) {
-            DBPDataSourceContainer container = ((IDataSourceContainerProvider) activeEditor).getDataSourceContainer();
+        } else if (activeEditor instanceof DBPDataSourceContainerProvider) {
+            DBPDataSourceContainer container = ((DBPDataSourceContainerProvider) activeEditor).getDataSourceContainer();
             if (container != null) {
                 autoCommit = container.isDefaultAutoCommit();
                 isolation = container.getActiveTransactionsIsolation();

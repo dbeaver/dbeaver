@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -58,6 +59,8 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
     private static final String PROP_SHOW_DISTINCT_VALUES_COUNT = "showDistinctValuesCount";
     private static final String PROP_QUERY_DATABASE = "queryDatabase";
     private static final String PROP_CASE_INSENSITIVE_SEARCH = "caseInsensitiveSearch";
+
+    private static final NumberFormat NUMBER_FORMAT = NumberFormat.getInstance();
 
     private Object value;
     private GenericFilterValueEdit filter;
@@ -93,11 +96,11 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
+    protected Composite createDialogArea(Composite parent)
     {
         DBSEntityReferrer descReferrer = ResultSetUtils.getEnumerableConstraint(filter.getAttribute());
 
-        Composite group = (Composite) super.createDialogArea(parent);
+        Composite group = super.createDialogArea(parent);
         {
             Composite labelComposite = UIUtils.createComposite(group, 2);
             labelComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -151,12 +154,26 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
         Table table = filter.getTableViewer().getTable();
 
         ViewerColumnController<?, ?> columnController = new ViewerColumnController<>("sqlFilterValueEditPopup", filter.getTableViewer());
-        columnController.addColumn(ResultSetMessages.dialog_filter_value_edit_table_value_label, ResultSetMessages.dialog_filter_value_edit_table_value_description, SWT.LEFT, true, true, new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                return filter.getAttribute().getValueHandler().getValueDisplayString(filter.getAttribute(), ((DBDLabelValuePair) element).getValue(), DBDDisplayFormat.UI);
-            }
-        });
+        columnController.addColumn(
+            ResultSetMessages.dialog_filter_value_edit_table_value_label,
+            ResultSetMessages.dialog_filter_value_edit_table_value_description,
+            SWT.LEFT,
+            true,
+            true,
+            filter.getAttribute().getDataKind() == DBPDataKind.NUMERIC,
+            null,
+            new ColumnLabelProvider() {
+                @Override
+                public String getText(Object element) {
+                    return filter.getAttribute().getValueHandler().getValueDisplayString(
+                        filter.getAttribute(),
+                        ((DBDLabelValuePair) element).getValue(),
+                        DBDDisplayFormat.UI
+                    );
+                }
+            },
+            null
+        );
         if (descReferrer != null) {
             columnController.addColumn(ResultSetMessages.dialog_filter_value_edit_table_description_label, ResultSetMessages.dialog_filter_value_edit_table_description_description, SWT.LEFT, true, true, new ColumnLabelProvider() {
                 @Override
@@ -167,12 +184,10 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
         }
         if (descReferrer == null) {
             columnController.addColumn(ResultSetMessages.dialog_filter_value_edit_table_count_label, ResultSetMessages.dialog_filter_value_edit_table_count_description, SWT.LEFT, true, true, true, null, new ColumnLabelProvider() {
-                private final NumberFormat numberFormat = NumberFormat.getInstance();
-
                 @Override
                 public String getText(Object element) {
                     if (element instanceof DBDLabelValuePairExt && isRowCountEnabled()) {
-                        return numberFormat.format(((DBDLabelValuePairExt) element).getCount());
+                        return NUMBER_FORMAT.format(((DBDLabelValuePairExt) element).getCount());
                     } else {
                         return null;
                     }
@@ -310,9 +325,16 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
                     if (count == null) {
                         table.getColumn(0).setText(ResultSetMessages.dialog_filter_value_edit_table_value_label);
                     } else if (count == table.getItemCount()) {
-                        table.getColumn(0).setText(NLS.bind(ResultSetMessages.dialog_filter_value_edit_table_value_total_label, count));
+                        table.getColumn(0).setText(NLS.bind(
+                            ResultSetMessages.dialog_filter_value_edit_table_value_total_label,
+                            NUMBER_FORMAT.format(count)
+                        ));
                     } else {
-                        table.getColumn(0).setText(NLS.bind(ResultSetMessages.dialog_filter_value_edit_table_value_total_shown_label, count, table.getItemCount()));
+                        table.getColumn(0).setText(NLS.bind(
+                            ResultSetMessages.dialog_filter_value_edit_table_value_total_shown_label,
+                            NUMBER_FORMAT.format(count),
+                            NUMBER_FORMAT.format(table.getItemCount())
+                        ));
                     }
 
                     UIUtils.packColumns(table, false);

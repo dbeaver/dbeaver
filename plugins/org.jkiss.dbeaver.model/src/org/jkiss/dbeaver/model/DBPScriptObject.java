@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +63,7 @@ public interface DBPScriptObject extends DBPObject {
     String OPTION_INCLUDE_NESTED_OBJECTS = "ddl.includeNestedObjects"; //$NON-NLS-1$
     String OPTION_INCLUDE_COMMENTS = "ddl.includeComments"; //$NON-NLS-1$
     String OPTION_INCLUDE_PERMISSIONS = "ddl.includePermissions"; //$NON-NLS-1$
+    String OPTION_INCLUDE_PARTITIONS = "ddl.includePartitions"; //$NON-NLS-1$
 
     String OPTION_USE_SPECIAL_NAME = "ddl.useSpecialName"; //$NON-NLS-1$
 

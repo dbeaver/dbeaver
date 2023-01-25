@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -41,6 +42,9 @@ public class GlobalPropertyTester extends PropertyTester {
     public static final String PROP_HAS_ACTIVE_PROJECT = "hasActiveProject";
     public static final String PROP_HAS_MULTI_PROJECTS = "hasMultipleProjects";
     public static final String PROP_CAN_CREATE_PROJECT = "canCreateProject";
+    public static final String PROP_CAN_EDIT_RESOURCE = "canEditResource";
+    public static final String PROP_CURRENT_PROJECT_RESOURCE_EDITABLE = "currentProjectResourceEditable";
+    public static final String PROP_CURRENT_PROJECT_RESOURCE_VIEWABLE = "currentProjectResourceViewable";
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
@@ -54,11 +58,11 @@ public class GlobalPropertyTester extends PropertyTester {
             case PROP_STANDALONE:
                 return DBWorkbench.getPlatform().getApplication().isStandalone();
             case PROP_DISTRIBUTED:
-                return DBWorkbench.getPlatform().getApplication().isDistributed();
+                return DBWorkbench.isDistributed();
             case PROP_BUNDLE_INSTALLED:
                 return Platform.getBundle((String)args[0]) != null;
             case PROP_CAN_CREATE_PROJECT:
-                return !DBWorkbench.getPlatform().getApplication().isDistributed();
+                return canManageProjects();
             case PROP_CAN_CREATE_CONNECTION:
             {
                 for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
@@ -68,8 +72,24 @@ public class GlobalPropertyTester extends PropertyTester {
                 }
                 return false;
             }
+            case PROP_CAN_EDIT_RESOURCE: {
+                DBPProject project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+                return project != null && project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
+            }
+            case PROP_CURRENT_PROJECT_RESOURCE_EDITABLE: {
+                DBPProject project = NavigatorUtils.getSelectedProject();
+                return project != null && project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
+            }
+            case PROP_CURRENT_PROJECT_RESOURCE_VIEWABLE: {
+                DBPProject project = NavigatorUtils.getSelectedProject();
+                return project != null && project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW);
+            }
         }
         return false;
+    }
+
+    public static boolean canManageProjects() {
+        return !DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PROJECT_ADMIN);
     }
 
     public static void firePropertyChange(String propName)

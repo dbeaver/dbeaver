@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,9 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
+import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.AsyncServerOutputReader;
+import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
@@ -49,11 +50,16 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -153,7 +159,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         getDefaultInstance().checkInstanceConnection(monitor, false);
         try {
             // Preload some settings, if available
-            settingCache.getObject(monitor, this, PostgreConstants.OPTION_STANDARD_CONFORMING_STRINGS);
+            settingCache.getAllObjects(monitor, this);
         } catch (DBException e) {
             // ignore
         }
@@ -255,9 +261,14 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return new PostgreDatabase(monitor, this, name, owner, templateName, tablespace, encoding);
     }
 
-        @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException
-    {
+    @Override
+    protected Map<String, String> getInternalConnectionProperties(
+        DBRProgressMonitor monitor,
+        DBPDriver driver,
+        JDBCExecutionContext context,
+        String purpose,
+        DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
         Map<String, String> props = new LinkedHashMap<>(PostgreDataSourceProvider.getConnectionsProps());
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler(PostgreConstants.HANDLER_SSL);
         if (sslConfig != null && sslConfig.isEnabled()) {
@@ -289,34 +300,53 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return props;
     }
 
-    private void initServerSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) {
+    private void initServerSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws DBException {
         props.put(PostgreConstants.PROP_SSL, "true");
 
-        final String rootCertProp;
-        final String clientCertProp;
-        final String keyCertProp;
+        if (!DBWorkbench.isDistributed()) {
+            // Local FS mode
+            final String rootCertProp;
+            final String clientCertProp;
+            final String keyCertProp;
 
-        if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
-            // Backward compatibility
-            rootCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_ROOT_CERT);
-            clientCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_CERT);
-            keyCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_KEY);
+            if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
+                // Backward compatibility
+                rootCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_ROOT_CERT);
+                clientCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_CERT);
+                keyCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_KEY);
+            } else {
+                rootCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT);
+                clientCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT);
+                keyCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
+            }
+
+            if (!CommonUtils.isEmpty(rootCertProp)) {
+                props.put("sslrootcert", rootCertProp);
+            }
+            if (!CommonUtils.isEmpty(clientCertProp)) {
+                props.put("sslcert", clientCertProp);
+            }
+            if (!CommonUtils.isEmpty(keyCertProp)) {
+                props.put("sslkey", keyCertProp);
+            }
         } else {
-            rootCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT);
-            clientCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT);
-            keyCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
-        }
+            try {
+                String rootCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT_VALUE);
+                if (!CommonUtils.isEmpty(rootCertProp)) {
+                    props.put("sslrootcert", saveCertificateToFile(rootCertProp));
+                }
+                String clientCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT_VALUE);
+                if (!CommonUtils.isEmpty(clientCertProp)) {
+                    props.put("sslcert", saveCertificateToFile(clientCertProp));
+                }
+                String keyCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY_VALUE);
+                if (!CommonUtils.isEmpty(keyCertProp)) {
+                    props.put("sslkey", saveCertificateToFile(keyCertProp));
+                }
+            } catch (IOException e) {
+                throw new DBException("Can not configure SSL", e);
+            }
 
-        if (!CommonUtils.isEmpty(rootCertProp)) {
-            props.put("sslrootcert", rootCertProp);
-        }
-
-        if (!CommonUtils.isEmpty(clientCertProp)) {
-            props.put("sslcert", clientCertProp);
-        }
-
-        if (!CommonUtils.isEmpty(keyCertProp)) {
-            props.put("sslkey", keyCertProp);
         }
 
         final String modeProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_MODE);
@@ -448,29 +478,63 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         if (instance != null) {
             log.debug("Initiate connection to " + getServerType().getServerTypeName() + " database [" + instance.getName() + "@" + conConfig.getHostName() + "] for " + purpose);
         }
-        if (instance instanceof PostgreDatabase &&
-            instance.getName() != null &&
-            !CommonUtils.equalObjects(instance.getName(), conConfig.getDatabaseName()))
-        {
-            // If database was changed then use new name for connection
-            final DBPConnectionConfiguration originalConfig = new DBPConnectionConfiguration(conConfig);
-            try {
-                // Patch URL with new database name
-                if (CommonUtils.isEmpty(conConfig.getUrl()) || !CommonUtils.isEmpty(conConfig.getHostName())) {
-                    conConfig.setDatabaseName(instance.getName());
-                    conConfig.setUrl(getContainer().getDriver().getConnectionURL(conConfig));
-                } //else {
-                    //String url = conConfig.getUrl();
-                //}
+        try {
+            if (instance instanceof PostgreDatabase && !CommonUtils.equalObjects(instance.getName(), conConfig.getDatabaseName())) {
+                // If database was changed then use new name for connection
+                final DBPConnectionConfiguration originalConfig = new DBPConnectionConfiguration(conConfig);
+                try {
+                    // Patch URL with new database name
+                    if (CommonUtils.isEmpty(conConfig.getUrl()) || !CommonUtils.isEmpty(conConfig.getHostName())) {
+                        conConfig.setDatabaseName(instance.getName());
+                        final DBPDriver driver = getContainer().getDriver();
+                        String newURL = JDBCURL.generateUrlByTemplate(driver, conConfig);
+                        if (CommonUtils.isEmpty(newURL)) {
+                            newURL = driver.getDataSourceProvider().getConnectionURL(driver, conConfig);
+                        }
+                        conConfig.setUrl(newURL);
+                    }
 
+                    pgConnection = super.openConnection(monitor, context, purpose);
+                }
+                finally {
+                    conConfig.setDatabaseName(originalConfig.getDatabaseName());
+                    conConfig.setUrl(originalConfig.getUrl());
+                }
+            } else {
                 pgConnection = super.openConnection(monitor, context, purpose);
             }
-            finally {
-                conConfig.setDatabaseName(originalConfig.getDatabaseName());
-                conConfig.setUrl(originalConfig.getUrl());
+        } catch (DBCException e) {
+            final Throwable cause = GeneralUtils.getRootCause(e);
+            final StackTraceElement element = cause.getStackTrace()[0];
+
+            if ("sun.security.util.DerValue".equals(element.getClassName())) { //$NON-NLS-1$
+                final DBWHandlerConfiguration handler = Objects.requireNonNull(conConfig.getHandler(PostgreConstants.HANDLER_SSL));
+                final String key = handler.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
+                final Path dst;
+
+                try {
+                    dst = DBWorkbench.getPlatform().getTempFolder(monitor, "ssl").resolve(container.getId() + ".pk8");
+                } catch (IOException ex) {
+                    log.error("Error creating temporary SSL key", ex);
+                    throw e;
+                }
+
+                try (Reader reader = Files.newBufferedReader(Path.of(key))) {
+                    Files.write(dst, DefaultCertificateStorage.loadDerFromPem(reader));
+                    handler.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, dst.toAbsolutePath().toString());
+                } catch (IOException ex) {
+                    log.error("Error converting SSL key", ex);
+                    throw e;
+                }
+
+                // Unfortunately, we can't delete the temp file here.
+                // The chain is built asynchronously by the driver, and we don't know at which moment in time it will happen.
+                // It will still be deleted during shutdown.
+
+                return openConnection(monitor, context, purpose);
             }
-        } else {
-            pgConnection = super.openConnection(monitor, context, purpose);
+
+            throw e;
         }
 
         if (getServerType().supportsClientInfo() && !getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
@@ -492,7 +556,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new PostgreStructureAssistant(this));
         } else if (adapter == DBCServerOutputReader.class) {
-            return adapter.cast(new AsyncServerOutputReader());
+            return adapter.cast(new PostgreServerOutputReader());
         } else if (adapter == DBAServerSessionManager.class) {
             return adapter.cast(new PostgreSessionManager(this));
         } else if (adapter == DBCQueryPlanner.class) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.ext.oracle.internal.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.plan.OracleQueryPlanner;
 import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSessionManager;
@@ -34,6 +35,8 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
+import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
+import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -53,7 +56,6 @@ import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
-import java.io.PrintWriter;
 import java.sql.*;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -300,11 +302,27 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                 setNLSParameter(session, connectionInfo, "NLS_TIMESTAMP_FORMAT", OracleConstants.PROP_SESSION_NLS_TIMESTAMP_FORMAT);
                 setNLSParameter(session, connectionInfo, "NLS_LENGTH_SEMANTICS", OracleConstants.PROP_SESSION_NLS_LENGTH_FORMAT);
                 setNLSParameter(session, connectionInfo, "NLS_CURRENCY", OracleConstants.PROP_SESSION_NLS_CURRENCY_FORMAT);
+                
+                SeparateConnectionBehavior behavior = SeparateConnectionBehavior.parse(
+                    getContainer().getPreferenceStore().getString(ModelPreferences.META_SEPARATE_CONNECTION)
+                );
+                boolean isMetaConnectionSeparate;
+                switch (behavior) {
+                    case ALWAYS:
+                        isMetaConnectionSeparate = true;
+                        break;
+                    case NEVER:
+                        isMetaConnectionSeparate = false;
+                        break;
+                    case DEFAULT:
+                    default:
+                        isMetaConnectionSeparate = !container.isForceUseSingleConnection();
+                        break;
+                }
 
-                boolean isMetadataContext = (
-                    getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_SEPARATE_CONNECTION) &&
-                    !getContainer().isForceUseSingleConnection()
-                ) ? JDBCExecutionContext.TYPE_METADATA.equals(context.getContextName()) : JDBCExecutionContext.TYPE_MAIN.equals(context.getContextName());
+                boolean isMetadataContext = isMetaConnectionSeparate
+                    ? JDBCExecutionContext.TYPE_METADATA.equals(context.getContextName())
+                    : JDBCExecutionContext.TYPE_MAIN.equals(context.getContextName());
 
                 if (isMetadataContext) {
                     if (CommonUtils.getBoolean(
@@ -855,7 +873,13 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         }
 
         @Override
-        public void readServerOutput(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @Nullable DBCExecutionResult executionResult, @Nullable DBCStatement statement, @NotNull PrintWriter output) throws DBCException {
+        public void readServerOutput(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext context,
+            @Nullable DBCExecutionResult executionResult,
+            @Nullable DBCStatement statement,
+            @NotNull DBCOutputWriter output
+        ) throws DBCException {
             try (JDBCSession session = (JDBCSession) context.openSession(monitor, DBCExecutionPurpose.UTIL, "Read DBMS output")) {
                 try (CallableStatement getLineProc = session.getOriginal().prepareCall("{CALL DBMS_OUTPUT.GET_LINE(?, ?)}")) {
                     getLineProc.registerOutParameter(1, java.sql.Types.VARCHAR);
@@ -865,11 +889,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                         getLineProc.execute();
                         status = getLineProc.getInt(2);
                         if (status == 0) {
-                            String str = getLineProc.getString(1);
-                            if (str != null) {
-                                output.write(str);
-                            }
-                            output.write('\n');
+                            output.println(null, getLineProc.getString(1));
                         }
                     }
                 } catch (SQLException e) {

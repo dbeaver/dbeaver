@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,15 +22,19 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.actions.ObjectPropertyTester;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.project.PrefPageProjectResourceSettings;
@@ -53,6 +57,11 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.projectExplorer";
     private ViewerColumnController columnController;
     private final NumberFormat sizeFormat = new DecimalFormat();
+    
+    private Composite treeContainer;
+    private Label lockPlaceholder;
+    private GridData lockPlaceholderLayoutInfo;
+    private GridData treeViewLayoutInfo;
 
     public ProjectExplorerView() {
         DBPPlatformDesktop.getInstance().getWorkspace().addProjectListener(this);
@@ -66,11 +75,12 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
 
     @Override
     public void createPartControl(Composite parent) {
-        super.createPartControl(parent);
+        treeContainer = UIUtils.createComposite(parent, 1);
+        super.createPartControl(treeContainer);
 
         UIUtils.setHelp(parent, IHelpContextIds.CTX_PROJECT_EXPLORER);
-
-        final TreeViewer viewer = getNavigatorViewer();
+        
+        TreeViewer viewer = getNavigatorViewer();
         viewer.addFilter(new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
@@ -94,6 +104,16 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
                 return true;
             }
         });
+        
+        lockPlaceholder = UIUtils.createLabel(treeContainer, UIIcon.READONLY_RESOURCES);
+        lockPlaceholder.setAlignment(SWT.CENTER);
+        lockPlaceholder.setVisible(false);
+        lockPlaceholderLayoutInfo = new GridData(SWT.CENTER, SWT.CENTER, true, true);
+        lockPlaceholderLayoutInfo.exclude = true;
+        lockPlaceholder.setLayoutData(lockPlaceholderLayoutInfo);
+        treeViewLayoutInfo = new GridData(SWT.FILL, SWT.FILL, true, true);
+        getNavigatorTree().setLayoutData(treeViewLayoutInfo);
+        updateRepresentation();
     }
 
     private void createColumns(final TreeViewer viewer) {
@@ -284,9 +304,19 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
 
     @Override
     public void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue) {
+        updateRepresentation();
+    }
+    
+    private void updateRepresentation() {
         UIExecutionQueue.queueExec(() -> {
             getNavigatorTree().reloadTree(getRootNode());
             updateTitle();
+            boolean viewable = ObjectPropertyTester.nodeProjectHasPermission(getRootNode(), RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW);
+            getNavigatorTree().setVisible(viewable);
+            treeViewLayoutInfo.exclude = !viewable;
+            lockPlaceholder.setVisible(!viewable);
+            lockPlaceholderLayoutInfo.exclude = viewable;
+            treeContainer.layout(true, true);
         });
         //columnController.autoSizeColumns();
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2019 Dmitriy Dubson (ddubson@pivotal.io)
  * Copyright (C) 2019 Gavin Shaw (gshaw@pivotal.io)
  * Copyright (C) 2019 Zach Marcin (zmarcin@pivotal.io)
@@ -78,10 +78,12 @@ public class GreenplumSchema extends PostgreSchema {
                                                     @NotNull PostgreTableContainer container,
                                                     @Nullable PostgreTableBase object,
                                                     @Nullable String objectName) throws SQLException {
+            GreenplumDataSource dataSource = getDataSource();
             String uriLocationColumn =
-                getDataSource().isGreenplumVersionAtLeast(session.getProgressMonitor(), 5, 0) ? "urilocation" : "location";
+                dataSource.isGreenplumVersionAtLeast(session.getProgressMonitor(), 5, 0) ? "urilocation" : "location";
             String execLocationColumn =
-                getDataSource().isGreenplumVersionAtLeast(session.getProgressMonitor(), 5, 0) ? "execlocation" : "location";
+                dataSource.isGreenplumVersionAtLeast(session.getProgressMonitor(), 5, 0) ? "execlocation" : "location";
+            boolean serverSupportFmterrtblColumn = dataSource.isServerSupportFmterrtblColumn(session);
             StringBuilder sqlQuery = new StringBuilder("SELECT c.oid,d.description,p.partitiontablename,c.*,\n" +
                     "CASE WHEN x." + uriLocationColumn + " IS NOT NULL THEN array_to_string(x." + uriLocationColumn + ", ',') ELSE '' END AS urilocation,\n" +
                     "CASE WHEN x.command IS NOT NULL THEN x.command ELSE '' END AS command,\n" +
@@ -91,9 +93,8 @@ public class GreenplumSchema extends PostgreSchema {
                     "array_to_string(x." + execLocationColumn + ", ',') AS execlocation,\n" +
                     "pg_encoding_to_char(x.encoding) AS encoding,\n" +
                     "x.writable,\n")
-                    .append(container.getDataSource().isServerVersionAtLeast(9,4) ?
-                            "" :
-                            "case when x.fmterrtbl is not NULL then true else false end as \"is_logging_errors\",\n")
+                    .append(serverSupportFmterrtblColumn ?
+                            "case when x.fmterrtbl is not NULL then true else false end as \"is_logging_errors\",\n" : "")
                     .append(
                             "case when c.relstorage = 'x' then true else false end as \"is_ext_table\",\n" +
                                     "case when (ns.nspname !~ '^pg_toast' and ns.nspname like 'pg_temp%') then true else false end as \"is_temp_table\"\n" +

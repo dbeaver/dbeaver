@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,4 +39,8 @@ public class OracleMessages extends NLS {
     public static String edit_oracle_dependencies_dependent_description;
     public static String oracle_password_will_expire_warn_name;
     public static String oracle_password_will_expire_warn_description;
+    public static String oracle_server_session_manager_details_name;
+    public static String oracle_server_session_manager_details_description;
+    public static String oracle_server_session_manager_display_exec_plan_name;
+    public static String oracle_server_session_manager_display_exec_plan_description;
 }

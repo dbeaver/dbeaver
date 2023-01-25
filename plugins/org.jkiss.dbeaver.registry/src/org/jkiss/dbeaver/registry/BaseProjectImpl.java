@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,11 +37,12 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.impl.app.DefaultValueEncryptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -172,6 +173,11 @@ public abstract class BaseProjectImpl implements DBPProject {
         return false;
     }
 
+    @Override
+    public boolean isPrivateProject() {
+        return true;
+    }
+
     @NotNull
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {
@@ -205,12 +211,6 @@ public abstract class BaseProjectImpl implements DBPProject {
 
     ////////////////////////////////////////////////////////
     // Secure storage
-
-    @NotNull
-    @Override
-    public DBSSecretController getSecretController() {
-        return DBSSecretController.getSessionSecretController(getWorkspaceSession());
-    }
 
     @Override
     public SecretKey getLocalSecretKey() {
@@ -324,6 +324,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     @Override
     public Object getResourceProperty(@NotNull String resourcePath, @NotNull String propName) {
         loadMetadata();
+        resourcePath = normalizeResourcePath(resourcePath);
         synchronized (metadataSync) {
             Map<String, Object> resProps = resourceProperties.get(resourcePath);
             if (resProps != null) {
@@ -335,13 +336,9 @@ public abstract class BaseProjectImpl implements DBPProject {
 
     @Nullable
     @Override
-    public Object getResourceProperty(@NotNull IResource resource, @NotNull String propName) {
-        return getResourceProperty(getResourcePath(resource), propName);
-    }
-
-    @Nullable
     public Map<String, Object> getResourceProperties(@NotNull String resourcePath) {
         loadMetadata();
+        resourcePath = normalizeResourcePath(resourcePath);
         synchronized (metadataSync) {
             return resourceProperties.get(resourcePath);
         }
@@ -350,6 +347,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     @Override
     public void setResourceProperty(@NotNull String resourcePath, @NotNull String propName, @Nullable Object propValue) {
         loadMetadata();
+        resourcePath = normalizeResourcePath(resourcePath);
         synchronized (metadataSync) {
             Map<String, Object> resProps = resourceProperties.get(resourcePath);
             if (resProps == null) {
@@ -381,12 +379,43 @@ public abstract class BaseProjectImpl implements DBPProject {
     }
 
     @Override
+    public void moveResourceProperties(@NotNull String oldResourcePath, @NotNull String newResourcePath) {
+        loadMetadata();
+        oldResourcePath = normalizeResourcePath(oldResourcePath);
+        newResourcePath = normalizeResourcePath(newResourcePath);
+        synchronized (metadataSync) {
+            Map<String, Object> resProps = resourceProperties.remove(oldResourcePath);
+            if (resProps != null) {
+                resourceProperties.put(newResourcePath, resProps);
+            }
+        }
+        flushMetadata(false); // wait for the file to be written
+    }
+
+    @Override
+    public final void moveResourcePropertiesBatch(@NotNull Collection<Pair<String, String>> oldToNewPaths) {
+        loadMetadata();
+        synchronized (metadataSync) {
+            for (var pathsPair : oldToNewPaths) {
+                final var oldResourcePath = normalizeResourcePath(pathsPair.getFirst());
+                final var newResourcePath = normalizeResourcePath(pathsPair.getSecond());
+                final var resProps = resourceProperties.remove(oldResourcePath);
+                if (resProps != null) {
+                    resourceProperties.put(newResourcePath, resProps);
+                }
+            }
+        }
+        flushMetadata(false); // wait for the file to be written
+    }
+
+    @Override
     public void refreshProject(DBRProgressMonitor monitor) {
 
     }
 
     public boolean resetResourceProperties(@NotNull String resourcePath) {
         loadMetadata();
+        resourcePath = normalizeResourcePath(resourcePath);
         boolean hadProperties;
         synchronized (metadataSync) {
             hadProperties = resourceProperties.remove(resourcePath) != null;
@@ -395,6 +424,15 @@ public abstract class BaseProjectImpl implements DBPProject {
             flushMetadata();
         }
         return hadProperties;
+    }
+
+    @NotNull
+    private static String normalizeResourcePath(@NotNull String resourcePath) {
+        while (resourcePath.startsWith("/")) {
+            resourcePath = resourcePath.substring(1);
+        }
+        resourcePath = resourcePath.replace('\\', '/');
+        return resourcePath;
     }
 
     @Override
@@ -411,7 +449,8 @@ public abstract class BaseProjectImpl implements DBPProject {
         boolean cacheChanged = false;
         synchronized (metadataSync) {
             if (resourceProperties != null) {
-                cacheChanged = (resourceProperties.remove(path.toString()) != null);
+                String resPath = normalizeResourcePath(path.toString());
+                cacheChanged = (resourceProperties.remove(resPath) != null);
             }
         }
         if (cacheChanged) {
@@ -419,13 +458,15 @@ public abstract class BaseProjectImpl implements DBPProject {
         }
     }
 
-    void updateResourceCache(IPath oldPath, IPath newPath) {
+    void moveResourceCache(IPath oldPath, IPath newPath) {
         boolean cacheChanged = false;
         synchronized (metadataSync) {
             if (resourceProperties != null) {
-                Map<String, Object> props = resourceProperties.remove(oldPath.toString());
+                String oldResPath = normalizeResourcePath(oldPath.toString());
+                Map<String, Object> props = resourceProperties.remove(oldResPath);
                 if (props != null) {
-                    resourceProperties.put(newPath.toString(), props);
+                    String newResPath = normalizeResourcePath(newPath.toString());
+                    resourceProperties.put(newResPath, props);
                     cacheChanged = true;
                 }
             }
@@ -524,7 +565,7 @@ public abstract class BaseProjectImpl implements DBPProject {
                         resourceProperties = mdCache;
                     }
                 } catch (Throwable e) {
-                    log.error("Error reading project '" + getName() + "' metadata from "  + mdFile.toAbsolutePath(), e);
+                    log.error("Error reading project '" + getName() + "' metadata from " + mdFile.toAbsolutePath(), e);
                 }
             }
             if (resourceProperties == null) {
@@ -534,6 +575,10 @@ public abstract class BaseProjectImpl implements DBPProject {
     }
 
     protected void flushMetadata() {
+        flushMetadata(true);
+    }
+
+    protected void flushMetadata(boolean async) {
         if (inMemory) {
             return;
         }
@@ -541,7 +586,11 @@ public abstract class BaseProjectImpl implements DBPProject {
             if (metadataSyncJob == null) {
                 metadataSyncJob = new ProjectSyncJob();
             }
-            metadataSyncJob.schedule(100);
+            if (async) {
+                metadataSyncJob.schedule(100);
+            } else {
+                metadataSyncJob.run(new VoidProgressMonitor());
+            }
         }
     }
 

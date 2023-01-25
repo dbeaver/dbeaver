@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@
 
 package org.jkiss.utils;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.nio.Buffer;
@@ -24,6 +27,13 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Comparator;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Some IO helper functions
@@ -276,4 +286,102 @@ public final class IOUtils {
         return result.toString();
     }
 
+    static void copyZipStream(InputStream inputStream, OutputStream outputStream)
+        throws IOException
+    {
+        byte[] writeBuffer = new byte[IOUtils.DEFAULT_BUFFER_SIZE];
+        for (int br = inputStream.read(writeBuffer); br != -1; br = inputStream.read(writeBuffer)) {
+            outputStream.write(writeBuffer, 0, br);
+        }
+        outputStream.flush();
+    }
+
+    public static void extractZipArchive(InputStream stream, Path targetFolder) throws IOException {
+        try (ZipInputStream zipStream = new ZipInputStream(stream)) {
+            for (; ; ) {
+                ZipEntry zipEntry = zipStream.getNextEntry();
+                if (zipEntry == null) {
+                    break;
+                }
+                try {
+                    if (!zipEntry.isDirectory()) {
+                        String zipEntryName = zipEntry.getName();
+                        checkAndExtractEntry(zipStream, zipEntry, targetFolder);
+                    }
+                } finally {
+                    zipStream.closeEntry();
+                }
+            }
+        }
+    }
+
+    private static void checkAndExtractEntry(InputStream zipStream, ZipEntry zipEntry, Path targetFolder) throws IOException {
+        if (!Files.exists(targetFolder)) {
+            try {
+                Files.createDirectories(targetFolder);
+            } catch (IOException e) {
+                throw new IOException("Can't create local cache folder '" + targetFolder.toAbsolutePath() + "'", e);
+            }
+        }
+        Path localFile = targetFolder.resolve(zipEntry.getName());
+        if (!localFile.normalize().startsWith(targetFolder.normalize())) {
+            throw new IOException("Zip entry is outside of the target directory");
+        }
+        if (Files.exists(localFile)) {
+            // Already extracted?
+            return;
+        }
+        Path localDir = localFile.getParent();
+        if (!Files.exists(localDir)) { // in case of localFile located in subdirectory inside zip archive
+            try {
+                Files.createDirectories(localDir);
+            } catch (IOException e) {
+                throw new IOException("Can't create local file directory in the cache '" + localDir.toAbsolutePath() + "'", e);
+            }
+        }
+        try (OutputStream os = Files.newOutputStream(localFile)) {
+            copyZipStream(zipStream, os);
+        }
+    }
+
+    public static void deleteDirectory(@NotNull Path path) throws IOException {
+        Files.walk(path)
+            .sorted(Comparator.reverseOrder())
+            .map(Path::toFile)
+            .forEach(File::delete);
+    }
+
+    @Nullable
+    public static String getDirectoryPath(@NotNull String sPath) throws InvalidPathException {
+        final Path path = Paths.get(sPath);
+        if (Files.isDirectory(path)) {
+            return path.toString();
+        } else {
+            final Path parent = path.getParent();
+            if (parent != null) {
+                return parent.toString();
+            }
+        }
+        return null;
+    }
+
+    @NotNull
+    public static String getFileNameWithoutExtension(Path file) {
+        String fileName = file.getFileName().toString();
+        int divPos = fileName.lastIndexOf('.');
+        if (divPos != -1) {
+            return fileName.substring(0, divPos);
+        }
+        return fileName;
+    }
+
+    @Nullable
+    public static String getFileExtension(Path file) {
+        String fileName = file.getFileName().toString();
+        int divPos = fileName.lastIndexOf('.');
+        if (divPos != -1) {
+            return fileName.substring(divPos + 1);
+        }
+        return null;
+    }
 }

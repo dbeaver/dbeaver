@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ConfigurationFileSelector;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator;
 import org.jkiss.utils.CommonUtils;
@@ -45,7 +46,7 @@ public class BigQueryAuthConfigurator extends DatabaseNativeAuthModelConfigurato
         authTypeCombo.select(0);
 
         UIUtils.createControlLabel(authPanel, BigQueryMessages.label_key_path);
-        authCertFile = new TextWithOpenFile(authPanel, BigQueryMessages.label_private_key_path, new String[]{"*", "*.p12", "*.json"}); //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        authCertFile = new ConfigurationFileSelector(authPanel, BigQueryMessages.label_private_key_path, new String[]{"*", "*.p12", "*.json"});
         authCertFile.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING));
     }
 

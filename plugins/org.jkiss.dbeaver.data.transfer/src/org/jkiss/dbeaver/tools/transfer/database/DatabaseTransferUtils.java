@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,7 +107,7 @@ public class DatabaseTransferUtils {
             if (updateMappingAttributes || force) {
                 for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
                     if (attr.getMappingType() == DatabaseMappingType.create || (attr.getMappingType().isValid() && force)) {
-                        attr.updateMappingType(monitor, false);
+                        attr.updateMappingType(monitor, false, false);
                         if (attr.getTarget() == null) {
                             log.debug("Can't find target attribute '" + attr.getTargetName() + "' in '" + containerMapping.getTargetName() + "'");
                         }

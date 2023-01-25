@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -60,6 +61,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
+import org.jkiss.dbeaver.ui.ISmartTransactionManager;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
@@ -129,7 +131,8 @@ public class SQLQueryJob extends DataSourceJob
         @NotNull List<SQLScriptElement> queries,
         @NotNull SQLScriptContext scriptContext,
         @Nullable SQLResultsConsumer resultsConsumer,
-        @Nullable SQLQueryListener listener)
+        @Nullable SQLQueryListener listener,
+        boolean isDisableFetchResultSet)
     {
         super(name, executionContext);
         this.dataContainer = dataContainer;
@@ -144,7 +147,9 @@ public class SQLQueryJob extends DataSourceJob
             DBPPreferenceStore preferenceStore = getDataSourceContainer().getPreferenceStore();
             this.commitType = SQLScriptCommitType.valueOf(preferenceStore.getString(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE));
             this.errorHandling = SQLScriptErrorHandling.valueOf(preferenceStore.getString(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING));
-            this.fetchResultSets = queries.size() == 1 || preferenceStore.getBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS);
+            this.fetchResultSets = queries.size() == 1 || (
+                preferenceStore.getBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS) && !isDisableFetchResultSet
+            );
             this.rsMaxRows = preferenceStore.getInt(ModelPreferences.RESULT_SET_MAX_ROWS);
         }
     }
@@ -582,13 +587,31 @@ public class SQLQueryJob extends DataSourceJob
             curResult.setHasResultSet(hasResultSet);
 
             long updateCount = -1;
+            // Some databases (especially NoSQL) may produce a lot of
+            // result sets, we should warn user because it may lead to UI freeze
+            int resultSetCounter = 0;
+            boolean confirmed = false;
             while (true) {
                 // Fetch data only if we have to fetch all results or if it is rs requested
                 if (fetchResultSetNumber < 0 || fetchResultSetNumber == resultSetNumber) {
+                    if (hasResultSet && !confirmed && resultSetCounter >= getDataSourceContainer().getPreferenceStore()
+                        .getInt(SQLPreferenceConstants.RESULT_SET_MAX_TABS_PER_QUERY)) {
+                        hasResultSet = DBWorkbench.getPlatformUI().confirmAction(
+                            SQLEditorMessages.editors_sql_warning_many_subtables_title,
+                            NLS.bind(
+                                SQLEditorMessages.editors_sql_warning_many_subtables_text,
+                                getDataSourceContainer().getPreferenceStore()
+                                    .getInt(SQLPreferenceConstants.RESULT_SET_MAX_TABS_PER_QUERY)
+                            ),
+                            true
+                        );
+                        confirmed = hasResultSet;
+                    }
                     if (hasResultSet && fetchResultSets) {
                         DBCResultSet resultSet;
                         try {
                             resultSet = dbcStatement.openResultSet();
+                            resultSetCounter++;
                         } catch (DBCException e) {
                             DBPErrorAssistant.ErrorType errorType = DBExecUtils.discoverErrorType(session.getDataSource(), e);
                             if (errorType == DBPErrorAssistant.ErrorType.RESULT_SET_MISSING) {
@@ -713,6 +736,7 @@ public class SQLQueryJob extends DataSourceJob
             fakeResultSet.addColumn("Execute time (ms)", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Fetch time (ms)", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Total time (ms)", DBPDataKind.NUMERIC);
+            fakeResultSet.addColumn("Start time", DBPDataKind.DATETIME);
             fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
             fakeResultSet.addRow(
                 statistics.getStatementsCount(),
@@ -720,6 +744,7 @@ public class SQLQueryJob extends DataSourceJob
                 statistics.getExecuteTime(),
                 statistics.getFetchTime(),
                 statistics.getTotalTime(),
+                new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date(statistics.getStartTime())),
                 new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date()));
             executeResult.setResultSetName(SQLEditorMessages.editors_sql_statistics);
         } else {
@@ -727,8 +752,9 @@ public class SQLQueryJob extends DataSourceJob
             long updateCount = statistics.getRowsUpdated();
             fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Query", DBPDataKind.STRING);
+            fakeResultSet.addColumn("Start time", DBPDataKind.DATETIME);
             fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
-            fakeResultSet.addRow(updateCount, query.getText(), new Date());
+            fakeResultSet.addRow(updateCount, query.getText(), new Date(statistics.getStartTime()), new Date());
 
             executeResult.setResultSetName(SQLEditorMessages.editors_sql_data_grid);
         }

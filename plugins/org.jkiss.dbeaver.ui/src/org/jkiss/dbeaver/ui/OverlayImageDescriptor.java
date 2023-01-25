@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,21 +19,21 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.jface.resource.CompositeImageDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Point;
+import org.jkiss.code.NotNull;
 
 /**
  * An OverlayIcon consists of a main icon and several adornments.
  */
 public class OverlayImageDescriptor extends CompositeImageDescriptor {
 
-	private Point imageSize = null;
+    private final ImageDescriptor baseImage;
+    private CachedImageDataProvider baseImageDataProvider = null;
+    private Point baseImageSize = null;
+    private ImageDescriptor[] topLeft, topRight, bottomLeft, bottomRight;
 
-    private CachedImageDataProvider baseImageData;
-	private ImageDescriptor[] topLeft, topRight, bottomLeft, bottomRight;
-
-    public OverlayImageDescriptor(ImageDescriptor baseImage) {
-        this.baseImageData = createCachedImageDataProvider(baseImage);
-        this.imageSize = new Point(baseImageData.getWidth(), baseImageData.getHeight());
-	}
+    public OverlayImageDescriptor(@NotNull ImageDescriptor baseImage) {
+        this.baseImage = baseImage;
+    }
 
     public void setTopLeft(ImageDescriptor[] topLeft)
     {
@@ -55,10 +55,18 @@ public class OverlayImageDescriptor extends CompositeImageDescriptor {
         this.bottomRight = bottomRight;
     }
 
+    @NotNull
+    private CachedImageDataProvider getBaseImageData() {
+        if (baseImageDataProvider == null) {
+            baseImageDataProvider = createCachedImageDataProvider(baseImage); 
+        }
+        return baseImageDataProvider;
+    }
+
 	@Override
     protected void drawCompositeImage(int width, int height) {
-        CachedImageDataProvider base = baseImageData;
-		drawImage(base, 0, 0);
+        drawImage(getBaseImageData(), 0, 0);
+        
         if (topRight != null)
             drawTopRight(topRight);
 
@@ -70,12 +78,17 @@ public class OverlayImageDescriptor extends CompositeImageDescriptor {
 
         if (topLeft != null)
             drawTopLeft(topLeft);
-	}
+    }
 
-	@Override
+    @NotNull
+    @Override
     protected Point getSize() {
-		return imageSize;
-	}
+        if (baseImageSize == null) {
+            CachedImageDataProvider idp = getBaseImageData();
+            baseImageSize = new Point(idp.getWidth(), idp.getHeight());
+        }
+        return baseImageSize;
+    }
 
     private void drawTopLeft(ImageDescriptor[] overlays) {
         if (overlays == null)

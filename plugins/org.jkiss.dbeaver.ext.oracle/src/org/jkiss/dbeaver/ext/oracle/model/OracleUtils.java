@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ public class OracleUtils {
 */
         final OracleDataSource dataSource = object.getDataSource();
 
-        monitor.beginTask("Load sources for " + objectType + " '" + objectFullName + "'...", 1);
+        monitor.subTask("Load sources for " + objectType + " '" + objectFullName + "'...");
         try (final JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load source code for " + objectType + " '" + objectFullName + "'")) {
             
             if (CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS)) {
@@ -148,7 +148,7 @@ public class OracleUtils {
 
             if (!CommonUtils.isEmpty(object.getConstraints(monitor)) && 
                 !CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS) &&
-                CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, true)) {
+                CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS)) {
                 ddl += invokeDBMSMetadataGetDependentDDL(session, schema, object, DBMSMetaDependentObjectType.REF_CONSTRAINT);
             }
 
@@ -173,8 +173,6 @@ public class OracleUtils {
             } else {
                 throw new DBException(e, dataSource);
             }
-        } finally {
-            monitor.done();
         }
     }
 

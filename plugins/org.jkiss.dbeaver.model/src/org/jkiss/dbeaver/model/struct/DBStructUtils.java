@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,13 @@ import java.util.*;
 public final class DBStructUtils {
 
     private static final Log log = Log.getLog(DBStructUtils.class);
+
+    private static final String INT_DATA_TYPE = "int";
+    private static final String INTEGER_DATA_TYPE = "integer";
+    private static final String FLOAT_DATA_TYPE = "float";
+    private static final String REAL_DATA_TYPE = "real";
+    private static final String DOUBLE_DATA_TYPE = "double";
+    private static final String TEXT_DATA_TYPE = "text";
 
     @Nullable
     public static DBSEntityReferrer getEnumerableConstraint(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attribute) throws DBException {
@@ -281,7 +288,9 @@ public final class DBStructUtils {
                 srcTypedObject instanceof DBSObject &&  objectContainer.getDataSource() == ((DBSObject) srcTypedObject).getDataSource()))) {
             // If source and target datasources have the same type then just return the same type name
             DBPDataSource srcDataSource = ((DBSObject) srcTypedObject).getDataSource();
+            assert srcDataSource != null;
             DBPDataSource tgtDataSource = objectContainer.getDataSource();
+            assert tgtDataSource != null;
             if (srcDataSource.getClass() == tgtDataSource.getClass() && addModifiers) {
                 return srcTypedObject.getFullTypeName();
             }
@@ -290,8 +299,9 @@ public final class DBStructUtils {
         {
             SQLDataTypeConverter dataTypeConverter = objectContainer == null ? null :
                 DBUtils.getAdapter(SQLDataTypeConverter.class, objectContainer.getDataSource().getSQLDialect());
-            if (dataTypeConverter != null) {
+            if (dataTypeConverter != null && srcTypedObject instanceof DBSObject) {
                 DBPDataSource srcDataSource = ((DBSObject) srcTypedObject).getDataSource();
+                assert srcDataSource != null;
                 DBPDataSource tgtDataSource = objectContainer.getDataSource();
                 String targetTypeName = dataTypeConverter.convertExternalDataType(
                     srcDataSource.getSQLDialect(),
@@ -314,7 +324,7 @@ public final class DBStructUtils {
                 // It seems this data type has modifiers. Try to find without modifiers
                 dataType = dataTypeProvider.getLocalDataType(SQLUtils.stripColumnTypeModifiers(typeName));
             }
-            if (dataType == null && typeNameLower.equals("double")) {
+            if (dataType == null && typeNameLower.equals(DOUBLE_DATA_TYPE)) {
                 dataType = dataTypeProvider.getLocalDataType("DOUBLE PRECISION");
                 if (dataType != null) {
                     typeName = dataType.getTypeName();
@@ -348,28 +358,36 @@ public final class DBStructUtils {
                             }
                         }
                         if (targetType == null) {
-                            if (typeNameLower.contains("float") ||
-                                typeNameLower.contains("real") ||
+                            if (typeNameLower.contains(FLOAT_DATA_TYPE) ||
+                                typeNameLower.contains(REAL_DATA_TYPE) ||
                                 (srcTypedObject.getScale() != null && srcTypedObject.getScale() > 0 && srcTypedObject.getScale() <= 6))
                             {
                                 for (String psn : possibleTypes.keySet()) {
-                                    if (psn.contains("float") || psn.contains("real")) {
+                                    if (psn.contains(FLOAT_DATA_TYPE) || psn.contains(REAL_DATA_TYPE)) {
                                         targetType = possibleTypes.get(psn);
                                         break;
                                     }
                                 }
-                            } else if (typeNameLower.contains("double") ||
+                            } else if (typeNameLower.contains(DOUBLE_DATA_TYPE) ||
                                 (srcTypedObject.getScale() != null && srcTypedObject.getScale() > 0 && srcTypedObject.getScale() <= 15))
                             {
                                 for (String psn : possibleTypes.keySet()) {
-                                    if (psn.contains("double")) {
+                                    if (psn.contains(DOUBLE_DATA_TYPE)) {
                                         targetType = possibleTypes.get(psn);
                                         break;
                                     }
                                 }
-                            } else if (typeNameLower.contains("int")) {
+                            } else if ((INT_DATA_TYPE.equals(typeNameLower) && possibleTypes.get(INTEGER_DATA_TYPE) != null)
+                                || (INTEGER_DATA_TYPE.equals(typeNameLower) && possibleTypes.get(INT_DATA_TYPE) != null))
+                            {
+                                // Let's use the closest int/integer synonym
+                                targetType = INT_DATA_TYPE.equals(typeNameLower)
+                                    ? possibleTypes.get(INTEGER_DATA_TYPE) : possibleTypes.get(INT_DATA_TYPE);
+
+                            } else if (typeNameLower.contains(INT_DATA_TYPE)) {
+                                // Ok, probably we do not have int/integer types, let's find something similar
                                 for (String psn : possibleTypes.keySet()) {
-                                    if (psn.contains("int")) {
+                                    if (psn.contains(INT_DATA_TYPE)) {
                                         targetType = possibleTypes.get(psn);
                                         break;
                                     }
@@ -377,12 +395,12 @@ public final class DBStructUtils {
                             }
                         }
                     } else if (targetType == null && dataKind == DBPDataKind.STRING) {
-                        if (typeNameLower.contains("text")) {
-                            if (possibleTypes.containsKey("text")) {
-                                targetType = possibleTypes.get("text");
+                        if (typeNameLower.contains(TEXT_DATA_TYPE)) {
+                            if (possibleTypes.containsKey(TEXT_DATA_TYPE)) {
+                                targetType = possibleTypes.get(TEXT_DATA_TYPE);
                             } else {
                                 for (Map.Entry<String, DBSDataType> type : possibleTypes.entrySet()) {
-                                    if (type.getKey().contains("text")) {
+                                    if (type.getKey().contains(TEXT_DATA_TYPE)) {
                                         targetType = type.getValue();
                                         break;
                                     }

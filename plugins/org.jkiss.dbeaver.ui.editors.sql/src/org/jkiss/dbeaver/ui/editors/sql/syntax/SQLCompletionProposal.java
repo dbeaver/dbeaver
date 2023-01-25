@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.DocumentEvent;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.*;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.viewers.StyledString;
@@ -45,6 +42,7 @@ import org.jkiss.dbeaver.model.text.TextUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.dialogs.SuggestionInformationControlCreator;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
@@ -53,7 +51,9 @@ import java.util.Map;
 /**
  * SQL Completion proposal
  */
-public class SQLCompletionProposal extends SQLCompletionProposalBase implements ICompletionProposal, ICompletionProposalExtension2, ICompletionProposalExtension4, ICompletionProposalExtension5, ICompletionProposalExtension6 {
+public class SQLCompletionProposal extends SQLCompletionProposalBase implements ICompletionProposal,
+    ICompletionProposalExtension2, ICompletionProposalExtension3, ICompletionProposalExtension4, ICompletionProposalExtension5,
+    ICompletionProposalExtension6 {
 
     private static final Log log = Log.getLog(SQLCompletionProposal.class);
 
@@ -264,5 +264,24 @@ public class SQLCompletionProposal extends SQLCompletionProposalBase implements 
         } else {
             return new StyledString(getDisplayString());
         }
+    }
+
+    @Override
+    public IInformationControlCreator getInformationControlCreator() {
+        if (hasStructObject()) {
+            return SuggestionInformationControlCreator.INSTANCE;
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public CharSequence getPrefixCompletionText(IDocument document, int completionOffset) {
+        return getReplacementString();
+    }
+
+    @Override
+    public int getPrefixCompletionStart(IDocument document, int completionOffset) {
+        return getReplacementOffset();
     }
 }

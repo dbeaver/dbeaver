@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,26 @@
 package org.jkiss.dbeaver.tasks.nativetool;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 public abstract class NativeToolUtils {
 
+    private static final Log log = Log.getLog(NativeToolUtils.class);
+    
     public static final String VARIABLE_HOST = "host";
     public static final String VARIABLE_DATABASE = "database";
+    public static final String VARIABLE_SCHEMA = "schema";
     public static final String VARIABLE_TABLE = "table";
     public static final String VARIABLE_DATE = "date";
     public static final String VARIABLE_TIMESTAMP = "timestamp";
@@ -40,6 +50,7 @@ public abstract class NativeToolUtils {
     public static final String[] ALL_VARIABLES = {
         VARIABLE_HOST,
         VARIABLE_DATABASE,
+        VARIABLE_SCHEMA,
         VARIABLE_TABLE,
         VARIABLE_DATE,
         VARIABLE_TIMESTAMP,
@@ -87,6 +98,41 @@ public abstract class NativeToolUtils {
                 return new SimpleDateFormat("mm").format(new Date());
             default:
                 return System.getProperty(name);
+        }
+    }
+    
+    /**
+     * Appends {@code --host} and {@code --port} parameters from connection settings to the list of command parameters
+     */
+    public static void addHostAndPortParamsToCmd(@NotNull DBPDataSourceContainer dataSourceContainer, @NotNull List<String> cmd) {
+        DBPConnectionConfiguration connectionInfo = dataSourceContainer.getActualConnectionConfiguration();
+        String hostname = "";
+        String port = "";
+        if (connectionInfo.getConfigurationType().equals(DBPDriverConfigurationType.MANUAL)) {
+            hostname = connectionInfo.getHostName();
+            port = connectionInfo.getHostPort();
+        } else {
+            String url = connectionInfo.getUrl();
+            String sampleUrl = dataSourceContainer.getDriver().getSampleURL();
+            if (sampleUrl != null) {
+                DBPConnectionConfiguration config = JDBCURL.extractConfigurationFromUrl(sampleUrl, url);
+                if (config != null) {
+                    hostname = config.getHostName();
+                    port = config.getHostPort();
+                }
+            } else {
+                try {
+                    URI uri = URI.create(url);
+                    hostname = uri.getHost();
+                    port = String.valueOf(uri.getPort());
+                } catch (Exception e) {
+                    log.error("Can't parse connection URL", e);
+                }
+            }
+        }
+        cmd.add("--host=" + hostname);
+        if (!CommonUtils.isEmpty(port)) {
+            cmd.add("--port=" + port);
         }
     }
 }

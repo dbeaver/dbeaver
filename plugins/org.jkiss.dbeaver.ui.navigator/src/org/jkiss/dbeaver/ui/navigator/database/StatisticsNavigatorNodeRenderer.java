@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.graphics.*;
@@ -26,6 +27,8 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -83,22 +86,26 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
     private static final Map<DBSObject, StatReadJob> statReaders = new IdentityHashMap<>();
 
+    private final IPropertyChangeListener themeChangeListener;
     private Font fontItalic;
 
     public StatisticsNavigatorNodeRenderer(INavigatorModelView view) {
         this.view = view;
+        this.themeChangeListener = e -> {
+            final ITheme theme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+            fontItalic = theme.getFontRegistry().getItalic(DatabaseNavigatorLabelProvider.TREE_TABLE_FONT);
+        };
+        this.themeChangeListener.propertyChange(null);
+
+        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
+
+        view.getNavigatorViewer().getControl().addDisposeListener(e -> {
+            PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
+        });
     }
 
     public INavigatorModelView getView() {
         return view;
-    }
-
-    public Font getFontItalic(Tree tree) {
-        if (fontItalic == null) {
-            fontItalic = UIUtils.modifyFont(tree.getFont(), SWT.ITALIC);
-            tree.addDisposeListener(e -> UIUtils.dispose(fontItalic));
-        }
-        return fontItalic;
     }
 
     public void paintNodeDetails(DBNNode node, Tree tree, GC gc, Event event) {
@@ -268,8 +275,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 (bgColor == null ? UIStyles.isDarkTheme() : UIUtils.isDark(bgColor.getRGB())) ?
                     HOST_NAME_FG_DARK : HOST_NAME_FG_LIGHT);
             gc.setForeground(hostNameColor);
-            Font hostNameFont = getFontItalic(tree);
-            gc.setFont(hostNameFont);
+            gc.setFont(fontItalic);
             Point hostTextSize = gc.stringExtent(text);
 
             int xOffset = RuntimeUtils.isLinux() ? 16 : 2;
@@ -453,24 +459,24 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             int xWidth = getTreeWidth(tree);
 
             if (xWidth - occupiedWidth > Math.max(PERCENT_FILL_WIDTH, textSize.x)) {
-                {
-                    CTabFolder tabFolder = UIUtils.getParentOfType(tree, CTabFolder.class);
-                    Color fillColor = tabFolder == null ? UIStyles.getDefaultWidgetBackground() : tabFolder.getBackground();
-                    gc.setBackground(fillColor);
-                    int fillWidth = PERCENT_FILL_WIDTH * percentFull / 100 + 1;
-                    int x = xWidth - fillWidth - 2;
-                    gc.fillRectangle(x, event.y + 2, fillWidth, event.height - 4);
-                }
+                CTabFolder tabFolder = UIUtils.getParentOfType(tree, CTabFolder.class);
+                Color fillColor = tabFolder == null ? UIStyles.getDefaultWidgetBackground() : tabFolder.getBackground();
 
+                // Frame
+                gc.setForeground(fillColor);
+                gc.drawRectangle(xWidth - PERCENT_FILL_WIDTH - 2, event.y + 1, PERCENT_FILL_WIDTH, event.height - 3);
+
+                // Bar
+                final int width = Math.max((int) Math.ceil((PERCENT_FILL_WIDTH - 3) * percentFull / 100.0), 1);
+                gc.setBackground(fillColor);
+                gc.fillRectangle(xWidth - PERCENT_FILL_WIDTH, event.y + 3, width, event.height - 6);
+
+                // Text
                 gc.setForeground(tree.getForeground());
-                int x = xWidth - textSize.x - 2;
-
-                Font oldFont = gc.getFont();
                 gc.setFont(tree.getFont());
-                gc.drawText(sizeText, x + 2, event.y + (event.height - textSize.y) / 2, true);
-                gc.setFont(oldFont);
+                gc.drawText(sizeText, xWidth - textSize.x, event.y + (event.height - textSize.y) / 2, true);
 
-                return Math.max(PERCENT_FILL_WIDTH, textSize.x) + 3;
+                return Math.max(PERCENT_FILL_WIDTH, textSize.x);
             }
         }
 

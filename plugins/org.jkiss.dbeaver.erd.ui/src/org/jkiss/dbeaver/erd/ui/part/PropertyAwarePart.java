@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -191,6 +191,12 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
             int modelIndex = getModelTargetConnections().indexOf(newValue);
             if (modelIndex >= 0) {
                 addTargetConnection(editPart, modelIndex);
+            } else {
+                for (Object child : getChildren()) {
+                    if (child instanceof PropertyAwarePart) {
+                        ((PropertyAwarePart) child).refreshTargetConnections();
+                    }
+                }
             }
 
         } else {
@@ -253,8 +259,15 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
             //add new connection
             ConnectionEditPart editPart = createOrFindConnection(newValue);
             int modelIndex = getModelSourceConnections().indexOf(newValue);
-            addSourceConnection(editPart, modelIndex);
-
+            if (modelIndex >= 0) {
+                addSourceConnection(editPart, modelIndex);
+            } else {
+                for (Object child : getChildren()) {
+                    if (child instanceof PropertyAwarePart) {
+                        ((PropertyAwarePart) child).refreshSourceConnections();
+                    }
+                }
+            }
         } else {
 
             //remove connection

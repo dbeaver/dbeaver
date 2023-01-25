@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
@@ -109,18 +110,43 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
 
         openAndExecuteSQLScript(workbenchWindow, navigatorContext, title, doRun, currentSelection, sql);
     }
-
+    
+    /**
+     * openAndExecuteSQLScript in a SQL window
+     */
     public static void openAndExecuteSQLScript(
         IWorkbenchWindow workbenchWindow,
         SQLNavigatorContext navigatorContext,
         String title,
         boolean doRun,
         ISelection currentSelection,
-        String sql) throws CoreException
-    {
+        String sql
+    ) throws CoreException {
+        openAndExecuteSQLScript(
+            workbenchWindow,
+            navigatorContext,
+            title,
+            doRun,
+            currentSelection,
+            sql, 
+            false);
+    }
+
+    /**
+     * openAndExecuteSQLScript with force sqlScript executing
+     */
+    public static void openAndExecuteSQLScript(
+        IWorkbenchWindow workbenchWindow,
+        SQLNavigatorContext navigatorContext,
+        String title,
+        boolean doRun,
+        ISelection currentSelection,
+        String sql,
+        boolean forceProcessAsScript
+    ) throws CoreException {
         SQLEditor editor;
-        if (OPEN_FILE_EDITOR) {
-            DBPProject project = navigatorContext.getProject();
+        DBPProject project = navigatorContext.getProject();
+        if (OPEN_FILE_EDITOR && project != null && project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
             SQLEditorHandlerOpenEditor.checkProjectIsOpen(project);
             IFolder folder = SQLEditorHandlerOpenEditor.getCurrentScriptFolder(currentSelection);
             IFile scriptFile = SQLEditorUtils.createNewScript(project, folder, navigatorContext);
@@ -153,7 +179,7 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
                     public void done(IJobChangeEvent event) {
                         UIUtils.syncExec(() -> editor.processSQL(
                             false,
-                            NavigatorUtils.getSelectedObjects(currentSelection).size() > 1
+                            forceProcessAsScript || NavigatorUtils.getSelectedObjects(currentSelection).size() > 1
                         ));
                     }
                 });

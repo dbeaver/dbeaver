@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
@@ -97,7 +98,9 @@ public class LocalProjectImpl extends BaseProjectImpl {
             NullProgressMonitor monitor = new NullProgressMonitor();
             try {
                 project.open(monitor);
-                project.refreshLocal(IFile.DEPTH_ONE, monitor);
+                if (!DBWorkbench.isDistributed()) {
+                    project.refreshLocal(IFile.DEPTH_ONE, monitor);
+                }
             } catch (CoreException e) {
                 if (getWorkspace().getPlatform().getApplication().isStandalone() &&
                     e.getMessage().contains(IProjectDescription.DESCRIPTION_FILE_NAME)) {

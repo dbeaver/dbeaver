@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,8 +114,6 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
     private final List<DBPDriverLibrary> libraries = new ArrayList<>();
 
-    private final boolean isDistributed = DBWorkbench.getPlatform().getApplication().isDistributed();
-
     static int getDialogCount() {
         return dialogCount;
     }
@@ -187,7 +185,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent) {
+    protected Composite createDialogArea(Composite parent) {
         if (newDriver) {
             getShell().setText(UIConnectionMessages.dialog_edit_driver_title_create_driver);
         } else {
@@ -195,7 +193,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             getShell().setImage(DBeaverIcons.getImage(driver.getPlainIcon()));
         }
 
-        final Composite group = (Composite) super.createDialogArea(parent);
+        final Composite group = super.createDialogArea(parent);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 500;
         group.setLayoutData(gd);
@@ -504,7 +502,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             }
         });
 
-        if (!isDistributed) {
+        if (!DBWorkbench.isDistributed()) {
             UIUtils.createToolButton(libsControlGroup, UIConnectionMessages.dialog_edit_driver_button_add_artifact, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -537,7 +535,9 @@ public class DriverEditDialog extends HelpEnabledDialog {
                     if (UIUtils.confirmAction(getShell(), UIConnectionMessages.dialog_edit_driver_dialog_delete_library_title, UIConnectionMessages.dialog_edit_driver_dialog_delete_library_message)) {
                         for (Object obj : selection.toArray()) {
                             if (obj instanceof DriverLibraryAbstract) {
-                                libraries.remove((DriverLibraryAbstract) obj);
+                                driver.resetDriverInstance();
+                                libraries.remove(obj);
+                                changeLibContent();
                             }
                         }
                     }
@@ -719,8 +719,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
         boolean hasFiles = false, hasDownloads = false;
         for (DBPDriverLibrary library : libraries) {
             final Path localFile = library.getLocalFile();
-            hasFiles = hasFiles || (!library.isDisabled() && localFile != null && Files.exists(localFile));
-            if (!hasFiles && !library.isDisabled()) {
+            hasFiles = hasFiles || (localFile != null && Files.exists(localFile));
+            if (!hasFiles) {
                 final Collection<DriverDescriptor.DriverFileInfo> files = driver.getLibraryFiles(library);
                 if (files != null) {
                     for (DriverDescriptor.DriverFileInfo file : files) {
@@ -731,7 +731,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 }
             }
 
-            if (!library.isDisabled() && library.isDownloadable()) {
+            if (library.isDownloadable()) {
                 hasDownloads = true;
             }
         }
@@ -739,6 +739,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
         if (updateVersionButton != null) {
             updateVersionButton.setEnabled(hasDownloads);
         }
+        detailsButton.setEnabled(hasFiles);
+        classListCombo.setEnabled(hasFiles);
     }
 
     private void changeLibSelection() {
@@ -809,7 +811,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
     @Override
     protected void okPressed() {
 
-        if (isDistributed) {
+        if (DBWorkbench.isDistributed()) {
             try {
                 syncDriverLibraries();
             } catch (DBException e) {

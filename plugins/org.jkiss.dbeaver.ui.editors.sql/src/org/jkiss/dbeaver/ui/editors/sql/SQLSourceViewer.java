@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
     protected Boolean showPermissions;
     protected Boolean showColumnComments;
     protected Boolean showFullDDL;
+    private Boolean showPartitionsDDL;
 
     private final IAction OPEN_CONSOLE_ACTION = new Action(SQLEditorMessages.source_viewer_open_in_sql_console, DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)) {
         @Override
@@ -126,6 +127,9 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
             }
             if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
                 options.put(DBPScriptObject.OPTION_INCLUDE_COMMENTS, getShowColumnComments());
+            }
+            if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_PARTITIONS)) {
+                options.put(DBPScriptObject.OPTION_INCLUDE_PARTITIONS, getShowPartitionsDDL());
             }
         }
         return options;
@@ -230,6 +234,23 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
                             }
                         }, true));
             }
+            if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_PARTITIONS)) {
+                toolBarManager.add(ActionUtils.makeActionContribution(
+                    new Action(SQLEditorMessages.source_viewer_show_partitions_ddl_text, Action.AS_CHECK_BOX) {
+                        {
+                            setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_PARTITION));
+                            setToolTipText(SQLEditorMessages.source_viewer_show_partitions_ddl_tip);
+                            setChecked(getShowPartitionsDDL());
+                        }
+
+                        @Override
+                        public void run() {
+                            showPartitionsDDL = isChecked();
+                            getPreferenceStore().setValue(DBPScriptObject.OPTION_INCLUDE_PARTITIONS, showPartitionsDDL);
+                            refreshPart(SQLSourceViewer.this, true);
+                        }
+                    }, true));
+            }
         }
     }
 
@@ -259,5 +280,12 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
             showFullDDL = getPreferenceStore().getBoolean(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS);
         }
         return showFullDDL;
+    }
+
+    protected Boolean getShowPartitionsDDL() {
+        if (showPartitionsDDL == null) {
+            showPartitionsDDL = getPreferenceStore().getBoolean(DBPScriptObject.OPTION_INCLUDE_PARTITIONS);
+        }
+        return showPartitionsDDL;
     }
 }

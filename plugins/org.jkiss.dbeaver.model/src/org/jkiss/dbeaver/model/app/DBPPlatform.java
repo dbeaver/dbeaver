@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
@@ -29,6 +31,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.model.task.DBTTaskController;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -78,11 +81,25 @@ public interface DBPPlatform {
     Path getTempFolder(DBRProgressMonitor monitor, String name) throws IOException;
 
     /**
-     * Platform configuration controller.
-     * Keeps application configuration which can be shared with other users.
+     * Returns platform configuration controller,
+     * which keeps configuration which can be shared with other users.
      */
     @NotNull
     DBConfigurationController getConfigurationController();
+    
+    /**
+     * Returns configuration controller,
+     * which keeps product configuration which can be shared with other users.
+     */
+    @NotNull
+    DBConfigurationController getProductConfigurationController();
+    
+    /**
+     * Returns configuration controller,
+     * which keeps plugin configuration which can be shared with other users.
+     */
+    @NotNull
+    DBConfigurationController getPluginConfigurationController(@NotNull String pluginId);
 
     /**
      * Local config files are used to store some configuration specific to local machine only.
@@ -95,6 +112,12 @@ public interface DBPPlatform {
      */
     @NotNull
     DBFileController getFileController();
+
+    /**
+     * Task controller can read and change tasks configuration file
+     */
+    @NotNull
+    DBTTaskController getTaskController();
 
     @Deprecated
     @NotNull

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -487,6 +487,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsCommentsOnRole() {
+        return supportsRoles();
+    }
+
+    @Override
     public boolean supportSerialTypes() {
         return true;
     }
@@ -554,5 +559,10 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     @Override
     public boolean supportsOpFamily() {
         return  dataSource.isServerVersionAtLeast(8, 3);
+    }
+
+    @Override
+    public boolean supportsAlterTableColumnWithUSING() {
+        return dataSource.isServerVersionAtLeast(8, 0);
     }
 }

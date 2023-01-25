@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,19 @@ package org.jkiss.dbeaver.tasks.ui.view;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.wizard.EditTaskVariablesDialog;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskProcessorUI;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -63,6 +67,10 @@ public class TaskHandlerRun extends AbstractHandler implements IElementUpdater {
     }
 
     public static void runTask(DBTTask task) {
+        if (task.getType().supportsVariables() && !confirmTaskVariables(task)) {
+            return;
+        }
+
         try {
             TaskProcessorUI listener = new TaskProcessorUI(UIUtils.getDialogRunnableContext(), task);
             task.getProject().getTaskManager().runTask(task, listener, Collections.emptyMap());
@@ -84,5 +92,24 @@ public class TaskHandlerRun extends AbstractHandler implements IElementUpdater {
             }
         }
 
+    }
+
+    private static boolean confirmTaskVariables(@NotNull DBTTask task) {
+        final Map<String, Object> properties = task.getProperties();
+
+        if (CommonUtils.toBoolean(properties.get(DBTaskUtils.TASK_PROMPT_VARIABLES))) {
+            final Map<String, Object> variables = DBTaskUtils.getVariables(task);
+            final EditTaskVariablesDialog dialog = new EditTaskVariablesDialog(UIUtils.getActiveWorkbenchShell(), variables);
+
+            if (dialog.open() != IDialogConstants.OK_ID) {
+                return false;
+            }
+
+            if (!variables.equals(dialog.getVariables())) {
+                DBTaskUtils.setVariables(properties, dialog.getVariables());
+            }
+        }
+
+        return true;
     }
 }

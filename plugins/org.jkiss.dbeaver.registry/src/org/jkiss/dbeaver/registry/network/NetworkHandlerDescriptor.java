@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry.network;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
  */
 public class NetworkHandlerDescriptor extends AbstractContextDescriptor implements DBWHandlerDescriptor {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.networkHandler"; //$NON-NLS-1$
+    private static final Log log = Log.getLog(NetworkHandlerDescriptor.class);
 
     private final String id;
     private final String label;
@@ -117,7 +119,12 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
     }
 
     public boolean matches(DBPDriver driver) {
-        return appliesTo(driver.getDataSourceProvider(), driver);
+        try {
+            return appliesTo(driver.getDataSourceProvider(), driver);
+        } catch (Exception e) {
+            log.debug(e);
+            return false;
+        }
     }
 
     public ObjectType getHandlerType() {

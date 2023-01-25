@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -66,30 +66,6 @@ public class CoreMessages extends NLS {
 	public static String actions_navigator_bookmark_title;
 
     public static String common_error_sql;
-
-    public static String confirm_exit_title;
-	public static String confirm_exit_message;
-	public static String confirm_exit_toggleMessage;
-
-	public static String confirm_disconnect_txn_title;
-	public static String confirm_disconnect_txn_message;
-	public static String confirm_disconnect_txn_toggleMessage;
-
-	public static String confirm_reconnect_txn_title;
-	public static String confirm_reconnect_txn_message;
-	public static String confirm_reconnect_txn_toggleMessage;
-
-	public static String confirm_driver_download_title;
-	public static String confirm_driver_download_message;
-	public static String confirm_driver_download_toggleMessage;
-
-	public static String confirm_driver_download_manual_title;
-	public static String confirm_driver_download_manual_message;
-	public static String confirm_driver_download_manual_toggleMessage;
-
-    public static String confirm_version_check_title;
-    public static String confirm_version_check_message;
-    public static String confirm_version_check_toggleMessage;
 
 	public static String controls_itemlist_action_copy;
 
@@ -288,9 +264,11 @@ public class CoreMessages extends NLS {
 	public static String pref_page_confirmations_combo_prompt;
 	public static String pref_page_confirmations_group_general_actions;
 	public static String pref_page_confirmations_group_object_editor;
-    public static String pref_page_confirmations_table_column_confirmation;
-    public static String pref_page_confirmations_table_column_group;
-    public static String pref_page_confirmations_table_column_value;
+	public static String pref_page_confirmations_table_column_confirmation;
+	public static String pref_page_confirmations_table_column_confirmation_tip;
+	public static String pref_page_confirmations_table_column_group;
+	public static String pref_page_confirmations_table_column_value;
+	public static String pref_page_confirmations_table_column_value_tip;
 
 	public static String pref_page_database_general_separate_meta_connection;
 	public static String pref_page_database_general_checkbox_case_sensitive_names;
@@ -508,6 +486,8 @@ public class CoreMessages extends NLS {
 	public static String pref_page_network_profiles_tool_create_dialog_error_info;
 	public static String pref_page_network_profiles_tool_delete_title;
 	public static String pref_page_network_profiles_tool_delete_text;
+    public static String pref_page_network_profiles_tool_copy_title;
+    public static String pref_page_network_profiles_tool_copy_text;
 	public static String pref_page_network_profiles_tool_delete_dialog_error_title;
 	public static String pref_page_network_profiles_tool_delete_dialog_error_info;
 	public static String pref_page_network_profiles_tool_delete_confirmation_title;
@@ -618,6 +598,19 @@ public class CoreMessages extends NLS {
     public static String dialog_data_source_synchronize_message;
     public static String dialog_data_source_synchronize_reply_keep_local_label;
     public static String dialog_data_source_synchronize_reply_keep_remote_label;
+
+    public static String pref_page_connections_group_security;
+    public static String pref_page_connections_use_win_cert_label;
+    public static String pref_page_connections_use_win_cert_tip;
+    public static String pref_page_connections_use_win_cert_disabled_tip;
+
+    public static String pref_page_transactions_notify_name_group_label;
+    public static String pref_page_transactions_notifications_show_check_label;
+    public static String pref_page_transactions_notifications_show_check_description;
+
+    public static String pref_page_label_edit_permissions; 
+    public static String pref_page_logs_files_max_size_label;
+    public static String pref_page_logs_files_max_count_label;
 
     static {
 		// initialize resource bundle

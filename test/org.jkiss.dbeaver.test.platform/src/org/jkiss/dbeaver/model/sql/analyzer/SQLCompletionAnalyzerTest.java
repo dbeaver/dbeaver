@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -118,7 +118,7 @@ public class SQLCompletionAnalyzerTest {
 
         {
             final List<SQLCompletionProposalBase> proposals = request
-                    .request("SELECT * FROM \"Table 3\" t WHERE t.|");
+                .request("SELECT * FROM \"Table 3\" t WHERE t.|");
 
             Assert.assertEquals(3, proposals.size());
             Assert.assertEquals("Col7", proposals.get(0).getReplacementString());
@@ -149,7 +149,7 @@ public class SQLCompletionAnalyzerTest {
 
     @Test
     public void testColumnWithNonExistingAliases() throws DBException {
-        final RequestResult request = RequestBuilder.tables(s-> {
+        final RequestResult request = RequestBuilder.tables(s -> {
             s.table("Table1", t -> {
                 t.attribute("Col1");
                 t.attribute("Col2");
@@ -292,14 +292,20 @@ public class SQLCompletionAnalyzerTest {
                         s.table("Table6", empty());
                     });
                 });
+                x.database("Database3", d -> {
+                    d.schema("a.schema", s -> {
+                        s.table("a.table", empty());
+                    });
+                });
             })
             .prepare();
 
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Da|");
-            Assert.assertEquals(2, proposals.size());
+            Assert.assertEquals(3, proposals.size());
             Assert.assertEquals("Database1", proposals.get(0).getReplacementString());
             Assert.assertEquals("Database2", proposals.get(1).getReplacementString());
+            Assert.assertEquals("Database3", proposals.get(2).getReplacementString());
         }
 
         {
@@ -314,6 +320,20 @@ public class SQLCompletionAnalyzerTest {
             Assert.assertEquals("Table1", proposals.get(0).getReplacementString());
             Assert.assertEquals("Table2", proposals.get(1).getReplacementString());
             Assert.assertEquals("Table3", proposals.get(2).getReplacementString());
+        }
+
+        {
+            final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Database3.|");
+            Assert.assertEquals(1, proposals.size());
+            Assert.assertEquals("\"a.schema\"", proposals.get(0).getReplacementString());
+            Assert.assertEquals(24, proposals.get(0).getReplacementOffset());
+        }
+
+        {
+            final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Database3.\"a.schema\".|");
+            Assert.assertEquals(1, proposals.size());
+            Assert.assertEquals("\"a.table\"", proposals.get(0).getReplacementString());
+            Assert.assertEquals(35, proposals.get(0).getReplacementOffset());
         }
     }
 

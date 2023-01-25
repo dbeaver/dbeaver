@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,29 +90,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
         NullNotNullModifier.appendModifier(monitor, column, sql, command);
     };
 
-    protected final ColumnModifier<OBJECT_TYPE> DefaultModifier = (monitor, column, sql, command) -> {
-        String defaultValue = CommonUtils.toString(column.getDefaultValue());
-        if (!CommonUtils.isEmpty(defaultValue)) {
-            DBPDataKind dataKind = column.getDataKind();
-            boolean useQuotes = false;//dataKind == DBPDataKind.STRING;
-            if (!defaultValue.startsWith(QUOTE) && !defaultValue.endsWith(QUOTE)) {
-                if (useQuotes && defaultValue.trim().startsWith(QUOTE)) {
-                    useQuotes = false;
-                }
-                if (dataKind == DBPDataKind.DATETIME) {
-                    final char firstChar = defaultValue.trim().charAt(0);
-                    if (!Character.isLetter(firstChar) && firstChar != '(' && firstChar != '[') {
-                        useQuotes = true;
-                    }
-                }
-            }
-
-            sql.append(" DEFAULT "); //$NON-NLS-1$
-            if (useQuotes) sql.append(QUOTE);
-            sql.append(defaultValue);
-            if (useQuotes) sql.append(QUOTE);
-        }
-    };
+    protected ColumnModifier<OBJECT_TYPE> DefaultModifier = new BaseDefaultModifier();
 
     protected ColumnModifier[] getSupportedModifiers(OBJECT_TYPE column, Map<String, Object> options)
     {
@@ -307,5 +285,47 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
             "COMMENT ON COLUMN " + DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
                 " IS " + SQLUtils.quoteString(column.getDataSource(), CommonUtils.notEmpty(column.getDescription()))));
     }
-}
 
+    protected class BaseDefaultModifier implements ColumnModifier<OBJECT_TYPE> {
+        @Override
+        public void appendModifier(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull OBJECT_TYPE column,
+            @NotNull StringBuilder sql,
+            @NotNull DBECommandAbstract<OBJECT_TYPE> command
+        ) {
+            String defaultValue = CommonUtils.toString(column.getDefaultValue());
+            if (!CommonUtils.isEmpty(defaultValue)) {
+                DBPDataKind dataKind = column.getDataKind();
+                boolean useQuotes = isUsesQuotes(defaultValue, dataKind);
+                sql.append(" DEFAULT "); //$NON-NLS-1$
+                appendDefaultValue(sql, defaultValue, useQuotes);
+            }
+        }
+
+        protected boolean isUsesQuotes(@NotNull String defaultValue, @NotNull DBPDataKind dataKind) {
+            boolean useQuotes = false;
+            if (!defaultValue.startsWith(QUOTE) && !defaultValue.endsWith(QUOTE)) {
+                if (dataKind == DBPDataKind.DATETIME) {
+                    final char firstChar = defaultValue.trim().charAt(0);
+                    if (!Character.isLetter(firstChar) && firstChar != '(' && firstChar != '[') {
+                        useQuotes = true;
+                    }
+                }
+            }
+            return useQuotes;
+        }
+
+        protected void appendDefaultValue(@NotNull StringBuilder sql, @NotNull String defaultValue, boolean useQuotes) {
+            if (useQuotes) {
+                sql.append(QUOTE);
+            }
+            sql.append(defaultValue);
+            if (useQuotes) {
+                sql.append(QUOTE);
+            }
+        }
+
+    }
+
+}

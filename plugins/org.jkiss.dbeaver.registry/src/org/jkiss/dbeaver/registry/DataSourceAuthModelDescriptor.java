@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,14 +46,15 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     private final ObjectType implType;
     private final String name;
     private final String description;
+    private final String requiredAuthProvider;
     private DBPImage icon;
-    private boolean defaultModel;
-    private boolean isDesktop;
-    private boolean requiresLocalConfiguration;
+    private final boolean defaultModel;
+    private final boolean isDesktop;
+    private final boolean requiresLocalConfiguration;
     private final Map<String, String[]> replaces = new HashMap<>();
     private boolean hasCondReplaces = false;
 
-    private DBAAuthModel instance;
+    private DBAAuthModel<?> instance;
 
     DataSourceAuthModelDescriptor(IConfigurationElement config) {
         super(config);
@@ -69,7 +70,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
         this.defaultModel = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_DEFAULT));
         this.isDesktop = CommonUtils.toBoolean(config.getAttribute("desktop"));
         this.requiresLocalConfiguration = CommonUtils.toBoolean(config.getAttribute("requiresLocalConfiguration"));
-
+        this.requiredAuthProvider = CommonUtils.toString(config.getAttribute("requiredAuthProvider"));
         for (IConfigurationElement dsConfig : config.getChildren("replace")) {
             String replModel = dsConfig.getAttribute("model");
             String forAttr = dsConfig.getAttribute("for");
@@ -130,8 +131,16 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     @Nullable
     @Override
     public DBPAuthModelDescriptor getReplacedBy(@NotNull DBPDriver driver) {
-        for (DataSourceAuthModelDescriptor amd : DataSourceProviderRegistry.getInstance().getAllAuthModels()) {
-            if (amd.getReplaces(driver).contains(id) && amd.isDriverApplicable(driver)) {
+        // This is a bit tricky
+        // We need to find all replacements (including inherited drivers)
+        // And the remove all models which are not applicable to the driver
+
+        List<? extends DBPAuthModelDescriptor> applicableAMs = DataSourceProviderRegistry.getInstance().getApplicableAuthModels(driver);
+
+        List<DataSourceAuthModelDescriptor> allAuthModels = DataSourceProviderRegistry.getInstance().getAllAuthModels();
+        for (int i = allAuthModels.size(); i > 0; i--) {
+            DataSourceAuthModelDescriptor amd = allAuthModels.get(i - 1);
+            if (applicableAMs.contains(amd) && amd.getReplaces(driver).contains(id) && amd.isDriverApplicable(driver)) {
                 return amd;
             }
         }
@@ -139,7 +148,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     }
 
     @NotNull
-    public DBAAuthModel getInstance() {
+    public <T extends DBAAuthCredentials> DBAAuthModel<T> getInstance() {
         if (instance == null) {
             try {
                 // locate class
@@ -149,19 +158,25 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
                 throw new IllegalStateException("Can't initialize data source auth model '" + implType.getImplName() + "'", ex);
             }
         }
-        return instance;
+        return (DBAAuthModel<T>) instance;
     }
 
     @NotNull
     @Override
     public DBPPropertySource createCredentialsSource(DBPDataSourceContainer dataSource, DBPConnectionConfiguration configuration) {
-        DBAAuthModel instance = getInstance();
+        DBAAuthModel<?> instance = getInstance();
         DBAAuthCredentials credentials = dataSource == null || configuration == null ?
             instance.createCredentials() :
             instance.loadCredentials(dataSource, configuration);
         PropertyCollector propertyCollector = new PropertyCollector(credentials, false);
         propertyCollector.collectProperties();
         return propertyCollector;
+    }
+
+    @Nullable
+    @Override
+    public String getRequiredAuthProviderId() {
+        return requiredAuthProvider;
     }
 
     boolean appliesTo(DBPDriver driver) {

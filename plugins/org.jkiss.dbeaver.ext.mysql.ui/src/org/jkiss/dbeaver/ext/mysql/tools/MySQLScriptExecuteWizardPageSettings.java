@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.ext.mysql.tools;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -70,14 +68,7 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
         Group outputGroup = UIUtils.createControlGroup(
                 composite, MySQLUIMessages.tools_script_execute_wizard_page_settings_group_input, 3, GridData.FILL_HORIZONTAL, 0);
         inputFileText = UIUtils.createLabelText(
-                outputGroup, MySQLUIMessages.tools_script_execute_wizard_page_settings_label_input_file, "", SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
-        inputFileText.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseUp(MouseEvent e)
-            {
-                chooseInputFile();
-            }
-        });
+                outputGroup, MySQLUIMessages.tools_script_execute_wizard_page_settings_label_input_file, "", SWT.BORDER); //$NON-NLS-2$
         Button browseButton = new Button(outputGroup, SWT.PUSH);
         browseButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
         browseButton.addSelectionListener(new SelectionAdapter() {

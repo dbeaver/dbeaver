@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,8 +25,10 @@ import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ValueFormatSelector;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -40,8 +42,7 @@ import java.util.Locale;
 /**
  * PrefPageResultSetGrid
  */
-public class PrefPageResultSetPresentationGrid extends TargetPrefPage
-{
+public class PrefPageResultSetPresentationGrid extends TargetPrefPage {
     private static final Log log = Log.getLog(PrefPageResultSetPresentationGrid.class);
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.resultset.grid"; //$NON-NLS-1$
@@ -57,41 +58,39 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
     private Button showCollectionInline;
     private Button showBooleanAsCheckbox;
     private Button showWhitespaceCharacters;
+    private ValueFormatSelector textValueFormat;
     private Button toggleBooleanOnClick;
     private Button moveAfterInlineEnter;
     private Combo gridDoubleClickBehavior;
     private Text gridRowBatchSize;
     private Text maxDefColumnWidth;
 
-    public PrefPageResultSetPresentationGrid()
-    {
+    public PrefPageResultSetPresentationGrid() {
         super();
     }
 
     @Override
-    protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dataSourceDescriptor)
-    {
+    protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dataSourceDescriptor) {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_ODD_ROWS) ||
-            store.contains(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES) ||
-            //store.contains(ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS) ||
-            store.contains(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ICONS) ||
-            store.contains(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS) ||
-            store.contains(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING) ||
-            store.contains(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING) ||
-            store.contains(ResultSetPreferences.RESULT_SET_SHOW_COLLECTIONS_INLINE) ||
-            store.contains(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX) ||
-            store.contains(ResultSetPreferences.RESULT_SET_SHOW_WHITESPACE_CHARACTERS) ||
-            store.contains(ResultSetPreferences.RESULT_SET_CLICK_TOGGLE_BOOLEAN) ||
-            store.contains(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK) ||
-            store.contains(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE) ||
-            store.contains(ResultSetPreferences.RESULT_SET_MAX_COLUMN_DEF_WIDTH);
+                store.contains(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES) ||
+                //store.contains(ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS) ||
+                store.contains(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ICONS) ||
+                store.contains(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS) ||
+                store.contains(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING) ||
+                store.contains(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING) ||
+                store.contains(ResultSetPreferences.RESULT_SET_SHOW_COLLECTIONS_INLINE) ||
+                store.contains(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX) ||
+                store.contains(ResultSetPreferences.RESULT_SET_SHOW_WHITESPACE_CHARACTERS) ||
+                store.contains(ResultSetPreferences.RESULT_SET_CLICK_TOGGLE_BOOLEAN) ||
+                store.contains(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK) ||
+                store.contains(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE) ||
+                store.contains(ResultSetPreferences.RESULT_SET_MAX_COLUMN_DEF_WIDTH);
     }
 
     @Override
-    protected boolean supportsDataSourceSpecificOptions()
-    {
+    protected boolean supportsDataSourceSpecificOptions() {
         return true;
     }
 
@@ -130,12 +129,13 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
             showWhitespaceCharacters = UIUtils.createCheckbox(appearanceGroup,
                 DataEditorsMessages.pref_page_database_resultsets_label_show_whitespace_characters,
                 DataEditorsMessages.pref_page_database_resultsets_label_show_whitespace_characters_tip, false, 2);
+            textValueFormat = new ValueFormatSelector(appearanceGroup);
             maxDefColumnWidth = UIUtils.createLabelText(appearanceGroup,
                 DataEditorsMessages.pref_page_database_resultsets_label_max_def_column_width, "", SWT.BORDER);
             maxDefColumnWidth.setToolTipText(
                 DataEditorsMessages.pref_page_database_resultsets_label_max_def_column_width_tip);
             maxDefColumnWidth.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
-            
+
             new PreferenceLinkArea(appearanceGroup, SWT.NONE,
                 EditorUtils.COLORS_AND_FONTS_PAGE_ID,
                 DataEditorsMessages.pref_page_database_resultsets_link_colors_and_fonts,
@@ -189,13 +189,11 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
     }
 
     @Override
-    protected void loadPreferences(DBPPreferenceStore store)
-    {
+    protected void loadPreferences(DBPPreferenceStore store) {
         try {
             gridShowOddRows.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ODD_ROWS));
             gridHighlightRowsWithSelectedCells.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_HIGHLIGHT_SELECTED_ROWS));
             colorizeDataTypes.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES));
-            //gridShowCellIcons.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS));
             gridShowAttrIcons.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ICONS));
             gridShowAttrFilters.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS));
             gridShowAttrOrder.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING));
@@ -203,13 +201,14 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
             showCollectionInline.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_COLLECTIONS_INLINE));
             showBooleanAsCheckbox.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX));
             showWhitespaceCharacters.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_WHITESPACE_CHARACTERS));
+            textValueFormat.select(CommonUtils.valueOf(DBDDisplayFormat.class, store.getString(ResultSetPreferences.RESULT_GRID_VALUE_FORMAT), DBDDisplayFormat.UI));
             toggleBooleanOnClick.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_CLICK_TOGGLE_BOOLEAN));
             moveAfterInlineEnter.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_INLINE_ENTER));
             gridDoubleClickBehavior.select(
                 CommonUtils.valueOf(
-                    Spreadsheet.DoubleClickBehavior.class,
-                    store.getString(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK),
-                    Spreadsheet.DoubleClickBehavior.NONE)
+                        Spreadsheet.DoubleClickBehavior.class,
+                        store.getString(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK),
+                        Spreadsheet.DoubleClickBehavior.NONE)
                     .ordinal());
             gridRowBatchSize.setText(store.getString(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE));
             maxDefColumnWidth.setText(store.getString(ResultSetPreferences.RESULT_SET_MAX_COLUMN_DEF_WIDTH));
@@ -219,8 +218,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
     }
 
     @Override
-    protected void savePreferences(DBPPreferenceStore store)
-    {
+    protected void savePreferences(DBPPreferenceStore store) {
         try {
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ODD_ROWS, gridShowOddRows.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_INLINE_ENTER, moveAfterInlineEnter.getSelection());
@@ -234,6 +232,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_COLLECTIONS_INLINE, showCollectionInline.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX, showBooleanAsCheckbox.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_WHITESPACE_CHARACTERS, showWhitespaceCharacters.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_GRID_VALUE_FORMAT, textValueFormat.getSelection().name());
             store.setValue(ResultSetPreferences.RESULT_SET_CLICK_TOGGLE_BOOLEAN, toggleBooleanOnClick.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK, CommonUtils.fromOrdinal(
                 Spreadsheet.DoubleClickBehavior.class, gridDoubleClickBehavior.getSelectionIndex()).name());
@@ -248,13 +247,11 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
     }
 
     @Override
-    protected void clearPreferences(DBPPreferenceStore store)
-    {
+    protected void clearPreferences(DBPPreferenceStore store) {
         store.setToDefault(ResultSetPreferences.RESULT_SET_INLINE_ENTER);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ODD_ROWS);
         store.setToDefault(ResultSetPreferences.RESULT_SET_HIGHLIGHT_SELECTED_ROWS);
         store.setToDefault(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
-        //store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ICONS);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING);
@@ -262,6 +259,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_COLLECTIONS_INLINE);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_WHITESPACE_CHARACTERS);
+        store.setToDefault(ResultSetPreferences.RESULT_GRID_VALUE_FORMAT);
         store.setToDefault(ResultSetPreferences.RESULT_SET_CLICK_TOGGLE_BOOLEAN);
         store.setToDefault(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK);
         store.setToDefault(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE);
@@ -269,8 +267,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
     }
 
     @Override
-    protected String getPropertyPageID()
-    {
+    protected String getPropertyPageID() {
         return PAGE_ID;
     }
 

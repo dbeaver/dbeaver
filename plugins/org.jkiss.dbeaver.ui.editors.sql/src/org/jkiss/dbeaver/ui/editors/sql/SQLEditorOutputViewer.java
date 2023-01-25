@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,123 +18,220 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.themes.ITheme;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
+import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
+import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
+import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReaderExt;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.MenuCreator;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Writer;
+import java.util.*;
 
 /**
  * SQL editor output viewer
  */
-public class SQLEditorOutputViewer extends Composite {
+public class SQLEditorOutputViewer extends Composite implements DBCOutputWriter {
+    private static final int MAX_RECORDS = 1000;
 
-    private final StyledText text;
-    private PrintWriter writer;
-    private boolean hasNewOutput;
+    private final Set<DBCOutputSeverity> severities = new HashSet<>();
+    private final Deque<OutputRecord> records = new ArrayDeque<>(MAX_RECORDS);
 
-    public SQLEditorOutputViewer(final IWorkbenchPartSite site, Composite parent, int style) {
+    private final Text filterText;
+    private final ToolBarManager filterToolbar;
+    private final SQLEditorOutputConsoleViewer viewer;
+
+    private DBCExecutionContext executionContext;
+
+    public SQLEditorOutputViewer(@NotNull IWorkbenchPartSite site, @NotNull Composite parent, int style) {
         super(parent, style);
-        setLayout(new FillLayout());
 
-        text = new StyledText(this, SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
-        text.setMargins(5, 5, 5, 5);
-        TextEditorUtils.enableHostEditorKeyBindingsSupport(site, text);
-        Writer out = new Writer() {
-            @Override
-            public void write(final char[] cbuf, final int off, final int len) throws IOException {
-                text.append(String.valueOf(cbuf, off, len));
-                if (len > 0) {
-                    hasNewOutput = true;
-                }
-            }
+        setLayoutData(new GridData(GridData.FILL_BOTH));
+        setLayout(GridLayoutFactory.fillDefaults().spacing(0, 0).create());
 
-            @Override
-            public void flush() throws IOException {
-            }
+        final Composite filterComposite = UIUtils.createPlaceholder(this, 2);
+        filterComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+        filterText = new Text(filterComposite, SWT.SINGLE | SWT.SEARCH | SWT.ICON_CANCEL);
+        filterText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        filterText.setMessage(SQLEditorMessages.sql_editor_panel_output_filter_message);
+        filterText.addModifyListener(e -> filterOutput());
+
+        filterToolbar = new ToolBarManager();
+        filterToolbar.add(new ConfigureSeverityAction());
+        filterToolbar.createControl(filterComposite);
+
+        viewer = new SQLEditorOutputConsoleViewer(site, this, SWT.NONE) {
             @Override
-            public void close() throws IOException {
+            public void clearOutput() {
+                super.clearOutput();
+                records.clear();
             }
         };
-        writer = new PrintWriter(out, true);
-        createContextMenu(site);
-        refreshStyles();
+        viewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        TextEditorUtils.enableHostEditorKeyBindingsSupport(site, filterText);
+        updateControls();
     }
 
-    public StyledText getText() {
-        return text;
-    }
-
-    void refreshStyles() {
-        ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-        Font outputFont = currentTheme.getFontRegistry().get(SQLConstants.CONFIG_FONT_OUTPUT);
-        if (outputFont != null) {
-            this.text.setFont(outputFont);
+    @Override
+    public void println(@Nullable DBCOutputSeverity severity, @Nullable String message) {
+        if (message == null) {
+            return;
         }
-        this.text.setForeground(currentTheme.getColorRegistry().get(SQLConstants.CONFIG_COLOR_TEXT));
-        this.text.setBackground(currentTheme.getColorRegistry().get(SQLConstants.CONFIG_COLOR_BACKGROUND));
+        if (severity == null || severities.contains(severity)) {
+            viewer.getOutputWriter().println(message);
+        }
+        records.offer(new OutputRecord(severity, message));
+        if (records.size() > MAX_RECORDS) {
+            records.pop();
+        }
     }
 
-    void print(String out)
-    {
-        text.append(out);
+    @Override
+    public void flush() {
+        viewer.getOutputWriter().flush();
     }
 
-    void println(String out)
-    {
-        print(out + "\n");
-    }
-
-    void scrollToEnd()
-    {
-        text.setTopIndex(text.getLineCount() - 1);
-    }
-
-    public PrintWriter getOutputWriter() {
-        return writer;
+    @NotNull
+    public SQLEditorOutputConsoleViewer getViewer() {
+        return viewer;
     }
 
     public boolean isHasNewOutput() {
-        return hasNewOutput;
+        return viewer.isHasNewOutput();
     }
 
-    void resetNewOutput() {
-        hasNewOutput = false;
+    public void refreshStyles() {
+        viewer.refreshStyles();
     }
 
-    private void createContextMenu(IWorkbenchPartSite site)
-    {
-        MenuManager menuMgr = new MenuManager();
-        menuMgr.addMenuListener(manager -> {
-            StyledTextUtils.fillDefaultStyledTextContextMenu(manager, text);
-            manager.add(new Separator());
-            manager.add(new Action(SQLEditorMessages.sql_editor_action_clear) {
-                @Override
-                public void run() {
-                    clearOutput();
+    public void resetNewOutput() {
+        viewer.resetNewOutput();
+    }
+
+    public void clearOutput() {
+        viewer.clearOutput();
+    }
+
+    public void setExecutionContext(@Nullable DBCExecutionContext executionContext) {
+        if (this.executionContext != executionContext) {
+            this.executionContext = executionContext;
+
+            updateControls();
+        }
+    }
+
+    private void updateControls() {
+        clearOutput();
+        severities.clear();
+
+        final DBPDataSource dataSource = executionContext != null ? executionContext.getDataSource() : null;
+        final DBCServerOutputReader reader = DBUtils.getAdapter(DBCServerOutputReader.class, dataSource);
+
+        if (reader instanceof DBCServerOutputReaderExt) {
+            final DBCServerOutputReaderExt readerExt = (DBCServerOutputReaderExt) reader;
+            final DBCOutputSeverity[] supportedSeverities = readerExt.getSupportedSeverities(executionContext);
+
+            severities.addAll(List.of(supportedSeverities));
+
+            UIUtils.setControlVisible(filterToolbar.getControl(), supportedSeverities.length > 0);
+        } else {
+            UIUtils.setControlVisible(filterToolbar.getControl(), false);
+        }
+
+        filterToolbar.getControl().getParent().layout(true, true);
+    }
+
+    private void filterOutput() {
+        viewer.getConsole().clearConsole();
+
+        final PrintWriter writer = viewer.getOutputWriter();
+        final String filter = filterText.getText().trim();
+
+        for (OutputRecord record : records) {
+            if (record.severity != null && !severities.contains(record.severity)) {
+                continue;
+            }
+            if (!filter.isEmpty() && !record.line.contains(filter)) {
+                continue;
+            }
+            writer.println(record.line);
+        }
+
+        writer.flush();
+    }
+
+    private class ConfigureSeverityAction extends Action {
+        public ConfigureSeverityAction() {
+            super(null, AS_DROP_DOWN_MENU);
+
+            final MenuManager filterMenu = new MenuManager();
+            filterMenu.setRemoveAllWhenShown(true);
+            filterMenu.addMenuListener(manager -> {
+                final DBCServerOutputReader reader = DBUtils.getAdapter(DBCServerOutputReader.class, executionContext.getDataSource());
+                if (!(reader instanceof DBCServerOutputReaderExt)) {
+                    return;
+                }
+                for (DBCOutputSeverity severity : ((DBCServerOutputReaderExt) reader).getSupportedSeverities(executionContext)) {
+                    manager.add(new ToggleSeverityAction(severity));
                 }
             });
-        });
-        menuMgr.setRemoveAllWhenShown(true);
-        text.setMenu(menuMgr.createContextMenu(text));
-        text.addDisposeListener(e -> menuMgr.dispose());
+
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.FILTER));
+            setToolTipText(SQLEditorMessages.sql_editor_panel_output_filter_hint);
+            setMenuCreator(new MenuCreator(control -> filterMenu));
+        }
     }
 
-    void clearOutput() {
-        text.setText("");
+    private class ToggleSeverityAction extends Action {
+        private final DBCOutputSeverity severity;
+
+        public ToggleSeverityAction(@NotNull DBCOutputSeverity severity) {
+            super(severity.getName(), AS_CHECK_BOX);
+            this.severity = severity;
+        }
+
+        @Override
+        public boolean isChecked() {
+            return severities.contains(severity);
+        }
+
+        @Override
+        public void run() {
+            if (severities.contains(severity)) {
+                severities.remove(severity);
+            } else {
+                severities.add(severity);
+            }
+
+            filterOutput();
+        }
     }
 
+    private static class OutputRecord {
+        private final DBCOutputSeverity severity;
+        private final String line;
+
+        public OutputRecord(@Nullable DBCOutputSeverity severity, @NotNull String line) {
+            this.severity = severity;
+            this.line = line;
+        }
+    }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -209,8 +209,10 @@ public class HexPreferencesManager {
         }
 
         {
-            Group cmpByteSettings = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_HORIZONTAL, 0);
-            UIUtils.createControlLabel(cmpByteSettings, "Default width");
+            Group cmpByteSettings = UIUtils.createControlGroup(
+                composite, BinaryEditorMessages.editor_cmp_byte_settings_label, 2, GridData.FILL_HORIZONTAL, 0
+            );
+            UIUtils.createControlLabel(cmpByteSettings, BinaryEditorMessages.editor_byte_settings_width_label);
             cmbByteWidth = new Combo(cmpByteSettings, SWT.BORDER);
             cmbByteWidth.setItems(arrDefValuetoIndex);
             int index = Arrays.asList(arrDefValuetoIndex).indexOf(defWidthValue);

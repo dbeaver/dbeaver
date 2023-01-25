@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -80,7 +81,8 @@ public class GenericSQLDialect extends JDBCSQLDialect {
         if (!CommonUtils.isEmpty(escapeStr)) {
             this.stringEscapeCharacter = escapeStr.charAt(0);
         }
-        this.scriptDelimiterRedefiner = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER_REDEFINER));
+        this.scriptDelimiterRedefiner =
+            CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER_REDEFINER), null);
         this.hasDelimiterAfterQuery = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_SQL_DELIMITER_AFTER_QUERY));
         this.hasDelimiterAfterBlock = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_SQL_DELIMITER_AFTER_BLOCK));
         this.legacySQLDialect = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_LEGACY_DIALECT));
@@ -119,6 +121,15 @@ public class GenericSQLDialect extends JDBCSQLDialect {
         }
         this.omitCatalogName = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_OMIT_CATALOG_NAME));
         this.supportsMultiInsert = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_MULTI_INSERT));
+
+        final String identifierQuotes = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_IDENTIFIER_QUOTES));
+        if (CommonUtils.isNotEmpty(identifierQuotes)) {
+            setIdentifierQuoteString(
+                Arrays.stream(identifierQuotes.split(","))
+                    .map(pair -> pair.split(":"))
+                    .toArray(String[][]::new)
+            );
+        }
     }
 
     @NotNull

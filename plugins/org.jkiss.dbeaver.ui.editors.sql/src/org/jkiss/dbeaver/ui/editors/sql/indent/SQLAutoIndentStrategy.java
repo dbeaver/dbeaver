@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,22 +18,16 @@ package org.jkiss.dbeaver.ui.editors.sql.indent;
 
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPMessageType;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.sql.SQLBlockCompletionInfo;
-import org.jkiss.dbeaver.model.sql.SQLBlockCompletions;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-
-import java.util.*;
 
 public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
@@ -93,6 +87,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             }
         } else if (command.length == 0 && command.text != null) {
             final boolean lineDelimiter = isLineDelimiter(document, command.text);
+            boolean isKeywordCaseUpdated = false;
             try {
                 boolean isPrevLetter = command.offset > 0 && Character.isJavaIdentifierPart(document.getChar(command.offset - 1));
                 boolean isQuote = isIdentifierQuoteString(command.text);
@@ -104,14 +99,14 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                     String line = document.get(lineRegion.getOffset(), lineRegion.getLength()).trim();
 
                     if (!SQLUtils.isCommentLine(syntaxManager.getDialect(), line)) {
-                        updateKeywordCase(document, command);
+                        isKeywordCaseUpdated = updateKeywordCase(document, command);
                     }
                 }
             } catch (BadLocationException e) {
                 log.debug(e);
             }
             if (lineDelimiter) {
-                smartIndentAfterNewLine(document, command);
+                smartIndentAfterNewLine(document, command, isKeywordCaseUpdated);
             }
         }
     }
@@ -287,7 +282,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         endPos = pos + 1;
         while (pos >= 0) {
             char ch = document.getChar(pos);
-            if (!Character.isJavaIdentifierPart(ch) && commandPrefix.indexOf(ch) == -1) {
+            if (!Character.isJavaIdentifierPart(ch) && (commandPrefix == null || commandPrefix.indexOf(ch) == -1)) {
                 break;
             }
             pos--;
@@ -306,7 +301,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         return false;
     }
 
-    private void smartIndentAfterNewLine(IDocument document, DocumentCommand command) {
+    private void smartIndentAfterNewLine(@NotNull IDocument document, @NotNull DocumentCommand command, boolean isLastTokenCaseUpdated) {
         int docLength = document.getLength();
         if (docLength == 0) {
             return;
@@ -405,7 +400,8 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                     } else if (part.equals(SQLBlockCompletions.ONE_INDENT_COMPLETION_PART)) {
                         buf.append(oneIndent);
                     } else {
-                        buf.append(adjustCase(lastTokenString, part));
+                        final String token = isLastTokenCaseUpdated ? syntaxManager.getKeywordCase().transform(lastTokenString) : lastTokenString;
+                        buf.append(adjustCase(token, part));
                     }
                 }
                 if (completion.getTailEndTokenId() != null) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,6 +131,7 @@ public class DBConstants {
     public static final String PROP_FEATURE_SPECIFIC = "specific";
     public static final String PROP_FEATURE_REQUIRED = "required";
     public static final String PROP_FEATURE_PASSWORD = "password";
+    public static final String PROP_FEATURE_NON_SECURED = "nonSecuredProperty";
     public static final String PROP_FEATURE_NAME = "name";
     public static final String PROP_FEATURE_MULTILINE = "multiline";
     public static final String PROP_FEATURE_EDIT_POSSIBLE = "editPossible";
@@ -142,7 +143,6 @@ public class DBConstants {
 
     public static final String HOST_LOCALHOST = "localhost";
 
-    public static final String PRODUCT_FEATURE_SIMPLE_DATABASE_ADMINISTRATION = "simpleDatabaseAdministration";
 
-
+    public static final String DRIVER_PARAM_DISABLE_NETWORK_PARAMETERS = "disableNetworkParameters";
 }

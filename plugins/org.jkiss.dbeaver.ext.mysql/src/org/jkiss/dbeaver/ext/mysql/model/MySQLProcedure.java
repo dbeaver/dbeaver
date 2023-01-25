@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import java.util.Map;
 /**
  * MySQLProcedure
  */
-public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCatalog> implements MySQLSourceObject, DBPRefreshableObject, DBPUniqueObject
+public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCatalog> implements MySQLSourceObject, DBPRefreshableObject
 {
     private static final Log log = Log.getLog(MySQLProcedure.class);
 
@@ -258,15 +258,6 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getContainer().proceduresCache.refreshObject(monitor, getContainer(), this);
-    }
-
-    @NotNull
-    @Override
-    public String getUniqueName() {
-        if (getProcedureType() == DBSProcedureType.PROCEDURE) {
-            return getName() + ' ' + getResultType();
-        }
-        return getName();
     }
 
     @Override

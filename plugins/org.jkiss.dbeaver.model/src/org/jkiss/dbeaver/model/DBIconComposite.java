@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 
 package org.jkiss.dbeaver.model;
+
+import org.jkiss.code.NotNull;
 
 /**
  * Image with overlays
@@ -73,6 +75,11 @@ public class DBIconComposite implements DBPImage
 
     public void setBottomRight(DBPImage bottomRight) {
         this.bottomRight = bottomRight;
+    }
+    
+    @NotNull
+    public DBPImage getMain() {
+        return main;
     }
 
     @Override

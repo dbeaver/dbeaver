@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
@@ -62,9 +63,11 @@ public class DBNUtils {
                     continue;
                 }
                 final DBXTreeFolder meta = ((DBNDatabaseFolder) childNode).getMeta();
-                final Class<?> objectClass = meta.getSource().getObjectClass(meta.getType());
-                if (objectClass != null && folderType.isAssignableFrom(objectClass)) {
-                    return childNode;
+                if (!CommonUtils.isEmpty(meta.getType())) {
+                    final Class<?> objectClass = meta.getSource().getObjectClass(meta.getType());
+                    if (objectClass != null && folderType.isAssignableFrom(objectClass)) {
+                        return childNode;
+                    }
                 }
             }
         } catch (DBException e) {

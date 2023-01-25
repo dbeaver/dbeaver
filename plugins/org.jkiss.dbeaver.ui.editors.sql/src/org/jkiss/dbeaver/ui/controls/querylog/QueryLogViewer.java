@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -766,6 +766,15 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             copyAction.setEnabled(logTable.getSelectionCount() > 0);
             copyAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
 
+            IAction deleteSelectionAction = new Action(ModelMessages.controls_querylog_action_delete) {
+                @Override
+                public void run() {
+                    deleteSelectedItems();
+                }
+            };
+            deleteSelectionAction.setEnabled(logTable.getSelectionCount() > 0);
+            deleteSelectionAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_DELETE);
+
             IAction copyAllAction = new Action(ModelMessages.controls_querylog_action_copy_all_fields) {
                 @Override
                 public void run() {
@@ -802,6 +811,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 manager.add(new Separator());
             }
             manager.add(copyAction);
+            manager.add(deleteSelectionAction);
             manager.add(copyAllAction);
             manager.add(selectAllAction);
             manager.add(clearLogAction);
@@ -933,6 +943,14 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             public void dragFinished(DragSourceEvent event) {
             }
         });
+    }
+
+    public synchronized void deleteSelectedItems() {
+        for (TableItem tableItem : logTable.getSelection()) {
+            objectToItemMap.remove(((QMEvent) tableItem.getData()).getObject().getObjectId());
+        }
+        int[] selectionIndices = logTable.getSelectionIndices();
+        logTable.remove(selectionIndices);
     }
 
     public synchronized void clearLog() {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
-import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UITextUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Grid row header renderer.
@@ -47,9 +51,6 @@ class GridRowRenderer extends AbstractRenderer {
         IGridContentProvider.ElementState state,
         IGridRow element)
     {
-        String text = grid.getLabelProvider().getText(element);
-
-        gc.setFont(grid.normalFont);
         gc.setBackground(grid.getLabelProvider().getHeaderBackground(element, selected));
         gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height + 1);
 
@@ -94,12 +95,19 @@ class GridRowRenderer extends AbstractRenderer {
             font = (element == grid.getFocusRowElement() ? grid.boldFont : grid.normalFont);
         }
         gc.setFont(font);
-        gc.drawString(
-            UITextUtils.getShortString(grid.fontMetrics, text, bounds.width - x - RIGHT_MARGIN),
-            bounds.x + x,
-            bounds.y + (bounds.height - gc.stringExtent(text).y) / 2,
-            isTransparent
-        );
+
+        final String text = grid.getLabelProvider().getText(element);
+        final String desc = grid.getLabelProvider().getDescription(element);
+
+        final String shortText = UITextUtils.getShortString(grid.fontMetrics, text, bounds.width - x - RIGHT_MARGIN);
+        gc.drawString(shortText, bounds.x + x, bounds.y + (bounds.height - gc.stringExtent(text).y) / 2, isTransparent);
+
+        if (CommonUtils.isNotEmpty(desc)) {
+            final String shortDesc = UITextUtils.getShortString(grid.fontMetrics, " - " + desc, bounds.width - x - RIGHT_MARGIN);
+            x += grid.sizingGC.stringExtent(shortText).x;
+            gc.setFont(grid.italicFont);
+            gc.drawString(shortDesc, bounds.x + x, bounds.y + (bounds.height - gc.stringExtent(text).y) / 2, isTransparent);
+        }
     }
 
     public int computeHeaderWidth(IGridRow element, int level) {
@@ -112,9 +120,9 @@ class GridRowRenderer extends AbstractRenderer {
             width += rowImage.getBounds().width;
             width += GridRowRenderer.IMAGE_SPACING;
         }
-        String rowText = grid.getLabelProvider().getText(element);
-        Point ext = grid.sizingGC.stringExtent(rowText);
-        width += ext.x;
+        final String rowText = grid.getLabelProvider().getText(element);
+        final String rowDesc = grid.getLabelProvider().getDescription(element);
+        width += grid.sizingGC.stringExtent(CommonUtils.isNotEmpty(rowDesc) ? rowText + " - " + rowDesc : rowText).x;
         width += level * GridRowRenderer.LEVEL_SPACING;
         return width;
     }

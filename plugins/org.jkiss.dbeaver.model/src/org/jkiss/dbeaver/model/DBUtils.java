@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -796,7 +796,11 @@ public final class DBUtils {
         @Nullable int[] nestedIndexes
     ) {
         if (attribute.isCustom()) {
-            return DBVUtils.executeExpression(((DBDAttributeBindingCustom) attribute).getEntityAttribute(), allAttributes, row);
+            try {
+                return DBVUtils.executeExpression(((DBDAttributeBindingCustom) attribute).getEntityAttribute(), allAttributes, row);
+            } catch (Exception e) {
+                return new DBDValueError(e);
+            }
         }
 
         final int depth = attribute.getLevel();
@@ -1592,7 +1596,7 @@ public final class DBUtils {
     }
 
     /**
-     * Returns DBPDataSourceContainer fro DBPDataSource or object itself otherwise
+     * Returns DBPDataSourceContainer from DBPDataSource or object itself otherwise
      */
     public static DBSObject getPublicObjectContainer(@NotNull DBSObject object)
     {
@@ -1893,8 +1897,14 @@ public final class DBUtils {
         return null;
     }
 
+    /**
+     * Sometimes it is all info that we know about datasource - default catalog or default schema. This method returns an array of them.
+     *
+     * @param context execution context contains info about default table containers
+     * @return array of the default table containers. First - default catalog, second - default schema. If they exist.
+     */
     @NotNull
-    public static DBSObject[] getSelectedObjects(DBRProgressMonitor monitor, @NotNull DBCExecutionContext context) {
+    public static DBSObject[] getSelectedObjects(@NotNull DBCExecutionContext context) {
         DBCExecutionContextDefaults contextDefaults = context.getContextDefaults();
         if (contextDefaults != null) {
             DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();

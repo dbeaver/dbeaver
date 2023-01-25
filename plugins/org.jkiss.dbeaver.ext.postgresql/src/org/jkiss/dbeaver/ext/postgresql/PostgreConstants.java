@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,6 +81,7 @@ public class PostgreConstants {
     public static final String PUBLIC_SCHEMA_NAME = "public";
 
     // Settings names from 'pg_options' view
+    public static final String OPTION_CLIENT_MIN_MESSAGES = "client_min_messages";
     public static final String OPTION_STANDARD_CONFORMING_STRINGS = "standard_conforming_strings";
 
     public static final String PG_OBJECT_CLASS = "org.postgresql.util.PGobject";
@@ -97,6 +98,7 @@ public class PostgreConstants {
         "oid", "oid", "Row identifier", false);
 
     public static final String TYPE_CHAR = "char";
+    public static final String TYPE_TEXT = "text";
     public static final String TYPE_UUID = "uuid";
     public static final String TYPE_BPCHAR = "bpchar";
     public static final String TYPE_VARCHAR = "varchar";
@@ -137,6 +139,8 @@ public class PostgreConstants {
     public static final String TYPE_INT2 = "int2";
     public static final String TYPE_INT4 = "int4";
     public static final String TYPE_INT8 = "int8";
+    public static final String TYPE_BIGINT = "bigint";
+
     public static final String TYPE_FLOAT4 = "float4";
     public static final String TYPE_FLOAT8 = "float8";
 

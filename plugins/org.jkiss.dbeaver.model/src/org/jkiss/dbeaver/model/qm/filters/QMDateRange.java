@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,26 +18,24 @@ package org.jkiss.dbeaver.model.qm.filters;
 
 import org.jkiss.code.Nullable;
 
-import java.time.LocalDateTime;
-
 public class QMDateRange {
     @Nullable
-    private final LocalDateTime from;
+    private final String from;
     @Nullable
-    private final LocalDateTime to;
+    private final String to;
 
-    public QMDateRange(@Nullable LocalDateTime from, @Nullable LocalDateTime to) {
+    public QMDateRange(@Nullable String from, @Nullable String to) {
         this.from = from;
         this.to = to;
     }
 
     @Nullable
-    public LocalDateTime getFrom() {
+    public String getFrom() {
         return from;
     }
 
     @Nullable
-    public LocalDateTime getTo() {
+    public String getTo() {
         return to;
     }
 }

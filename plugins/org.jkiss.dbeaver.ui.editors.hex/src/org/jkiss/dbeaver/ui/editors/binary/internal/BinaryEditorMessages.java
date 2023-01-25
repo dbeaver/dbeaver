@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,6 +72,9 @@ public class BinaryEditorMessages extends NLS {
 	public static String editor_binary_hex_status_line_text_insert;
 	public static String editor_binary_hex_status_line_text_ovewrite;
 	public static String editor_binary_hex_status_line_value;
+
+    public static String editor_cmp_byte_settings_label;
+    public static String editor_byte_settings_width_label;
 
 	static {
 		// initialize resource bundle

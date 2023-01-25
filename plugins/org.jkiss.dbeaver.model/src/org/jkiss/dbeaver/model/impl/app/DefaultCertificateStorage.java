@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.app;
 
+import org.bouncycastle.util.io.pem.PemReader;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -25,11 +26,16 @@ import org.jkiss.dbeaver.model.app.DBACertificateStorage;
 import org.jkiss.utils.Base64;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * DefaultCertificateStorage
@@ -44,15 +50,15 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
     public static final String CLIENT_CERT_ALIAS = "client-cert";
     public static final String KEY_CERT_ALIAS = "key-cert";
 
-    private final File localPath;
+    private final Path localPath;
     private final Map<String, UserDefinedKeystore> userDefinedKeystores;
 
-    public DefaultCertificateStorage(File localPath) {
+    public DefaultCertificateStorage(Path localPath) {
         this.localPath = localPath;
         this.userDefinedKeystores = new HashMap<>();
-        if (localPath.exists()) {
+        if (Files.exists(localPath)) {
             // Cleanup old keystores
-            final File[] ksFiles = localPath.listFiles();
+            final File[] ksFiles = localPath.toFile().listFiles();
             if (ksFiles != null) {
                 for (File ksFile : ksFiles) {
                     if (!ksFile.delete()) {
@@ -60,18 +66,22 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
                     }
                 }
             }
-        } else if (!localPath.mkdirs()) {
-            log.error("Can't create directory for security manager: " + localPath.getAbsolutePath());
+        } else {
+            try {
+                Files.createDirectories(localPath);
+            } catch (IOException e) {
+                log.error("Can't create directory for security manager: " + localPath, e);
+            }
         }
     }
 
     @Override
     public KeyStore getKeyStore(DBPDataSourceContainer container, String certType) throws DBException {
         try {
-            File ksFile = getKeyStorePath(container, certType);
+            Path ksFile = getKeyStorePath(container, certType);
             KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            if (ksFile.exists()) {
-                try (InputStream is = new FileInputStream(ksFile)) {
+            if (Files.exists(ksFile)) {
+                try (InputStream is = Files.newInputStream(ksFile)) {
                     ks.load(is, getKeyStorePassword(container, certType));
                 }
             } else {
@@ -85,10 +95,16 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
         }
     }
 
-    private void saveKeyStore(DBPDataSourceContainer container, String certType, KeyStore keyStore) throws Exception {
-        final File ksFile = getKeyStorePath(container, certType);
+    @NotNull
+    @Override
+    public Path getStorageFolder() {
+        return this.localPath;
+    }
 
-        try (OutputStream os = new FileOutputStream(ksFile)) {
+    private void saveKeyStore(DBPDataSourceContainer container, String certType, KeyStore keyStore) throws Exception {
+        final Path ksFile = getKeyStorePath(container, certType);
+
+        try (OutputStream os = Files.newOutputStream(ksFile)) {
             keyStore.store(os, DEFAULT_PASSWORD);
         }
     }
@@ -194,12 +210,12 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
     }
 
     @Override
-    public File getKeyStorePath(DBPDataSourceContainer dataSource, String certType) {
+    public Path getKeyStorePath(DBPDataSourceContainer dataSource, String certType) {
         final UserDefinedKeystore userDefinedKeystore = getUserDefinedKeystore(dataSource, certType);
         if (userDefinedKeystore != null) {
-            return userDefinedKeystore.file;
+            return userDefinedKeystore.file.toPath();
         } else {
-            return new File(localPath, getKeyStoreName(dataSource, certType) + JKS_EXTENSION);
+            return localPath.resolve(getKeyStoreName(dataSource, certType) + JKS_EXTENSION);
         }
     }
 
@@ -217,6 +233,11 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
     @Override
     public String getKeyStoreType(DBPDataSourceContainer dataSource) {
         return KeyStore.getDefaultType();
+    }
+
+    @NotNull
+    public static byte[] loadDerFromPem(@NotNull Reader reader) throws IOException {
+        return new PemReader(reader).readPemObject().getContent();
     }
 
     /**

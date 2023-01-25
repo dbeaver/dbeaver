@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ import java.util.Locale;
 /**
  * Oracle SQL dialect
  */
-public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConverter {
+public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConverter, SQLDialectDDLExtension {
 
     private static final Log log = Log.getLog(OracleSQLDialect.class);
 
@@ -119,6 +119,7 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
         "ELSIF",
         "EXIT",
     };
+    public static final String AUTO_INCREMENT_KEYWORD = "GENERATED ALWAYS AS IDENTITY";
     private boolean crlfBroken;
     private DBPPreferenceStore preferenceStore;
 
@@ -503,8 +504,10 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
                 if (precision == 0 || precision > OracleConstants.NUMERIC_MAX_PRECISION) {
                     precision = OracleConstants.NUMERIC_MAX_PRECISION;
                 }
-                if (scale != null && precision > 0) {
-                    return "(" + precision + ',' + scale + ")";
+                if (scale != null || precision > 0) {
+                    // 38 - is default precision value. And we can not add scale here.
+                    // It will be changed to 0 automatically after table creation from the Oracle side.
+                    return "(" + (precision > 0 ? precision : "38") + (scale != null ? "," + scale : "") +  ")";
                 }
                 break;
             case OracleConstants.TYPE_INTERVAL_DAY_SECOND:
@@ -673,5 +676,34 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
     @Override
     public boolean supportsAliasInConditions() {
         return false;
+    }
+
+    @Nullable
+    @Override
+    public String getAutoIncrementKeyword() {
+        return AUTO_INCREMENT_KEYWORD;
+    }
+
+    @Override
+    public boolean supportsCreateIfExists() {
+        return false;
+    }
+
+    @NotNull
+    @Override
+    public String getTimestampDataType() {
+        return OracleConstants.TYPE_NAME_TIMESTAMP;
+    }
+
+    @NotNull
+    @Override
+    public String getBigIntegerType() {
+        return OracleConstants.TYPE_NUMBER;
+    }
+
+    @NotNull
+    @Override
+    public String getClobDataType() {
+        return OracleConstants.TYPE_CLOB;
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.LogOutputStream;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPApplicationController;
@@ -97,8 +99,10 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private static final String PROP_EXIT_DATA = IApplicationContext.EXIT_DATA_PROPERTY; //$NON-NLS-1$
     private static final String PROP_EXIT_CODE = "eclipse.exitcode"; //$NON-NLS-1$
 
-    public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
+    private static final String VALUE_TRUST_STRORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
 
+    public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
+    
     private final String WORKSPACE_DIR_6; //$NON-NLS-1$
     private final Path FILE_WITH_WORKSPACES;
     public final String WORKSPACE_DIR_CURRENT;
@@ -273,6 +277,14 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             SWTBrowserRegistry.overrideBrowser();
         }
         TimezoneRegistry.overrideTimezone();
+
+        if (RuntimeUtils.isWindows()
+            && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE))
+            && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE))
+            && ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
+        ) {
+            System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, VALUE_TRUST_STRORE_TYPE_WINDOWS);
+        }
 
         // Prefs default
         PlatformUI.getPreferenceStore().setDefault(
@@ -550,21 +562,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         final Path homeDir = Path.of(defaultHomePath);
         try {
             if (!Files.exists(homeDir) || Files.list(homeDir).count() == 0) {
-                Path previousVersionWorkspaceDir = null;
-                for (String oldDir : WORKSPACE_DIR_PREVIOUS) {
-                    oldDir = GeneralUtils.replaceSystemPropertyVariables(oldDir);
-                    final Path oldWorkspaceDir = Path.of(oldDir);
-                    if (Files.exists(oldWorkspaceDir) &&
-                        Files.exists(GeneralUtils.getMetadataFolder(oldWorkspaceDir))) {
-                        previousVersionWorkspaceDir = oldWorkspaceDir;
-                        break;
-                    }
-                }
-                if (previousVersionWorkspaceDir != null) {
-                    DBeaverSettingsImporter importer = new DBeaverSettingsImporter(this, getDisplay());
-                    if (!importer.migrateFromPreviousVersion(previousVersionWorkspaceDir.toFile(), homeDir.toFile())) {
-                        return false;
-                    }
+                if (!tryMigrateFromPreviousVersion(homeDir)) {
+                    return false;
                 }
             }
         } catch (Throwable e) {
@@ -615,6 +614,26 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             System.err.println("Can't switch workspace to '" + defaultHomePath + "' - " + e.getMessage());  //$NON-NLS-1$ //$NON-NLS-2$
         }
 
+        return true;
+    }
+
+    protected boolean tryMigrateFromPreviousVersion(Path homeDir) {
+        Path previousVersionWorkspaceDir = null;
+        for (String oldDir : WORKSPACE_DIR_PREVIOUS) {
+            oldDir = GeneralUtils.replaceSystemPropertyVariables(oldDir);
+            final Path oldWorkspaceDir = Path.of(oldDir);
+            if (Files.exists(oldWorkspaceDir) &&
+                Files.exists(GeneralUtils.getMetadataFolder(oldWorkspaceDir))) {
+                previousVersionWorkspaceDir = oldWorkspaceDir;
+                break;
+            }
+        }
+        if (previousVersionWorkspaceDir != null) {
+            DBeaverSettingsImporter importer = new DBeaverSettingsImporter(this, getDisplay());
+            if (!importer.migrateFromPreviousVersion(previousVersionWorkspaceDir.toFile(), homeDir.toFile())) {
+                return false;
+            }
+        }
         return true;
     }
 
@@ -672,14 +691,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
         logLocation = GeneralUtils.replaceVariables(logLocation, new SystemVariablesResolver());
         File debugLogFile = new File(logLocation);
-        if (debugLogFile.exists()) {
-            if (!debugLogFile.delete()) {
-                System.err.println("Can't delete debug log file"); //$NON-NLS-1$
-                return;
-            }
-        }
         try {
-            debugWriter = new FileOutputStream(debugLogFile);
+            debugWriter = new LogOutputStream(debugLogFile);
             oldSystemOut = System.out;
             oldSystemErr = System.err;
             System.setOut(new PrintStream(new ProxyPrintStream(debugWriter, oldSystemOut)));

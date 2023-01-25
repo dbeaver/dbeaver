@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -96,8 +96,16 @@ public class PrefPageTransactions extends TargetPrefPage
         }
 
         {
-            Group notifyNameGroup = UIUtils.createControlGroup(composite, "Notifications", 2, GridData.FILL_HORIZONTAL, 0);
-            showTransactionNotificationsCheck = UIUtils.createCheckbox(notifyNameGroup, "Show transaction end notification", "Show transaction end (commit or rollback) notification in task bar", false, 2);
+            Group notifyNameGroup = UIUtils.createControlGroup(
+                composite, CoreMessages.pref_page_transactions_notify_name_group_label, 2, GridData.FILL_HORIZONTAL, 0
+            );
+            showTransactionNotificationsCheck = UIUtils.createCheckbox(
+                notifyNameGroup,
+                CoreMessages.pref_page_transactions_notifications_show_check_label,
+                CoreMessages.pref_page_transactions_notifications_show_check_description,
+                false,
+                2
+            );
         }
         return composite;
     }

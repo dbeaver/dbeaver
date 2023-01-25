@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.*;
 import org.eclipse.ui.editors.text.IEncodingSupport;
 import org.eclipse.ui.internal.WorkbenchMessages;
@@ -152,30 +150,21 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         createEditorAction(bars, IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE);
         createEditorAction(bars, ITextEditorActionConstants.GOTO_LINE);
 
-        manager.addListener(new Listener() {
-            @Override
-            public void handleEvent(Event event)
-            {
-                firePropertyChange(PROP_DIRTY);
-                updateActionsStatus();
-            }
+        manager.addListener(event -> {
+            firePropertyChange(PROP_DIRTY);
+            updateActionsStatus();
         });
 
         bars.updateActionBars();
 
-        preferencesChangeListener = new DBPPreferenceListener() {
-            @Override
-            public void preferenceChange(PreferenceChangeEvent event)
-            {
-                if (HexPreferencesPage.PROP_FONT_DATA.equals(event.getProperty())) {
-                    manager.setTextFont((FontData) event.getNewValue());
-                }
-                if (HexPreferencesPage.PROP_DEF_WIDTH.equals(event.getProperty())) {
-                		manager.setDefWidth((String) event.getNewValue());
-                }
-                    
+        preferencesChangeListener = event -> {
+            if (HexPreferencesPage.PROP_FONT_DATA.equals(event.getProperty())) {
+                manager.setTextFont((FontData) event.getNewValue());
             }
-            
+            if (HexPreferencesPage.PROP_DEF_WIDTH.equals(event.getProperty())) {
+                    manager.setDefWidth((String) event.getNewValue());
+            }
+
         };
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.addPropertyChangeListener(preferencesChangeListener);
@@ -240,8 +229,10 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
             manager = null;
         }
 
-        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        store.removePropertyChangeListener(preferencesChangeListener);
+        if (preferencesChangeListener != null) {
+            DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+            store.removePropertyChangeListener(preferencesChangeListener);
+        }
 
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
 
@@ -427,7 +418,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     }
 
     class EditorAction extends Action {
-        String actionId = null;
+        String actionId;
 
         EditorAction(String actionId, String text)
         {

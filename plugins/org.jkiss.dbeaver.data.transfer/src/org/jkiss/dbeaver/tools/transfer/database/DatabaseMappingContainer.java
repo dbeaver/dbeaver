@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         this.consumerSettings = consumerSettings;
         this.source = sourceObject;
         this.target = targetObject;
-        refreshMappingType(monitor, DatabaseMappingType.existing, false);
+        refreshMappingType(monitor, DatabaseMappingType.existing, false, false);
     }
 
     public DatabaseMappingContainer(DatabaseMappingContainer container, DBSDataContainer sourceObject) {
@@ -106,19 +106,28 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     }
 
     public void refreshMappingType(DBRRunnableContext context, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
-        refreshMappingType(new VoidProgressMonitor(), mappingType, forceRefresh);
+        refreshMappingType(new VoidProgressMonitor(), mappingType, forceRefresh, false);
     }
 
-    public void refreshMappingType(DBRProgressMonitor monitor, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
+    public void refreshMappingType(
+        DBRProgressMonitor monitor,
+        DatabaseMappingType mappingType,
+        boolean forceRefresh,
+        boolean updateAttributesNames
+    ) throws DBException {
         this.mappingType = mappingType;
-        refreshAttributesMappingTypes(monitor, forceRefresh);
+        refreshAttributesMappingTypes(monitor, forceRefresh, updateAttributesNames);
     }
 
-    public void refreshAttributesMappingTypes(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException {
+    public void refreshAttributesMappingTypes(
+        DBRProgressMonitor monitor,
+        boolean forceRefresh,
+        boolean updateAttributesNames
+    ) throws DBException {
         final Collection<DatabaseMappingAttribute> mappings = getAttributeMappings(monitor);
         if (!CommonUtils.isEmpty(mappings)) {
             for (DatabaseMappingAttribute attr : mappings) {
-                attr.updateMappingType(monitor, forceRefresh);
+                attr.updateMappingType(monitor, forceRefresh, updateAttributesNames);
             }
         }
     }
@@ -254,7 +263,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
 
     private void addAttributeMapping(DBRProgressMonitor monitor, DBSAttributeBase attr) throws DBException {
         DatabaseMappingAttribute mapping = new DatabaseMappingAttribute(this, attr);
-        mapping.updateMappingType(monitor, false);
+        mapping.updateMappingType(monitor, false, false);
         attributeMappings.add(mapping);
     }
 
@@ -274,7 +283,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 DBSAttributeBase sourceAttr = attrMapping.getSource();
                 if (sourceAttr != null) {
                     Map<String, Object> attrSettings = new LinkedHashMap<>();
-                    attrsSection.put(attrMapping.getSourceLabelOrName(sourceAttr, true), attrSettings);
+                    attrsSection.put(attrMapping.getSourceLabelOrName(sourceAttr), attrSettings);
                     attrMapping.saveSettings(attrSettings);
                 }
             }
@@ -320,13 +329,13 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             }
         }
         if (!attributeMappings.isEmpty()) {
-            Map<String, Object> attrsSection = (Map<String, Object>) settings.get("attributes");
-            if (attrsSection != null) {
+            Map<String, Object> attrsSection = JSONUtils.getObject(settings, "attributes");
+            if (!attrsSection.isEmpty()) {
                 for (DatabaseMappingAttribute attrMapping : attributeMappings) {
                     DBSAttributeBase sourceAttr = attrMapping.getSource();
                     if (sourceAttr != null) {
-                        Map<String, Object> attrSettings = (Map<String, Object>) attrsSection.get(attrMapping.getSourceLabelOrName(sourceAttr, true));
-                        if (attrSettings != null) {
+                        Map<String, Object> attrSettings = JSONUtils.getObject(attrsSection, attrMapping.getSourceLabelOrName(sourceAttr));
+                        if (!attrSettings.isEmpty()) {
                             attrMapping.loadSettings(attrSettings);
                         }
                     }

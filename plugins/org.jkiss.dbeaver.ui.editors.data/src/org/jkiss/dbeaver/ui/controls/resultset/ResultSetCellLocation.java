@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.utils.ArrayUtils;
+
+import java.util.List;
 
 /**
  * Resultset cell location
@@ -27,27 +32,45 @@ public class ResultSetCellLocation {
     private final ResultSetRow row;
     private final int[] rowIndexes;
 
-    public ResultSetCellLocation(DBDAttributeBinding attribute, ResultSetRow row) {
-        this.attribute = attribute;
-        this.row = row;
-        this.rowIndexes = null;
+    public ResultSetCellLocation(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row) {
+        this(attribute, row, null);
     }
 
-    public ResultSetCellLocation(DBDAttributeBinding attribute, ResultSetRow row, int[] rowIndexes) {
-        this.attribute = attribute;
+    public ResultSetCellLocation(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row, @Nullable int[] rowIndexes) {
+        this.attribute = getLeafAttribute(attribute, rowIndexes);
         this.row = row;
         this.rowIndexes = rowIndexes;
     }
 
+    @NotNull
     public DBDAttributeBinding getAttribute() {
         return attribute;
     }
 
+    @NotNull
     public ResultSetRow getRow() {
         return row;
     }
 
+    @Nullable
     public int[] getRowIndexes() {
         return rowIndexes;
+    }
+
+    @NotNull
+    public static DBDAttributeBinding getLeafAttribute(@NotNull DBDAttributeBinding attribute, @Nullable int[] indexes) {
+        DBDAttributeBinding leaf = attribute;
+
+        if (!ArrayUtils.isEmpty(indexes)) {
+            for (int index : indexes) {
+                final List<DBDAttributeBinding> nestedBindings = leaf.getNestedBindings();
+                if (nestedBindings == null || index >= nestedBindings.size()) {
+                    break;
+                }
+                leaf = nestedBindings.get(index);
+            }
+        }
+
+        return leaf;
     }
 }

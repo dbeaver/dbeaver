@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.LongKeyMap;
 
 import java.util.ArrayList;
@@ -50,7 +51,6 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
 
     private static final Log log = Log.getLog(QMMCollectorImpl.class);
 
-    private static final long EVENT_DISPATCH_PERIOD = 250;
     private static final int MAX_HISTORY_EVENTS = 10000;
 
     // Session map
@@ -67,9 +67,15 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     // History (may be purged when limit reached)
     private List<QMMetaEvent> pastEvents = new ArrayList<>();
     private boolean running = true;
+    private long eventDispatchPeriod = 250;
 
     public QMMCollectorImpl() {
-        new EventDispatcher().schedule(EVENT_DISPATCH_PERIOD);
+        var application = DBWorkbench.getPlatform().getApplication();
+        var qmConfigurationProvider = DBUtils.getAdapter(QMConfigurationProvider.class, application);
+        if (qmConfigurationProvider != null) {
+            eventDispatchPeriod = qmConfigurationProvider.getEventDispatchPeriod();
+        }
+        new EventDispatcher().schedule(eventDispatchPeriod);
     }
 
     public synchronized void dispose() {
@@ -364,7 +370,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
                 }
             }
             if (isRunning()) {
-                this.schedule(EVENT_DISPATCH_PERIOD);
+                this.schedule(eventDispatchPeriod);
             }
             return Status.OK_STATUS;
         }

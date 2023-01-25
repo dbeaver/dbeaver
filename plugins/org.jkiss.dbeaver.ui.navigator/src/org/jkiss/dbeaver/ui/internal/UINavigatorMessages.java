@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -195,20 +195,6 @@ public class UINavigatorMessages extends NLS {
     public static String confirm_local_folder_delete_title;
     public static String confirm_local_folder_delete_message;
 
-    public static String confirm_entity_reject_title;
-    public static String confirm_entity_reject_message;
-    public static String confirm_entity_reject_toggleMessage;
-
-    public static String confirm_entity_revert_title;
-    public static String confirm_entity_revert_message;
-    public static String confirm_entity_revert_toggleMessage;
-
-    public static String confirm_close_editor_edit_title;
-    public static String confirm_close_editor_edit_message;
-
-    public static String confirm_close_entity_edit_title;
-    public static String confirm_close_entity_edit_message;
-
     public static String label_configure_columns;
 
     public static String label_description;
@@ -266,6 +252,26 @@ public class UINavigatorMessages extends NLS {
 
     public static String datasource_list_action_empty;
     public static String filter_connection_name_placeholder;
+
+    public static String failed_to_paste_due_to_permissions_title;
+    public static String failed_to_paste_due_to_permissions_message;
+
+    public static String object_list_control_group_by_label;
+    public static String object_list_control_clear_grouping_label;
+    public static String pref_page_project_resource_settings_description;
+    public static String navigator_handler_connections_filter_show_all_text;
+    public static String navigator_handler_connections_filter_show_connected_text;
+    public static String navigator_handler_object_create_file_other_text;
+
+    public static String navigator_provider_element_tooltip_datasource_name;
+    public static String navigator_provider_element_tooltip_datasource_url;
+    public static String navigator_provider_element_tooltip_datasource_database_name;
+    public static String navigator_provider_element_tooltip_datasource_database_version;
+    public static String navigator_provider_element_tooltip_datasource_user;
+    public static String navigator_provider_element_tooltip_datasource_description;
+    public static String navigator_provider_element_tooltip_datasource_read_only;
+    public static String navigator_provider_element_tooltip_datasource_provided;
+    public static String navigator_provider_element_tooltip_datasource_error;
 
     static {
         // initialize resource bundle

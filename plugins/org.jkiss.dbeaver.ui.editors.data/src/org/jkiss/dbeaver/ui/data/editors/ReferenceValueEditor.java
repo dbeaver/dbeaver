@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -75,19 +76,21 @@ public class ReferenceValueEditor {
     private IValueEditor valueEditor;
     private DBSEntityReferrer refConstraint;
     private Table editorSelector;
-    private volatile boolean sortByValue = true;
-    private volatile boolean sortAsc = true;
+    private static volatile boolean sortByValue = true; // It is static to save its value between editors
+    private static volatile boolean sortAsc = true;
+    private TableColumn prevSortColumn = null;
     private volatile boolean dictLoaded = false;
     private Object lastPattern;
     private Object firstValue = null;
     private Object lastValue = null;
     private int maxResults;
+    private Font boldFont;
 
 
     public ReferenceValueEditor(IValueController valueController, IValueEditor valueEditor) {
         this.valueController = valueController;
         this.valueEditor = valueEditor;
-        maxResults =
+        this.maxResults =
             valueController.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getInt(
                 ModelPreferences.DICTIONARY_MAX_ROWS);
     }
@@ -119,6 +122,9 @@ public class ReferenceValueEditor {
         if (refConstraint == null) {
             return false;
         }
+
+        this.boldFont = UIUtils.makeBoldFont(parent.getFont());
+        parent.addDisposeListener(e -> this.boldFont.dispose());
 
         if (refConstraint instanceof DBSEntityAssociation) {
             final DBSEntityAssociation association = (DBSEntityAssociation)refConstraint;
@@ -179,10 +185,15 @@ public class ReferenceValueEditor {
         SortListener sortListener = new SortListener();
         valueColumn.addListener(SWT.Selection, sortListener);
         descColumn.addListener(SWT.Selection, sortListener);
+        if (!sortByValue) {
+            editorSelector.setSortColumn(descColumn);
+            editorSelector.setSortDirection(sortAsc ? SWT.DOWN : SWT.UP);
+            prevSortColumn = descColumn;
+        }
 
         editorSelector.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void widgetDefaultSelected(SelectionEvent e) {
                 if (valueEditor.isReadOnly()) {
                     return;
                 }
@@ -229,13 +240,11 @@ public class ReferenceValueEditor {
             for (TableItem item : items) {
                 if (curTextValue.equalsIgnoreCase(item.getText(0)) || curTextValue.equalsIgnoreCase(item.getText(1))) {
                     editorSelector.deselectAll();
-                    item.setBackground(selectionColor);
-                    item.setForeground(UIUtils.getContrastColor(selectionColor));
+                    item.setFont(boldFont);
                     editorSelector.showItem(item);
                     newValueFound = true;
                 } else {
-                    item.setBackground(null);
-                    item.setForeground(null);
+                    item.setFont(null);
                 }
             }
 
@@ -354,13 +363,12 @@ public class ReferenceValueEditor {
                         curItem = item;
                         curItemIndex = i;
                     } else {
-                        item.setBackground(null);
+                        item.setFont(null);
                     }
                 }
                 editorSelector.deselectAll();
                 if (curItem != null) {
-                    curItem.setBackground(selectionColor);
-                    curItem.setForeground(UIUtils.getContrastColor(selectionColor));
+                    curItem.setFont(boldFont);
                     editorSelector.showItem(curItem);
                     // Show cur item on top
                     editorSelector.setTopIndex(curItemIndex);
@@ -389,8 +397,7 @@ public class ReferenceValueEditor {
     }
 
     private class SortListener implements Listener {
-        private TableColumn prevColumn = null;
-        private int sortDirection = SWT.DOWN;
+        private int sortDirection = sortAsc ? SWT.DOWN : SWT.UP;
 
         public SortListener() {
         }
@@ -398,16 +405,17 @@ public class ReferenceValueEditor {
         @Override
         public void handleEvent(Event event) {
             TableColumn column = (TableColumn) event.widget;
-            if (prevColumn == column) {
+            if (prevSortColumn == column) {
                 // Set reverse order
                 sortDirection = (sortDirection == SWT.UP ? SWT.DOWN : SWT.UP);
             }
-            prevColumn = column;
+            prevSortColumn = column;
             sortByValue = (Boolean)column.getData();
             sortAsc = sortDirection == SWT.DOWN;
             editorSelector.setSortColumn(column);
             editorSelector.setSortDirection(sortDirection);
             reloadSelectorValues(lastPattern, true);
+
         }
     }
 

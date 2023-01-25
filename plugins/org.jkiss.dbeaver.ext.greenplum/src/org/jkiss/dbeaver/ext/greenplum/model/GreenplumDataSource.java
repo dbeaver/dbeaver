@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2019 Dmitriy Dubson (ddubson@pivotal.io)
  * Copyright (C) 2019 Gavin Shaw (gshaw@pivotal.io)
  * Copyright (C) 2019 Zach Marcin (zmarcin@pivotal.io)
@@ -20,8 +20,10 @@
  */
 package org.jkiss.dbeaver.ext.greenplum.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -30,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.osgi.framework.Version;
 
+import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,6 +41,7 @@ public class GreenplumDataSource extends PostgreDataSource {
     private static final Log log = Log.getLog(GreenplumDataSource.class);
 
     private Version gpVersion;
+    private Boolean supportsFmterrtblColumn;
 
     public GreenplumDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         super(monitor, container);
@@ -67,5 +71,20 @@ public class GreenplumDataSource extends PostgreDataSource {
             return false;
         }
         return true;
+    }
+
+    boolean isServerSupportFmterrtblColumn(@NotNull JDBCSession session) {
+        if (supportsFmterrtblColumn == null) {
+            try {
+                JDBCUtils.queryString(
+                    session,
+                    PostgreUtils.getQueryForSystemColumnChecking("pg_exttable", "fmterrtbl"));
+                supportsFmterrtblColumn = true;
+            } catch (SQLException e) {
+                log.debug("Error reading system information from the pg_exttable table", e);
+                supportsFmterrtblColumn = false;
+            }
+        }
+        return supportsFmterrtblColumn;
     }
 }

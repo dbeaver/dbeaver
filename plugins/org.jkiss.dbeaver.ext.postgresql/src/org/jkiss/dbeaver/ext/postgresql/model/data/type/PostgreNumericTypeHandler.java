@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,12 +76,8 @@ public class PostgreNumericTypeHandler extends PostgreTypeHandler {
         if (type.getObjectId() == PostgreOid.FLOAT8) {
             return 15;
         }
-        if (type.getObjectId() == PostgreOid.NUMERIC) {
-            if (typmod >= 0) {
-                return (typmod & NUMERIC_MASK_PRECISION) >> 16;
-            } else {
-                return 1000; // 1000 - Max user defined precision. The NUMERIC type can hold a value up to 131,072 digits before the decimal point
-            }
+        if (type.getObjectId() == PostgreOid.NUMERIC && typmod >= 0) {
+            return (typmod & NUMERIC_MASK_PRECISION) >> 16;
         }
         return null;
     }
@@ -94,10 +90,6 @@ public class PostgreNumericTypeHandler extends PostgreTypeHandler {
         }
         if (type.getObjectId() == PostgreOid.FLOAT8) {
             return 17;
-        }
-        if (type.getObjectId() == PostgreOid.NUMERIC && typmod < 0) {
-            Integer typePrecision = getTypePrecision(type, typmod);
-            return typePrecision != null ? typePrecision - 1 : null; // Scale must be less than precision
         }
         if (typmod < 0) {
             return null;

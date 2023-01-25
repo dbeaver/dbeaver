@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
@@ -42,18 +43,24 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
     }
 
     protected void createAuthPanel(Composite parent, int hSpan, Runnable panelExtender) {
+        Assert.isLegal(isAuthEnabled());
         authModelSelector = new AuthModelSelector(parent, panelExtender, () -> getSite().updateButtons());
         authModelSelector.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         ((GridData)authModelSelector.getLayoutData()).horizontalSpan = hSpan;
     }
 
     protected Composite getAuthPanelComposite() {
+        Assert.isLegal(isAuthEnabled());
         return authModelSelector.getAuthPanelComposite();
     }
 
     @Override
     public void loadSettings() {
         super.loadSettings();
+
+        if (!isAuthEnabled()) {
+            return;
+        }
 
         DBPDataSourceContainer activeDataSource = getSite().getActiveDataSource();
 
@@ -86,16 +93,24 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
 
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource) {
+        super.saveSettings(dataSource);
+
+        if (!isAuthEnabled()) {
+            return;
+        }
+
         DBPAuthModelDescriptor selectedAuthModel = authModelSelector.getSelectedAuthModel();
         dataSource.getConnectionConfiguration().setAuthModelId(
             selectedAuthModel == null ? null : selectedAuthModel.getId());
         authModelSelector.saveSettings(dataSource);
-        super.saveSettings(dataSource);
     }
 
     @Override
     public boolean isComplete() {
-        return authModelSelector.isComplete();
+        return !isAuthEnabled() || authModelSelector.isComplete();
     }
 
+    protected boolean isAuthEnabled() {
+        return true;
+    }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IElementFilter;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -59,6 +60,7 @@ public class AuthModelSelector extends Composite {
     private Runnable panelExtender;
     private Runnable changeListener;
     private Combo authModelCombo;
+    protected Button sharedCredentialsCheck;
 
     public AuthModelSelector(Composite parent, Runnable panelExtender, Runnable changeListener) {
         super(parent, SWT.NONE);
@@ -116,6 +118,9 @@ public class AuthModelSelector extends Composite {
                 dataSourceContainer.getConnectionConfiguration().setAuthModelId(selectedAuthModel.getId());
             }
         }
+        if (this.sharedCredentialsCheck != null) {
+            this.sharedCredentialsCheck.setSelection(activeDataSource.isSharedCredentials());
+        }
 
         changeAuthModel();
 
@@ -137,7 +142,7 @@ public class AuthModelSelector extends Composite {
         UIUtils.disposeChildControls(modelConfigPlaceholder);
 
         Label authModelLabel = UIUtils.createControlLabel(modelConfigPlaceholder, UIConnectionMessages.dialog_connection_auth_group);
-        Composite authModelComp = UIUtils.createComposite(modelConfigPlaceholder, 2);
+        Composite authModelComp = UIUtils.createComposite(modelConfigPlaceholder, 3);
         authModelComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         authModelCombo = new Combo(authModelComp, SWT.DROP_DOWN | SWT.READ_ONLY);
         authModelCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -163,11 +168,28 @@ public class AuthModelSelector extends Composite {
                 UIUtils.resizeShell(authModelCombo.getShell());
             }
         });
-        Label authModelDescLabel = new Label(authModelComp, SWT.NONE);
-        authModelDescLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        if (selectedAuthModel != null) {
-            //authModelDescLabel.setText(CommonUtils.notEmpty(selectedAuthModel.getDescription()));
+        UIUtils.createEmptyLabel(authModelComp, 1, 1).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        if (DBWorkbench.isDistributed() && !activeDataSource.getProject().isPrivateProject()) {
+            sharedCredentialsCheck = UIUtils.createCheckbox(authModelComp,
+                "Share credentials",
+                activeDataSource == null || activeDataSource.isSharedCredentials());
+            sharedCredentialsCheck.setToolTipText("Saved credentials will be accessible to all users who have access to this connection configuration");
+            sharedCredentialsCheck.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            sharedCredentialsCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+//                    if (sharedCredentialsCheck.getSelection()) {
+//                        savePasswordCheck.setEnabled(true);
+//                    }
+                }
+            });
+            if (sharedCredentialsCheck.getSelection()) {
+//                savePasswordCheck.setEnabled(true);
+            }
+        } else {
+            UIUtils.createEmptyLabel(authModelComp, 1, 1);
         }
+
         for (DBPAuthModelDescriptor model : allAuthModels) {
             authModelCombo.add(model.getName());
         }
@@ -227,6 +249,10 @@ public class AuthModelSelector extends Composite {
     }
 
     public void saveSettings(DBPDataSourceContainer dataSource) {
+        if (this.sharedCredentialsCheck != null) {
+            dataSource.setSharedCredentials(this.sharedCredentialsCheck.getSelection());
+        }
+
         if (authModelConfigurator != null) {
             authModelConfigurator.saveSettings(dataSource);
         }

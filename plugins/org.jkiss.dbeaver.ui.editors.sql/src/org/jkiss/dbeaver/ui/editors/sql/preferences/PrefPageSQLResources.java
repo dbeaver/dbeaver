@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -44,6 +45,7 @@ import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.*;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -62,6 +64,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
     private Button connectionFoldersCheck;
     private Text scriptTitlePattern;
     private Text scriptFileNamePattern;
+    private Spinner bigScriptFileSizeBoundarySpinner;
     private Button bindEmbeddedReadCheck;
     private Button bindEmbeddedWriteCheck;
     private Composite commentTypeComposite;
@@ -105,7 +108,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
                         GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_ACTIVE_DATABASE),
                         GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_ACTIVE_SCHEMA),
                         GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_ACTIVE_PROJECT)));
-            UIUtils.setContentProposalToolTip(scriptFileNamePattern, "Output file name patterns",
+            UIUtils.setContentProposalToolTip(scriptFileNamePattern, SQLEditorMessages.pref_page_sql_editor_file_name_pattern_tip,
                 SQLPreferenceConstants.VAR_CONNECTION_NAME, SQLPreferenceConstants.VAR_DRIVER_NAME,
                 SQLPreferenceConstants.VAR_ACTIVE_DATABASE, SQLPreferenceConstants.VAR_ACTIVE_SCHEMA, SQLPreferenceConstants.VAR_ACTIVE_PROJECT);
             ContentAssistUtils.installContentProposal(
@@ -119,9 +122,21 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
                     GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_ACTIVE_DATABASE),
                     GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_ACTIVE_PROJECT),
                     GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_ACTIVE_SCHEMA)));
-            UIUtils.setContentProposalToolTip(scriptTitlePattern, "Output file name patterns",
+            UIUtils.setContentProposalToolTip(scriptTitlePattern, SQLEditorMessages.pref_page_sql_editor_file_name_pattern_tip,
                 SQLPreferenceConstants.VAR_CONNECTION_NAME, SQLPreferenceConstants.VAR_DRIVER_NAME, SQLPreferenceConstants.VAR_FILE_NAME, SQLPreferenceConstants.VAR_FILE_EXT,
                 SQLPreferenceConstants.VAR_ACTIVE_DATABASE, SQLPreferenceConstants.VAR_ACTIVE_SCHEMA, SQLPreferenceConstants.VAR_ACTIVE_PROJECT);
+            
+            UIUtils.createControlLabel(
+                scriptsGroup,
+                SQLEditorMessages.sql_editor_prefs_script_disable_sql_syntax_parsing_for_scripts_bigger_than
+            );
+            bigScriptFileSizeBoundarySpinner = new Spinner(scriptsGroup, SWT.BORDER);
+            bigScriptFileSizeBoundarySpinner.setDigits(0);
+            bigScriptFileSizeBoundarySpinner.setIncrement(50);
+            bigScriptFileSizeBoundarySpinner.setMinimum(0);
+            bigScriptFileSizeBoundarySpinner.setMaximum(Integer.MAX_VALUE);
+            long bigScriptSize = DBWorkbench.getPlatform().getPreferenceStore().getLong(SQLPreferenceConstants.SCRIPT_BIG_FILE_LENGTH_BOUNDARY);
+            bigScriptFileSizeBoundarySpinner.setSelection((int) (bigScriptSize / 1024));
         }
 
         // New Script template
@@ -167,8 +182,18 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
 
         // Connection association
         {
-            Composite connGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_connection_association, 2, GridData.FILL_HORIZONTAL, 0);
+            final ExpandableComposite expander = new ExpandableComposite(composite, SWT.NONE);
+            expander.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, false, false, 1, 1));
+            expander.setText(SQLEditorMessages.sql_editor_prefs_script_advanced_settings);
 
+            Composite connGroup = UIUtils.createControlGroup(
+                expander,
+                SQLEditorMessages.pref_page_sql_editor_group_connection_association,
+                2,
+                GridData.FILL_HORIZONTAL,
+                0
+            );
+            expander.setClient(connGroup);
             Label tipLabel = new Label(connGroup, SWT.WRAP);
             tipLabel.setText(SQLEditorMessages.pref_page_sql_editor_checkbox_bind_connection_hint);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -225,6 +250,9 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
         connectionFoldersCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS));
         scriptTitlePattern.setText(store.getString(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN));
         scriptFileNamePattern.setText(store.getString(SQLPreferenceConstants.SCRIPT_FILE_NAME_PATTERN));
+        bigScriptFileSizeBoundarySpinner.setSelection(
+            (int) (store.getLong(SQLPreferenceConstants.SCRIPT_BIG_FILE_LENGTH_BOUNDARY) / 1024)
+        );
         setSQLTemplateText(SQLEditorUtils.getNewScriptTemplate(store), false);
         sqlTemplateEnabledCheckbox.setSelection(store.getBoolean(SQLPreferenceConstants.NEW_SCRIPT_TEMPLATE_ENABLED));
         UIUtils.enableWithChildren(sqlTemplateViewerComposite, sqlTemplateEnabledCheckbox.getSelection());
@@ -268,6 +296,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
         store.setValue(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS, connectionFoldersCheck.getSelection());
         store.setValue(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN, scriptTitlePattern.getText());
         store.setValue(SQLPreferenceConstants.SCRIPT_FILE_NAME_PATTERN, scriptFileNamePattern.getText());
+        store.setValue(SQLPreferenceConstants.SCRIPT_BIG_FILE_LENGTH_BOUNDARY, bigScriptFileSizeBoundarySpinner.getSelection() * 1024L);
 
         store.setValue(SQLPreferenceConstants.NEW_SCRIPT_TEMPLATE_ENABLED, sqlTemplateEnabledCheckbox.getSelection());
         final IDocument document = sqlTemplateViewer.getDocument();

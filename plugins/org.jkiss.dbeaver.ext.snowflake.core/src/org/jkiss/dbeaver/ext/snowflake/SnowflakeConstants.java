@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,5 +36,9 @@ public class SnowflakeConstants
 
     public static final String PROP_ROLE_LEGACY = DBConstants.INTERNAL_PROP_PREFIX + "role@";
     public static final String PROP_AUTHENTICATOR_LEGACY = DBConstants.INTERNAL_PROP_PREFIX + "authenticator@";
+
+    public static final String METADATA_COLUMN_CREATED = "CREATED";
+    public static final String METADATA_COLUMN_LAST_ALTERED = "LAST_ALTERED";
+    public static final String METADATA_COLUMN_COMMENT = "COMMENT";
 
 }

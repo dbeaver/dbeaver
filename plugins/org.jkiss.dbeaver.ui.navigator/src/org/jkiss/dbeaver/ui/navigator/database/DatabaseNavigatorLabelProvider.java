@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,17 @@
  */
 package org.jkiss.dbeaver.ui.navigator.database;
 
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.themes.ITheme;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
@@ -32,14 +37,22 @@ import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Version;
+
+import java.util.StringJoiner;
 
 /**
  * DatabaseNavigatorLabelProvider
 */
 public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implements IFontProvider, IColorProvider
 {
+    public static final String TREE_TABLE_FONT = "org.eclipse.ui.workbench.TREE_TABLE_FONT";
+
+    private final IPropertyChangeListener themeChangeListener;
+
     protected Font normalFont;
     protected Font boldFont;
     protected Font italicFont;
@@ -48,26 +61,24 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     protected Color transientForeground;
     private ILabelDecorator labelDecorator;
 
-    public DatabaseNavigatorLabelProvider(Viewer viewer)
-    {
-        //this.view = view;
-        this.normalFont = viewer.getControl().getFont();
-        this.boldFont = UIUtils.makeBoldFont(normalFont);
-        this.italicFont = UIUtils.modifyFont(normalFont, SWT.ITALIC);
-        //this.boldItalicFont = UIUtils.modifyFont(normalFont, SWT.BOLD | SWT.ITALIC);
+    public DatabaseNavigatorLabelProvider(Viewer viewer) {
         this.lockedForeground = Display.getDefault().getSystemColor(SWT.COLOR_GRAY);
         this.transientForeground = Display.getDefault().getSystemColor(SWT.COLOR_DARK_RED);
+        this.themeChangeListener = e -> {
+            final ITheme theme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+            normalFont = theme.getFontRegistry().get(TREE_TABLE_FONT);
+            boldFont = theme.getFontRegistry().getBold(TREE_TABLE_FONT);
+            italicFont = theme.getFontRegistry().getItalic(TREE_TABLE_FONT);
+            viewer.refresh();
+        };
+        this.themeChangeListener.propertyChange(null);
+
+        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
     }
 
     @Override
-    public void dispose()
-    {
-        UIUtils.dispose(boldFont);
-        boldFont = null;
-        UIUtils.dispose(italicFont);
-        italicFont = null;
-//        UIUtils.dispose(boldItalicFont);
-//        boldItalicFont = null;
+    public void dispose() {
+        PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
         super.dispose();
     }
 
@@ -186,33 +197,44 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
         if (element instanceof DBNDataSource) {
             final DBPDataSourceContainer ds = ((DBNDataSource) element).getDataSourceContainer();
             if (ds != null) {
-                StringBuilder info = new StringBuilder();
-                info.append("Name: ").append(ds.getName()).append("\n");
+                StringJoiner tooltip = new StringJoiner("\n");
+                tooltip.add(NLS.bind(UINavigatorMessages.navigator_provider_element_tooltip_datasource_name, ds.getName()));
                 final DBPConnectionConfiguration cfg = ds.getConnectionConfiguration();
                 if (!CommonUtils.isEmpty(cfg.getUrl())) {
-                    info.append("URL: ").append(cfg.getUrl()).append("\n");
+                    tooltip.add(NLS.bind(UINavigatorMessages.navigator_provider_element_tooltip_datasource_url, cfg.getUrl()));
                 } else if (!CommonUtils.isEmpty(cfg.getDatabaseName())) {
-                    info.append("Database: ").append(cfg.getDatabaseName()).append("\n");
+                    tooltip.add(NLS.bind(
+                        UINavigatorMessages.navigator_provider_element_tooltip_datasource_database_name,
+                        cfg.getDatabaseName()));
+                }
+                DBPDataSource dataSource = ds.getDataSource();
+                if (dataSource != null) {
+                    Version databaseVersion = dataSource.getInfo().getDatabaseVersion();
+                    if (databaseVersion != null) {
+                        tooltip.add(NLS.bind(
+                            UINavigatorMessages.navigator_provider_element_tooltip_datasource_database_version,
+                            databaseVersion.toString()));
+                    }
                 }
                 if (!CommonUtils.isEmpty(cfg.getUserName())) {
-                    info.append("User: ").append(cfg.getUserName()).append("\n");
+                    tooltip.add(NLS.bind(UINavigatorMessages.navigator_provider_element_tooltip_datasource_user, cfg.getUserName()));
                 }
                 if (!CommonUtils.isEmpty(ds.getDescription())) {
-                    info.append("Description: ").append(ds.getDescription()).append("\n");
+                    tooltip.add(NLS.bind(
+                        UINavigatorMessages.navigator_provider_element_tooltip_datasource_description,
+                        ds.getDescription()));
                 }
-/*
-                if (cfg.getConnectionType() != null) {
-                    info.append("Type: ").append(cfg.getConnectionType().getName()).append("\n");
-                }
-*/
                 if (ds.isConnectionReadOnly()) {
-                    info.append("Read-only connection\n");
+                    tooltip.add(UINavigatorMessages.navigator_provider_element_tooltip_datasource_read_only);
                 }
                 if (ds.isProvided()) {
-                    info.append("Provided connection\n");
+                    tooltip.add(UINavigatorMessages.navigator_provider_element_tooltip_datasource_provided);
+                }
+                if (ds.getConnectionError() != null) {
+                    tooltip.add(NLS.bind(UINavigatorMessages.navigator_provider_element_tooltip_datasource_error, ds.getConnectionError()));
                 }
 
-                return info.toString().trim();
+                return tooltip.toString();
 
             }
         } else if (element instanceof DBNNode) {

@@ -32,7 +32,9 @@
         <!-- Edit menu -->
         <menuContribution allPopups="false" locationURI="menu:edit">
             <separator name="additions" visible="true"/>
-            <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.add"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.add">
+                <visibleWhen checkEnabled="true"/>
+            </command>
         </menuContribution>
 
         <!-- Edit menu -->

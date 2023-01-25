@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPDataFormatterRegistry;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -34,11 +35,7 @@ import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -130,40 +127,41 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
         return customProfiles;
     }
 
-    private void loadProfiles()
-    {
+    private void loadProfiles() {
         customProfiles = new ArrayList<>();
-
-        Path storeFile = DBWorkbench.getPlatform().getLocalConfigurationFile(CONFIG_FILE_NAME);
-        if (!Files.exists(storeFile)) {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PUBLIC)) {
+            log.warn("The user has no permission to load custom data formatter configuration");
             return;
         }
         try {
-            try (InputStream is = Files.newInputStream(storeFile)) {
+            String content = DBWorkbench.getPlatform().getProductConfigurationController().loadConfigurationFile(CONFIG_FILE_NAME);
+            if (CommonUtils.isEmpty(content)) {
+                return;
+            }
+            try (StringReader is = new StringReader(content)) {
                 SAXReader parser = new SAXReader(is);
                 try {
                     parser.parse(new FormattersParser());
-                } catch (XMLException ex) {
+                } catch (Throwable ex) {
                     throw new DBException("Datasource config parse error", ex);
                 }
-            } catch (DBException ex) {
-                log.warn("Can't load profiles config from " + storeFile, ex);
             }
-        }
-        catch (IOException ex) {
-            log.warn("IO error", ex);
+        } catch (DBException ex) {
+            log.warn("Can't load profiles config from " + CONFIG_FILE_NAME, ex);
         }
     }
 
 
-    private void saveProfiles()
-    {
+    private void saveProfiles() {
         if (customProfiles == null) {
             return;
         }
-        Path storeFile = DBWorkbench.getPlatform().getLocalConfigurationFile(CONFIG_FILE_NAME);
-        try (OutputStream os = Files.newOutputStream(storeFile)) {
-            XMLBuilder xml = new XMLBuilder(os, GeneralUtils.UTF8_ENCODING);
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+            log.warn("The user has no permission to save data formatter configuration");
+            return;
+        }
+        try (StringWriter out = new StringWriter()) {
+            XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
             xml.setButify(true);
             xml.startElement("profiles");
             for (DBDDataFormatterProfile profile : customProfiles) {
@@ -183,9 +181,12 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
             }
             xml.endElement();
             xml.flush();
-        }
-        catch (IOException ex) {
-            log.warn("IO error", ex);
+
+            out.flush();
+            DBWorkbench.getPlatform().getProductConfigurationController()
+                .saveConfigurationFile(CONFIG_FILE_NAME, out.getBuffer().toString());
+        } catch (Throwable ex) {
+            log.warn("Failed to save data formatter profiles to " + CONFIG_FILE_NAME, ex);
         }
     }
 

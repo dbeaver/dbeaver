@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.xml;
 
+import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.TextAttribute;
@@ -30,25 +31,19 @@ import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.reconciler.MonoReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
-import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
-import org.eclipse.swt.graphics.RGB;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.text.NonRuleBasedDamagerRepairer;
 
 public class XMLSourceViewerConfiguration extends SourceViewerConfiguration {
-    static final RGB COLOR_XML_COMMENT = new RGB(128, 0, 0);
-    static final RGB COLOR_PROC_INSTR = new RGB(128, 128, 128);
-    static final RGB COLOR_STRING = new RGB(0, 128, 0);
-    static final RGB COLOR_DEFAULT = new RGB(0, 0, 0);
-    static final RGB COLOR_TAG = new RGB(0, 0, 128);
+    private static final String COLOR_XML_COMMENT = "org.jkiss.dbeaver.xml.editor.color.comment";
+    static final String COLOR_XML_STRING = "org.jkiss.dbeaver.xml.editor.color.text";
+    private static final String COLOR_XML_TAG = "org.jkiss.dbeaver.xml.editor.color.tag";
 
-    private final ISharedTextColors colorManager;
     private final XMLEditor editor;
 
     public XMLSourceViewerConfiguration(XMLEditor editor) {
-        this.colorManager = UIUtils.getSharedTextColors();
         this.editor = editor;
     }
 
@@ -71,11 +66,12 @@ public class XMLSourceViewerConfiguration extends SourceViewerConfiguration {
     }
 
     private XMLTagScanner getXMLTagScanner() {
-        XMLTagScanner tagScanner = new XMLTagScanner(colorManager);
+        ColorRegistry colorRegistry = UIUtils.getColorRegistry();
+        XMLTagScanner tagScanner = new XMLTagScanner(colorRegistry);
         tagScanner.setDefaultReturnToken(
             new Token(
                 new TextAttribute(
-                    colorManager.getColor(COLOR_TAG))));
+                    colorRegistry.get(COLOR_XML_TAG))));
         return tagScanner;
     }
 
@@ -102,11 +98,12 @@ public class XMLSourceViewerConfiguration extends SourceViewerConfiguration {
     }
 
     private XMLScanner getXMLScanner() {
-        XMLScanner scanner = new XMLScanner(colorManager);
+        ColorRegistry colorRegistry = UIUtils.getColorRegistry();
+        XMLScanner scanner = new XMLScanner(colorRegistry);
         scanner.setDefaultReturnToken(
             new Token(
                 new TextAttribute(
-                    colorManager.getColor(COLOR_DEFAULT))));
+                    colorRegistry.get(COLOR_XML_STRING))));
         return scanner;
     }
 
@@ -114,6 +111,7 @@ public class XMLSourceViewerConfiguration extends SourceViewerConfiguration {
     public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
         PresentationReconciler reconciler = new PresentationReconciler();
         reconciler.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
+        ColorRegistry colorRegistry = UIUtils.getColorRegistry();
 
         DefaultDamagerRepairer dr =
             new DefaultDamagerRepairer(getXMLTagScanner());
@@ -127,7 +125,7 @@ public class XMLSourceViewerConfiguration extends SourceViewerConfiguration {
         NonRuleBasedDamagerRepairer ndr =
             new NonRuleBasedDamagerRepairer(
                 new TextAttribute(
-                    colorManager.getColor(COLOR_XML_COMMENT)));
+                    colorRegistry.get(COLOR_XML_COMMENT)));
         reconciler.setDamager(ndr, XMLPartitionScanner.XML_COMMENT);
         reconciler.setRepairer(ndr, XMLPartitionScanner.XML_COMMENT);
 

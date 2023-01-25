@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,10 +46,9 @@ import java.util.List;
  */
 public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
 
-    public static final int SHOW_GLOBAL_FILTERS_ID = 1000;
     private static final String DIALOG_ID = "DBeaver.EditBootstrapQueriesDialog";
 
-    private DataSourceDescriptor dataSourceDescriptor;
+    private final DataSourceDescriptor dataSourceDescriptor;
     private List<String> queries;
     private boolean ignoreErrors;
     private Table queriesTable;
@@ -63,10 +62,10 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent) {
+    protected Composite createDialogArea(Composite parent) {
         getShell().setText(CoreMessages.dialog_connection_edit_wizard_general_bootstrap_query_title);
 
-        Composite composite = (Composite) super.createDialogArea(parent);
+        Composite composite = super.createDialogArea(parent);
 
         Group group = UIUtils.createControlGroup(composite, CoreMessages.dialog_connection_edit_wizard_general_bootstrap_query_sql_label, 2, GridData.FILL_BOTH, 0);
 
