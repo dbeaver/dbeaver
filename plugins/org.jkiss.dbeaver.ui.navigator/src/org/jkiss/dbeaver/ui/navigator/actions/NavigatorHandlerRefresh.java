@@ -131,8 +131,9 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                             if (((IRefreshablePart) editorPart).refreshPart(this, true) == IRefreshablePart.RefreshResult.CANCELED) {
                                 return true;
                             }
-                            // we still want to refresh source object, see #18752
-                            // iter.remove(); 
+                            if (nextNode == editorNode) {
+                                iter.remove();
+                            }
                         }
                     }
                 }
