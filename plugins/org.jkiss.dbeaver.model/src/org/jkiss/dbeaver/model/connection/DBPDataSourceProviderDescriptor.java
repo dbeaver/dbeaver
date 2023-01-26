@@ -52,6 +52,8 @@ public interface DBPDataSourceProviderDescriptor extends DBPNamedObject {
 
     DBPDataSourceProviderDescriptor getParentProvider();
 
+    List<DBPDataSourceProviderDescriptor> getChildrenProviders();
+
     // Returns true if this provider or one of parent providers has specified ID
     boolean matchesId(String id);
 }
