@@ -381,6 +381,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         }
     }
 
+    @NotNull
     @Override
     public List<DBPDataSourceProviderDescriptor> getChildrenProviders() {
         return childrenProviders;

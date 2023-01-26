@@ -104,21 +104,14 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
 
         boolean matches(String providerId, String checkDriverId, String checkDriverClass) {
             if (this.dataSourceProvider != null && !this.dataSourceProvider.equals(providerId)) {
-                // Providers not equals, ok, but we can check children providers then
+                // Try finding a matching child provider
                 DBPDataSourceProviderDescriptor provider = DBWorkbench.getPlatform()
                     .getDataSourceProviderRegistry()
                     .getDataSourceProvider(this.dataSourceProvider);
                 boolean childHasMatch = false;
                 if (provider != null) {
                     List<DBPDataSourceProviderDescriptor> childrenProviders = provider.getChildrenProviders();
-                    if (!CommonUtils.isEmpty(childrenProviders)) {
-                        for (DBPDataSourceProviderDescriptor descriptor : childrenProviders) {
-                            if (descriptor.getId().equals(providerId)) {
-                                childHasMatch = true;
-                                break;
-                            }
-                        }
-                    }
+                    childHasMatch = childrenProviders.stream().map(DBPDataSourceProviderDescriptor::getId).anyMatch(providerId::equals);
                 }
                 if (!childHasMatch) {
                     return false;
