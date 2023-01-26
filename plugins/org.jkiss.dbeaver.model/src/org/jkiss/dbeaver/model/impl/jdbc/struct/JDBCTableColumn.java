@@ -181,7 +181,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         boolean formatValues,
         boolean caseInsensitiveSearch) throws DBException
     {
-        final String identifier = DBUtils.getQuotedIdentifier(this, DBPAttributeReferencePurpose.DATA_SELECTION);
+        String identifier = DBUtils.getQuotedIdentifier(this, DBPAttributeReferencePurpose.DATA_SELECTION);
         DBDValueHandler valueHandler = DBUtils.findValueHandler(session, this);
         StringBuilder query = new StringBuilder();
         query.append("SELECT ");
@@ -200,6 +200,15 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         query.append("\nFROM ").append(DBUtils.getObjectFullName(getTable(), DBPEvaluationContext.DML));
         if (valuePattern instanceof String) {
             query.append("\nWHERE ");
+            boolean needCast = false;
+            String typeExt = "";
+            DBSDataType dataType = DBUtils.getDataType(this);
+            if (dataType != null) typeExt = CommonUtils.toString(dataType.geTypeExtension());
+            needCast = "E".equals(typeExt); // for future - maybe not only Enum? But I have no such deep knowledge
+            if (needCast) {
+                identifier = "cast(" + identifier + " as varchar(1000))"; // it could be better for PostgreSQL to specify just "varchar" or "text"
+                                                                          // but this not conforms SQL standard, so I left varchar(1000) - it works  
+            }
             if (getDataKind() == DBPDataKind.STRING) {
                 final SQLDialect dialect = getDataSource().getSQLDialect();
                 final SQLExpressionFormatter caseInsensitiveFormatter = caseInsensitiveSearch
