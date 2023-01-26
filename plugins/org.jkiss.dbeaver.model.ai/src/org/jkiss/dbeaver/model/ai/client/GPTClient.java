@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.ai.client;
 import com.theokanning.openai.OpenAiService;
 import com.theokanning.openai.completion.CompletionChoice;
 import com.theokanning.openai.completion.CompletionRequest;
+import okhttp3.ResponseBody;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -33,7 +34,9 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import retrofit2.HttpException;
+import retrofit2.Response;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
@@ -109,7 +112,7 @@ public class GPTClient {
         }
     }
 
-    private static String tryCreateCompletion(@NotNull OpenAiService service, @NotNull CompletionRequest completionRequest, int attempt) {
+    private static String tryCreateCompletion(@NotNull OpenAiService service, @NotNull CompletionRequest completionRequest, int attempt) throws DBException {
         if (attempt == MAX_REQUEST_ATTEMPTS) {
             log.error("Maximum GPT completion attempts reached");
             return null;
@@ -133,6 +136,23 @@ public class GPTClient {
                 }
                 return tryCreateCompletion(service, completionRequest, attempt + 1);
             } else {
+                if (exception instanceof HttpException) {
+                    Response<?> response = ((HttpException) exception).response();
+                    if (response != null) {
+                        try {
+                            try (ResponseBody responseBody = response.errorBody()) {
+                                if (responseBody != null) {
+                                    String bodyString = responseBody.string();
+                                    if (!CommonUtils.isEmpty(bodyString)) {
+                                        throw new DBException("GTP completion error:\n" + bodyString);
+                                    }
+                                }
+                            }
+                        } catch (IOException e) {
+                            log.debug(e);
+                        }
+                    }
+                }
                 throw exception;
             }
         }
