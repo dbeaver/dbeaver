@@ -11,7 +11,7 @@
     <launcherArgs>
         <programArgs></programArgs>
 
-        <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM --add-opens=java.base/java.nio=ALL-UNNAMED -Dosgi.requiredJavaVersion=11 -Xms64m -Xmx1024m</vmArgs>
+        <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED -Dosgi.requiredJavaVersion=11 -Xms64m -Xmx1024m</vmArgs>
         <vmArgsMac>-XstartOnFirstThread</vmArgsMac>
     </launcherArgs>
 

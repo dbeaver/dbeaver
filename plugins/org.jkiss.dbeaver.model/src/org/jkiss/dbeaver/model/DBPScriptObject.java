@@ -66,6 +66,8 @@ public interface DBPScriptObject extends DBPObject {
     String OPTION_INCLUDE_PARTITIONS = "ddl.includePartitions"; //$NON-NLS-1$
 
     String OPTION_USE_SPECIAL_NAME = "ddl.useSpecialName"; //$NON-NLS-1$
+    
+    String OPTION_CAST_PARAMS = "sql.castParameter"; //$NON-NLS-1$
 
     Map<String, Object> EMPTY_OPTIONS = Collections.unmodifiableMap(new HashMap<>());
 
