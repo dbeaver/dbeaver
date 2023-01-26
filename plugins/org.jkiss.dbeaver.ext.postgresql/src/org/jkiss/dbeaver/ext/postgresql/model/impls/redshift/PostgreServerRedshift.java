@@ -298,6 +298,11 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     }
 
     @Override
+    public boolean supportsSysTypCategoryColumn() {
+        return false;
+    }
+
+    @Override
     public boolean supportsEntityMetadataInResults() {
         return true;
     }

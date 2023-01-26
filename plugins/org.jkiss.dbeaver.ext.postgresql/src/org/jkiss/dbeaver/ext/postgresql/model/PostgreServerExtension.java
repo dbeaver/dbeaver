@@ -173,6 +173,8 @@ public interface PostgreServerExtension {
     /** True if supports external types - types from another databases (like Athena). These types in this case will be turned into fake types */
     boolean supportsExternalTypes();
 
+    boolean supportsSysTypCategoryColumn();
+
     boolean supportsBackslashStringEscape();
 
     /** The ability to disable triggers need for the data transfer */
