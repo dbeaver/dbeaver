@@ -1032,7 +1032,16 @@ public class CommonUtils {
     }
 
     @SafeVarargs
-    public static <T> T[] array(T ... elems) {
+    public static <T> T[] array(T... elems) {
         return elems;
+    }
+
+    @NotNull
+    public static String normalizeResourcePath(@NotNull String resourcePath) {
+        while (resourcePath.startsWith("/")) {
+            resourcePath = resourcePath.substring(1);
+        }
+        resourcePath = resourcePath.replace('\\', '/');
+        return resourcePath;
     }
 }
