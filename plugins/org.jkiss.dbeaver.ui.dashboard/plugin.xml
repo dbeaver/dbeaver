@@ -56,14 +56,10 @@
             <enabledWhen>
                 <and>
                     <reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/>
-                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="public"/>
                 </and>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.configure" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardConfiguration">
-            <enabledWhen>
-                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="public"/>
-            </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.reset" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardReset">
             <enabledWhen>
@@ -81,9 +77,6 @@
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.view" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardViewItem">
-            <enabledWhen>
-                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="public"/>
-            </enabledWhen>
         </handler>
     </extension>
 
