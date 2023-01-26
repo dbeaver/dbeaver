@@ -1036,6 +1036,9 @@ public class CommonUtils {
         return elems;
     }
 
+    /**
+     * Removes (single or multiple) starting '/' from {@code resourcePath} and replaces all '\' with '/'
+     */
     @NotNull
     public static String normalizeResourcePath(@NotNull String resourcePath) {
         while (resourcePath.startsWith("/")) {
