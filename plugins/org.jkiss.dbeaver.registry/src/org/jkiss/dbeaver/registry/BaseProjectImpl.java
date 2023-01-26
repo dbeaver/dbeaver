@@ -392,6 +392,11 @@ public abstract class BaseProjectImpl implements DBPProject {
         flushMetadata(false); // wait for the file to be written
     }
 
+    /**
+     * Method for Bulk Update of resources properties paths
+     *
+     * @param oldToNewPaths collection of OldPath to NewPath pairs
+     */
     @Override
     public final void moveResourcePropertiesBatch(@NotNull Collection<Pair<String, String>> oldToNewPaths) {
         loadMetadata();
