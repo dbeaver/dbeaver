@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.utils.CommonUtils;
@@ -146,6 +147,14 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
     public boolean isComplete()
     {
         return true;
+    }
+
+    @Override
+    public void setSite(IDataSourceConnectionEditorSite site) {
+        super.setSite(site);
+        if (site != null && site.getDriver() != null) {
+            setTitle(site.getDriver().getName());
+        }
     }
 
     @Override
