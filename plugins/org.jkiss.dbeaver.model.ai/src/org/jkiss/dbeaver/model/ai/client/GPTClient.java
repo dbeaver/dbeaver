@@ -113,10 +113,6 @@ public class GPTClient {
     }
 
     private static String tryCreateCompletion(@NotNull OpenAiService service, @NotNull CompletionRequest completionRequest, int attempt) throws DBException {
-        if (attempt == MAX_REQUEST_ATTEMPTS) {
-            log.error("Maximum GPT completion attempts reached");
-            return null;
-        }
         try {
             List<CompletionChoice> choices = service.createCompletion(completionRequest).getChoices();
             Optional<CompletionChoice> choice = choices.stream().findFirst();
@@ -128,7 +124,7 @@ public class GPTClient {
 
             return completionText.trim();
         } catch (Exception exception) {
-            if (exception instanceof HttpException && ((HttpException) exception).code() == 429) {
+            if (exception instanceof HttpException && ((HttpException) exception).code() == 429 && attempt < MAX_REQUEST_ATTEMPTS) {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
