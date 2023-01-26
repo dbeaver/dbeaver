@@ -712,7 +712,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     // So make a separate request to the database for checking.
     boolean supportsSysTypCategoryColumn(JDBCSession session) {
         if (supportTypColumn == null) {
-            if (!getDataSource().getServerType().supportsSysTypCategoryColumn()){
+            if (!getDataSource().getServerType().supportsSysTypCategoryColumn()) {
                 supportTypColumn = false;
             } else if (!dataSource.isServerVersionAtLeast(10, 0)) {
                 try {

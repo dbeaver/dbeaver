@@ -173,6 +173,7 @@ public interface PostgreServerExtension {
     /** True if supports external types - types from another databases (like Athena). These types in this case will be turned into fake types */
     boolean supportsExternalTypes();
 
+    /** True if pg_type contains typcategory column for the correct data types reading */
     boolean supportsSysTypCategoryColumn();
 
     boolean supportsBackslashStringEscape();
