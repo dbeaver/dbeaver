@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.model.dataset.storage;
 
-import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -77,23 +76,22 @@ public class DatasetStorage {
         this.dataSet = dataSet;
     }
 
-    public DatasetStorage(String datasetId,
+    public DatasetStorage(String datasetName,
                           byte[] xmlData,
                           DBPDataSourceRegistry dataSourceRegistry
-    ) throws DBException, CoreException {
+    ) throws DBException {
         try (InputStream contents = new ByteArrayInputStream(xmlData)) {
             final Document document = XMLUtils.parseDocument(contents);
             final Element root = document.getDocumentElement();
 
             dataSet = new DBDDataSet(
-                datasetId,
-                root.getAttribute(ATTR_NAME)
+                datasetName
             );
             dataSet.setDescription(root.getAttribute(ATTR_DESCRIPTION));
             dataSet.setDraft(CommonUtils.toBoolean(root.getAttribute(ATTR_DRAFT)));
             deserializeQueries(root, dataSet, dataSourceRegistry);
         } catch (Exception e) {
-            throw new DBException("I>O Error reading dataset '" + datasetId + "'", e);
+            throw new DBException("I>O Error reading dataset '" + datasetName + "'", e);
         }
     }
 
@@ -156,20 +154,18 @@ public class DatasetStorage {
     public ByteArrayInputStream serialize() throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream(5000);
         XMLBuilder xml = new XMLBuilder(buffer, GeneralUtils.getDefaultFileEncoding());
-        xml.startElement(TAG_DATASET);
-        xml.addAttribute(ATTR_NAME, dataSet.getDisplayName());
-        if (dataSet.getDescription() != null) {
-            xml.addAttribute(ATTR_DESCRIPTION, dataSet.getDescription());
-        }
-        xml.addAttribute(ATTR_DRAFT, String.valueOf(dataSet.isDraft()));
+        try (var datasetXmlElement = xml.startElement(TAG_DATASET)) {
+            if (dataSet.getDescription() != null) {
+                xml.addAttribute(ATTR_DESCRIPTION, dataSet.getDescription());
+            }
+            xml.addAttribute(ATTR_DRAFT, String.valueOf(dataSet.isDraft()));
 
-        try (var queriesXmlElement = xml.startElement(TAG_QUERIES)) {
-            for (DBDDataSetQuery query : dataSet.getQueries()) {
-                serializeQuery(xml, query);
+            try (var queriesXmlElement = xml.startElement(TAG_QUERIES)) {
+                for (DBDDataSetQuery query : dataSet.getQueries()) {
+                    serializeQuery(xml, query);
+                }
             }
         }
-
-        xml.endElement();
         xml.flush();
         return new ByteArrayInputStream(buffer.toByteArray());
     }

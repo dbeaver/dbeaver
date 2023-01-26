@@ -26,23 +26,14 @@ import java.util.List;
  * Dataset
  */
 public class DBDDataSet {
-
-    @NotNull
-    private final String id;
     @NotNull
     private String displayName;
     private String description;
     private boolean draft;
     private final List<DBDDataSetQuery> queries = new ArrayList<>();
 
-    public DBDDataSet(@NotNull String id, @NotNull String displayName) {
-        this.id = id;
+    public DBDDataSet(@NotNull String displayName) {
         this.displayName = displayName;
-    }
-
-    @NotNull
-    public String getId() {
-        return id;
     }
 
     @NotNull
