@@ -50,6 +50,7 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
     protected Boolean showColumnComments;
     protected Boolean showFullDDL;
     private Boolean showPartitionsDDL;
+    private Boolean showCastParams;
 
     private final IAction OPEN_CONSOLE_ACTION = new Action(SQLEditorMessages.source_viewer_open_in_sql_console, DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)) {
         @Override
@@ -130,6 +131,9 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
             }
             if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_PARTITIONS)) {
                 options.put(DBPScriptObject.OPTION_INCLUDE_PARTITIONS, getShowPartitionsDDL());
+            }
+            if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_CAST_PARAMS)) {
+                options.put(DBPScriptObject.OPTION_CAST_PARAMS, getShowCastParams());
             }
         }
         return options;
@@ -251,6 +255,23 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
                         }
                     }, true));
             }
+            if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_CAST_PARAMS)) {
+                toolBarManager.add(ActionUtils.makeActionContribution(
+                        new Action(SQLEditorMessages.source_viewer_cast_params_text, Action.AS_CHECK_BOX) {
+                            {
+                                setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_DATA_TYPE));
+                                setToolTipText(SQLEditorMessages.source_viewer_cast_params_ddl_tip);
+                                setChecked(getShowCastParams());
+                            }
+
+                            @Override
+                            public void run() {
+                                showCastParams = isChecked();
+                                getPreferenceStore().setValue(DBPScriptObject.OPTION_CAST_PARAMS, showCastParams);
+                                refreshPart(SQLSourceViewer.this, true);
+                            }
+                        }, true));
+            }
         }
     }
 
@@ -287,5 +308,12 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
             showPartitionsDDL = getPreferenceStore().getBoolean(DBPScriptObject.OPTION_INCLUDE_PARTITIONS);
         }
         return showPartitionsDDL;
+    }
+
+    protected boolean getShowCastParams() {
+        if (showCastParams == null) {
+            showCastParams = getPreferenceStore().getBoolean(DBPScriptObject.OPTION_CAST_PARAMS);
+        }
+        return showCastParams;
     }
 }

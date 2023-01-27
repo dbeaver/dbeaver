@@ -155,6 +155,8 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
             return ((DBDComposite) ownerValue).getAttributeValue(attribute);
         } else if (ownerValue instanceof Map) {
             return ((Map<?, ?>) ownerValue).get(getName());
+        } else if (ownerValue == null) {
+            return null;
         }
 
         DBDAttributeBinding parent = getParent(1);

@@ -4085,7 +4085,8 @@ public class ResultSetViewer extends Viewer
         }
         if (executionContext == null) {
             if (finalizer != null) finalizer.run();
-            UIUtils.showMessageBox(viewerPanel.getShell(), "Data read", "Can't read data - no active connection", SWT.ICON_WARNING);
+            UIUtils.syncExec(() ->
+                UIUtils.showMessageBox(viewerPanel.getShell(), "Data read", "Can't read data - no active connection", SWT.ICON_WARNING));
             return false;
         }
         // Cancel any refresh jobs
