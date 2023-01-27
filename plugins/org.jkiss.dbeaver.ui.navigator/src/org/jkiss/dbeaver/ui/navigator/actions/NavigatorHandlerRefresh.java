@@ -131,7 +131,9 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                             if (((IRefreshablePart) editorPart).refreshPart(this, true) == IRefreshablePart.RefreshResult.CANCELED) {
                                 return true;
                             }
-                            iter.remove();
+                            if (nextNode == editorNode) {
+                                iter.remove();
+                            }
                         }
                     }
                 }
