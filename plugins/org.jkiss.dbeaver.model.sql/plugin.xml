@@ -60,7 +60,7 @@
             <property name="ddlKeywords" value="CREATE,ALTER,DROP"/>
             <property name="dmlKeywords" value="INSERT,DELETE,UPDATE,UPSERT,MERGE,TRUNCATE"/>
             <property name="execKeywords" value=""/>
-            <property name="types" value=""/>
+            <property name="types" value="BOOLEAN,CHAR,VARCHAR,BINARY,VARBINARY,INT,INTEGER,SMALLINT, BIGINT, NUMBER, NUMBER, "/>
             <property name="functions" value=""/>
 
             <property name="" value=""/>

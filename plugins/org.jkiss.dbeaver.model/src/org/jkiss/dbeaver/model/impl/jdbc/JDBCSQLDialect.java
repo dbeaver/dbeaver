@@ -75,6 +75,7 @@ public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConver
     private transient boolean typesLoaded = false;
 
     public JDBCSQLDialect(String name, String id) {
+        super(id);
         this.name = name;
         this.id = id;
     }
@@ -227,12 +228,6 @@ public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConver
     @Override
     public String getDialectName() {
         return name;
-    }
-
-    @NotNull
-    @Override
-    public String getDialectId() {
-        return id;
     }
 
     @Nullable

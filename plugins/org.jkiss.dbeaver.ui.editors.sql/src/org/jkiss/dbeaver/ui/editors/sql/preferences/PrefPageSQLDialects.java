@@ -30,16 +30,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
-import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
-import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
+import org.jkiss.dbeaver.model.impl.dialects.SQLDialectDescriptor;
+import org.jkiss.dbeaver.model.impl.dialects.SQLDialectRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * PrefPageSQLDialects

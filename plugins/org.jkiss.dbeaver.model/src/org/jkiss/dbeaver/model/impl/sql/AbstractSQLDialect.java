@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexNative;
+import org.jkiss.dbeaver.model.impl.dialects.SQLDialectDescriptor;
+import org.jkiss.dbeaver.model.impl.dialects.SQLDialectRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
@@ -108,13 +110,13 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     @NotNull
     @Override
     public String[] getExecuteKeywords() {
-        return EXEC_KEYWORDS;
+        return getDescriptor().getExecuteKeywords(true).toArray(new String[0]) ;
     }
 
     @NotNull
     @Override
     public String[] getDDLKeywords() {
-        return DDL_KEYWORDS;
+        return getDescriptor().getDDLKeywords(true).toArray(new String[0]);
     }
 
     protected void addSQLKeyword(String keyword) {
@@ -890,6 +892,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     @Override
     public SQLBlockCompletions getBlockCompletions() {
         return DEFAULT_SQL_BLOCK_COMPLETIONS;
+    }
+
+    @NotNull
+    protected SQLDialectDescriptor getDescriptor() {
+        return SQLDialectRegistry.getInstance().getDialect(getDialectId());
     }
 }
 

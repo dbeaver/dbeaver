@@ -36,6 +36,7 @@ public class H2SQLDialect extends GenericSQLDialect {
         super.initDriverSettings(session, dataSource, metaData);
     }
 
+
     @Override
     public boolean supportsAliasInSelect() {
         return true;

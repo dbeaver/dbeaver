@@ -36,7 +36,8 @@ import java.util.UUID;
  */
 public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQLDialect {
 
-    public static final String ID = "basic";
+    public static String DEFAULT_ID = "basic";
+    public String id;
 
     public static final BasicSQLDialect INSTANCE = new BasicSQLDialect();
 
@@ -67,13 +68,7 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
     private static final String[] CORE_NON_TRANSACTIONAL_KEYWORDS = new String[]{
         SQLConstants.KEYWORD_SELECT,
     };
-    protected static final String[] DML_KEYWORDS = new String[]{
-            SQLConstants.KEYWORD_INSERT,
-            SQLConstants.KEYWORD_DELETE,
-            SQLConstants.KEYWORD_UPDATE,
-            SQLConstants.KEYWORD_MERGE,
-            SQLConstants.KEYWORD_UPSERT,
-            SQLConstants.KEYWORD_TRUNCATE};
+
     public static final String[][] DEFAULT_IDENTIFIER_QUOTES = {{"\"", "\""}};
     public static final String[][] DEFAULT_STRING_QUOTES = {{"'", "'"}};
 
@@ -81,13 +76,18 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
     private static final String[] ROLLBACK_KEYWORDS = { SQLConstants.KEYWORD_ROLLBACK };
 
     protected BasicSQLDialect() {
+        this("basic");
+    }
+
+    protected BasicSQLDialect(String id) {
+        this.id = id;
         loadStandardKeywords();
     }
 
     @NotNull
     @Override
     public String getDialectId() {
-        return ID;
+        return id;
     }
 
     @NotNull
@@ -111,13 +111,13 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
     @NotNull
     @Override
     public String[] getExecuteKeywords() {
-        return EXEC_KEYWORDS;
+        return super.getExecuteKeywords();
     }
 
     @NotNull
     @Override
     public String[] getDDLKeywords() {
-        return DDL_KEYWORDS;
+        return super.getDDLKeywords();
     }
 
     @NotNull
@@ -308,7 +308,7 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
 
     @NotNull
     public String[] getDMLKeywords() {
-        return isStandardSQL() ? DML_KEYWORDS : new String[0];
+        return isStandardSQL() ? getDescriptor().getDMLKeywords(true).toArray(new String[0]): new String[0];
     }
 
     @NotNull
@@ -376,5 +376,6 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
             addKeywords(functions, DBPKeywordType.FUNCTION);
         }
     }
+
 
 }
