@@ -272,12 +272,8 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
     @Nullable
     String getConditionTypeCasting(boolean isInCondition, boolean castColumnName) {
         final String typeName = getTypeName();
-        DBSDataType dataType = DBUtils.getDataType(this);
-        if ((dataType != null) && (isInCondition)) {
-            String typeExt = CommonUtils.toString(dataType.geTypeExtension());
-            if ("E".equals(typeExt)) { // for future - maybe not only Enum? But I have no such deep knowledge
-                return "::text";
-            }    
+        if (isInCondition && typeCategory == PostgreTypeCategory.E) {
+            return "::text";
         }
         if (isInCondition && (PostgreConstants.TYPE_JSON.equals(typeName) || PostgreConstants.TYPE_XML.equals(typeName))) {
             // Convert value in text for json or xml columns in where condition
