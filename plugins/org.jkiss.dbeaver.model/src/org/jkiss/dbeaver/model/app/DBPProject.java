@@ -144,6 +144,11 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
 
     void moveResourceProperties(@NotNull String oldResourcePath, @NotNull String newResourcePath);
 
+    /**
+     * Method for Bulk Update of resources properties paths
+     *
+     * @param oldToNewPaths collection of OldPath to NewPath pairs
+     */
     void moveResourcePropertiesBatch(@NotNull Collection<Pair<String, String>> oldToNewPaths);
 
     void refreshProject(DBRProgressMonitor monitor);

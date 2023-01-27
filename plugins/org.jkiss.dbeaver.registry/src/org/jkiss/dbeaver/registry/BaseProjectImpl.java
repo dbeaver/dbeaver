@@ -392,13 +392,8 @@ public abstract class BaseProjectImpl implements DBPProject {
         flushMetadata(false); // wait for the file to be written
     }
 
-    /**
-     * Method for Bulk Update of resources properties paths
-     *
-     * @param oldToNewPaths collection of OldPath to NewPath pairs
-     */
     @Override
-    public final void moveResourcePropertiesBatch(@NotNull Collection<Pair<String, String>> oldToNewPaths) {
+    public void moveResourcePropertiesBatch(@NotNull Collection<Pair<String, String>> oldToNewPaths) {
         loadMetadata();
         synchronized (metadataSync) {
             for (var pathsPair : oldToNewPaths) {
@@ -561,7 +556,7 @@ public abstract class BaseProjectImpl implements DBPProject {
                         resourceProperties = mdCache;
                     }
                 } catch (Throwable e) {
-                    log.error("Error reading project '" + getName() + "' metadata from " + mdFile.toAbsolutePath(), e);
+                    log.error("Error reading project '" + getName() + "' metadata from "  + mdFile.toAbsolutePath(), e);
                 }
             }
             if (resourceProperties == null) {
