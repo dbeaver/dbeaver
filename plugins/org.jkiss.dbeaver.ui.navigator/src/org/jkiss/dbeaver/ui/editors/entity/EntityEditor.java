@@ -1064,6 +1064,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     @Override
     public void recreateEditorControl() {
+        if (getContainer() == null || getContainer().isDisposed()) {
+            // Disposed during editor opening
+            return;
+        }
         recreatePages();
         firePropertyChange(PROP_OBJECT_INIT);
         DataSourceToolbarUtils.refreshSelectorToolbar(getSite().getWorkbenchWindow());
