@@ -276,7 +276,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         if ((dataType != null) && (isInCondition)) {
             String typeExt = CommonUtils.toString(dataType.geTypeExtension());
             if ("E".equals(typeExt)) { // for future - maybe not only Enum? But I have no such deep knowledge
-        	return "::text";
+                return "::text";
             }    
         }
         if (isInCondition && (PostgreConstants.TYPE_JSON.equals(typeName) || PostgreConstants.TYPE_XML.equals(typeName))) {
