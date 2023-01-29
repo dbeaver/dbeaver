@@ -634,7 +634,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     }
 
     @Override
-    public void metaInfoChanged(DBRProgressMonitor monitor, @NotNull final List<QMMetaEvent> events) {
+    public void metaInfoChanged(@NotNull DBRProgressMonitor monitor, @NotNull final List<QMMetaEvent> events) {
         if (DBWorkbench.getPlatform().isShuttingDown()) {
             return;
         }

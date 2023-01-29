@@ -3,11 +3,11 @@
 
 <plugin>
 	<extension point="org.eclipse.core.runtime.preferences">
-		<initializer class="org.jkiss.dbeaver.ui.editors.sql.ai.internal.GPTPreferencesInitializer"/>
+		<initializer class="org.jkiss.dbeaver.ui.editors.sql.ai.gpt3.GPTPreferencesInitializer"/>
 	</extension>
 
 	<extension point="org.eclipse.ui.preferencePages">
-		<page id="org.jkiss.dbeaver.preferences.gpt" category="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.ui.editors.sql.ai.preferences.GPTPreferencePage" name="%pref.page.name.gpt">
+		<page id="org.jkiss.dbeaver.preferences.gpt" category="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.ui.editors.sql.ai.gpt3.GPTPreferencePage" name="%pref.page.name.gpt">
 			<keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
 			<keywordReference id="org.jkiss.dbeaver.ui.editors.ai.keyword.gtp"/>
 		</page>
@@ -38,7 +38,7 @@
 		<image commandId="org.jkiss.dbeaver.ui.editors.sql.ai.show.gpt" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/misc/ai.png"/>
 	</extension>
 	<extension point="org.eclipse.ui.handlers">
-		<handler commandId="org.jkiss.dbeaver.ui.editors.sql.ai.show.gpt" class="org.jkiss.dbeaver.ui.editors.sql.ai.internal.GPTExecuteHandler">
+		<handler commandId="org.jkiss.dbeaver.ui.editors.sql.ai.show.gpt" class="org.jkiss.dbeaver.ui.editors.sql.ai.internal.AITranslateHandler">
 		</handler>
 	</extension>
 </plugin>

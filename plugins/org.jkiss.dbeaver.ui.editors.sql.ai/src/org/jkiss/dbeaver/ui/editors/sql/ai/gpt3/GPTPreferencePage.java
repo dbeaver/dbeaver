@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.ai.preferences;
+package org.jkiss.dbeaver.ui.editors.sql.ai.gpt3;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -25,13 +25,13 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.GPTPreferences;
-import org.jkiss.dbeaver.model.ai.client.GPTClient;
-import org.jkiss.dbeaver.model.ai.internal.GPTModel;
+import org.jkiss.dbeaver.model.ai.gpt3.GPTClient;
+import org.jkiss.dbeaver.model.ai.gpt3.GPTModel;
+import org.jkiss.dbeaver.model.ai.gpt3.GPTPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.sql.ai.internal.GPTMessages;
+import org.jkiss.dbeaver.ui.editors.sql.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
 import java.util.Locale;
@@ -93,12 +93,12 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         placeholder.setLayoutData(new GridData(GridData.FILL_BOTH));
         {
             Group authorizationGroup = UIUtils.createControlGroup(placeholder,
-                GPTMessages.gpt_preference_page_group_authorization,
+                AIUIMessages.gpt_preference_page_group_authorization,
                 2,
                 SWT.NONE,
                 5
             );
-            tokenText = UIUtils.createLabelText(authorizationGroup, GPTMessages.gpt_preference_page_selector_token,
+            tokenText = UIUtils.createLabelText(authorizationGroup, AIUIMessages.gpt_preference_page_selector_token,
                 "", SWT.BORDER | SWT.PASSWORD);
             tokenText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             Link link = UIUtils.createLink(
@@ -117,14 +117,14 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         }
         {
             Group modelGroup = UIUtils.createControlGroup(placeholder,
-                GPTMessages.gpt_preference_page_group_model,
+                AIUIMessages.gpt_preference_page_group_model,
                 2,
                 SWT.NONE,
                 5
             );
             modelGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             modelCombo = UIUtils.createLabelCombo(modelGroup,
-                GPTMessages.gpt_preference_page_combo_engine,
+                AIUIMessages.gpt_preference_page_combo_engine,
                 SWT.READ_ONLY
             );
             for (GPTModel model : GPTModel.values()) {
@@ -133,21 +133,21 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
             UIUtils.createInfoLabel(modelGroup, "code-davinci model suits the best for SQL code completion", GridData.FILL_HORIZONTAL, 2);
             {
                 Group modelAdvancedGroup = UIUtils.createControlGroup(placeholder,
-                    GPTMessages.gpt_preference_page_group_model_advanced,
+                    AIUIMessages.gpt_preference_page_group_model_advanced,
                     2,
                     SWT.NONE,
                     5
                 );
 
                 temperatureText = UIUtils.createLabelText(modelAdvancedGroup,
-                    GPTMessages.gpt_preference_page_text_temperature,
+                    AIUIMessages.gpt_preference_page_text_temperature,
                     "0.0"
                 );
                 temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
                 UIUtils.createInfoLabel(modelAdvancedGroup, "Lower temperatures give more precise results", GridData.FILL_HORIZONTAL, 2);
 
                 maxTokensText = UIUtils.createLabelText(modelAdvancedGroup,
-                    GPTMessages.gpt_preference_page_text_max_tokens,
+                    AIUIMessages.gpt_preference_page_text_max_tokens,
                     "250"
                 );
                 maxTokensText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
@@ -155,7 +155,7 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
                 temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
                 modelAdvancedGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-                maxTablesText = UIUtils.createLabelText(modelAdvancedGroup, GPTMessages.gpt_preference_page_text_max_tables, null);
+                maxTablesText = UIUtils.createLabelText(modelAdvancedGroup, AIUIMessages.gpt_preference_page_text_max_tables, null);
                 executeQueryImmediately = UIUtils.createCheckbox(
                     modelAdvancedGroup,
                     "Execute SQL immediately",

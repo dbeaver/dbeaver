@@ -14,24 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.ai.internal;
 
-import org.eclipse.core.runtime.Plugin;
-import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
-import org.osgi.framework.BundleContext;
+package org.jkiss.dbeaver.model.ai.translator;
 
-public class GTPActivator extends Plugin {
+/**
+ * Natural language translator item
+ */
+public class DAIHistoryItem {
 
-    @Override
-    public void start(BundleContext context) throws Exception {
-        super.start(context);
-        // Trigger pref defaults
-        new BundlePreferenceStore(getBundle());
+    private String naturalText;
+    private String completionText;
+
+    public String getNaturalText() {
+        return naturalText;
     }
 
-    @Override
-    public void stop(BundleContext context) throws Exception {
-        super.stop(context);
+    public void setNaturalText(String naturalText) {
+        this.naturalText = naturalText;
     }
 
+    public String getCompletionText() {
+        return completionText;
+    }
+
+    public void setCompletionText(String completionText) {
+        this.completionText = completionText;
+    }
 }

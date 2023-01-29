@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.ai.internal;
+package org.jkiss.dbeaver.ui.editors.sql.ai.gpt3;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
-import org.jkiss.dbeaver.model.ai.GPTPreferences;
-import org.jkiss.dbeaver.model.ai.internal.GPTModel;
+import org.jkiss.dbeaver.model.ai.gpt3.GPTModel;
+import org.jkiss.dbeaver.model.ai.gpt3.GPTPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PrefUtils;

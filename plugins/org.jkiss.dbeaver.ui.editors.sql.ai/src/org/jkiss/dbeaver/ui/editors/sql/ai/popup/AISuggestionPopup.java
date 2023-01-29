@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
-import org.jkiss.dbeaver.ui.editors.sql.ai.preferences.GPTPreferencePage;
+import org.jkiss.dbeaver.ui.editors.sql.ai.gpt3.GPTPreferencePage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GPTSuggestionPopup extends AbstractPopupPanel {
+public class AISuggestionPopup extends AbstractPopupPanel {
 
     private static final Map<String, List<String>> queryHistory = new HashMap<>();
 
@@ -42,7 +42,7 @@ public class GPTSuggestionPopup extends AbstractPopupPanel {
     private Text inputField;
     private String inputText;
 
-    public GPTSuggestionPopup(@NotNull Shell parentShell, @NotNull String title, @NotNull DBPDataSourceContainer dataSourceContainer) {
+    public AISuggestionPopup(@NotNull Shell parentShell, @NotNull String title, @NotNull DBPDataSourceContainer dataSourceContainer) {
         super(parentShell, title);
         this.dataSourceContainer = dataSourceContainer;
         setImage(DBIcon.AI);

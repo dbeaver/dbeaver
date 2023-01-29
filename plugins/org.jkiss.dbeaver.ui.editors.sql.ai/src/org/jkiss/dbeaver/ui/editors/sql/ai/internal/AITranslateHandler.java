@@ -27,22 +27,22 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.ai.GPTPreferences;
-import org.jkiss.dbeaver.model.ai.client.GPTClient;
+import org.jkiss.dbeaver.model.ai.gpt3.GPTClient;
+import org.jkiss.dbeaver.model.ai.gpt3.GPTPreferences;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.ui.editors.sql.ai.popup.GPTSuggestionPopup;
-import org.jkiss.dbeaver.ui.editors.sql.ai.preferences.GPTPreferencePage;
+import org.jkiss.dbeaver.ui.editors.sql.ai.gpt3.GPTPreferencePage;
+import org.jkiss.dbeaver.ui.editors.sql.ai.popup.AISuggestionPopup;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
-public class GPTExecuteHandler extends AbstractHandler {
+public class AITranslateHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -81,7 +81,7 @@ public class GPTExecuteHandler extends AbstractHandler {
             }
         }
 
-        GPTSuggestionPopup gptSuggestionPopup = new GPTSuggestionPopup(
+        AISuggestionPopup gptSuggestionPopup = new AISuggestionPopup(
             HandlerUtil.getActiveShell(event),
             "GPT-3 smart completion",
             dataSourceContainer

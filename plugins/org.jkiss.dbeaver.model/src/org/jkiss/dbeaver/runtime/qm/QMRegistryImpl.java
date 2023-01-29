@@ -174,6 +174,7 @@ public class QMRegistryImpl implements QMRegistry {
     }
 
     private class DefaultEventBrowser implements QMEventBrowser {
+        @NotNull
         @Override
         public QMEventCursor getQueryHistoryCursor(
             @NotNull DBRProgressMonitor monitor,

@@ -15,24 +15,34 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.qm;
+package org.jkiss.dbeaver.model.ai.completion;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.List;
+
 /**
- * Query manager history
+ * Completion engine
  */
-public interface QMEventBrowser {
+public interface DAICompletionEngine {
+
+    String getEngineName();
+
+    String getModelName();
 
     @NotNull
-    QMEventCursor getQueryHistoryCursor(
+    List<DAICompletionResponse> performQueryCompletion(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull QMEventCriteria criteria,
-        @Nullable QMEventFilter filter)
+        @Nullable DBSLogicalDataSource dataSource,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull DAICompletionRequest completionRequest,
+        boolean returnOnlyCompletion,
+        int maxResults)
         throws DBException;
 
 }
