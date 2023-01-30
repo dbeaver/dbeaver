@@ -781,7 +781,13 @@ public class SQLScriptParser {
                         }
 
                         if (param == null) {
-                            param = new SQLQueryParameter(syntaxManager, orderPos, matcher.group(0), start, matcher.end() - matcher.start());
+                            param = new SQLQueryParameter(
+                                syntaxManager,
+                                orderPos,
+                                matcher.group(SQLQueryParameter.VARIABLE_NAME_GROUP_NAME).toUpperCase(Locale.ENGLISH),
+                                start,
+                                matcher.end() - matcher.start()
+                            );
                             if (parameters == null) {
                                 parameters = new ArrayList<>();
                             }
