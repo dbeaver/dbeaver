@@ -242,12 +242,6 @@ public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConver
 
     @NotNull
     @Override
-    public String[] getExecuteKeywords() {
-        return new String[0];
-    }
-
-    @NotNull
-    @Override
     public String getSearchStringEscape() {
         return searchStringEscape;
     }

@@ -164,15 +164,15 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
 
     @Override
     protected void performDefaults() {
-        if (element != null) {
+        if (curDialect != null) {
             SQLDialectRegistry.getInstance().getCustomDialects().remove(curDialect.getId());
         }
         if (dialectTable != null && dialectTable.getSelection().length != 0) {
             dialectTable.getSelection()[0].setFont(normalFont);
         }
-        setFieldsToEmpty();
         SQLDialectRegistry.getInstance().saveCustomDialects();
         SQLDialectRegistry.getInstance().reloadDialects();
+        loadDialectSettings();
         super.performDefaults();
     }
 

@@ -340,19 +340,17 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
         // Add default set of keywords
         Set<String> all = new HashSet<>();
         if (isStandardSQL()) {
-            Collections.addAll(all, SQLConstants.SQL2003_RESERVED_KEYWORDS);
-            //Collections.addAll(reservedWords, SQLConstants.SQL2003_NON_RESERVED_KEYWORDS);
-            Collections.addAll(all, SQLConstants.SQL_EX_KEYWORDS);
-            Collections.addAll(functions, SQLConstants.SQL2003_FUNCTIONS);
+            all.addAll(getDescriptor().getReservedWords(true));
+            functions.addAll(getDescriptor().getFunctions(true));
             Collections.addAll(tableQueryWords, SQLConstants.TABLE_KEYWORDS);
             Collections.addAll(columnQueryWords, SQLConstants.COLUMN_KEYWORDS);
         }
 
-        for (String executeKeyword : ArrayUtils.safeArray(getExecuteKeywords())) {
+        for (String executeKeyword : getDescriptor().getExecuteKeywords(true)) {
             addSQLKeyword(executeKeyword);
             setKeywordIndent(executeKeyword, 1);
         }
-        for (String ddlKeyword : ArrayUtils.safeArray(getDDLKeywords())) {
+        for (String ddlKeyword : getDescriptor().getDDLKeywords(true)) {
             addSQLKeyword(ddlKeyword);
             setKeywordIndent(ddlKeyword, 1);
         }
@@ -369,7 +367,7 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
 
         if (isStandardSQL()) {
             // Add default types
-            Collections.addAll(types, SQLConstants.DEFAULT_TYPES);
+            types.addAll(getDescriptor().getDataTypes(true));
 
             addKeywords(all, DBPKeywordType.KEYWORD);
             addKeywords(types, DBPKeywordType.TYPE);

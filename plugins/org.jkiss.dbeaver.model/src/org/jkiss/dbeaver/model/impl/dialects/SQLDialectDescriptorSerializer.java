@@ -81,12 +81,6 @@ public class SQLDialectDescriptorSerializer {
     ) throws IOException {
         jsonWriter.name(dialectDescriptor.getId());
         jsonWriter.beginObject();
-//        JSONUtils.fieldNE(jsonWriter, ATTR_DIALECTS_DESCRIPTION, dialectDescriptor.getDescription());
-//        JSONUtils.fieldNE(jsonWriter, ATTR_DIALECTS_PARENT, dialectDescriptor.getParentDialect() != null ?
-//                                                          dialectDescriptor.getParentDialect().getId() : "");
-//        JSONUtils.fieldNE(jsonWriter, ATTR_DIALECTS_CLASS, dialectDescriptor.getImplClass().getImplName());
-//        JSONUtils.fieldNE(jsonWriter, ATTR_DIALECTS_ICON, dialectDescriptor.getIcon().getLocation());
-
         JSONUtils.field(jsonWriter, ATTR_DIALECTS_VALUE_SCRIPT_SEPARATOR, dialectDescriptor.getScriptDelimiter());
         JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_VALUE_KEYWORDS,
             dialectDescriptor.getReservedWords(false));

@@ -117,8 +117,7 @@ public class SQLDialectRegistry
      * Saves dialects to config file
      */
     public void saveCustomDialects() {
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try(ByteArrayOutputStream baos = new ByteArrayOutputStream();) {
             SQLDialectDescriptorSerializer.serializeDialects(baos, this.customDialects.values());
             DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(
                 SQLDialectDescriptorSerializer.DIALECTS_FILE_NAME,

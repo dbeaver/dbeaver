@@ -88,41 +88,69 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
         for (IConfigurationElement propElement : config.getChildren("property")) {
             String propName = propElement.getAttribute("name");
             String propValue = propElement.getAttribute("value");
-            if (propName == null || CommonUtils.isEmpty(propValue)) {
+            if (propName == null) {
+                log.warn("Can't find property name for" + propElement.getName());
                 continue;
             }
-            switch (propName) {
-                case "keywords":
-                    this.keywords = loadSet(propValue);
-                    break;
-                case "ddlKeywords":
-                    this.ddlKeywords = loadSet(propValue);
-                    break;
-                case "dmlKeywords":
-                    this.dmlKeywords = loadSet(propValue);
-                    break;
-                case "execKeywords":
-                    this.execKeywords = loadSet(propValue);
-                    break;
-                case "txnKeywords":
-                    this.txnKeywords = loadSet(propValue);
-                    break;
-                case "types":
-                    this.types = loadSet(propValue);
-                    break;
-                case "functions":
-                    this.functions = loadSet(propValue);
-                    break;
-                case "insertMethods":
-                    insertMethodNames = loadList(propValue);
-                    break;
-                default:
-                    if (properties == null) {
-                        properties = new LinkedHashMap<>();
+            if (CommonUtils.isEmpty(propValue)) {
+                String className = propElement.getAttribute("class");
+                String fieldName = propElement.getAttribute("field");
+                if (fieldName == null || className == null) {
+                    continue;
+                }
+                Set<String> values = new HashSet<>();
+                for (String field : fieldName.split(",")) {
+                    Set<String> fieldValues = extractValuesFromStaticField(className, field);
+                    if (fieldValues == null) {
+                        log.warn("Can't extract field " + field + " values");
+                        continue;
                     }
-                    this.properties.put(propName, propValue);
-                    break;
+                    values.addAll(fieldValues);
+                }
+                setValue(propName, values);
+            } else {
+                loadFromValue(propName, propValue);
             }
+        }
+    }
+
+    private void loadFromValue(String propName, String propValue) {
+        Set<String> values = loadSet(propValue);
+        setValue(propName, values);
+    }
+
+    private void setValue(String propName, Set<String> values) {
+        switch (propName) {
+            case "keywords":
+                this.keywords = values;
+                break;
+            case "ddlKeywords":
+                this.ddlKeywords = values;
+                break;
+            case "dmlKeywords":
+                this.dmlKeywords = values;
+                break;
+            case "execKeywords":
+                this.execKeywords = values;
+                break;
+            case "txnKeywords":
+                this.txnKeywords = values;
+                break;
+            case "types":
+                this.types = values;
+                break;
+            case "functions":
+                this.functions = values;
+                break;
+            case "insertMethods":
+                insertMethodNames = new ArrayList<>(values);
+                break;
+            default:
+                if (properties == null) {
+                    properties = new LinkedHashMap<>();
+                }
+                this.properties.put(propName, values);
+                break;
         }
     }
 
@@ -416,9 +444,9 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
             ) {
                 Object o = field.get(reference);
                 if (o instanceof String[]) {
-                    return Set.of((String[]) o);
+                    return new HashSet<>(Arrays.asList((String[]) o));
                 } else if (o instanceof List) {
-                    return Set.of(((List<String>) o).toArray(new String[0]));
+                    return new HashSet<String>((Collection<? extends String>) o);
                 } else if (o instanceof Set){
                     return (Set<String>) o;
                 } else {
