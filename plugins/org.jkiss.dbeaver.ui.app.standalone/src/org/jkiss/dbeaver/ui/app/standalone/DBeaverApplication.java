@@ -48,7 +48,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.registry.DesktopApplicationImpl;
 import org.jkiss.dbeaver.registry.SWTBrowserRegistry;
-import org.jkiss.dbeaver.registry.TimezoneRegistry;
+import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
