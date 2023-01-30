@@ -1915,6 +1915,7 @@ public class DataSourceDescriptor
             connectionInfo.getHandlers().forEach(handler ->
                 handler.setSavePassword(false)
             );
+            setSavePassword(false);
             return;
         }
 
