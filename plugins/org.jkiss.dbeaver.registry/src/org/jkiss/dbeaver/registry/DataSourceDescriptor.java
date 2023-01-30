@@ -110,6 +110,8 @@ public class DataSourceDescriptor
     @NotNull
     private DBPDriver driver;
     @NotNull
+    private DBPDriver originalDriver;
+    @NotNull
     private DBPConnectionConfiguration connectionInfo;
     // Copy of connection info with resolved params (cache)
     private DBPConnectionConfiguration resolvedConnectionInfo;
@@ -187,13 +189,27 @@ public class DataSourceDescriptor
         @NotNull DBPDataSourceOrigin origin,
         @NotNull String id,
         @NotNull DBPDriver driver,
-        @NotNull DBPConnectionConfiguration connectionInfo) {
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) {
+        this(registry, storage, origin, id, driver, driver, connectionInfo);
+    }
+
+    public DataSourceDescriptor(
+        @NotNull DBPDataSourceRegistry registry,
+        @NotNull DBPDataSourceConfigurationStorage storage,
+        @NotNull DBPDataSourceOrigin origin,
+        @NotNull String id,
+        @NotNull DBPDriver originalDriver,
+        @NotNull DBPDriver substitutedDriver,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) {
         this.registry = registry;
         this.storage = storage;
         this.origin = origin;
         this.manageable = storage.isDefault();
         this.id = id;
-        this.driver = driver;
+        this.originalDriver = originalDriver;
+        this.driver = substitutedDriver;
         this.connectionInfo = connectionInfo;
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.virtualModel = new DBVModel(this);
@@ -290,6 +306,11 @@ public class DataSourceDescriptor
     @Override
     public DBPDriver getDriver() {
         return driver;
+    }
+
+    @NotNull
+    public DBPDriver getOriginalDriver() {
+        return originalDriver;
     }
 
     @NotNull
