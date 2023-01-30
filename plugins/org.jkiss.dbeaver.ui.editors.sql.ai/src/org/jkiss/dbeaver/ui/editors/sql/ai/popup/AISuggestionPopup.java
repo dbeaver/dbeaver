@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.editors.sql.ai.popup;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -116,6 +118,16 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         }
 
         inputField.setFocus();
+
+        historyCombo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                String text = historyCombo.getText();
+                if (!CommonUtils.isEmpty(text)) {
+                    inputField.setText(text);
+                }
+            }
+        });
 
         return placeholder;
     }
