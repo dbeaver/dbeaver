@@ -174,6 +174,9 @@ public class ArrayUtils {
         }
     }
 
+    /**
+     * Returns index of the first found element satisfying a given predicate in the provided array 
+     */
     public static <T> int indexOf(T[] array, @NotNull Predicate<T> condition) {
         for (int i = 0; i < array.length; i++) {
             if (condition.test(array[i])) {
