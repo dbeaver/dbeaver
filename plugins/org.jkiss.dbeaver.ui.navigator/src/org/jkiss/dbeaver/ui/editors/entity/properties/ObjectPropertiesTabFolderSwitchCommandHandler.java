@@ -48,9 +48,7 @@ public class ObjectPropertiesTabFolderSwitchCommandHandler extends AbstractHandl
                 String activeFolderId = propsEditor.getActiveFolderId();
                 int activeFolderIndex = ArrayUtils.indexOf(foldersInfo, f -> f.getId().equals(activeFolderId));
                 int targetFolderIndex = (activeFolderIndex + indexDelta + foldersInfo.length) % foldersInfo.length;
-                if (targetFolderIndex >= 0 && targetFolderIndex < foldersInfo.length) {
-                    propsEditor.switchFolder(foldersInfo[targetFolderIndex].getId());
-                }
+                propsEditor.switchFolder(foldersInfo[targetFolderIndex].getId());
             }
         }
         return null;
