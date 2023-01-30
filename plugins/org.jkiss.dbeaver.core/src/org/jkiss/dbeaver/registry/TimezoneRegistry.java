@@ -55,6 +55,7 @@ public class TimezoneRegistry {
 
     public static void overrideTimezone() {
         userDefaultTimezone = System.getProperty("user.timezone");
+        System.setProperty("user.old.timezone", userDefaultTimezone);
         DBPPreferenceStore preferenceStore = ModelPreferences.getPreferences();
         final String timezone = preferenceStore.getString(ModelPreferences.CLIENT_TIMEZONE);
         if (timezone != null && !timezone.equals(DBConstants.DEFAULT_TIMEZONE)) {
