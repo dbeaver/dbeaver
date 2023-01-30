@@ -574,7 +574,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             }
         } catch (SQLException e) {
             log.debug("Error reading aggregate function body", e);
-            body = "-- Aggregate function";
+            body = "-- Aggregate function " + getFullQualifiedSignature() + "\n-- " + e.getMessage();
         }
     }
 
