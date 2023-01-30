@@ -37,7 +37,6 @@ import java.util.UUID;
 public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQLDialect {
 
     public static String DEFAULT_ID = "basic";
-    public String id;
 
     public static final BasicSQLDialect INSTANCE = new BasicSQLDialect();
 
@@ -80,14 +79,7 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
     }
 
     protected BasicSQLDialect(String id) {
-        this.id = id;
-        loadStandardKeywords();
-    }
-
-    @NotNull
-    @Override
-    public String getDialectId() {
-        return id;
+        super(id);
     }
 
     @NotNull
@@ -336,44 +328,6 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
         return false;
     }
 
-    private void loadStandardKeywords() {
-        // Add default set of keywords
-        Set<String> all = new HashSet<>();
-        if (isStandardSQL()) {
-            all.addAll(getDescriptor().getReservedWords(true));
-            functions.addAll(getDescriptor().getFunctions(true));
-            Collections.addAll(tableQueryWords, SQLConstants.TABLE_KEYWORDS);
-            Collections.addAll(columnQueryWords, SQLConstants.COLUMN_KEYWORDS);
-        }
-
-        for (String executeKeyword : getDescriptor().getExecuteKeywords(true)) {
-            addSQLKeyword(executeKeyword);
-            setKeywordIndent(executeKeyword, 1);
-        }
-        for (String ddlKeyword : getDescriptor().getDDLKeywords(true)) {
-            addSQLKeyword(ddlKeyword);
-            setKeywordIndent(ddlKeyword, 1);
-        }
-        for (String kw : tableQueryWords) {
-            setKeywordIndent(kw, 1);
-        }
-        for (String kw : columnQueryWords) {
-            setKeywordIndent(kw, 1);
-        }
-        for (String[] beKeywords : ArrayUtils.safeArray(getBlockBoundStrings())) {
-            setKeywordIndent(beKeywords[0], 1);
-            setKeywordIndent(beKeywords[1], -1);
-        }
-
-        if (isStandardSQL()) {
-            // Add default types
-            types.addAll(getDescriptor().getDataTypes(true));
-
-            addKeywords(all, DBPKeywordType.KEYWORD);
-            addKeywords(types, DBPKeywordType.TYPE);
-            addKeywords(functions, DBPKeywordType.FUNCTION);
-        }
-    }
 
 
 }

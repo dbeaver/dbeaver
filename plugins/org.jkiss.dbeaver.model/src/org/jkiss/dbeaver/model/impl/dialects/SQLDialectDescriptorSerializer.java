@@ -30,7 +30,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class SQLDialectDescriptorSerializer {
     private static final Log log = Log.getLog(SQLDialectDescriptorSerializer.class);

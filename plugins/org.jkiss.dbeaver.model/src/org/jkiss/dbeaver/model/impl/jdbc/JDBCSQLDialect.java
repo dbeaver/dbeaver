@@ -55,7 +55,6 @@ public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConver
     };
 
     private String name;
-    private String id;
     private String[][] identifierQuoteString = new String[][]{{SQLConstants.DEFAULT_IDENTIFIER_QUOTE, SQLConstants.DEFAULT_IDENTIFIER_QUOTE}};
     private SQLStateType sqlStateType;
     private String searchStringEscape;
@@ -77,7 +76,6 @@ public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConver
     public JDBCSQLDialect(String name, String id) {
         super(id);
         this.name = name;
-        this.id = id;
     }
 
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {

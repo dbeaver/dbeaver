@@ -80,7 +80,12 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     private Pair<String, String> multiLineComments = new Pair<>(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END);
     private Map<String, Integer> keywordsIndent = new HashMap<>();
 
-    protected AbstractSQLDialect() {
+    private String id;
+
+    protected AbstractSQLDialect(@NotNull String id) {
+        this.id = id;
+
+        loadDescriptorKeywords();
     }
 
     @NotNull
@@ -897,6 +902,45 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     @NotNull
     protected SQLDialectDescriptor getDescriptor() {
         return SQLDialectRegistry.getInstance().getDialect(getDialectId());
+    }
+
+    @NotNull
+    @Override
+    public String getDialectId() {
+        return id;
+    }
+
+    private void loadDescriptorKeywords() {
+        // Add default set of keywords
+        Set<String> all = new HashSet<>(getDescriptor().getReservedWords(true));
+        functions.addAll(getDescriptor().getFunctions(true));
+        Collections.addAll(tableQueryWords, SQLConstants.TABLE_KEYWORDS);
+        Collections.addAll(columnQueryWords, SQLConstants.COLUMN_KEYWORDS);
+
+        for (String executeKeyword : getDescriptor().getExecuteKeywords(true)) {
+            addSQLKeyword(executeKeyword);
+            setKeywordIndent(executeKeyword, 1);
+        }
+        for (String ddlKeyword : getDescriptor().getDDLKeywords(true)) {
+            addSQLKeyword(ddlKeyword);
+            setKeywordIndent(ddlKeyword, 1);
+        }
+        for (String kw : tableQueryWords) {
+            setKeywordIndent(kw, 1);
+        }
+        for (String kw : columnQueryWords) {
+            setKeywordIndent(kw, 1);
+        }
+        for (String[] beKeywords : ArrayUtils.safeArray(getBlockBoundStrings())) {
+            setKeywordIndent(beKeywords[0], 1);
+            setKeywordIndent(beKeywords[1], -1);
+        }
+        // Add default types
+        types.addAll(getDescriptor().getDataTypes(true));
+
+        addKeywords(all, DBPKeywordType.KEYWORD);
+        addKeywords(types, DBPKeywordType.TYPE);
+        addKeywords(functions, DBPKeywordType.FUNCTION);
     }
 }
 
