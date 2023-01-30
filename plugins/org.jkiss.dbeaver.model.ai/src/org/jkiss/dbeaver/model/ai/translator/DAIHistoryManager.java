@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.ai.translator;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 
 import java.util.List;
@@ -24,13 +25,16 @@ import java.util.List;
 /**
  * Natural language translator history
  */
-public interface DAITranslateHistory {
+public interface DAIHistoryManager {
 
-    List<DAIHistoryItem> readLastNaturalTexts(int maxCount);
+    @NotNull
+    List<DAIHistoryItem> readLastNaturalTexts(
+        @NotNull DBSLogicalDataSource dataSource,
+        int maxCount);
 
     void saveTranslationHistory(
-        DBSLogicalDataSource dataSource,
-        String natualText,
-        String sqlText);
+        @NotNull DBSLogicalDataSource dataSource,
+        @NotNull String natualText,
+        @NotNull String sqlText);
 
 }

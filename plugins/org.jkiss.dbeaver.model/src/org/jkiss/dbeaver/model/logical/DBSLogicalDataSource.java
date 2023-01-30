@@ -44,6 +44,7 @@ public class DBSLogicalDataSource implements DBPDataSourceContainerProvider, DBP
         this.description = description;
     }
 
+    @NotNull
     @Override
     public DBPDataSourceContainer getDataSourceContainer() {
         return dataSourceContainer;

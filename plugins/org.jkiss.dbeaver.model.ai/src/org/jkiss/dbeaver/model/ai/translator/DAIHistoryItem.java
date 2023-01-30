@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.ai.translator;
 
+import java.time.LocalDate;
+
 /**
  * Natural language translator item
  */
@@ -24,6 +26,15 @@ public class DAIHistoryItem {
 
     private String naturalText;
     private String completionText;
+    private LocalDate time;
+
+    public DAIHistoryItem() {
+    }
+
+    public DAIHistoryItem(String naturalText, String completionText) {
+        this.naturalText = naturalText;
+        this.completionText = completionText;
+    }
 
     public String getNaturalText() {
         return naturalText;
@@ -39,5 +50,13 @@ public class DAIHistoryItem {
 
     public void setCompletionText(String completionText) {
         this.completionText = completionText;
+    }
+
+    public LocalDate getTime() {
+        return time;
+    }
+
+    public void setTime(LocalDate time) {
+        this.time = time;
     }
 }

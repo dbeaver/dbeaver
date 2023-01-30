@@ -23,10 +23,13 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.ai.translator.DAIHistoryManager;
+import org.jkiss.dbeaver.model.ai.translator.SimpleFilterManager;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.ui.editors.sql.ai.gpt3.GPTPreferencePage;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -37,6 +40,16 @@ import java.util.Map;
 public class AISuggestionPopup extends AbstractPopupPanel {
 
     private static final Map<String, List<String>> queryHistory = new HashMap<>();
+
+    @NotNull
+    private static DAIHistoryManager historyManager;
+
+    static {
+        historyManager = GeneralUtils.adapt(AISuggestionPopup.class, DAIHistoryManager.class);
+        if (historyManager == null) {
+            historyManager = new SimpleFilterManager();
+        }
+    }
 
     private final DBPDataSourceContainer dataSourceContainer;
     private Text inputField;
