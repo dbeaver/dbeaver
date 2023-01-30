@@ -23,24 +23,21 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.part.MultiPageEditorPart;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderInfo;
 import org.jkiss.utils.ArrayUtils;
 
-import java.util.Map;
 
 public class ObjectPropertiesTabFolderSwitchCommandHandler extends AbstractHandler {
     
     public static final String NEXT_PAGE_COMMAND_ID = "org.jkiss.dbeaver.entity.propsTab.nextPage";
     public static final String PREV_PAGE_COMMAND_ID = "org.jkiss.dbeaver.entity.propsTab.prevPage";
     
-    private static final Map<String, Integer> pageIndexDeltaByCommandId = Map.of(
-        NEXT_PAGE_COMMAND_ID, 1,
-        PREV_PAGE_COMMAND_ID, -1
-    );
-    
+    @Nullable
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        Integer indexDelta = pageIndexDeltaByCommandId.get(event.getCommand().getId());
+    public Object execute(@NotNull ExecutionEvent event) throws ExecutionException {
+        Integer indexDelta = NEXT_PAGE_COMMAND_ID.equals(event.getCommand().getId()) ? 1 : -1;
         IEditorPart editor = HandlerUtil.getActiveEditor(event);
         if (indexDelta != null && editor instanceof MultiPageEditorPart) {
             MultiPageEditorPart pagedEditor = (MultiPageEditorPart) editor;
@@ -50,7 +47,7 @@ public class ObjectPropertiesTabFolderSwitchCommandHandler extends AbstractHandl
                 TabbedFolderInfo[] foldersInfo = propsEditor.collectFolders(propsEditor);
                 String activeFolderId = propsEditor.getActiveFolderId();
                 int activeFolderIndex = ArrayUtils.indexOf(foldersInfo, f -> f.getId().equals(activeFolderId));
-                int targetFolderIndex = activeFolderIndex + indexDelta;
+                int targetFolderIndex = (activeFolderIndex + indexDelta + foldersInfo.length) % foldersInfo.length;
                 if (targetFolderIndex >= 0 && targetFolderIndex < foldersInfo.length) {
                     propsEditor.switchFolder(foldersInfo[targetFolderIndex].getId());
                 }
