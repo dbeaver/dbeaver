@@ -17,10 +17,11 @@
 package org.jkiss.dbeaver.model.ai.translator;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-import java.time.LocalDate;
 import java.util.*;
 
 public class SimpleFilterManager implements DAIHistoryManager {
@@ -28,7 +29,12 @@ public class SimpleFilterManager implements DAIHistoryManager {
 
     @NotNull
     @Override
-    public List<DAIHistoryItem> readLastNaturalTexts(@NotNull DBSLogicalDataSource dataSource, int maxCount) {
+    public List<DAIHistoryItem> readTranslationHistory(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSLogicalDataSource dataSource,
+        @NotNull DBCExecutionContext executionContext,
+        int maxCount
+    ) {
         List<DAIHistoryItem> queries = queryHistory.get(dataSource.getDataSourceContainer().getId());
         if (!CommonUtils.isEmpty(queries)) {
             return new ArrayList<>(queries);
@@ -37,10 +43,16 @@ public class SimpleFilterManager implements DAIHistoryManager {
     }
 
     @Override
-    public void saveTranslationHistory(@NotNull DBSLogicalDataSource dataSource, @NotNull String natualText, @NotNull String sqlText) {
+    public void saveTranslationHistory(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSLogicalDataSource dataSource,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull String natualText,
+        @NotNull String sqlText
+    ) {
         List<DAIHistoryItem> queries = queryHistory.computeIfAbsent(dataSource.getDataSourceContainer().getId(), k -> new ArrayList<>());
         DAIHistoryItem item = new DAIHistoryItem(natualText, sqlText);
-        item.setTime(LocalDate.now());
+        item.setTime(new Date());
         queries.add(item);
     }
 }

@@ -18,7 +18,10 @@
 package org.jkiss.dbeaver.model.ai.translator;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
 
@@ -28,13 +31,17 @@ import java.util.List;
 public interface DAIHistoryManager {
 
     @NotNull
-    List<DAIHistoryItem> readLastNaturalTexts(
+    List<DAIHistoryItem> readTranslationHistory(
+        @NotNull DBRProgressMonitor monitor,
         @NotNull DBSLogicalDataSource dataSource,
-        int maxCount);
+        @NotNull DBCExecutionContext executionContext,
+        int maxCount) throws DBException;
 
     void saveTranslationHistory(
+        @NotNull DBRProgressMonitor monitor,
         @NotNull DBSLogicalDataSource dataSource,
+        @NotNull DBCExecutionContext executionContext,
         @NotNull String natualText,
-        @NotNull String sqlText);
+        @NotNull String sqlText) throws DBException;
 
 }

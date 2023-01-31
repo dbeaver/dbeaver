@@ -19,23 +19,32 @@ package org.jkiss.dbeaver.ui.editors.sql.ai.internal;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.gpt3.GPTClient;
 import org.jkiss.dbeaver.model.ai.gpt3.GPTPreferences;
+import org.jkiss.dbeaver.model.ai.translator.DAIHistoryManager;
+import org.jkiss.dbeaver.model.ai.translator.SimpleFilterManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.ai.gpt3.GPTPreferencePage;
 import org.jkiss.dbeaver.ui.editors.sql.ai.popup.AISuggestionPopup;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -61,6 +70,12 @@ public class AITranslateHandler extends AbstractHandler {
             DBWorkbench.getPlatformUI().showError("Bad GPT configuration", "You must specify OpenAI API token in preferences");
             return null;
         }
+        DBCExecutionContext executionContext = editor.getExecutionContext();
+        if (executionContext == null) {
+            DBWorkbench.getPlatformUI().showError("No connection", "You must connect to the database before performing completion");
+            return null;
+        }
+
 
         // Show info transfer warning
         if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(GPTPreferences.GPT_TRANSFER_CONFIRMED)) {
@@ -81,25 +96,32 @@ public class AITranslateHandler extends AbstractHandler {
             }
         }
 
+        DAIHistoryManager historyManager = GeneralUtils.adapt(AISuggestionPopup.class, DAIHistoryManager.class);
+        if (historyManager == null) {
+            historyManager = new SimpleFilterManager();
+        }
+        DBSLogicalDataSource lDataSource = new DBSLogicalDataSource(dataSourceContainer, "GPT-3 wrapper", null);
+
         AISuggestionPopup gptSuggestionPopup = new AISuggestionPopup(
             HandlerUtil.getActiveShell(event),
             "GPT-3 smart completion",
-            dataSourceContainer
+            historyManager,
+            lDataSource,
+            executionContext
         );
         if (gptSuggestionPopup.open() == IDialogConstants.OK_ID) {
-            doAutoCompletion(editor, gptSuggestionPopup.getInputText());
+            doAutoCompletion(executionContext, historyManager, lDataSource, editor, gptSuggestionPopup.getInputText());
         }
         return null;
     }
 
-    private void doAutoCompletion(SQLEditor editor, String inputText) {
+    private void doAutoCompletion(DBCExecutionContext executionContext, DAIHistoryManager historyManager, DBSLogicalDataSource lDataSource, SQLEditor editor, String inputText) {
         if (CommonUtils.isEmptyTrimmed(inputText)) {
             return;
         }
 
-        DBCExecutionContext executionContext = editor.getExecutionContext();
         DBSObjectContainer object;
-        if (executionContext == null || executionContext.getContextDefaults() == null) {
+        if (executionContext.getContextDefaults() == null) {
             object = null;
         } else {
             if (executionContext.getContextDefaults().getDefaultSchema() == null) {
@@ -127,9 +149,28 @@ public class AITranslateHandler extends AbstractHandler {
             return;
         }
 
-        if (CommonUtils.isEmptyTrimmed(completionResult[0])) {
+        String completion = completionResult[0];
+        if (CommonUtils.isEmptyTrimmed(completion)) {
             return;
         }
+
+        // Save to history
+        new AbstractJob("Save smart completion history") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                try {
+                    historyManager.saveTranslationHistory(
+                        monitor,
+                        lDataSource,
+                        executionContext,
+                        inputText,
+                        completion);
+                } catch (DBException e) {
+                    return GeneralUtils.makeExceptionStatus(e);
+                }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
 
         ISelection selection = editor.getSelectionProvider().getSelection();
         IDocument document = editor.getDocument();
@@ -137,7 +178,6 @@ public class AITranslateHandler extends AbstractHandler {
             try {
                 int offset = ((TextSelection) selection).getOffset();
                 int length = ((TextSelection) selection).getLength();
-                String completion = completionResult[0];
                 document.replace(
                     offset,
                     length,

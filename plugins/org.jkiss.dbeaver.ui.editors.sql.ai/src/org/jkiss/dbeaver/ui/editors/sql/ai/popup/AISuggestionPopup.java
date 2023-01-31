@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.ai.popup;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -23,43 +25,49 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.ai.translator.DAIHistoryItem;
 import org.jkiss.dbeaver.model.ai.translator.DAIHistoryManager;
-import org.jkiss.dbeaver.model.ai.translator.SimpleFilterManager;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.ui.editors.sql.ai.gpt3.GPTPreferencePage;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class AISuggestionPopup extends AbstractPopupPanel {
 
-    private static final Map<String, List<String>> queryHistory = new HashMap<>();
+    private static final Log log = Log.getLog(AISuggestionPopup.class);
 
     @NotNull
-    private static DAIHistoryManager historyManager;
+    private final DAIHistoryManager historyManager;
 
-    static {
-        historyManager = GeneralUtils.adapt(AISuggestionPopup.class, DAIHistoryManager.class);
-        if (historyManager == null) {
-            historyManager = new SimpleFilterManager();
-        }
-    }
+    @NotNull
+    private final DBSLogicalDataSource dataSource;
+    @NotNull
+    private final DBCExecutionContext executionContext;
 
-    private final DBPDataSourceContainer dataSourceContainer;
     private Text inputField;
     private String inputText;
 
-    public AISuggestionPopup(@NotNull Shell parentShell, @NotNull String title, @NotNull DBPDataSourceContainer dataSourceContainer) {
+    public AISuggestionPopup(
+        @NotNull Shell parentShell,
+        @NotNull String title,
+        @NotNull DAIHistoryManager historyManager,
+        @NotNull DBSLogicalDataSource dataSource,
+        @NotNull DBCExecutionContext executionContext
+    ) {
         super(parentShell, title);
-        this.dataSourceContainer = dataSourceContainer;
+        this.historyManager = historyManager;
+        this.dataSource = dataSource;
+        this.executionContext = executionContext;
         setImage(DBIcon.AI);
         setModeless(true);
     }
@@ -86,6 +94,7 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         gd.heightHint = UIUtils.getFontHeight(placeholder.getFont()) * 10;
         gd.widthHint = UIUtils.getFontHeight(placeholder.getFont()) * 40;
         inputField.setLayoutData(gd);
+        inputField.setTextLimit(10000);
 
         inputField.addModifyListener(e -> inputText = inputField.getText());
         inputField.addListener(SWT.KeyDown, event -> {
@@ -105,17 +114,33 @@ public class AISuggestionPopup extends AbstractPopupPanel {
 
         closeOnFocusLost(inputField, historyCombo, applyButton);
 
-        List<String> queries = queryHistory.get(dataSourceContainer.getId());
-        if (!CommonUtils.isEmpty(queries)) {
-            for (String query : queries) {
-                historyCombo.add(query);
+        historyCombo.setEnabled(false);
+
+        historyCombo.setEnabled(false);
+        AbstractJob completionJob = new AbstractJob("Read completion history") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                try {
+                    List<DAIHistoryItem> queries = historyManager.readTranslationHistory(monitor, dataSource, executionContext, 100);
+                    UIUtils.syncExec(() -> {
+                        if (!CommonUtils.isEmpty(queries)) {
+                            for (DAIHistoryItem query : queries) {
+                                historyCombo.add(query.getNaturalText());
+                            }
+                            historyCombo.select(0);
+                            inputField.setText(queries.get(0).getNaturalText());
+                            inputField.selectAll();
+                        } else {
+                            historyCombo.setEnabled(false);
+                        }
+                    });
+                } catch (DBException e) {
+                    log.error("Error reading completion history", e);
+                }
+                return Status.OK_STATUS;
             }
-            historyCombo.select(0);
-            inputField.setText(queries.get(0));
-            inputField.selectAll();
-        } else {
-            historyCombo.setEnabled(false);
-        }
+        };
+        completionJob.schedule();
 
         inputField.setFocus();
 
@@ -148,11 +173,6 @@ public class AISuggestionPopup extends AbstractPopupPanel {
     @Override
     protected void okPressed() {
         inputText = inputField.getText().trim();
-        if (!CommonUtils.isEmpty(inputText)) {
-            List<String> queries = queryHistory.computeIfAbsent(dataSourceContainer.getId(), k -> new ArrayList<>());
-            queries.remove(inputText);
-            queries.add(0, inputText);
-        }
 
         super.okPressed();
     }

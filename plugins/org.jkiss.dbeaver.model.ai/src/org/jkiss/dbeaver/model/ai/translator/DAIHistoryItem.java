@@ -17,7 +17,11 @@
 
 package org.jkiss.dbeaver.model.ai.translator;
 
-import java.time.LocalDate;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
+
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Natural language translator item
@@ -26,7 +30,7 @@ public class DAIHistoryItem {
 
     private String naturalText;
     private String completionText;
-    private LocalDate time;
+    private Date time;
 
     public DAIHistoryItem() {
     }
@@ -34,6 +38,12 @@ public class DAIHistoryItem {
     public DAIHistoryItem(String naturalText, String completionText) {
         this.naturalText = naturalText;
         this.completionText = completionText;
+    }
+
+    public DAIHistoryItem(Map<String, Object> map) {
+        this.naturalText = JSONUtils.getString(map, "naturalText");
+        this.completionText = JSONUtils.getString(map, "completionText");
+        this.time = new Date(JSONUtils.getLong(map, "time", 0));
     }
 
     public String getNaturalText() {
@@ -52,11 +62,19 @@ public class DAIHistoryItem {
         this.completionText = completionText;
     }
 
-    public LocalDate getTime() {
+    public Date getTime() {
         return time;
     }
 
-    public void setTime(LocalDate time) {
+    public void setTime(Date time) {
         this.time = time;
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("naturalText", this.naturalText);
+        map.put("completionText", this.completionText);
+        map.put("time", this.time == null ? 0L : this.time.getTime());
+        return map;
     }
 }
