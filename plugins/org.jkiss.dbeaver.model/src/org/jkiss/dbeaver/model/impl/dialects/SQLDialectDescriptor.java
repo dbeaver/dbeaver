@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import javax.management.ReflectionException;
@@ -36,7 +35,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 /**
- * SQLDialectDescriptor
+ * Describes dialect keywords, functions and types
  */
 public class SQLDialectDescriptor extends AbstractContextDescriptor implements SQLDialectMetadata {
 
@@ -54,6 +53,34 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     private SQLDialectDescriptor parentDialect;
     private Set<SQLDialectDescriptor> subDialects = null;
 
+    public enum WordType {
+        ATTR_DIALECTS_VALUE_KEYWORDS("keywords"), //$NON-NLS-1$
+        ATTR_DIALECTS_VALUE_KEYWORDS_EXEC("execKeywords"), //$NON-NLS-1$
+        ATTR_DIALECTS_VALUE_KEYWORDS_DDL("ddlKeywords"), //$NON-NLS-1$
+        ATTR_DIALECTS_TXN_KEYWORDS("txnKeywords"), //$NON-NLS-1$
+        ATTR_DIALECTS_VALUE_KEYWORDS_DML("dmlKeywords"), //$NON-NLS-1$
+        ATTR_DIALECTS_VALUE_SCRIPT_SEPARATOR("scriptSeparator"),
+        ATTR_DIALECTS_VALUE_FUNCTIONS("functions"), //$NON-NLS-1$
+        ATTR_DIALECTS_VALUE_TYPES("types"); //$NON-NLS-1$
+
+        @Nullable
+        public static WordType getByTypeName(@NotNull String typename) {
+            Optional<WordType> first = Arrays.stream(values())
+                .filter(it -> it.getTypeName().equals(typename))
+                .findFirst();
+            return first.orElse(null);
+        }
+
+        private final String typeName;
+
+        WordType(String name) {
+            this.typeName = name;
+        }
+
+        public String getTypeName() {
+            return typeName;
+        }
+    }
     private Map<String, Object> properties;
 
     private Set<String> keywords = new HashSet<>();
@@ -68,6 +95,8 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     private List<String> insertMethodNames;
     private DBDInsertReplaceMethod[] insertReplaceMethods;
     private List<SQLInsertReplaceMethodDescriptor> insertMethodDescriptors;
+
+    private SQLDialectDescriptorTransformer transformer;
 
     public SQLDialectDescriptor(String id) {
         super("org.jkiss.dbeaver.registry");
@@ -120,30 +149,40 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     }
 
     private void setValue(String propName, Set<String> values) {
-        switch (propName) {
-            case "keywords":
+        WordType typeName = WordType.getByTypeName(propName);
+        if (typeName == null) {
+            if ("insertMethods".equals(propName)) {
+                insertMethodNames = new ArrayList<>(values);
+                return;
+            } else {
+                if (properties == null) {
+                    properties = new LinkedHashMap<>();
+                }
+                this.properties.put(propName, values);
+                return;
+            }
+        }
+        switch (typeName) {
+            case ATTR_DIALECTS_VALUE_KEYWORDS:
                 this.keywords = values;
                 break;
-            case "ddlKeywords":
+            case ATTR_DIALECTS_VALUE_KEYWORDS_DDL:
                 this.ddlKeywords = values;
                 break;
-            case "dmlKeywords":
+            case ATTR_DIALECTS_VALUE_KEYWORDS_DML:
                 this.dmlKeywords = values;
                 break;
-            case "execKeywords":
+            case ATTR_DIALECTS_VALUE_KEYWORDS_EXEC:
                 this.execKeywords = values;
                 break;
-            case "txnKeywords":
+            case ATTR_DIALECTS_TXN_KEYWORDS:
                 this.txnKeywords = values;
                 break;
-            case "types":
+            case ATTR_DIALECTS_VALUE_TYPES:
                 this.types = values;
                 break;
-            case "functions":
+            case ATTR_DIALECTS_VALUE_FUNCTIONS:
                 this.functions = values;
-                break;
-            case "insertMethods":
-                insertMethodNames = new ArrayList<>(values);
                 break;
             default:
                 if (properties == null) {
@@ -188,6 +227,11 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
         return icon;
     }
 
+    @Nullable
+    public SQLDialectDescriptorTransformer getTransformer() {
+        return transformer;
+    }
+
     @Override
     public boolean isAbstract() {
         return isAbstract;
@@ -208,26 +252,26 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     @NotNull
     public Set<String> getReservedWords(boolean nested) {
         if (!nested) {
-            return keywords;
+            return getTransformedValues(WordType.ATTR_DIALECTS_VALUE_KEYWORDS, keywords);
         }
         HashSet<String> nestedKeywords = new HashSet<>(keywords);
         if (parentDialect != null) {
             nestedKeywords.addAll(parentDialect.getReservedWords(true));
         }
-        return nestedKeywords;
+        return getTransformedValues(WordType.ATTR_DIALECTS_VALUE_KEYWORDS, nestedKeywords);
     }
 
     @Override
     @NotNull
     public Set<String> getDataTypes(boolean nested) {
         if (!nested) {
-            return types;
+            return getTransformedValues(WordType.ATTR_DIALECTS_VALUE_TYPES, types);
         }
         HashSet<String> nestedTypes = new HashSet<>(types);
         if (parentDialect != null) {
             nestedTypes.addAll(parentDialect.getDataTypes(true));
         }
-        return nestedTypes;
+        return getTransformedValues(WordType.ATTR_DIALECTS_VALUE_TYPES, nestedTypes);
 
     }
 
@@ -235,13 +279,13 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     @NotNull
     public Set<String> getFunctions(boolean nested) {
         if (!nested) {
-            return functions;
+            return getTransformedValues(WordType.ATTR_DIALECTS_VALUE_FUNCTIONS, functions);
         }
         HashSet<String> nestedFunctions = new HashSet<>(functions);
         if (parentDialect != null) {
             nestedFunctions.addAll(parentDialect.getFunctions(true));
         }
-        return nestedFunctions;
+        return getTransformedValues(WordType.ATTR_DIALECTS_VALUE_FUNCTIONS, nestedFunctions);
 
     }
 
@@ -249,26 +293,26 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     @NotNull
     public Set<String> getDDLKeywords(boolean nested) {
         if (!nested) {
-            return ddlKeywords;
+            return getTransformedValues(WordType.ATTR_DIALECTS_VALUE_KEYWORDS_DDL, ddlKeywords);
         }
         HashSet<String> nestedDDLKeywords = new HashSet<>(ddlKeywords);
         if (parentDialect != null) {
             nestedDDLKeywords.addAll(parentDialect.getDDLKeywords(true));
         }
-        return nestedDDLKeywords;
+        return getTransformedValues(WordType.ATTR_DIALECTS_VALUE_KEYWORDS_DDL, nestedDDLKeywords);
     }
 
     @NotNull
     @Override
     public Set<String> getDMLKeywords(boolean nested) {
         if (!nested) {
-            return dmlKeywords;
+            return getTransformedValues(WordType.ATTR_DIALECTS_VALUE_KEYWORDS_DML, dmlKeywords);
         }
         HashSet<String> nestedDMLKeywords = new HashSet<>(dmlKeywords);
         if (parentDialect != null) {
             nestedDMLKeywords.addAll(parentDialect.getDMLKeywords(true));
         }
-        return nestedDMLKeywords;
+        return getTransformedValues(WordType.ATTR_DIALECTS_VALUE_KEYWORDS_DML, nestedDMLKeywords);
 
     }
 
@@ -276,27 +320,26 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     @Override
     public Set<String> getExecuteKeywords(boolean nested) {
         if (!nested) {
-            return execKeywords;
+            return getTransformedValues(WordType.ATTR_DIALECTS_VALUE_KEYWORDS_EXEC, execKeywords);
         }
         HashSet<String> nestedExecuteKeywords = new HashSet<>(execKeywords);
         if (parentDialect != null) {
             nestedExecuteKeywords.addAll(parentDialect.getExecuteKeywords(true));
         }
-        return nestedExecuteKeywords;
+        return getTransformedValues(WordType.ATTR_DIALECTS_VALUE_KEYWORDS_EXEC, nestedExecuteKeywords);
     }
 
     @Override
     @NotNull
     public Set<String> getTransactionKeywords(boolean nested) {
         if (!nested) {
-            return txnKeywords;
+            return getTransformedValues(WordType.ATTR_DIALECTS_TXN_KEYWORDS, txnKeywords);
         }
         HashSet<String> nestedTXNKeywords = new HashSet<>(execKeywords);
         if (parentDialect != null) {
             nestedTXNKeywords.addAll(parentDialect.getTransactionKeywords(true));
         }
-        return nestedTXNKeywords;
-
+        return getTransformedValues(WordType.ATTR_DIALECTS_TXN_KEYWORDS, nestedTXNKeywords);
     }
 
     @Override
@@ -318,6 +361,10 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     @Override
     public SQLDialectMetadata getParentDialect() {
         return parentDialect;
+    }
+
+    public void setTransformer(@Nullable SQLDialectDescriptorTransformer transformer) {
+        this.transformer = transformer;
     }
 
     public void setParentDialect(SQLDialectDescriptor parentDialect) {
@@ -461,5 +508,11 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
         }
     }
 
+    private Set<String> getTransformedValues(WordType type, Set<String> value) {
+        if (transformer == null) {
+            return value;
+        }
+        return transformer.transform(type, value);
+    }
 
 }
