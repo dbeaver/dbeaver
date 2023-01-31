@@ -18,9 +18,13 @@ package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.accessibility.ACC;
 import org.eclipse.swt.accessibility.Accessible;
+import org.eclipse.swt.accessibility.AccessibleControlAdapter;
+import org.eclipse.swt.accessibility.AccessibleControlEvent;
 import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.accessibility.AccessibleListener;
+import org.eclipse.swt.accessibility.AccessibleTableAdapter;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -36,12 +40,18 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDCollection;
+import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentBytes;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentChars;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentLOB;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
@@ -471,12 +481,67 @@ public class Spreadsheet extends LightGrid implements Listener {
 
     ////////////////////////////////////////////////////////////
     // Accessibility support
+    
+    private static final Map<String, String> lobMimeTypeNames = Map.of(
+        MimeTypes.TEXT_HTML, "html",
+        MimeTypes.TEXT_XML, "xml",
+        MimeTypes.TEXT_CSS, "css",
+        MimeTypes.TEXT_JSON, "json",
+        MimeTypes.APPLICATION_JSON, "json",
+        MimeTypes.OCTET_STREAM, "blob",
+        MimeTypes.MULTIPART_ANY, "multipart",
+        MimeTypes.MULTIPART_RELATED, "multipart"
+    );
 
     private void hookAccessibility() {
         final Accessible accessible = getAccessible();
 
         accessible.addAccessibleListener(new GridAccessibleListener());
-        addCursorChangeListener(event -> accessible.selectionChanged());
+        addCursorChangeListener(event -> {
+            accessible.selectionChanged();
+
+            GridCell cell = getFocusCell();
+            if (cell != null) {
+                accessible.sendEvent(ACC.EVENT_VALUE_CHANGED, new Object[] { null,  cell.getRow().getElement()});
+            }
+        });
+
+        accessible.addAccessibleControlListener(new AccessibleControlAdapter() {
+            @Override
+            public void getValue(AccessibleControlEvent e) {
+                int rowsCount = getRowSelectionSize();
+                int colsCount = getColumnSelectionSize();
+                int cellsCount = getCellSelectionSize();
+               
+                if (cellsCount == 1) {
+                    GridCell cell = posToCell(getCursorPosition());
+                    String rowLabel = getLabelProvider().getText(cell.getRow());
+                    String columnLabel = getLabelProvider().getText(cell.getColumn());
+                    boolean isReadOnly = getContentProvider().isElementReadOnly(cell.getColumn());
+                    Object rawValue = getContentProvider().getCellValue(cell.getColumn(), cell.getRow(), false);
+                    String valueStr = "";
+                    String lobContentType = rawValue instanceof DBDContent ? ((DBDContent) rawValue).getContentType() : null;
+                    String collType = rawValue instanceof DBDCollection ? ((DBDCollection) rawValue).getComponentType().getName() : null;
+                    if (lobContentType != null && lobMimeTypeNames.get(lobContentType) != null) {
+                        valueStr = "object of type " + lobMimeTypeNames.get(lobContentType);
+                    } else if (collType != null) {
+                        valueStr = "collection of type " + collType;
+                    } else {
+                        valueStr = getContentProvider().getCellValue(cell.getColumn(), cell.getRow(), true).toString();
+                    }
+                    if (valueStr.isEmpty()) {
+                        valueStr = "empty string";
+                    }
+                    e.result = "at row " + rowLabel + " column " + columnLabel + (isReadOnly ? " readonly" : "") + " value is " + valueStr;
+                } else if (rowsCount == 1) {
+                    e.result = colsCount + " columns selected";
+                } else if (colsCount == 1) {
+                    e.result = rowsCount + " rows selected";
+                } else {
+                    e.result = "a freeform range selected";
+                }
+            }
+        });
     }
 
     private static class GridAccessibleListener implements AccessibleListener {
