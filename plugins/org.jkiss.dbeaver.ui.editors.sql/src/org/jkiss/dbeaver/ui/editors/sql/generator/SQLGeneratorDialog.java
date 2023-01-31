@@ -272,6 +272,7 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                     settings,
                     SQLEditorMessages.sql_generator_dialog_button_show_cast_params,
                     sqlGenerator.isShowCastParams());
+            supportsCastParamsButton.setToolTipText(SQLEditorMessages.sql_generator_dialog_button_show_cast_params_tip);
             supportsCastParamsButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
