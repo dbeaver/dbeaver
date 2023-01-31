@@ -316,6 +316,7 @@ public class SQLEditorMessages extends NLS {
     public static String sql_generator_dialog_button_show_partitions_DDL;
 
     public static String sql_generator_dialog_button_show_cast_params;
+    public static String sql_generator_dialog_button_show_cast_params_tip;
     public static String action_result_tabs_delete_variables_question;
     public static String script_selector_create_script;
     public static String script_selector_project_scripts;
@@ -340,9 +341,6 @@ public class SQLEditorMessages extends NLS {
     public static String source_viewer_show_partitions_ddl_text;
     public static String source_viewer_show_partitions_ddl_tip;
 
-    public static String source_viewer_cast_params_text;
-
-    public static String source_viewer_cast_params_ddl_tip;
     public static String sql_editor_action_clear;
     public static String sql_editor_title_tooltip_path;
     public static String sql_editor_title_tooltip_connecton;
