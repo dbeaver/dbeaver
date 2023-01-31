@@ -242,6 +242,7 @@ public class DataSourceDescriptor
         this.connectionReadOnly = source.connectionReadOnly;
         this.forceUseSingleConnection = source.forceUseSingleConnection;
         this.driver = source.driver;
+        this.originalDriver = source.originalDriver;
         this.clientHome = source.clientHome;
 
         this.connectionModifyRestrictions = source.connectionModifyRestrictions == null ? null : new ArrayList<>(source.connectionModifyRestrictions);
@@ -1914,6 +1915,7 @@ public class DataSourceDescriptor
             connectionInfo.getHandlers().forEach(handler ->
                 handler.setSavePassword(false)
             );
+            setSavePassword(false);
             return;
         }
 
