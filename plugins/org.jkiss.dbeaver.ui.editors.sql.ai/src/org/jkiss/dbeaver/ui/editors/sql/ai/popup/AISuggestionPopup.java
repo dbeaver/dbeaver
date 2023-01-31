@@ -130,6 +130,7 @@ public class AISuggestionPopup extends AbstractPopupPanel {
                             historyCombo.select(0);
                             inputField.setText(queries.get(0).getNaturalText());
                             inputField.selectAll();
+                            historyCombo.setEnabled(true);
                         } else {
                             historyCombo.setEnabled(false);
                         }
