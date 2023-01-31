@@ -715,11 +715,11 @@ public class NavigatorUtils {
     public static void filterSelection(final ISelection selection, boolean exclude)
     {
         if (selection instanceof IStructuredSelection) {
-            Map<DBNDatabaseFolder, DBSObjectFilter> folders = new HashMap<>();
+            Map<DBNDatabaseNode, DBSObjectFilter> folders = new HashMap<>();
             for (Object item : ((IStructuredSelection)selection).toArray()) {
                 if (item instanceof DBNNode) {
                     final DBNNode node = (DBNNode) item;
-                    DBNDatabaseFolder folder = (DBNDatabaseFolder) node.getParentNode();
+                    DBNDatabaseNode folder = (DBNDatabaseNode) node.getParentNode();
                     DBSObjectFilter nodeFilter = folders.get(folder);
                     if (nodeFilter == null) {
                         nodeFilter = folder.getNodeFilter(folder.getItemsMeta(), true);
@@ -737,7 +737,7 @@ public class NavigatorUtils {
                 }
             }
             // Save folders
-            for (Map.Entry<DBNDatabaseFolder, DBSObjectFilter> entry : folders.entrySet()) {
+            for (Map.Entry<DBNDatabaseNode, DBSObjectFilter> entry : folders.entrySet()) {
                 entry.getKey().setNodeFilter(entry.getKey().getItemsMeta(), entry.getValue());
             }
             // Refresh all folders

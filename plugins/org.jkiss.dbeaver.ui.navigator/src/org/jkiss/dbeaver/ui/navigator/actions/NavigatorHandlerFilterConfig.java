@@ -27,9 +27,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -49,26 +47,27 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
         if (node instanceof DBNDatabaseItem) {
             node = node.getParentNode();
         }
-        if (node instanceof DBNDatabaseFolder) {
+        if (node instanceof DBNDatabaseFolder || node instanceof DBNDataSource) {
             configureFilters(HandlerUtil.getActiveShell(event), node);
         }
+
         return null;
     }
 
     public static void configureFilters(Shell shell, DBNNode node)
     {
-        final DBNDatabaseFolder folder = (DBNDatabaseFolder) node;
-        DBXTreeItem itemsMeta = folder.getItemsMeta();
+        final DBNDatabaseNode databaseNode = (DBNDatabaseNode) node;
+        DBXTreeItem itemsMeta = databaseNode.getItemsMeta();
         if (itemsMeta != null) {
-            DBSObjectFilter objectFilter = folder.getNodeFilter(itemsMeta, true);
+            DBSObjectFilter objectFilter = databaseNode.getNodeFilter(itemsMeta, true);
             if (objectFilter == null) {
                 objectFilter = new DBSObjectFilter();
             }
-            final DBPDataSourceRegistry dsRegistry = folder.getOwnerProject().getDataSourceRegistry();
-            final boolean globalFilter = folder.getValueObject() instanceof DBPDataSource;
+            final DBPDataSourceRegistry dsRegistry = databaseNode.getOwnerProject().getDataSourceRegistry();
+            final boolean globalFilter = databaseNode.getValueObject() instanceof DBPDataSource;
             String parentName = "?";
-            if (folder.getValueObject() instanceof DBSObject) {
-                parentName = ((DBSObject) folder.getValueObject()).getName();
+            if (databaseNode.getValueObject() instanceof DBSObject) {
+                parentName = ((DBSObject) databaseNode.getValueObject()).getName();
             }
             EditObjectFilterDialog dialog = new EditObjectFilterDialog(
                 shell,
@@ -78,11 +77,13 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                 globalFilter);
             switch (dialog.open()) {
                 case IDialogConstants.OK_ID:
-                    folder.setNodeFilter(itemsMeta, dialog.getFilter());
-                    NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(folder));
+                    databaseNode.setNodeFilter(itemsMeta, dialog.getFilter());
+                    NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(databaseNode));
                     break;
                 case EditObjectFilterDialog.SHOW_GLOBAL_FILTERS_ID:
-                    objectFilter = folder.getDataSource().getContainer().getObjectFilter(folder.getChildrenClass(), null, true);
+                    objectFilter = databaseNode.getDataSource()
+                        .getContainer()
+                        .getObjectFilter(((DBNContainer) databaseNode).getChildrenClass(), null, true);
                     dialog = new EditObjectFilterDialog(
                         shell,
                             dsRegistry, "All " + node.getNodeType(),
@@ -90,9 +91,14 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                         true);
                     if (dialog.open() == IDialogConstants.OK_ID) {
                         // Set global filter
-                        folder.getDataSource().getContainer().setObjectFilter(folder.getChildrenClass(), null, dialog.getFilter());
-                        folder.getDataSource().getContainer().persistConfiguration();
-                        NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(folder));
+                        databaseNode.getDataSource()
+                            .getContainer()
+                            .setObjectFilter(((DBNContainer) databaseNode).getChildrenClass(),
+                                null,
+                                dialog.getFilter()
+                            );
+                        databaseNode.getDataSource().getContainer().persistConfiguration();
+                        NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(databaseNode));
                     }
                     break;
             }
