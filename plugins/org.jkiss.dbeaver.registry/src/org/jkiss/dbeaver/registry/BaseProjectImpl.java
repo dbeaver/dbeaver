@@ -389,7 +389,7 @@ public abstract class BaseProjectImpl implements DBPProject {
                 resourceProperties.put(newResourcePath, resProps);
             }
         }
-        flushMetadata(); // wait for the file to be written
+        flushMetadata();
     }
 
     @Override

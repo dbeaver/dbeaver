@@ -31,10 +31,10 @@ import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 
+import javax.crypto.SecretKey;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.UUID;
-import javax.crypto.SecretKey;
 
 /**
  * Project meta information.
