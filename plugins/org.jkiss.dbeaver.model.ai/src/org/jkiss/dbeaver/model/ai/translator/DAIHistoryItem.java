@@ -28,6 +28,7 @@ import java.util.Map;
  */
 public class DAIHistoryItem {
 
+    private String id;
     private String naturalText;
     private String completionText;
     private Date time;
@@ -41,9 +42,18 @@ public class DAIHistoryItem {
     }
 
     public DAIHistoryItem(Map<String, Object> map) {
+        this.id = JSONUtils.getString(map, "id");
         this.naturalText = JSONUtils.getString(map, "naturalText");
         this.completionText = JSONUtils.getString(map, "completionText");
         this.time = new Date(JSONUtils.getLong(map, "time", 0));
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getNaturalText() {
@@ -72,6 +82,7 @@ public class DAIHistoryItem {
 
     public Map<String, Object> toMap() {
         Map<String, Object> map = new LinkedHashMap<>();
+        map.put("id", this.id);
         map.put("naturalText", this.naturalText);
         map.put("completionText", this.completionText);
         map.put("time", this.time == null ? 0L : this.time.getTime());

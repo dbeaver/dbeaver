@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.ai.gpt3.GPTPreferences;
 import org.jkiss.dbeaver.model.ai.translator.DAIHistoryManager;
 import org.jkiss.dbeaver.model.ai.translator.SimpleFilterManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -101,6 +102,15 @@ public class AITranslateHandler extends AbstractHandler {
             historyManager = new SimpleFilterManager();
         }
         DBSLogicalDataSource lDataSource = new DBSLogicalDataSource(dataSourceContainer, "GPT-3 wrapper", null);
+        DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
+        if (contextDefaults != null) {
+            if (contextDefaults.getDefaultCatalog() != null) {
+                lDataSource.setCurrentCatalog(contextDefaults.getDefaultCatalog().getName());
+            }
+            if (contextDefaults.getDefaultSchema() != null) {
+                lDataSource.setCurrentSchema(contextDefaults.getDefaultSchema().getName());
+            }
+        }
 
         AISuggestionPopup gptSuggestionPopup = new AISuggestionPopup(
             HandlerUtil.getActiveShell(event),
