@@ -255,6 +255,23 @@
                 class="org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor"
                 nodes="streamTransferConsumer"/>
 
+        <streamWriter
+                id="clipboard"
+                label="Clipboard"
+                description="Copy to clipboard"
+                order="2000"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/text.png"
+                class="org.jkiss.dbeaver.tools.transfer.stream.writer.ClipboardStreamWriter"
+                if="!object.binaryFormat"/>
+
+        <streamWriter
+                id="file"
+                label="Local File"
+                description="Export to local file"
+                order="1000"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/folder.png"
+                class="org.jkiss.dbeaver.tools.transfer.stream.writer.FileStreamWriter"/>
+
     </extension>
 
     <extension point="org.jkiss.dbeaver.task">

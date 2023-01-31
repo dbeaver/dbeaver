@@ -284,8 +284,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             UserChoiceResponse response = DBWorkbench.getPlatformUI().showUserChoice(
                 DTMessages.data_transfer_blob_file_conflict_title, NLS.bind(DTMessages.data_transfer_file_conflict_ask_message, fileName),
                 List.of(
-                    BlobFileConflictBehavior.PATCHNAME.title,
-                    BlobFileConflictBehavior.OVERWRITE.title,
+                    BlobFileConflictBehavior.PATCHNAME.getTitle(),
+                    BlobFileConflictBehavior.OVERWRITE.getTitle(),
                     DTMessages.data_transfer_file_conflict_cancel
                 ),
                 forAllLabels, runtimeParameters.blobFileConflictPreviousChoice, 1
@@ -417,9 +417,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             UserChoiceResponse response = DBWorkbench.getPlatformUI().showUserChoice(
                 DTMessages.data_transfer_file_conflict_ask_title, NLS.bind(DTMessages.data_transfer_file_conflict_ask_message, fileName),
                 Arrays.asList(
-                    processor instanceof IAppendableDataExporter ? DataFileConflictBehavior.APPEND.title : null,
-                    DataFileConflictBehavior.PATCHNAME.title,
-                    DataFileConflictBehavior.OVERWRITE.title,
+                    processor instanceof IAppendableDataExporter ? DataFileConflictBehavior.APPEND.getTitle() : null,
+                    DataFileConflictBehavior.PATCHNAME.getTitle(),
+                    DataFileConflictBehavior.OVERWRITE.getTitle(),
                     DTMessages.data_transfer_file_conflict_cancel
                 ),
                 forAllLabels, runtimeParameters.dataFileConflictPreviousChoice, 2

@@ -32,6 +32,8 @@ import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor;
 import org.jkiss.dbeaver.tools.transfer.processor.ShowInExplorerEventProcessor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferStreamWriterDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
@@ -56,7 +58,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         public Integer blobFileConflictPreviousChoice = null;
         public boolean dontDropBlobFileConflictBehavior = false;
         public String outputFileNameToReuse = null;
-        
+
         public ConsumerRuntimeParameters() {
             this.dataFileConflictBehavior = StreamConsumerSettings.this.dataFileConflictBehavior;
             this.blobFileConflictBehavior = StreamConsumerSettings.this.blobFileConflictBehavior;
@@ -84,29 +86,39 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         BINARY,
         NATIVE
     }
-    
+
     public enum DataFileConflictBehavior {
         ASK(DTMessages.data_transfer_file_conflict_ask),
         APPEND(DTMessages.data_transfer_file_conflict_append),
         PATCHNAME(DTMessages.data_transfer_file_conflict_fix_name),
         OVERWRITE(DTMessages.data_transfer_file_conflict_override);
-        
-        public final String title; 
-        
-        DataFileConflictBehavior(String title) {
+
+        private final String title;
+
+        DataFileConflictBehavior(@NotNull String title) {
             this.title = title;
         }
+
+        @NotNull
+        public String getTitle() {
+            return title;
+        }
     }
-    
+
     public enum BlobFileConflictBehavior {
         ASK(DTMessages.data_transfer_file_conflict_ask),
         PATCHNAME(DTMessages.data_transfer_file_conflict_fix_name),
         OVERWRITE(DTMessages.data_transfer_file_conflict_override);
-        
-        public final String title; 
-        
-        BlobFileConflictBehavior(String title) {
+
+        public final String title;
+
+        BlobFileConflictBehavior(@NotNull String title) {
             this.title = title;
+        }
+
+        @NotNull
+        public String getTitle() {
+            return title;
         }
     }
 
@@ -117,6 +129,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private static final String DATA_FILE_CONFLICT_BEHAVIOR = "dataFileConflictBehavior"; //$NON-NLS-1$
     private static final String BLOB_FILE_CONFLICT_BEHAVIOR = "blobFileConflictBehavior"; //$NON-NLS-1$
 
+    private DataTransferStreamWriterDescriptor writer;
     private LobExtractType lobExtractType = LobExtractType.INLINE;
     private LobEncoding lobEncoding = LobEncoding.BINARY;
 
@@ -143,7 +156,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     public void setDataFileConflictBehavior(@NotNull DataFileConflictBehavior dataFileConflictBehavior) {
         this.dataFileConflictBehavior = dataFileConflictBehavior;
     }
-    
+
     @NotNull
     public DataFileConflictBehavior getDataFileConflictBehavior() {
         return dataFileConflictBehavior;
@@ -152,12 +165,12 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     public void setBlobFileConflictBehavior(@NotNull BlobFileConflictBehavior blobFileConflictBehavior) {
         this.blobFileConflictBehavior = blobFileConflictBehavior;
     }
-    
+
     @NotNull
     public BlobFileConflictBehavior getBlobFileConflictBehavior() {
         return blobFileConflictBehavior;
     }
-    
+
     @Override
     public ConsumerRuntimeParameters prepareRuntimeParameters() {
         return new ConsumerRuntimeParameters();
@@ -220,7 +233,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     }
 
     public boolean isOutputClipboard() {
-        return outputClipboard;
+        return writer != null && writer.getId().equals("clipboard") || outputClipboard;
     }
 
     public void setOutputClipboard(boolean outputClipboard) {
@@ -257,6 +270,15 @@ public class StreamConsumerSettings implements IDataTransferSettings {
 
     public void setMaxOutFileSize(long maxOutFileSize) {
         this.maxOutFileSize = maxOutFileSize;
+    }
+
+    @Nullable
+    public DataTransferStreamWriterDescriptor getWriter() {
+        return writer;
+    }
+
+    public void setWriter(@NotNull DataTransferStreamWriterDescriptor descriptor) {
+        this.writer = descriptor;
     }
 
     @NotNull
@@ -305,6 +327,8 @@ public class StreamConsumerSettings implements IDataTransferSettings {
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DataTransferSettings dataTransferSettings, Map<String, Object> settings) {
+        writer = DataTransferRegistry.getInstance().getStreamWriterById(CommonUtils.toString(settings.get("writerId")));
+
         lobExtractType = CommonUtils.valueOf(LobExtractType.class, CommonUtils.toString(settings.get("lobExtractType")), LobExtractType.INLINE);
         lobEncoding = CommonUtils.valueOf(LobEncoding.class, CommonUtils.toString(settings.get("lobEncoding")), LobEncoding.BINARY);
 
@@ -395,6 +419,10 @@ public class StreamConsumerSettings implements IDataTransferSettings {
 
     @Override
     public void saveSettings(Map<String, Object> settings) {
+        if (writer != null) {
+            settings.put("writerId", writer.getId());
+        }
+
         settings.put("lobExtractType", lobExtractType.name());
         settings.put("lobEncoding", lobEncoding.name());
         // settings.put("appendToFile", appendToFileEnd);
@@ -433,17 +461,17 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             settings.put("eventProcessors", eventProcessors);
         }
     }
-    
+
     @Override
     public String getSettingsSummary() {
         StringBuilder summary = new StringBuilder();
 
-        if (!outputClipboard) {
+        if (!isOutputClipboard()) {
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_use_single_file, useSingleFile);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_directory, outputFolder);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_file_name_pattern, outputFilePattern);
-            DTUtils.addSummary(summary, DTMessages.data_transfer_file_conflict_behavior_setting, dataFileConflictBehavior.title);
-            DTUtils.addSummary(summary, DTMessages.data_transfer_blob_file_conflict_behavior_setting, blobFileConflictBehavior.title);
+            DTUtils.addSummary(summary, DTMessages.data_transfer_file_conflict_behavior_setting, dataFileConflictBehavior.getTitle());
+            DTUtils.addSummary(summary, DTMessages.data_transfer_blob_file_conflict_behavior_setting, blobFileConflictBehavior.getTitle());
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_encoding, outputEncoding);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_timestamp_pattern, outputTimestampPattern);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_insert_bom, outputEncodingBOM);

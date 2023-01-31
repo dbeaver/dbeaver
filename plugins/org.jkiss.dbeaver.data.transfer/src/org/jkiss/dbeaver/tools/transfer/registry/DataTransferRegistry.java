@@ -44,6 +44,7 @@ public class DataTransferRegistry {
     private final List<DataTransferNodeDescriptor> nodes = new ArrayList<>();
     private final Map<String, DataTransferAttributeTransformerDescriptor> transformers = new LinkedHashMap<>();
     private final Map<String, DataTransferEventProcessorDescriptor> eventProcessors = new LinkedHashMap<>();
+    private final Map<String, DataTransferStreamWriterDescriptor> streamWriters = new LinkedHashMap<>();
 
     private DataTransferRegistry(@NotNull IExtensionRegistry registry) {
         // Load datasource providers from external plugins
@@ -63,6 +64,9 @@ public class DataTransferRegistry {
             } else if ("eventProcessor".equals(ext.getName())) {
                 final DataTransferEventProcessorDescriptor descriptor = new DataTransferEventProcessorDescriptor(ext);
                 eventProcessors.put(descriptor.getId(), descriptor);
+            } else if ("streamWriter".equals(ext.getName())) {
+                final DataTransferStreamWriterDescriptor descriptor = new DataTransferStreamWriterDescriptor(ext);
+                streamWriters.put(descriptor.getId(), descriptor);
             }
 
         }
@@ -195,5 +199,18 @@ public class DataTransferRegistry {
     @Nullable
     public DataTransferEventProcessorDescriptor getEventProcessorById(@NotNull String id) {
         return eventProcessors.get(id);
+    }
+
+    @NotNull
+    public Collection<DataTransferStreamWriterDescriptor> getStreamWriters(@NotNull DataTransferProcessorDescriptor processor) {
+        return streamWriters.values().stream()
+            .filter(writer -> writer.isVisible(processor))
+            .sorted(Comparator.comparingInt(DataTransferStreamWriterDescriptor::getOrder))
+            .collect(Collectors.toList());
+    }
+
+    @Nullable
+    public DataTransferStreamWriterDescriptor getStreamWriterById(@NotNull String id) {
+        return streamWriters.get(id);
     }
 }

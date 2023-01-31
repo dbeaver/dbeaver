@@ -34,7 +34,9 @@ public interface IObjectPropertyConfigurator<OBJECT, SETTINGS> {
 
     void saveSettings(@NotNull SETTINGS settings);
 
-    void resetSettings(@NotNull SETTINGS settings);
+    default void resetSettings(@NotNull SETTINGS settings) {
+        // do nothing by default
+    }
 
     boolean isComplete();
 

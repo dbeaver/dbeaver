@@ -95,6 +95,9 @@
         <propertyConfigurator
                 class="org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor"
                 uiClass="org.jkiss.dbeaver.tools.transfer.ui.processor.config.ExecuteCommandEventProcessorConfigurator"/>
+        <propertyConfigurator
+                class="org.jkiss.dbeaver.tools.transfer.stream.writer.FileStreamWriter"
+                uiClass="org.jkiss.dbeaver.tools.transfer.ui.config.FileStreamWriterConfigurator"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">
