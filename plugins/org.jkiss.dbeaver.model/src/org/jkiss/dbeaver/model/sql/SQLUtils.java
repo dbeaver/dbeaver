@@ -740,23 +740,25 @@ public final class SQLUtils {
             return sql;
         }
         boolean hasFixes = false;
-        char[] fixed = sql.toCharArray();
-        for (int i = 0; i < fixed.length; i++) {
-            if (fixed[i] == '\r') {
-                if (i > 0 && fixed[i - 1] == '\n') {
+        char[] initial = sql.toCharArray();
+        StringBuilder fixed = new StringBuilder(initial.length);
+        for (int i = 0; i < initial.length; i++) {
+            fixed.append(initial[i]);
+            if (initial[i] == '\r') {
+                if (i > 0 && initial[i - 1] == '\n') {
                     // \n\r
                     continue;
                 }
-                if (i == fixed.length - 1 || fixed[i + 1] == '\n') {
+                if (i == initial.length - 1 || initial[i + 1] == '\n') {
                     // \r\n
                     continue;
                 }
-                // Single \r - replace it with space
-                fixed[i] = ' ';
+                // Single \r - add \n after it to get \r\n sequence
+                fixed.append('\n');
                 hasFixes = true;
             }
         }
-        return hasFixes ? String.valueOf(fixed) : sql;
+        return hasFixes ? fixed.toString() : sql;
     }
 
     /**
