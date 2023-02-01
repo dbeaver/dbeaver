@@ -519,20 +519,32 @@ public class Spreadsheet extends LightGrid implements Listener {
                     String columnLabel = getLabelProvider().getText(cell.getColumn());
                     boolean isReadOnly = getContentProvider().isElementReadOnly(cell.getColumn());
                     Object rawValue = getContentProvider().getCellValue(cell.getColumn(), cell.getRow(), false);
-                    String valueStr = "";
+                    String valueStr;
+                    String valuePrefix = "";
                     String lobContentType = rawValue instanceof DBDContent ? ((DBDContent) rawValue).getContentType() : null;
                     String collType = rawValue instanceof DBDCollection ? ((DBDCollection) rawValue).getComponentType().getName() : null;
                     if (lobContentType != null && lobMimeTypeNames.get(lobContentType) != null) {
                         valueStr = "object of type " + lobMimeTypeNames.get(lobContentType);
                     } else if (collType != null) {
                         valueStr = "collection of type " + collType;
+                    } else if (rawValue instanceof Boolean) {
+                        valuePrefix = " boolean";
+                        valueStr = rawValue.toString();
                     } else {
+                        if (rawValue instanceof String) {
+                            valuePrefix = "string";
+                        } else if (rawValue instanceof Number) {
+                            valuePrefix = "numeric";
+                        }
                         valueStr = getContentProvider().getCellValue(cell.getColumn(), cell.getRow(), true).toString();
                     }
                     if (valueStr.isEmpty()) {
                         valueStr = "empty string";
                     }
-                    e.result = "at row " + rowLabel + " column " + columnLabel + (isReadOnly ? " readonly" : "") + " value is " + valueStr;
+                    if (isReadOnly) {
+                        valuePrefix = (isReadOnly ? " readonly" : "") + valuePrefix;
+                    }
+                    e.result = "at row " + rowLabel + " column " + columnLabel + valuePrefix + " value is " + valueStr;
                 } else if (rowsCount == 1) {
                     e.result = colsCount + " columns selected";
                 } else if (colsCount == 1) {
