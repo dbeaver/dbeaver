@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMConstants;
 import org.jkiss.dbeaver.model.qm.QMObjectType;
@@ -70,6 +71,39 @@ public final class ModelPreferences
         }
     }
     
+    public enum LineEndingNormalizationBehavior {
+        DEFAULT(ModelMessages.statement_line_ending_normalization_default, null),
+        LF(ModelMessages.statement_line_ending_normalization_unix, "\n"),
+        CRLF(ModelMessages.statement_line_ending_normalization_dos, "\r\n"),
+        CR(ModelMessages.statement_line_ending_normalization_mac, "\r"),
+        LFCR(ModelMessages.statement_line_ending_normalization_acron, "\n\r"),
+        NL(ModelMessages.statement_line_ending_normalization_ibm, "\025"),
+        AS_IS(ModelMessages.statement_line_ending_normalization_leave_as_is, null);
+        
+        private final String title;
+        private final String chars;
+        
+        LineEndingNormalizationBehavior(String title, String chars) {
+            this.title = title;
+            this.chars = chars;
+        }
+        
+        public String getTitle() {
+            return title;
+        }
+        
+        public String getChars() {
+            return chars;
+        }
+
+        /**
+         * Convert value to LineEndingNormalizationBehavior option
+         */
+        public static LineEndingNormalizationBehavior parse(String value) {
+            return CommonUtils.valueOf(LineEndingNormalizationBehavior.class, value, DEFAULT);
+        }
+    }
+    
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.model";
     public static final String CLIENT_TIMEZONE = "java.client.timezone";
     public static final String CLIENT_BROWSER = "swt.client.browser";
@@ -96,6 +130,7 @@ public final class ModelPreferences
     public static final String SCRIPT_IGNORE_NATIVE_DELIMITER = "script.sql.ignoreNativeDelimiter"; //$NON-NLS-1$
     public static final String SCRIPT_STATEMENT_DELIMITER_BLANK = "script.sql.delimiter.blank"; //$NON-NLS-1$
     public static final String QUERY_REMOVE_TRAILING_DELIMITER = "script.sql.query.remove.trailing.delimiter"; //$NON-NLS-1$
+    public static final String STATEMENT_LINE_ENDING_NORMALIZATION = "script.sql.statement.lineEndingNormalization"; //$NON-NLS-1$
 
     public static final String MEMORY_CONTENT_MAX_SIZE = "content.memory.maxsize"; //$NON-NLS-1$
     public static final String CONTENT_HEX_ENCODING = "content.hex.encoding"; //$NON-NLS-1$
@@ -230,6 +265,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, SCRIPT_IGNORE_NATIVE_DELIMITER, false);
         PrefUtils.setDefaultPreferenceValue(store, SCRIPT_STATEMENT_DELIMITER_BLANK, true);
         PrefUtils.setDefaultPreferenceValue(store, QUERY_REMOVE_TRAILING_DELIMITER, true);
+        PrefUtils.setDefaultPreferenceValue(store, STATEMENT_LINE_ENDING_NORMALIZATION, LineEndingNormalizationBehavior.DEFAULT.name());
 
         PrefUtils.setDefaultPreferenceValue(store, MEMORY_CONTENT_MAX_SIZE, 10000);
         PrefUtils.setDefaultPreferenceValue(store, META_SEPARATE_CONNECTION, SeparateConnectionBehavior.DEFAULT.name());

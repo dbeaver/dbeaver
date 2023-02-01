@@ -159,6 +159,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_enable_parameters_in_ddl_tip;
     public static String pref_page_sql_editor_enable_variables;
     public static String pref_page_sql_editor_enable_variables_tip;
+    public static String pref_page_sql_editor_label_line_ending_normalization;
+    public static String pref_page_sql_editor_line_ending_normalization_tip;
     // SQProposalsSearch
     public static String pref_page_sql_format_group_search;
     public static String pref_page_sql_completion_label_match_contains;

@@ -291,7 +291,7 @@ public class SQLScriptParser {
                         continue;
                     }
                     String queryText = document.get(statementStart, tokenOffset - statementStart);
-                    queryText = SQLUtils.fixLineFeeds(queryText);
+                    queryText = SQLUtils.fixLineFeeds(queryText, context.getPreferenceStore());
 
                     if (isDelimiter &&
                         (keepDelimiters ||
@@ -629,7 +629,7 @@ public class SQLScriptParser {
                 element = parsedElement;
             } else {
                 // Use selected query as is
-                selText = SQLUtils.fixLineFeeds(selText);
+                selText = SQLUtils.fixLineFeeds(selText, context.getPreferenceStore());
                 element = new SQLQuery(context.getDataSource(), selText, region.getOffset(), region.getLength());
             }
         } else if (region.getOffset() >= 0) {

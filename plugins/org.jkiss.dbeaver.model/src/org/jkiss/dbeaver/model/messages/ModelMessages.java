@@ -241,6 +241,14 @@ public class ModelMessages extends NLS {
 
     public static String no_corresponding_table_column_text;
     public static String cannot_determine_unique_row_identifier_text;
+    
+    public static String statement_line_ending_normalization_default;
+    public static String statement_line_ending_normalization_unix;
+    public static String statement_line_ending_normalization_dos;
+    public static String statement_line_ending_normalization_mac;
+    public static String statement_line_ending_normalization_acron;
+    public static String statement_line_ending_normalization_ibm;
+    public static String statement_line_ending_normalization_leave_as_is;
 
 	static {
 		// initialize resource bundle

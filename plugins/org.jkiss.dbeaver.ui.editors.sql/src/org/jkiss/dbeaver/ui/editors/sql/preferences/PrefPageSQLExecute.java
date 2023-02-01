@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ModelPreferences.LineEndingNormalizationBehavior;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLScriptCommitType;
@@ -47,12 +48,23 @@ public class PrefPageSQLExecute extends TargetPrefPage
     private static final Log log = Log.getLog(PrefPageSQLExecute.class);
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sqlexecute"; //$NON-NLS-1$
+    
+    private static final java.util.List<LineEndingNormalizationBehavior> LINE_ENDING_NORMALIZATION_VALUES = java.util.List.of(
+        LineEndingNormalizationBehavior.DEFAULT,
+        LineEndingNormalizationBehavior.LF,
+        LineEndingNormalizationBehavior.CRLF,
+        LineEndingNormalizationBehavior.CR,
+        LineEndingNormalizationBehavior.LFCR,
+        LineEndingNormalizationBehavior.NL,
+        LineEndingNormalizationBehavior.AS_IS
+    );  
 
     private Button invalidateBeforeExecuteCheck;
     private Spinner executeTimeoutText;
     private Button soundOnQueryEnd;
     private Button updateDefaultAfterExecute;
     private Button clearOutputBeforeExecute;
+    private Combo lineEndingNormalizationCombo;
 
     private Combo commitTypeCombo;
     private Combo errorHandlingCombo;
@@ -108,7 +120,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.contains(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE) ||
             store.contains(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE) ||
             store.contains(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE) ||
-            store.contains(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)
+            store.contains(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE) ||
+            store.contains(ModelPreferences.STATEMENT_LINE_ENDING_NORMALIZATION)
         ;
     }
 
@@ -170,7 +183,16 @@ public class PrefPageSQLExecute extends TargetPrefPage
                 executeTimeoutText.setMinimum(0);
                 executeTimeoutText.setMaximum(100000);
                 executeTimeoutText.setToolTipText(SQLEditorMessages.pref_page_sql_editor_label_sql_timeout_tip);
-
+                
+                lineEndingNormalizationCombo = UIUtils.createLabelCombo(
+                    UIUtils.createFormPlaceholder(commonGroup, 2, 2),
+                    SQLEditorMessages.pref_page_sql_editor_label_line_ending_normalization,
+                    SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN 
+                );
+                lineEndingNormalizationCombo.setToolTipText(SQLEditorMessages.pref_page_sql_editor_line_ending_normalization_tip);
+                lineEndingNormalizationCombo.setItems(LINE_ENDING_NORMALIZATION_VALUES.stream()
+                    .map(b -> b.getTitle()).toArray(String[]::new));
+                lineEndingNormalizationCombo.select(0);
             }
         }
 
@@ -265,6 +287,9 @@ public class PrefPageSQLExecute extends TargetPrefPage
             soundOnQueryEnd.setSelection(store.getBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END));
             updateDefaultAfterExecute.setSelection(store.getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE));
             clearOutputBeforeExecute.setSelection(store.getBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE));
+            lineEndingNormalizationCombo.select(LINE_ENDING_NORMALIZATION_VALUES.indexOf(
+                LineEndingNormalizationBehavior.parse(store.getString(ModelPreferences.STATEMENT_LINE_ENDING_NORMALIZATION))
+            ));
 
             commitTypeCombo.select(SQLScriptCommitType.valueOf(store.getString(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE)).ordinal());
             errorHandlingCombo.select(SQLScriptErrorHandling.valueOf(store.getString(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING)).ordinal());
@@ -299,6 +324,9 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.BEEP_ON_QUERY_END, soundOnQueryEnd.getSelection());
             store.setValue(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE, updateDefaultAfterExecute.getSelection());
             store.setValue(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE, clearOutputBeforeExecute.getSelection());
+            store.setValue(ModelPreferences.STATEMENT_LINE_ENDING_NORMALIZATION,
+                LINE_ENDING_NORMALIZATION_VALUES.get(lineEndingNormalizationCombo.getSelectionIndex()).name()
+            );
 
             store.setValue(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE, CommonUtils.fromOrdinal(SQLScriptCommitType.class, commitTypeCombo.getSelectionIndex()).name());
             store.setValue(SQLPreferenceConstants.SCRIPT_COMMIT_LINES, commitLinesText.getSelection());
@@ -355,6 +383,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.BEEP_ON_QUERY_END);
         store.setToDefault(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE);
         store.setToDefault(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE);
+        store.setToDefault(ModelPreferences.STATEMENT_LINE_ENDING_NORMALIZATION);
     }
 
     @Override

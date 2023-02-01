@@ -22,6 +22,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ModelPreferences.LineEndingNormalizationBehavior;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -31,6 +33,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.RelationalSQLDialect;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRFinder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -733,9 +736,20 @@ public final class SQLUtils {
     }
 
     /**
-     * Replaces single \r linefeeds with space (some databases don't like them)
+     * Replaces single \r linefeeds as specified in STATEMENT_LINE_ENDING_NORMALIZATION setting  (some databases don't like them)
+     * DEFAULT behaviour is replacing \r with space
      */
-    public static String fixLineFeeds(String sql) {
+    public static String fixLineFeeds(String sql, DBPPreferenceStore prefStore) {
+        final String prefSetting = prefStore.getString(ModelPreferences.STATEMENT_LINE_ENDING_NORMALIZATION);
+        LineEndingNormalizationBehavior behavior = LineEndingNormalizationBehavior.parse(prefSetting);
+        switch(behavior) {
+            case AS_IS: return sql;
+            case DEFAULT: return fixLineFeedsDefault(sql);
+            default: return sql.replaceAll("\\R", behavior.getChars()); // replace Any Unicode linebreak sequence with given characters
+        }
+    }
+    
+    private static String fixLineFeedsDefault(String sql) {
         if (sql.indexOf('\r') == -1) {
             return sql;
         }
