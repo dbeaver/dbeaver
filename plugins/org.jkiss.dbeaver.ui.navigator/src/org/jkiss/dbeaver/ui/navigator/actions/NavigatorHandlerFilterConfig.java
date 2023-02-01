@@ -47,27 +47,26 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
         if (node instanceof DBNDatabaseItem) {
             node = node.getParentNode();
         }
-        if (node instanceof DBNDatabaseFolder || node instanceof DBNDataSource) {
+        if (node instanceof DBNDatabaseNode) {
             configureFilters(HandlerUtil.getActiveShell(event), node);
         }
-
         return null;
     }
 
     public static void configureFilters(Shell shell, DBNNode node)
     {
-        final DBNDatabaseNode databaseNode = (DBNDatabaseNode) node;
-        DBXTreeItem itemsMeta = databaseNode.getItemsMeta();
+        final DBNDatabaseNode folder = (DBNDatabaseNode) node;
+        DBXTreeItem itemsMeta = folder.getItemsMeta();
         if (itemsMeta != null) {
-            DBSObjectFilter objectFilter = databaseNode.getNodeFilter(itemsMeta, true);
+            DBSObjectFilter objectFilter = folder.getNodeFilter(itemsMeta, true);
             if (objectFilter == null) {
                 objectFilter = new DBSObjectFilter();
             }
-            final DBPDataSourceRegistry dsRegistry = databaseNode.getOwnerProject().getDataSourceRegistry();
-            final boolean globalFilter = databaseNode.getValueObject() instanceof DBPDataSource;
+            final DBPDataSourceRegistry dsRegistry = folder.getOwnerProject().getDataSourceRegistry();
+            final boolean globalFilter = folder.getValueObject() instanceof DBPDataSource;
             String parentName = "?";
-            if (databaseNode.getValueObject() instanceof DBSObject) {
-                parentName = ((DBSObject) databaseNode.getValueObject()).getName();
+            if (folder.getValueObject() instanceof DBSObject) {
+                parentName = ((DBSObject) folder.getValueObject()).getName();
             }
             EditObjectFilterDialog dialog = new EditObjectFilterDialog(
                 shell,
@@ -77,13 +76,11 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                 globalFilter);
             switch (dialog.open()) {
                 case IDialogConstants.OK_ID:
-                    databaseNode.setNodeFilter(itemsMeta, dialog.getFilter());
-                    NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(databaseNode));
+                    folder.setNodeFilter(itemsMeta, dialog.getFilter());
+                    NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(folder));
                     break;
                 case EditObjectFilterDialog.SHOW_GLOBAL_FILTERS_ID:
-                    objectFilter = databaseNode.getDataSource()
-                        .getContainer()
-                        .getObjectFilter(((DBNContainer) databaseNode).getChildrenClass(), null, true);
+                    objectFilter = folder.getDataSource().getContainer().getObjectFilter(((DBNDataSource) folder).getChildrenClass(), null, true);
                     dialog = new EditObjectFilterDialog(
                         shell,
                             dsRegistry, "All " + node.getNodeType(),
@@ -91,14 +88,10 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                         true);
                     if (dialog.open() == IDialogConstants.OK_ID) {
                         // Set global filter
-                        databaseNode.getDataSource()
-                            .getContainer()
-                            .setObjectFilter(((DBNContainer) databaseNode).getChildrenClass(),
-                                null,
-                                dialog.getFilter()
-                            );
-                        databaseNode.getDataSource().getContainer().persistConfiguration();
-                        NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(databaseNode));
+                        folder.getDataSource().getContainer().setObjectFilter((((DBNDataSource) folder).getChildrenClass()), null,
+                            dialog.getFilter());
+                        folder.getDataSource().getContainer().persistConfiguration();
+                        NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(folder));
                     }
                     break;
             }

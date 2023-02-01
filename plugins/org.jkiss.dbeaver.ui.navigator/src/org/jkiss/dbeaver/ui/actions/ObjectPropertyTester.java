@@ -204,15 +204,13 @@ public class ObjectPropertyTester extends PropertyTester {
                 if (node instanceof DBNDatabaseItem) {
                     node = node.getParentNode();
                 }
-                if ((node instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) node).getItemsMeta() != null)
-                    || (node instanceof DBNDataSource && ((DBNDataSource) node).getItemsMeta() != null)) {
+                if ((node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getItemsMeta() != null)) {
                     return true;
                 }
                 break;
             }
             case PROP_CAN_FILTER_OBJECT: {
-                if ((node.getParentNode() instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) node.getParentNode()).getItemsMeta() != null)
-                    || (node.getParentNode() instanceof DBNDataSource && ((DBNDataSource) node.getParentNode()).getItemsMeta() != null)) {
+                if ((node.getParentNode() instanceof DBNDatabaseNode && ((DBNDatabaseNode) node.getParentNode()).getItemsMeta() != null)) {
                     return true;
                 }
                 break;
@@ -221,8 +219,8 @@ public class ObjectPropertyTester extends PropertyTester {
                 if (node instanceof DBNDatabaseItem) {
                     node = node.getParentNode();
                 }
-                if (node instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) node).getItemsMeta() != null) {
-                    DBSObjectFilter filter = ((DBNDatabaseFolder) node).getNodeFilter(((DBNDatabaseFolder) node).getItemsMeta(), true);
+                if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getItemsMeta() != null) {
+                    DBSObjectFilter filter = ((DBNDatabaseNode) node).getNodeFilter(((DBNDatabaseNode) node).getItemsMeta(), true);
                     if ("defined".equals(expectedValue)) {
                         return filter != null && !filter.isEmpty();
                     } else {
