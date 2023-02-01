@@ -295,7 +295,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             sqlDialect.getCatalogSeparator(),
                             sqlDialect.getIdentifierQuoteStrings(),
                             false);
-                        rootObject = SQLSearchUtils.findObjectByFQN(monitor, sc, request.getContext().getExecutionContext(), Arrays.asList(allNames), !request.isSimpleMode(), wordDetector);
+                        rootObject = SQLSearchUtils.findObjectByFQN(monitor, sc, request, Arrays.asList(allNames));
                     }
                 }
                 if (rootObject != null) {
@@ -726,7 +726,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 sqlDialect.getCatalogSeparator(),
                 sqlDialect.getIdentifierQuoteStrings(),
                 false);
-            DBSObject rightTable = SQLSearchUtils.findObjectByFQN(monitor, sc, request.getContext().getExecutionContext(), Arrays.asList(allNames), !request.isSimpleMode(), request.getWordDetector());
+            DBSObject rightTable = SQLSearchUtils.findObjectByFQN(monitor, sc, request, Arrays.asList(allNames));
             if (rightTable instanceof DBSEntity) {
                 try {
                     String joinCriteria = SQLUtils.generateTableJoin(monitor, leftTable, DBUtils.getQuotedIdentifier(leftTable), (DBSEntity) rightTable, DBUtils.getQuotedIdentifier(rightTable));
@@ -923,7 +923,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             if (name != null && CommonUtils.isNotEmpty(name.getFirst())) {
                 final String[][] quoteStrings = sqlDialect.getIdentifierQuoteStrings();
                 final String[] allNames = SQLUtils.splitFullIdentifier(name.getFirst(), catalogSeparator, quoteStrings, false);
-                return SQLSearchUtils.findObjectByFQN(monitor, sc, request.getContext().getExecutionContext(), Arrays.asList(allNames), !request.isSimpleMode(), request.getWordDetector());
+                return SQLSearchUtils.findObjectByFQN(monitor, sc, request, Arrays.asList(allNames));
             }
         }
 

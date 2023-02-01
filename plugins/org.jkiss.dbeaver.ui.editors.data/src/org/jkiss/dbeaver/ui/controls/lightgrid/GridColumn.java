@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author serge@dbeaver.com
  */
-class GridColumn implements IGridColumn {
+public class GridColumn implements IGridColumn {
 
     /**
      * Default width of the column.
