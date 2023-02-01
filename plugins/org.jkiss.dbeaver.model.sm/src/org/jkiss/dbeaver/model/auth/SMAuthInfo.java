@@ -39,6 +39,10 @@ public class SMAuthInfo {
     @Nullable
     private final String smAccessToken;
 
+    /**
+     * Deprecated, use smAccessToken instead
+     */
+    @Deprecated
     @Nullable //Backward compatibility
     private String smAuthToken;
 
