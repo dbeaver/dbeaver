@@ -157,7 +157,8 @@ public class DashboardRegistry {
     }
 
     /**
-     * Find dashboard matchign source. Source can be {@link DBPDataSourceContainer}, {@link DBPDataSourceProviderDescriptor} or {@link DBPDriver}
+     * Find dashboard matching source.
+     * Source can be {@link DBPDataSourceContainer}, {@link DBPDataSourceProviderDescriptor} or {@link DBPDriver}
      */
     public List<DashboardDescriptor> getDashboards(DBPNamedObject source, boolean defaultOnly) {
         if (source instanceof DBPDataSourceContainer) {

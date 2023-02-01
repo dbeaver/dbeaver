@@ -71,6 +71,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private final List<DBPPropertyDescriptor> driverProperties = new ArrayList<>();
     private final List<DriverDescriptor> drivers = new ArrayList<>();
     private final List<NativeClientDescriptor> nativeClients = new ArrayList<>();
+    private final List<DBPDataSourceProviderDescriptor> childrenProviders = new ArrayList<>();
     @NotNull
     private SQLDialectMetadata scriptDialect;
     private boolean inheritClients;
@@ -112,6 +113,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             this.parentProvider = registry.getDataSourceProvider(parentId);
             if (this.parentProvider == null) {
                 log.error("Provider '" + parentId + "' not found");
+            } else {
+                this.parentProvider.addChildrenProvider(this);
             }
         }
     }
@@ -400,6 +403,16 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         } else {
             return this.drivers.remove(driver);
         }
+    }
+
+    @NotNull
+    @Override
+    public List<DBPDataSourceProviderDescriptor> getChildrenProviders() {
+        return childrenProviders;
+    }
+
+    private void addChildrenProvider(@NotNull DataSourceProviderDescriptor descriptor) {
+        childrenProviders.add(descriptor);
     }
 
     //////////////////////////////////////
