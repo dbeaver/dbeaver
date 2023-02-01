@@ -638,11 +638,34 @@
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="postgresql" parent="basic" class="org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect" label="PostgreSQL" description="PostgreSQL dialect." icon="icons/postgresql_icon.png">
             <property name="insertMethods" value="pgInsertIgnore,pgReplaceIgnore"/>
-            <property name="keywords" value=""/>
-            <property name="execKeywords" value=""/>
+            <property name="keywords" class="org.jkiss.dbeaver.ext.postgresql.model.PostgreKeywords" field="POSTGRE_KEYWORDS, POSTGRE_EXTRA_KEYWORDS, OTHER_TYPES_FUNCTION"/>
+            <property name="functions" class="org.jkiss.dbeaver.ext.postgresql.model.PostgreKeywords" field="
+            POSTGRE_FUNCTIONS_ADMIN,
+            POSTGRE_FUNCTIONS_AGGREGATE,
+            POSTGRE_FUNCTIONS_ARRAY,
+            POSTGRE_FUNCTIONS_BINARY_STRING,
+            POSTGRE_FUNCTIONS_COMPRASION,
+            POSTGRE_FUNCTIONS_CONDITIONAL,
+            POSTGRE_FUNCTIONS_DATETIME,
+            POSTGRE_FUNCTIONS_ENUM,
+            POSTGRE_FUNCTIONS_FORMATTING,
+            POSTGRE_FUNCTIONS_GEOMETRY,
+            POSTGRE_FUNCTIONS_INFO,
+            POSTGRE_FUNCTIONS_JSON,
+            POSTGRE_FUNCTIONS_LO,
+            POSTGRE_FUNCTIONS_MATH,
+            POSTGRE_FUNCTIONS_NETWROK,
+            POSTGRE_FUNCTIONS_RANGE,
+            POSTGRE_FUNCTIONS_SEQUENCE,
+            POSTGRE_FUNCTIONS_SRF,
+            POSTGRE_FUNCTIONS_STRING,
+            POSTGRE_FUNCTIONS_TEXT_SEARCH,
+            POSTGRE_FUNCTIONS_TRIGGER,
+            POSTGRE_FUNCTIONS_WINDOW,
+            POSTGRE_FUNCTIONS_XML"/>
             <property name="ddlKeywords" value=""/>
             <property name="dmlKeywords" value=""/>
-            <property name="functions" value=""/>
+            <property name="execKeywords" value=""/>
             <property name="types" value=""/>
 
             <property name="" value=""/>

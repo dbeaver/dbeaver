@@ -129,7 +129,7 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
                 }
                 Set<String> values = new HashSet<>();
                 for (String field : fieldName.split(",")) {
-                    Set<String> fieldValues = extractValuesFromStaticField(className, field);
+                    Set<String> fieldValues = extractValuesFromStaticField(className, field.trim());
                     if (fieldValues == null) {
                         log.warn("Can't extract field " + field + " values");
                         continue;
@@ -335,7 +335,7 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
         if (!nested) {
             return getTransformedValues(WordType.ATTR_DIALECTS_TXN_KEYWORDS, txnKeywords);
         }
-        HashSet<String> nestedTXNKeywords = new HashSet<>(execKeywords);
+        HashSet<String> nestedTXNKeywords = new HashSet<>(txnKeywords);
         if (parentDialect != null) {
             nestedTXNKeywords.addAll(parentDialect.getTransactionKeywords(true));
         }
@@ -345,7 +345,7 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     @Override
     @NotNull
     public String getScriptDelimiter() {
-        return CommonUtils.isEmpty(scriptDelimiter) ? ";" : scriptDelimiter;
+        return ";";
     }
 
     public ObjectType getImplClass() {
@@ -415,60 +415,9 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
         return insertMethodDescriptors;
     }
 
-    public void setScriptDelimiter(String scriptDelimiter) {
-        this.scriptDelimiter = scriptDelimiter;
-    }
 
     public void setProperties(Map<String, Object> properties) {
         this.properties = properties;
-    }
-
-    public void setKeywords(Set<String> keywords) {
-        this.keywords = keywords;
-    }
-
-    public void setDdlKeywords(Set<String> ddlKeywords) {
-        this.ddlKeywords = ddlKeywords;
-    }
-    
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setImplClass(String implClass) {
-        this.implClass = new ObjectType(implClass);
-    }
-
-    public void setIcon(DBPImage icon) {
-        this.icon = icon;
-    }
-
-    public void setDmlKeywords(Set<String> dmlKeywords) {
-        this.dmlKeywords = dmlKeywords;
-    }
-
-    public void setExecKeywords(Set<String> execKeywords) {
-        this.execKeywords = execKeywords;
-    }
-
-    public void setTxnKeywords(Set<String> txnKeywords) {
-        this.txnKeywords = txnKeywords;
-    }
-
-    public void setTypes(Set<String> types) {
-        this.types = types;
-    }
-
-    public void setFunctions(Set<String> functions) {
-        this.functions = functions;
     }
 
     @Override
@@ -478,11 +427,13 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
 
     /**
      * Use reflection to extract values from the string array/list static field by field references
+     * All constants should not be declared in dialect class because it will lead to the incorrect initialization
      */
     @Nullable
     private Set<String> extractValuesFromStaticField(@NotNull String classReference, @NotNull String reference) {
         try {
-            Class<?> clazz = Class.forName(classReference);
+
+            Class<?> clazz = getContributorBundle().loadClass(classReference);
             Field field = clazz.getDeclaredField(reference);
             if (
                 field.getType().equals(String[].class)
@@ -503,7 +454,7 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
                 throw new NoSuchElementException("Invalid field type " + field.getType());
             }
         } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException | ReflectionException e) {
-            log.error("Invalid dialect XML entry, " + classReference + '.' + reference + "field not found!", e);
+            log.error("Invalid dialect XML entry, " + classReference + '.' + reference + " field not found!", e);
             return null;
         }
     }

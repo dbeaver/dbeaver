@@ -300,7 +300,7 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
 
     @NotNull
     public String[] getDMLKeywords() {
-        return isStandardSQL() ? getDescriptor().getDMLKeywords(true).toArray(new String[0]): new String[0];
+        return isStandardSQL() ? getDescriptor().getDMLKeywords(true).toArray(new String[0]) : new String[0];
     }
 
     @NotNull
@@ -327,7 +327,5 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
     public boolean isAmbiguousCountBroken() {
         return false;
     }
-
-
 
 }
