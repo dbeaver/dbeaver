@@ -39,6 +39,7 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -395,7 +396,7 @@ public class CustomTimeEditor {
         } else if (value instanceof Instant) {
             return Date.from((Instant) value);
         } else if (value instanceof LocalDateTime) {
-            return Date.from(Instant.from((LocalDateTime) value));
+            return Date.from(((LocalDateTime) value).toInstant(ZoneOffset.UTC));
         } else {
             throw new DBCException(value.toString());
         }
