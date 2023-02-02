@@ -38,6 +38,14 @@ public class SMAuthInfo {
 
     @Nullable
     private final String smAccessToken;
+
+    /**
+     * Deprecated, use smAccessToken instead
+     */
+    @Deprecated
+    @Nullable //Backward compatibility
+    private String smAuthToken;
+
     @Nullable
     private final String smRefreshToken;
     @Nullable
@@ -121,6 +129,9 @@ public class SMAuthInfo {
 
     @Nullable
     public String getSmAccessToken() {
+        if (smAuthToken != null) {
+            return smAuthToken;
+        }
         return smAccessToken;
     }
 
