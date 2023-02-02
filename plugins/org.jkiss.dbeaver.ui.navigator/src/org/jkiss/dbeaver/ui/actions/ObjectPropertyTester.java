@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -213,7 +214,13 @@ public class ObjectPropertyTester extends PropertyTester {
                 break;
             }
             case PROP_HAS_FILTER: {
-                if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getItemsMeta() != null) {
+
+                if (
+                    node instanceof DBNDatabaseNode
+                    && ((DBNDatabaseNode) node).getItemsMeta() != null
+                    && !DBSCatalog.class.isAssignableFrom(((DBNDatabaseNode) node)
+                        .getChildrenClass(((DBNDatabaseNode) node).getItemsMeta()))
+                ) {
                     DBSObjectFilter filter = ((DBNDatabaseNode) node).getNodeFilter(((DBNDatabaseNode) node).getItemsMeta(), true);
                     if ("defined".equals(expectedValue)) {
                         return filter != null && !filter.isEmpty();
