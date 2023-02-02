@@ -44,9 +44,6 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         DBNNode node = NavigatorUtils.getSelectedNode(selection);
-        if (node instanceof DBNDatabaseItem) {
-            node = node.getParentNode();
-        }
         if (node instanceof DBNDatabaseNode) {
             configureFilters(HandlerUtil.getActiveShell(event), node);
         }
@@ -105,9 +102,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             return;
         }
         DBNNode node = NavigatorUtils.getSelectedNode(element);
-        if (node instanceof DBNDatabaseItem) {
-            node = node.getParentNode();
-        }
+
         if (node != null) {
             element.setText(NLS.bind(UINavigatorMessages.actions_navigator_filter_objects, node.getNodeType()));
         }

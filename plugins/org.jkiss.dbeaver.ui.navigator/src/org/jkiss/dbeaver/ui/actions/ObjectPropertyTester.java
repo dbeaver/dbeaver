@@ -201,9 +201,6 @@ public class ObjectPropertyTester extends PropertyTester {
                 break;
             }
             case PROP_CAN_FILTER: {
-                if (node instanceof DBNDatabaseItem) {
-                    node = node.getParentNode();
-                }
                 if ((node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getItemsMeta() != null)) {
                     return true;
                 }
@@ -216,9 +213,6 @@ public class ObjectPropertyTester extends PropertyTester {
                 break;
             }
             case PROP_HAS_FILTER: {
-                if (node instanceof DBNDatabaseItem) {
-                    node = node.getParentNode();
-                }
                 if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getItemsMeta() != null) {
                     DBSObjectFilter filter = ((DBNDatabaseNode) node).getNodeFilter(((DBNDatabaseNode) node).getItemsMeta(), true);
                     if ("defined".equals(expectedValue)) {
