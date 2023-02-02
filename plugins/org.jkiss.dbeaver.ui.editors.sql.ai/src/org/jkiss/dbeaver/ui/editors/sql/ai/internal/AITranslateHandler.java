@@ -125,7 +125,13 @@ public class AITranslateHandler extends AbstractHandler {
         return null;
     }
 
-    private void doAutoCompletion(DBCExecutionContext executionContext, DAIHistoryManager historyManager, DBSLogicalDataSource lDataSource, SQLEditor editor, String inputText) {
+    private void doAutoCompletion(
+        DBCExecutionContext executionContext,
+        DAIHistoryManager historyManager,
+        DBSLogicalDataSource lDataSource,
+        SQLEditor editor,
+        String inputText
+    ) {
         if (CommonUtils.isEmptyTrimmed(inputText)) {
             return;
         }

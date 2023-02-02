@@ -31,10 +31,19 @@ import java.util.List;
  */
 public interface DAICompletionEngine {
 
+    /**
+     * Completion engine name
+     */
     String getEngineName();
 
+    /**
+     * Completion model name
+     */
     String getModelName();
 
+    /**
+     * Do query completion
+     */
     @NotNull
     List<DAICompletionResponse> performQueryCompletion(
         @NotNull DBRProgressMonitor monitor,
@@ -42,7 +51,7 @@ public interface DAICompletionEngine {
         @NotNull DBCExecutionContext executionContext,
         @NotNull DAICompletionRequest completionRequest,
         boolean returnOnlyCompletion,
-        int maxResults)
-        throws DBException;
+        int maxResults
+    ) throws DBException;
 
 }

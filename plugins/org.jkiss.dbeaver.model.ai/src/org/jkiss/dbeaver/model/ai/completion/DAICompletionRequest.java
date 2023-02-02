@@ -76,6 +76,9 @@ public class DAICompletionRequest {
         return completionOptions;
     }
 
+    /**
+     * Sets completion option value
+     */
     public void setCompletionOption(String name, Object value) {
         completionOptions.put(name, value);
     }

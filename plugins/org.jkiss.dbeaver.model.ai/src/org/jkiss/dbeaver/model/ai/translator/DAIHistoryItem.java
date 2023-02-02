@@ -80,6 +80,9 @@ public class DAIHistoryItem {
         this.time = time;
     }
 
+    /**
+     * Converts item to map
+     */
     public Map<String, Object> toMap() {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("id", this.id);

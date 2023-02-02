@@ -30,6 +30,9 @@ import java.util.List;
  */
 public interface DAIHistoryManager {
 
+    /**
+     * Reads translation history
+     */
     @NotNull
     List<DAIHistoryItem> readTranslationHistory(
         @NotNull DBRProgressMonitor monitor,
@@ -37,6 +40,9 @@ public interface DAIHistoryManager {
         @NotNull DBCExecutionContext executionContext,
         int maxCount) throws DBException;
 
+    /**
+     * Saves translated query info
+     */
     void saveTranslationHistory(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSLogicalDataSource dataSource,

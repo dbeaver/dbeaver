@@ -29,6 +29,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public class DAITextTranslator {
 
+    /**
+     * Translates text into SQL query (DML)
+     */
     @NotNull
     public static DAITranslatedItem translateTextToSQL(
         @NotNull DBRProgressMonitor monitor,
