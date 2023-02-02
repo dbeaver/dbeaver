@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
@@ -26,7 +25,6 @@ import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReaderExt;
 import org.jkiss.dbeaver.model.impl.AsyncServerOutputReader;
 import org.jkiss.utils.BeanUtils;
 
-import java.util.Arrays;
 import java.util.Map;
 
 public class PostgreServerOutputReader extends AsyncServerOutputReader implements DBCServerOutputReaderExt {
@@ -39,19 +37,7 @@ public class PostgreServerOutputReader extends AsyncServerOutputReader implement
     @NotNull
     @Override
     public DBCOutputSeverity[] getSupportedSeverities(@NotNull DBCExecutionContext context) {
-        final PostgreDataSource dataSource = (PostgreDataSource) context.getDataSource();
-        final PostgreSetting setting = dataSource.getSetting(PostgreConstants.OPTION_CLIENT_MIN_MESSAGES);
-        final PostgreOutputSeverity[] values = PostgreOutputSeverity.values();
-
-        if (setting != null) {
-            for (int i = 0; i < values.length; i++) {
-                if (values[i].name().equalsIgnoreCase(setting.getValue())) {
-                    return Arrays.copyOfRange(values, i, values.length);
-                }
-            }
-        }
-
-        return values;
+        return PostgreOutputSeverity.values();
     }
 
     @Override
@@ -88,10 +74,10 @@ public class PostgreServerOutputReader extends AsyncServerOutputReader implement
     private enum PostgreOutputSeverity implements DBCOutputSeverity {
         DEBUG("Debug"),
         LOG("Log"),
+        INFO("Info"),
         NOTICE("Notice"),
         WARNING("Warning"),
-        ERROR("Error"),
-        INFO("Info");
+        ERROR("Error");
 
         private final String name;
 
