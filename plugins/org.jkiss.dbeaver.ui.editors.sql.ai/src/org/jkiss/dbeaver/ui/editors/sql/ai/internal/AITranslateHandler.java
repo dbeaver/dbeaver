@@ -56,6 +56,9 @@ public class AITranslateHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
+        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(GPTPreferences.AI_DISABLED)) {
+            return null;
+        }
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
 
         DBPDataSourceContainer dataSourceContainer = editor.getDataSourceContainer();

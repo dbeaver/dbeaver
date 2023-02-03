@@ -41,6 +41,7 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.gpt";
     private static final String API_KEY_URL = "https://beta.openai.com/account/api-keys";
 
+    private Button enableAICheck;
     private Text tokenText;
 
     private Combo modelCombo;
@@ -53,6 +54,9 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     @Override
     protected void performDefaults() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+
+        enableAICheck.setSelection(!store.getBoolean(GPTPreferences.AI_DISABLED));
+
         modelCombo.select(GPTModel.getByName(store.getString(GPTPreferences.GPT_MODEL)).ordinal());
         temperatureText.setText(String.valueOf(store.getDouble(GPTPreferences.GPT_MODEL_TEMPERATURE)));
         maxTokensText.setText(String.valueOf(store.getInt(GPTPreferences.GPT_MODEL_MAX_TOKENS)));
@@ -68,6 +72,9 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     @Override
     public boolean performOk() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+
+        store.setValue(GPTPreferences.AI_DISABLED, !enableAICheck.getSelection());
+
         store.setValue(GPTPreferences.GPT_MODEL, modelCombo.getText());
         store.setValue(GPTPreferences.GPT_MODEL_TEMPERATURE, temperatureText.getText());
         store.setValue(GPTPreferences.GPT_MODEL_MAX_TOKENS, maxTokensText.getText());
@@ -88,9 +95,15 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
-        Composite checkboxComposite = UIUtils.createPlaceholder(placeholder, 2);
-        checkboxComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         placeholder.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        enableAICheck = UIUtils.createCheckbox(
+            placeholder,
+            "Enable smart completion",
+            "Enable AI smart completion. If you don't want to see it in SQL editor then you can disable this feature.",
+            false,
+            2);
+
         {
             Group authorizationGroup = UIUtils.createControlGroup(placeholder,
                 AIUIMessages.gpt_preference_page_group_authorization,
