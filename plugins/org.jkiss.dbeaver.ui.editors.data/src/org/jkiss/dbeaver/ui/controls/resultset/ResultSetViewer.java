@@ -4462,9 +4462,9 @@ public class ResultSetViewer extends Viewer
         if (updatePresentation) {
             redrawData(false, true);
             updateEditControls();
-        }
 
-        activePresentation.scrollToRow(IResultSetPresentation.RowPosition.CURRENT);
+            activePresentation.scrollToRow(IResultSetPresentation.RowPosition.CURRENT);
+        }
 
         return curRow;
     }
