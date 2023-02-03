@@ -686,6 +686,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         }
                     }
                 }
+                this.scrollToRow(IResultSetPresentation.RowPosition.CURRENT);
 
             } else {
                 Collection<GridPos> ssSelection = spreadsheet.getSelection();

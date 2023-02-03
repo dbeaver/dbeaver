@@ -267,6 +267,27 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                 }
             });
         }
+        if (sqlGenerator.supportCastParams()) {
+            Button supportsCastParamsButton = UIUtils.createCheckbox(
+                    settings,
+                    SQLEditorMessages.sql_generator_dialog_button_show_cast_params,
+                    sqlGenerator.isShowCastParams());
+            supportsCastParamsButton.setToolTipText(SQLEditorMessages.sql_generator_dialog_button_show_cast_params_tip);
+            supportsCastParamsButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    sqlGenerator.setShowCastParams(supportsCastParamsButton.getSelection());
+                    getDialogBoundsSettings().put(DBPScriptObject.OPTION_CAST_PARAMS, supportsCastParamsButton.getSelection());
+
+                    UIUtils.runInUI(sqlGenerator);
+                    Object sql = sqlGenerator.getResult();
+                    if (sql != null) {
+                        setSQLText(CommonUtils.toString(sql));
+                        updateSQL();
+                    }
+                }
+            });
+        }
         return composite;
     }
 }
