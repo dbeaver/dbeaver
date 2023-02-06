@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.impl.dialects.SQLDialectRegistry;
+import org.jkiss.dbeaver.model.sql.dialects.SQLDialectRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;

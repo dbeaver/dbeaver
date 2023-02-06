@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.impl.dialects;
+package org.jkiss.dbeaver.model.sql.dialects;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

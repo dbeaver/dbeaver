@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.impl.dialects;
+package org.jkiss.dbeaver.model.sql.dialects;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
@@ -103,7 +103,7 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
         this.id = id;
     }
 
-    SQLDialectDescriptor(IConfigurationElement config) {
+    public SQLDialectDescriptor(IConfigurationElement config) {
         super(config);
         this.id = config.getAttribute("id");
         this.label = config.getAttribute("label");
