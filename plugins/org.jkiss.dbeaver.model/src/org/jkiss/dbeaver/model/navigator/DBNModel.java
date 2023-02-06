@@ -316,6 +316,11 @@ public class DBNModel implements IResourceChangeListener {
                 }
             }
         } else if (nodePath.type == DBNNode.NodePathType.ext) {
+            var node = findNodeByPath(monitor, nodePath,
+                root, 0);
+            if (node != null) {
+                return node;
+            }
             DBNProject[] projects = root.getProjects();
             if (ArrayUtils.isEmpty(projects)) {
                 throw new DBException("No projects in workspace");
