@@ -17,6 +17,10 @@
 package org.jkiss.dbeaver.model.sql.parser;
 
 import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentExtension3;
+import org.eclipse.jface.text.IDocumentPartitioner;
+import org.eclipse.jface.text.rules.FastPartitioner;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -36,6 +40,7 @@ import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -100,6 +105,18 @@ public class SQLScriptParserGenericsTest {
         for (int pos : positions) {
             element = SQLScriptParser.parseQuery(context, 0, query.length(), pos, false, false);
             Assert.assertEquals("begin transaction", element.getText());
+        }
+    }
+    
+    @Test
+    public void parseFromCursorPositionCommentAfterStatement() throws DBException {
+        String query = "select 1; -- xx";
+        SQLScriptElement element;
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        int[] positions = new int[]{4, 8, 9, 10, 11, 12, 13, 14};
+        for (int pos : positions) {
+            element = SQLScriptParser.extractQueryAtPos(context, pos);
+            Assert.assertEquals("select 1", element.getText());
         }
     }
     
@@ -282,7 +299,14 @@ public class SQLScriptParserGenericsTest {
         syntaxManager.init(dialect, dataSourceContainer.getPreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
         ruleManager.loadRules(dataSource, false);
-        return new SQLParserContext(dataSource, syntaxManager, ruleManager, new Document(query));
+        IDocument document = new Document(query);
+        IDocumentPartitioner partitioner = new FastPartitioner(
+            new SQLPartitionScanner(dataSource, dialect, ruleManager),
+            SQLParserPartitions.SQL_CONTENT_TYPES
+        );
+        partitioner.connect(document);
+        ((IDocumentExtension3) document).setDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING, partitioner);
+        return new SQLParserContext(dataSource, syntaxManager, ruleManager, document);
     }
 
     private SQLDialect setDialect(String name) throws DBException {
