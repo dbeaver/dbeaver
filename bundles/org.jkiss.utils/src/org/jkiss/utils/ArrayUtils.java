@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Common utils
@@ -171,6 +172,18 @@ public class ArrayUtils {
         } else {
             return Arrays.asList(array);
         }
+    }
+
+    /**
+     * Returns index of the first found element satisfying a given predicate in the provided array 
+     */
+    public static <T> int indexOf(@NotNull T[] array, @NotNull Predicate<T> condition) {
+        for (int i = 0; i < array.length; i++) {
+            if (condition.test(array[i])) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public static <T> int indexOf(T[] array, T element) {

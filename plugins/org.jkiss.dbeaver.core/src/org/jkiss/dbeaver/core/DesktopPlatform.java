@@ -236,6 +236,12 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         DesktopPlatform.disposed = true;
         System.gc();
         log.debug("Platform shutdown completed (" + (System.currentTimeMillis() - startTime) + "ms)");
+        // Just in case do System.eis after pause
+        new Thread(() -> {
+            RuntimeUtils.pause(10000);
+            System.out.println("App shutdown was halted. Force system shutdown!");
+            System.exit(-2);
+        }).start();
     }
 
     @Override

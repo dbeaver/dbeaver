@@ -81,7 +81,6 @@ public class PostgreConstants {
     public static final String PUBLIC_SCHEMA_NAME = "public";
 
     // Settings names from 'pg_options' view
-    public static final String OPTION_CLIENT_MIN_MESSAGES = "client_min_messages";
     public static final String OPTION_STANDARD_CONFORMING_STRINGS = "standard_conforming_strings";
 
     public static final String PG_OBJECT_CLASS = "org.postgresql.util.PGobject";

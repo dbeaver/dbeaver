@@ -176,7 +176,7 @@ public class SQLScriptParserGenericsTest {
         }
         Assert.assertEquals(List.of("1", "SYs_B_1", "MyVar8", "ABC", "#d2"), actualParamNames);
     }
-    
+
     @Test
     public void parseVariables() throws DBException {
         List<String> inputParamNames = List.of("aBc", "PrE#%&@T", "a@c=");
@@ -190,6 +190,36 @@ public class SQLScriptParserGenericsTest {
             actualParamNames.add(sqlQueryParameter.getName());
         }
         Assert.assertEquals(List.of("ABC", "PRE#%&@T", "A@C="), actualParamNames);
+    }
+
+    @Test
+    public void parseVariablesInStrings() throws DBException {
+        List<String> inputParamNames = List.of("aBc", "PrET", "ac");
+        StringJoiner joiner = new StringJoiner(", ", "select ", " from dual");
+        inputParamNames.stream().forEach(p -> joiner.add("'${" + p + "}'"));
+        String query = joiner.toString();
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        List<SQLQueryParameter> params = SQLScriptParser.parseParametersAndVariables(context, 0, query.length());
+        List<String> actualParamNames = new ArrayList<String>();
+        for (SQLQueryParameter sqlQueryParameter : params) {
+            actualParamNames.add(sqlQueryParameter.getName());
+        }
+        Assert.assertEquals(List.of("ABC", "PRET", "AC"), actualParamNames);
+    }
+
+    @Test
+    public void parseVariablesInComment() throws DBException {
+        List<String> inputParamNames = List.of("aBc", "PrET", "ac");
+        StringJoiner joiner = new StringJoiner(", ", "-- ", " ");
+        inputParamNames.stream().forEach(p -> joiner.add("${" + p + "}"));
+        String query = joiner.toString();
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        List<SQLQueryParameter> params = SQLScriptParser.parseParametersAndVariables(context, 0, query.length());
+        List<String> actualParamNames = new ArrayList<String>();
+        for (SQLQueryParameter sqlQueryParameter : params) {
+            actualParamNames.add(sqlQueryParameter.getName());
+        }
+        Assert.assertEquals(List.of("ABC", "PRET", "AC"), actualParamNames);
     }
     
     @Test
