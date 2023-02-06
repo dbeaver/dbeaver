@@ -630,7 +630,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 GridPos focusPos = spreadsheet.getFocusPos();
                 int rowNum = focusPos.row;
                 if (rowNum < 0) {
-                    return;
+                    if (!settings.isInsertMultipleRows()) {
+                        return;
+                    }
+                    rowNum = 0;
                 }
                 //boolean overNewRow = controller.getModel().getRow(rowNum).getState() == ResultSetRow.STATE_ADDED;
                 try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), controller.getDataContainer(), "Advanced paste")) {
@@ -686,6 +689,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         }
                     }
                 }
+                this.scrollToRow(IResultSetPresentation.RowPosition.CURRENT);
 
             } else {
                 Collection<GridPos> ssSelection = spreadsheet.getSelection();

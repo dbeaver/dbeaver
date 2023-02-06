@@ -40,12 +40,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.Pair;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -53,6 +51,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 public abstract class BaseProjectImpl implements DBPProject {
 
@@ -84,7 +84,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     private volatile DBPDataSourceRegistry dataSourceRegistry;
     private volatile TaskManagerImpl taskManager;
     private volatile Map<String, Object> properties;
-    private volatile Map<String, Map<String, Object>> resourceProperties;
+    protected volatile Map<String, Map<String, Object>> resourceProperties;
     private UUID projectID;
 
     protected final Object metadataSync = new Object();
@@ -324,7 +324,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     @Override
     public Object getResourceProperty(@NotNull String resourcePath, @NotNull String propName) {
         loadMetadata();
-        resourcePath = normalizeResourcePath(resourcePath);
+        resourcePath = CommonUtils.normalizeResourcePath(resourcePath);
         synchronized (metadataSync) {
             Map<String, Object> resProps = resourceProperties.get(resourcePath);
             if (resProps != null) {
@@ -338,7 +338,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     @Override
     public Map<String, Object> getResourceProperties(@NotNull String resourcePath) {
         loadMetadata();
-        resourcePath = normalizeResourcePath(resourcePath);
+        resourcePath = CommonUtils.normalizeResourcePath(resourcePath);
         synchronized (metadataSync) {
             return resourceProperties.get(resourcePath);
         }
@@ -347,7 +347,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     @Override
     public void setResourceProperty(@NotNull String resourcePath, @NotNull String propName, @Nullable Object propValue) {
         loadMetadata();
-        resourcePath = normalizeResourcePath(resourcePath);
+        resourcePath = CommonUtils.normalizeResourcePath(resourcePath);
         synchronized (metadataSync) {
             Map<String, Object> resProps = resourceProperties.get(resourcePath);
             if (resProps == null) {
@@ -381,31 +381,15 @@ public abstract class BaseProjectImpl implements DBPProject {
     @Override
     public void moveResourceProperties(@NotNull String oldResourcePath, @NotNull String newResourcePath) {
         loadMetadata();
-        oldResourcePath = normalizeResourcePath(oldResourcePath);
-        newResourcePath = normalizeResourcePath(newResourcePath);
+        oldResourcePath = CommonUtils.normalizeResourcePath(oldResourcePath);
+        newResourcePath = CommonUtils.normalizeResourcePath(newResourcePath);
         synchronized (metadataSync) {
             Map<String, Object> resProps = resourceProperties.remove(oldResourcePath);
             if (resProps != null) {
                 resourceProperties.put(newResourcePath, resProps);
             }
         }
-        flushMetadata(false); // wait for the file to be written
-    }
-
-    @Override
-    public final void moveResourcePropertiesBatch(@NotNull Collection<Pair<String, String>> oldToNewPaths) {
-        loadMetadata();
-        synchronized (metadataSync) {
-            for (var pathsPair : oldToNewPaths) {
-                final var oldResourcePath = normalizeResourcePath(pathsPair.getFirst());
-                final var newResourcePath = normalizeResourcePath(pathsPair.getSecond());
-                final var resProps = resourceProperties.remove(oldResourcePath);
-                if (resProps != null) {
-                    resourceProperties.put(newResourcePath, resProps);
-                }
-            }
-        }
-        flushMetadata(false); // wait for the file to be written
+        flushMetadata();
     }
 
     @Override
@@ -415,7 +399,7 @@ public abstract class BaseProjectImpl implements DBPProject {
 
     public boolean resetResourceProperties(@NotNull String resourcePath) {
         loadMetadata();
-        resourcePath = normalizeResourcePath(resourcePath);
+        resourcePath = CommonUtils.normalizeResourcePath(resourcePath);
         boolean hadProperties;
         synchronized (metadataSync) {
             hadProperties = resourceProperties.remove(resourcePath) != null;
@@ -424,15 +408,6 @@ public abstract class BaseProjectImpl implements DBPProject {
             flushMetadata();
         }
         return hadProperties;
-    }
-
-    @NotNull
-    private static String normalizeResourcePath(@NotNull String resourcePath) {
-        while (resourcePath.startsWith("/")) {
-            resourcePath = resourcePath.substring(1);
-        }
-        resourcePath = resourcePath.replace('\\', '/');
-        return resourcePath;
     }
 
     @Override
@@ -449,7 +424,7 @@ public abstract class BaseProjectImpl implements DBPProject {
         boolean cacheChanged = false;
         synchronized (metadataSync) {
             if (resourceProperties != null) {
-                String resPath = normalizeResourcePath(path.toString());
+                String resPath = CommonUtils.normalizeResourcePath(path.toString());
                 cacheChanged = (resourceProperties.remove(resPath) != null);
             }
         }
@@ -462,10 +437,10 @@ public abstract class BaseProjectImpl implements DBPProject {
         boolean cacheChanged = false;
         synchronized (metadataSync) {
             if (resourceProperties != null) {
-                String oldResPath = normalizeResourcePath(oldPath.toString());
+                String oldResPath = CommonUtils.normalizeResourcePath(oldPath.toString());
                 Map<String, Object> props = resourceProperties.remove(oldResPath);
                 if (props != null) {
-                    String newResPath = normalizeResourcePath(newPath.toString());
+                    String newResPath = CommonUtils.normalizeResourcePath(newPath.toString());
                     resourceProperties.put(newResPath, props);
                     cacheChanged = true;
                 }
@@ -506,7 +481,7 @@ public abstract class BaseProjectImpl implements DBPProject {
         this.format = format;
     }
 
-    private void loadMetadata() {
+    protected void loadMetadata() {
         if (isInMemory()) {
             return;
         }
@@ -565,7 +540,7 @@ public abstract class BaseProjectImpl implements DBPProject {
                         resourceProperties = mdCache;
                     }
                 } catch (Throwable e) {
-                    log.error("Error reading project '" + getName() + "' metadata from " + mdFile.toAbsolutePath(), e);
+                    log.error("Error reading project '" + getName() + "' metadata from "  + mdFile.toAbsolutePath(), e);
                 }
             }
             if (resourceProperties == null) {
@@ -575,10 +550,6 @@ public abstract class BaseProjectImpl implements DBPProject {
     }
 
     protected void flushMetadata() {
-        flushMetadata(true);
-    }
-
-    protected void flushMetadata(boolean async) {
         if (inMemory) {
             return;
         }
@@ -586,10 +557,11 @@ public abstract class BaseProjectImpl implements DBPProject {
             if (metadataSyncJob == null) {
                 metadataSyncJob = new ProjectSyncJob();
             }
-            if (async) {
-                metadataSyncJob.schedule(100);
-            } else {
+            // if this is a web app, we want to wait the sync job
+            if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
                 metadataSyncJob.run(new VoidProgressMonitor());
+            } else {
+                metadataSyncJob.schedule(100);
             }
         }
     }

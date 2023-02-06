@@ -223,8 +223,6 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             }
         }
 
-        folderComposite.switchFolder(curFolderId);
-
         folderComposite.addFolderListener(folderId1 -> {
             if (CommonUtils.equalObjects(curFolderId, folderId1)) {
                 return;
@@ -265,6 +263,9 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 }
             }
         });
+        
+        folderComposite.switchFolder(curFolderId);
+        
         return foldersPlaceholder;
     }
 
@@ -431,6 +432,10 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     public ITabbedFolder getActiveFolder()
     {
         return getActiveFolder(true);
+    }
+    
+    public String getActiveFolderId() {
+        return this.curFolderId;
     }
 
     private ITabbedFolder getActiveFolder(boolean activate)

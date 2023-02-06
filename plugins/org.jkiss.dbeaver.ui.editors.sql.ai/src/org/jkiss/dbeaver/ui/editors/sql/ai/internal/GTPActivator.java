@@ -14,19 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.utils;
+package org.jkiss.dbeaver.ui.editors.sql.ai.internal;
 
-import org.jkiss.code.NotNull;
+import org.eclipse.core.runtime.Plugin;
+import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
+import org.osgi.framework.BundleContext;
 
-import java.util.regex.Pattern;
+public class GTPActivator extends Plugin {
 
-public class StringUtils {
-
-    private static final Pattern REVERSE_BACKSLASH_PREFIX_REGEX = Pattern.compile("^/+");
-
-    @NotNull
-    public static String normalizeResourcePath(@NotNull String path) {
-        return REVERSE_BACKSLASH_PREFIX_REGEX.matcher(path).replaceFirst("")
-                .replace('\\', '/');
+    @Override
+    public void start(BundleContext context) throws Exception {
+        super.start(context);
+        // Trigger pref defaults
+        new BundlePreferenceStore(getBundle());
     }
+
+    @Override
+    public void stop(BundleContext context) throws Exception {
+        super.stop(context);
+    }
+
 }

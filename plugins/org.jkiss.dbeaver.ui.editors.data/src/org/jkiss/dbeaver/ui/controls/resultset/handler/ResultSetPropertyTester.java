@@ -84,6 +84,7 @@ public class ResultSetPropertyTester extends PropertyTester
             case PROP_CAN_COPY:
                 return !actionsDisabled && rsv.getModel().hasData();
             case PROP_CAN_PASTE:
+                return !actionsDisabled && rsv.supportsEdit();
             case PROP_CAN_CUT: {
                 if (actionsDisabled || !rsv.supportsEdit()) {
                     return false;

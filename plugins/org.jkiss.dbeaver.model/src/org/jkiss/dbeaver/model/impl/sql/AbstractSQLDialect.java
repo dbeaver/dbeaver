@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -25,6 +26,8 @@ import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexNative;
 import org.jkiss.dbeaver.model.sql.dialects.SQLDialectDescriptor;
 import org.jkiss.dbeaver.model.sql.dialects.SQLDialectRegistry;
+
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
@@ -32,6 +35,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -816,37 +820,60 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
-    public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters) {
+    public void generateStoredProcedureCall(
+        StringBuilder sql, 
+        DBSProcedure proc, 
+        Collection<? extends DBSProcedureParameter> parameters, 
+        boolean castParams
+    ) {
         List<DBSProcedureParameter> inParameters = new ArrayList<>();
         if (parameters != null) {
             inParameters.addAll(parameters);
         }
         //getMaxParameterLength(parameters, inParameters);
+        DBPPreferenceStore prefStore;
+        DBPDataSource dataSource = proc.getDataSource();
+        if (dataSource != null) {
+            prefStore = dataSource.getContainer().getPreferenceStore();
+        } else {
+            prefStore = DBWorkbench.getPlatform().getPreferenceStore();
+        }
+        String namedParameterPrefix = prefStore.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX);        
         boolean useBrackets = useBracketsForExec(proc);
         if (useBrackets) sql.append("{ ");
         sql.append(getStoredProcedureCallInitialClause(proc)).append("(");
         if (!inParameters.isEmpty()) {
             boolean first = true;
             for (DBSProcedureParameter parameter : inParameters) {
+                String typeName = parameter.getParameterType().getFullTypeName();
                 switch (parameter.getParameterKind()) {
                     case IN:
                         if (!first) {
-                            sql.append(",");
+                            sql.append(", ");
                         }
-                        sql.append(":").append(CommonUtils.escapeIdentifier(parameter.getName()));
+                        if (castParams) {
+                            sql.append("cast(").append(namedParameterPrefix).append(CommonUtils.escapeIdentifier(parameter.getName()))
+                                .append(" as ").append(typeName).append(")");
+                        } else {
+                            sql.append(namedParameterPrefix).append(CommonUtils.escapeIdentifier(parameter.getName()));
+                        }
                         break;
                     case RETURN:
                         continue;
                     default:
                         if (isStoredProcedureCallIncludesOutParameters()) {
                             if (!first) {
-                                sql.append(",");
+                                sql.append(", ");
                             }
-                            sql.append("?");
+                            if (castParams) {
+                                sql.append("cast(?")
+                                    .append(" as ").append(typeName).append(")");
+                            } else {
+                                sql.append("?");
+                            }
                         }
                         break;
-                }
-                String typeName = parameter.getParameterType().getFullTypeName();
+                }                
 //                sql.append("\t-- put the ").append(parameter.getName())
 //                    .append(" parameter value instead of '").append(parameter.getName()).append("' (").append(typeName).append(")");
                 first = false;

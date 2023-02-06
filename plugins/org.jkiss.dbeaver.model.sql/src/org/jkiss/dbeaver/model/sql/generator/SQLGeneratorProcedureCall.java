@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql.generator;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -27,6 +28,11 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Collection;
 
 public class SQLGeneratorProcedureCall extends SQLGeneratorProcedure {
+    
+    @Override
+    public boolean supportCastParams() {
+        return true;
+    }
 
     @Override
     protected void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSProcedure proc) throws DBException {
@@ -34,7 +40,9 @@ public class SQLGeneratorProcedureCall extends SQLGeneratorProcedure {
         DBPDataSource dataSource = proc.getDataSource();
         {
             SQLDialect sqlDialect = dataSource.getSQLDialect();
-            sqlDialect.generateStoredProcedureCall(sql, proc, CommonUtils.safeCollection(parameters));
+            boolean castParams = isShowCastParams();
+            sqlDialect.generateStoredProcedureCall(sql, proc, CommonUtils.safeCollection(parameters), castParams);
         }
     }
+    
 }
