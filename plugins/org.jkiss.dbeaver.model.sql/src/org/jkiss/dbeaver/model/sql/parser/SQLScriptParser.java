@@ -420,6 +420,29 @@ public class SQLScriptParser {
         final int docLength = document.getLength();
         IDocumentPartitioner partitioner = document instanceof IDocumentExtension3 ? ((IDocumentExtension3)document).getDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING) : null;
         if (partitioner != null) {
+            try {
+                int currLineIndex = document.getLineOfOffset(currentPos);
+                IRegion currLine = document.getLineInformation(currLineIndex);
+                int currLineEnd = currLine.getOffset() + currLine.getLength(); 
+                boolean inTailComment = SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(partitioner.getContentType(currentPos)); 
+                if (!inTailComment && currentPos >= currLineEnd) {
+                    IRegion nextLine = currLineIndex >= document.getNumberOfLines()
+                        ? null
+                        : document.getLineInformation(currLineIndex + 1);
+                    if (currentPos < nextLine.getOffset()) { 
+                        inTailComment = SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(partitioner.getContentType(currLineEnd - 1));
+                    }
+                }
+                if (inTailComment) {
+                    int letterBeforeComment = skipCommentsBackTillLetter(document, partitioner, currentPos, currLine.getOffset());
+                    if (letterBeforeComment >= 0) {
+                        // if we are in the single-line comment and there are letters before the comment, then extract  
+                        currentPos = letterBeforeComment;
+                    }
+                }
+            } catch (BadLocationException ex) { 
+                return null; 
+            }
             // Move to default partition. We don't want to be in the middle of multi-line comment or string
             while (currentPos < docLength && isMultiCommentPartition(partitioner, currentPos)) {
                 currentPos++;
@@ -530,8 +553,7 @@ public class SQLScriptParser {
         } catch (BadLocationException e) {
             log.warn(e);
         }
-        return parseQuery(context,
-            startPos, document.getLength(), currentPos, false, false);
+        return parseQuery(context, startPos, document.getLength(), currentPos, false, false);
     }
 
     private static boolean isDefaultPartition(IDocumentPartitioner partitioner, int currentPos) {
@@ -541,7 +563,7 @@ public class SQLScriptParser {
     private static boolean isMultiCommentPartition(IDocumentPartitioner partitioner, int currentPos) {
         return partitioner != null && SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(partitioner.getContentType(currentPos));
     }
-
+    
     public static SQLScriptElement extractNextQuery(SQLParserContext context, int offset, boolean next) {
         SQLScriptElement curElement = extractQueryAtPos(context, offset);
         if (curElement == null) {
@@ -549,6 +571,9 @@ public class SQLScriptParser {
         }
 
         IDocument document = context.getDocument();
+        IDocumentPartitioner partitioner = document instanceof IDocumentExtension3
+            ? ((IDocumentExtension3)document).getDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING)
+            : null;
         try {
             int docLength = document.getLength();
             int curPos;
@@ -556,6 +581,16 @@ public class SQLScriptParser {
                 final String[] statementDelimiters = context.getSyntaxManager().getStatementDelimiters();
                 curPos = curElement.getOffset() + curElement.getLength();
                 while (curPos < docLength) {
+                    if (partitioner != null) { 
+                        ITypedRegion region = partitioner.getPartition(curPos);
+                        switch (region.getType()) {
+                            case SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT:
+                            case SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT: {
+                                curPos = region.getOffset() + region.getLength();
+                                continue;
+                            }   
+                        }
+                    }
                     char c = document.getChar(curPos);
                     if (!Character.isWhitespace(c)) {
                         boolean isDelimiter = false;
@@ -572,13 +607,7 @@ public class SQLScriptParser {
                 }
             } else {
                 curPos = curElement.getOffset() - 1;
-                while (curPos >= 0) {
-                    char c = document.getChar(curPos);
-                    if (Character.isLetter(c)) {
-                        break;
-                    }
-                    curPos--;
-                }
+                curPos = skipCommentsBackTillLetter(document, partitioner, curPos, 0);
             }
             if (curPos <= 0 || curPos >= docLength) {
                 return null;
@@ -589,7 +618,34 @@ public class SQLScriptParser {
             return null;
         }
     }
-
+    
+    private static int skipCommentsBackTillLetter(
+        @NotNull IDocument document,
+        @Nullable IDocumentPartitioner partitioner,
+        int pos,
+        int limit
+    ) throws BadLocationException {
+        int curPos = pos;
+        while (curPos >= limit) {
+            if (partitioner != null) { 
+                ITypedRegion region = partitioner.getPartition(curPos);
+                switch (region.getType()) {
+                    case SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT:
+                    case SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT: {
+                        curPos = region.getOffset() - 1;
+                        continue;
+                    }   
+                }
+            }
+            char c = document.getChar(curPos);
+            if (Character.isLetter(c)) {
+                return curPos;
+            }
+            curPos--;
+        }
+        return -1;
+    }
+    
     @Nullable
     public static SQLScriptElement extractActiveQuery(SQLParserContext context, int selOffset, int selLength) {
         return extractActiveQuery(context, new IRegion[]{new Region(selOffset, selLength)});
