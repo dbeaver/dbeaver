@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.navigator.meta.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
-import org.jkiss.dbeaver.model.impl.dialects.SQLDialectRegistry;
+import org.jkiss.dbeaver.model.sql.dialects.SQLDialectRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.MissingDataSourceProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
