@@ -717,6 +717,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     } else {
                         query.append(identifier).append(" LIKE ?");
                     }
+                } else if (keyColumn.getDataKind() == DBPDataKind.NUMERIC) {
+                    query.append(identifier).append(" >= ?");
                 } else {
                     query.append(identifier).append(" = ?");
                 }
