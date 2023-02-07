@@ -109,7 +109,7 @@ public class SQLScriptParserGenericsTest {
     }
     
     @Test
-    public void parseFromCursorPositionCommentAfterStatement() throws DBException {
+    public void parseFromCursorPositionSingleLineCommentAfterStatement() throws DBException {
         String query = "select 1; -- xx";
         SQLScriptElement element;
         SQLParserContext context = createParserContext(setDialect("snowflake"), query);
@@ -117,6 +117,42 @@ public class SQLScriptParserGenericsTest {
         for (int pos : positions) {
             element = SQLScriptParser.extractQueryAtPos(context, pos);
             Assert.assertEquals("select 1", element.getText());
+        }
+    }
+    
+    @Test
+    public void parseFromCursorPositionSingleLineCommentBeforeStatement() throws DBException {
+        String query = "-- xx\nselect 1;";
+        SQLScriptElement element;
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        int[] positions = new int[]{0, 1, 4, 12};
+        for (int pos : positions) {
+            element = SQLScriptParser.extractQueryAtPos(context, pos);
+            Assert.assertEquals("-- xx\nselect 1", element.getText());
+        }
+    }
+    
+    @Test
+    public void parseFromCursorPositionMultiLineCommentBeforeStatement() throws DBException {
+        String query = "/* xx */\nselect 1;";
+        SQLScriptElement element;
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        int[] positions = new int[]{0, 1, 4, 12};
+        for (int pos : positions) {
+            element = SQLScriptParser.extractQueryAtPos(context, pos);
+            Assert.assertEquals("/* xx */\nselect 1", element.getText());
+        }
+    }
+    
+    @Test
+    public void parseFromCursorPositionMultiLineCommentAfterStatement() throws DBException {
+        String query = "select 1;\n/* xx */";
+        SQLScriptElement element;
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        int[] positions = new int[]{12, 14, 17};
+        for (int pos : positions) {
+            element = SQLScriptParser.extractQueryAtPos(context, pos);
+            Assert.assertEquals("/* xx */", element.getText());
         }
     }
     

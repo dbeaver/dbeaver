@@ -572,7 +572,7 @@ public class SQLScriptParser {
 
         IDocument document = context.getDocument();
         IDocumentPartitioner partitioner = document instanceof IDocumentExtension3
-            ? ((IDocumentExtension3)document).getDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING)
+            ? ((IDocumentExtension3) document).getDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING)
             : null;
         try {
             int docLength = document.getLength();
