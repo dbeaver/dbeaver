@@ -3332,6 +3332,8 @@ public class ResultSetViewer extends Viewer
     {
         if (attribute != null && supportsDataFilter()) {
             {
+                filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_MENU_DISTINCT));
+
                 filtersMenu.add(new Separator());
 
                 //filtersMenu.add(new FilterByListAction(operator, type, attribute));
@@ -3371,8 +3373,6 @@ public class ResultSetViewer extends Viewer
                     }
                 }
 */
-
-                filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_MENU_DISTINCT));
 
                 // Operators with no inputs
                 for (DBCLogicalOperator operator : operators) {
