@@ -28,10 +28,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.ai.AICompletionConstants;
+import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
 import org.jkiss.dbeaver.model.ai.translator.DAIHistoryItem;
 import org.jkiss.dbeaver.model.ai.translator.DAIHistoryManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -40,6 +43,7 @@ import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.ui.editors.sql.ai.gpt3.GPTPreferencePage;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
 import java.util.List;
 
 public class AISuggestionPopup extends AbstractPopupPanel {
@@ -56,6 +60,9 @@ public class AISuggestionPopup extends AbstractPopupPanel {
 
     private Text inputField;
     private String inputText;
+
+    private DAICompletionScope currentScope = DAICompletionScope.CURRENT_SCHEMA;
+    private Text scopeText;
 
     public AISuggestionPopup(
         @NotNull Shell parentShell,
@@ -87,12 +94,33 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         Composite scopePanel = UIUtils.createComposite(placeholder, 4);
         scopePanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         UIUtils.createControlLabel(scopePanel, "Scope");
+
+        DBPPreferenceStore dsPrefs = dataSource.getDataSourceContainer().getPreferenceStore();
+        currentScope = CommonUtils.valueOf(
+            DAICompletionScope.class,
+            dsPrefs.getString(AICompletionConstants.AI_META_SCOPE),
+            DAICompletionScope.CURRENT_SCHEMA);
+
         Combo scopeCombo = new Combo(scopePanel, SWT.DROP_DOWN | SWT.READ_ONLY);
-        scopeCombo.add("Current schema");
-        scopeCombo.add("All database tables");
-        scopeCombo.add("Custom");
-        scopeCombo.select(0);
-        UIUtils.createEmptyLabel(scopePanel, 1, 1).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        for (DAICompletionScope scope : DAICompletionScope.values()) {
+            scopeCombo.add(scope.getTitle());
+            if (currentScope == scope) {
+                scopeCombo.select(scopeCombo.getItemCount() - 1);
+            }
+        }
+        scopeCombo.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                currentScope = CommonUtils.fromOrdinal(DAICompletionScope.class, scopeCombo.getSelectionIndex());
+                showScopeSettings(currentScope);
+            }
+        });
+
+        scopeText = new Text(scopePanel, SWT.READ_ONLY | SWT.BORDER);
+        scopeText.setEditable(false);
+        //scopeText.setEnabled(false);
+        scopeText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         {
             ToolBar tb = new ToolBar(scopePanel, SWT.FLAT);
             UIUtils.createToolItem(tb, "Configure", UIIcon.CONFIGURATION,
@@ -129,7 +157,7 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         ((GridData)applyButton.getLayoutData()).grabExcessHorizontalSpace = false;
         ((GridData)applyButton.getLayoutData()).horizontalAlignment = GridData.END;
 
-        closeOnFocusLost(inputField, scopeCombo, historyCombo, applyButton);
+        closeOnFocusLost(inputField, scopeCombo, scopeText, historyCombo, applyButton);
 
         historyCombo.setEnabled(false);
         AbstractJob completionJob = new AbstractJob("Read completion history") {
@@ -170,7 +198,37 @@ public class AISuggestionPopup extends AbstractPopupPanel {
             }
         });
 
+        showScopeSettings(currentScope);
+
         return placeholder;
+    }
+
+    private void showScopeSettings(DAICompletionScope scope) {
+        String text;
+        switch (scope) {
+            case CURRENT_SCHEMA:
+                text = dataSource.getCurrentSchema();
+                if (CommonUtils.isEmpty(text)) {
+                    text = dataSource.getCurrentCatalog();
+                }
+                if (CommonUtils.isEmpty(text)) {
+                    text = dataSource.getDataSourceContainer().getName();
+                }
+                break;
+            case CURRENT_DATABASE:
+                text = dataSource.getCurrentCatalog();
+                if (CommonUtils.isEmpty(text)) {
+                    text = dataSource.getDataSourceContainer().getName();
+                }
+                break;
+            case CURRENT_DATASOURCE:
+                text = dataSource.getDataSourceContainer().getName();
+                break;
+            default:
+                text = "...";
+                break;
+        }
+        scopeText.setText(CommonUtils.toString(text, "N/A"));
     }
 
     protected void createButtonsForButtonBar(Composite parent) {
@@ -189,6 +247,16 @@ public class AISuggestionPopup extends AbstractPopupPanel {
     @Override
     protected void okPressed() {
         inputText = inputField.getText().trim();
+
+        DBPPreferenceStore dsPrefs = dataSource.getDataSourceContainer().getPreferenceStore();
+        dsPrefs.setValue(
+            AICompletionConstants.AI_META_SCOPE,
+            currentScope.name());
+        try {
+            dsPrefs.save();
+        } catch (IOException ex) {
+            log.error(ex);
+        }
 
         super.okPressed();
     }

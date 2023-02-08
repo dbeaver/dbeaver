@@ -32,12 +32,12 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.AICompletionConstants;
 import org.jkiss.dbeaver.model.ai.gpt3.GPTClient;
-import org.jkiss.dbeaver.model.ai.gpt3.GPTPreferences;
 import org.jkiss.dbeaver.model.ai.translator.DAIHistoryManager;
 import org.jkiss.dbeaver.model.ai.translator.SimpleFilterManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -81,18 +81,18 @@ public class AITranslateHandler extends AbstractHandler {
             return null;
         }
 
-
         // Show info transfer warning
-        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(GPTPreferences.GPT_TRANSFER_CONFIRMED)) {
+        DBPPreferenceStore dsPreferenceStore = dataSourceContainer.getPreferenceStore();
+        if (!dsPreferenceStore.getBoolean(AICompletionConstants.AI_META_TRANSFER_CONFIRMED)) {
             if (UIUtils.confirmAction(editor.getSite().getShell(), "Transfer information to OpenAI",
                 "In order to perform AI smart completion DBeaver needs to transfer\n" +
                     "your database metadata information (table and column names) to OpenAI API.\n" +
-                    "Do you confirm?",
+                    "Do you confirm it for connection '" + dataSourceContainer.getName() + "'?",
                 DBIcon.AI))
             {
-                DBWorkbench.getPlatform().getPreferenceStore().setValue(GPTPreferences.GPT_TRANSFER_CONFIRMED, true);
+                dsPreferenceStore.setValue(AICompletionConstants.AI_META_TRANSFER_CONFIRMED, true);
                 try {
-                    DBWorkbench.getPlatform().getPreferenceStore().save();
+                    dsPreferenceStore.save();
                 } catch (IOException e) {
                     DBWorkbench.getPlatformUI().showError("Preferences save error", null, e);
                 }
@@ -118,7 +118,7 @@ public class AITranslateHandler extends AbstractHandler {
 
         AISuggestionPopup gptSuggestionPopup = new AISuggestionPopup(
             HandlerUtil.getActiveShell(event),
-            "GPT-3 smart completion",
+            "ChatGPT smart completion",
             historyManager,
             lDataSource,
             executionContext

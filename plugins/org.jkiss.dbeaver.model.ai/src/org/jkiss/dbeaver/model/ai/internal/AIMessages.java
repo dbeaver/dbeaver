@@ -14,16 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.gpt3;
+package org.jkiss.dbeaver.model.ai.internal;
 
-/**
- * GPT preference constants
- */
-public class GPTPreferences {
+import org.eclipse.osgi.util.NLS;
 
-    public static final String GPT_API_TOKEN = "gpt.token";
-    public static final String GPT_MODEL = "gpt.model";
-    public static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
-    public static final String GPT_LOG_QUERY = "gpt.log.query";
+public class AIMessages extends NLS {
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.model.ai.internal.AIMessages"; //$NON-NLS-1$
+
+    public static String ai_scope_current_schema;
+    public static String ai_scope_current_database;
+    public static String ai_scope_current_datasource;
+    public static String ai_scope_custom;
+
+    static {
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, AIMessages.class);
+    }
+
+    private AIMessages() {
+    }
 }
-

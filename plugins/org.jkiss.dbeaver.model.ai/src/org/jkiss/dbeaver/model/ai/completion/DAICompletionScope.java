@@ -14,16 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.gpt3;
+
+package org.jkiss.dbeaver.model.ai.completion;
+
+import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 
 /**
- * GPT preference constants
+ * Completion scope
  */
-public class GPTPreferences {
+public enum DAICompletionScope {
+    CURRENT_SCHEMA(AIMessages.ai_scope_current_schema),
+    CURRENT_DATABASE(AIMessages.ai_scope_current_database),
+    CURRENT_DATASOURCE(AIMessages.ai_scope_current_datasource),
+    CUSTOM(AIMessages.ai_scope_custom);
 
-    public static final String GPT_API_TOKEN = "gpt.token";
-    public static final String GPT_MODEL = "gpt.model";
-    public static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
-    public static final String GPT_LOG_QUERY = "gpt.log.query";
+    private final String title;
+
+    DAICompletionScope(String title) {
+        this.title = title;
+    }
+
+    public String getTitle() {
+        return title;
+    }
 }
-
