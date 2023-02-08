@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
@@ -197,22 +198,26 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
     private EntityDiagram loadContentFromFile(DBRProgressMonitor progressMonitor)
         throws DBException
     {
-        final IFile localFile = EditorUtils.getFileFromInput(getEditorInput());
-        if (localFile == null) {
-            throw new DBException("Can not get file from editor input " + getEditorInput());
-        }
+        IStorage storage = EditorUtils.getStorageFromInput(getEditorInput());
 
         final DiagramPart diagramPart = getDiagramPart();
-        EntityDiagram entityDiagram = new EntityDiagram(null, localFile.getName(), getContentProvider(), getDecorator());
+
+        EntityDiagram entityDiagram = new EntityDiagram(
+            null,
+            storage == null ? CommonUtils.toString(getEditorInput()) : storage.getName(),
+            getContentProvider(),
+            getDecorator());
         entityDiagram.clear();
         entityDiagram.setLayoutManualAllowed(true);
         entityDiagram.setLayoutManualDesired(true);
         diagramPart.setModel(entityDiagram);
 
-        try (final InputStreamReader isr = new InputStreamReader(localFile.getContents(), GeneralUtils.UTF8_CHARSET)) {
-            DiagramLoader.load(progressMonitor, getDiagramProject(), diagramPart, isr);
-        } catch (Exception e) {
-            throw new DBException("Error loading ER diagram from '" + localFile.getName() + "'", e);
+        if (storage != null) {
+            try (final InputStreamReader isr = new InputStreamReader(storage.getContents(), GeneralUtils.UTF8_CHARSET)) {
+                DiagramLoader.load(progressMonitor, getDiagramProject(), diagramPart, isr);
+            } catch (Exception e) {
+                throw new DBException("Error loading ER diagram from '" + storage.getName() + "'", e);
+            }
         }
 
         return entityDiagram;
