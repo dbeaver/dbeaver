@@ -425,6 +425,8 @@ public final class DBStructUtils {
             }
             if (dataType != null) {
                 dataKind = dataType.getDataKind();
+                // Datatype caches ignore case, but we probably should use it with the original case
+                typeName = dataType.getTypeName();
             }
         }
 
