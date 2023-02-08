@@ -30,6 +30,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.ai.AICompletionConstants;
 import org.jkiss.dbeaver.model.ai.gpt3.GPTClient;
 import org.jkiss.dbeaver.model.ai.gpt3.GPTPreferences;
 import org.jkiss.dbeaver.model.ai.translator.DAIHistoryManager;
@@ -56,7 +57,7 @@ public class AITranslateHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(GPTPreferences.AI_DISABLED)) {
+        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_DISABLED)) {
             return null;
         }
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
@@ -207,7 +208,7 @@ public class AITranslateHandler extends AbstractHandler {
             }
         }
 
-        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(GPTPreferences.GPT_EXECUTE_IMMEDIATELY)) {
+        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY)) {
             editor.processSQL(false, false);
         }
     }

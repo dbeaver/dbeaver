@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai.gpt3;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -27,12 +28,15 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
 public class GPTRequestFormatter {
+
+    private static final Log log = Log.getLog(GPTRequestFormatter.class);
+
+    private static final int MAX_PROMPT_LENGTH = 7500; // 8000 -
 
     /**
      * Add completion metadata to request
@@ -48,27 +52,28 @@ public class GPTRequestFormatter {
         }
 
         StringBuilder additionalMetadata = new StringBuilder();
-        //additionalMetadata.append("Use SQL\n");
         additionalMetadata.append("### ")
             .append(context.getDataSource().getSQLDialect().getDialectName())
             .append(" SQL tables, with their properties:\n#\n");
-        generateObjectDescription(monitor, additionalMetadata, context);
+        String tail = "";
         if (executionContext != null && executionContext.getContextDefaults() != null) {
             DBSSchema defaultSchema = executionContext.getContextDefaults().getDefaultSchema();
             if (defaultSchema != null) {
-                additionalMetadata.append("#\n# Current schema is ").append(defaultSchema.getName()).append("\n");
+                tail += "#\n# Current schema is " + defaultSchema.getName() + "\n";
             }
         }
-        additionalMetadata.append("#\n###").append(request.trim()).append("\nSELECT");
+        int maxRequestLength = MAX_PROMPT_LENGTH - additionalMetadata.length() - tail.length() - 20;
+
+        additionalMetadata.append(generateObjectDescription(monitor, context, maxRequestLength));
+        additionalMetadata.append(tail).append("#\n###").append(request.trim()).append("\nSELECT");
         return additionalMetadata.toString();
     }
 
-
-    private static void generateObjectDescription(
+    private static String generateObjectDescription(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull StringBuilder request,
-        @NotNull DBSObject object
-    ) throws DBException {
+        @NotNull DBSObject object,
+        int maxRequestLength) throws DBException {
+        StringBuilder request = new StringBuilder();
         if (object instanceof DBSEntity) {
             request.append("# ").append(DBUtils.getQuotedIdentifier(object));
             List<? extends DBSEntityAttribute> attributes = ((DBSEntity) object).getAttributes(monitor);
@@ -94,18 +99,20 @@ public class GPTRequestFormatter {
                 monitor,
                 DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES);
             int totalChildren = 0;
-            int maxChildren = DBWorkbench.getPlatform().getPreferenceStore().getInt(GPTPreferences.GPT_MAX_TABLES);
             for (DBSObject child : ((DBSObjectContainer) object).getChildren(monitor)) {
                 if (DBUtils.isSystemObject(child) || DBUtils.isHiddenObject(child) || child instanceof DBSTablePartition) {
                     continue;
                 }
-                totalChildren++;
-                generateObjectDescription(monitor, request, child);
-                if (maxChildren > 0 && totalChildren > maxChildren) {
+                String childText = generateObjectDescription(monitor, child, maxRequestLength);
+                if (request.length() + childText.length() > maxRequestLength) {
+                    log.debug("Trim GPT metadata prompt  at table '" + child.getName() + "' - too long request");
                     break;
                 }
+                request.append(childText);
+                totalChildren++;
             }
         }
+        return request.toString();
     }
 
     private GPTRequestFormatter() {

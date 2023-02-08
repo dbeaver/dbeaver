@@ -25,6 +25,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.ai.AICompletionConstants;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -48,6 +49,7 @@ public class GPTClient {
     private static final int MAX_REQUEST_ATTEMPTS = 2;
 
     private static final Map<String, OpenAiService> clientInstances = new HashMap<>();
+    private static final int GPT_MODEL_MAX_TOKENS = 2048;
 
     public static boolean isValidConfiguration() {
         return !CommonUtils.isEmpty(acquireToken());
@@ -157,11 +159,17 @@ public class GPTClient {
     }
 
     private static CompletionRequest createCompletionRequest(@NotNull String request) {
-        int maxTokens = getPreferenceStore().getInt(GPTPreferences.GPT_MODEL_MAX_TOKENS);
+        int maxTokens = GPT_MODEL_MAX_TOKENS;
         Double temperature = getPreferenceStore().getDouble(GPTPreferences.GPT_MODEL_TEMPERATURE);
         String model = getPreferenceStore().getString(GPTPreferences.GPT_MODEL);
-        return CompletionRequest.builder()
-            .prompt(request)
+        CompletionRequest.CompletionRequestBuilder builder = CompletionRequest.builder().prompt(request);
+
+        int maxChoices = getPreferenceStore().getInt(AICompletionConstants.AI_COMPLETION_MAX_CHOICES);
+        if (maxChoices > 1) {
+            builder.n(maxChoices);
+        }
+
+        return builder
             .temperature(temperature)
             .maxTokens(maxTokens)
             .frequencyPenalty(0.0)

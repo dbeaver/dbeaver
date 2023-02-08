@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.gpt3;
+package org.jkiss.dbeaver.model.ai;
 
 /**
- * GPT preference constants
+ * AI completion constants
  */
-public class GPTPreferences {
+public class AICompletionConstants {
 
-    public static final String GPT_API_TOKEN = "gpt.token";
-    public static final String GPT_MODEL = "gpt.model";
-    public static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
-    public static final String GPT_LOG_QUERY = "gpt.log.query";
-    public static final String GPT_TRANSFER_CONFIRMED = "gpt.meta.transfer.confirmed";
+    public static final String AI_DISABLED = "ai.completion.disabled";
+    public static final String AI_COMPLETION_EXECUTE_IMMEDIATELY = "ai.completion.executeImmediately";
+    public static final String AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT = "ai.completion.includeSourceTextInQuery";
+    public static final String AI_COMPLETION_MAX_CHOICES = "ai.completion.maxChoices";
+
 }
 
