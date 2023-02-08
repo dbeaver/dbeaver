@@ -24,6 +24,8 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.sql.commands.SQLCommandSet;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -118,6 +120,9 @@ public class EditTaskVariablesDialog extends StatusDialog {
                 @Override
                 protected void saveEditorValue(Control control, int index, TableItem item) {
                     String newValue = ((Text) control).getText();
+                    if (index == 0) {
+                        newValue = SQLCommandSet.prepareVarName(BasicSQLDialect.INSTANCE, newValue);
+                    }
                     item.setText(index, newValue);
                 }
             };
