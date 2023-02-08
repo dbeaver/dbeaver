@@ -61,7 +61,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
-import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -504,6 +503,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             }
             case CMD_FILTER_CLEAR_SETTING: {
                 rsv.clearDataFilter(true);
+                break;
             }
             case CMD_REFERENCES_MENU: {
                 boolean shiftPressed = event.getTrigger() instanceof Event && ((((Event) event.getTrigger()).stateMask & SWT.SHIFT) == SWT.SHIFT);
