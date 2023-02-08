@@ -22,12 +22,17 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Spreadsheet command handler.
@@ -38,6 +43,8 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
     public static final String CMD_COLUMNS_FIT_VALUE = "org.jkiss.dbeaver.core.resultset.grid.columnsFitValue";
     public static final String CMD_COLUMNS_FIT_SCREEN = "org.jkiss.dbeaver.core.resultset.grid.columnsFitScreen";
     public static final String CMD_COLUMNS_HIDE_EMPTY = "org.jkiss.dbeaver.core.resultset.grid.columnsHideEmpty";
+    public static final String CMD_SELECT_COLUMNS = "org.jkiss.dbeaver.core.resultset.grid.selectColumn";
+    public static final String CMD_SELECT_ROWS = "org.jkiss.dbeaver.core.resultset.grid.selectRow";
 
     public static SpreadsheetPresentation getActiveSpreadsheet(ExecutionEvent event)
     {
@@ -80,6 +87,27 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
                     }
                     spreadsheet.refreshData(true, false, true);
                 }
+                break;
+            }
+            case CMD_SELECT_COLUMNS: {
+                Spreadsheet s = spreadsheet.getSpreadsheet();
+                int rowsCount = s.getItemCount();
+                Collection<GridPos> cellsToSelect = s.getColumnSelection().stream().flatMap(
+                    c -> IntStream.range(0, rowsCount).mapToObj(r -> new GridPos(c.getIndex(), r))
+                ).collect(Collectors.toCollection(() -> new LinkedList<>()));
+                s.selectCells(cellsToSelect);
+                s.resetFocus();
+                s.setFocusColumn(s.getColumnSelection().stream().mapToInt(c -> c.getIndex()).min().getAsInt());
+                break;
+            }
+            case CMD_SELECT_ROWS: {
+                Spreadsheet s = spreadsheet.getSpreadsheet();
+                int columnsCount = s.getColumnCount();
+                Collection<GridPos> cellsToSelect = s.getRowSelection().stream().flatMap(
+                    r -> IntStream.range(0, columnsCount).mapToObj(c -> new GridPos(c, r))
+                ).collect(Collectors.toCollection(() -> new LinkedList<>()));
+                s.selectCells(cellsToSelect);
+                s.setFocusItem(s.getRowSelection().stream().mapToInt(n -> n).min().getAsInt());
                 break;
             }
         }
