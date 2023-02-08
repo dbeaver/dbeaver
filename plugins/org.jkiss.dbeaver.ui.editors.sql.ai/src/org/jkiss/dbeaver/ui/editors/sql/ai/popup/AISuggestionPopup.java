@@ -80,17 +80,30 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         hintPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         Label hintLabel = new Label(hintPanel, SWT.NONE);
         hintLabel.setText("Enter a text in a human language, it will be translated into SQL.");
-        hintLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 2;
+        hintLabel.setLayoutData(gd);
+
+        Composite scopePanel = UIUtils.createComposite(placeholder, 4);
+        scopePanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        UIUtils.createControlLabel(scopePanel, "Scope");
+        Combo scopeCombo = new Combo(scopePanel, SWT.DROP_DOWN | SWT.READ_ONLY);
+        scopeCombo.add("Current schema");
+        scopeCombo.add("All database tables");
+        scopeCombo.add("Custom");
+        scopeCombo.select(0);
+        UIUtils.createEmptyLabel(scopePanel, 1, 1).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         {
-            ToolBar tb = new ToolBar(hintPanel, SWT.FLAT);
+            ToolBar tb = new ToolBar(scopePanel, SWT.FLAT);
             UIUtils.createToolItem(tb, "Configure", UIIcon.CONFIGURATION,
                 SelectionListener.widgetSelectedAdapter(
                     selectionEvent -> UIUtils.showPreferencesFor(getShell(), null, GPTPreferencePage.PAGE_ID)));
+            tb.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         }
 
         inputField = new Text(placeholder, SWT.BORDER | SWT.MULTI);
         //inputField.setLayoutData(new GridData(GridData.FILL_BOTH));
-        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = UIUtils.getFontHeight(placeholder.getFont()) * 10;
         gd.widthHint = UIUtils.getFontHeight(placeholder.getFont()) * 40;
         inputField.setLayoutData(gd);
@@ -104,17 +117,19 @@ public class AISuggestionPopup extends AbstractPopupPanel {
             }
         });
 
-        Composite historyPanel = UIUtils.createComposite(placeholder, 2);
-        historyPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        Combo historyCombo = new Combo(historyPanel, SWT.DROP_DOWN | SWT.READ_ONLY);
+        Composite miscPanel = UIUtils.createComposite(placeholder, 2);
+        miscPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        UIUtils.createControlLabel(miscPanel, "History");
+        Combo historyCombo = new Combo(miscPanel, SWT.DROP_DOWN | SWT.READ_ONLY);
         historyCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        Button applyButton = UIUtils.createDialogButton(historyPanel, "Translate",
+        Button applyButton = UIUtils.createDialogButton(placeholder, "Translate",
             SelectionListener.widgetSelectedAdapter(selectionEvent -> okPressed()));
+        ((GridData)applyButton.getLayoutData()).grabExcessHorizontalSpace = false;
+        ((GridData)applyButton.getLayoutData()).horizontalAlignment = GridData.END;
 
-        closeOnFocusLost(inputField, historyCombo, applyButton);
-
-        historyCombo.setEnabled(false);
+        closeOnFocusLost(inputField, scopeCombo, historyCombo, applyButton);
 
         historyCombo.setEnabled(false);
         AbstractJob completionJob = new AbstractJob("Read completion history") {

@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -72,7 +73,12 @@ public class GPTRequestFormatter {
     private static String generateObjectDescription(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSObject object,
-        int maxRequestLength) throws DBException {
+        int maxRequestLength
+    ) throws DBException {
+        if (DBNUtils.getNodeByObject(monitor, object, false) == null) {
+            // Skip hidden objects
+            return "";
+        }
         StringBuilder request = new StringBuilder();
         if (object instanceof DBSEntity) {
             request.append("# ").append(DBUtils.getQuotedIdentifier(object));
