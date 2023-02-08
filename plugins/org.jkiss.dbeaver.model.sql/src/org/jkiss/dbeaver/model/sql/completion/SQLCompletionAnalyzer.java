@@ -75,6 +75,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
     private final List<SQLCompletionProposalBase> proposals = new ArrayList<>();
     private boolean searchFinished = false;
+    private boolean checkNavigatorNodes = true;
 
     public SQLCompletionAnalyzer(SQLCompletionRequest request) {
         this.request = request;
@@ -930,6 +931,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         return null;
     }
 
+    public void setCheckNavigatorNodes(boolean check) {
+        this.checkNavigatorNodes = check;
+    }
+
     private enum InlineState {
         UNMATCHED,
         TABLE_NAME,
@@ -1265,7 +1270,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
     private SQLCompletionProposalBase makeProposalsFromObject(DBSObject object, boolean useShortName, Map<String, Object> params) {
         DBNNode node = DBNUtils.getNodeByObject(monitor, object, false);
-        if (node == null && (object instanceof DBSEntity || object instanceof DBSObjectContainer)) {
+        if (checkNavigatorNodes && node == null && (object instanceof DBSEntity || object instanceof DBSObjectContainer)) {
             return null;
         }
 
