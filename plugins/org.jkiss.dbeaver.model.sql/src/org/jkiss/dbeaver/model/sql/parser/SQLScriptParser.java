@@ -424,18 +424,17 @@ public class SQLScriptParser {
                 int currLineIndex = document.getLineOfOffset(currentPos);
                 IRegion currLine = document.getLineInformation(currLineIndex);
                 int currLineEnd = currLine.getOffset() + currLine.getLength(); 
+                boolean hasNextLine = currLineIndex + 1 < document.getNumberOfLines();
                 boolean inTailComment = SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(partitioner.getContentType(currentPos)); 
-                if (!inTailComment && currentPos >= currLineEnd) {
-                    IRegion nextLine = currLineIndex >= document.getNumberOfLines()
-                        ? null
-                        : document.getLineInformation(currLineIndex + 1);
-                    if (currentPos < nextLine.getOffset()) { 
-                        inTailComment = SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(partitioner.getContentType(currLineEnd - 1));
-                    }
+                if (!inTailComment && currentPos >= currLineEnd &&
+                    (!hasNextLine || (hasNextLine && currentPos < document.getLineInformation(currLineIndex + 1).getOffset()))
+                ) { 
+                    inTailComment = SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(partitioner.getContentType(currLineEnd - 1));
                 }
                 if (inTailComment) {
-                    int letterBeforeComment = skipCommentsBackTillLetter(document, partitioner, currentPos, currLine.getOffset());
-                    if (letterBeforeComment >= 0) {
+                    int observablePosition = currentPos < document.getLength() ? currentPos : currentPos - 1;
+                    int letterBeforeComment = skipCommentsBackTillLetter(document, partitioner, observablePosition, currLine.getOffset());
+                    if (letterBeforeComment >= currLine.getOffset()) {
                         // if we are in the single-line comment and there are letters before the comment, then extract  
                         currentPos = letterBeforeComment;
                     }
