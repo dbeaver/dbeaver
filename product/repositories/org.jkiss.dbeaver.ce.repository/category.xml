@@ -15,6 +15,9 @@
     <feature id="org.jkiss.dbeaver.ide.feature">
         <category name="org.jkiss.dbeaver"/>
     </feature>
+    <feature id="org.jkiss.dbeaver.ext.ai.feature">
+        <category name="org.jkiss.dbeaver.additions"/>
+    </feature>
     <feature id="org.jkiss.dbeaver.ext.office.feature">
         <category name="org.jkiss.dbeaver.additions"/>
     </feature>
