@@ -45,7 +45,7 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     private Button enableAICheck;
 
     private Button includeSourceTextInCommentCheck;
-    private Text maxCompletionChoicesText;
+//    private Text maxCompletionChoicesText;
     private Button executeQueryImmediatelyCheck;
 
     private Text tokenText;
@@ -61,7 +61,7 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         enableAICheck.setSelection(!store.getBoolean(AICompletionConstants.AI_DISABLED));
 
         includeSourceTextInCommentCheck.setSelection(store.getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT));
-        maxCompletionChoicesText.setText(store.getString(AICompletionConstants.AI_COMPLETION_MAX_CHOICES));
+//        maxCompletionChoicesText.setText(store.getString(AICompletionConstants.AI_COMPLETION_MAX_CHOICES));
         executeQueryImmediatelyCheck.setSelection(store.getBoolean(AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY));
 
         modelCombo.select(GPTModel.getByName(store.getString(GPTPreferences.GPT_MODEL)).ordinal());
@@ -81,7 +81,7 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
 
         store.setValue(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT, includeSourceTextInCommentCheck.getSelection());
         store.setValue(AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY, executeQueryImmediatelyCheck.getSelection());
-        store.setValue(AICompletionConstants.AI_COMPLETION_MAX_CHOICES, maxCompletionChoicesText.getText());
+//        store.setValue(AICompletionConstants.AI_COMPLETION_MAX_CHOICES, maxCompletionChoicesText.getText());
 
         store.setValue(GPTPreferences.GPT_MODEL, modelCombo.getText());
         store.setValue(GPTPreferences.GPT_MODEL_TEMPERATURE, temperatureText.getText());
@@ -110,28 +110,6 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
             2);
 
         {
-            Group completionGroup = UIUtils.createControlGroup(placeholder,
-                "Completion",
-                2,
-                SWT.NONE,
-                5
-            );
-            maxCompletionChoicesText = UIUtils.createLabelText(
-                completionGroup, "Include source in query comment", null);
-            includeSourceTextInCommentCheck = UIUtils.createCheckbox(
-                completionGroup,
-                "Include source in query comment",
-                "Add your human language text in query comment",
-                false,
-                2);
-            executeQueryImmediatelyCheck = UIUtils.createCheckbox(
-                completionGroup,
-                "Execute SQL immediately",
-                "Try to execute translated SQL immediately after completion",
-                false,
-                2);
-        }
-        {
             Group authorizationGroup = UIUtils.createControlGroup(placeholder,
                 AIUIMessages.gpt_preference_page_group_authorization,
                 2,
@@ -154,6 +132,32 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
             gd.horizontalSpan = 2;
             link.setLayoutData(gd);
             authorizationGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        }
+        {
+            Group completionGroup = UIUtils.createControlGroup(placeholder,
+                "Completion",
+                2,
+                SWT.NONE,
+                5
+            );
+            completionGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            includeSourceTextInCommentCheck = UIUtils.createCheckbox(
+                completionGroup,
+                "Include source in query comment",
+                "Add your human language text in query comment",
+                false,
+                2);
+            executeQueryImmediatelyCheck = UIUtils.createCheckbox(
+                completionGroup,
+                "Execute SQL immediately",
+                "Try to execute translated SQL immediately after completion",
+                false,
+                2);
+//            maxCompletionChoicesText = UIUtils.createLabelText(
+//                completionGroup, "Completion choices number", null);
+//            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+//            gd.widthHint = UIUtils.getFontHeight(maxCompletionChoicesText) * 5;
+//            maxCompletionChoicesText.setLayoutData(gd);
         }
         {
             Group modelGroup = UIUtils.createControlGroup(placeholder,

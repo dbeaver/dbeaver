@@ -106,13 +106,13 @@ public class GPTClient {
             if (monitor.isCanceled()) {
                 return null;
             }
-            return tryCreateCompletion(service, completionRequest, 0);
+            return tryCreateCompletion(service, request, completionRequest, 0);
         } finally {
             monitor.done();
         }
     }
 
-    private static String tryCreateCompletion(@NotNull OpenAiService service, @NotNull CompletionRequest completionRequest, int attempt) throws DBException {
+    private static String tryCreateCompletion(@NotNull OpenAiService service, @NotNull String originalText, @NotNull CompletionRequest completionRequest, int attempt) throws DBException {
         try {
             List<CompletionChoice> choices = service.createCompletion(completionRequest).getChoices();
             Optional<CompletionChoice> choice = choices.stream().findFirst();
@@ -122,6 +122,15 @@ public class GPTClient {
             }
             completionText = "SELECT " + completionText.trim() + ";";
 
+            if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT)) {
+                String[] lines = originalText.split("\n");
+                for (String line : lines) {
+                    if (!CommonUtils.isEmpty(line)) {
+                        completionText = "-- " + line.trim() + "\n" + completionText;
+                    }
+                }
+            }
+
             return completionText.trim();
         } catch (Exception exception) {
             if (exception instanceof HttpException && ((HttpException) exception).code() == 429 && attempt < MAX_REQUEST_ATTEMPTS) {
@@ -130,7 +139,7 @@ public class GPTClient {
                 } catch (InterruptedException e) {
                     return null;
                 }
-                return tryCreateCompletion(service, completionRequest, attempt + 1);
+                return tryCreateCompletion(service, originalText, completionRequest, attempt + 1);
             } else {
                 if (exception instanceof HttpException) {
                     Response<?> response = ((HttpException) exception).response();
@@ -158,16 +167,20 @@ public class GPTClient {
         return DBWorkbench.getPlatform().getPreferenceStore();
     }
 
-    private static CompletionRequest createCompletionRequest(@NotNull String request) {
+    private static CompletionRequest createCompletionRequest(@NotNull String request) throws DBException {
         int maxTokens = GPT_MODEL_MAX_TOKENS;
         Double temperature = getPreferenceStore().getDouble(GPTPreferences.GPT_MODEL_TEMPERATURE);
         String model = getPreferenceStore().getString(GPTPreferences.GPT_MODEL);
         CompletionRequest.CompletionRequestBuilder builder = CompletionRequest.builder().prompt(request);
 
-        int maxChoices = getPreferenceStore().getInt(AICompletionConstants.AI_COMPLETION_MAX_CHOICES);
-        if (maxChoices > 1) {
-            builder.n(maxChoices);
-        }
+//        int maxChoices = getPreferenceStore().getInt(AICompletionConstants.AI_COMPLETION_MAX_CHOICES);
+//        if (maxChoices > 1) {
+//            builder.n(maxChoices);
+//            maxTokens -= request.length() / 2;
+//            if (maxTokens <= 0) {
+//                maxTokens = 100;
+//            }
+//        }
 
         return builder
             .temperature(temperature)
