@@ -147,11 +147,14 @@ public class GridColumn implements IGridColumn {
 
     public boolean isOverSortArrow(int x, int y) {
         int sortOrder = grid.getContentProvider().getSortOrder(this);
+        if (sortOrder <= 0 && !grid.getContentProvider().isElementSupportsSort(this)) {
+            return false;
+        }
         Rectangle bounds = getBounds();
         if (y < bounds.y || y > bounds.y + bounds.height) {
             return false;
         }
-        int arrowEnd = bounds.width - rightMargin - GridColumnRenderer.IMAGE_SPACING - GridColumnRenderer.getFilterControlBounds().width;
+        int arrowEnd = bounds.width - GridColumnRenderer.IMAGE_SPACING - GridColumnRenderer.getFilterControlBounds().width;
         Rectangle sortBounds = GridColumnRenderer.getSortControlBounds();
         int arrowBegin = arrowEnd - sortBounds.width;
         return
