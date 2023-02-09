@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -113,7 +112,7 @@ public class SQLScriptParserGenericsTest {
         String query = "select 1; -- xx";
         SQLScriptElement element;
         SQLParserContext context = createParserContext(setDialect("snowflake"), query);
-        int[] positions = new int[]{4, 8, 9, 10, 11, 12, 13, 14};
+        int[] positions = new int[]{4, 8, 9, 10, 11, 12, 13, 14, 15};
         for (int pos : positions) {
             element = SQLScriptParser.extractQueryAtPos(context, pos);
             Assert.assertEquals("select 1", element.getText());

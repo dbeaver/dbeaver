@@ -22,5 +22,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ext.postgresql,
  org.jkiss.dbeaver.ext.oracle,
  org.jkiss.dbeaver.ext.snowflake.core,
- org.jkiss.dbeaver.ext.mssql,
- org.jkiss.dbeaver.ui.editors.sql
+ org.jkiss.dbeaver.ext.mssql
