@@ -186,8 +186,9 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         }
         DBNNode[] children = super.readChildNodes(monitor);
 
+        DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
         children = ArrayUtils.insertArea(DBNNode.class, children, 0, new Object[]{
-            new DBNProjectDatabases(this, project.getDataSourceRegistry())});
+            new DBNProjectDatabases(this, dataSourceRegistry)});
 
         return children;
     }
