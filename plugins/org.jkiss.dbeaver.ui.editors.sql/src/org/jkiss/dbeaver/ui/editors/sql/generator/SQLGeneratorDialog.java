@@ -16,12 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.generator;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -36,7 +33,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBPScriptObjectExt2;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.generator.SQLGenerator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.ViewSQLDialog;
@@ -112,58 +110,39 @@ class SQLGeneratorDialog extends ViewSQLDialog {
         sqlGenerator.setShowFullDdl(getDialogBoundsSettings().get(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS) != null &&
                 getDialogBoundsSettings().getBoolean(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS));
 
-        generateDDLJob = new Job("Generating DDL") {
+        generateDDLJob = new AbstractJob("Generating DDL") {
             @Override
-            protected IStatus run(IProgressMonitor monitor) {
+            protected IStatus run(DBRProgressMonitor monitor) {
                 try {
-                    sqlGenerator.run(new DefaultProgressMonitor(monitor));
-                    return Status.OK_STATUS;
-                } catch (InvocationTargetException e) {
-                    log.error(e);
-                    return Status.error("Error running while DDL generation", e);
-                } catch (InterruptedException ignore) {
-                    return Status.CANCEL_STATUS;
-                }
-            }
-        };
-        generateDDLJob.addJobChangeListener(new JobChangeAdapter() {
-            @Override
-            public void running(IJobChangeEvent event) {
-                if (SQLGeneratorDialog.this.getShell() != null && !SQLGeneratorDialog.this.getShell().isDisposed()) {
-                    UIUtils.syncExec(() -> {
-                        setSQLText("Loading DDL...");
-                        updateSQL();
-                        Button button = getButton(IDialogConstants.DETAILS_ID);
-                        if (button != null && !button.isDisposed()) {
-                            button.setEnabled(false);
-                        }
-                    });
-                }
-            }
-            @Override
-            public void done(IJobChangeEvent event) {
-                if (event.getResult().isOK()) {
+                    sqlGenerator.run(monitor);
                     Object sql = sqlGenerator.getResult();
-                    if (SQLGeneratorDialog.this.getShell() != null && !SQLGeneratorDialog.this.getShell().isDisposed()) {
-                        UIUtils.syncExec(() -> {
+                    UIUtils.syncExec(() -> {
+                        if (SQLGeneratorDialog.this.getShell() != null && !SQLGeneratorDialog.this.getShell()
+                            .isDisposed()) {
                             if (sql != null) {
                                 setSQLText(CommonUtils.toString(sql));
                                 updateSQL();
                             }
                             Button button = getButton(IDialogConstants.DETAILS_ID);
-                            if (button != null && !button.isDisposed()) {
+                            if (button != null) {
                                 button.setEnabled(true);
                             }
-                        });
-                    }
-                }
+                        }
+                    });
 
+                    return Status.OK_STATUS;
+                } catch (InvocationTargetException e) {
+                    log.error(e);
+                    return Status.error("Error running DDL generation", e);
+                } catch (InterruptedException ignore) {
+                    return Status.CANCEL_STATUS;
+                }
             }
-        });
-        generateDDLJob.schedule();
+        };
 
         Composite composite = super.createDialogArea(parent);
-        
+        startGenerateJob();
+
         if (!sqlGenerator.hasOptions()) {
             return composite;
         }
@@ -291,6 +270,12 @@ class SQLGeneratorDialog extends ViewSQLDialog {
     private void startGenerateJob() {
         generateDDLJob.cancel();
         generateDDLJob.schedule();
+        setSQLText("Loading DDL...");
+        updateSQL();
+        Button button = getButton(IDialogConstants.DETAILS_ID);
+        if (button != null) {
+            button.setEnabled(false);
+        }
     }
 
     @Override
