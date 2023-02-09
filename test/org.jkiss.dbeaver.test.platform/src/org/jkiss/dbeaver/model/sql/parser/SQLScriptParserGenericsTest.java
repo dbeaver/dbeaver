@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -104,6 +105,54 @@ public class SQLScriptParserGenericsTest {
         for (int pos : positions) {
             element = SQLScriptParser.parseQuery(context, 0, query.length(), pos, false, false);
             Assert.assertEquals("begin transaction", element.getText());
+        }
+    }
+    
+    @Test
+    public void parseFromCursorPositionSingleLineCommentAfterStatement() throws DBException {
+        String query = "select 1; -- xx";
+        SQLScriptElement element;
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        int[] positions = new int[]{4, 8, 9, 10, 11, 12, 13, 14};
+        for (int pos : positions) {
+            element = SQLScriptParser.extractQueryAtPos(context, pos);
+            Assert.assertEquals("select 1", element.getText());
+        }
+    }
+    
+    @Test
+    public void parseFromCursorPositionSingleLineCommentBeforeStatement() throws DBException {
+        String query = "-- xx\nselect 1;";
+        SQLScriptElement element;
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        int[] positions = new int[]{0, 1, 4, 12};
+        for (int pos : positions) {
+            element = SQLScriptParser.extractQueryAtPos(context, pos);
+            Assert.assertEquals("-- xx\nselect 1", element.getText());
+        }
+    }
+    
+    @Test
+    public void parseFromCursorPositionMultiLineCommentBeforeStatement() throws DBException {
+        String query = "/* xx */\nselect 1;";
+        SQLScriptElement element;
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        int[] positions = new int[]{0, 1, 4, 12};
+        for (int pos : positions) {
+            element = SQLScriptParser.extractQueryAtPos(context, pos);
+            Assert.assertEquals("/* xx */\nselect 1", element.getText());
+        }
+    }
+    
+    @Test
+    public void parseFromCursorPositionMultiLineCommentAfterStatement() throws DBException {
+        String query = "select 1;\n/* xx */";
+        SQLScriptElement element;
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        int[] positions = new int[]{12, 14, 17};
+        for (int pos : positions) {
+            element = SQLScriptParser.extractQueryAtPos(context, pos);
+            Assert.assertEquals("/* xx */", element.getText());
         }
     }
     
@@ -286,7 +335,14 @@ public class SQLScriptParserGenericsTest {
         syntaxManager.init(dialect, dataSourceContainer.getPreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
         ruleManager.loadRules(dataSource, false);
-        return new SQLParserContext(dataSource, syntaxManager, ruleManager, new Document(query));
+        IDocument document = new Document(query);
+        IDocumentPartitioner partitioner = new FastPartitioner(
+            new SQLPartitionScanner(dataSource, dialect, ruleManager),
+            SQLParserPartitions.SQL_CONTENT_TYPES
+        );
+        partitioner.connect(document);
+        ((IDocumentExtension3) document).setDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING, partitioner);
+        return new SQLParserContext(dataSource, syntaxManager, ruleManager, document);
     }
 
     private SQLDialect setDialect(String name) throws DBException {
