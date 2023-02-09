@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.ai.popup;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -28,23 +29,37 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AICompletionConstants;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
 import org.jkiss.dbeaver.model.ai.translator.DAIHistoryItem;
 import org.jkiss.dbeaver.model.ai.translator.DAIHistoryManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSStructContainer;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.editors.sql.ai.gpt3.GPTPreferencePage;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.*;
 
 public class AISuggestionPopup extends AbstractPopupPanel {
 
@@ -63,6 +78,10 @@ public class AISuggestionPopup extends AbstractPopupPanel {
 
     private DAICompletionScope currentScope = DAICompletionScope.CURRENT_SCHEMA;
     private Text scopeText;
+    private final List<DBSEntity> customEntities = new ArrayList<>();
+    private ToolItem scopeConfigItem;
+
+    private final Set<String> checkedObjectIds = new LinkedHashSet<>();
 
     public AISuggestionPopup(
         @NotNull Shell parentShell,
@@ -91,7 +110,7 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         gd.horizontalSpan = 2;
         hintLabel.setLayoutData(gd);
 
-        Composite scopePanel = UIUtils.createComposite(placeholder, 4);
+        Composite scopePanel = UIUtils.createComposite(placeholder, 5);
         scopePanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         UIUtils.createControlLabel(scopePanel, "Scope");
 
@@ -100,6 +119,10 @@ public class AISuggestionPopup extends AbstractPopupPanel {
             DAICompletionScope.class,
             dsPrefs.getString(AICompletionConstants.AI_META_SCOPE),
             DAICompletionScope.CURRENT_SCHEMA);
+        String customIds = dsPrefs.getString(AICompletionConstants.AI_META_CUSTOM);
+        if (customIds != null) {
+            checkedObjectIds.addAll(Arrays.asList(customIds.split(",")));
+        }
 
         Combo scopeCombo = new Combo(scopePanel, SWT.DROP_DOWN | SWT.READ_ONLY);
         for (DAICompletionScope scope : DAICompletionScope.values()) {
@@ -114,6 +137,9 @@ public class AISuggestionPopup extends AbstractPopupPanel {
             public void widgetSelected(SelectionEvent e) {
                 currentScope = CommonUtils.fromOrdinal(DAICompletionScope.class, scopeCombo.getSelectionIndex());
                 showScopeSettings(currentScope);
+                if (currentScope == DAICompletionScope.CUSTOM) {
+                    showScopeConfiguration();
+                }
             }
         });
 
@@ -123,11 +149,15 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         scopeText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         {
             ToolBar tb = new ToolBar(scopePanel, SWT.FLAT);
-            UIUtils.createToolItem(tb, "Configure", UIIcon.CONFIGURATION,
+            scopeConfigItem = UIUtils.createToolItem(tb, "Customize", UIIcon.RS_DETAILS,
+                SelectionListener.widgetSelectedAdapter(
+                    selectionEvent -> showScopeConfiguration()));
+            UIUtils.createToolItem(tb, "Settings", UIIcon.CONFIGURATION,
                 SelectionListener.widgetSelectedAdapter(
                     selectionEvent -> UIUtils.showPreferencesFor(getShell(), null, GPTPreferencePage.PAGE_ID)));
             tb.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         }
+
 
         inputField = new Text(placeholder, SWT.BORDER | SWT.MULTI);
         //inputField.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -203,6 +233,17 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         return placeholder;
     }
 
+    private void showScopeConfiguration() {
+        ScopeConfigDialog dialog = new ScopeConfigDialog(checkedObjectIds);
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return;
+        }
+
+        checkedObjectIds.clear();
+        checkedObjectIds.addAll(dialog.checkedObjectIds);
+        showScopeSettings(DAICompletionScope.CUSTOM);
+    }
+
     private void showScopeSettings(DAICompletionScope scope) {
         String text;
         switch (scope) {
@@ -225,9 +266,10 @@ public class AISuggestionPopup extends AbstractPopupPanel {
                 text = dataSource.getDataSourceContainer().getName();
                 break;
             default:
-                text = "...";
+                text = "" + checkedObjectIds.size() + " object(s)";
                 break;
         }
+        scopeConfigItem.setEnabled(scope == DAICompletionScope.CUSTOM);
         scopeText.setText(CommonUtils.toString(text, "N/A"));
     }
 
@@ -244,6 +286,38 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         return inputText;
     }
 
+    public DAICompletionScope getScope() {
+        return currentScope;
+    }
+
+    public List<DBSEntity> getCustomEntities() {
+        List<DBSEntity> entities = new ArrayList<>();
+        try {
+            DBPDataSource dataSource = executionContext.getDataSource();
+            if (dataSource instanceof DBSObjectContainer) {
+                loadCheckedEntitiesById((DBSObjectContainer)dataSource, entities);
+            }
+        } catch (Exception e) {
+            log.error(e);
+        }
+        return entities;
+    }
+
+    private void loadCheckedEntitiesById(DBSObjectContainer container, List<DBSEntity> entities) throws DBException {
+        Collection<? extends DBSObject> children = container.getChildren(new LoggingProgressMonitor(log));
+        if (children != null) {
+            for (DBSObject child : children) {
+                if (child instanceof DBSEntity) {
+                    if (checkedObjectIds.contains(DBUtils.getObjectFullId(child))) {
+                        entities.add((DBSEntity) child);
+                    }
+                } else if (child instanceof DBSStructContainer) {
+                    loadCheckedEntitiesById((DBSObjectContainer) child, entities);
+                }
+            }
+        }
+    }
+
     @Override
     protected void okPressed() {
         inputText = inputField.getText().trim();
@@ -252,13 +326,145 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         dsPrefs.setValue(
             AICompletionConstants.AI_META_SCOPE,
             currentScope.name());
+
+        String customObjectIds = String.join(",", checkedObjectIds);
+        if (CommonUtils.isEmpty(customObjectIds)) {
+            dsPrefs.setToDefault(AICompletionConstants.AI_META_CUSTOM);
+        } else {
+            dsPrefs.setValue(AICompletionConstants.AI_META_CUSTOM, customObjectIds);
+        }
         try {
             dsPrefs.save();
         } catch (IOException ex) {
             log.error(ex);
         }
 
+        if (currentScope == DAICompletionScope.CUSTOM) {
+
+        } else {
+            customEntities.clear();
+        }
+
         super.okPressed();
+    }
+
+    private class ScopeConfigDialog extends BaseDialog {
+
+        private Tree objectTree;
+        private final Set<String> checkedObjectIds;
+
+        public ScopeConfigDialog(Set<String> checkedIds) {
+            super(AISuggestionPopup.this.getShell(), "Customize scope", DBIcon.AI);
+            this.checkedObjectIds = new LinkedHashSet<>(checkedIds);
+        }
+
+        @Override
+        protected Composite createDialogArea(Composite parent) {
+            Composite composite = super.createDialogArea(parent);
+
+            objectTree = new Tree(composite, SWT.CHECK);
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.widthHint = 400;
+            gd.heightHint = 300;
+            objectTree.setLayoutData(gd);
+
+            loadObjects(objectTree, executionContext.getDataSource());
+
+            return composite;
+        }
+
+        private void loadObjects(Tree objectTree, DBPDataSource ds) {
+            new AbstractJob("Load database structure") {
+                @Override
+                protected IStatus run(DBRProgressMonitor monitor) {
+                    if (ds instanceof DBSObjectContainer) {
+                        try {
+                            loadContainer(monitor, objectTree, null, (DBSObjectContainer)ds, checkedObjectIds);
+                        } catch (Exception e) {
+                            return GeneralUtils.makeExceptionStatus(e);
+                        }
+                        UIUtils.syncExec(() -> {
+                            for (TreeItem item : objectTree.getItems()) {
+                                item.setExpanded(true);
+                            }
+                        });
+                    }
+                    return Status.OK_STATUS;
+                }
+            }.schedule();
+        }
+
+        private void loadContainer(
+            DBRProgressMonitor monitor,
+            Tree objectTree,
+            TreeItem parentItem,
+            DBSObjectContainer objectContainer,
+            Set<String> checkedObjectIds
+        )  throws DBException {
+            Collection<? extends DBSObject> children = objectContainer.getChildren(monitor);
+            if (children == null) {
+                return;
+            }
+            Map<TreeItem, DBSObjectContainer> addedContainers = new LinkedHashMap<>();
+            UIUtils.syncExec(() -> {
+                for (DBSObject child : children) {
+                    if (monitor.isCanceled()) {
+                        return;
+                    }
+                    if (!(child instanceof DBSStructContainer) && !(child instanceof DBSEntity)) {
+                        continue;
+                    }
+                    DBNDatabaseNode node = DBNUtils.getNodeByObject(monitor, child, false);
+                    if (node == null) {
+                        continue;
+                    }
+                    TreeItem item = parentItem == null ?
+                        new TreeItem(objectTree, SWT.NONE) :  new TreeItem(parentItem, SWT.NONE);
+                    item.setData(child);
+                    item.setImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
+                    item.setText(node.getNodeName());
+                    String objectId = DBUtils.getObjectFullId(child);
+                    if (checkedObjectIds.contains(objectId)) {
+                        item.setChecked(true);
+                        if (parentItem != null && !parentItem.getExpanded()) {
+                            parentItem.setExpanded(true);
+                        }
+                    }
+                    if (child instanceof DBSObjectContainer) {
+                        addedContainers.put(item, (DBSObjectContainer) child);
+                    }
+                }
+            });
+            if (monitor.isCanceled()) {
+                return;
+            }
+            for (Map.Entry<TreeItem, DBSObjectContainer> contItem : addedContainers.entrySet()) {
+                DBSObjectContainer object = contItem.getValue();
+                loadContainer(monitor, objectTree, contItem.getKey(), object, checkedObjectIds);
+            }
+        }
+
+        @Override
+        protected void okPressed() {
+            checkedObjectIds.clear();
+            collectCheckedObjects(objectTree.getItems());
+
+            super.okPressed();
+        }
+
+        private void collectCheckedObjects(TreeItem[] items) {
+            for (TreeItem item : items) {
+                if (item.getChecked()) {
+                    if (item.getData() instanceof DBSEntity) {
+                        checkedObjectIds.add(DBUtils.getObjectFullId((DBSEntity) item.getData()));
+                    }
+                }
+                TreeItem[] children = item.getItems();
+                if (!ArrayUtils.isEmpty(children)) {
+                    collectCheckedObjects(children);
+                }
+            }
+        }
     }
 
 }

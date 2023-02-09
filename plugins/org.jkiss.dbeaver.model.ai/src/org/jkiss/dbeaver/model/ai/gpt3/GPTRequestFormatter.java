@@ -20,17 +20,16 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.ai.completion.DAICompletionRequest;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collection;
 import java.util.List;
 
 public class GPTRequestFormatter {
@@ -44,17 +43,17 @@ public class GPTRequestFormatter {
      */
     public static String addDBMetadataToRequest(
         DBRProgressMonitor monitor,
-        String request,
+        DAICompletionRequest request,
         DBCExecutionContext executionContext,
-        DBSObjectContainer context
+        DBSObjectContainer mainObject
     ) throws DBException {
-        if (context == null || context.getDataSource() == null || CommonUtils.isEmptyTrimmed(request)) {
-            return request;
+        if (mainObject == null || mainObject.getDataSource() == null || CommonUtils.isEmptyTrimmed(request.getPromptText())) {
+            throw new DBException("Invalid completion request");
         }
 
         StringBuilder additionalMetadata = new StringBuilder();
         additionalMetadata.append("### ")
-            .append(context.getDataSource().getSQLDialect().getDialectName())
+            .append(mainObject.getDataSource().getSQLDialect().getDialectName())
             .append(" SQL tables, with their properties:\n#\n");
         String tail = "";
         if (executionContext != null && executionContext.getContextDefaults() != null) {
@@ -65,13 +64,20 @@ public class GPTRequestFormatter {
         }
         int maxRequestLength = MAX_PROMPT_LENGTH - additionalMetadata.length() - tail.length() - 20;
 
-        additionalMetadata.append(generateObjectDescription(monitor, context, maxRequestLength));
-        additionalMetadata.append(tail).append("#\n###").append(request.trim()).append("\nSELECT");
+        if (CommonUtils.isEmpty(request.getCustomEntities())) {
+            additionalMetadata.append(generateObjectDescription(monitor, request, mainObject, maxRequestLength));
+        } else {
+            for (DBSEntity entity : request.getCustomEntities()) {
+                additionalMetadata.append(generateObjectDescription(monitor, request, entity, maxRequestLength));
+            }
+        }
+        additionalMetadata.append(tail).append("#\n###").append(request.getPromptText().trim()).append("\nSELECT");
         return additionalMetadata.toString();
     }
 
     private static String generateObjectDescription(
         @NotNull DBRProgressMonitor monitor,
+        @NotNull DAICompletionRequest request,
         @NotNull DBSObject object,
         int maxRequestLength
     ) throws DBException {
@@ -79,26 +85,46 @@ public class GPTRequestFormatter {
             // Skip hidden objects
             return "";
         }
-        StringBuilder request = new StringBuilder();
+        StringBuilder description = new StringBuilder();
         if (object instanceof DBSEntity) {
-            request.append("# ").append(DBUtils.getQuotedIdentifier(object));
+            description.append("# ").append(DBUtils.getQuotedIdentifier(object));
+            description.append("(");
             List<? extends DBSEntityAttribute> attributes = ((DBSEntity) object).getAttributes(monitor);
+            boolean firstAttr = true;
             if (attributes != null) {
-                request.append("(");
-                boolean firstAttr = true;
                 for (DBSEntityAttribute attribute : attributes) {
                     if (DBUtils.isHiddenObject(attribute)) {
                         continue;
                     }
-                    if (!firstAttr) {
-                        request.append(",");
-                    }
+                    if (!firstAttr) description.append(",");
                     firstAttr = false;
-                    request.append(attribute.getName());
+                    description.append(attribute.getName());
                 }
-                request.append(")");
             }
-            request.append(";\n");
+            Collection<? extends DBSEntityAssociation> associations = ((DBSEntity) object).getAssociations(monitor);
+            if (associations != null) {
+                for (DBSEntityAssociation association : associations) {
+                    if (association instanceof DBSEntityReferrer) {
+                        DBSEntity refEntity = association.getAssociatedEntity();
+                        List<? extends DBSEntityAttributeRef> refAttrs = ((DBSEntityReferrer) association).getAttributeReferences(monitor);
+                        if (refEntity != null && !CommonUtils.isEmpty(refAttrs)) {
+                            if (!firstAttr) description.append(",");
+                            firstAttr = false;
+                            description.append("FOREIGN KEY (");
+                            boolean firstRA = true;
+                            for (DBSEntityAttributeRef ar : refAttrs) {
+                                if (ar.getAttribute() != null) {
+                                    if (!firstRA) description.append(",");
+                                    firstRA = false;
+                                    description.append(ar.getAttribute().getName());
+                                }
+                            }
+                            description.append(") REFERENCES ").append(refEntity.getName());
+                        }
+                    }
+                }
+            }
+            description.append(");\n");
         } else if (object instanceof DBSObjectContainer) {
             monitor.subTask("Load cache of " + object.getName());
             ((DBSObjectContainer) object).cacheStructure(
@@ -109,16 +135,16 @@ public class GPTRequestFormatter {
                 if (DBUtils.isSystemObject(child) || DBUtils.isHiddenObject(child) || child instanceof DBSTablePartition) {
                     continue;
                 }
-                String childText = generateObjectDescription(monitor, child, maxRequestLength);
-                if (request.length() + childText.length() > maxRequestLength) {
+                String childText = generateObjectDescription(monitor, request, child, maxRequestLength);
+                if (description.length() + childText.length() > maxRequestLength) {
                     log.debug("Trim GPT metadata prompt  at table '" + child.getName() + "' - too long request");
                     break;
                 }
-                request.append(childText);
+                description.append(childText);
                 totalChildren++;
             }
         }
-        return request.toString();
+        return description.toString();
     }
 
     private GPTRequestFormatter() {

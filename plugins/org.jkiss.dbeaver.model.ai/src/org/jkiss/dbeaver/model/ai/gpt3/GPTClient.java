@@ -21,12 +21,14 @@ import com.theokanning.openai.completion.CompletionChoice;
 import com.theokanning.openai.completion.CompletionRequest;
 import okhttp3.ResponseBody;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.AICompletionConstants;
+import org.jkiss.dbeaver.model.ai.completion.DAICompletionRequest;
+import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -76,24 +78,43 @@ public class GPTClient {
      *
      * @param request          request text
      * @param monitor          execution monitor
-     * @param context          context object
      * @return resulting string
      */
     public static String requestCompletion(
-        @NotNull String request,
+        @NotNull DAICompletionRequest request,
         @NotNull DBRProgressMonitor monitor,
-        @Nullable DBSObjectContainer context,
-        @NotNull DBCExecutionContext executionContext) throws DBException {
-        if (context == null || context.getDataSource() == null) {
-            throw new DBException("No datasource container");
+        @NotNull DBCExecutionContext executionContext
+    ) throws DBException {
+        DAICompletionScope scope = request.getScope();
+        DBSObjectContainer mainObject = null;
+        DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
+        if (contextDefaults != null) {
+            switch (scope) {
+                case CURRENT_SCHEMA:
+                    if (contextDefaults.getDefaultSchema() != null) {
+                        mainObject = contextDefaults.getDefaultSchema();
+                    } else {
+                        mainObject = contextDefaults.getDefaultCatalog();
+                    }
+                    break;
+                case CURRENT_DATABASE:
+                    mainObject = contextDefaults.getDefaultCatalog();
+                    break;
+                default:
+                    break;
+            }
         }
-        DBPDataSourceContainer container = context.getDataSource().getContainer();
+        if (mainObject == null) {
+            mainObject = ((DBSObjectContainer) executionContext.getDataSource());
+        }
+
+        DBPDataSourceContainer container = executionContext.getDataSource().getContainer();
         OpenAiService service = clientInstances.get(container.getId());
         if (service == null) {
             service = initGPTApiClientInstance();
             clientInstances.put(container.getId(), service);
         }
-        String modifiedRequest = GPTRequestFormatter.addDBMetadataToRequest(monitor, request, executionContext, context);
+        String modifiedRequest = GPTRequestFormatter.addDBMetadataToRequest(monitor, request, executionContext, mainObject);
         if (monitor.isCanceled()) {
             return "";
         }
@@ -106,41 +127,27 @@ public class GPTClient {
             if (monitor.isCanceled()) {
                 return null;
             }
-            return tryCreateCompletion(service, request, completionRequest, 0);
-        } finally {
-            monitor.done();
-        }
-    }
 
-    private static String tryCreateCompletion(@NotNull OpenAiService service, @NotNull String originalText, @NotNull CompletionRequest completionRequest, int attempt) throws DBException {
-        try {
-            List<CompletionChoice> choices = service.createCompletion(completionRequest).getChoices();
-            Optional<CompletionChoice> choice = choices.stream().findFirst();
-            String completionText = choice.orElseThrow().getText();
-            if (CommonUtils.isEmpty(completionText)) {
-                return null;
-            }
-            completionText = "SELECT " + completionText.trim() + ";";
-
-            if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT)) {
-                String[] lines = originalText.split("\n");
-                for (String line : lines) {
-                    if (!CommonUtils.isEmpty(line)) {
-                        completionText = "-- " + line.trim() + "\n" + completionText;
-                    }
-                }
-            }
-
-            return completionText.trim();
-        } catch (Exception exception) {
-            if (exception instanceof HttpException && ((HttpException) exception).code() == 429 && attempt < MAX_REQUEST_ATTEMPTS) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
+            try {
+                List<CompletionChoice> choices = service.createCompletion(completionRequest).getChoices();
+                Optional<CompletionChoice> choice = choices.stream().findFirst();
+                String completionText = choice.orElseThrow().getText();
+                if (CommonUtils.isEmpty(completionText)) {
                     return null;
                 }
-                return tryCreateCompletion(service, originalText, completionRequest, attempt + 1);
-            } else {
+                completionText = "SELECT " + completionText.trim() + ";";
+
+                if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT)) {
+                    String[] lines = request.getPromptText().split("\n");
+                    for (String line : lines) {
+                        if (!CommonUtils.isEmpty(line)) {
+                            completionText = "-- " + line.trim() + "\n" + completionText;
+                        }
+                    }
+                }
+
+                return completionText.trim();
+            } catch (Exception exception) {
                 if (exception instanceof HttpException) {
                     Response<?> response = ((HttpException) exception).response();
                     if (response != null) {
@@ -160,6 +167,9 @@ public class GPTClient {
                 }
                 throw exception;
             }
+
+        } finally {
+            monitor.done();
         }
     }
 

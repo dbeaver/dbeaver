@@ -17,7 +17,10 @@
 
 package org.jkiss.dbeaver.model.ai.completion;
 
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,6 +33,10 @@ public class DAICompletionRequest {
     private String endText;
     private boolean beginTruncated;
     private boolean endTruncated;
+
+    private DAICompletionScope scope;
+    private List<DBSEntity> customEntities;
+
     private final Map<String, Object> completionOptions = new HashMap<>();
 
     public String getBeginText() {
@@ -70,6 +77,22 @@ public class DAICompletionRequest {
 
     public void setEndTruncated(boolean endTruncated) {
         this.endTruncated = endTruncated;
+    }
+
+    public DAICompletionScope getScope() {
+        return scope;
+    }
+
+    public void setScope(DAICompletionScope scope) {
+        this.scope = scope;
+    }
+
+    public List<DBSEntity> getCustomEntities() {
+        return customEntities;
+    }
+
+    public void setCustomEntities(List<DBSEntity> customEntities) {
+        this.customEntities = customEntities;
     }
 
     public Map<String, Object> getCompletionOptions() {

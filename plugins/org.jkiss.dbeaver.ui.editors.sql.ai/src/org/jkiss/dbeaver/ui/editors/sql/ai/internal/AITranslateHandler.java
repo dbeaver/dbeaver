@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.AICompletionConstants;
+import org.jkiss.dbeaver.model.ai.completion.DAICompletionRequest;
 import org.jkiss.dbeaver.model.ai.gpt3.GPTClient;
 import org.jkiss.dbeaver.model.ai.translator.DAIHistoryManager;
 import org.jkiss.dbeaver.model.ai.translator.SimpleFilterManager;
@@ -40,7 +41,6 @@ import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
@@ -116,15 +116,19 @@ public class AITranslateHandler extends AbstractHandler {
             }
         }
 
-        AISuggestionPopup gptSuggestionPopup = new AISuggestionPopup(
+        AISuggestionPopup aiCompletionPopup = new AISuggestionPopup(
             HandlerUtil.getActiveShell(event),
             "ChatGPT smart completion",
             historyManager,
             lDataSource,
             executionContext
         );
-        if (gptSuggestionPopup.open() == IDialogConstants.OK_ID) {
-            doAutoCompletion(executionContext, historyManager, lDataSource, editor, gptSuggestionPopup.getInputText());
+        if (aiCompletionPopup.open() == IDialogConstants.OK_ID) {
+            DAICompletionRequest completionRequest = new DAICompletionRequest();
+            completionRequest.setPromptText(aiCompletionPopup.getInputText());
+            completionRequest.setScope(aiCompletionPopup.getScope());
+            completionRequest.setCustomEntities(aiCompletionPopup.getCustomEntities());
+            doAutoCompletion(executionContext, historyManager, lDataSource, editor, completionRequest);
         }
         return null;
     }
@@ -134,32 +138,17 @@ public class AITranslateHandler extends AbstractHandler {
         DAIHistoryManager historyManager,
         DBSLogicalDataSource lDataSource,
         SQLEditor editor,
-        String inputText
+        DAICompletionRequest request
     ) {
-        if (CommonUtils.isEmptyTrimmed(inputText)) {
+        if (CommonUtils.isEmptyTrimmed(request.getPromptText())) {
             return;
         }
 
-        DBSObjectContainer object;
-        if (executionContext.getContextDefaults() == null) {
-            object = null;
-        } else {
-            if (executionContext.getContextDefaults().getDefaultSchema() == null) {
-                object = executionContext.getContextDefaults().getDefaultCatalog();
-            } else {
-                object = executionContext.getContextDefaults().getDefaultSchema();
-            }
-            if (object == null) {
-                object = ((DBSObjectContainer) executionContext.getDataSource());
-            }
-        }
-
         String[] completionResult = new String[1];
-        DBSObjectContainer finalObject = object;
         try {
             UIUtils.runInProgressDialog(monitor -> {
                 try {
-                    completionResult[0] = GPTClient.requestCompletion(inputText, monitor, finalObject, executionContext);
+                    completionResult[0] = GPTClient.requestCompletion(request, monitor, executionContext);
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 }
@@ -183,7 +172,7 @@ public class AITranslateHandler extends AbstractHandler {
                         monitor,
                         lDataSource,
                         executionContext,
-                        inputText,
+                        request.getPromptText(),
                         completion);
                 } catch (DBException e) {
                     return GeneralUtils.makeExceptionStatus(e);
