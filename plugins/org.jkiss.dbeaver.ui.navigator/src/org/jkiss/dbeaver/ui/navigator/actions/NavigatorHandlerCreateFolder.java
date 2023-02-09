@@ -33,6 +33,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
@@ -82,6 +84,12 @@ public class NavigatorHandlerCreateFolder extends NavigatorHandlerObjectBase {
 
     private static void createNewFolder(@NotNull IResource resource, @NotNull String folderName) throws DBException {
         try {
+            if (resource instanceof IProject) {
+                DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject((IProject) resource);
+                if (project != null) {
+                    resource = project.getRootResource();
+                }
+            }
             if (resource instanceof IProject) {
                 IFolder newFolder = ((IProject) resource).getFolder(folderName);
                 if (newFolder.exists()) {
