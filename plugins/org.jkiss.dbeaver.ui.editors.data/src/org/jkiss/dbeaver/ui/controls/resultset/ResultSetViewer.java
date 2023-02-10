@@ -2281,6 +2281,9 @@ public class ResultSetViewer extends Viewer
             constraint.setOrderDescending(false);
         } else if (forceOrder == ColumnOrder.DESC) {
             constraint.setOrderDescending(true);
+        } else if (constraint.getOrderPosition() > 0 && !constraint.isOrderDescending()) {
+            // Toggle to DESC ordering
+            constraint.setOrderDescending(true);
         } else {
             // Reset order
             for (DBDAttributeConstraint con2 : dataFilter.getConstraints()) {
@@ -3332,6 +3335,8 @@ public class ResultSetViewer extends Viewer
     {
         if (attribute != null && supportsDataFilter()) {
             {
+                filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_MENU_DISTINCT));
+
                 filtersMenu.add(new Separator());
 
                 //filtersMenu.add(new FilterByListAction(operator, type, attribute));
@@ -3372,8 +3377,6 @@ public class ResultSetViewer extends Viewer
                 }
 */
 
-                filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_MENU_DISTINCT));
-
                 // Operators with no inputs
                 for (DBCLogicalOperator operator : operators) {
                     if (operator.getArgumentCount() == 0) {
@@ -3389,7 +3392,9 @@ public class ResultSetViewer extends Viewer
             }
         }
         filtersMenu.add(new Separator());
-        filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_SAVE_SETTING));
+        if (getDataContainer() instanceof DBSEntity) {
+            filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_SAVE_SETTING));
+        }
         filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_CLEAR_SETTING));
         filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_EDIT_SETTINGS));
     }
@@ -4462,9 +4467,9 @@ public class ResultSetViewer extends Viewer
         if (updatePresentation) {
             redrawData(false, true);
             updateEditControls();
-        }
 
-        activePresentation.scrollToRow(IResultSetPresentation.RowPosition.CURRENT);
+            activePresentation.scrollToRow(IResultSetPresentation.RowPosition.CURRENT);
+        }
 
         return curRow;
     }

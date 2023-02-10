@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.runtime.LocalFileStorage;
 import org.jkiss.dbeaver.ui.IDataSourceContainerUpdate;
 import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -56,6 +57,8 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 /**
  * EditorUtils
@@ -126,6 +129,13 @@ public class EditorUtils {
     }
 
     public static IStorage getStorageFromInput(Object element) {
+        if (element instanceof IStorageEditorInput) {
+            try {
+                return ((IStorageEditorInput) element).getStorage();
+            } catch (CoreException e) {
+                log.error(e);
+            }
+        }
         if (element instanceof IAdaptable) {
             IStorage storage = ((IAdaptable) element).getAdapter(IStorage.class);
             if (storage != null) {
@@ -136,6 +146,13 @@ public class EditorUtils {
             IFile file = getFileFromInput((IEditorInput) element);
             if (file != null) {
                 return file;
+            }
+            if (element instanceof IURIEditorInput) {
+                URI uri = ((IURIEditorInput) element).getURI();
+                File localFile = new File(uri);
+                if (localFile.exists()) {
+                    return new LocalFileStorage(localFile, StandardCharsets.UTF_8.name());
+                }
             }
         }
         return null;

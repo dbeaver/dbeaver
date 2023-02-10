@@ -63,6 +63,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
     static final String ATTR_NAVIGATOR_HIDE_VIRTUAL = "navigator-hide-virtual"; //$NON-NLS-1$
     static final String ATTR_NAVIGATOR_MERGE_ENTITIES = "navigator-merge-entities"; //$NON-NLS-1$
 
+    private static final String ATTR_ORIGINAL_PROVIDER = "original-provider"; //$NON-NLS-1$
+    private static final String ATTR_ORIGINAL_DRIVER = "original-driver"; //$NON-NLS-1$
+
     public static final String TAG_ORIGIN = "origin"; //$NON-NLS-1$
     private static final String ATTR_ORIGIN_TYPE = "$type"; //$NON-NLS-1$
     private static final String ATTR_ORIGIN_CONFIGURATION = "$configuration"; //$NON-NLS-1$
@@ -498,28 +501,29 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 String id = conMap.getKey();
                 Map<String, Object> conObject = conMap.getValue();
 
-                // Primary settings
-                String dsProviderID = CommonUtils.toString(conObject.get(RegistryConstants.ATTR_PROVIDER));
-                if (CommonUtils.isEmpty(dsProviderID)) {
-                    log.debug("Empty datasource provider for datasource '" + id + "'");
+                final String originalProviderId = CommonUtils.toString(conObject.get(ATTR_ORIGINAL_PROVIDER));
+                final String originalDriverId = CommonUtils.toString(conObject.get(ATTR_ORIGINAL_DRIVER));
+                final String substitutedProviderId = CommonUtils.toString(conObject.get(RegistryConstants.ATTR_PROVIDER));
+                final String substitutedDriverId = CommonUtils.toString(conObject.get(RegistryConstants.ATTR_DRIVER));
+
+                DriverDescriptor originalDriver;
+                DriverDescriptor substitutedDriver;
+
+                if (CommonUtils.isEmpty(originalProviderId) || CommonUtils.isEmpty(originalDriverId)) {
+                    originalDriver = parseDriver(id, substitutedProviderId, substitutedDriverId, true);
+                    substitutedDriver = originalDriver;
+                } else {
+                    originalDriver = parseDriver(id, originalProviderId, originalDriverId, true);
+                    substitutedDriver = parseDriver(id, substitutedProviderId, substitutedDriverId, false);
+                }
+                if (originalDriver == null) {
                     continue;
                 }
-                DataSourceProviderDescriptor provider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(
-                    dsProviderID);
-                if (provider == null) {
-                    log.debug("Can't find datasource provider " + dsProviderID + " for datasource '" + id + "'");
-                    provider = (DataSourceProviderDescriptor) DataSourceProviderRegistry.getInstance().makeFakeProvider(dsProviderID);
+                if (substitutedDriver == null || substitutedDriver.isTemporary()) {
+                    substitutedDriver = originalDriver;
                 }
-                String driverId = CommonUtils.toString(conObject.get(RegistryConstants.ATTR_DRIVER));
-                DriverDescriptor driver = provider.getDriver(driverId);
-                if (driver == null) {
-                    log.debug("Can't find driver " + driverId + " in datasource provider " + provider.getId() + " for datasource '" + id + "'. Create new driver");
-                    driver = provider.createDriver(driverId);
-                    driver.setName(driverId);
-                    driver.setDescription("Missing driver " + driverId);
-                    driver.setDriverClassName("java.sql.Driver");
-                    driver.setTemporary(true);
-                    provider.addDriver(driver);
+                while (substitutedDriver.getReplacedBy() != null) {
+                    substitutedDriver = substitutedDriver.getReplacedBy();
                 }
 
                 DataSourceDescriptor dataSource = registry.getDataSource(id);
@@ -544,7 +548,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         configurationStorage.isVirtual() ? registry.getDefaultStorage() : configurationStorage,
                         origin,
                         id,
-                        driver,
+                        originalDriver,
+                        substitutedDriver,
                         new DBPConnectionConfiguration());
                 } else {
                     oldDataSource = new DataSourceDescriptor(dataSource, registry);
@@ -731,6 +736,52 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
     }
 
+    @Nullable
+    private static DriverDescriptor parseDriver(
+        @NotNull String id,
+        @NotNull String providerId,
+        @NotNull String driverId,
+        boolean createIfAbsent
+    ) {
+        if (CommonUtils.isEmpty(providerId)) {
+            log.debug("Empty datasource provider for datasource '" + id + "'");
+            return null;
+        }
+
+        if (CommonUtils.isEmpty(driverId)) {
+            log.debug("Empty driver for datasource '" + id + "'");
+            return null;
+        }
+
+        DataSourceProviderDescriptor provider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(providerId);
+        if (provider == null) {
+            if (createIfAbsent) {
+                log.debug("Can't find datasource provider " + providerId + " for datasource '" + id + "'");
+                provider = (DataSourceProviderDescriptor) DataSourceProviderRegistry.getInstance().makeFakeProvider(providerId);
+            } else {
+                return null;
+            }
+        }
+
+        DriverDescriptor driver = provider.getOriginalDriver(driverId);
+        if (driver == null) {
+            if (createIfAbsent) {
+                log.debug("Can't find driver " + driverId + " in datasource provider "
+                    + provider.getId() + " for datasource '" + id + "'. Create new driver");
+                driver = provider.createDriver(driverId);
+                driver.setName(driverId);
+                driver.setDescription("Missing driver " + driverId);
+                driver.setDriverClassName("java.sql.Driver");
+                driver.setTemporary(true);
+                provider.addDriver(driver);
+            } else {
+                return null;
+            }
+        }
+
+        return driver;
+    }
+
     private void deserializeModifyPermissions(Map<String, Object> conObject, DBPDataSourcePermissionOwner permissionOwner) {
         Map<String, Object> securityCfg = JSONUtils.getObject(conObject, "security");
         if (!CommonUtils.isEmpty(securityCfg)) {
@@ -835,6 +886,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
         json.beginObject();
         JSONUtils.field(json, RegistryConstants.ATTR_PROVIDER, dataSource.getDriver().getProviderDescriptor().getId());
         JSONUtils.field(json, RegistryConstants.ATTR_DRIVER, dataSource.getDriver().getId());
+        if (dataSource.getDriver() != dataSource.getOriginalDriver()) {
+            JSONUtils.field(json, ATTR_ORIGINAL_PROVIDER, dataSource.getOriginalDriver().getProviderDescriptor().getId());
+            JSONUtils.field(json, ATTR_ORIGINAL_DRIVER, dataSource.getOriginalDriver().getId());
+        }
         DBPDataSourceOrigin origin = dataSource.getOriginSource();
         if (origin != DataSourceOriginLocal.INSTANCE) {
             Map<String, Object> originProps = new LinkedHashMap<>();
