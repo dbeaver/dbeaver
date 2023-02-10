@@ -32,15 +32,16 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.AICompletionConstants;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionRequest;
+import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
 import org.jkiss.dbeaver.model.ai.gpt3.GPTClient;
 import org.jkiss.dbeaver.model.ai.translator.DAIHistoryManager;
 import org.jkiss.dbeaver.model.ai.translator.SimpleFilterManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
@@ -50,7 +51,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 public class AITranslateHandler extends AbstractHandler {
@@ -81,21 +81,18 @@ public class AITranslateHandler extends AbstractHandler {
             return null;
         }
 
+        DAICompletionSettings settings = new DAICompletionSettings(dataSourceContainer);
+
         // Show info transfer warning
-        DBPPreferenceStore dsPreferenceStore = dataSourceContainer.getPreferenceStore();
-        if (!dsPreferenceStore.getBoolean(AICompletionConstants.AI_META_TRANSFER_CONFIRMED)) {
+        if (!settings.isMetaTransferConfirmed()) {
             if (UIUtils.confirmAction(editor.getSite().getShell(), "Transfer information to OpenAI",
                 "In order to perform AI smart completion DBeaver needs to transfer\n" +
                     "your database metadata information (table and column names) to OpenAI API.\n" +
                     "Do you confirm it for connection '" + dataSourceContainer.getName() + "'?",
                 DBIcon.AI))
             {
-                dsPreferenceStore.setValue(AICompletionConstants.AI_META_TRANSFER_CONFIRMED, true);
-                try {
-                    dsPreferenceStore.save();
-                } catch (IOException e) {
-                    DBWorkbench.getPlatformUI().showError("Preferences save error", null, e);
-                }
+                settings.setMetaTransferConfirmed(true);
+                settings.saveSettings();
             } else {
                 return null;
             }
@@ -121,7 +118,8 @@ public class AITranslateHandler extends AbstractHandler {
             "ChatGPT smart completion",
             historyManager,
             lDataSource,
-            executionContext
+            executionContext,
+            settings
         );
         if (aiCompletionPopup.open() == IDialogConstants.OK_ID) {
             DAICompletionRequest completionRequest = new DAICompletionRequest();
@@ -187,6 +185,11 @@ public class AITranslateHandler extends AbstractHandler {
             try {
                 int offset = ((TextSelection) selection).getOffset();
                 int length = ((TextSelection) selection).getLength();
+                SQLScriptElement query = editor.extractQueryAtPos(offset);
+                if (query != null) {
+                    offset = query.getOffset();
+                    length = query.getLength();
+                }
                 document.replace(
                     offset,
                     length,

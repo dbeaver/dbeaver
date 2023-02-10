@@ -31,15 +31,14 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.ai.AICompletionConstants;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
+import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
 import org.jkiss.dbeaver.model.ai.translator.DAIHistoryItem;
 import org.jkiss.dbeaver.model.ai.translator.DAIHistoryManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
@@ -57,7 +56,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.*;
 
@@ -72,13 +70,14 @@ public class AISuggestionPopup extends AbstractPopupPanel {
     private final DBSLogicalDataSource dataSource;
     @NotNull
     private final DBCExecutionContext executionContext;
+    private final DAICompletionSettings settings;
 
     private Text inputField;
     private String inputText;
 
     private DAICompletionScope currentScope = DAICompletionScope.CURRENT_SCHEMA;
     private Text scopeText;
-    private final List<DBSEntity> customEntities = new ArrayList<>();
+
     private ToolItem scopeConfigItem;
 
     private final Set<String> checkedObjectIds = new LinkedHashSet<>();
@@ -88,12 +87,13 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         @NotNull String title,
         @NotNull DAIHistoryManager historyManager,
         @NotNull DBSLogicalDataSource dataSource,
-        @NotNull DBCExecutionContext executionContext
-    ) {
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull DAICompletionSettings settings) {
         super(parentShell, title);
         this.historyManager = historyManager;
         this.dataSource = dataSource;
         this.executionContext = executionContext;
+        this.settings = settings;
         setImage(DBIcon.AI);
         setModeless(true);
     }
@@ -114,14 +114,9 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         scopePanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         UIUtils.createControlLabel(scopePanel, "Scope");
 
-        DBPPreferenceStore dsPrefs = dataSource.getDataSourceContainer().getPreferenceStore();
-        currentScope = CommonUtils.valueOf(
-            DAICompletionScope.class,
-            dsPrefs.getString(AICompletionConstants.AI_META_SCOPE),
-            DAICompletionScope.CURRENT_SCHEMA);
-        String customIds = dsPrefs.getString(AICompletionConstants.AI_META_CUSTOM);
-        if (customIds != null) {
-            checkedObjectIds.addAll(Arrays.asList(customIds.split(",")));
+        currentScope = settings.getScope();
+        if (settings.getCustomObjectIds() != null) {
+            checkedObjectIds.addAll(Arrays.asList(settings.getCustomObjectIds()));
         }
 
         Combo scopeCombo = new Combo(scopePanel, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -322,28 +317,9 @@ public class AISuggestionPopup extends AbstractPopupPanel {
     protected void okPressed() {
         inputText = inputField.getText().trim();
 
-        DBPPreferenceStore dsPrefs = dataSource.getDataSourceContainer().getPreferenceStore();
-        dsPrefs.setValue(
-            AICompletionConstants.AI_META_SCOPE,
-            currentScope.name());
-
-        String customObjectIds = String.join(",", checkedObjectIds);
-        if (CommonUtils.isEmpty(customObjectIds)) {
-            dsPrefs.setToDefault(AICompletionConstants.AI_META_CUSTOM);
-        } else {
-            dsPrefs.setValue(AICompletionConstants.AI_META_CUSTOM, customObjectIds);
-        }
-        try {
-            dsPrefs.save();
-        } catch (IOException ex) {
-            log.error(ex);
-        }
-
-        if (currentScope == DAICompletionScope.CUSTOM) {
-
-        } else {
-            customEntities.clear();
-        }
+        settings.setScope(currentScope);
+        settings.setCustomObjectIds(checkedObjectIds.toArray(new String[0]));
+        settings.saveSettings();
 
         super.okPressed();
     }
@@ -367,6 +343,32 @@ public class AISuggestionPopup extends AbstractPopupPanel {
             gd.widthHint = 400;
             gd.heightHint = 300;
             objectTree.setLayoutData(gd);
+            objectTree.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (e.detail != SWT.CHECK) {
+                        return;
+                    }
+                    TreeItem item = (TreeItem) e.item;
+                    if (item.getData() instanceof DBSStructContainer) {
+                        checkTreeItems(item.getItems(), item.getChecked());
+                    }
+                }
+
+                private void checkTreeItems(TreeItem[] items, boolean check) {
+                    for (TreeItem child : items) {
+                        child.setChecked(check);
+                        if (child.getData() instanceof DBSEntity) {
+
+                        } else {
+                            TreeItem[] children = child.getItems();
+                            if (!ArrayUtils.isEmpty(children)) {
+                                checkTreeItems(children, check);
+                            }
+                        }
+                    }
+                }
+            });
 
             loadObjects(objectTree, executionContext.getDataSource());
 
