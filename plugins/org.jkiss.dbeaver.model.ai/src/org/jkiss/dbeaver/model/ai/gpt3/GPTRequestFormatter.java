@@ -37,6 +37,8 @@ public class GPTRequestFormatter {
     private static final Log log = Log.getLog(GPTRequestFormatter.class);
 
     private static final int MAX_PROMPT_LENGTH = 7500; // 8000 -
+    private static final boolean SUPPORTS_ATTRS = true;
+    private static final boolean SUPPORTS_FKS = false;
 
     /**
      * Add completion metadata to request
@@ -89,37 +91,42 @@ public class GPTRequestFormatter {
         if (object instanceof DBSEntity) {
             description.append("# ").append(DBUtils.getQuotedIdentifier(object));
             description.append("(");
-            List<? extends DBSEntityAttribute> attributes = ((DBSEntity) object).getAttributes(monitor);
             boolean firstAttr = true;
-            if (attributes != null) {
-                for (DBSEntityAttribute attribute : attributes) {
-                    if (DBUtils.isHiddenObject(attribute)) {
-                        continue;
+            if (SUPPORTS_ATTRS) {
+                List<? extends DBSEntityAttribute> attributes = ((DBSEntity) object).getAttributes(monitor);
+                if (attributes != null) {
+                    for (DBSEntityAttribute attribute : attributes) {
+                        if (DBUtils.isHiddenObject(attribute)) {
+                            continue;
+                        }
+                        if (!firstAttr) description.append(",");
+                        firstAttr = false;
+                        description.append(attribute.getName());
                     }
-                    if (!firstAttr) description.append(",");
-                    firstAttr = false;
-                    description.append(attribute.getName());
                 }
             }
-            Collection<? extends DBSEntityAssociation> associations = ((DBSEntity) object).getAssociations(monitor);
-            if (associations != null) {
-                for (DBSEntityAssociation association : associations) {
-                    if (association instanceof DBSEntityReferrer) {
-                        DBSEntity refEntity = association.getAssociatedEntity();
-                        List<? extends DBSEntityAttributeRef> refAttrs = ((DBSEntityReferrer) association).getAttributeReferences(monitor);
-                        if (refEntity != null && !CommonUtils.isEmpty(refAttrs)) {
-                            if (!firstAttr) description.append(",");
-                            firstAttr = false;
-                            description.append("FOREIGN KEY (");
-                            boolean firstRA = true;
-                            for (DBSEntityAttributeRef ar : refAttrs) {
-                                if (ar.getAttribute() != null) {
-                                    if (!firstRA) description.append(",");
-                                    firstRA = false;
-                                    description.append(ar.getAttribute().getName());
+            if (SUPPORTS_FKS) {
+                // TBD
+                Collection<? extends DBSEntityAssociation> associations = ((DBSEntity) object).getAssociations(monitor);
+                if (associations != null) {
+                    for (DBSEntityAssociation association : associations) {
+                        if (association instanceof DBSEntityReferrer) {
+                            DBSEntity refEntity = association.getAssociatedEntity();
+                            List<? extends DBSEntityAttributeRef> refAttrs = ((DBSEntityReferrer) association).getAttributeReferences(monitor);
+                            if (refEntity != null && !CommonUtils.isEmpty(refAttrs)) {
+                                if (!firstAttr) description.append(",");
+                                firstAttr = false;
+                                description.append("FOREIGN KEY (");
+                                boolean firstRA = true;
+                                for (DBSEntityAttributeRef ar : refAttrs) {
+                                    if (ar.getAttribute() != null) {
+                                        if (!firstRA) description.append(",");
+                                        firstRA = false;
+                                        description.append(ar.getAttribute().getName());
+                                    }
                                 }
+                                description.append(") REFERENCES ").append(refEntity.getName());
                             }
-                            description.append(") REFERENCES ").append(refEntity.getName());
                         }
                     }
                 }

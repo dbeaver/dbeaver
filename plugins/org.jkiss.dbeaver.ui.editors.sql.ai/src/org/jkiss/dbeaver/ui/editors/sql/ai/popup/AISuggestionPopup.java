@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.editors.sql.ai.gpt3.GPTPreferencePage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -104,11 +105,17 @@ public class AISuggestionPopup extends AbstractPopupPanel {
 
         Composite hintPanel = UIUtils.createComposite(placeholder, 2);
         hintPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        Label hintLabel = new Label(hintPanel, SWT.NONE);
-        hintLabel.setText("Enter a text in a human language, it will be translated into SQL.");
+        Link hintLabel = new Link(hintPanel, SWT.NONE);
+        hintLabel.setText("Enter a text in a human language, it will be translated into SQL (<a>instructions</a>)");
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
         hintLabel.setLayoutData(gd);
+        hintLabel.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                UIUtils.openWebBrowser(HelpUtils.getHelpExternalReference("AI-Smart-Assistance"));
+            }
+        });
 
         Composite scopePanel = UIUtils.createComposite(placeholder, 5);
         scopePanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
