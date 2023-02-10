@@ -22,7 +22,10 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
+import org.jkiss.dbeaver.ui.controls.lightgrid.IGridColumn;
+import org.jkiss.dbeaver.ui.controls.lightgrid.IGridController.DropLocation;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
@@ -30,7 +33,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -45,6 +48,8 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
     public static final String CMD_COLUMNS_HIDE_EMPTY = "org.jkiss.dbeaver.core.resultset.grid.columnsHideEmpty";
     public static final String CMD_SELECT_COLUMNS = "org.jkiss.dbeaver.core.resultset.grid.selectColumn";
     public static final String CMD_SELECT_ROWS = "org.jkiss.dbeaver.core.resultset.grid.selectRow";
+    public static final String CMD_MOVE_COLUMNS_RIGHT = "org.jkiss.dbeaver.core.resultset.grid.moveColumnRight";
+    public static final String CMD_MOVE_COLUMNS_LEFT = "org.jkiss.dbeaver.core.resultset.grid.moveColumnLeft";
 
     public static SpreadsheetPresentation getActiveSpreadsheet(ExecutionEvent event)
     {
@@ -92,22 +97,58 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
             case CMD_SELECT_COLUMNS: {
                 Spreadsheet s = spreadsheet.getSpreadsheet();
                 int rowsCount = s.getItemCount();
-                Collection<GridPos> cellsToSelect = s.getColumnSelection().stream().flatMap(
+                List<IGridColumn> columnsSelection = s.getColumnSelection();
+                Collection<GridPos> cellsToSelect = columnsSelection.stream().flatMap(
                     c -> IntStream.range(0, rowsCount).mapToObj(r -> new GridPos(c.getIndex(), r))
-                ).collect(Collectors.toCollection(() -> new LinkedList<>()));
+                ).collect(Collectors.toList());
                 s.selectCells(cellsToSelect);
                 s.resetFocus();
-                s.setFocusColumn(s.getColumnSelection().stream().mapToInt(c -> c.getIndex()).min().getAsInt());
+                s.setFocusColumn(columnsSelection.stream().mapToInt(c -> c.getIndex()).min().getAsInt());
                 break;
             }
             case CMD_SELECT_ROWS: {
                 Spreadsheet s = spreadsheet.getSpreadsheet();
                 int columnsCount = s.getColumnCount();
-                Collection<GridPos> cellsToSelect = s.getRowSelection().stream().flatMap(
+                Collection<Integer> rowsSelection = s.getRowSelection();
+                Collection<GridPos> cellsToSelect = rowsSelection.stream().flatMap(
                     r -> IntStream.range(0, columnsCount).mapToObj(c -> new GridPos(c, r))
-                ).collect(Collectors.toCollection(() -> new LinkedList<>()));
+                ).collect(Collectors.toList());
                 s.selectCells(cellsToSelect);
-                s.setFocusItem(s.getRowSelection().stream().mapToInt(n -> n).min().getAsInt());
+                s.setFocusItem(rowsSelection.stream().mapToInt(n -> n).min().getAsInt());
+                break;
+            }
+            case CMD_MOVE_COLUMNS_RIGHT: {
+                Spreadsheet s = spreadsheet.getSpreadsheet();
+                Collection<GridCell> selectedCells = s.getCellSelection();
+                List<IGridColumn> selectedColumns = s.getColumnSelection();
+                int rightmostColumnIndex = selectedColumns.stream().mapToInt(c -> c.getIndex()).max().getAsInt();
+                if (rightmostColumnIndex < s.getColumnCount() - 1) {
+                    List<Object> columnsToMove = selectedColumns.stream().map(c -> c.getElement()).collect(Collectors.toList());
+                    List<GridPos> cellsToSelect = selectedCells.stream().map(c -> s.cellToPos(c)).map(p -> new GridPos(p.col + 1, p.row)).collect(Collectors.toList());
+                    if (spreadsheet.shiftColumns(columnsToMove, 1)) {
+                        s.deselectAll();
+                        s.selectCells(cellsToSelect);
+                        s.resetFocus();
+                        s.setFocusColumn(rightmostColumnIndex + 1);
+                    }
+                }
+                break;
+            }
+            case CMD_MOVE_COLUMNS_LEFT: {
+                Spreadsheet s = spreadsheet.getSpreadsheet();
+                Collection<GridCell> selectedCells = s.getCellSelection();
+                List<IGridColumn> selectedColumns = s.getColumnSelection();
+                int leftmostColumnIndex = selectedColumns.stream().mapToInt(c -> c.getIndex()).min().getAsInt();
+                if (leftmostColumnIndex > 0) {
+                    List<Object> columnsToMove = selectedColumns.stream().map(c -> c.getElement()).collect(Collectors.toList());
+                    List<GridPos> cellsToSelect = selectedCells.stream().map(c -> s.cellToPos(c)).map(p -> new GridPos(p.col - 1, p.row)).collect(Collectors.toList());
+                    if (spreadsheet.shiftColumns(columnsToMove, -1)) {
+                        s.deselectAll();
+                        s.selectCells(cellsToSelect);
+                        s.resetFocus();
+                        s.setFocusColumn(leftmostColumnIndex - 1);
+                    }
+                }
                 break;
             }
         }
