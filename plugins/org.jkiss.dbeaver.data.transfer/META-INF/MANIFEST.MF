@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.data.transfer;singleton:=true
-Bundle-Version: 2.0.83.qualifier
-Bundle-Release-Date: 20230306
+Bundle-Version: 2.0.84.qualifier
+Bundle-Release-Date: 20230220
 Bundle-Activator: org.jkiss.dbeaver.tools.transfer.internal.DTActivator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
