@@ -84,10 +84,13 @@ class GridColumnRenderer extends AbstractRenderer {
 
     public void paint(GC gc, Rectangle bounds, boolean selected, boolean hovering, IGridColumn element) {
 
-        boolean hasFilters = grid.getContentProvider().isElementSupportsFilter(element);
+        IGridContentProvider contentProvider = grid.getContentProvider();
+        boolean hasFilters = contentProvider.isElementSupportsFilter(element);
 
-        int sortOrder = grid.getContentProvider().getSortOrder(element);
-        final Rectangle sortBounds = sortOrder == SWT.NONE ? null : getSortControlBounds();
+        int sortOrder = contentProvider.getSortOrder(element);
+        boolean showSortIconAlways = contentProvider.isElementSupportsSort(element);
+        boolean showSortIcon = showSortIconAlways || sortOrder > 0;
+        final Rectangle sortBounds = showSortIcon ? getSortControlBounds() : null;
         final Rectangle filterBounds = getFilterControlBounds();
 
         boolean flat = true;
@@ -115,7 +118,7 @@ class GridColumnRenderer extends AbstractRenderer {
 
         int width = bounds.width - x;
 
-        if (sortOrder == SWT.NONE) {
+        if (sortOrder <= 0) {
             width -= RIGHT_MARGIN;
         } else {
             width -= ARROW_MARGIN + sortBounds.width;
@@ -184,13 +187,13 @@ class GridColumnRenderer extends AbstractRenderer {
         }
 
         // Sort icon
-        if (sortOrder != SWT.NONE) {
+        if (showSortIcon) {
             sortBounds.x = bounds.x + bounds.width - sortBounds.width - filterBounds.width - IMAGE_SPACING;
             sortBounds.y = y;
             if (drawSelected) {
                 sortBounds.x++;
             }
-            paintSort(gc, sortBounds, sortOrder, false);
+            paintSort(gc, sortBounds, sortOrder, showSortIconAlways);
         }
 
         // Drop-down icon

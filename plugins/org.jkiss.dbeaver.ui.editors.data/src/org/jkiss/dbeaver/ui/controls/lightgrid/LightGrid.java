@@ -2139,13 +2139,11 @@ public abstract class LightGrid extends Canvas {
                     for (GridColumn column : columns) {
                         if (x >= x2 && x <= x2 + column.getWidth()) {
                             hoveringOnHeader = true;
-/*
                             if (column.isOverSortArrow(x - x2, y)) {
                                 overSorter = true;
                                 columnBeingSorted = column;
                                 break;
                             }
-*/
 
                             if(column.isOverFilterButton(x - x2, y)) {
                             	columnBeingFiltered = column;

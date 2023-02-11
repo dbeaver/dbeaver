@@ -2281,6 +2281,9 @@ public class ResultSetViewer extends Viewer
             constraint.setOrderDescending(false);
         } else if (forceOrder == ColumnOrder.DESC) {
             constraint.setOrderDescending(true);
+        } else if (constraint.getOrderPosition() > 0 && !constraint.isOrderDescending()) {
+            // Toggle to DESC ordering
+            constraint.setOrderDescending(true);
         } else {
             // Reset order
             for (DBDAttributeConstraint con2 : dataFilter.getConstraints()) {
