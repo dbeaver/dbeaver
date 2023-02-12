@@ -342,8 +342,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.bindings">
-        <scheme id="org.jkiss.dbeaver.keyboardOnlyKeyScheme" parentId="org.jkiss.dbeaver.defaultKeyScheme" name="%keyboardOnlyKeyScheme.name" description="%keyboardOnlyKeyScheme.description" />
-
+        <scheme id="org.jkiss.dbeaver.keyboardOnlyKeyScheme" parentId="org.jkiss.dbeaver.defaultKeyScheme" name="%keyboardOnlyKeyScheme.name" description="%keyboardOnlyKeyScheme.description"/>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">

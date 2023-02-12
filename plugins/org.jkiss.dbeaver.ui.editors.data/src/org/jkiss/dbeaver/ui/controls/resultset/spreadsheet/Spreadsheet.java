@@ -296,7 +296,6 @@ public class Spreadsheet extends LightGrid implements Listener {
                 }
                 break;
             case SWT.MouseDoubleClick:
-            {
                 if (event.button != 1) {
                     return;
                 }
@@ -349,7 +348,6 @@ public class Spreadsheet extends LightGrid implements Listener {
                     }
                 }
                 break;
-            }
             case SWT.MouseDown:
                 if (event.button == 2) {
 //                    presentation.openValueEditor(true);
