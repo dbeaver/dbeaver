@@ -24,11 +24,12 @@ import org.eclipse.swt.accessibility.AccessibleControlAdapter;
 import org.eclipse.swt.accessibility.AccessibleControlEvent;
 import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.accessibility.AccessibleListener;
-import org.eclipse.swt.accessibility.AccessibleTableAdapter;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.MenuDetectEvent;
+import org.eclipse.swt.events.MenuDetectListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
@@ -43,9 +44,6 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentBytes;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentChars;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentLOB;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
@@ -298,6 +296,7 @@ public class Spreadsheet extends LightGrid implements Listener {
                 }
                 break;
             case SWT.MouseDoubleClick:
+            {
                 if (event.button != 1) {
                     return;
                 }
@@ -350,6 +349,7 @@ public class Spreadsheet extends LightGrid implements Listener {
                     }
                 }
                 break;
+            }
             case SWT.MouseDown:
                 if (event.button == 2) {
 //                    presentation.openValueEditor(true);
@@ -387,6 +387,29 @@ public class Spreadsheet extends LightGrid implements Listener {
     }
 
     private void hookContextMenu() {
+        addMenuDetectListener(new MenuDetectListener() {
+            @Override
+            public void menuDetected(MenuDetectEvent e) {
+                if (e.detail == SWT.MENU_KEYBOARD) {
+                    GridCell focusCell = getFocusCell();
+                    Object focusColumnElement = getFocusColumnElement();
+                    if (focusCell != null) {
+                        GridPos focusPos = cellToPos(focusCell);
+                        patchEventWithLocalRect(e, getCellBounds(focusPos.col, focusPos.row));
+                    } else if (focusColumnElement != null) {
+                        IGridColumn focusColumn = getColumnByElement(focusColumnElement);
+                        patchEventWithLocalRect(e, getColumnBounds(focusColumn.getIndex()));
+                    }
+                }
+            }
+            
+            private void patchEventWithLocalRect(MenuDetectEvent e, Rectangle r) {
+                Point p = toDisplay(new Point(r.x + r.width, r.y));
+                e.x = p.x;
+                e.y = p.y;
+            }
+        });
+        
         MenuManager menuMgr = new MenuManager(null, AbstractPresentation.RESULT_SET_PRESENTATION_CONTEXT_MENU);
         Menu menu = menuMgr.createContextMenu(this);
         menuMgr.addMenuListener(manager -> {

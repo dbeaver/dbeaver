@@ -1000,16 +1000,15 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         }
                     }
                     if (!hiddenAttributes.isEmpty()) {
-                        manager.insertAfter(IResultSetController.MENU_GROUP_ADDITIONS, new Action(ResultSetMessages.controls_resultset_viewer_show_hidden_columns) {
-                            @Override
-                            public void run() {
-                                ResultSetModel model = controller.getModel();
-                                for (DBDAttributeBinding attr : hiddenAttributes) {
-                                    model.setAttributeVisibility(attr, true);
-                                }
-                                refreshData(true, false, true);
-                            }
-                        });
+                        manager.insertAfter(
+                            IResultSetController.MENU_GROUP_ADDITIONS,
+                            ActionUtils.makeCommandContribution(
+                                controller.getSite(),
+                                SpreadsheetCommandHandler.CMD_SHOW_COLUMNS,
+                                ResultSetMessages.controls_resultset_viewer_show_hidden_columns,
+                                null
+                            )
+                        );
                     }
 
                     String hideTitle;
@@ -1019,24 +1018,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     } else {
                         hideTitle = NLS.bind(ResultSetMessages.controls_resultset_viewer_hide_columns_x, selectedColumns.size());
                     }
-
-                    manager.insertAfter(IResultSetController.MENU_GROUP_ADDITIONS, new Action(hideTitle) {
-                        @Override
-                        public void run() {
-                            ResultSetModel model = controller.getModel();
-                            if (selectedColumns.size() >= model.getVisibleAttributeCount()) {
-                                UIUtils.showMessageBox(
-                                    getControl().getShell(),
-                                    ResultSetMessages.controls_resultset_viewer_hide_columns_error_title,
-                                    ResultSetMessages.controls_resultset_viewer_hide_columnss_error_text, SWT.ERROR);
-                            } else {
-                                for (IGridColumn selectedColumn : selectedColumns) {
-                                    model.setAttributeVisibility((DBDAttributeBinding) selectedColumn.getElement(), false);
-                                }
-                                refreshData(true, false, true);
-                            }
-                        }
-                    });
+                    manager.insertAfter(
+                        IResultSetController.MENU_GROUP_ADDITIONS, 
+                        ActionUtils.makeCommandContribution(controller.getSite(), SpreadsheetCommandHandler.CMD_HIDE_COLUMNS, hideTitle, null)
+                    );
                 }
             }
         }
@@ -1547,7 +1532,13 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
     }
     
-    public boolean shiftColumns(List<Object> columns, int delta) {
+    /**
+     * Moves specified columns to delta.
+     * @param columns - columns to move
+     * @param delta determines where columns should be moved. Negative number means to the left, positive - to the right
+     * @return true if all columns were moved, otherwise false
+     */
+    public boolean shiftColumns(@NotNull List<Object> columns, int delta) {
         if (delta == 0) {
             return false;
         }
@@ -1596,7 +1587,6 @@ public class SpreadsheetPresentation extends AbstractPresentation
             setConstraintPosition(allConstraints.get(i), pin, i);
         }
         controller.setDataFilter(dataFilter, false);
-        // spreadsheet.setFocusColumn(targetPosition);
         spreadsheet.refreshData(false, true, false);
         return true;
     }

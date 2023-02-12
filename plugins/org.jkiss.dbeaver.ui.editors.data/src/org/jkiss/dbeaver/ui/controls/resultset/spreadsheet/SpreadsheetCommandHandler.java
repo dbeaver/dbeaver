@@ -19,18 +19,24 @@ package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridColumn;
-import org.jkiss.dbeaver.ui.controls.lightgrid.IGridController.DropLocation;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -50,6 +56,8 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
     public static final String CMD_SELECT_ROWS = "org.jkiss.dbeaver.core.resultset.grid.selectRow";
     public static final String CMD_MOVE_COLUMNS_RIGHT = "org.jkiss.dbeaver.core.resultset.grid.moveColumnRight";
     public static final String CMD_MOVE_COLUMNS_LEFT = "org.jkiss.dbeaver.core.resultset.grid.moveColumnLeft";
+    public static final String CMD_HIDE_COLUMNS = "org.jkiss.dbeaver.core.resultset.grid.hideColumns";
+    public static final String CMD_SHOW_COLUMNS = "org.jkiss.dbeaver.core.resultset.grid.showColumns";
 
     public static SpreadsheetPresentation getActiveSpreadsheet(ExecutionEvent event)
     {
@@ -96,6 +104,7 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
             }
             case CMD_SELECT_COLUMNS: {
                 Spreadsheet s = spreadsheet.getSpreadsheet();
+                GridPos focusPos = s.getFocusPos();
                 int rowsCount = s.getItemCount();
                 List<IGridColumn> columnsSelection = s.getColumnSelection();
                 Collection<GridPos> cellsToSelect = columnsSelection.stream().flatMap(
@@ -103,24 +112,28 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
                 ).collect(Collectors.toList());
                 s.selectCells(cellsToSelect);
                 s.resetFocus();
-                s.setFocusColumn(columnsSelection.stream().mapToInt(c -> c.getIndex()).min().getAsInt());
+                s.setFocusColumn(focusPos.col);
                 break;
             }
             case CMD_SELECT_ROWS: {
                 Spreadsheet s = spreadsheet.getSpreadsheet();
+                GridPos focusPos = s.getFocusPos();
                 int columnsCount = s.getColumnCount();
                 Collection<Integer> rowsSelection = s.getRowSelection();
                 Collection<GridPos> cellsToSelect = rowsSelection.stream().flatMap(
                     r -> IntStream.range(0, columnsCount).mapToObj(c -> new GridPos(c, r))
                 ).collect(Collectors.toList());
                 s.selectCells(cellsToSelect);
-                s.setFocusItem(rowsSelection.stream().mapToInt(n -> n).min().getAsInt());
+                s.resetFocus();
+                s.setFocusItem(focusPos.row);
                 break;
             }
             case CMD_MOVE_COLUMNS_RIGHT: {
                 Spreadsheet s = spreadsheet.getSpreadsheet();
                 Collection<GridCell> selectedCells = s.getCellSelection();
                 List<IGridColumn> selectedColumns = s.getColumnSelection();
+                GridPos focusPos = s.getFocusPos();
+                Object focusColumnElement = s.getFocusColumnElement();
                 int rightmostColumnIndex = selectedColumns.stream().mapToInt(c -> c.getIndex()).max().getAsInt();
                 if (rightmostColumnIndex < s.getColumnCount() - 1) {
                     List<Object> columnsToMove = selectedColumns.stream().map(c -> c.getElement()).collect(Collectors.toList());
@@ -129,7 +142,8 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
                         s.deselectAll();
                         s.selectCells(cellsToSelect);
                         s.resetFocus();
-                        s.setFocusColumn(rightmostColumnIndex + 1);
+                        s.setFocusColumn(s.getColumnByElement(focusColumnElement).getIndex());
+                        s.setFocusItem(focusPos.row);
                     }
                 }
                 break;
@@ -138,6 +152,8 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
                 Spreadsheet s = spreadsheet.getSpreadsheet();
                 Collection<GridCell> selectedCells = s.getCellSelection();
                 List<IGridColumn> selectedColumns = s.getColumnSelection();
+                GridPos focusPos = s.getFocusPos();
+                Object focusColumnElement = s.getFocusColumnElement();
                 int leftmostColumnIndex = selectedColumns.stream().mapToInt(c -> c.getIndex()).min().getAsInt();
                 if (leftmostColumnIndex > 0) {
                     List<Object> columnsToMove = selectedColumns.stream().map(c -> c.getElement()).collect(Collectors.toList());
@@ -146,10 +162,44 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
                         s.deselectAll();
                         s.selectCells(cellsToSelect);
                         s.resetFocus();
-                        s.setFocusColumn(leftmostColumnIndex - 1);
+                        s.setFocusColumn(s.getColumnByElement(focusColumnElement).getIndex());
+                        s.setFocusItem(focusPos.row);
                     }
                 }
                 break;
+            }
+            case CMD_HIDE_COLUMNS: {
+                ResultSetModel model = spreadsheet.getController().getModel();
+                List<IGridColumn> selectedColumns = spreadsheet.getSpreadsheet().getColumnSelection();
+                if (selectedColumns.size() >= model.getVisibleAttributeCount()) {
+                    UIUtils.showMessageBox(
+                        spreadsheet.getControl().getShell(),
+                        ResultSetMessages.controls_resultset_viewer_hide_columns_error_title,
+                        ResultSetMessages.controls_resultset_viewer_hide_columnss_error_text, SWT.ERROR);
+                } else {
+                    for (IGridColumn selectedColumn : selectedColumns) {
+                        model.setAttributeVisibility((DBDAttributeBinding) selectedColumn.getElement(), false);
+                    }
+                    spreadsheet.refreshData(true, false, true);
+                }
+                break;
+            }
+            case CMD_SHOW_COLUMNS: {
+                ResultSetModel model = spreadsheet.getController().getModel();
+                List<DBDAttributeBinding> hiddenAttributes = new ArrayList<>();
+                List<DBDAttributeConstraint> constraints = model.getDataFilter().getConstraints();
+                for (DBDAttributeConstraint ac : constraints) {
+                    DBSAttributeBase attribute = ac.getAttribute();
+                    if (!ac.isVisible() && attribute instanceof DBDAttributeBinding
+                        && DBDAttributeConstraint.isVisibleByDefault((DBDAttributeBinding) attribute)
+                    ) {
+                        hiddenAttributes.add((DBDAttributeBinding) attribute);
+                    }
+                }
+                for (DBDAttributeBinding attr : hiddenAttributes) {
+                    model.setAttributeVisibility(attr, true);
+                }
+                spreadsheet.refreshData(true, false, true);
             }
         }
 
