@@ -104,7 +104,11 @@ public class EditTaskVariablesDialog extends StatusDialog {
                 @Override
                 protected Control createEditor(Table table, int index, TableItem item) {
                     Text editor = new Text(table, SWT.NONE);
-                    editor.setText(item.getText(index));
+                    String value = item.getText(index);
+                    if (index == 0 && value.chars().anyMatch(n -> !Character.isUpperCase(n))) {
+                        value = BasicSQLDialect.INSTANCE.getQuotedIdentifier(value, true, true);
+                    }
+                    editor.setText(value);
                     editor.selectAll();
 
                     editor.addTraverseListener(e -> {
