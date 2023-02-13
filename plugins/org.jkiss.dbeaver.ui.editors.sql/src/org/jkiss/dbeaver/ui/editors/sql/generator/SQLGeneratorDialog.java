@@ -268,14 +268,14 @@ class SQLGeneratorDialog extends ViewSQLDialog {
     }
 
     private void startGenerateJob() {
-        generateDDLJob.cancel();
-        generateDDLJob.schedule();
         setSQLText("Loading DDL...");
         updateSQL();
         Button button = getButton(IDialogConstants.DETAILS_ID);
         if (button != null) {
             button.setEnabled(false);
         }
+        generateDDLJob.cancel();
+        generateDDLJob.schedule();
     }
 
     @Override
