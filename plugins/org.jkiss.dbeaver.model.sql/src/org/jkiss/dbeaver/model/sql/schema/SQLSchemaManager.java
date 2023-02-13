@@ -65,8 +65,8 @@ public final class SQLSchemaManager {
             SQLDialect targetDatabaseDialect,
             String targetDatabaseName,
             int schemaVersionActual,
-            int schemaVersionObsolete)
-    {
+            int schemaVersionObsolete
+    ) {
         this.schemaId = schemaId;
 
         this.scriptSource = scriptSource;
@@ -82,29 +82,37 @@ public final class SQLSchemaManager {
     public void updateSchema(DBRProgressMonitor monitor) throws DBException {
         try {
             Connection dbCon = connectionProvider.getDatabaseConnection(monitor);
+            var autoCommit = dbCon.getAutoCommit();
+            dbCon.setAutoCommit(false);
             try (JDBCTransaction txn = new JDBCTransaction(dbCon)) {
-                int currentSchemaVersion = versionManager.getCurrentSchemaVersion(monitor, dbCon, targetDatabaseName);
-                // Do rollback in case some error happened during version check (makes sense for PG)
-                txn.rollback();
-                if (currentSchemaVersion < 0) {
-                    createNewSchema(monitor, dbCon);
+                try {
+                    int currentSchemaVersion = versionManager.getCurrentSchemaVersion(monitor, dbCon, targetDatabaseName);
+                    // Do rollback in case some error happened during version check (makes sense for PG)
+                    txn.rollback();
+                    if (currentSchemaVersion < 0) {
+                        createNewSchema(monitor, dbCon);
 
-                    // Update schema version
-                    versionManager.updateCurrentSchemaVersion(monitor, dbCon, targetDatabaseName);
-                } else if (schemaVersionObsolete > 0 && currentSchemaVersion < schemaVersionObsolete) {
-                    dropSchema(monitor, dbCon);
-                    createNewSchema(monitor, dbCon);
+                        // Update schema version
+                        versionManager.updateCurrentSchemaVersion(monitor, dbCon, targetDatabaseName);
+                    } else if (schemaVersionObsolete > 0 && currentSchemaVersion < schemaVersionObsolete) {
+                        dropSchema(monitor, dbCon);
+                        createNewSchema(monitor, dbCon);
 
-                    // Update schema version
-                    versionManager.updateCurrentSchemaVersion(monitor, dbCon, targetDatabaseName);
-                } else if (schemaVersionActual > currentSchemaVersion) {
-                    upgradeSchemaVersion(monitor, dbCon, currentSchemaVersion);
+                        // Update schema version
+                        versionManager.updateCurrentSchemaVersion(monitor, dbCon, targetDatabaseName);
+                    } else if (schemaVersionActual > currentSchemaVersion) {
+                        upgradeSchemaVersion(monitor, dbCon, currentSchemaVersion);
+                    }
+
+                    txn.commit();
+                } catch (Exception e) {
+                    txn.rollback();
+                    throw e;
                 }
-
-                txn.commit();
+            } finally {
+                dbCon.setAutoCommit(autoCommit);
             }
-        }
-        catch (IOException | SQLException e) {
+        } catch (IOException | SQLException e) {
             throw new DBException("Error updating " + schemaId + " schema version", e);
         }
     }
@@ -116,16 +124,13 @@ public final class SQLSchemaManager {
             if (ddlStream == null) {
                 continue;
             }
-            var savepointName = "Update schema " + schemaId + " version from " + curVer + " to " + updateToVer;
-            log.debug(savepointName);
-            var savepoint = connection.setSavepoint(savepointName);
+            log.debug("Update schema " + schemaId + " version from " + curVer + " to " + updateToVer);
             try {
                 executeScript(monitor, connection, ddlStream, true);
                 // Update schema version
                 versionManager.updateCurrentSchemaVersion(monitor, connection, targetDatabaseName, updateToVer);
             } catch (Exception e) {
                 log.warn("Error updating " + schemaId + " schema version from " + curVer + " to " + updateToVer, e);
-                connection.rollback(savepoint);
                 throw e;
             } finally {
                 ContentUtils.close(ddlStream);
