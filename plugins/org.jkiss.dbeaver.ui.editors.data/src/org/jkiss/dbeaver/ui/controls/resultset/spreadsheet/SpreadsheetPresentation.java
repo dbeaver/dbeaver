@@ -1020,7 +1020,12 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     }
                     manager.insertAfter(
                         IResultSetController.MENU_GROUP_ADDITIONS, 
-                        ActionUtils.makeCommandContribution(controller.getSite(), SpreadsheetCommandHandler.CMD_HIDE_COLUMNS, hideTitle, null)
+                        ActionUtils.makeCommandContribution(
+                            controller.getSite(),
+                            SpreadsheetCommandHandler.CMD_HIDE_COLUMNS,
+                            hideTitle,
+                            null
+                        )
                     );
                 }
             }
@@ -1534,6 +1539,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     
     /**
      * Moves specified columns to delta.
+     *
      * @param columns - columns to move
      * @param delta determines where columns should be moved. Negative number means to the left, positive - to the right
      * @return true if all columns were moved, otherwise false
@@ -1544,7 +1550,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
         final DBDDataFilter dataFilter = new DBDDataFilter(controller.getModel().getDataFilter());
         List<DBDAttributeConstraint> constraintsToMove = new ArrayList<>(columns.size());
-        int pinnedAttrsCount = 0, normalAttrsCount = 0;
+        int pinnedAttrsCount = 0;
+        int normalAttrsCount = 0;
         for (Object column : columns) {
             if (column instanceof DBDAttributeBinding) {
                 final DBDAttributeConstraint attrConstraint = dataFilter.getConstraint((DBDAttributeBinding) column);
@@ -1576,7 +1583,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             return false;
         }
         // reorder constraints affecting the whole collection of them 
-        for (DBDAttributeConstraint constraint: constraintsToMove) {
+        for (DBDAttributeConstraint constraint : constraintsToMove) {
             int oldIndex = getConstraintPosition(constraint, pin);
             int newIndex = oldIndex + delta;
             allConstraints.remove(constraint);

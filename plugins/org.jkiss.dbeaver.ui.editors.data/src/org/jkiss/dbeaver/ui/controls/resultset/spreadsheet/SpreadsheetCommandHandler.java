@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridColumn;
+import org.jkiss.dbeaver.ui.controls.lightgrid.IGridItem;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
@@ -134,10 +135,11 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
                 List<IGridColumn> selectedColumns = s.getColumnSelection();
                 GridPos focusPos = s.getFocusPos();
                 Object focusColumnElement = s.getFocusColumnElement();
-                int rightmostColumnIndex = selectedColumns.stream().mapToInt(c -> c.getIndex()).max().getAsInt();
+                int rightmostColumnIndex = selectedColumns.stream().mapToInt(IGridColumn::getIndex).max().getAsInt();
                 if (rightmostColumnIndex < s.getColumnCount() - 1) {
-                    List<Object> columnsToMove = selectedColumns.stream().map(c -> c.getElement()).collect(Collectors.toList());
-                    List<GridPos> cellsToSelect = selectedCells.stream().map(c -> s.cellToPos(c)).map(p -> new GridPos(p.col + 1, p.row)).collect(Collectors.toList());
+                    List<Object> columnsToMove = selectedColumns.stream().map(IGridItem::getElement).collect(Collectors.toList());
+                    List<GridPos> cellsToSelect = selectedCells.stream().map(s::cellToPos)
+                        .map(p -> new GridPos(p.col + 1, p.row)).collect(Collectors.toList());
                     if (spreadsheet.shiftColumns(columnsToMove, 1)) {
                         s.deselectAll();
                         s.selectCells(cellsToSelect);
@@ -154,10 +156,11 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
                 List<IGridColumn> selectedColumns = s.getColumnSelection();
                 GridPos focusPos = s.getFocusPos();
                 Object focusColumnElement = s.getFocusColumnElement();
-                int leftmostColumnIndex = selectedColumns.stream().mapToInt(c -> c.getIndex()).min().getAsInt();
+                int leftmostColumnIndex = selectedColumns.stream().mapToInt(IGridColumn::getIndex).min().getAsInt();
                 if (leftmostColumnIndex > 0) {
-                    List<Object> columnsToMove = selectedColumns.stream().map(c -> c.getElement()).collect(Collectors.toList());
-                    List<GridPos> cellsToSelect = selectedCells.stream().map(c -> s.cellToPos(c)).map(p -> new GridPos(p.col - 1, p.row)).collect(Collectors.toList());
+                    List<Object> columnsToMove = selectedColumns.stream().map(IGridItem::getElement).collect(Collectors.toList());
+                    List<GridPos> cellsToSelect = selectedCells.stream().map(s::cellToPos)
+                        .map(p -> new GridPos(p.col - 1, p.row)).collect(Collectors.toList());
                     if (spreadsheet.shiftColumns(columnsToMove, -1)) {
                         s.deselectAll();
                         s.selectCells(cellsToSelect);
