@@ -102,7 +102,7 @@ public class SQLScriptParserGenericsTest {
             Assert.assertEquals("begin transaction", element.getText());
         }
     }
-    
+
     @Test
     public void parseSnowflakeCreateProcedureWithIfStatements() throws DBException {
         String[] query = new String[]{ 

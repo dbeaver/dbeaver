@@ -876,7 +876,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             if (Character.isLetterOrDigit(c)) {
                 result.append(c);
                 lastUnd = false;
-            } else if (!lastUnd) {
+            } else if (c == '_' || !lastUnd) {
                 result.append('_');
                 lastUnd = true;
             }
