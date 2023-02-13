@@ -427,7 +427,7 @@
                         useURL="false"
                         defaultPort="8563"
                         description="%driver.exasol.description"
-                        webURL="https://www.exasol.com/portal/display/DOWNLOAD/EXASOL+Download+Section"
+                        webURL="https://downloads.exasol.com/clients-and-drivers"
                         categories="sql,analytic,columns">
                     <file path="maven:/com.exasol:exasol-jdbc:RELEASE[7.1.16]" type="jar" bundle="!drivers.exasol"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.exasol"/>
@@ -435,8 +435,7 @@
                     <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.exasol"/>
 
                     <replace provider="generic" driver="exasol"/>
-                    <property name="querytimeout" value="600"/>
-                    <property name="connecttimeout" value="1000"/>
+                    <property name="querytimeout" value="3600"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern"
                               value="yyyy-MM-dd-HH.mm.ss.ffffff"/>
                 </driver>
