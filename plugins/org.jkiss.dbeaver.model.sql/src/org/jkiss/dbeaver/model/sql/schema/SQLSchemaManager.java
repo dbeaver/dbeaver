@@ -107,6 +107,7 @@ public final class SQLSchemaManager {
                     txn.commit();
                 } catch (Exception e) {
                     txn.rollback();
+                    log.warn(schemaId + " migration has been rolled back");
                     throw e;
                 }
             } finally {
