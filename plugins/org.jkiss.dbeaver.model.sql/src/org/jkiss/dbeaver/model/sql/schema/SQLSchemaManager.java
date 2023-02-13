@@ -51,21 +51,21 @@ public final class SQLSchemaManager {
     private final SQLSchemaConnectionProvider connectionProvider;
     private final SQLSchemaVersionManager versionManager;
 
-    private SQLDialect targetDatabaseDialect;
-    private String targetDatabaseName;
+    private final SQLDialect targetDatabaseDialect;
+    private final String targetDatabaseName;
 
-    private int schemaVersionActual;
-    private int schemaVersionObsolete;
+    private final int schemaVersionActual;
+    private final int schemaVersionObsolete;
 
     public SQLSchemaManager(
-        String schemaId,
-        SQLSchemaScriptSource scriptSource,
-        SQLSchemaConnectionProvider connectionProvider,
-        SQLSchemaVersionManager versionManager,
-        SQLDialect targetDatabaseDialect,
-        String targetDatabaseName,
-        int schemaVersionActual,
-        int schemaVersionObsolete)
+            String schemaId,
+            SQLSchemaScriptSource scriptSource,
+            SQLSchemaConnectionProvider connectionProvider,
+            SQLSchemaVersionManager versionManager,
+            SQLDialect targetDatabaseDialect,
+            String targetDatabaseName,
+            int schemaVersionActual,
+            int schemaVersionObsolete)
     {
         this.schemaId = schemaId;
 
@@ -113,19 +113,22 @@ public final class SQLSchemaManager {
         for (int curVer = currentSchemaVersion; curVer < schemaVersionActual; curVer++) {
             int updateToVer = curVer + 1;
             Reader ddlStream = scriptSource.openSchemaUpdateScript(monitor, updateToVer);
-            if (ddlStream != null) {
-                log.debug("Update schema " + schemaId + " version from " + curVer + " to " + updateToVer);
-                try {
-                    executeScript(monitor, connection, ddlStream, true);
-                } catch (Exception e) {
-                    log.warn("Error updating " + schemaId + " schema version from " + curVer + " to " + updateToVer, e);
-                    throw e;
-                } finally {
-                    ContentUtils.close(ddlStream);
-                }
+            if (ddlStream == null) {
+                continue;
+            }
+            var savepointName = "Update schema " + schemaId + " version from " + curVer + " to " + updateToVer;
+            log.debug(savepointName);
+            var savepoint = connection.setSavepoint(savepointName);
+            try {
+                executeScript(monitor, connection, ddlStream, true);
                 // Update schema version
-                versionManager.updateCurrentSchemaVersion(
-                    monitor, connection, targetDatabaseName);
+                versionManager.updateCurrentSchemaVersion(monitor, connection, targetDatabaseName, updateToVer);
+            } catch (Exception e) {
+                log.warn("Error updating " + schemaId + " schema version from " + curVer + " to " + updateToVer, e);
+                connection.rollback(savepoint);
+                throw e;
+            } finally {
+                ContentUtils.close(ddlStream);
             }
         }
     }
