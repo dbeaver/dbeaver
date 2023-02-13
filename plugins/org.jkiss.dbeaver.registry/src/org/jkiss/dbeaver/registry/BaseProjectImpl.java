@@ -588,41 +588,36 @@ public abstract class BaseProjectImpl implements DBPProject {
                     // Nothing to save and metadata file doesn't exist
                     return Status.OK_STATUS;
                 }
-                try {
-                    if (!CommonUtils.isEmpty(resourceProperties)) {
-                        try (Writer mdWriter = Files.newBufferedWriter(mdFile, StandardCharsets.UTF_8)) {
-                            try (JsonWriter jsonWriter = METADATA_GSON.newJsonWriter(mdWriter)) {
-                                jsonWriter.beginObject();
+                try (Writer mdWriter = Files.newBufferedWriter(mdFile, StandardCharsets.UTF_8);
+                     JsonWriter jsonWriter = METADATA_GSON.newJsonWriter(mdWriter)
+                ) {
+                    jsonWriter.beginObject();
 
-                                jsonWriter.name("resources");
-                                jsonWriter.beginObject();
-                                for (Map.Entry<String, Map<String, Object>> resEntry : resourceProperties.entrySet()) {
-                                    jsonWriter.name(resEntry.getKey());
-                                    jsonWriter.beginObject();
-                                    Map<String, Object> resProps = resEntry.getValue();
-                                    for (Map.Entry<String, Object> propEntry : resProps.entrySet()) {
-                                        jsonWriter.name(propEntry.getKey());
-                                        Object value = propEntry.getValue();
-                                        if (value == null) {
-                                            jsonWriter.nullValue();
-                                        } else if (value instanceof Number) {
-                                            jsonWriter.value((Number) value);
-                                        } else if (value instanceof Boolean) {
-                                            jsonWriter.value((Boolean) value);
-                                        } else {
-                                            jsonWriter.value(CommonUtils.toString(value));
-                                        }
-                                    }
-                                    jsonWriter.endObject();
-                                }
-                                jsonWriter.endObject();
-
-                                jsonWriter.endObject();
-                                jsonWriter.flush();
+                    jsonWriter.name("resources");
+                    jsonWriter.beginObject();
+                    for (var resEntry : resourceProperties.entrySet()) {
+                        jsonWriter.name(resEntry.getKey());
+                        jsonWriter.beginObject();
+                        Map<String, Object> resProps = resEntry.getValue();
+                        for (var propEntry : resProps.entrySet()) {
+                            jsonWriter.name(propEntry.getKey());
+                            Object value = propEntry.getValue();
+                            if (value == null) {
+                                jsonWriter.nullValue();
+                            } else if (value instanceof Number) {
+                                jsonWriter.value((Number) value);
+                            } else if (value instanceof Boolean) {
+                                jsonWriter.value((Boolean) value);
+                            } else {
+                                jsonWriter.value(CommonUtils.toString(value));
                             }
                         }
+                        jsonWriter.endObject();
                     }
+                    jsonWriter.endObject();
 
+                    jsonWriter.endObject();
+                    jsonWriter.flush();
                 } catch (IOException e) {
                     log.error("Error flushing project metadata", e);
                 }
