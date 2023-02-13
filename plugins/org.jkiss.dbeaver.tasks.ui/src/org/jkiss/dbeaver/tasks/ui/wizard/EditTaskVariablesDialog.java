@@ -106,7 +106,7 @@ public class EditTaskVariablesDialog extends StatusDialog {
                     Text editor = new Text(table, SWT.NONE);
                     String value = item.getText(index);
                     if (index == 0 && value.chars().anyMatch(n -> !Character.isUpperCase(n))) {
-                        value = BasicSQLDialect.INSTANCE.getQuotedIdentifier(value, true, true);
+                        value = BasicSQLDialect.INSTANCE.getQuotedIdentifier(value, true, false);
                     }
                     editor.setText(value);
                     editor.selectAll();

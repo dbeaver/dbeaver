@@ -483,12 +483,20 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @Override
     public String getUnquotedIdentifier(String identifier) {
+        return getUnquotedIdentifier(identifier, false);
+    }
+    
+    @Override
+    public String getUnquotedIdentifier(String identifier, boolean unescapeQuotesInsideIdentifier) {
         String[][] quoteStrings = this.getIdentifierQuoteStrings();
         if (ArrayUtils.isEmpty(quoteStrings)) {
             quoteStrings = BasicSQLDialect.DEFAULT_IDENTIFIER_QUOTES;
         }
         for (int i = 0; i < quoteStrings.length; i++) {
             identifier = DBUtils.getUnQuotedIdentifier(identifier, quoteStrings[i][0], quoteStrings[i][1]);
+            if (unescapeQuotesInsideIdentifier) {
+                identifier = identifier.replace(quoteStrings[i][0] + quoteStrings[i][0], quoteStrings[i][0]);
+            }
         }
         return identifier;
     }
