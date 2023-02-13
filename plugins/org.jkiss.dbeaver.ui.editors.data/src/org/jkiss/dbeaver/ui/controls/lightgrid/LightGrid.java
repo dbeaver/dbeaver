@@ -262,6 +262,7 @@ public abstract class LightGrid extends Canvas {
     private boolean hoveringOnColumnFilter = false;
     private boolean hoveringOnLink = false;
     private boolean hoveringOnRowHeader = false;
+    private boolean isColumnContextMenuShouldBeShown = false;
 
     private GridColumn columnBeingSorted;
     private GridColumn columnBeingFiltered;
@@ -1493,6 +1494,14 @@ public abstract class LightGrid extends Canvas {
 
     public boolean isHoveringOnRowHeader() {
         return hoveringOnRowHeader;
+    }
+    
+    public boolean isColumnContextMenuShouldBeShown() {
+        return isColumnContextMenuShouldBeShown;
+    }
+    
+    public void setColumnContextMenuShouldBeShown(boolean value) {
+        isColumnContextMenuShouldBeShown = value;
     }
 
     /**

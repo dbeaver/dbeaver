@@ -307,6 +307,7 @@
         <command id="org.jkiss.dbeaver.core.resultset.grid.moveColumnLeft" name="%command.org.jkiss.dbeaver.core.resultset.grid.moveColumnLeft.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.moveColumnLeft.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.grid.hideColumns" name="%command.org.jkiss.dbeaver.core.resultset.grid.hideColumns.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.hideColumns.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.grid.showColumns" name="%command.org.jkiss.dbeaver.core.resultset.grid.showColumns.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.showColumns.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.grid.showColumnContextMenu" name="%command.org.jkiss.dbeaver.core.resultset.grid.showColumnContextMenu.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.showColumnContextMenu.description" categoryId="org.jkiss.dbeaver.core.rs"/>
             
         <command id="org.jkiss.dbeaver.core.resultset.filterMenu" name="%command.org.jkiss.dbeaver.core.resultset.filterMenu.name" description="%command.org.jkiss.dbeaver.core.resultset.filterMenu.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.filterMenu.distinct" name="%command.org.jkiss.dbeaver.core.resultset.filterMenu.distinct.name" description="%command.org.jkiss.dbeaver.core.resultset.filterMenu.distinct.description" categoryId="org.jkiss.dbeaver.core.rs"/>
@@ -436,6 +437,9 @@
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.presentation.control"/></activeWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.grid.showColumns" class="org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetCommandHandler">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.presentation.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.resultset.grid.showColumnContextMenu" class="org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetCommandHandler">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.presentation.control"/></activeWhen>
         </handler>
 
@@ -995,7 +999,7 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.grid.copyColumnNames" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="ALT+SHIFT+C"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.grid.hideColumns" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="ALT+SHIFT+H"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.grid.showColumns" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="ALT+SHIFT+T"/>
-
+        <key commandId="org.jkiss.dbeaver.core.resultset.grid.showColumnContextMenu" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="SHIFT+F11"/>
 
         <key commandId="org.jkiss.dbeaver.core.resultset.grid.togglePanel" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="CTRL+ALT+F2">
             <parameter id="panelId" value="value-view"/>

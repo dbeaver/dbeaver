@@ -152,6 +152,11 @@ public class Spreadsheet extends LightGrid implements Listener {
     public SpreadsheetPresentation getPresentation() {
         return presentation;
     }
+    
+    @NotNull
+    public IWorkbenchPartSite getSite() {
+        return site;
+    }
 
     public Clipboard getClipboard() {
         return clipboard;
@@ -413,13 +418,20 @@ public class Spreadsheet extends LightGrid implements Listener {
         menuMgr.addMenuListener(manager -> {
             // Let controller to provide it's own menu items
             GridPos focusPos = getFocusPos();
-            presentation.fillContextMenu(
-                manager,
-                isHoveringOnRowHeader() ? null :
-                    focusPos.col >= 0 && focusPos.col < getColumnCount() ? getColumn(focusPos.col) : null,
-                isHoveringOnHeader() ? null :
-                    (focusPos.row >= 0 && focusPos.row < gridRows.length ? gridRows[focusPos.row] : null)
-            );
+            if (isColumnContextMenuShouldBeShown()) {
+                boolean isRecordMode = presentation.getController().isRecordMode();
+                presentation.fillContextMenu(
+                    manager,
+                    isRecordMode ? null : getColumnByPosition(focusPos),
+                    isRecordMode ? getRowByPosition(focusPos) : null
+                );
+            } else {
+                presentation.fillContextMenu(
+                    manager,
+                    isHoveringOnRowHeader() ? null : getColumnByPosition(focusPos),
+                    isHoveringOnHeader() ? null : getRowByPosition(focusPos)
+                );
+            }
         });
         menuMgr.setRemoveAllWhenShown(true);
         super.setMenu(menu);
@@ -429,6 +441,22 @@ public class Spreadsheet extends LightGrid implements Listener {
         } else {
             site.registerContextMenu(menuMgr, presentation);
         }
+    }
+
+    /**
+     * Returns grid column by grid position
+     */
+    @Nullable
+    private GridColumn getColumnByPosition(GridPos focusPos) {
+        return focusPos.col >= 0 && focusPos.col < getColumnCount() ? getColumn(focusPos.col) : null;
+    }
+
+    /**
+     * Returns grid row by grid position
+     */
+    @Nullable
+    private IGridRow getRowByPosition(GridPos focusPos) {
+        return focusPos.row >= 0 && focusPos.row < gridRows.length ? gridRows[focusPos.row] : null;
     }
 
     public void cancelInlineEditor() {

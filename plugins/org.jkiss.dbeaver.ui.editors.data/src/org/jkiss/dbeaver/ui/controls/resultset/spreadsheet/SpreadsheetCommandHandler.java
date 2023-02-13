@@ -20,6 +20,8 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -59,6 +61,7 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
     public static final String CMD_MOVE_COLUMNS_LEFT = "org.jkiss.dbeaver.core.resultset.grid.moveColumnLeft";
     public static final String CMD_HIDE_COLUMNS = "org.jkiss.dbeaver.core.resultset.grid.hideColumns";
     public static final String CMD_SHOW_COLUMNS = "org.jkiss.dbeaver.core.resultset.grid.showColumns";
+    public static final String CMD_SHOW_COLUMN_CONTEXT_MENU = "org.jkiss.dbeaver.core.resultset.grid.showColumnContextMenu";
 
     public static SpreadsheetPresentation getActiveSpreadsheet(ExecutionEvent event)
     {
@@ -203,6 +206,24 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
                     model.setAttributeVisibility(attr, true);
                 }
                 spreadsheet.refreshData(true, false, true);
+                break;
+            }
+            case CMD_SHOW_COLUMN_CONTEXT_MENU: {
+                Spreadsheet s = spreadsheet.getSpreadsheet();
+                GridCell focusCell = s.getFocusCell();
+                Object focusColumnElement = s.getFocusColumnElement();
+                if (focusCell != null) {
+                    GridPos focusPos = s.cellToPos(focusCell);
+                    Rectangle r = s.getCellBounds(focusPos.col, focusPos.row);
+                    s.getMenu().setLocation(s.toDisplay(new Point(r.x + r.width, r.y)));
+                } else if (focusColumnElement != null) {
+                    IGridColumn focusColumn = s.getColumnByElement(focusColumnElement);
+                    Rectangle r = s.getColumnBounds(focusColumn.getIndex());
+                    s.getMenu().setLocation(s.toDisplay(new Point(r.x + r.width, r.y)));
+                }
+                s.setColumnContextMenuShouldBeShown(true);
+                s.getMenu().setVisible(true);
+                break;
             }
         }
 
