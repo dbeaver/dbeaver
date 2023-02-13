@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.sqlite.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -110,6 +111,9 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler implements DBDV
             }
 
             return timestampFormatter.formatValue(value);
+        }
+        if (value instanceof byte[] && column.getDataKind() == DBPDataKind.STRING) {
+            return new String((byte[]) value);
         }
         return super.getValueDisplayString(column, value, format);
     }
