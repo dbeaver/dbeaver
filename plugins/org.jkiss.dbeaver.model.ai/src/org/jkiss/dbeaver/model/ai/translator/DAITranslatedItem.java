@@ -15,24 +15,22 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.qm;
+package org.jkiss.dbeaver.model.ai.translator;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
+import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 
 /**
- * Query manager history
+ * Natural language translator history
  */
-public interface QMEventBrowser {
+public class DAITranslatedItem {
 
-    @NotNull
-    QMEventCursor getQueryHistoryCursor(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull QMEventCriteria criteria,
-        @Nullable QMEventFilter filter)
-        throws DBException;
+    private DBSLogicalDataSource dataSource;
+    private DAICompletionEngine engine;
+
+    private String sourceText;
+    private String queryText;
+    private long translateTime;
+
 
 }

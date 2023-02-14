@@ -14,25 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ui.editors.sql.ai.internal;
 
-package org.jkiss.dbeaver.model.qm;
+import org.eclipse.core.runtime.Plugin;
+import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
+import org.osgi.framework.BundleContext;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+public class AIUIActivator extends Plugin {
 
-/**
- * Query manager history
- */
-public interface QMEventBrowser {
+    @Override
+    public void start(BundleContext context) throws Exception {
+        super.start(context);
+        // Trigger pref defaults
+        new BundlePreferenceStore(getBundle());
+    }
 
-    @NotNull
-    QMEventCursor getQueryHistoryCursor(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull QMEventCriteria criteria,
-        @Nullable QMEventFilter filter)
-        throws DBException;
+    @Override
+    public void stop(BundleContext context) throws Exception {
+        super.stop(context);
+    }
 
 }

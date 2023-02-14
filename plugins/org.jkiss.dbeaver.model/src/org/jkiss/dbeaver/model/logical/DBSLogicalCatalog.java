@@ -15,24 +15,24 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.qm;
+package org.jkiss.dbeaver.model.logical;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+
+import java.util.List;
 
 /**
- * Query manager history
+ * Logical database
  */
-public interface QMEventBrowser {
+public class DBSLogicalCatalog extends DBSLogicalObject<DBSObjectContainer> {
 
-    @NotNull
-    QMEventCursor getQueryHistoryCursor(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull QMEventCriteria criteria,
-        @Nullable QMEventFilter filter)
-        throws DBException;
+    private List<DBSLogicalSchema> schemas;
 
+    public List<DBSLogicalSchema> getSchemas() {
+        return schemas;
+    }
+
+    public void setSchemas(List<DBSLogicalSchema> schemas) {
+        this.schemas = schemas;
+    }
 }

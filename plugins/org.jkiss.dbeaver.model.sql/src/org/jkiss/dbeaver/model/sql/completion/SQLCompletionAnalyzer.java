@@ -75,6 +75,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
     private final List<SQLCompletionProposalBase> proposals = new ArrayList<>();
     private boolean searchFinished = false;
+    private boolean checkNavigatorNodes = true;
 
     public SQLCompletionAnalyzer(SQLCompletionRequest request) {
         this.request = request;
@@ -930,6 +931,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         return null;
     }
 
+    public void setCheckNavigatorNodes(boolean check) {
+        this.checkNavigatorNodes = check;
+    }
+
     private enum InlineState {
         UNMATCHED,
         TABLE_NAME,
@@ -1189,6 +1194,9 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 List<SQLCompletionProposalBase> childProposals = new ArrayList<>(matchedObjects.size());
                 for (DBSObject child : matchedObjects) {
                     SQLCompletionProposalBase proposal = makeProposalsFromObject(child, !(parent instanceof DBPDataSource), params);
+                    if (proposal == null) {
+                        continue;
+                    }
                     if (!scoredMatches.isEmpty()) {
                         int proposalScore = scoredMatches.get(child.getName());
                         proposal.setProposalScore(proposalScore);
@@ -1260,9 +1268,11 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
     }
 
-    private SQLCompletionProposalBase makeProposalsFromObject(DBSObject object, boolean useShortName, Map<String, Object> params)
-    {
+    private SQLCompletionProposalBase makeProposalsFromObject(DBSObject object, boolean useShortName, Map<String, Object> params) {
         DBNNode node = DBNUtils.getNodeByObject(monitor, object, false);
+        if (checkNavigatorNodes && node == null && (object instanceof DBSEntity || object instanceof DBSObjectContainer)) {
+            return null;
+        }
 
         DBPImage objectIcon = node == null ? null : node.getNodeIconDefault();
         if (objectIcon == null) {
