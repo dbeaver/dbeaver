@@ -201,6 +201,18 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
                 CommonUtils.truncateString(DBUtils.getClientApplicationName(getContainer(), context, purpose), 64));
         }
 
+        if (SQLServerUtils.isDriverSqlServer(getContainer().getDriver())) {
+            // Starting microsoft driver version 10.1 defaulted the encrypt option to true (previously false)
+            // thus the driver will look for a certificate to validate unless trustServerCertificate is set to true
+            // (i.e. do not validate, trust all when encrypt option is enabled)
+            boolean trustCertificate = CommonUtils.getBoolean(
+                connectionInfo.getProviderProperty(SQLServerConstants.PROP_SSL_TRUST_SERVER_CERTIFICATE),
+                true);
+            if (trustCertificate) {
+                properties.put(SQLServerConstants.PROP_DRIVER_TRUST_SERVER_CERTIFICATE, Boolean.TRUE.toString());
+            }
+        }
+
         fillConnectionProperties(connectionInfo, properties);
 
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler(SQLServerConstants.HANDLER_SSL);
@@ -220,7 +232,6 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 //            String keyStorePath = certificateStorage.getKeyStorePath(getContainer(), "ssl").getAbsolutePath();
 
             properties.put("encrypt", "true");
-            properties.put("trustServerCertificate", sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_TRUST_SERVER_CERTIFICATE));
 
             final String keystoreFileProp;
             final String keystorePasswordProp;
