@@ -256,16 +256,19 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             });
             filtersClearButton.setEnabled(false);
 
-            filtersSaveButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
-            filtersSaveButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_SAVE));
-            filtersSaveButton.setToolTipText(ActionUtils.findCommandDescription(ResultSetHandlerMain.CMD_FILTER_SAVE_SETTING, viewer.getSite(), false));
-            filtersSaveButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    viewer.saveDataFilter();
-                }
-            });
-            filtersSaveButton.setEnabled(false);
+            if (viewer.getDataContainer() instanceof DBSEntity) {
+                filtersSaveButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
+                filtersSaveButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_SAVE));
+                filtersSaveButton.setToolTipText(ActionUtils.findCommandDescription(ResultSetHandlerMain.CMD_FILTER_SAVE_SETTING, viewer.getSite(), false));
+                filtersSaveButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        viewer.saveDataFilter();
+                    }
+                });
+            } else {
+                filtersSaveButton = null;
+            }
 
             ToolItem filtersCustomButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
             filtersCustomButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER));
@@ -328,7 +331,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             filtersText.setEnabled(supportsDataFilter);
             executePanel.setEnabled(supportsDataFilter);
             filtersClearButton.setEnabled(viewer.getModel().getDataFilter().hasFilters() || viewer.getModel().getDataFilter().hasOrdering() || !CommonUtils.isEmpty(filterText));
-            filtersSaveButton.setEnabled(viewer.getDataContainer() instanceof DBSEntity);
+            if (filtersSaveButton != null) {
+                filtersSaveButton.setEnabled(viewer.getDataContainer() instanceof DBSEntity);
+            }
             // Update history buttons
             if (historyPosition > 0) {
                 historyBackButton.setEnabled(true);
