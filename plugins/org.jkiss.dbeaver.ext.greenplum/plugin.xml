@@ -100,12 +100,12 @@
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="greenplum" parent="postgresql" class="org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect" label="Greenplum" description="Greenplum dialect." icon="icons/greenplum_icon.png">
-            <keywords value=""/>
-            <execKeywords value=""/>
-            <ddlKeywords value=""/>
-            <dmlKeywords value=""/>
-            <functions value=""/>
-            <types value=""/>
+            <property name="keywords" value=""/>
+            <property name="execKeywords" value=""/>
+            <property name="ddlKeywords" value=""/>
+            <property name="dmlKeywords" value=""/>
+            <property name="functions" value=""/>
+            <property name="types" value=""/>
 
             <property name="" value=""/>
         </dialect>

@@ -24,6 +24,9 @@ import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexNative;
+import org.jkiss.dbeaver.model.sql.dialects.SQLDialectDescriptor;
+import org.jkiss.dbeaver.model.sql.dialects.SQLDialectRegistry;
+
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
@@ -81,7 +84,12 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     private Pair<String, String> multiLineComments = new Pair<>(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END);
     private Map<String, Integer> keywordsIndent = new HashMap<>();
 
-    protected AbstractSQLDialect() {
+    private String id;
+
+    protected AbstractSQLDialect(@NotNull String id) {
+        this.id = id;
+
+        loadDescriptorKeywords();
     }
 
     @NotNull
@@ -111,13 +119,13 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     @NotNull
     @Override
     public String[] getExecuteKeywords() {
-        return EXEC_KEYWORDS;
+        return getDescriptor().getExecuteKeywords(true).toArray(new String[0]) ;
     }
 
     @NotNull
     @Override
     public String[] getDDLKeywords() {
-        return DDL_KEYWORDS;
+        return getDescriptor().getDDLKeywords(true).toArray(new String[0]);
     }
 
     protected void addSQLKeyword(String keyword) {
@@ -916,6 +924,50 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     @Override
     public SQLBlockCompletions getBlockCompletions() {
         return DEFAULT_SQL_BLOCK_COMPLETIONS;
+    }
+
+    @NotNull
+    protected SQLDialectDescriptor getDescriptor() {
+        return SQLDialectRegistry.getInstance().getDialect(getDialectId());
+    }
+
+    @NotNull
+    @Override
+    public String getDialectId() {
+        return id;
+    }
+
+    private void loadDescriptorKeywords() {
+        // Add default set of keywords
+        Set<String> all = new HashSet<>(getDescriptor().getReservedWords(true));
+        functions.addAll(getDescriptor().getFunctions(true));
+        Collections.addAll(tableQueryWords, SQLConstants.TABLE_KEYWORDS);
+        Collections.addAll(columnQueryWords, SQLConstants.COLUMN_KEYWORDS);
+
+        for (String executeKeyword : getDescriptor().getExecuteKeywords(true)) {
+            addSQLKeyword(executeKeyword);
+            setKeywordIndent(executeKeyword, 1);
+        }
+        for (String ddlKeyword : getDescriptor().getDDLKeywords(true)) {
+            addSQLKeyword(ddlKeyword);
+            setKeywordIndent(ddlKeyword, 1);
+        }
+        for (String kw : tableQueryWords) {
+            setKeywordIndent(kw, 1);
+        }
+        for (String kw : columnQueryWords) {
+            setKeywordIndent(kw, 1);
+        }
+        for (String[] beKeywords : ArrayUtils.safeArray(getBlockBoundStrings())) {
+            setKeywordIndent(beKeywords[0], 1);
+            setKeywordIndent(beKeywords[1], -1);
+        }
+        // Add default types
+        types.addAll(getDescriptor().getDataTypes(true));
+
+        addKeywords(all, DBPKeywordType.KEYWORD);
+        addKeywords(types, DBPKeywordType.TYPE);
+        addKeywords(functions, DBPKeywordType.FUNCTION);
     }
 }
 

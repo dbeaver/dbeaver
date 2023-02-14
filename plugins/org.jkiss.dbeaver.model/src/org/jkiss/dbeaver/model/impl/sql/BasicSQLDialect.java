@@ -36,7 +36,7 @@ import java.util.UUID;
  */
 public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQLDialect {
 
-    public static final String ID = "basic";
+    public static String DEFAULT_ID = "basic";
 
     public static final BasicSQLDialect INSTANCE = new BasicSQLDialect();
 
@@ -67,13 +67,7 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
     private static final String[] CORE_NON_TRANSACTIONAL_KEYWORDS = new String[]{
         SQLConstants.KEYWORD_SELECT,
     };
-    protected static final String[] DML_KEYWORDS = new String[]{
-            SQLConstants.KEYWORD_INSERT,
-            SQLConstants.KEYWORD_DELETE,
-            SQLConstants.KEYWORD_UPDATE,
-            SQLConstants.KEYWORD_MERGE,
-            SQLConstants.KEYWORD_UPSERT,
-            SQLConstants.KEYWORD_TRUNCATE};
+
     public static final String[][] DEFAULT_IDENTIFIER_QUOTES = {{"\"", "\""}};
     public static final String[][] DEFAULT_STRING_QUOTES = {{"'", "'"}};
 
@@ -81,13 +75,11 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
     private static final String[] ROLLBACK_KEYWORDS = { SQLConstants.KEYWORD_ROLLBACK };
 
     protected BasicSQLDialect() {
-        loadStandardKeywords();
+        this("basic");
     }
 
-    @NotNull
-    @Override
-    public String getDialectId() {
-        return ID;
+    protected BasicSQLDialect(String id) {
+        super(id);
     }
 
     @NotNull
@@ -111,13 +103,13 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
     @NotNull
     @Override
     public String[] getExecuteKeywords() {
-        return EXEC_KEYWORDS;
+        return super.getExecuteKeywords();
     }
 
     @NotNull
     @Override
     public String[] getDDLKeywords() {
-        return DDL_KEYWORDS;
+        return super.getDDLKeywords();
     }
 
     @NotNull
@@ -308,7 +300,7 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
 
     @NotNull
     public String[] getDMLKeywords() {
-        return isStandardSQL() ? DML_KEYWORDS : new String[0];
+        return isStandardSQL() ? getDescriptor().getDMLKeywords(true).toArray(new String[0]) : new String[0];
     }
 
     @NotNull
@@ -334,47 +326,6 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
     @Override
     public boolean isAmbiguousCountBroken() {
         return false;
-    }
-
-    private void loadStandardKeywords() {
-        // Add default set of keywords
-        Set<String> all = new HashSet<>();
-        if (isStandardSQL()) {
-            Collections.addAll(all, SQLConstants.SQL2003_RESERVED_KEYWORDS);
-            //Collections.addAll(reservedWords, SQLConstants.SQL2003_NON_RESERVED_KEYWORDS);
-            Collections.addAll(all, SQLConstants.SQL_EX_KEYWORDS);
-            Collections.addAll(functions, SQLConstants.SQL2003_FUNCTIONS);
-            Collections.addAll(tableQueryWords, SQLConstants.TABLE_KEYWORDS);
-            Collections.addAll(columnQueryWords, SQLConstants.COLUMN_KEYWORDS);
-        }
-
-        for (String executeKeyword : ArrayUtils.safeArray(getExecuteKeywords())) {
-            addSQLKeyword(executeKeyword);
-            setKeywordIndent(executeKeyword, 1);
-        }
-        for (String ddlKeyword : ArrayUtils.safeArray(getDDLKeywords())) {
-            addSQLKeyword(ddlKeyword);
-            setKeywordIndent(ddlKeyword, 1);
-        }
-        for (String kw : tableQueryWords) {
-            setKeywordIndent(kw, 1);
-        }
-        for (String kw : columnQueryWords) {
-            setKeywordIndent(kw, 1);
-        }
-        for (String[] beKeywords : ArrayUtils.safeArray(getBlockBoundStrings())) {
-            setKeywordIndent(beKeywords[0], 1);
-            setKeywordIndent(beKeywords[1], -1);
-        }
-
-        if (isStandardSQL()) {
-            // Add default types
-            Collections.addAll(types, SQLConstants.DEFAULT_TYPES);
-
-            addKeywords(all, DBPKeywordType.KEYWORD);
-            addKeywords(types, DBPKeywordType.TYPE);
-            addKeywords(functions, DBPKeywordType.FUNCTION);
-        }
     }
 
 }

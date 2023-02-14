@@ -20,26 +20,26 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.sql.dialects.SQLDialectDescriptorTransformer;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
-import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
-import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.model.sql.dialects.SQLDialectDescriptor;
+import org.jkiss.dbeaver.model.sql.dialects.SQLDialectRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
-import org.jkiss.dbeaver.utils.PrefUtils;
 
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * PrefPageSQLDialects
@@ -58,11 +58,14 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
     private Text ddlKeywordsText;
     private Text dmlKeywordsText;
     private Text executeKeywordsText;
-    private Text blockStatementsText;
-    private Text statementDelimiterText;
-    private Text dualTableNameText;
-    private Text testQueryText;
+//    private Text blockStatementsText;
+//    private Text dualTableNameText;
+//    private Text testQueryText;
     private Text dialectText;
+    @Nullable
+    private Tree dialectTable;
+    private Font boldFont;
+    private Font normalFont;
 
     public PrefPageSQLDialects() {
         super();
@@ -74,18 +77,18 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
         boolean isPrefPage = element == null;
 
         Composite composite = UIUtils.createComposite(parent, isPrefPage ? 2 : 1);
-
         if (isPrefPage) {
             // Create dialect selector
             Composite dialectsGroup = UIUtils.createComposite(composite, 1);
             dialectsGroup.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_BEGINNING));
             UIUtils.createControlLabel(dialectsGroup, "Dialects", 2);
 
-            Tree dialectTable = new Tree(dialectsGroup, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL);
+            dialectTable = new Tree(dialectsGroup, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 200;
             dialectTable.setLayoutData(gd);
-
+            boldFont = UIUtils.makeBoldFont(dialectTable.getFont());
+            normalFont = dialectTable.getFont();
             List<SQLDialectDescriptor> dialects = SQLDialectRegistry.getInstance().getRootDialects();
             //dialects.sort(Comparator.comparing(SQLDialectDescriptor::getLabel));
             for (SQLDialectDescriptor dialect : dialects) {
@@ -119,7 +122,7 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
             //UIUtils.createControlLabel(settingsGroup, SQLEditorMessages.pref_page_sql_format_label_settings, 2);
 
             Group kwGroup = UIUtils.createControlGroup(settingsGroup, "Keywords", 2, GridData.FILL_HORIZONTAL, 0);
-            ((GridData)kwGroup.getLayoutData()).horizontalSpan = 2;
+            ((GridData) kwGroup.getLayoutData()).horizontalSpan = 2;
             reservedWordsText = UIUtils.createLabelTextAdvanced(kwGroup, "Reserved words", "", SWT.BORDER);
             dataTypesText = UIUtils.createLabelTextAdvanced(kwGroup, "Data Types", "", SWT.BORDER);
             functionNamesText = UIUtils.createLabelTextAdvanced(kwGroup, "Function names", "", SWT.BORDER);
@@ -127,34 +130,32 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
             dmlKeywordsText = UIUtils.createLabelTextAdvanced(kwGroup, "Data modify keywords", "", SWT.BORDER);
             executeKeywordsText = UIUtils.createLabelTextAdvanced(kwGroup, "Execute keywords", "", SWT.BORDER);
             transactionKeywordsText = UIUtils.createLabelTextAdvanced(kwGroup, "Transaction keywords", "", SWT.BORDER);
-            blockStatementsText = UIUtils.createLabelTextAdvanced(kwGroup, "Block statements", "", SWT.BORDER);
+//            blockStatementsText = UIUtils.createLabelTextAdvanced(kwGroup, "Block statements", "", SWT.BORDER);
 
-            Group miscGroup = UIUtils.createControlGroup(settingsGroup, "Miscellaneous", 2, GridData.FILL_HORIZONTAL, 0);
-            statementDelimiterText = UIUtils.createLabelText(miscGroup, "Statement delimiter", "", SWT.BORDER);
-            dualTableNameText = UIUtils.createLabelText(miscGroup, "Dual table name", "", SWT.BORDER);
-            testQueryText = UIUtils.createLabelText(miscGroup, "Test query", "", SWT.BORDER);
+//            Group miscGroup = UIUtils.createControlGroup(settingsGroup, "Miscellaneous", 2, GridData.FILL_HORIZONTAL, 0);
+//            statementDelimiterText = UIUtils.createLabelText(miscGroup, "Statement delimiter", "", SWT.BORDER);
+//            dualTableNameText = UIUtils.createLabelText(miscGroup, "Dual table name", "", SWT.BORDER);
+//            testQueryText = UIUtils.createLabelText(miscGroup, "Test query", "", SWT.BORDER);
 
         }
-
-        performDefaults();
-
+        setFieldsToEmpty();
         return composite;
     }
 
     private void createDialectItem(Tree dialectTable, TreeItem parentItem, SQLDialectDescriptor dialect) {
         TreeItem di;
-        if (!dialect.isHidden()) {
-            di = parentItem == null ? new TreeItem(dialectTable, SWT.NONE) : new TreeItem(parentItem, SWT.NONE);
-            di.setText(dialect.getLabel());
-            di.setImage(DBeaverIcons.getImage(dialect.getIcon()));
-            di.setData(dialect);
-        } else {
-            di = parentItem;
+        di = parentItem == null ? new TreeItem(dialectTable, SWT.NONE) : new TreeItem(parentItem, SWT.NONE);
+        if (SQLDialectRegistry.getInstance().getDialect(dialect.getId()).getTransformer() != null) {
+            di.setFont(boldFont);
         }
-
-        List<SQLDialectMetadata> subDialects = dialect.getSubDialects(true);
-        subDialects.sort(Comparator.comparing(SQLDialectMetadata::getLabel));
-        for (SQLDialectMetadata dm : subDialects) {
+        di.setText(dialect.getLabel());
+        di.setImage(DBeaverIcons.getImage(dialect.getIcon()));
+        di.setData(dialect);
+        // Dialect already has an existing customization
+        Set<SQLDialectMetadata> subDialects = dialect.getSubDialects(true);
+        ArrayList<SQLDialectMetadata> dialects = new ArrayList<>(subDialects);
+        dialects.sort(Comparator.comparing(SQLDialectMetadata::getLabel));
+        for (SQLDialectMetadata dm : dialects) {
             createDialectItem(dialectTable, di, (SQLDialectDescriptor) dm);
         }
         if (di != null) {
@@ -164,14 +165,15 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
 
     @Override
     protected void performDefaults() {
-        if (element != null) {
-            DBPDataSourceContainer dataSource = element.getAdapter(DBPDataSourceContainer.class);
-            if (dataSource != null) {
-                curDialect = dataSource.getScriptDialect();
-            }
+        if (curDialect != null) {
+            SQLDialectRegistry.getInstance().getDialect(curDialect.getId()).setTransformer(null);
         }
+        if (dialectTable != null && dialectTable.getSelection().length != 0) {
+            dialectTable.getSelection()[0].setFont(normalFont);
+        }
+        SQLDialectRegistry.getInstance().saveDialectModifiers();
+        SQLDialectRegistry.getInstance().reloadDialects();
         loadDialectSettings();
-
         super.performDefaults();
     }
 
@@ -179,29 +181,104 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
         if (curDialect == null) {
             return;
         }
+        SQLDialectDescriptor descriptor = SQLDialectRegistry.getInstance().getDialect(curDialect.getId());
         if (dialectText != null) {
             dialectText.setText(curDialect.getLabel());
         }
-        reservedWordsText.setText(String.join(",", curDialect.getReservedWords()));
-        dataTypesText.setText(String.join(",", curDialect.getDataTypes()));
-        functionNamesText.setText(String.join(",", curDialect.getFunctions()));
-        ddlKeywordsText.setText(String.join(",", curDialect.getDDLKeywords()));
-        dmlKeywordsText.setText(String.join(",", curDialect.getDMLKeywords()));
-        executeKeywordsText.setText(String.join(",", curDialect.getExecuteKeywords()));
-        transactionKeywordsText.setText(String.join(",", curDialect.getTransactionKeywords()));
+        reservedWordsText.setText(String.join(",", descriptor.getReservedWords(true)));
+        dataTypesText.setText(String.join(",", descriptor.getDataTypes(true)));
+        functionNamesText.setText(String.join(",", descriptor.getFunctions(true)));
+        ddlKeywordsText.setText(String.join(",", descriptor.getDDLKeywords(true)));
+        dmlKeywordsText.setText(String.join(",", descriptor.getDMLKeywords(true)));
+        executeKeywordsText.setText(String.join(",", descriptor.getExecuteKeywords(true)));
+        transactionKeywordsText.setText(String.join(",", descriptor.getTransactionKeywords(true)));
         //blockStatementsText.setText(String.join(",", curDialect.getBlockBoundStrings()));
 
-        statementDelimiterText.setText(curDialect.getScriptDelimiter());
+    }
+
+    @NotNull
+    private SQLDialectDescriptorTransformer createTransformer(@NotNull SQLDialectDescriptor descriptor) {
+        descriptor.setTransformer(null);
+        SQLDialectDescriptorTransformer transformer = new SQLDialectDescriptorTransformer(curDialect.getId());
+        transformer.putWords(
+            SQLDialectDescriptor.WordType.ATTR_DIALECTS_VALUE_KEYWORDS.getTypeName(),
+            generateSetDiff(descriptor.getReservedWords(true), getSetFromText(reservedWordsText))
+        );
+        transformer.putWords(
+            SQLDialectDescriptor.WordType.ATTR_DIALECTS_VALUE_TYPES.getTypeName(),
+            generateSetDiff(descriptor.getDataTypes(true), getSetFromText(dataTypesText))
+        );
+        transformer.putWords(
+            SQLDialectDescriptor.WordType.ATTR_DIALECTS_VALUE_KEYWORDS_DDL.getTypeName(),
+            generateSetDiff(descriptor.getDDLKeywords(true), getSetFromText(ddlKeywordsText))
+        );
+        transformer.putWords(
+            SQLDialectDescriptor.WordType.ATTR_DIALECTS_VALUE_KEYWORDS_DML.getTypeName(),
+            generateSetDiff(descriptor.getDMLKeywords(true), getSetFromText(dmlKeywordsText))
+        );
+        transformer.putWords(
+            SQLDialectDescriptor.WordType.ATTR_DIALECTS_VALUE_FUNCTIONS.getTypeName(),
+            generateSetDiff(descriptor.getFunctions(true), getSetFromText(functionNamesText))
+        );
+        transformer.putWords(
+            SQLDialectDescriptor.WordType.ATTR_DIALECTS_VALUE_KEYWORDS_EXEC.getTypeName(),
+            generateSetDiff(descriptor.getExecuteKeywords(true), getSetFromText(executeKeywordsText))
+        );
+        transformer.putWords(
+            SQLDialectDescriptor.WordType.ATTR_DIALECTS_TXN_KEYWORDS.getTypeName(),
+            generateSetDiff(descriptor.getTransactionKeywords(true), getSetFromText(transactionKeywordsText))
+        );
+        return transformer;
+    }
+
+    private Set<String> getSetFromText(@NotNull Text text) {
+        return Set.of(text.getText().trim().split(","));
+    }
+
+    private Map<SQLDialectDescriptorTransformer.FilterType, Set<String>> generateSetDiff(Set<String> original,
+        Set<String> newSet) {
+        Set<String> exclude = original.stream().filter(it -> !newSet.contains(it)).collect(Collectors.toSet());
+        Set<String> include = newSet.stream().filter(it -> !original.contains(it)).collect(Collectors.toSet());
+        Map<SQLDialectDescriptorTransformer.FilterType, Set<String>> diff = new HashMap<>();
+        diff.put(SQLDialectDescriptorTransformer.FilterType.EXCLUDES, exclude);
+        diff.put(SQLDialectDescriptorTransformer.FilterType.INCLUDES, include);
+        return diff;
+    }
+
+    private void setFieldsToEmpty() {
+        reservedWordsText.setText(String.join(""));
+        dataTypesText.setText(String.join(""));
+        functionNamesText.setText("");
+        ddlKeywordsText.setText("");
+        dmlKeywordsText.setText("");
+        executeKeywordsText.setText("");
+        transactionKeywordsText.setText("");
+    }
+
+    public boolean isNotChanged(@NotNull SQLDialectDescriptor descriptor) {
+        return getSetFromText(reservedWordsText).equals(descriptor.getReservedWords(true))
+            && getSetFromText(executeKeywordsText).equals(descriptor.getExecuteKeywords(true))
+            && getSetFromText(dmlKeywordsText).equals(descriptor.getDMLKeywords(true))
+            && getSetFromText(transactionKeywordsText).equals(descriptor.getTransactionKeywords(true))
+            && getSetFromText(ddlKeywordsText).equals(descriptor.getDDLKeywords(true))
+            && getSetFromText(dataTypesText).equals(descriptor.getDataTypes(true))
+            && getSetFromText(functionNamesText).equals(descriptor.getFunctions(true));
+
     }
 
     @Override
     public boolean performOk() {
-        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-
+        SQLDialectDescriptor descriptor = SQLDialectRegistry.getInstance().getDialect(curDialect.getId());
+        if (isNotChanged(descriptor)) {
+            return super.performOk();
+        }
+        descriptor.setTransformer(null);
+        descriptor.setTransformer(createTransformer(descriptor));
         //store.setValue(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ, bindEmbeddedReadCheck.getSelection());
-
-        PrefUtils.savePreferenceStore(store);
-
+        SQLDialectRegistry.getInstance().saveDialectModifiers();
+        if (dialectTable != null && dialectTable.getSelection().length != 0) {
+            dialectTable.getSelection()[0].setFont(boldFont);
+        }
         return super.performOk();
     }
 
@@ -219,5 +296,6 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
     public void setElement(IAdaptable element) {
         this.element = element;
     }
+
 
 }

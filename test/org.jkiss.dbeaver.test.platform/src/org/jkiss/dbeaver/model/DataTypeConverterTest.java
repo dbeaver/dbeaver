@@ -42,7 +42,7 @@ public class DataTypeConverterTest {
 
     @Before
     public void setUp() throws Exception {
-        dialect = new JDBCSQLDialect("testName", "testID");
+        dialect = new JDBCSQLDialect("testName", "generic");
         Mockito.lenient().when(mockDataSource.getSQLDialect()).thenReturn(dialect);
     }
 

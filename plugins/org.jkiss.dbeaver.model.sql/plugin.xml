@@ -56,12 +56,12 @@
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="basic" class="org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect" label="SQL" description="Base SQL dialect for all other dialects." icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/sql.png" abstract="true">
-            <property name="keywords" value=""/>
+            <property name="keywords" class="org.jkiss.dbeaver.model.sql.SQLConstants" field="SQL2003_RESERVED_KEYWORDS,SQL_EX_KEYWORDS"/>
             <property name="ddlKeywords" value="CREATE,ALTER,DROP"/>
             <property name="dmlKeywords" value="INSERT,DELETE,UPDATE,UPSERT,MERGE,TRUNCATE"/>
-            <property name="execKeywords" value=""/>
-            <property name="types" value=""/>
-            <property name="functions" value=""/>
+            <property name="execKeywords" value="CHANGE, MODIFY"/>
+            <property name="types" class="org.jkiss.dbeaver.model.sql.SQLConstants" field="DEFAULT_TYPES"/>
+            <property name="functions" class="org.jkiss.dbeaver.model.sql.SQLConstants" field="SQL2003_FUNCTIONS"/>
 
             <property name="" value=""/>
         </dialect>
