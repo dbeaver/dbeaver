@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.ai.preferences;
+package org.jkiss.dbeaver.ui.editors.sql.ai.gpt3;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -25,13 +25,14 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.GPTPreferences;
-import org.jkiss.dbeaver.model.ai.client.GPTClient;
-import org.jkiss.dbeaver.model.ai.internal.GPTModel;
+import org.jkiss.dbeaver.model.ai.AICompletionConstants;
+import org.jkiss.dbeaver.model.ai.gpt3.GPTClient;
+import org.jkiss.dbeaver.model.ai.gpt3.GPTModel;
+import org.jkiss.dbeaver.model.ai.gpt3.GPTPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.sql.ai.internal.GPTMessages;
+import org.jkiss.dbeaver.ui.editors.sql.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
 import java.util.Locale;
@@ -41,24 +42,31 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.gpt";
     private static final String API_KEY_URL = "https://beta.openai.com/account/api-keys";
 
+    private Button enableAICheck;
+
+    private Button includeSourceTextInCommentCheck;
+//    private Text maxCompletionChoicesText;
+    private Button executeQueryImmediatelyCheck;
+
     private Text tokenText;
 
     private Combo modelCombo;
     private Text temperatureText;
-    private Text maxTokensText;
-    private Button executeQueryImmediately;
     private Button logQueryCheck;
-    private Text maxTablesText;
 
     @Override
     protected void performDefaults() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+
+        enableAICheck.setSelection(!store.getBoolean(AICompletionConstants.AI_DISABLED));
+
+        includeSourceTextInCommentCheck.setSelection(store.getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT));
+//        maxCompletionChoicesText.setText(store.getString(AICompletionConstants.AI_COMPLETION_MAX_CHOICES));
+        executeQueryImmediatelyCheck.setSelection(store.getBoolean(AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY));
+
         modelCombo.select(GPTModel.getByName(store.getString(GPTPreferences.GPT_MODEL)).ordinal());
         temperatureText.setText(String.valueOf(store.getDouble(GPTPreferences.GPT_MODEL_TEMPERATURE)));
-        maxTokensText.setText(String.valueOf(store.getInt(GPTPreferences.GPT_MODEL_MAX_TOKENS)));
-        executeQueryImmediately.setSelection(store.getBoolean(GPTPreferences.GPT_EXECUTE_IMMEDIATELY));
         logQueryCheck.setSelection(store.getBoolean(GPTPreferences.GPT_LOG_QUERY));
-        maxTablesText.setText(String.valueOf(store.getInt(GPTPreferences.GPT_MAX_TABLES)));
 
         String secretValue = DBWorkbench.getPlatform().getPreferenceStore()
             .getString(GPTPreferences.GPT_API_TOKEN);
@@ -68,12 +76,16 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     @Override
     public boolean performOk() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+
+        store.setValue(AICompletionConstants.AI_DISABLED, !enableAICheck.getSelection());
+
+        store.setValue(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT, includeSourceTextInCommentCheck.getSelection());
+        store.setValue(AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY, executeQueryImmediatelyCheck.getSelection());
+//        store.setValue(AICompletionConstants.AI_COMPLETION_MAX_CHOICES, maxCompletionChoicesText.getText());
+
         store.setValue(GPTPreferences.GPT_MODEL, modelCombo.getText());
         store.setValue(GPTPreferences.GPT_MODEL_TEMPERATURE, temperatureText.getText());
-        store.setValue(GPTPreferences.GPT_MODEL_MAX_TOKENS, maxTokensText.getText());
-        store.setValue(GPTPreferences.GPT_EXECUTE_IMMEDIATELY, executeQueryImmediately.getSelection());
         store.setValue(GPTPreferences.GPT_LOG_QUERY, logQueryCheck.getSelection());
-        store.setValue(GPTPreferences.GPT_MAX_TABLES, maxTablesText.getText());
 
         if (!modelCombo.getText().equals(store.getString(GPTPreferences.GPT_MODEL)) ||
             !tokenText.getText().equals(store.getString(GPTPreferences.GPT_API_TOKEN))
@@ -88,17 +100,23 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
-        Composite checkboxComposite = UIUtils.createPlaceholder(placeholder, 2);
-        checkboxComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         placeholder.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        enableAICheck = UIUtils.createCheckbox(
+            placeholder,
+            "Enable smart completion",
+            "Enable AI smart completion. If you don't want to see it in SQL editor then you can disable this feature.",
+            false,
+            2);
+
         {
             Group authorizationGroup = UIUtils.createControlGroup(placeholder,
-                GPTMessages.gpt_preference_page_group_authorization,
+                AIUIMessages.gpt_preference_page_group_authorization,
                 2,
                 SWT.NONE,
                 5
             );
-            tokenText = UIUtils.createLabelText(authorizationGroup, GPTMessages.gpt_preference_page_selector_token,
+            tokenText = UIUtils.createLabelText(authorizationGroup, AIUIMessages.gpt_preference_page_selector_token,
                 "", SWT.BORDER | SWT.PASSWORD);
             tokenText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             Link link = UIUtils.createLink(
@@ -116,15 +134,41 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
             authorizationGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
         {
+            Group completionGroup = UIUtils.createControlGroup(placeholder,
+                "Completion",
+                2,
+                SWT.NONE,
+                5
+            );
+            completionGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            includeSourceTextInCommentCheck = UIUtils.createCheckbox(
+                completionGroup,
+                "Include source in query comment",
+                "Add your human language text in query comment",
+                false,
+                2);
+            executeQueryImmediatelyCheck = UIUtils.createCheckbox(
+                completionGroup,
+                "Execute SQL immediately",
+                "Try to execute translated SQL immediately after completion",
+                false,
+                2);
+//            maxCompletionChoicesText = UIUtils.createLabelText(
+//                completionGroup, "Completion choices number", null);
+//            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+//            gd.widthHint = UIUtils.getFontHeight(maxCompletionChoicesText) * 5;
+//            maxCompletionChoicesText.setLayoutData(gd);
+        }
+        {
             Group modelGroup = UIUtils.createControlGroup(placeholder,
-                GPTMessages.gpt_preference_page_group_model,
+                AIUIMessages.gpt_preference_page_group_model,
                 2,
                 SWT.NONE,
                 5
             );
             modelGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             modelCombo = UIUtils.createLabelCombo(modelGroup,
-                GPTMessages.gpt_preference_page_combo_engine,
+                AIUIMessages.gpt_preference_page_combo_engine,
                 SWT.READ_ONLY
             );
             for (GPTModel model : GPTModel.values()) {
@@ -133,35 +177,22 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
             UIUtils.createInfoLabel(modelGroup, "code-davinci model suits the best for SQL code completion", GridData.FILL_HORIZONTAL, 2);
             {
                 Group modelAdvancedGroup = UIUtils.createControlGroup(placeholder,
-                    GPTMessages.gpt_preference_page_group_model_advanced,
+                    AIUIMessages.gpt_preference_page_group_model_advanced,
                     2,
                     SWT.NONE,
                     5
                 );
 
                 temperatureText = UIUtils.createLabelText(modelAdvancedGroup,
-                    GPTMessages.gpt_preference_page_text_temperature,
+                    AIUIMessages.gpt_preference_page_text_temperature,
                     "0.0"
                 );
                 temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
                 UIUtils.createInfoLabel(modelAdvancedGroup, "Lower temperatures give more precise results", GridData.FILL_HORIZONTAL, 2);
 
-                maxTokensText = UIUtils.createLabelText(modelAdvancedGroup,
-                    GPTMessages.gpt_preference_page_text_max_tokens,
-                    "250"
-                );
-                maxTokensText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
-
                 temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
                 modelAdvancedGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-                maxTablesText = UIUtils.createLabelText(modelAdvancedGroup, GPTMessages.gpt_preference_page_text_max_tables, null);
-                executeQueryImmediately = UIUtils.createCheckbox(
-                    modelAdvancedGroup,
-                    "Execute SQL immediately",
-                    "Try to execute translated SQL immediately after completion",
-                    false,
-                    2);
                 logQueryCheck = UIUtils.createCheckbox(
                     modelAdvancedGroup,
                     "Write GPT queries to debug log",

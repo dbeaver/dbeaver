@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.internal;
+package org.jkiss.dbeaver.model.ai.gpt3;
 
 import org.jkiss.code.NotNull;
 

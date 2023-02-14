@@ -45,6 +45,7 @@ public class GlobalPropertyTester extends PropertyTester {
     public static final String PROP_CAN_EDIT_RESOURCE = "canEditResource";
     public static final String PROP_CURRENT_PROJECT_RESOURCE_EDITABLE = "currentProjectResourceEditable";
     public static final String PROP_CURRENT_PROJECT_RESOURCE_VIEWABLE = "currentProjectResourceViewable";
+    public static final String PROP_HAS_PREFERENCE = "hasPreference";
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
@@ -83,6 +84,9 @@ public class GlobalPropertyTester extends PropertyTester {
             case PROP_CURRENT_PROJECT_RESOURCE_VIEWABLE: {
                 DBPProject project = NavigatorUtils.getSelectedProject();
                 return project != null && project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW);
+            }
+            case PROP_HAS_PREFERENCE: {
+                return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(CommonUtils.toString(expectedValue));
             }
         }
         return false;

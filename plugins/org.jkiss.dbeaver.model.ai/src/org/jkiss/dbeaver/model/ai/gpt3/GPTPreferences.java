@@ -14,19 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.model.ai.gpt3;
 
 /**
  * GPT preference constants
  */
 public class GPTPreferences {
+
     public static final String GPT_API_TOKEN = "gpt.token";
     public static final String GPT_MODEL = "gpt.model";
     public static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
-    public static final String GPT_MODEL_MAX_TOKENS = "gpt.model.maxTokens";
-    public static final String GPT_EXECUTE_IMMEDIATELY = "gpt.execute.immediately";
     public static final String GPT_LOG_QUERY = "gpt.log.query";
-    public static final String GPT_MAX_TABLES = "gpt.max.tables";
-    public static final String GPT_TRANSFER_CONFIRMED = "gpt.meta.transfer.confirmed";
 }
 

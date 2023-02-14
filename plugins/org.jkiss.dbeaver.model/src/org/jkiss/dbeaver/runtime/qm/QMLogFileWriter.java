@@ -128,7 +128,7 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
     }
 
     @Override
-    public synchronized void metaInfoChanged(DBRProgressMonitor monitor, @NotNull List<QMMetaEvent> events)
+    public synchronized void metaInfoChanged(@NotNull DBRProgressMonitor monitor, @NotNull List<QMMetaEvent> events)
     {
         if (!enabled || logWriter == null) {
             return;

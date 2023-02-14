@@ -15,24 +15,26 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.qm;
+package org.jkiss.dbeaver.model.ai.completion;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 
 /**
- * Query manager history
+ * Completion scope
  */
-public interface QMEventBrowser {
+public enum DAICompletionScope {
+    CURRENT_SCHEMA(AIMessages.ai_scope_current_schema),
+    CURRENT_DATABASE(AIMessages.ai_scope_current_database),
+    CURRENT_DATASOURCE(AIMessages.ai_scope_current_datasource),
+    CUSTOM(AIMessages.ai_scope_custom);
 
-    @NotNull
-    QMEventCursor getQueryHistoryCursor(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull QMEventCriteria criteria,
-        @Nullable QMEventFilter filter)
-        throws DBException;
+    private final String title;
 
+    DAICompletionScope(String title) {
+        this.title = title;
+    }
+
+    public String getTitle() {
+        return title;
+    }
 }
