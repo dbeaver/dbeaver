@@ -674,7 +674,8 @@ public class SQLQueryJob extends DataSourceJob
                         hasResultSet = dbcStatement.nextResults();
                     } catch (DBCException e) {
                         if (session.getDataSource().getInfo().isMultipleResultsFetchBroken()) {
-                            log.error(e);
+                            statistics.addWarning(e);
+                            statistics.setError(e);
                             // #2792: Check this twice. Some drivers (e.g. Sybase jConnect)
                             // throw error on n'th result fetch - but it still can keep fetching next results
                             hasResultSet = dbcStatement.nextResults();
@@ -693,6 +694,9 @@ public class SQLQueryJob extends DataSourceJob
                 curResult.addWarnings(dbcStatement.getStatementWarnings());
             } catch (Throwable e) {
                 log.warn("Can't read execution warnings", e);
+            }
+            if (!CommonUtils.isEmpty(statistics.getWarnings())) {
+                curResult.addWarnings(statistics.getWarnings().toArray(new Throwable[0]));
             }
             //monitor.subTask("Close query");
             if (!keepStatementOpen()) {

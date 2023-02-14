@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
@@ -136,16 +137,34 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @Override
     protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
-        activeDatabaseName = getContainer().getConnectionConfiguration().getBootstrap().getDefaultCatalogName();
-        if (CommonUtils.isEmpty(activeDatabaseName)) {
-            activeDatabaseName = getContainer().getConnectionConfiguration().getDatabaseName();
+        DBPConnectionConfiguration configuration = getContainer().getActualConnectionConfiguration();
+        if (configuration.getConfigurationType() == DBPDriverConfigurationType.MANUAL) {
+            activeDatabaseName = configuration.getBootstrap().getDefaultCatalogName();
+            if (CommonUtils.isEmpty(activeDatabaseName)) {
+                activeDatabaseName = configuration.getDatabaseName();
+            }
+        } else {
+            String url = configuration.getUrl();
+            int divPos = url.lastIndexOf('/');
+            if (divPos > 0) {
+                int lastPos = -1;
+                for (int i = divPos + 1; i < url.length(); i++) {
+                    char c = url.charAt(i);
+                    if (!Character.isLetterOrDigit(c) && c != '_' && c != '$' && c != '.') {
+                        lastPos = i;
+                    }
+                }
+                if (lastPos < 0) lastPos = url.length();
+                activeDatabaseName = url.substring(divPos + 1, lastPos);
+            }
         }
         if (CommonUtils.isEmpty(activeDatabaseName)) {
             activeDatabaseName = PostgreConstants.DEFAULT_DATABASE;
         }
+
         databaseCache = new DatabaseCache();
         settingCache = new SettingCache();
-        DBPConnectionConfiguration configuration = getContainer().getActualConnectionConfiguration();
+
         final boolean showNDD = isReadDatabaseList(configuration);
         List<PostgreDatabase> dbList = new ArrayList<>();
         if (!showNDD) {

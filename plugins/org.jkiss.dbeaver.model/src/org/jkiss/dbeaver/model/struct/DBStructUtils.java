@@ -323,6 +323,10 @@ public final class DBStructUtils {
             if (dataType == null && typeName.contains("(")) {
                 // It seems this data type has modifiers. Try to find without modifiers
                 dataType = dataTypeProvider.getLocalDataType(SQLUtils.stripColumnTypeModifiers(typeName));
+                if (dataType != null) {
+                    int startPos = typeName.indexOf("(");
+                    typeName = dataType + typeName.substring(startPos);
+                }
             }
             if (dataType == null && typeNameLower.equals(DOUBLE_DATA_TYPE)) {
                 dataType = dataTypeProvider.getLocalDataType("DOUBLE PRECISION");
@@ -425,6 +429,10 @@ public final class DBStructUtils {
             }
             if (dataType != null) {
                 dataKind = dataType.getDataKind();
+                // Datatype caches ignore case, but we probably should use it with the original case
+                if (typeName.equalsIgnoreCase(dataType.getTypeName())) {
+                    typeName = dataType.getTypeName();
+                }
             }
         }
 

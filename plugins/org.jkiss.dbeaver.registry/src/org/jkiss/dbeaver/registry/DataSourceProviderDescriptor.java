@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
@@ -70,6 +71,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private final List<DBPPropertyDescriptor> driverProperties = new ArrayList<>();
     private final List<DriverDescriptor> drivers = new ArrayList<>();
     private final List<NativeClientDescriptor> nativeClients = new ArrayList<>();
+    private final List<DBPDataSourceProviderDescriptor> childrenProviders = new ArrayList<>();
     @NotNull
     private SQLDialectMetadata scriptDialect;
     private boolean inheritClients;
@@ -111,6 +113,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             this.parentProvider = registry.getDataSourceProvider(parentId);
             if (this.parentProvider == null) {
                 log.error("Provider '" + parentId + "' not found");
+            } else {
+                this.parentProvider.addChildrenProvider(this);
             }
         }
     }
@@ -334,6 +338,12 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         return eDrivers;
     }
 
+    /**
+     * Retrieves an original or, if another one replaced it, substituted driver by the given {@code id}.
+     *
+     * @param id identifier of the driver to retrieve
+     * @return driver or {@code null} if no driver was found
+     */
     public DriverDescriptor getDriver(String id)
     {
         for (DriverDescriptor driver : drivers) {
@@ -344,6 +354,23 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
                 return driver;
             }
         }
+        return null;
+    }
+
+    /**
+     * Retrieves a driver by the given {@code id}.
+     *
+     * @param id identifier of the driver to retrieve
+     * @return driver or {@code null} if no driver was found
+     */
+    @Nullable
+    public DriverDescriptor getOriginalDriver(@NotNull String id) {
+        for (DriverDescriptor driver : drivers) {
+            if (driver.getId().equals(id)) {
+                return driver;
+            }
+        }
+
         return null;
     }
 
@@ -376,6 +403,16 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         } else {
             return this.drivers.remove(driver);
         }
+    }
+
+    @NotNull
+    @Override
+    public List<DBPDataSourceProviderDescriptor> getChildrenProviders() {
+        return childrenProviders;
+    }
+
+    private void addChildrenProvider(@NotNull DataSourceProviderDescriptor descriptor) {
+        childrenProviders.add(descriptor);
     }
 
     //////////////////////////////////////

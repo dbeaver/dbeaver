@@ -369,6 +369,9 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                     }
                 },
                 ownerControl.createDefaultLoadVisualizer(editorValues -> {
+                    if (ownerControl.isDisposed()) {
+                        return;
+                    }
                     formEditor.loadEditorValues(editorValues);
                     if (blockEnableState != null) {
                         blockEnableState.restore();

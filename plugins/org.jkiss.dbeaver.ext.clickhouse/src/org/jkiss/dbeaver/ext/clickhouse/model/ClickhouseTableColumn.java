@@ -43,7 +43,11 @@ public class ClickhouseTableColumn extends GenericTableColumn {
     @Override
     public void setFullTypeName(String fullTypeName) throws DBException {
         this.fullTypeName = fullTypeName;
-        super.setFullTypeName(fullTypeName);
+        if (fullTypeName.toUpperCase().contains("ARRAY")) {
+            setTypeName(fullTypeName);
+        } else {
+            super.setFullTypeName(fullTypeName);
+        }
     }
 
     @NotNull

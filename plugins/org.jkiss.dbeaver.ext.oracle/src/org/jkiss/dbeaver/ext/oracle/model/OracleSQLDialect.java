@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicatesCondi
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -469,8 +470,20 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
 
     @Override
     protected String getStoredProcedureCallInitialClause(DBSProcedure proc) {
-        String schemaName = proc.getParentObject().getName();
-        return "CALL " + schemaName + "." + proc.getName();
+        if (proc.getProcedureType() == DBSProcedureType.FUNCTION) {
+            return SQLConstants.KEYWORD_SELECT + " " + proc.getFullyQualifiedName(DBPEvaluationContext.DML);
+        } else {
+            return "CALL " + proc.getFullyQualifiedName(DBPEvaluationContext.DML);
+        }
+    }
+
+    @NotNull
+    @Override
+    protected String getProcedureCallEndClause(DBSProcedure procedure) {
+        if (procedure.getProcedureType() == DBSProcedureType.FUNCTION) {
+            return "FROM DUAL";
+        }
+        return super.getProcedureCallEndClause(procedure);
     }
 
     @Override

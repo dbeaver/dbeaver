@@ -630,7 +630,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 GridPos focusPos = spreadsheet.getFocusPos();
                 int rowNum = focusPos.row;
                 if (rowNum < 0) {
-                    return;
+                    if (!settings.isInsertMultipleRows()) {
+                        return;
+                    }
+                    rowNum = 0;
                 }
                 //boolean overNewRow = controller.getModel().getRow(rowNum).getState() == ResultSetRow.STATE_ADDED;
                 try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), controller.getDataContainer(), "Advanced paste")) {
@@ -686,6 +689,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         }
                     }
                 }
+                this.scrollToRow(IResultSetPresentation.RowPosition.CURRENT);
 
             } else {
                 Collection<GridPos> ssSelection = spreadsheet.getSelection();
@@ -1916,20 +1920,18 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Override
         public int getSortOrder(@Nullable IGridColumn column) {
-            if (showAttrOrdering) {
-                if (column != null && column.getElement() instanceof DBDAttributeBinding) {
-                    DBDAttributeBinding binding = (DBDAttributeBinding) column.getElement();
-                    if (!binding.hasNestedBindings()) {
-                        DBDAttributeConstraint co = controller.getModel().getDataFilter().getConstraint(binding);
-                        if (co != null && co.getOrderPosition() > 0) {
-                            return co.isOrderDescending() ? SWT.DOWN : SWT.UP;
-                        }
-                        return SWT.DEFAULT;
+            if (column != null && column.getElement() instanceof DBDAttributeBinding) {
+                DBDAttributeBinding binding = (DBDAttributeBinding) column.getElement();
+                if (!binding.hasNestedBindings()) {
+                    DBDAttributeConstraint co = controller.getModel().getDataFilter().getConstraint(binding);
+                    if (co != null && co.getOrderPosition() > 0) {
+                        return co.isOrderDescending() ? SWT.DOWN : SWT.UP;
                     }
-                } else if (column == null && controller.isRecordMode()) {
-                    // Columns order in record mode
-                    return columnOrder;
+                    return SWT.DEFAULT;
                 }
+            } else if (column == null && controller.isRecordMode()) {
+                // Columns order in record mode
+                return columnOrder;
             }
             return SWT.NONE;
         }
@@ -1985,7 +1987,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Override
         public boolean isElementSupportsFilter(IGridColumn element) {
-            if (element.getElement() instanceof DBDAttributeBinding) {
+            if (element != null && element.getElement() instanceof DBDAttributeBinding) {
                 return supportsAttributeFilter;
             }
             return false;
@@ -1993,8 +1995,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Override
         public boolean isElementSupportsSort(@Nullable IGridColumn element) {
-            if (element.getElement() instanceof DBDAttributeBinding) {
-                return true;
+            if (element != null && element.getElement() instanceof DBDAttributeBinding) {
+                return showAttrOrdering;
             }
             return false;
         }
