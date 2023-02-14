@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.tools.transfer.ui.IDataTransferEventProcessorConfigurat
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.tools.transfer.ui.prefs.PrefPageDataTransfer;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
@@ -61,6 +62,7 @@ import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.nio.charset.Charset;
@@ -195,19 +197,13 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
         {
             Group generalSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_output_group_general, 5, GridData.FILL_HORIZONTAL, 0);
-            clipboardCheck = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_copy_to_clipboard, null, false, 4);
+            clipboardCheck = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_copy_to_clipboard, null, false, 5);
             clipboardCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     settings.setOutputClipboard(clipboardCheck.getSelection());
                     updateControlsEnablement();
                     updatePageCompletion();
-                }
-            });
-            UIUtils.createLink(generalSettings, DTMessages.data_transfer_wizard_output_label_global_settings, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    UIUtils.showPreferencesFor(getShell(), null, PrefPageDataTransfer.PAGE_ID);
                 }
             });
 
@@ -217,7 +213,14 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                 settings.setOutputFolder(directoryText.getText());
                 updatePageCompletion();
             });
-            ((GridData) directoryText.getParent().getLayoutData()).horizontalSpan = 4;
+            ((GridData) directoryText.getParent().getLayoutData()).horizontalSpan = 3;
+
+            UIUtils.createLink(generalSettings, DTMessages.data_transfer_wizard_output_label_global_settings, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    UIUtils.showPreferencesFor(getShell(), null, PrefPageDataTransfer.PAGE_ID);
+                }
+            });
 
             UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_file_name_pattern);
             fileNameText = new Text(generalSettings, SWT.BORDER);
@@ -382,6 +385,12 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             ContentAssistUtils.installContentProposal(directoryText, new SmartTextContentAdapter(), proposalProvider);
             ContentAssistUtils.installContentProposal(fileNameText, new SmartTextContentAdapter(), proposalProvider);
         }
+
+        UIUtils.createLink(
+            composite,
+            DTMessages.data_transfer_wizard_output_export_to_external_storage_link,
+            SelectionListener.widgetSelectedAdapter(e -> ShellUtils.launchProgram(e.text))
+        );
 
         setControl(composite);
 
