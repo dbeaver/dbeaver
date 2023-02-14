@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -414,7 +415,17 @@ public class DataSourceDescriptor
             return savePassword;
         }
         resolveSecretsIfNeeded();
-        return secretsResolved && secretsContainsDatabaseCreds;
+
+        if (secretsResolved && secretsContainsDatabaseCreds) {
+            return true;
+        }
+        if (savePassword) {
+            // Check actual credentials
+            // They may be ready if we are in test connection mode
+            DBAAuthCredentials authCreds = getConnectionConfiguration().getAuthModel().loadCredentials(this, getConnectionConfiguration());
+            return authCreds.isComplete();
+        }
+        return false;
     }
 
     @Override
@@ -1111,6 +1122,10 @@ public class DataSourceDescriptor
 
     private void resolveSecretsIfNeeded() throws DBException {
         if (secretsResolved || !getProject().isUseSecretStorage()) {
+            return;
+        }
+        if (registry.getDataSource(getId()) == null) {
+            // Datasource not saved yet - secrets are unavailable
             return;
         }
         var secretController = DBSSecretController.getProjectSecretController(getProject());

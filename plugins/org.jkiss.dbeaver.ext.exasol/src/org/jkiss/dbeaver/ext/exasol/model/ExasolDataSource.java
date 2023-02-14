@@ -888,10 +888,6 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
         if (querytimeout != null)
             url.append(";").append(ExasolConstants.DRV_QUERYTIMEOUT).append("=").append(querytimeout);
 
-        Object connecttimeout = properties.get(ExasolConstants.DRV_CONNECT_TIMEOUT);
-        if (connecttimeout != null)
-            url.append(";").append(ExasolConstants.DRV_CONNECT_TIMEOUT).append("=").append(connecttimeout);
-
         // append properties if exists -> meta connection using different type
         if (! addMetaProps.isEmpty()) {
         	Set<Entry<Object, Object>> entries = addMetaProps.entrySet();

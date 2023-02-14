@@ -57,6 +57,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
     private Button showAllDatabases;
     private Button showAllSchemas;
     private Button encryptPassword;
+    private Button trustServerCertificate;
 
     private boolean needsPort;
 
@@ -185,7 +186,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             Group secureGroup = new Group(settingsGroup, SWT.NONE);
             secureGroup.setText(SQLServerUIMessages.dialog_setting_connection_settings);
             secureGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            secureGroup.setLayout(new RowLayout());
+            secureGroup.setLayout(new GridLayout(1, false));
 
             if (!isSqlServer) {
                 encryptPassword = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_encrypt_password, SQLServerUIMessages.dialog_setting_encrypt_password_tip, false, 1);
@@ -199,6 +200,15 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
                     1);
             }
             showAllSchemas = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_show_all_schemas, SQLServerUIMessages.dialog_setting_show_all_schemas_tip, true, 1);
+
+            if (isSqlServer) {
+                trustServerCertificate = UIUtils.createCheckbox(
+                    secureGroup,
+                    SQLServerUIMessages.dialog_setting_trust_server_certificate,
+                    SQLServerUIMessages.dialog_setting_trust_server_certificate_tip,
+                    true,
+                    1);
+            }
         }
 
         createDriverPanel(settingsGroup);
@@ -281,6 +291,10 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
                 CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_DATABASES)));
         }
         showAllSchemas.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS)));
+        if (trustServerCertificate != null) {
+            trustServerCertificate.setSelection(CommonUtils.getBoolean(
+                connectionInfo.getProviderProperty(SQLServerConstants.PROP_SSL_TRUST_SERVER_CERTIFICATE), true));
+        }
 
         if (!isSqlServer() && encryptPassword != null) {
             encryptPassword.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_ENCRYPT_PASSWORD)));
@@ -320,6 +334,10 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         if (showAllSchemas != null) {
             connectionInfo.setProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS,
                 String.valueOf(showAllSchemas.getSelection()));
+        }
+        if (trustServerCertificate != null) {
+            connectionInfo.setProviderProperty(SQLServerConstants.PROP_SSL_TRUST_SERVER_CERTIFICATE,
+                String.valueOf(trustServerCertificate.getSelection()));
         }
 
         if (encryptPassword != null) {
