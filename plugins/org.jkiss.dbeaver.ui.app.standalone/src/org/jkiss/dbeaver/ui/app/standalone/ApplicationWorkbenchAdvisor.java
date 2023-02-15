@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
@@ -66,6 +67,8 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This workbench advisor creates the window advisor, and specifies
@@ -120,7 +123,37 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         "org.eclipse.equinox.internal.p2.ui.sdk.ProvisioningPreferencePage",    // Install-Update
         "org.eclipse.debug.ui.DebugPreferencePage"                              // Debugger
     };
-
+    
+    private static final Set<String> fontPrefIdsToHide = Set.of(
+        UIFonts.TEXT_EDITOR_BLOCK_SELECTION_FONT,
+        UIFonts.TEXT_FONT,
+        UIFonts.CONSOLE_FONT,
+        UIFonts.DETAIL_PANE_TEXT_FONT,
+        UIFonts.MEMORY_VIEW_TABLE_FONT,
+        UIFonts.COMPARE_TEXT_FONT,
+        UIFonts.DIALOG_FONT,
+        UIFonts.VARIABLE_TEXT_FONT,
+        UIFonts.PART_TITLE_FONT,
+        UIFonts.TREE_AND_TABLE_FONT_FOR_VIEWS
+    );
+    
+    private static final Map<String, List<String>> fontOverrides = Map.of(
+        UIFonts.DBEAVER_FONTS_MONOSPACE, List.of(
+            UIFonts.TEXT_EDITOR_BLOCK_SELECTION_FONT,
+            UIFonts.TEXT_FONT,
+            UIFonts.CONSOLE_FONT,
+            UIFonts.DETAIL_PANE_TEXT_FONT,
+            UIFonts.MEMORY_VIEW_TABLE_FONT,
+            UIFonts.COMPARE_TEXT_FONT
+        ),
+        UIFonts.DBEAVER_FONTS_MAIN_FONT, List.of(
+            UIFonts.DIALOG_FONT,
+            UIFonts.VARIABLE_TEXT_FONT,
+            UIFonts.PART_TITLE_FONT,
+            UIFonts.TREE_AND_TABLE_FONT_FOR_VIEWS
+        )
+    ); 
+    
     //processor must be created before we start event loop
     protected final DBPApplication application;
     private final DelayedEventsProcessor processor;
@@ -165,6 +198,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         WorkbenchImages.getImageRegistry().put(IDEInternalWorkbenchImages.IMG_OBJS_ERROR_PATH, DBeaverIcons.getImageDescriptor(DBIcon.SMALL_ERROR));
         WorkbenchImages.getDescriptors().put(IDEInternalWorkbenchImages.IMG_OBJS_ERROR_PATH, DBeaverIcons.getImageDescriptor(DBIcon.SMALL_ERROR));
 
+        FontPreferenceOverrides.overrideFontPrefValues(fontOverrides);
+            
 /*
         // Set default resource encoding to UTF-8
         String defEncoding = DBWorkbench.getPlatform().getPreferenceStore().getString(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING);
@@ -203,11 +238,14 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             property.equals(DBeaverPreferences.LOGS_DEBUG_LOCATION) ||
             property.equals(ModelPreferences.PLATFORM_LANGUAGE);
     }
-
+    
+    
     private void filterPreferencePages() {
-        // Remove unneeded pref pages
+        // Remove unneeded pref pages and override font preferences page
         PreferenceManager pm = PlatformUI.getWorkbench().getPreferenceManager();
-
+        
+        FontPreferenceOverrides.hideFontPrefs(pm, fontPrefIdsToHide);
+        
         for (String epp : getExcludedPreferencePageIds()) {
             pm.remove(epp);
         }
