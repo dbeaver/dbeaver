@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai.gpt3;
 
+import com.google.gson.Gson;
 import com.theokanning.openai.OpenAiService;
 import com.theokanning.openai.completion.CompletionChoice;
 import com.theokanning.openai.completion.CompletionRequest;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.AICompletionConstants;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionRequest;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -39,6 +41,7 @@ import retrofit2.HttpException;
 import retrofit2.Response;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
@@ -174,7 +177,20 @@ public class GPTClient {
                                 if (responseBody != null) {
                                     String bodyString = responseBody.string();
                                     if (!CommonUtils.isEmpty(bodyString)) {
-                                        throw new DBException("GTP completion error:\n" + bodyString);
+                                        try {
+                                            Gson gson = new Gson();
+                                            Map<String, Object> map = JSONUtils.parseMap(gson, new StringReader(bodyString));
+                                            Map<String, Object> error = JSONUtils.deserializeProperties(map, "error");
+                                            if (error != null) {
+                                                String message = JSONUtils.getString(error, "message");
+                                                if (!CommonUtils.isEmpty(message)) {
+                                                    bodyString = message;
+                                                }
+                                            }
+                                        } catch (Exception e) {
+                                            // ignore json errors
+                                        }
+                                        throw new DBException("AI service error: " + bodyString);
                                     }
                                 }
                             }
