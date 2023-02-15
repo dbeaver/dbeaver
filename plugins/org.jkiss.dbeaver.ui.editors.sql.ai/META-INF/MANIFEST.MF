@@ -11,6 +11,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.bundle.gpt3,
+ org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.ui.navigator,
  org.eclipse.ui.workbench,
  org.jkiss.dbeaver.ui,
@@ -20,6 +21,6 @@ Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ui.editors.sql,
  org.jkiss.dbeaver.ui.editors.base
 Bundle-ClassPath: .
-Bundle-Activator: org.jkiss.dbeaver.ui.editors.sql.ai.internal.GTPActivator
+Bundle-Activator: org.jkiss.dbeaver.ui.editors.sql.ai.internal.AIUIActivator
 Automatic-Module-Name: org.jkiss.dbeaver.ui.editors.sql.ai
 

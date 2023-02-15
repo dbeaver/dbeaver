@@ -4,7 +4,7 @@
 
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -339,6 +339,10 @@
         <key commandId="org.eclipse.ui.help.dynamicHelp" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F1"/>
 
         <key commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand" contextId="org.eclipse.ui.contexts.window" sequence="CTRL+ALT+SHIFT+F" schemeId="org.jkiss.dbeaver.defaultKeyScheme"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.bindings">
+        <scheme id="org.jkiss.dbeaver.keyboardOnlyKeyScheme" parentId="org.jkiss.dbeaver.defaultKeyScheme" name="%keyboardOnlyKeyScheme.name" description="%keyboardOnlyKeyScheme.description"/>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">

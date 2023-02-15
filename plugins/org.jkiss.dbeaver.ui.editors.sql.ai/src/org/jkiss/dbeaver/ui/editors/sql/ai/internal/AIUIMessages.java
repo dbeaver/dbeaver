@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.ui.editors.sql.ai.internal;
 
 import org.eclipse.osgi.util.NLS;
 
-public class GPTMessages extends NLS {
-    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.sql.ai.internal.GPTMessages"; //$NON-NLS-1$
+public class AIUIMessages extends NLS {
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.sql.ai.internal.AIUIMessages"; //$NON-NLS-1$
 
 
     public static String gpt_preference_page_checkbox_enable_gpt;
@@ -36,9 +36,9 @@ public class GPTMessages extends NLS {
 
     static {
         // initialize resource bundle
-        NLS.initializeMessages(BUNDLE_NAME, GPTMessages.class);
+        NLS.initializeMessages(BUNDLE_NAME, AIUIMessages.class);
     }
 
-    private GPTMessages() {
+    private AIUIMessages() {
     }
 }

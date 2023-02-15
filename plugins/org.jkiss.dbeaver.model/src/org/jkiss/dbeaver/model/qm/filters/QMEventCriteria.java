@@ -56,6 +56,7 @@ public class QMEventCriteria {
     private boolean desc = true;
     private int fetchingSize = 200;
 
+    @Nullable
     public String getContainerId() {
         return containerId;
     }
@@ -64,6 +65,7 @@ public class QMEventCriteria {
         this.containerId = containerId;
     }
 
+    @Nullable
     public String getSessionId() {
         return sessionId;
     }
@@ -106,6 +108,7 @@ public class QMEventCriteria {
         return queryTypes.length > 0 && ArrayUtils.contains(queryTypes, type);
     }
 
+    @Nullable
     public String getSearchString() {
         return searchString;
     }
@@ -134,6 +137,7 @@ public class QMEventCriteria {
         this.users = users;
     }
 
+    @NotNull
     public Set<String> getUsers() {
         return users;
     }
@@ -142,6 +146,7 @@ public class QMEventCriteria {
         return !users.isEmpty();
     }
 
+    @NotNull
     public Set<String> getDriverIds() {
         return driverIds;
     }

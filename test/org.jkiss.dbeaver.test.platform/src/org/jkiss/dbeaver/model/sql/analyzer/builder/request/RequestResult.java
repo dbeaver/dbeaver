@@ -85,6 +85,7 @@ public class RequestResult {
         );
 
         final SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(request);
+        analyzer.setCheckNavigatorNodes(false);
         analyzer.runAnalyzer(new VoidProgressMonitor());
         return analyzer.getProposals();
     }
