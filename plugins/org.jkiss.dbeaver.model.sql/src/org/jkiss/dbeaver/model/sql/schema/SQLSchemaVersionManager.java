@@ -39,19 +39,19 @@ public interface SQLSchemaVersionManager {
      * Updates current schema version to actual
      */
     void updateCurrentSchemaVersion(
-            DBRProgressMonitor monitor,
-            @NotNull Connection connection,
-            @NotNull String schemaName
+        DBRProgressMonitor monitor,
+        @NotNull Connection connection,
+        @NotNull String schemaName
     ) throws DBException, SQLException;
 
     /**
      * Updates current schema version
      */
     void updateCurrentSchemaVersion(
-            DBRProgressMonitor monitor,
-            @NotNull Connection connection,
-            @NotNull String schemaName,
-            int version
+        DBRProgressMonitor monitor,
+        @NotNull Connection connection,
+        @NotNull String schemaName,
+        int version
     ) throws DBException, SQLException;
 
     default void fillInitialSchemaData(DBRProgressMonitor monitor, Connection connection) throws DBException, SQLException {

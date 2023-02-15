@@ -41,7 +41,6 @@ import java.sql.Statement;
  * SQL schema manager.
  * Upgrades schema version if needed.
  * Converts schema create/update scripts into target database dialect.
- *
  */
 public final class SQLSchemaManager {
     private static final Log log = Log.getLog(SQLSchemaManager.class);
@@ -58,14 +57,14 @@ public final class SQLSchemaManager {
     private final int schemaVersionObsolete;
 
     public SQLSchemaManager(
-            String schemaId,
-            SQLSchemaScriptSource scriptSource,
-            SQLSchemaConnectionProvider connectionProvider,
-            SQLSchemaVersionManager versionManager,
-            SQLDialect targetDatabaseDialect,
-            String targetDatabaseName,
-            int schemaVersionActual,
-            int schemaVersionObsolete
+        String schemaId,
+        SQLSchemaScriptSource scriptSource,
+        SQLSchemaConnectionProvider connectionProvider,
+        SQLSchemaVersionManager versionManager,
+        SQLDialect targetDatabaseDialect,
+        String targetDatabaseName,
+        int schemaVersionActual,
+        int schemaVersionObsolete
     ) {
         this.schemaId = schemaId;
 
