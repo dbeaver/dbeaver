@@ -46,9 +46,9 @@ import static org.mockito.Mockito.mock;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EpochTimeAttributeTransformerTest {
-    private static final String NANOS = "nanoseconds";
-    private static final String MILLIS = "milliseconds";
-    private static final String SECONDS = "seconds";
+    private static final String NANOS = "NANOSECONDS";
+    private static final String MILLIS = "MILLISECONDS";
+    private static final String SECONDS = "SECONDS";
 
     private final EpochTimeAttributeTransformer transformer = new EpochTimeAttributeTransformer();
 
