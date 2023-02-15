@@ -410,7 +410,13 @@ public class AISuggestionPopup extends AbstractPopupPanel {
             DBSObjectContainer objectContainer,
             Set<String> checkedObjectIds
         )  throws DBException {
-            Collection<? extends DBSObject> children = objectContainer.getChildren(monitor);
+            Collection<? extends DBSObject> children;
+            try {
+                children = objectContainer.getChildren(monitor);
+            } catch (Exception e) {
+                log.debug("Error loading container '" + objectContainer.getName() + "' contents: " + e.getMessage());
+                return;
+            }
             if (children == null) {
                 return;
             }

@@ -658,7 +658,6 @@ public class SQLConstants {
     public static final String CONFIG_COLOR_TEXT = "org.jkiss.dbeaver.sql.editor.color.text.foreground";
     public static final String CONFIG_COLOR_BACKGROUND = "org.jkiss.dbeaver.sql.editor.color.text.background";
     public static final String CONFIG_COLOR_DISABLED = "org.jkiss.dbeaver.sql.editor.color.disabled.background";
-    public static final String CONFIG_FONT_OUTPUT = "org.jkiss.dbeaver.sql.editor.font.output";
 
     public static final char DEFAULT_PARAMETER_MARK = '?';
     public static final char DEFAULT_PARAMETER_PREFIX = ':';
