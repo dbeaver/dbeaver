@@ -139,6 +139,7 @@ public class DatabricksView extends GenericView {
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(
             getDataSource(),
+            getCatalog(),
             getSchema(),
             this);
     }

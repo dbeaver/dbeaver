@@ -158,6 +158,7 @@ public class DatabricksTable extends GenericTable {
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(
             getDataSource(),
+            getCatalog(),
             getSchema(),
             this);
     }
