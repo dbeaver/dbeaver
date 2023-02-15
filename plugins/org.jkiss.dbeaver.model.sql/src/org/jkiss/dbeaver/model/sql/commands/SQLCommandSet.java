@@ -67,7 +67,7 @@ public class SQLCommandSet implements SQLControlCommandHandler {
     @NotNull
     public static String prepareVarName(@NotNull SQLDialect sqlDialect, @NotNull String rawName) {
         if (sqlDialect.isQuotedIdentifier(rawName)) {
-            return sqlDialect.getUnquotedIdentifier(rawName);
+            return sqlDialect.getUnquotedIdentifier(rawName, true);
         } else {
             return rawName.toUpperCase(Locale.ENGLISH);
         }

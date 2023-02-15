@@ -330,6 +330,8 @@ public interface SQLDialect {
 
     String getUnquotedIdentifier(String identifier);
 
+    String getUnquotedIdentifier(String identifier, boolean unescapeQuotesInsideIdentifier);
+
     boolean isQuotedString(String string);
 
     String getQuotedString(String string);

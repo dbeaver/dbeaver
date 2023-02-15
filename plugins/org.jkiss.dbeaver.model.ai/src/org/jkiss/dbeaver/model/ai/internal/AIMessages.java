@@ -14,24 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.ai.internal;
+package org.jkiss.dbeaver.model.ai.internal;
 
-import org.eclipse.core.runtime.Plugin;
-import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
-import org.osgi.framework.BundleContext;
+import org.eclipse.osgi.util.NLS;
 
-public class GTPActivator extends Plugin {
+public class AIMessages extends NLS {
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.model.ai.internal.AIMessages"; //$NON-NLS-1$
 
-    @Override
-    public void start(BundleContext context) throws Exception {
-        super.start(context);
-        // Trigger pref defaults
-        new BundlePreferenceStore(getBundle());
+    public static String ai_scope_current_schema;
+    public static String ai_scope_current_database;
+    public static String ai_scope_current_datasource;
+    public static String ai_scope_custom;
+
+    static {
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, AIMessages.class);
     }
 
-    @Override
-    public void stop(BundleContext context) throws Exception {
-        super.stop(context);
+    private AIMessages() {
     }
-
 }
