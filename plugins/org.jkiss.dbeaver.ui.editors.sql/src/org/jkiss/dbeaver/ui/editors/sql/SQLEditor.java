@@ -1583,12 +1583,12 @@ public class SQLEditor extends SQLEditorBase implements
     }
     
     public void toggleActiveTabPinned() {
-    	CTabItem activeTab = getActiveResultsTab();
-    	QueryResultsContainer container = (QueryResultsContainer) activeTab.getData();
-    	
-    	if (!container.hasData()) return;
+        CTabItem activeTab = getActiveResultsTab();
+        QueryResultsContainer container = (QueryResultsContainer) activeTab.getData();
+        
+        if (!container.hasData()) return;
 
-    	boolean isPinned = container.isPinned();
+        boolean isPinned = container.isPinned();
 
         container.setPinned(!isPinned);
 
@@ -1617,7 +1617,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     }
 
-    public boolean activeTabIsPinned() {
+    public boolean isActiveTabPinned() {
         CTabItem tabItem = getActiveResultsTab();
         return tabItem != null && ((QueryResultsContainer) tabItem.getData()).isPinned();
     }

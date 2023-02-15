@@ -16,17 +16,17 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 public class SQLEditorHandlerToggleTabPinned extends AbstractHandler implements IElementUpdater {
 
-	@Override
-	public Object execute(ExecutionEvent event) throws ExecutionException {
+    @Override
+    public Object execute(ExecutionEvent event) throws ExecutionException {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
         if (editor != null) {
-        	editor.toggleActiveTabPinned();
+            editor.toggleActiveTabPinned();
         }
-		return null;
-	}
+        return null;
+    }
 
-	@Override
-	public void updateElement(UIElement element, Map parameters) {
+    @Override
+    public void updateElement(UIElement element, Map parameters) {
         IWorkbenchWindow workbenchWindow = element.getServiceLocator().getService(IWorkbenchWindow.class);
         if (workbenchWindow == null || workbenchWindow.getActivePage() == null) {
             return;
@@ -37,12 +37,12 @@ public class SQLEditorHandlerToggleTabPinned extends AbstractHandler implements 
         }
         SQLEditor editor = RuntimeUtils.getObjectAdapter(activeEditor, SQLEditor.class);
         if (editor != null) {
-        	if (editor.activeTabIsPinned()) {
-        		element.setText(SQLEditorMessages.action_result_tabs_unpin_tab);
-        	} else {
-        		element.setText(SQLEditorMessages.action_result_tabs_pin_tab);
-        	}
+            if (editor.isActiveTabPinned()) {
+                element.setText(SQLEditorMessages.action_result_tabs_unpin_tab);
+            } else {
+                element.setText(SQLEditorMessages.action_result_tabs_pin_tab);
+            }
         }
-	}
+    }
 
 }
