@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.registry.timezone;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 public class TimezoneRegistry {
 
-    public static String userDefaultTimezone = "";
+    private static String userDefaultTimezone = "";
 
     private TimezoneRegistry() {
     }
@@ -55,6 +55,7 @@ public class TimezoneRegistry {
 
     public static void overrideTimezone() {
         userDefaultTimezone = System.getProperty("user.timezone");
+        System.setProperty("user.old.timezone", userDefaultTimezone);
         DBPPreferenceStore preferenceStore = ModelPreferences.getPreferences();
         final String timezone = preferenceStore.getString(ModelPreferences.CLIENT_TIMEZONE);
         if (timezone != null && !timezone.equals(DBConstants.DEFAULT_TIMEZONE)) {
@@ -73,6 +74,11 @@ public class TimezoneRegistry {
         Instant instant = Instant.now();
         ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, ZoneId.of(id));
         return  String.format("%s (UTC%s)", id, zonedDateTime.getOffset());
+    }
+
+    @NotNull
+    public static String getUserDefaultTimezone() {
+        return "".equals(userDefaultTimezone) ? TimeZone.getDefault().getID() : userDefaultTimezone;
     }
 
     @NotNull
