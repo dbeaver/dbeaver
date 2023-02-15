@@ -181,7 +181,7 @@
                 custom="true">
             <type kind="NUMERIC"/>
             <propertyGroup label="Properties">
-                <property id="unit" label="Unit" type="string" description="%EpochTimeTransformer.property.unit.description" defaultValue="milliseconds" required="true" validValues="seconds,milliseconds,microseconds,nanoseconds,dotnet,w32filetime,oadate,sqliteJulian"/>
+                <property id="unit" label="Unit" type="string" description="%EpochTimeTransformer.property.unit.description" defaultValue="MILLISECONDS" required="true" validValues="SECONDS,MILLISECONDS,MICROSECONDS,NANOSECONDS,DOTNET,W32FILETIME,OADATE,SQLITEJULIAN"/>
                 <property id="zoneId" label="Timezone ID" type="string" description="%EpochTimeTransformer.property.timezoneID.description"/>
             </propertyGroup>
         </transformer>
