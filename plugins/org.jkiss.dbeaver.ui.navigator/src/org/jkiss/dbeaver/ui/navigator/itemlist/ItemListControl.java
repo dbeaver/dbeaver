@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.navigator.itemlist;
 
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -29,6 +30,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.eclipse.ui.themes.ITheme;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
@@ -72,11 +74,12 @@ public class ItemListControl extends NodeListControl
     private static final String COLOR_NEW = "org.jkiss.dbeaver.sql.resultset.color.cell.new.background";
     private static final String COLOR_MODIFIED = "org.jkiss.dbeaver.sql.resultset.color.cell.modified.background";
 
+    private final IPropertyChangeListener themeChangeListener;
     private final ISearchExecutor searcher;
     private final Color searchHighlightColor;
     //private Color disabledCellColor;
-    private final Font normalFont;
-    private final Font boldFont;
+    private Font normalFont;
+    private Font boldFont;
 
     private final Map<DBNNode, Map<String, Object>> changedProperties = new HashMap<>();
     private CommandContributionItem createObjectCommand;
@@ -89,12 +92,19 @@ public class ItemListControl extends NodeListControl
         DBXTreeNode metaNode)
     {
         super(parent, style, workbenchSite, node, metaNode);
+        this.themeChangeListener = e -> {
+            final ITheme theme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+            normalFont = theme.getFontRegistry().get(UIFonts.DBEAVER_FONTS_MAIN_FONT);
+            boldFont = theme.getFontRegistry().getBold(UIFonts.DBEAVER_FONTS_MAIN_FONT);
+            super.getItemsViewer().refresh();
+            super.getNavigatorViewer().refresh();
+        };
+        this.themeChangeListener.propertyChange(null);
 
+        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
         this.searcher = new SearcherFilter();
         this.searchHighlightColor = new Color(parent.getDisplay(), 170, 255, 170);
         //this.disabledCellColor = UIStyles.getDefaultTextBackground();//parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);
-        this.normalFont = parent.getFont();
-        this.boldFont = UIUtils.makeBoldFont(normalFont);
     }
 
     @Override
@@ -235,6 +245,7 @@ public class ItemListControl extends NodeListControl
         UIUtils.dispose(searchHighlightColor);
         //UIUtils.dispose(disabledCellColor);
         UIUtils.dispose(boldFont);
+        
         super.disposeControl();
     }
 
