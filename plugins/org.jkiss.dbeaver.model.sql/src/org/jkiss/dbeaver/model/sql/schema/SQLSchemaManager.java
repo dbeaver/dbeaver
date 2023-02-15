@@ -92,13 +92,23 @@ public final class SQLSchemaManager {
                         createNewSchema(monitor, dbCon);
 
                         // Update schema version
-                        versionManager.updateCurrentSchemaVersion(monitor, dbCon, targetDatabaseName, versionManager.getLatestSchemaVersion());
+                        versionManager.updateCurrentSchemaVersion(
+                            monitor,
+                            dbCon,
+                            targetDatabaseName,
+                            versionManager.getLatestSchemaVersion()
+                        );
                     } else if (schemaVersionObsolete > 0 && currentSchemaVersion < schemaVersionObsolete) {
                         dropSchema(monitor, dbCon);
                         createNewSchema(monitor, dbCon);
 
                         // Update schema version
-                        versionManager.updateCurrentSchemaVersion(monitor, dbCon, targetDatabaseName, versionManager.getLatestSchemaVersion());
+                        versionManager.updateCurrentSchemaVersion(
+                            monitor,
+                            dbCon,
+                            targetDatabaseName,
+                            versionManager.getLatestSchemaVersion()
+                        );
                     } else if (schemaVersionActual > currentSchemaVersion) {
                         upgradeSchemaVersion(monitor, dbCon, currentSchemaVersion);
                     }
