@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import retrofit2.HttpException;
 import retrofit2.Response;
@@ -48,7 +49,7 @@ public class GPTClient {
     private static final Log log = Log.getLog(GPTClient.class);
 
     //How many retries may be done if code 429 happens
-    private static final int MAX_REQUEST_ATTEMPTS = 2;
+    private static final int MAX_REQUEST_ATTEMPTS = 3;
 
     private static final Map<String, OpenAiService> clientInstances = new HashMap<>();
     private static final int GPT_MODEL_MAX_TOKENS = 2048;
@@ -129,7 +130,24 @@ public class GPTClient {
             }
 
             try {
-                List<CompletionChoice> choices = service.createCompletion(completionRequest).getChoices();
+                List<CompletionChoice> choices;
+                for (int i = 0; ; i++) {
+                    try {
+                        choices = service.createCompletion(completionRequest).getChoices();
+                        break;
+                    } catch (Exception e) {
+                        if (e instanceof HttpException && ((HttpException) e).code() == 429) {
+                            RuntimeUtils.pause(1000);
+                            if (i >= MAX_REQUEST_ATTEMPTS - 1) {
+                                throw e;
+                            } else {
+                                log.debug("AI service failed. Retry (" + e.getMessage() + ")");
+                                continue;
+                            }
+                        }
+                        throw e;
+                    }
+                }
                 Optional<CompletionChoice> choice = choices.stream().findFirst();
                 String completionText = choice.orElseThrow().getText();
                 if (CommonUtils.isEmpty(completionText)) {
