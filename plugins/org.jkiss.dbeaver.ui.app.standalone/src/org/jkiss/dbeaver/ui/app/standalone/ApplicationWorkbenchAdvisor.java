@@ -43,6 +43,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
@@ -56,6 +57,7 @@ import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.app.standalone.update.DBeaverVersionChecker;
+import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
@@ -124,33 +126,41 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         "org.eclipse.debug.ui.DebugPreferencePage"                              // Debugger
     };
     
+    
+    /**
+     * Diagram font
+     */
+    public static String DIAGRAM_FONT = ERDUIConstants.PROP_DIAGRAM_FONT;
+
+    public static String RESULTS_GRID_FONT = ThemeConstants.FONT_SQL_RESULT_SET;
+    
     private static final Set<String> fontPrefIdsToHide = Set.of(
-        UIFonts.TEXT_EDITOR_BLOCK_SELECTION_FONT,
-        UIFonts.TEXT_FONT,
-        UIFonts.CONSOLE_FONT,
-        UIFonts.DETAIL_PANE_TEXT_FONT,
-        UIFonts.MEMORY_VIEW_TABLE_FONT,
-        UIFonts.COMPARE_TEXT_FONT,
-        UIFonts.DIALOG_FONT,
-        UIFonts.VARIABLE_TEXT_FONT,
-        UIFonts.PART_TITLE_FONT,
-        UIFonts.TREE_AND_TABLE_FONT_FOR_VIEWS
+        ApplicationWorkbenchWindowAdvisor.TEXT_EDITOR_BLOCK_SELECTION_FONT,
+        ApplicationWorkbenchWindowAdvisor.TEXT_FONT,
+        ApplicationWorkbenchWindowAdvisor.CONSOLE_FONT,
+        ApplicationWorkbenchWindowAdvisor.DETAIL_PANE_TEXT_FONT,
+        ApplicationWorkbenchWindowAdvisor.MEMORY_VIEW_TABLE_FONT,
+        ApplicationWorkbenchWindowAdvisor.COMPARE_TEXT_FONT,
+        ApplicationWorkbenchWindowAdvisor.DIALOG_FONT,
+        ApplicationWorkbenchWindowAdvisor.VARIABLE_TEXT_FONT,
+        ApplicationWorkbenchWindowAdvisor.PART_TITLE_FONT,
+        ApplicationWorkbenchWindowAdvisor.TREE_AND_TABLE_FONT_FOR_VIEWS
     );
     
     private static final Map<String, List<String>> fontOverrides = Map.of(
         UIFonts.DBEAVER_FONTS_MONOSPACE, List.of(
-            UIFonts.TEXT_EDITOR_BLOCK_SELECTION_FONT,
-            UIFonts.TEXT_FONT,
-            UIFonts.CONSOLE_FONT,
-            UIFonts.DETAIL_PANE_TEXT_FONT,
-            UIFonts.MEMORY_VIEW_TABLE_FONT,
-            UIFonts.COMPARE_TEXT_FONT
+            ApplicationWorkbenchWindowAdvisor.TEXT_EDITOR_BLOCK_SELECTION_FONT,
+            ApplicationWorkbenchWindowAdvisor.TEXT_FONT,
+            ApplicationWorkbenchWindowAdvisor.CONSOLE_FONT,
+            ApplicationWorkbenchWindowAdvisor.DETAIL_PANE_TEXT_FONT,
+            ApplicationWorkbenchWindowAdvisor.MEMORY_VIEW_TABLE_FONT,
+            ApplicationWorkbenchWindowAdvisor.COMPARE_TEXT_FONT
         ),
         UIFonts.DBEAVER_FONTS_MAIN_FONT, List.of(
-            UIFonts.DIALOG_FONT,
-            UIFonts.VARIABLE_TEXT_FONT,
-            UIFonts.PART_TITLE_FONT,
-            UIFonts.TREE_AND_TABLE_FONT_FOR_VIEWS
+            ApplicationWorkbenchWindowAdvisor.DIALOG_FONT,
+            ApplicationWorkbenchWindowAdvisor.VARIABLE_TEXT_FONT,
+            ApplicationWorkbenchWindowAdvisor.PART_TITLE_FONT,
+            ApplicationWorkbenchWindowAdvisor.TREE_AND_TABLE_FONT_FOR_VIEWS
         )
     ); 
     

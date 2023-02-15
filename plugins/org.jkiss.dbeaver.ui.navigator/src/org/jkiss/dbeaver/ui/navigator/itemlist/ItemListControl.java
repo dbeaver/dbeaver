@@ -73,7 +73,6 @@ public class ItemListControl extends NodeListControl
     // FIXME: copied from editors.data constants. Need to move it in general colors configuration
     private static final String COLOR_NEW = "org.jkiss.dbeaver.sql.resultset.color.cell.new.background";
     private static final String COLOR_MODIFIED = "org.jkiss.dbeaver.sql.resultset.color.cell.modified.background";
-    public static final String TREE_TABLE_FONT = "org.eclipse.ui.workbench.TREE_TABLE_FONT";
 
     private final IPropertyChangeListener themeChangeListener;
     private final ISearchExecutor searcher;
@@ -95,8 +94,8 @@ public class ItemListControl extends NodeListControl
         super(parent, style, workbenchSite, node, metaNode);
         this.themeChangeListener = e -> {
             final ITheme theme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-            normalFont = theme.getFontRegistry().get(TREE_TABLE_FONT);
-            boldFont = theme.getFontRegistry().getBold(TREE_TABLE_FONT);
+            normalFont = theme.getFontRegistry().get(UIFonts.DBEAVER_FONTS_MAIN_FONT);
+            boldFont = theme.getFontRegistry().getBold(UIFonts.DBEAVER_FONTS_MAIN_FONT);
             super.getItemsViewer().refresh();
             super.getNavigatorViewer().refresh();
         };

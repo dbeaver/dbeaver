@@ -17,8 +17,6 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.jkiss.dbeaver.ui.UIFonts;
-
 /**
  * ThemeConstants
  */
@@ -26,7 +24,7 @@ public class ThemeConstants
 {
     public static final String RESULTS_PROP_PREFIX = "org.jkiss.dbeaver.sql.resultset.";
 
-    public static final String FONT_SQL_RESULT_SET = UIFonts.RESULTS_GRID_FONT; //$NON-NLS-1$
+    public static final String FONT_SQL_RESULT_SET = RESULTS_PROP_PREFIX + "font"; //$NON-NLS-1$
     public static final String COLOR_SQL_RESULT_SET_SELECTION_FORE = RESULTS_PROP_PREFIX + "color.selection.foreground"; //$NON-NLS-1$
     public static final String COLOR_SQL_RESULT_SET_SELECTION_BACK = RESULTS_PROP_PREFIX + "color.selection.background"; //$NON-NLS-1$
     public static final String COLOR_SQL_RESULT_SET_PREVIEW_BACK = RESULTS_PROP_PREFIX + "color.preview.background"; //$NON-NLS-1$
