@@ -95,4 +95,27 @@
         </handler>
     </extension>
 
+    <extension point="org.eclipse.ui.themes">
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.dbeaver.ui.fonts.label" id="org.jkiss.dbeaver.ui.fonts">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.fonts.description</description>
+        </themeElementCategory>
+    
+        <fontDefinition
+                id="org.jkiss.dbeaver.dbeaver.ui.fonts.monospace"
+                categoryId="org.jkiss.dbeaver.ui.fonts"
+                label="%fontDefinition.org.jkiss.dbeaver.ui.fonts.monospace.label"
+                value="Courier New-regular-10">
+            <description>%fontDefinition.org.jkiss.dbeaver.ui.fonts.monospace.description</description>
+            <fontValue os="linux" value="Monospace-regular-10"/>
+            <fontValue os="macosx" value="Courier-regular-11"/>
+        </fontDefinition>
+        <fontDefinition
+                id="org.jkiss.dbeaver.dbeaver.ui.fonts.main"
+                categoryId="org.jkiss.dbeaver.ui.fonts"
+                label="%fontDefinition.org.jkiss.dbeaver.ui.fonts.main.label"
+                value="Segoe UI-regular-9">
+            <description>%fontDefinition.org.jkiss.dbeaver.ui.fonts.main.description</description>
+        </fontDefinition>
+       
+    </extension>
 </plugin>

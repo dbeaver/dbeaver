@@ -36,5 +36,6 @@ Require-Bundle: org.eclipse.osgi,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.data,
- org.eclipse.ui.views.log
+ org.eclipse.ui.views.log,
+ org.jkiss.dbeaver.erd.ui
 Automatic-Module-Name: org.jkiss.dbeaver.ui.app.standalone
