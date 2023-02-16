@@ -495,7 +495,7 @@ public class GeneralUtils {
             int pos = 0;
             while (matcher.find(pos)) {
                 pos = matcher.end();
-                String varName = matcher.group(2);
+                String varName = matcher.group(2).toUpperCase();
                 String varValue = null;
                 if (resolvedVars != null) {
                     varValue = resolvedVars.get(varName); 
