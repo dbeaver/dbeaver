@@ -26,15 +26,20 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AICompletionConstants;
+import org.jkiss.dbeaver.model.ai.AIEngineSettings;
+import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.gpt3.GPTClient;
+import org.jkiss.dbeaver.model.ai.gpt3.GPTConstants;
 import org.jkiss.dbeaver.model.ai.gpt3.GPTModel;
-import org.jkiss.dbeaver.model.ai.gpt3.GPTPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
+import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
 import java.util.Locale;
 
 public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
@@ -58,18 +63,23 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     protected void performDefaults() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
-        enableAICheck.setSelection(!store.getBoolean(AICompletionConstants.AI_DISABLED));
+        AISettings settings = AISettings.getSettings();
+        AIEngineSettings openAiSettings = settings.getEngineConfiguration(GPTConstants.OPENAI_ENGINE);
+
+        enableAICheck.setSelection(!settings.isAiDisabled());
 
         includeSourceTextInCommentCheck.setSelection(store.getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT));
 //        maxCompletionChoicesText.setText(store.getString(AICompletionConstants.AI_COMPLETION_MAX_CHOICES));
         executeQueryImmediatelyCheck.setSelection(store.getBoolean(AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY));
 
-        modelCombo.select(GPTModel.getByName(store.getString(GPTPreferences.GPT_MODEL)).ordinal());
-        temperatureText.setText(String.valueOf(store.getDouble(GPTPreferences.GPT_MODEL_TEMPERATURE)));
-        logQueryCheck.setSelection(store.getBoolean(GPTPreferences.GPT_LOG_QUERY));
+        modelCombo.select(GPTModel.getByName(store.getString(GPTConstants.GPT_MODEL)).ordinal());
+        temperatureText.setText(String.valueOf(store.getDouble(GPTConstants.GPT_MODEL_TEMPERATURE)));
+        logQueryCheck.setSelection(store.getBoolean(GPTConstants.GPT_LOG_QUERY));
 
-        String secretValue = DBWorkbench.getPlatform().getPreferenceStore()
-            .getString(GPTPreferences.GPT_API_TOKEN);
+        String secretValue = CommonUtils.toString(openAiSettings.getProperties().get(GPTConstants.GPT_API_TOKEN), null);
+        if (secretValue == null) {
+            secretValue = DBWorkbench.getPlatform().getPreferenceStore().getString(GPTConstants.GPT_API_TOKEN);
+        }
         tokenText.setText(secretValue == null ? "" : secretValue);
     }
 
@@ -77,22 +87,38 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     public boolean performOk() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
-        store.setValue(AICompletionConstants.AI_DISABLED, !enableAICheck.getSelection());
+        AISettings settings = AISettings.getSettings();
+        settings.setAiDisabled(!enableAICheck.getSelection());
+
+        AIEngineSettings engineConfiguration = settings.getEngineConfiguration(GPTConstants.OPENAI_ENGINE);
+        engineConfiguration.setEngineEnabled(enableAICheck.getSelection());
 
         store.setValue(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT, includeSourceTextInCommentCheck.getSelection());
         store.setValue(AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY, executeQueryImmediatelyCheck.getSelection());
 //        store.setValue(AICompletionConstants.AI_COMPLETION_MAX_CHOICES, maxCompletionChoicesText.getText());
 
-        store.setValue(GPTPreferences.GPT_MODEL, modelCombo.getText());
-        store.setValue(GPTPreferences.GPT_MODEL_TEMPERATURE, temperatureText.getText());
-        store.setValue(GPTPreferences.GPT_LOG_QUERY, logQueryCheck.getSelection());
+        store.setValue(GPTConstants.GPT_MODEL, modelCombo.getText());
+        store.setValue(GPTConstants.GPT_MODEL_TEMPERATURE, temperatureText.getText());
+        store.setValue(GPTConstants.GPT_LOG_QUERY, logQueryCheck.getSelection());
 
-        if (!modelCombo.getText().equals(store.getString(GPTPreferences.GPT_MODEL)) ||
-            !tokenText.getText().equals(store.getString(GPTPreferences.GPT_API_TOKEN))
+        if (!modelCombo.getText().equals(store.getString(GPTConstants.GPT_MODEL)) ||
+            !tokenText.getText().equals(store.getString(GPTConstants.GPT_API_TOKEN))
         ) {
             GPTClient.resetServices();
         }
-        store.setValue(GPTPreferences.GPT_API_TOKEN, tokenText.getText());
+        store.setToDefault(GPTConstants.GPT_API_TOKEN);
+        engineConfiguration.getProperties().put(GPTConstants.GPT_API_TOKEN, tokenText.getText());
+
+        try {
+            store.save();
+        } catch (IOException e) {
+            log.debug(e);
+        }
+
+        if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+            settings.saveSettings();
+        }
+
         return true;
     }
 

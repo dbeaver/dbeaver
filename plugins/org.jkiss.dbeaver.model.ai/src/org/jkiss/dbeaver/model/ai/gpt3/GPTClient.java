@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.AICompletionConstants;
+import org.jkiss.dbeaver.model.ai.AIEngineSettings;
+import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionRequest;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
@@ -62,7 +64,7 @@ public class GPTClient {
     }
 
     /**
-     * Initializes OpenAiService instance using token provided by {@link GPTPreferences} GTP_TOKEN_PATH
+     * Initializes OpenAiService instance using token provided by {@link GPTConstants} GTP_TOKEN_PATH
      */
     private static OpenAiService initGPTApiClientInstance() throws DBException {
         String token = acquireToken();
@@ -73,11 +75,16 @@ public class GPTClient {
     }
 
     private static String acquireToken() {
-        return DBWorkbench.getPlatform().getPreferenceStore().getString(GPTPreferences.GPT_API_TOKEN);
+        AIEngineSettings openAiConfig = AISettings.getSettings().getEngineConfiguration(GPTConstants.OPENAI_ENGINE);
+        Object token = openAiConfig.getProperties().get(GPTConstants.GPT_API_TOKEN);
+        if (token != null) {
+            return token.toString();
+        }
+        return DBWorkbench.getPlatform().getPreferenceStore().getString(GPTConstants.GPT_API_TOKEN);
     }
 
     /**
-     * Request completion from GPT API uses parameters from {@link GPTPreferences} for model settings\
+     * Request completion from GPT API uses parameters from {@link GPTConstants} for model settings\
      * Adds current schema metadata to starting query
      *
      * @param request          request text
@@ -125,7 +132,7 @@ public class GPTClient {
         CompletionRequest completionRequest = createCompletionRequest(modifiedRequest);
         monitor.subTask("Request GPT completion");
         try {
-            if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(GPTPreferences.GPT_LOG_QUERY)) {
+            if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(GPTConstants.GPT_LOG_QUERY)) {
                 log.debug("GPT request:\n" + completionRequest.getPrompt());
             }
             if (monitor.isCanceled()) {
@@ -213,8 +220,8 @@ public class GPTClient {
 
     private static CompletionRequest createCompletionRequest(@NotNull String request) throws DBException {
         int maxTokens = GPT_MODEL_MAX_TOKENS;
-        Double temperature = getPreferenceStore().getDouble(GPTPreferences.GPT_MODEL_TEMPERATURE);
-        String model = getPreferenceStore().getString(GPTPreferences.GPT_MODEL);
+        Double temperature = getPreferenceStore().getDouble(GPTConstants.GPT_MODEL_TEMPERATURE);
+        String model = getPreferenceStore().getString(GPTConstants.GPT_MODEL);
         CompletionRequest.CompletionRequestBuilder builder = CompletionRequest.builder().prompt(request);
 
 //        int maxChoices = getPreferenceStore().getInt(AICompletionConstants.AI_COMPLETION_MAX_CHOICES);
