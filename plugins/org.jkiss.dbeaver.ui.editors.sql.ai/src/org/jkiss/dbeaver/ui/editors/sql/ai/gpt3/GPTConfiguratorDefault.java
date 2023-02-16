@@ -25,7 +25,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.AICompletionConstants;
 import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 import org.jkiss.dbeaver.model.ai.AISettings;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
 import org.jkiss.dbeaver.model.ai.gpt3.GPTCompletionEngine;
 import org.jkiss.dbeaver.model.ai.gpt3.GPTConstants;
 import org.jkiss.dbeaver.model.ai.gpt3.GPTModel;
@@ -38,7 +37,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
 
-public class GPTConfiguratorDefault implements IObjectPropertyConfigurator<DAICompletionEngine, AISettings> {
+public class GPTConfiguratorDefault implements IObjectPropertyConfigurator<GPTCompletionEngine, AISettings> {
 
     private static final String API_KEY_URL = "https://beta.openai.com/account/api-keys";
 
@@ -55,7 +54,7 @@ public class GPTConfiguratorDefault implements IObjectPropertyConfigurator<DAICo
     private Button logQueryCheck;
 
     @Override
-    public void createControl(@NotNull Composite placeholder, DAICompletionEngine object, @NotNull Runnable propertyChangeListener) {
+    public void createControl(@NotNull Composite placeholder, GPTCompletionEngine object, @NotNull Runnable propertyChangeListener) {
         enableAICheck = UIUtils.createCheckbox(
             placeholder,
             "Enable smart completion",
@@ -107,11 +106,8 @@ public class GPTConfiguratorDefault implements IObjectPropertyConfigurator<DAICo
                 "Try to execute translated SQL immediately after completion",
                 false,
                 2);
-//            maxCompletionChoicesText = UIUtils.createLabelText(
-//                completionGroup, "Completion choices number", null);
-//            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-//            gd.widthHint = UIUtils.getFontHeight(maxCompletionChoicesText) * 5;
-//            maxCompletionChoicesText.setLayoutData(gd);
+
+            createCompletionSettings(completionGroup, propertyChangeListener);
         }
         {
             Group modelGroup = UIUtils.createControlGroup(placeholder,
@@ -153,8 +149,18 @@ public class GPTConfiguratorDefault implements IObjectPropertyConfigurator<DAICo
                     "Write GPT queries with metadata info in debug logs",
                     false,
                     2);
+
+                createAdvancedSettings(modelAdvancedGroup, propertyChangeListener);
             }
         }
+    }
+
+    protected void createCompletionSettings(Group group, Runnable propertyChangeListener) {
+
+    }
+
+    protected void createAdvancedSettings(Group group, Runnable propertyChangeListener) {
+
     }
 
     @Override

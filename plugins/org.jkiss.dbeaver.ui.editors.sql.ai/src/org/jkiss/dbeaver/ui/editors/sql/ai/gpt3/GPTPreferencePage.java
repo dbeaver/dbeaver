@@ -25,7 +25,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AISettings;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
 import org.jkiss.dbeaver.model.ai.gpt3.GPTCompletionEngine;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
@@ -43,7 +42,7 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.gpt";
     private final AISettings settings;
 
-    private IObjectPropertyConfigurator<DAICompletionEngine, AISettings> configurator;
+    private IObjectPropertyConfigurator<GPTCompletionEngine, AISettings> configurator;
 
     public GPTPreferencePage() {
         UIPropertyConfiguratorDescriptor cfgDescriptor = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(GPTCompletionEngine.class.getName());
@@ -90,7 +89,7 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
         placeholder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        DAICompletionEngine engine = new GPTCompletionEngine();
+        GPTCompletionEngine engine = new GPTCompletionEngine();
         configurator.createControl(placeholder, engine, () -> {});
         performDefaults();
 
