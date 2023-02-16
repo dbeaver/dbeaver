@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.AICompletionConstants;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionRequest;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
-import org.jkiss.dbeaver.model.ai.gpt3.GPTClient;
+import org.jkiss.dbeaver.model.ai.gpt3.GPTCompletionEngine;
 import org.jkiss.dbeaver.model.ai.translator.DAIHistoryManager;
 import org.jkiss.dbeaver.model.ai.translator.SimpleFilterManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -68,10 +68,10 @@ public class AITranslateHandler extends AbstractHandler {
             return null;
         }
 
-        if (!GPTClient.isValidConfiguration()) {
+        if (!GPTCompletionEngine.isValidConfiguration()) {
             UIUtils.showPreferencesFor(editor.getSite().getShell(), null, GPTPreferencePage.PAGE_ID);
         }
-        if (!GPTClient.isValidConfiguration()) {
+        if (!GPTCompletionEngine.isValidConfiguration()) {
             DBWorkbench.getPlatformUI().showError("Bad GPT configuration", "You must specify OpenAI API token in preferences");
             return null;
         }
@@ -146,7 +146,7 @@ public class AITranslateHandler extends AbstractHandler {
         try {
             UIUtils.runInProgressDialog(monitor -> {
                 try {
-                    completionResult[0] = GPTClient.requestCompletion(request, monitor, executionContext);
+                    completionResult[0] = GPTCompletionEngine.requestCompletion(request, monitor, executionContext);
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 }

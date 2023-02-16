@@ -22,17 +22,21 @@ import com.theokanning.openai.completion.CompletionChoice;
 import com.theokanning.openai.completion.CompletionRequest;
 import okhttp3.ResponseBody;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.AICompletionConstants;
 import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionRequest;
+import org.jkiss.dbeaver.model.ai.completion.DAICompletionResponse;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -45,19 +49,45 @@ import retrofit2.Response;
 import java.io.IOException;
 import java.io.StringReader;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
-public class GPTClient {
-    private static final Log log = Log.getLog(GPTClient.class);
+public class GPTCompletionEngine implements DAICompletionEngine {
+    private static final Log log = Log.getLog(GPTCompletionEngine.class);
 
     //How many retries may be done if code 429 happens
     private static final int MAX_REQUEST_ATTEMPTS = 3;
 
     private static final Map<String, OpenAiService> clientInstances = new HashMap<>();
     private static final int GPT_MODEL_MAX_TOKENS = 2048;
+
+    public GPTCompletionEngine() {
+    }
+
+    @Override
+    public String getEngineName() {
+        return "GPT-3";
+    }
+
+    @Override
+    public String getModelName() {
+        return DBWorkbench.getPlatform().getPreferenceStore().getString(GPTConstants.GPT_MODEL);
+    }
+
+    @NotNull
+    @Override
+    public List<DAICompletionResponse> performQueryCompletion(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBSLogicalDataSource dataSource,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull DAICompletionRequest completionRequest,
+        boolean returnOnlyCompletion,
+        int maxResults
+    ) throws DBException {
+        String result = requestCompletion(completionRequest, monitor, executionContext);
+        DAICompletionResponse response = new DAICompletionResponse();
+        response.setResultCompletion(result);
+        return Collections.singletonList(response);
+    }
 
     public static boolean isValidConfiguration() {
         return !CommonUtils.isEmpty(acquireToken());
@@ -244,14 +274,11 @@ public class GPTClient {
             .build();
     }
 
-    private GPTClient() {
-
-    }
-
     /**
      * Resets GPT client cache
      */
     public static void resetServices() {
         clientInstances.clear();
     }
+
 }

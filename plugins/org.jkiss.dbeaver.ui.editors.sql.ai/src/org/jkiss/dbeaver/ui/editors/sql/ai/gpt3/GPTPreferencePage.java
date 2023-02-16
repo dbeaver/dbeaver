@@ -16,98 +16,60 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.ai.gpt3;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.AICompletionConstants;
-import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 import org.jkiss.dbeaver.model.ai.AISettings;
-import org.jkiss.dbeaver.model.ai.gpt3.GPTClient;
-import org.jkiss.dbeaver.model.ai.gpt3.GPTConstants;
-import org.jkiss.dbeaver.model.ai.gpt3.GPTModel;
+import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
+import org.jkiss.dbeaver.model.ai.gpt3.GPTCompletionEngine;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.sql.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
-import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.util.Locale;
 
 public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
     private static final Log log = Log.getLog(GPTPreferencePage.class);
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.gpt";
-    private static final String API_KEY_URL = "https://beta.openai.com/account/api-keys";
+    private final AISettings settings;
 
-    private Button enableAICheck;
+    private IObjectPropertyConfigurator<DAICompletionEngine, AISettings> configurator;
 
-    private Button includeSourceTextInCommentCheck;
-//    private Text maxCompletionChoicesText;
-    private Button executeQueryImmediatelyCheck;
-
-    private Text tokenText;
-
-    private Combo modelCombo;
-    private Text temperatureText;
-    private Button logQueryCheck;
+    public GPTPreferencePage() {
+        UIPropertyConfiguratorDescriptor cfgDescriptor = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(GPTCompletionEngine.class.getName());
+        if (cfgDescriptor != null) {
+            try {
+                configurator = (IObjectPropertyConfigurator)cfgDescriptor.createConfigurator();
+            } catch (DBException e) {
+                log.error(e);
+            }
+        }
+        if (configurator == null) {
+            configurator = new GPTConfiguratorDefault();
+        }
+        settings = AISettings.getSettings();
+    }
 
     @Override
     protected void performDefaults() {
-        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-
-        AISettings settings = AISettings.getSettings();
-        AIEngineSettings openAiSettings = settings.getEngineConfiguration(GPTConstants.OPENAI_ENGINE);
-
-        enableAICheck.setSelection(!settings.isAiDisabled());
-
-        includeSourceTextInCommentCheck.setSelection(store.getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT));
-//        maxCompletionChoicesText.setText(store.getString(AICompletionConstants.AI_COMPLETION_MAX_CHOICES));
-        executeQueryImmediatelyCheck.setSelection(store.getBoolean(AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY));
-
-        modelCombo.select(GPTModel.getByName(store.getString(GPTConstants.GPT_MODEL)).ordinal());
-        temperatureText.setText(String.valueOf(store.getDouble(GPTConstants.GPT_MODEL_TEMPERATURE)));
-        logQueryCheck.setSelection(store.getBoolean(GPTConstants.GPT_LOG_QUERY));
-
-        String secretValue = CommonUtils.toString(openAiSettings.getProperties().get(GPTConstants.GPT_API_TOKEN), null);
-        if (secretValue == null) {
-            secretValue = DBWorkbench.getPlatform().getPreferenceStore().getString(GPTConstants.GPT_API_TOKEN);
-        }
-        tokenText.setText(secretValue == null ? "" : secretValue);
+        configurator.loadSettings(settings);
     }
 
     @Override
     public boolean performOk() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
-        AISettings settings = AISettings.getSettings();
-        settings.setAiDisabled(!enableAICheck.getSelection());
-
-        AIEngineSettings engineConfiguration = settings.getEngineConfiguration(GPTConstants.OPENAI_ENGINE);
-        engineConfiguration.setEngineEnabled(enableAICheck.getSelection());
-
-        store.setValue(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT, includeSourceTextInCommentCheck.getSelection());
-        store.setValue(AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY, executeQueryImmediatelyCheck.getSelection());
-//        store.setValue(AICompletionConstants.AI_COMPLETION_MAX_CHOICES, maxCompletionChoicesText.getText());
-
-        store.setValue(GPTConstants.GPT_MODEL, modelCombo.getText());
-        store.setValue(GPTConstants.GPT_MODEL_TEMPERATURE, temperatureText.getText());
-        store.setValue(GPTConstants.GPT_LOG_QUERY, logQueryCheck.getSelection());
-
-        if (!modelCombo.getText().equals(store.getString(GPTConstants.GPT_MODEL)) ||
-            !tokenText.getText().equals(store.getString(GPTConstants.GPT_API_TOKEN))
-        ) {
-            GPTClient.resetServices();
-        }
-        store.setToDefault(GPTConstants.GPT_API_TOKEN);
-        engineConfiguration.getProperties().put(GPTConstants.GPT_API_TOKEN, tokenText.getText());
+        configurator.saveSettings(settings);
 
         try {
             store.save();
@@ -128,106 +90,8 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
         placeholder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        enableAICheck = UIUtils.createCheckbox(
-            placeholder,
-            "Enable smart completion",
-            "Enable AI smart completion. If you don't want to see it in SQL editor then you can disable this feature.",
-            false,
-            2);
-
-        {
-            Group authorizationGroup = UIUtils.createControlGroup(placeholder,
-                AIUIMessages.gpt_preference_page_group_authorization,
-                2,
-                SWT.NONE,
-                5
-            );
-            tokenText = UIUtils.createLabelText(authorizationGroup, AIUIMessages.gpt_preference_page_selector_token,
-                "", SWT.BORDER | SWT.PASSWORD);
-            tokenText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            Link link = UIUtils.createLink(
-                authorizationGroup,
-                "Copy-paste API token from <a>" + API_KEY_URL + "</a>",
-                new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        UIUtils.openWebBrowser(API_KEY_URL);
-                    }
-                });
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
-            link.setLayoutData(gd);
-            authorizationGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        }
-        {
-            Group completionGroup = UIUtils.createControlGroup(placeholder,
-                "Completion",
-                2,
-                SWT.NONE,
-                5
-            );
-            completionGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            includeSourceTextInCommentCheck = UIUtils.createCheckbox(
-                completionGroup,
-                "Include source in query comment",
-                "Add your human language text in query comment",
-                false,
-                2);
-            executeQueryImmediatelyCheck = UIUtils.createCheckbox(
-                completionGroup,
-                "Execute SQL immediately",
-                "Try to execute translated SQL immediately after completion",
-                false,
-                2);
-//            maxCompletionChoicesText = UIUtils.createLabelText(
-//                completionGroup, "Completion choices number", null);
-//            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-//            gd.widthHint = UIUtils.getFontHeight(maxCompletionChoicesText) * 5;
-//            maxCompletionChoicesText.setLayoutData(gd);
-        }
-        {
-            Group modelGroup = UIUtils.createControlGroup(placeholder,
-                AIUIMessages.gpt_preference_page_group_model,
-                2,
-                SWT.NONE,
-                5
-            );
-            modelGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            modelCombo = UIUtils.createLabelCombo(modelGroup,
-                AIUIMessages.gpt_preference_page_combo_engine,
-                SWT.READ_ONLY
-            );
-            for (GPTModel model : GPTModel.values()) {
-                modelCombo.add(model.getName());
-            }
-            UIUtils.createInfoLabel(modelGroup, "code-davinci model suits the best for SQL code completion", GridData.FILL_HORIZONTAL, 2);
-            {
-                Group modelAdvancedGroup = UIUtils.createControlGroup(placeholder,
-                    AIUIMessages.gpt_preference_page_group_model_advanced,
-                    2,
-                    SWT.NONE,
-                    5
-                );
-
-                temperatureText = UIUtils.createLabelText(modelAdvancedGroup,
-                    AIUIMessages.gpt_preference_page_text_temperature,
-                    "0.0"
-                );
-                temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
-                UIUtils.createInfoLabel(modelAdvancedGroup, "Lower temperatures give more precise results", GridData.FILL_HORIZONTAL, 2);
-
-                temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
-                modelAdvancedGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-                logQueryCheck = UIUtils.createCheckbox(
-                    modelAdvancedGroup,
-                    "Write GPT queries to debug log",
-                    "Write GPT queries with metadata info in debug logs",
-                    false,
-                    2);
-            }
-        }
-
+        DAICompletionEngine engine = new GPTCompletionEngine();
+        configurator.createControl(placeholder, engine, () -> {});
         performDefaults();
 
         return placeholder;
