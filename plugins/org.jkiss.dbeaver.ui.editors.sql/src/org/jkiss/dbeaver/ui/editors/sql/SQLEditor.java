@@ -1582,11 +1582,18 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
     
+    /**
+     * Toggle isPinned value of active tab container,
+     * then move tab to left of all unpinned tabs if pinning,
+     * or move tab to right of all pinned tabs if unpinning
+     */
     public void toggleActiveTabPinned() {
         CTabItem activeTab = getActiveResultsTab();
         QueryResultsContainer container = (QueryResultsContainer) activeTab.getData();
         
-        if (!container.hasData()) return;
+        if (!container.hasData()) {
+            return;
+        }
 
         boolean isPinned = container.isPinned();
 
@@ -1617,6 +1624,9 @@ public class SQLEditor extends SQLEditorBase implements
 
     }
 
+    /**
+     * Return true if there is an active tab, and its container is pinned
+     */
     public boolean isActiveTabPinned() {
         CTabItem tabItem = getActiveResultsTab();
         return tabItem != null && ((QueryResultsContainer) tabItem.getData()).isPinned();
