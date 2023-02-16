@@ -16,43 +16,107 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * AI engine settings
  */
 public class AIEngineRegistry {
 
+    private static final Log log = Log.getLog(AIEngineRegistry.class);
+
+    public static class EngineDescriptor extends AbstractDescriptor {
+
+        private final IConfigurationElement contributorConfig;
+        protected EngineDescriptor(IConfigurationElement contributorConfig) {
+            super(contributorConfig);
+            this.contributorConfig = contributorConfig;
+        }
+
+        public String getId() {
+            return contributorConfig.getAttribute("id");
+        }
+
+        public String getLabel() {
+            return contributorConfig.getAttribute("id");
+        }
+
+        String getReplaces() {
+            return contributorConfig.getAttribute("replaces");
+        }
+
+        public DAICompletionEngine createInstance() throws DBException {
+            ObjectType objectType = new ObjectType(contributorConfig);
+            return objectType.createInstance(DAICompletionEngine.class);
+        }
+
+    }
+
     private static AIEngineRegistry instance = null;
 
     public synchronized static AIEngineRegistry getInstance() {
         if (instance == null) {
-            //instance = new AIEngineRegistry(Platform.getExtensionRegistry());
+            instance = new AIEngineRegistry(Platform.getExtensionRegistry());
         }
         return instance;
     }
 
-/*
-    private final List<EntityEditorDescriptor> entityEditors = new ArrayList<>();
-    private final List<EntityConfiguratorDescriptor> entityConfigurators = new ArrayList<>();
-    private final Map<String, List<EntityEditorDescriptor>> positionsMap = new HashMap<>();
+    private final Map<String, EngineDescriptor> descriptorMap = new LinkedHashMap<>();
+    private final Map<String, String> replaceMap = new LinkedHashMap<>();
 
     public AIEngineRegistry(IExtensionRegistry registry) {
-        // Create default editor
-        // Load datasource providers from external plugins
-        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EntityEditorDescriptor.EXTENSION_ID);
+        IConfigurationElement[] extElements = registry.getConfigurationElementsFor("com.dbeaver.ai.engine");
         for (IConfigurationElement ext : extElements) {
             if ("completionEngine".equals(ext.getName())) {
-                EntityEditorDescriptor descriptor = new EntityEditorDescriptor(ext);
-                entityEditors.add(descriptor);
-                List<EntityEditorDescriptor> list = positionsMap.computeIfAbsent(
-                    descriptor.getPosition(), k -> new ArrayList<>());
-                list.add(descriptor);
-            } else if (TAG_CONFIGURATOR.equals(ext.getName())) {
-                EntityConfiguratorDescriptor descriptor = new EntityConfiguratorDescriptor(ext);
-                entityConfigurators.add(descriptor);
+                EngineDescriptor descriptor = new EngineDescriptor(ext);
+                descriptorMap.put(descriptor.getId(), descriptor);
+
+                String replaces = descriptor.getReplaces();
+                if (!CommonUtils.isEmpty(replaces)) {
+                    for (String rl : replaces.split(",")) {
+                        replaceMap.put(rl, descriptor.getId());
+                    }
+                }
             }
         }
     }
 
-*/
+    public List<EngineDescriptor> getCompletionEngines() {
+        List<EngineDescriptor> list = new ArrayList<>();
+        for (Map.Entry<String, EngineDescriptor> entry : descriptorMap.entrySet()) {
+            if (replaceMap.containsKey(entry.getKey())) {
+                continue;
+            }
+            list.add(entry.getValue());
+        }
+        return list;
+    }
+
+    public DAICompletionEngine getCompletionEngine(String id) throws DBException {
+        while (true) {
+            String replace = replaceMap.get(id);
+            if (replace == null) {
+                break;
+            }
+            id = replace;
+        }
+        EngineDescriptor descriptor = descriptorMap.get(id);
+        if (descriptor == null) {
+            throw new DBException("AI engine '" + id + "' not found");
+        }
+        return descriptor.createInstance();
+    }
 
 }
