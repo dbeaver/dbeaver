@@ -131,11 +131,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     private synchronized void tryFireMetaEvent(final QMMObject object, final QMEventAction action, DBCExecutionContext context) {
         try {
             String sessionId = QMUtils.getQmSessionId(context);
-            if (sessionId == null) {
-                log.debug("QM session not found for context " + context.getContextName());
-            } else {
-                eventPool.add(new QMMetaEvent(object, action, sessionId));
-            }
+            eventPool.add(new QMMetaEvent(object, action, sessionId));
         } catch (DBException e) {
             log.error("Failed to fire qm meta event", e);
         }
