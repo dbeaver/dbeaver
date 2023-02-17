@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionRequest;
+import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -66,7 +67,7 @@ public class GPTRequestFormatter {
         }
         int maxRequestLength = MAX_PROMPT_LENGTH - additionalMetadata.length() - tail.length() - 20;
 
-        if (CommonUtils.isEmpty(request.getCustomEntities())) {
+        if (request.getScope() != DAICompletionScope.CUSTOM) {
             additionalMetadata.append(generateObjectDescription(monitor, request, mainObject, maxRequestLength));
         } else {
             for (DBSEntity entity : request.getCustomEntities()) {
