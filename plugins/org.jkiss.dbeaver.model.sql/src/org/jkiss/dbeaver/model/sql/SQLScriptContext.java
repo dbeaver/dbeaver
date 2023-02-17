@@ -17,10 +17,12 @@
 
 package org.jkiss.dbeaver.model.sql;
 
+import org.eclipse.jface.text.Document;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -28,6 +30,10 @@ import org.jkiss.dbeaver.model.exec.DBCScriptContext;
 import org.jkiss.dbeaver.model.exec.DBCScriptContextListener;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
 import org.jkiss.dbeaver.model.impl.OutputWriterAdapter;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
+import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
+import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLQueryParameterRegistry;
@@ -265,6 +271,30 @@ public class SQLScriptContext implements DBCScriptContext {
         this.pragmas.putAll(context.pragmas);
     }
 
+    /**
+     * Parse and fill variables with their values in the provided text
+     */
+    @NotNull
+    public String fillVariables(@NotNull String text) {
+        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+        DBPDataSource dataSource = contextProvider.getExecutionContext().getDataSource();
+        syntaxManager.init(BasicSQLDialect.INSTANCE, dataSource.getContainer().getPreferenceStore());
+        syntaxManager.setParametersEnabled(false);
+        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
+        ruleManager.loadRules(dataSource, false);
+
+        Document sqlDocument = new Document(text);
+        SQLParserContext context = new SQLParserContext(dataSource, syntaxManager, ruleManager, sqlDocument);
+        List<SQLQueryParameter> parameters = SQLScriptParser.parseParametersAndVariables(context, 0, text.length());
+        if (parameters != null) {
+            resolveParameters(parameters);
+            String result = SQLUtils.fillParameters(text, parameters);
+            return result;
+        } else {
+            return text;
+        }
+    }
+
     public boolean fillQueryParameters(SQLQuery query, boolean useDefaults) {
         if (ignoreParameters) {
             return true;
@@ -286,25 +316,27 @@ public class SQLScriptContext implements DBCScriptContext {
                 return false;
             }
         } else {
-            for (SQLQueryParameter parameter : parameters) {
-                Object varValue = variables.get(parameter.getVarName());
-                if (varValue == null) {
-                    varValue = variables.get(parameter.getName());
-                }
-                if (varValue == null) {
-                    varValue = defaultParameters.get(parameter.getName());
-                } else {
-                    varValue = ((VariableInfo)varValue).value;
-                }
-                if (varValue != null) {
-                    parameter.setValue(CommonUtils.toString(varValue));
-                }
-            }
+            resolveParameters(parameters);
         }
 
         SQLUtils.fillQueryParameters(query, parameters);
 
         return true;
+    }
+
+    private void resolveParameters(List<SQLQueryParameter> parameters) {
+        for (SQLQueryParameter parameter : parameters) {
+            Object varValue = getVariable(parameter.getVarName());
+            if (varValue == null) {
+                varValue = getVariable(parameter.getName());
+            }
+            if (varValue == null) {
+                varValue = defaultParameters.get(parameter.getName());
+            }
+            if (varValue != null) {
+                parameter.setValue(CommonUtils.toString(varValue));
+            }
+        }   
     }
 
     public Map<String, Object> getAllParameters() {

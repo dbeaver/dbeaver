@@ -132,6 +132,14 @@ public class SQLSyntaxManager {
         return variablesEnabled;
     }
 
+    /**
+     * Disable rules for parameters and anonymous parameters
+     */
+    public void setParametersEnabled(boolean value) {
+        parametersEnabled = value;
+        anonymousParametersEnabled = value;
+    }
+
     public void init(@NotNull SQLDialect dialect, @NotNull DBPPreferenceStore preferenceStore)
     {
         this.statementDelimiters = new String[0];

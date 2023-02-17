@@ -24,8 +24,6 @@ import org.jkiss.dbeaver.model.sql.SQLControlCommandHandler;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
 import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
 
@@ -54,8 +52,8 @@ public class SQLCommandSet implements SQLControlCommandHandler {
                 "Expected syntax:\n@set varName = value or expression"
             );
         }
-        String varValue = parameter.substring(divPos + 1).trim();
-        varValue = GeneralUtils.replaceVariables(varValue, name -> CommonUtils.toString(scriptContext.getVariable(name)));
+        String rawVarValue = parameter.substring(divPos + 1).trim();
+        String varValue = scriptContext.fillVariables(rawVarValue);
         scriptContext.setVariable(varName, varValue);
 
         return true;

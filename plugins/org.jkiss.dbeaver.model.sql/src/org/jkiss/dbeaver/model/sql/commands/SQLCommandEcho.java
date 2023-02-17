@@ -20,8 +20,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.sql.SQLControlCommand;
 import org.jkiss.dbeaver.model.sql.SQLControlCommandHandler;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
-import org.jkiss.dbeaver.model.sql.eval.ScriptVariablesResolver;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
  * Control command handler
@@ -32,7 +30,7 @@ public class SQLCommandEcho implements SQLControlCommandHandler {
     public boolean handleCommand(SQLControlCommand command, SQLScriptContext scriptContext) throws DBException {
         String parameter = command.getParameter();
         if (parameter != null) {
-            parameter = GeneralUtils.replaceVariables(parameter, new ScriptVariablesResolver(scriptContext));
+            parameter = scriptContext.fillVariables(parameter);
         }
         scriptContext.getOutputWriter().println(null, parameter);
 

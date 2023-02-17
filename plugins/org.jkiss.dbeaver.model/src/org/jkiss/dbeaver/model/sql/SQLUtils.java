@@ -1089,19 +1089,28 @@ public final class SQLUtils {
     }
 
     public static void fillQueryParameters(SQLQuery sqlStatement, List<SQLQueryParameter> parameters) {
+        String rawQuery = sqlStatement.getText();
+        String query = fillParameters(rawQuery, parameters);
+        sqlStatement.setText(query);
+        //sqlStatement.setOriginalText(query);
+    }
+
+    /**
+     * Substitute variable values to the provided text
+     */
+    public static String fillParameters(String text, List<SQLQueryParameter> parameters) {
         // Set values for all parameters
         // Replace parameter tokens with parameter values
-        String query = sqlStatement.getText();
+        String result = text;
         for (int i = parameters.size(); i > 0; i--) {
             SQLQueryParameter parameter = parameters.get(i - 1);
             String paramValue = parameter.getValue();
             if (paramValue == null || paramValue.isEmpty()) {
                 paramValue = SQLConstants.NULL_VALUE;
             }
-            query = query.substring(0, parameter.getTokenOffset()) + paramValue + query.substring(parameter.getTokenOffset() + parameter.getTokenLength());
-        }
-        sqlStatement.setText(query);
-        //sqlStatement.setOriginalText(query);
+            result = result.substring(0, parameter.getTokenOffset()) + paramValue + result.substring(parameter.getTokenOffset() + parameter.getTokenLength());
+        }   
+        return result;
     }
 
     public static boolean needQueryDelimiter(SQLDialect sqlDialect, String query) {
