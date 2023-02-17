@@ -27,61 +27,89 @@ public class WSResourceUpdatedEvent extends WSAbstractProjectEvent {
     private final String resourcePath;
     @NotNull
     private final RMResource[] resourceParsedPath;
+    @NotNull
+    private final WSResourceProperty property;
+    @Nullable
+    private final String details;
 
     private WSResourceUpdatedEvent(
         @NotNull WSEventType eventType,
         @Nullable String sessionId,
+        @Nullable String userId,
         @NotNull String projectId,
         @NotNull String resourcePath,
-        @NotNull RMResource[] resourceParsedPath
-    ) {
-        super(eventType, sessionId, projectId);
+        @NotNull RMResource[] resourceParsedPath,
+        @NotNull WSResourceProperty property,
+        @Nullable String details
+        ) {
+        super(eventType, sessionId, userId, projectId);
+        this.property = property;
         this.resourcePath = resourcePath;
         this.resourceParsedPath = resourceParsedPath;
+        this.details = details;
     }
 
     public static WSResourceUpdatedEvent create(
         @Nullable String sessionId,
+        @Nullable String userId,
         @NotNull String projectId,
         @NotNull String resourcePath,
-        @NotNull RMResource[] resourceParsedPath
+        @NotNull RMResource[] resourceParsedPath,
+        @NotNull WSResourceProperty property,
+        @Nullable String details
+
     ) {
         return new WSResourceUpdatedEvent(
             WSEventType.RM_RESOURCE_CREATED,
             sessionId,
+            userId,
             projectId,
             resourcePath,
-            resourceParsedPath
+            resourceParsedPath,
+            property,
+            details
         );
     }
 
     public static WSResourceUpdatedEvent update(
         @Nullable String sessionId,
+        @Nullable String userId,
         @NotNull String projectId,
         @NotNull String resourcePath,
-        @NotNull RMResource[] resourceParsedPath
+        @NotNull RMResource[] resourceParsedPath,
+        @NotNull WSResourceProperty property,
+        @Nullable String details
     ) {
         return new WSResourceUpdatedEvent(
             WSEventType.RM_RESOURCE_UPDATED,
             sessionId,
+            userId,
             projectId,
             resourcePath,
-            resourceParsedPath
+            resourceParsedPath,
+            property,
+            details
         );
     }
 
     public static WSResourceUpdatedEvent delete(
         @Nullable String sessionId,
+        @Nullable String userId,
         @NotNull String projectId,
         @NotNull String resourcePath,
-        @NotNull RMResource[] resourceParsedPath
+        @NotNull RMResource[] resourceParsedPath,
+        @NotNull WSResourceProperty property,
+        @Nullable String details
     ) {
         return new WSResourceUpdatedEvent(
             WSEventType.RM_RESOURCE_DELETED,
             sessionId,
+            userId,
             projectId,
             resourcePath,
-            resourceParsedPath
+            resourceParsedPath,
+            property,
+            details
         );
     }
 
@@ -98,5 +126,15 @@ public class WSResourceUpdatedEvent extends WSAbstractProjectEvent {
     @NotNull
     public Object getResourceParsedPath() {
         return resourceParsedPath;
+    }
+
+    @NotNull
+    public WSResourceProperty getProperty() {
+        return property;
+    }
+
+    @Nullable
+    public String getDetails() {
+        return details;
     }
 }
