@@ -29,21 +29,24 @@ public class WSDatasourceFolderEvent extends WSAbstractProjectEvent {
     private WSDatasourceFolderEvent(
         WSEventType eventType,
         String sessionId,
+        String userId,
         String projectId,
         List<String> nodePaths
     ) {
-        super(eventType, sessionId, projectId);
+        super(eventType, sessionId, userId, projectId);
         this.nodePaths = nodePaths;
     }
 
     public static WSDatasourceFolderEvent create(
         @Nullable String sessionId,
+        @Nullable String userId,
         @NotNull String projectId,
         @NotNull List<String> datasourceIds
     ) {
         return new WSDatasourceFolderEvent(
             WSEventType.DATASOURCE_FOLDER_CREATED,
             sessionId,
+            userId,
             projectId,
             datasourceIds
         );
@@ -51,12 +54,14 @@ public class WSDatasourceFolderEvent extends WSAbstractProjectEvent {
 
     public static WSDatasourceFolderEvent delete(
         @Nullable String sessionId,
+        @Nullable String userId,
         @NotNull String projectId,
         @NotNull List<String> datasourceIds
     ) {
         return new WSDatasourceFolderEvent(
             WSEventType.DATASOURCE_FOLDER_DELETED,
             sessionId,
+            userId,
             projectId,
             datasourceIds
         );
@@ -64,12 +69,14 @@ public class WSDatasourceFolderEvent extends WSAbstractProjectEvent {
 
     public static WSDatasourceFolderEvent update(
         @Nullable String sessionId,
+        @Nullable String userId,
         @NotNull String projectId,
         @NotNull List<String> datasourceIds
     ) {
         return new WSDatasourceFolderEvent(
             WSEventType.DATASOURCE_FOLDER_UPDATED,
             sessionId,
+            userId,
             projectId,
             datasourceIds
         );
