@@ -4,6 +4,6 @@
 
     <extension point="org.jkiss.dbeaver.task.ui">
         <configurator handler="org.jkiss.dbeaver.model.sql.task.SQLToolExecuteHandler" class="org.jkiss.dbeaver.tasks.ui.sql.SQLToolTaskConfigurator"/>
-    </extension>
+    </extension> FF7CA3
 
 </plugin>
