@@ -55,7 +55,7 @@ public class SQLCommandSet implements SQLControlCommandHandler {
             );
         }
         String varValue = parameter.substring(divPos + 1).trim();
-        varValue = GeneralUtils.replaceVariables(varValue, name -> CommonUtils.toString(scriptContext.getVariable(name)));
+        varValue = GeneralUtils.replaceVariables(varValue, name -> CommonUtils.toString(scriptContext.getVariable(name)), true);
         scriptContext.setVariable(varName, varValue);
 
         return true;
