@@ -72,7 +72,7 @@ public class SQLQueryTranslator implements SQLTranslator {
 
         SQLTranslateContext context = new SQLTranslateContext(sourceDialect, targetDialect, preferenceStore);
 
-        List<SQLScriptElement> sqlScriptElements = SQLScriptParser.parseScript(sourceDialect, preferenceStore, script);
+        List<SQLScriptElement> sqlScriptElements = SQLScriptParser.parseScript(null, sourceDialect, preferenceStore, script);
         List<SQLScriptElement> result = new ArrayList<>();
 
         SQLQueryTranslator defaultSQLQueryTranslator = new SQLQueryTranslator(context);
