@@ -65,9 +65,9 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
+import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
@@ -3196,6 +3196,8 @@ public class SQLEditor extends SQLEditorBase implements
                 return;
         }
 
+        topBarMan.update(true);
+
         fireDataSourceChanged(event);
         super.preferenceChange(event);
     }
@@ -3207,7 +3209,7 @@ public class SQLEditor extends SQLEditorBase implements
                 try {
                     listener.onDataSourceChanged(event);
                 } catch (Throwable ex) {
-                    ex.printStackTrace();
+                    log.debug(ex);
                 }
             }
         }

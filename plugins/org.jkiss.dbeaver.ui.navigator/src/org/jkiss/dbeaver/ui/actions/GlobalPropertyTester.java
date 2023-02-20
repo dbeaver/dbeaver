@@ -86,7 +86,12 @@ public class GlobalPropertyTester extends PropertyTester {
                 return project != null && project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW);
             }
             case PROP_HAS_PREFERENCE: {
-                return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(CommonUtils.toString(expectedValue));
+                String prefName = CommonUtils.toString(expectedValue);
+                String prefValue = DBWorkbench.getPlatform().getPreferenceStore().getString(prefName);
+                if (CommonUtils.isEmpty(prefValue)) {
+                    prefValue = System.getProperty(prefName);
+                }
+                return CommonUtils.toBoolean(prefValue);
             }
         }
         return false;

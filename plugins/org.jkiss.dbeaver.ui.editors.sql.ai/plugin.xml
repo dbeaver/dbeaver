@@ -27,7 +27,11 @@
 		</menuContribution>
 		<menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side" >
 			<command commandId="org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion">
-<!--				<visibleWhen checkEnabled="true"/>-->
+				<visibleWhen>
+					<with variable="activePart">
+						<not><test property="org.jkiss.dbeaver.core.global.hasPreference" value="ai.completion.disabled"/></not>
+					</with>
+				</visibleWhen>
 			</command>
 		</menuContribution>
 	</extension>
