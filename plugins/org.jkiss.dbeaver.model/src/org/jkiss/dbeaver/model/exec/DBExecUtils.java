@@ -781,9 +781,13 @@ public class DBExecUtils {
                         if (sqlQuery == null) {
                             tableColumn = attrEntity.getAttribute(monitor, columnName);
                         } else {
-                            SQLSelectItem selectItem = sqlQuery.getSelectItem(columnName);
-                            boolean isAllColumns = sqlQuery.getSelectItemCount() == 1 && sqlQuery.getSelectItemAsteriskIndex() != -1;
-                            if (isAllColumns || (selectItem != null && selectItem.isPlainColumn())) {
+                            SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getOrdinalPosition());
+                            if (selectItem == null) {
+                                selectItem = sqlQuery.getSelectItem(columnName);
+                            }
+                            
+                            boolean isAllColumns = sqlQuery.getSelectItemAsteriskIndex() != -1;
+                            if (isAllColumns || (selectItem != null && (selectItem.isPlainColumn() || selectItem.getName().equals("*")))) {
                                 tableColumn = attrEntity.getAttribute(monitor, columnName);
                             }
                         }
