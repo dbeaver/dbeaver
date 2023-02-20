@@ -102,6 +102,11 @@ public class AISettings {
                     ((SMSessionPersistent) session).setAttribute(AISettings.class.getName(), settings);
                 }
             }
+            if (!DBWorkbench.isDistributed() &&
+                DBWorkbench.getPlatform().getPreferenceStore().getString(AICompletionConstants.AI_DISABLED) != null
+            ) {
+                settings.setAiDisabled(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_DISABLED));
+            }
             return settings;
         } catch (Exception e) {
             log.error(e);
@@ -113,6 +118,9 @@ public class AISettings {
         try {
             String content = gson.toJson(this, AISettings.class);
             DBWorkbench.getPlatform().getProductConfigurationController().saveConfigurationFile(AI_CONFIGURATION_JSON, content);
+            if (!DBWorkbench.isDistributed()) {
+                DBWorkbench.getPlatform().getPreferenceStore().setValue(AICompletionConstants.AI_DISABLED, aiDisabled);
+            }
         } catch (Exception e) {
             log.error(e);
         }
