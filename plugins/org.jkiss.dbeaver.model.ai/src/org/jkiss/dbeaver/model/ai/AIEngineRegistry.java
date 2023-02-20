@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -58,7 +59,7 @@ public class AIEngineRegistry {
         }
 
         public DAICompletionEngine createInstance() throws DBException {
-            ObjectType objectType = new ObjectType(contributorConfig);
+            ObjectType objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
             return objectType.createInstance(DAICompletionEngine.class);
         }
 

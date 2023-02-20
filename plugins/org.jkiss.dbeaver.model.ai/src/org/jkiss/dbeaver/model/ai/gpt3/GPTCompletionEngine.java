@@ -26,6 +26,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AICompletionConstants;
 import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 import org.jkiss.dbeaver.model.ai.AISettings;
@@ -37,9 +38,15 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -59,6 +66,8 @@ public class GPTCompletionEngine implements DAICompletionEngine {
 
     private static final Map<String, OpenAiService> clientInstances = new HashMap<>();
     private static final int GPT_MODEL_MAX_TOKENS = 2048;
+    private static final int MAX_PROMPT_LENGTH = 7500; // 8000 -
+    private static final boolean SUPPORTS_ATTRS = true;
 
     public GPTCompletionEngine() {
     }
@@ -89,7 +98,7 @@ public class GPTCompletionEngine implements DAICompletionEngine {
         return Collections.singletonList(response);
     }
 
-    public static boolean isValidConfiguration() {
+    public boolean isValidConfiguration() {
         return !CommonUtils.isEmpty(acquireToken());
     }
 
@@ -121,7 +130,7 @@ public class GPTCompletionEngine implements DAICompletionEngine {
      * @param monitor          execution monitor
      * @return resulting string
      */
-    public static String requestCompletion(
+    private String requestCompletion(
         @NotNull DAICompletionRequest request,
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext
@@ -155,7 +164,7 @@ public class GPTCompletionEngine implements DAICompletionEngine {
             service = initGPTApiClientInstance();
             clientInstances.put(container.getId(), service);
         }
-        String modifiedRequest = GPTRequestFormatter.addDBMetadataToRequest(monitor, request, executionContext, mainObject);
+        String modifiedRequest = addDBMetadataToRequest(monitor, request, executionContext, mainObject);
         if (monitor.isCanceled()) {
             return "";
         }
@@ -279,6 +288,109 @@ public class GPTCompletionEngine implements DAICompletionEngine {
      */
     public static void resetServices() {
         clientInstances.clear();
+    }
+
+    /**
+     * Add completion metadata to request
+     */
+    public String addDBMetadataToRequest(
+        DBRProgressMonitor monitor,
+        DAICompletionRequest request,
+        DBCExecutionContext executionContext,
+        DBSObjectContainer mainObject
+    ) throws DBException {
+        if (mainObject == null || mainObject.getDataSource() == null || CommonUtils.isEmptyTrimmed(request.getPromptText())) {
+            throw new DBException("Invalid completion request");
+        }
+
+        StringBuilder additionalMetadata = new StringBuilder();
+        additionalMetadata.append("### ")
+            .append(mainObject.getDataSource().getSQLDialect().getDialectName())
+            .append(" SQL tables, with their properties:\n#\n");
+        String tail = "";
+        if (executionContext != null && executionContext.getContextDefaults() != null) {
+            DBSSchema defaultSchema = executionContext.getContextDefaults().getDefaultSchema();
+            if (defaultSchema != null) {
+                tail += "#\n# Current schema is " + defaultSchema.getName() + "\n";
+            }
+        }
+        int maxRequestLength = MAX_PROMPT_LENGTH - additionalMetadata.length() - tail.length() - 20;
+
+        if (request.getScope() != DAICompletionScope.CUSTOM) {
+            additionalMetadata.append(generateObjectDescription(monitor, request, mainObject, maxRequestLength));
+        } else {
+            for (DBSEntity entity : request.getCustomEntities()) {
+                additionalMetadata.append(generateObjectDescription(monitor, request, entity, maxRequestLength));
+            }
+        }
+        additionalMetadata.append(tail).append("#\n###").append(request.getPromptText().trim()).append("\nSELECT");
+        return additionalMetadata.toString();
+    }
+
+    private String generateObjectDescription(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DAICompletionRequest request,
+        @NotNull DBSObject object,
+        int maxRequestLength
+    ) throws DBException {
+        if (DBNUtils.getNodeByObject(monitor, object, false) == null) {
+            // Skip hidden objects
+            return "";
+        }
+        StringBuilder description = new StringBuilder();
+        if (object instanceof DBSEntity) {
+            description.append("# ").append(DBUtils.getQuotedIdentifier(object));
+            description.append("(");
+            boolean firstAttr = addPromptAttributes(monitor, (DBSEntity) object, description, true);
+            addPromptExtra(monitor, (DBSEntity) object, description, firstAttr);
+
+            description.append(");\n");
+        } else if (object instanceof DBSObjectContainer) {
+            monitor.subTask("Load cache of " + object.getName());
+            ((DBSObjectContainer) object).cacheStructure(
+                monitor,
+                DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES);
+            int totalChildren = 0;
+            for (DBSObject child : ((DBSObjectContainer) object).getChildren(monitor)) {
+                if (DBUtils.isSystemObject(child) || DBUtils.isHiddenObject(child) || child instanceof DBSTablePartition) {
+                    continue;
+                }
+                String childText = generateObjectDescription(monitor, request, child, maxRequestLength);
+                if (description.length() + childText.length() > maxRequestLength) {
+                    log.debug("Trim GPT metadata prompt  at table '" + child.getName() + "' - too long request");
+                    break;
+                }
+                description.append(childText);
+                totalChildren++;
+            }
+        }
+        return description.toString();
+    }
+
+    protected boolean addPromptAttributes(
+        DBRProgressMonitor monitor,
+        DBSEntity entity,
+        StringBuilder prompt,
+        boolean firstAttr
+    ) throws DBException {
+        if (SUPPORTS_ATTRS) {
+            List<? extends DBSEntityAttribute> attributes = entity.getAttributes(monitor);
+            if (attributes != null) {
+                for (DBSEntityAttribute attribute : attributes) {
+                    if (DBUtils.isHiddenObject(attribute)) {
+                        continue;
+                    }
+                    if (!firstAttr) prompt.append(",");
+                    firstAttr = false;
+                    prompt.append(attribute.getName());
+                }
+            }
+        }
+        return firstAttr;
+    }
+
+    protected void addPromptExtra(DBRProgressMonitor monitor, DBSEntity object, StringBuilder description, boolean firstAttr) throws DBException {
+
     }
 
 }

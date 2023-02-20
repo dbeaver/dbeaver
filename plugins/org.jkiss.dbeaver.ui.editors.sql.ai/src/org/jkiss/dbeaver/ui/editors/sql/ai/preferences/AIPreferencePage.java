@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.ai.gpt3;
+package org.jkiss.dbeaver.ui.editors.sql.ai.preferences;
 
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -37,14 +37,14 @@ import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
 import java.io.IOException;
 
-public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
-    private static final Log log = Log.getLog(GPTPreferencePage.class);
+public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
+    private static final Log log = Log.getLog(AIPreferencePage.class);
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.gpt";
     private final AISettings settings;
 
     private IObjectPropertyConfigurator<GPTCompletionEngine, AISettings> configurator;
 
-    public GPTPreferencePage() {
+    public AIPreferencePage() {
         UIPropertyConfiguratorDescriptor cfgDescriptor = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(GPTCompletionEngine.class.getName());
         if (cfgDescriptor != null) {
             try {
@@ -54,7 +54,7 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
             }
         }
         if (configurator == null) {
-            configurator = new GPTConfiguratorDefault();
+            configurator = new AIConfiguratorDefault();
         }
         settings = AISettings.getSettings();
     }

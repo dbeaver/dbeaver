@@ -31,9 +31,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.AICompletionConstants;
+import org.jkiss.dbeaver.model.ai.AIEngineRegistry;
+import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionRequest;
+import org.jkiss.dbeaver.model.ai.completion.DAICompletionResponse;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
-import org.jkiss.dbeaver.model.ai.gpt3.GPTCompletionEngine;
 import org.jkiss.dbeaver.model.ai.translator.DAIHistoryManager;
 import org.jkiss.dbeaver.model.ai.translator.SimpleFilterManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -45,13 +47,15 @@ import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.ui.editors.sql.ai.gpt3.GPTPreferencePage;
 import org.jkiss.dbeaver.ui.editors.sql.ai.popup.AISuggestionPopup;
+import org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AITranslateHandler extends AbstractHandler {
 
@@ -68,11 +72,19 @@ public class AITranslateHandler extends AbstractHandler {
             return null;
         }
 
-        if (!GPTCompletionEngine.isValidConfiguration()) {
-            UIUtils.showPreferencesFor(editor.getSite().getShell(), null, GPTPreferencePage.PAGE_ID);
+        DAICompletionEngine engine;
+        try {
+            engine = AIEngineRegistry.getInstance().getCompletionEngine("openai");
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError("AI error", "Cannot determine AI engine", e);
+            return null;
         }
-        if (!GPTCompletionEngine.isValidConfiguration()) {
-            DBWorkbench.getPlatformUI().showError("Bad GPT configuration", "You must specify OpenAI API token in preferences");
+
+        if (!engine.isValidConfiguration()) {
+            UIUtils.showPreferencesFor(editor.getSite().getShell(), null, AIPreferencePage.PAGE_ID);
+        }
+        if (!engine.isValidConfiguration()) {
+            DBWorkbench.getPlatformUI().showError("Bad AI engine configuration", "You must specify OpenAI API token in preferences");
             return null;
         }
         DBCExecutionContext executionContext = editor.getExecutionContext();
@@ -102,7 +114,7 @@ public class AITranslateHandler extends AbstractHandler {
         if (historyManager == null) {
             historyManager = new SimpleFilterManager();
         }
-        DBSLogicalDataSource lDataSource = new DBSLogicalDataSource(dataSourceContainer, "GPT-3 wrapper", null);
+        DBSLogicalDataSource lDataSource = new DBSLogicalDataSource(dataSourceContainer, "AI logical wrapper", null);
         DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
         if (contextDefaults != null) {
             if (contextDefaults.getDefaultCatalog() != null) {
@@ -126,7 +138,7 @@ public class AITranslateHandler extends AbstractHandler {
             completionRequest.setPromptText(aiCompletionPopup.getInputText());
             completionRequest.setScope(aiCompletionPopup.getScope());
             completionRequest.setCustomEntities(aiCompletionPopup.getCustomEntities());
-            doAutoCompletion(executionContext, historyManager, lDataSource, editor, completionRequest);
+            doAutoCompletion(executionContext, historyManager, lDataSource, editor, engine, completionRequest);
         }
         return null;
     }
@@ -136,17 +148,20 @@ public class AITranslateHandler extends AbstractHandler {
         DAIHistoryManager historyManager,
         DBSLogicalDataSource lDataSource,
         SQLEditor editor,
+        DAICompletionEngine engine,
         DAICompletionRequest request
     ) {
         if (CommonUtils.isEmptyTrimmed(request.getPromptText())) {
             return;
         }
 
-        String[] completionResult = new String[1];
+        List<DAICompletionResponse> completionResult = new ArrayList<>();
         try {
             UIUtils.runInProgressDialog(monitor -> {
                 try {
-                    completionResult[0] = GPTCompletionEngine.requestCompletion(request, monitor, executionContext);
+                    completionResult.addAll(
+                        engine.performQueryCompletion(
+                            monitor, lDataSource, executionContext, request, true, 100));
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 }
@@ -155,8 +170,13 @@ public class AITranslateHandler extends AbstractHandler {
             DBWorkbench.getPlatformUI().showError("Auto completion error", null, e.getTargetException());
             return;
         }
+        if (completionResult.isEmpty()) {
+            DBWorkbench.getPlatformUI().showError("AI error", "No smart completions returned");
+            return;
+        }
 
-        String completion = completionResult[0];
+        DAICompletionResponse response = completionResult.get(0);
+        String completion = response.getResultCompletion();
         if (CommonUtils.isEmptyTrimmed(completion)) {
             return;
         }

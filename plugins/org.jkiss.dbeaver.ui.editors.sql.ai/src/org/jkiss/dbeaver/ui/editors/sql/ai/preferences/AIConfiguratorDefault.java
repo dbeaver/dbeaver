@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.ai.gpt3;
+package org.jkiss.dbeaver.ui.editors.sql.ai.preferences;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -37,7 +37,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
 
-public class GPTConfiguratorDefault implements IObjectPropertyConfigurator<GPTCompletionEngine, AISettings> {
+public class AIConfiguratorDefault implements IObjectPropertyConfigurator<GPTCompletionEngine, AISettings> {
 
     private static final String API_KEY_URL = "https://beta.openai.com/account/api-keys";
 
