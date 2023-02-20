@@ -14,16 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event;
+package org.jkiss.dbeaver.ui;
 
-import org.jkiss.code.Nullable;
+public class UIFonts {
 
-public class WSServerConfigurationChangedEvent extends WSEvent {
-    public WSServerConfigurationChangedEvent() {
-        super(WSEventType.SERVER_CONFIG_CHANGED);
-    }
+    /**
+     * Monospace font
+     */
+    public static String DBEAVER_FONTS_MONOSPACE =  "org.jkiss.dbeaver.dbeaver.ui.fonts.monospace";
+    
+    /**
+     * Main font
+     */
+    public static String DBEAVER_FONTS_MAIN_FONT =  "org.jkiss.dbeaver.dbeaver.ui.fonts.main";
 
-    public WSServerConfigurationChangedEvent(@Nullable String sessionId, @Nullable String userId) {
-        super(WSEventType.SERVER_CONFIG_CHANGED, sessionId, userId);
-    }
 }

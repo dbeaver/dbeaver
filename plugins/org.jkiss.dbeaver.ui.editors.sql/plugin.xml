@@ -1073,16 +1073,6 @@
             <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.sql.description</description>
         </themeElementCategory>
 
-        <fontDefinition
-            id="org.jkiss.dbeaver.sql.editor.font.output"
-            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-            label="%fontDefinition.org.jkiss.dbeaver.sql.editor.font.output.label"
-            value="Courier New-regular-10">
-            <description>%fontDefinition.org.jkiss.dbeaver.sql.editor.font.output.description</description>
-            <fontValue os="linux" value="Monospace-regular-10"/>
-            <fontValue os="macosx" value="Courier-regular-11"/>
-        </fontDefinition>
-
         <colorDefinition
             label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.keyword.foreground.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.sql"

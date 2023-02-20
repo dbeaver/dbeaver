@@ -14,16 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event;
+package org.jkiss.dbeaver.ext.databricks;
 
-import org.jkiss.code.Nullable;
-
-public class WSServerConfigurationChangedEvent extends WSEvent {
-    public WSServerConfigurationChangedEvent() {
-        super(WSEventType.SERVER_CONFIG_CHANGED);
-    }
-
-    public WSServerConfigurationChangedEvent(@Nullable String sessionId, @Nullable String userId) {
-        super(WSEventType.SERVER_CONFIG_CHANGED, sessionId, userId);
-    }
+public class DatabricksConstants {
+    public static final String PROP_LOCATION = "Location";
+    public static final String PROP_OWNER = "Owner";
+    public static final String PROP_CREATED_TIME = "Created Time";
+    public static final String PROP_TABLE_PROPERTIES = "Table Properties";
+    public static final String PROP_STORAGE_PROPERTIES = "Storage Properties";
 }

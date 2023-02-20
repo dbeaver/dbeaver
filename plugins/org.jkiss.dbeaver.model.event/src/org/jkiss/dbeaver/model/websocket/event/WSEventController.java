@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.websocket.event;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.websocket.WSEventHandler;
@@ -30,14 +31,15 @@ import java.util.List;
 import java.util.Map;
 
 public class WSEventController {
+    private static final Log log = Log.getLog(WSEventController.class);
+
     private final Map<String, List<WSEventHandler>> eventHandlersByType = new HashMap<>();
     protected final List<WSEvent> eventsPool = new ArrayList<>();
 
     public WSEventController() {
         var eventHandlers = WSEventHandlersRegistry.getInstance().getEventHandlers();
 
-        eventHandlers
-            .forEach(handler -> eventHandlersByType.computeIfAbsent(handler.getSupportedTopicId(), x -> new ArrayList<>()).add(handler));
+        eventHandlers.forEach(handler -> eventHandlersByType.computeIfAbsent(handler.getSupportedTopicId(), x -> new ArrayList<>()).add(handler));
     }
 
     /**
@@ -76,8 +78,16 @@ public class WSEventController {
                 return Status.OK_STATUS;
             }
             for (WSEvent event : events) {
-                eventHandlersByType.getOrDefault(event.getTopicId(), List.of())
-                    .forEach(handler -> handler.handleEvent(event));
+                eventHandlersByType.getOrDefault(event.getTopicId(), List.of()).forEach(handler -> {
+                    try {
+                        handler.handleEvent(event);
+                    } catch (Exception e) {
+                        log.error(
+                            "Error on event handle " + handler.getSupportedTopicId(),
+                            e
+                        );
+                    }
+                });
             }
             schedule(CHECK_PERIOD);
             return Status.OK_STATUS;
