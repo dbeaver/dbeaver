@@ -54,7 +54,6 @@ public final class DBStructUtils {
     private static final String REAL_DATA_TYPE = "real";
     private static final String DOUBLE_DATA_TYPE = "double";
     private static final String TEXT_DATA_TYPE = "text";
-    private static final String STRING_DATA_TYPE = "string";
 
     @Nullable
     public static DBSEntityReferrer getEnumerableConstraint(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attribute) throws DBException {
@@ -400,10 +399,7 @@ public final class DBStructUtils {
                             }
                         }
                     } else if (targetType == null && dataKind == DBPDataKind.STRING) {
-                        if (typeNameLower.contains(TEXT_DATA_TYPE) || STRING_DATA_TYPE.equals(typeNameLower)) {
-                            // Search data types including "text" for the source data type including text.
-                            // Like "longtext", "ntext".
-                            // The "string" data type can also be turned into the "text" data type because it is more "text" than "varchar".
+                        if (typeNameLower.contains(TEXT_DATA_TYPE)) {
                             if (possibleTypes.containsKey(TEXT_DATA_TYPE)) {
                                 targetType = possibleTypes.get(TEXT_DATA_TYPE);
                             } else {
