@@ -29,10 +29,12 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBPScriptObjectExt2;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.generator.SQLGenerator;
@@ -114,7 +116,12 @@ class SQLGeneratorDialog extends ViewSQLDialog {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 try {
-                    sqlGenerator.run(monitor);
+                    DBExecUtils.tryExecuteRecover(monitor, getExecutionContext().getDataSource(), param -> {
+                        sqlGenerator.run(monitor);
+                    });
+                    if (monitor.isCanceled()) {
+                        return Status.CANCEL_STATUS;
+                    }
                     Object sql = sqlGenerator.getResult();
                     UIUtils.syncExec(() -> {
                         if (SQLGeneratorDialog.this.getShell() != null && !SQLGeneratorDialog.this.getShell()
@@ -131,11 +138,9 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                     });
 
                     return Status.OK_STATUS;
-                } catch (InvocationTargetException e) {
+                } catch (DBException e) {
                     log.error(e);
                     return Status.error("Error running DDL generation", e);
-                } catch (InterruptedException ignore) {
-                    return Status.CANCEL_STATUS;
                 }
             }
         };
