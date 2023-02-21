@@ -688,6 +688,8 @@ public class DBExecUtils {
                 if (attrMeta == null) {
                     continue;
                 }
+
+                SQLSelectItem selectItem = sqlQuery == null ? null : sqlQuery.getSelectItem(attrMeta.getOrdinalPosition());
                 // We got table name and column name
                 // To be editable we need this resultset contain set of columns from the same table
                 // which construct any unique key
@@ -695,7 +697,6 @@ public class DBExecUtils {
                 if (sourceEntity == null) {
                     DBCEntityMetaData attrEntityMeta = attrMeta.getEntityMetaData();
                     if (attrEntityMeta == null && sqlQuery != null) {
-                        SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getOrdinalPosition());
                         if (selectItem != null && selectItem.isPlainColumn()) {
                             attrEntityMeta = selectItem.getEntityMetaData();
                         }
@@ -753,8 +754,7 @@ public class DBExecUtils {
                         if ((asteriskIndex < 0 || asteriskIndex > attrMeta.getOrdinalPosition()) &&
                             attrMeta.getOrdinalPosition() < sqlQuery.getSelectItemCount())
                         {
-                            SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getOrdinalPosition());
-                            if (selectItem.isPlainColumn()) {
+                            if (selectItem != null && selectItem.isPlainColumn()) {
                                 String realColumnName = selectItem.getName();
                                 if (!realColumnName.equalsIgnoreCase(columnName)) {
                                     if (DBUtils.isQuotedIdentifier(dataSource, realColumnName)) {
@@ -781,13 +781,6 @@ public class DBExecUtils {
                         if (sqlQuery == null) {
                             tableColumn = attrEntity.getAttribute(monitor, columnName);
                         } else {
-                            SQLSelectItem selectItem = sqlQuery.getSelectItem(columnName);
-                            // if column name was quoted, we can't find select item by column name as we removed quotes earlier
-                            // so let's try to get select item by position
-                            if (selectItem == null) {
-                                selectItem = sqlQuery.getSelectItem(attrMeta.getOrdinalPosition());
-                            }
-                            
                             boolean isAllColumns = sqlQuery.getSelectItemAsteriskIndex() != -1;
                             if (isAllColumns || (selectItem != null && (selectItem.isPlainColumn() || selectItem.getName().equals("*")))) {
                                 tableColumn = attrEntity.getAttribute(monitor, columnName);
