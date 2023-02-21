@@ -741,6 +741,9 @@ public abstract class AbstractSQLDialect implements SQLDialect {
                         return null;
                     }
                     return "(" + maxLength + ")";
+                } if ("VARCHAR".equals(typeName)) {
+                    // Default max length value for varchar column, because many databases do not support varchar without modifiers
+                    return "(100)";
                 }
             }
         } else if ((dataKind == DBPDataKind.CONTENT || dataKind == DBPDataKind.BINARY) && !typeName.contains("LOB")) {

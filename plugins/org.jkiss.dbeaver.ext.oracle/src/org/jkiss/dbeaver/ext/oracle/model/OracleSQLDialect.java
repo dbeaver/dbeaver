@@ -567,6 +567,11 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
                     dataTypeModifies = String.valueOf(sourceTypedObject.getMaxLength());
                 }
                 break;
+            case "STRING":
+                // Default varchar type with default length for the string columns
+                localDataType = OracleConstants.TYPE_NAME_VARCHAR2;
+                dataTypeModifies = String.valueOf(256);
+                break;
             case "XML":
             case "XMLTYPE":
                 localDataType = OracleConstants.TYPE_FQ_XML;
