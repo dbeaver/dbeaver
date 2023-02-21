@@ -781,9 +781,11 @@ public class DBExecUtils {
                         if (sqlQuery == null) {
                             tableColumn = attrEntity.getAttribute(monitor, columnName);
                         } else {
-                            SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getOrdinalPosition());
+                            SQLSelectItem selectItem = sqlQuery.getSelectItem(columnName);
+                            // if column name was quoted, we can't find select item by column name as we removed quotes earlier
+                            // so let's try to get select item by position
                             if (selectItem == null) {
-                                selectItem = sqlQuery.getSelectItem(columnName);
+                                selectItem = sqlQuery.getSelectItem(attrMeta.getOrdinalPosition());
                             }
                             
                             boolean isAllColumns = sqlQuery.getSelectItemAsteriskIndex() != -1;
