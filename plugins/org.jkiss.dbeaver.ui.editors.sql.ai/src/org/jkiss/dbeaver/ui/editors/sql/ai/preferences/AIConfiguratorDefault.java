@@ -87,7 +87,10 @@ public class AIConfiguratorDefault implements IObjectPropertyConfigurator<GPTCom
             authorizationGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
         {
-            Group completionGroup = UIUtils.createControlGroup(placeholder,
+            Composite settingsPanel = UIUtils.createComposite(placeholder, 2);
+            settingsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            Group completionGroup = UIUtils.createControlGroup(settingsPanel,
                 "Completion",
                 2,
                 SWT.NONE,
@@ -108,6 +111,8 @@ public class AIConfiguratorDefault implements IObjectPropertyConfigurator<GPTCom
                 2);
 
             createCompletionSettings(completionGroup, propertyChangeListener);
+
+            createFormattingSettings(settingsPanel, propertyChangeListener);
         }
         {
             Group modelGroup = UIUtils.createControlGroup(placeholder,
@@ -156,6 +161,11 @@ public class AIConfiguratorDefault implements IObjectPropertyConfigurator<GPTCom
     }
 
     protected void createCompletionSettings(Group group, Runnable propertyChangeListener) {
+
+    }
+
+    protected void createFormattingSettings(Composite settingsPanel, Runnable propertyChangeListener) {
+        UIUtils.createEmptyLabel(settingsPanel, 1, 1);
 
     }
 

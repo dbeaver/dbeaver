@@ -93,13 +93,19 @@ public class GPTCompletionEngine implements DAICompletionEngine {
         int maxResults
     ) throws DBException {
         String result = requestCompletion(completionRequest, monitor, executionContext);
-        DAICompletionResponse response = new DAICompletionResponse();
-        response.setResultCompletion(result);
+        DAICompletionResponse response = createCompletionResponse(dataSource, executionContext, result);
         return Collections.singletonList(response);
     }
 
     public boolean isValidConfiguration() {
         return !CommonUtils.isEmpty(acquireToken());
+    }
+
+    @NotNull
+    protected DAICompletionResponse createCompletionResponse(DBSLogicalDataSource dataSource, DBCExecutionContext executionContext, String result) {
+        DAICompletionResponse response = new DAICompletionResponse();
+        response.setResultCompletion(result);
+        return response;
     }
 
     /**
@@ -204,6 +210,7 @@ public class GPTCompletionEngine implements DAICompletionEngine {
                 }
                 completionText = "SELECT " + completionText.trim() + ";";
 
+                completionText = postProcessGeneratedQuery(monitor, mainObject, executionContext, completionText);
                 if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT)) {
                     String[] lines = request.getPromptText().split("\n");
                     for (String line : lines) {
@@ -293,7 +300,7 @@ public class GPTCompletionEngine implements DAICompletionEngine {
     /**
      * Add completion metadata to request
      */
-    public String addDBMetadataToRequest(
+    protected String addDBMetadataToRequest(
         DBRProgressMonitor monitor,
         DAICompletionRequest request,
         DBCExecutionContext executionContext,
@@ -323,7 +330,10 @@ public class GPTCompletionEngine implements DAICompletionEngine {
                 additionalMetadata.append(generateObjectDescription(monitor, request, entity, maxRequestLength));
             }
         }
-        additionalMetadata.append(tail).append("#\n###").append(request.getPromptText().trim()).append("\nSELECT");
+
+        String promptText = request.getPromptText().trim();
+        promptText = postProcessPrompt(monitor, mainObject, executionContext, promptText);
+        additionalMetadata.append(tail).append("#\n###").append(promptText).append("\nSELECT");
         return additionalMetadata.toString();
     }
 
@@ -389,8 +399,33 @@ public class GPTCompletionEngine implements DAICompletionEngine {
         return firstAttr;
     }
 
-    protected void addPromptExtra(DBRProgressMonitor monitor, DBSEntity object, StringBuilder description, boolean firstAttr) throws DBException {
+    protected void addPromptExtra(
+        DBRProgressMonitor monitor,
+        DBSEntity object,
+        StringBuilder description,
+        boolean firstAttr
+    ) throws DBException {
 
+    }
+
+    protected String postProcessPrompt(
+        DBRProgressMonitor monitor,
+        DBSObjectContainer mainObject,
+        DBCExecutionContext executionContext,
+        String promptText
+    ) {
+
+        return promptText;
+    }
+
+    protected String postProcessGeneratedQuery(
+        DBRProgressMonitor monitor,
+        DBSObjectContainer mainObject,
+        DBCExecutionContext executionContext,
+        String completionText
+    ) {
+
+        return completionText;
     }
 
 }
