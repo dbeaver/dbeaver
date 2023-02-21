@@ -230,6 +230,7 @@ public class SQLEditor extends SQLEditorBase implements
     private ScriptAutoSaveJob scriptAutoSavejob;
     private boolean isResultSetAutoFocusEnabled = true;
     private Boolean isDisableFetchResultSet = null;
+    private boolean hideSQLEditorPanel;
 
     private final ArrayList<SQLEditorAddIn> addIns = new ArrayList<>();
 
@@ -281,6 +282,10 @@ public class SQLEditor extends SQLEditorBase implements
 
     public void setResultSetAutoFocusEnabled(boolean value) {
         isResultSetAutoFocusEnabled = value;
+    }
+
+    public void setHideSQLEditorPanel(boolean hideSQLEditorPanel) {
+        this.hideSQLEditorPanel = hideSQLEditorPanel;
     }
 
     @Override
@@ -1846,7 +1851,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (resultsSash.getMaximizedControl() == null) {
             resultsSash.setMaximizedControl(resultTabs);
             switchFocus(true);
-        } else {
+        } else if (!hideSQLEditorPanel) {
             resultsSash.setMaximizedControl(null);
             switchFocus(false);
         }
@@ -4097,7 +4102,8 @@ public class SQLEditor extends SQLEditorBase implements
                         return;
                     }
                     if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE)
-                        && isResultSetAutoFocusEnabled) {
+                        && isResultSetAutoFocusEnabled && !hideSQLEditorPanel
+                    ) {
                         resultsSash.setMaximizedControl(sqlEditorPanel);
                     }
                     clearProblems(null);
@@ -4290,7 +4296,11 @@ public class SQLEditor extends SQLEditorBase implements
                         // Editor closed
                         return;
                     }
-                    resultsSash.setMaximizedControl(null);
+                    if (hideSQLEditorPanel) {
+                        resultsSash.setMaximizedControl(resultTabs);
+                    } else {
+                        resultsSash.setMaximizedControl(null);
+                    }
                     if (!hasErrors) {
                         getSelectionProvider().setSelection(originalSelection);
                     }
