@@ -23,7 +23,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -717,7 +719,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
                         PostgreUtils.getQueryForSystemColumnChecking("pg_type", "typcategory"));
                     supportTypColumn = true;
                 } catch (SQLException e) {
-                    log.debug("Error reading system information from the pg_type table", e);
+                    log.debug("Error reading system information from the pg_type table: " + e.getMessage());
                     try {
                         if (!session.isClosed() && !session.getAutoCommit()) {
                             session.rollback();

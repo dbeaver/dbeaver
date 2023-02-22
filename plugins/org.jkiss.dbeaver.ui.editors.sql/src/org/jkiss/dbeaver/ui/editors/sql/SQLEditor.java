@@ -65,9 +65,9 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
+import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
@@ -3023,7 +3023,8 @@ public class SQLEditor extends SQLEditorBase implements
                 null,
                 ConfirmationDialog.WARNING,
                 SQLPreferenceConstants.CONFIRM_RUNNING_QUERY_CLOSE,
-                ConfirmationDialog.QUESTION
+                ConfirmationDialog.QUESTION,
+                jobsRunning
             ) != IDialogConstants.YES_ID)
             {
                 return ISaveablePart2.CANCEL;
@@ -4527,7 +4528,11 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
             if (!DBWorkbench.getPlatform().isShuttingDown() && resultsSash != null && !resultsSash.isDisposed()) {
-                dumpOutput(monitor);
+                try {
+                    dumpOutput(monitor);
+                } catch (Exception e) {
+                    log.debug(e);
+                }
                 schedule(200);
             }
 
