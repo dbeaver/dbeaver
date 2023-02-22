@@ -55,7 +55,7 @@ public class SQLCommandSet implements SQLControlCommandHandler {
             );
         }
         String varValue = parameter.substring(divPos + 1).trim();
-        varValue = GeneralUtils.replaceVariables(varValue, name -> CommonUtils.toString(scriptContext.getVariable(name)));
+        varValue = GeneralUtils.replaceVariables(varValue, name -> CommonUtils.toString(scriptContext.getVariable(name)), true);
         scriptContext.setVariable(varName, varValue);
 
         return true;
@@ -67,7 +67,7 @@ public class SQLCommandSet implements SQLControlCommandHandler {
     @NotNull
     public static String prepareVarName(@NotNull SQLDialect sqlDialect, @NotNull String rawName) {
         if (sqlDialect.isQuotedIdentifier(rawName)) {
-            return sqlDialect.getUnquotedIdentifier(rawName);
+            return sqlDialect.getUnquotedIdentifier(rawName, true);
         } else {
             return rawName.toUpperCase(Locale.ENGLISH);
         }

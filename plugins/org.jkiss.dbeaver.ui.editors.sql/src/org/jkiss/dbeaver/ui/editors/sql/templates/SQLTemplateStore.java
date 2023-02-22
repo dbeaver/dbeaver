@@ -208,10 +208,6 @@ public class SQLTemplateStore extends TemplateStore {
         private CustomTemplatesStore() {
             super(DBWorkbench.getPlatform().getPreferenceStore());
             try {
-                if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PUBLIC)) {
-                    log.warn("The user has no permission to load sql templates configuration");
-                    return;
-                }
                 String content = DBWorkbench.getPlatform().getProductConfigurationController().loadConfigurationFile(TEMPLATES_CONFIG_XML);
                 if (CommonUtils.isNotEmpty(content)) {
                     setValue(PREF_STORE_KEY, content);

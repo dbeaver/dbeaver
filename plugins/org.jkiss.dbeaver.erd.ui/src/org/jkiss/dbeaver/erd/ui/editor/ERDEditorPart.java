@@ -1472,7 +1472,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     private class NavigatorViewerAdapter extends Viewer {
         @Override
         public Control getControl() {
-            return getGraphicalControl();
+            return getGraphicalViewer() == null ? null : getGraphicalControl();
         }
 
         @Override

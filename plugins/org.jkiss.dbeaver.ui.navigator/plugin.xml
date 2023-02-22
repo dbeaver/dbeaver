@@ -110,7 +110,7 @@
             class="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
             namespace="org.jkiss.dbeaver.core.global"
-            properties="standalone,distributed,bundleInstalled,hasPermission,canCreateConnection,canCreateProject,hasActiveProject,hasMultipleProjects,canEditResource,currentProjectResourceEditable,currentProjectResourceViewable"
+            properties="standalone,distributed,bundleInstalled,hasPermission,canCreateConnection,canCreateProject,hasActiveProject,hasMultipleProjects,canEditResource,currentProjectResourceEditable,currentProjectResourceViewable,hasPreference"
             type="java.lang.Object"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
@@ -991,5 +991,34 @@
                 group="%confirm.object.editor.group.name"/>
     </extension>
 
+
+
+    <extension point="org.eclipse.ui.commands">
+        <category id="org.jkiss.dbeaver.entity.propsTab" name="%category.org.jkiss.dbeaver.entity.propsTab.name" description="%category.org.jkiss.dbeaver.entity.propsTab.description"/>
+        <command id="org.jkiss.dbeaver.entity.propsTab.nextPage" name="%command.org.jkiss.dbeaver.entity.propsTab.nextPage.name" description="%command.org.jkiss.dbeaver.entity.propsTab.nextPage.description" categoryId="org.jkiss.dbeaver.entity.propsTab" />
+        <command id="org.jkiss.dbeaver.entity.propsTab.prevPage" name="%command.org.jkiss.dbeaver.entity.propsTab.prevPage.name" description="%command.org.jkiss.dbeaver.entity.propsTab.prevPage.description" categoryId="org.jkiss.dbeaver.entity.propsTab" />
+    </extension>
+
+    <extension point="org.eclipse.ui.bindings">
+        <key commandId="org.jkiss.dbeaver.entity.propsTab.nextPage" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+SHIFT+ARROW_DOWN"/>
+        <key commandId="org.jkiss.dbeaver.entity.propsTab.prevPage" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+SHIFT+ARROW_UP"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.entity.propsTab.nextPage" class="org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesTabFolderSwitchCommandHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor" />
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.entity.propsTab.prevPage" class="org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesTabFolderSwitchCommandHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor" />
+                </with>
+            </enabledWhen>
+        </handler>
+    </extension>
 
 </plugin>

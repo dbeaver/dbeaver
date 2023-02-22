@@ -22,12 +22,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.auth.SMAuthSpace;
-import org.jkiss.dbeaver.model.auth.SMSession;
-import org.jkiss.dbeaver.model.auth.SMSessionContext;
-import org.jkiss.dbeaver.model.auth.SMSessionPersistent;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
@@ -36,7 +30,6 @@ import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.LongKeyMap;
 
@@ -137,27 +130,8 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
 
     private synchronized void tryFireMetaEvent(final QMMObject object, final QMEventAction action, DBCExecutionContext context) {
         try {
-            DBRProgressMonitor monitor = new LoggingProgressMonitor();
-            DBPProject project = context.getDataSource().getContainer().getProject();
-            SMSessionContext projectAuthContext = project.getSessionContext();
-            SMAuthSpace projectPrimaryAuthSpace = projectAuthContext.getPrimaryAuthSpace();
-
-            SMSession session = null;
-            if (projectPrimaryAuthSpace != null) {
-                session = project.getSessionContext().getSpaceSession(monitor, projectPrimaryAuthSpace, false);
-            }
-            if (session == null) {
-                DBPWorkspace workspace = project.getWorkspace();
-                session = workspace.getAuthContext().getSpaceSession(monitor, workspace, false);
-            }
-
-            SMSessionPersistent sessionPersistent = DBUtils.getAdapter(SMSessionPersistent.class, session);
-            if (sessionPersistent == null) {
-                log.warn("Session persistent not found");
-                return;
-            }
-
-            eventPool.add(new QMMetaEvent(object, action, sessionPersistent.getAttribute(QMConstants.QM_SESSION_ID_ATTR)));
+            String sessionId = QMUtils.getQmSessionId(context);
+            eventPool.add(new QMMetaEvent(object, action, sessionId));
         } catch (DBException e) {
             log.error("Failed to fire qm meta event", e);
         }

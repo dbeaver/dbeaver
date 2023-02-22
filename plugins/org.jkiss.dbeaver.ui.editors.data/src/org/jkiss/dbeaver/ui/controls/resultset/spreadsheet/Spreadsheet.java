@@ -18,13 +18,18 @@ package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.accessibility.ACC;
 import org.eclipse.swt.accessibility.Accessible;
+import org.eclipse.swt.accessibility.AccessibleControlAdapter;
+import org.eclipse.swt.accessibility.AccessibleControlEvent;
 import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.accessibility.AccessibleListener;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.MenuDetectEvent;
+import org.eclipse.swt.events.MenuDetectListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
@@ -36,12 +41,15 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDCollection;
+import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
@@ -143,6 +151,11 @@ public class Spreadsheet extends LightGrid implements Listener {
     @NotNull
     public SpreadsheetPresentation getPresentation() {
         return presentation;
+    }
+    
+    @NotNull
+    public IWorkbenchPartSite getSite() {
+        return site;
     }
 
     public Clipboard getClipboard() {
@@ -377,18 +390,48 @@ public class Spreadsheet extends LightGrid implements Listener {
     }
 
     private void hookContextMenu() {
+        addMenuDetectListener(new MenuDetectListener() {
+            @Override
+            public void menuDetected(MenuDetectEvent e) {
+                if (e.detail == SWT.MENU_KEYBOARD) {
+                    GridCell focusCell = getFocusCell();
+                    Object focusColumnElement = getFocusColumnElement();
+                    if (focusCell != null) {
+                        GridPos focusPos = cellToPos(focusCell);
+                        patchEventWithLocalRect(e, getCellBounds(focusPos.col, focusPos.row));
+                    } else if (focusColumnElement != null) {
+                        IGridColumn focusColumn = getColumnByElement(focusColumnElement);
+                        patchEventWithLocalRect(e, getColumnBounds(focusColumn.getIndex()));
+                    }
+                }
+            }
+            
+            private void patchEventWithLocalRect(MenuDetectEvent e, Rectangle r) {
+                Point p = toDisplay(new Point(r.x + r.width, r.y));
+                e.x = p.x;
+                e.y = p.y;
+            }
+        });
+        
         MenuManager menuMgr = new MenuManager(null, AbstractPresentation.RESULT_SET_PRESENTATION_CONTEXT_MENU);
         Menu menu = menuMgr.createContextMenu(this);
         menuMgr.addMenuListener(manager -> {
             // Let controller to provide it's own menu items
             GridPos focusPos = getFocusPos();
-            presentation.fillContextMenu(
-                manager,
-                isHoveringOnRowHeader() ? null :
-                    focusPos.col >= 0 && focusPos.col < getColumnCount() ? getColumn(focusPos.col) : null,
-                isHoveringOnHeader() ? null :
-                    (focusPos.row >= 0 && focusPos.row < gridRows.length ? gridRows[focusPos.row] : null)
-            );
+            if (isColumnContextMenuShouldBeShown()) {
+                boolean isRecordMode = presentation.getController().isRecordMode();
+                presentation.fillContextMenu(
+                    manager,
+                    isRecordMode ? null : getColumnByPosition(focusPos),
+                    isRecordMode ? getRowByPosition(focusPos) : null
+                );
+            } else {
+                presentation.fillContextMenu(
+                    manager,
+                    isHoveringOnRowHeader() ? null : getColumnByPosition(focusPos),
+                    isHoveringOnHeader() ? null : getRowByPosition(focusPos)
+                );
+            }
         });
         menuMgr.setRemoveAllWhenShown(true);
         super.setMenu(menu);
@@ -398,6 +441,22 @@ public class Spreadsheet extends LightGrid implements Listener {
         } else {
             site.registerContextMenu(menuMgr, presentation);
         }
+    }
+
+    /**
+     * Returns grid column by grid position
+     */
+    @Nullable
+    private GridColumn getColumnByPosition(GridPos focusPos) {
+        return focusPos.col >= 0 && focusPos.col < getColumnCount() ? getColumn(focusPos.col) : null;
+    }
+
+    /**
+     * Returns grid row by grid position
+     */
+    @Nullable
+    private IGridRow getRowByPosition(GridPos focusPos) {
+        return focusPos.row >= 0 && focusPos.row < gridRows.length ? gridRows[focusPos.row] : null;
     }
 
     public void cancelInlineEditor() {
@@ -471,12 +530,79 @@ public class Spreadsheet extends LightGrid implements Listener {
 
     ////////////////////////////////////////////////////////////
     // Accessibility support
+    
+    private static final Map<String, String> lobMimeTypeNames = Map.of(
+        MimeTypes.TEXT_HTML, "html",
+        MimeTypes.TEXT_XML, "xml",
+        MimeTypes.TEXT_CSS, "css",
+        MimeTypes.TEXT_JSON, "json",
+        MimeTypes.APPLICATION_JSON, "json",
+        MimeTypes.OCTET_STREAM, "blob",
+        MimeTypes.MULTIPART_ANY, "multipart",
+        MimeTypes.MULTIPART_RELATED, "multipart"
+    );
 
     private void hookAccessibility() {
         final Accessible accessible = getAccessible();
 
         accessible.addAccessibleListener(new GridAccessibleListener());
-        addCursorChangeListener(event -> accessible.selectionChanged());
+        addCursorChangeListener(event -> {
+            accessible.selectionChanged();
+
+            GridCell cell = getFocusCell();
+            if (cell != null) {
+                accessible.sendEvent(ACC.EVENT_VALUE_CHANGED, new Object[] { null,  cell.getRow().getElement()});
+            }
+        });
+
+        accessible.addAccessibleControlListener(new AccessibleControlAdapter() {
+            @Override
+            public void getValue(AccessibleControlEvent e) {
+                int rowsCount = getRowSelectionSize();
+                int colsCount = getColumnSelectionSize();
+                int cellsCount = getCellSelectionSize();
+               
+                if (cellsCount == 1) {
+                    GridCell cell = posToCell(getCursorPosition());
+                    String rowLabel = getLabelProvider().getText(cell.getRow());
+                    String columnLabel = getLabelProvider().getText(cell.getColumn());
+                    boolean isReadOnly = getContentProvider().isElementReadOnly(cell.getColumn());
+                    Object rawValue = getContentProvider().getCellValue(cell.getColumn(), cell.getRow(), false);
+                    String valueStr;
+                    String valuePrefix = "";
+                    String lobContentType = rawValue instanceof DBDContent ? ((DBDContent) rawValue).getContentType() : null;
+                    String collType = rawValue instanceof DBDCollection ? ((DBDCollection) rawValue).getComponentType().getName() : null;
+                    if (lobContentType != null && lobMimeTypeNames.get(lobContentType) != null) {
+                        valueStr = "object of type " + lobMimeTypeNames.get(lobContentType);
+                    } else if (collType != null) {
+                        valueStr = "collection of type " + collType;
+                    } else if (rawValue instanceof Boolean) {
+                        valuePrefix = " boolean";
+                        valueStr = rawValue.toString();
+                    } else {
+                        if (rawValue instanceof String) {
+                            valuePrefix = "string";
+                        } else if (rawValue instanceof Number) {
+                            valuePrefix = "numeric";
+                        }
+                        valueStr = getContentProvider().getCellValue(cell.getColumn(), cell.getRow(), true).toString();
+                    }
+                    if (valueStr.isEmpty()) {
+                        valueStr = "empty string";
+                    }
+                    if (isReadOnly) {
+                        valuePrefix = (isReadOnly ? " readonly" : "") + valuePrefix;
+                    }
+                    e.result = "at row " + rowLabel + " column " + columnLabel + valuePrefix + " value is " + valueStr;
+                } else if (rowsCount == 1) {
+                    e.result = colsCount + " columns selected";
+                } else if (colsCount == 1) {
+                    e.result = rowsCount + " rows selected";
+                } else {
+                    e.result = "a freeform range selected";
+                }
+            }
+        });
     }
 
     private static class GridAccessibleListener implements AccessibleListener {

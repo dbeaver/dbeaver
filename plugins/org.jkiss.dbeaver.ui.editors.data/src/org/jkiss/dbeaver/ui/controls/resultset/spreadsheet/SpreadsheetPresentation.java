@@ -630,7 +630,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 GridPos focusPos = spreadsheet.getFocusPos();
                 int rowNum = focusPos.row;
                 if (rowNum < 0) {
-                    return;
+                    if (!settings.isInsertMultipleRows()) {
+                        return;
+                    }
+                    rowNum = 0;
                 }
                 //boolean overNewRow = controller.getModel().getRow(rowNum).getState() == ResultSetRow.STATE_ADDED;
                 try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), controller.getDataContainer(), "Advanced paste")) {
@@ -686,6 +689,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         }
                     }
                 }
+                this.scrollToRow(IResultSetPresentation.RowPosition.CURRENT);
 
             } else {
                 Collection<GridPos> ssSelection = spreadsheet.getSelection();
@@ -996,16 +1000,15 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         }
                     }
                     if (!hiddenAttributes.isEmpty()) {
-                        manager.insertAfter(IResultSetController.MENU_GROUP_ADDITIONS, new Action(ResultSetMessages.controls_resultset_viewer_show_hidden_columns) {
-                            @Override
-                            public void run() {
-                                ResultSetModel model = controller.getModel();
-                                for (DBDAttributeBinding attr : hiddenAttributes) {
-                                    model.setAttributeVisibility(attr, true);
-                                }
-                                refreshData(true, false, true);
-                            }
-                        });
+                        manager.insertAfter(
+                            IResultSetController.MENU_GROUP_ADDITIONS,
+                            ActionUtils.makeCommandContribution(
+                                controller.getSite(),
+                                SpreadsheetCommandHandler.CMD_SHOW_COLUMNS,
+                                ResultSetMessages.controls_resultset_viewer_show_hidden_columns,
+                                null
+                            )
+                        );
                     }
 
                     String hideTitle;
@@ -1015,24 +1018,15 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     } else {
                         hideTitle = NLS.bind(ResultSetMessages.controls_resultset_viewer_hide_columns_x, selectedColumns.size());
                     }
-
-                    manager.insertAfter(IResultSetController.MENU_GROUP_ADDITIONS, new Action(hideTitle) {
-                        @Override
-                        public void run() {
-                            ResultSetModel model = controller.getModel();
-                            if (selectedColumns.size() >= model.getVisibleAttributeCount()) {
-                                UIUtils.showMessageBox(
-                                    getControl().getShell(),
-                                    ResultSetMessages.controls_resultset_viewer_hide_columns_error_title,
-                                    ResultSetMessages.controls_resultset_viewer_hide_columnss_error_text, SWT.ERROR);
-                            } else {
-                                for (IGridColumn selectedColumn : selectedColumns) {
-                                    model.setAttributeVisibility((DBDAttributeBinding) selectedColumn.getElement(), false);
-                                }
-                                refreshData(true, false, true);
-                            }
-                        }
-                    });
+                    manager.insertAfter(
+                        IResultSetController.MENU_GROUP_ADDITIONS, 
+                        ActionUtils.makeCommandContribution(
+                            controller.getSite(),
+                            SpreadsheetCommandHandler.CMD_HIDE_COLUMNS,
+                            hideTitle,
+                            null
+                        )
+                    );
                 }
             }
         }
@@ -1542,6 +1536,67 @@ public class SpreadsheetPresentation extends AbstractPresentation
             fireSelectionChanged(selection);
         }
     }
+    
+    /**
+     * Moves specified columns to delta.
+     *
+     * @param columns - columns to move
+     * @param delta determines where columns should be moved. Negative number means to the left, positive - to the right
+     * @return true if all columns were moved, otherwise false
+     */
+    public boolean shiftColumns(@NotNull List<Object> columns, int delta) {
+        if (delta == 0) {
+            return false;
+        }
+        final DBDDataFilter dataFilter = new DBDDataFilter(controller.getModel().getDataFilter());
+        List<DBDAttributeConstraint> constraintsToMove = new ArrayList<>(columns.size());
+        int pinnedAttrsCount = 0;
+        int normalAttrsCount = 0;
+        for (Object column : columns) {
+            if (column instanceof DBDAttributeBinding) {
+                final DBDAttributeConstraint attrConstraint = dataFilter.getConstraint((DBDAttributeBinding) column);
+                if (attrConstraint != null) {
+                    constraintsToMove.add(attrConstraint);
+                    if (attrConstraint.hasOption(ATTR_OPTION_PINNED)) {
+                        pinnedAttrsCount++;
+                    } else {
+                        normalAttrsCount++;
+                    }
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        if (pinnedAttrsCount != 0 && normalAttrsCount != 0) {
+            return false;
+        }
+        boolean pin = pinnedAttrsCount > 0;
+        int order = delta > 0 ? -1 : 1;
+        // right to left while shifting right, left to right while shifting left
+        constraintsToMove.sort((a, b) -> Integer.compare(getConstraintPosition(a, pin), getConstraintPosition(b, pin)) * order);
+        List<DBDAttributeConstraint> allConstraints = getOrderedConstraints(dataFilter, pin);
+        int leftmostIndex = constraintsToMove.stream().mapToInt(c -> getConstraintPosition(c, pin)).min().getAsInt();
+        int rightmostIndex = constraintsToMove.stream().mapToInt(c -> getConstraintPosition(c, pin)).max().getAsInt();
+        if ((delta < 0 && leftmostIndex + delta < 0) || (delta > 0 && rightmostIndex + delta >= allConstraints.size())) {
+            return false;
+        }
+        // reorder constraints affecting the whole collection of them 
+        for (DBDAttributeConstraint constraint : constraintsToMove) {
+            int oldIndex = getConstraintPosition(constraint, pin);
+            int newIndex = oldIndex + delta;
+            allConstraints.remove(constraint);
+            allConstraints.add(newIndex, constraint);
+        }
+        // fix up the positions for all the affected constraints after the order modifications 
+        for (int i = 0; i < allConstraints.size(); i++) {
+            setConstraintPosition(allConstraints.get(i), pin, i);
+        }
+        controller.setDataFilter(dataFilter, false);
+        spreadsheet.refreshData(false, true, false);
+        return true;
+    }
 
     @Override
     public void moveColumn(Object dragColumn, Object dropColumn, DropLocation location) {
@@ -1916,20 +1971,18 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Override
         public int getSortOrder(@Nullable IGridColumn column) {
-            if (showAttrOrdering) {
-                if (column != null && column.getElement() instanceof DBDAttributeBinding) {
-                    DBDAttributeBinding binding = (DBDAttributeBinding) column.getElement();
-                    if (!binding.hasNestedBindings()) {
-                        DBDAttributeConstraint co = controller.getModel().getDataFilter().getConstraint(binding);
-                        if (co != null && co.getOrderPosition() > 0) {
-                            return co.isOrderDescending() ? SWT.DOWN : SWT.UP;
-                        }
-                        return SWT.DEFAULT;
+            if (column != null && column.getElement() instanceof DBDAttributeBinding) {
+                DBDAttributeBinding binding = (DBDAttributeBinding) column.getElement();
+                if (!binding.hasNestedBindings()) {
+                    DBDAttributeConstraint co = controller.getModel().getDataFilter().getConstraint(binding);
+                    if (co != null && co.getOrderPosition() > 0) {
+                        return co.isOrderDescending() ? SWT.DOWN : SWT.UP;
                     }
-                } else if (column == null && controller.isRecordMode()) {
-                    // Columns order in record mode
-                    return columnOrder;
+                    return SWT.DEFAULT;
                 }
+            } else if (column == null && controller.isRecordMode()) {
+                // Columns order in record mode
+                return columnOrder;
             }
             return SWT.NONE;
         }
@@ -1985,7 +2038,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Override
         public boolean isElementSupportsFilter(IGridColumn element) {
-            if (element.getElement() instanceof DBDAttributeBinding) {
+            if (element != null && element.getElement() instanceof DBDAttributeBinding) {
                 return supportsAttributeFilter;
             }
             return false;
@@ -1993,8 +2046,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Override
         public boolean isElementSupportsSort(@Nullable IGridColumn element) {
-            if (element.getElement() instanceof DBDAttributeBinding) {
-                return true;
+            if (element != null && element.getElement() instanceof DBDAttributeBinding) {
+                return showAttrOrdering;
             }
             return false;
         }

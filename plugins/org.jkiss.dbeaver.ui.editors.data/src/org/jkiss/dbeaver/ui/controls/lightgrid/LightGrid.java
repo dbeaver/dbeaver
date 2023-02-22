@@ -262,6 +262,7 @@ public abstract class LightGrid extends Canvas {
     private boolean hoveringOnColumnFilter = false;
     private boolean hoveringOnLink = false;
     private boolean hoveringOnRowHeader = false;
+    private boolean isColumnContextMenuShouldBeShown = false;
 
     private GridColumn columnBeingSorted;
     private GridColumn columnBeingFiltered;
@@ -1494,6 +1495,14 @@ public abstract class LightGrid extends Canvas {
     public boolean isHoveringOnRowHeader() {
         return hoveringOnRowHeader;
     }
+    
+    public boolean isColumnContextMenuShouldBeShown() {
+        return isColumnContextMenuShouldBeShown;
+    }
+    
+    public void setColumnContextMenuShouldBeShown(boolean value) {
+        isColumnContextMenuShouldBeShown = value;
+    }
 
     /**
      * Removes all of the items from the receiver.
@@ -2139,13 +2148,11 @@ public abstract class LightGrid extends Canvas {
                     for (GridColumn column : columns) {
                         if (x >= x2 && x <= x2 + column.getWidth()) {
                             hoveringOnHeader = true;
-/*
                             if (column.isOverSortArrow(x - x2, y)) {
                                 overSorter = true;
                                 columnBeingSorted = column;
                                 break;
                             }
-*/
 
                             if(column.isOverFilterButton(x - x2, y)) {
                             	columnBeingFiltered = column;
