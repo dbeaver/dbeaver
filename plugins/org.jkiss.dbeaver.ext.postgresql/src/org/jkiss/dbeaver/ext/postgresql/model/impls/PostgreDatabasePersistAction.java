@@ -31,9 +31,9 @@ public class PostgreDatabasePersistAction extends SQLDatabasePersistAction {
         COMMENT
     }
     
-    private PostgreProcedure procedure;
-    private String title;
-    private ActionType actionType;
+    private final PostgreProcedure procedure;
+    private final String title;
+    private final ActionType actionType;
 
     public PostgreDatabasePersistAction(@NotNull String title, boolean complex,
             @NotNull PostgreProcedure procedure, ActionType actionType) {
