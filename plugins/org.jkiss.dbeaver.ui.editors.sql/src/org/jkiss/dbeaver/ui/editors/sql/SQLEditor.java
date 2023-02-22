@@ -3023,7 +3023,8 @@ public class SQLEditor extends SQLEditorBase implements
                 null,
                 ConfirmationDialog.WARNING,
                 SQLPreferenceConstants.CONFIRM_RUNNING_QUERY_CLOSE,
-                ConfirmationDialog.QUESTION
+                ConfirmationDialog.QUESTION,
+                jobsRunning
             ) != IDialogConstants.YES_ID)
             {
                 return ISaveablePart2.CANCEL;
