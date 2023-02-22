@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.access.DBAUserCredentialsProvider;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -131,12 +130,5 @@ public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNative
         @NotNull CREDENTIALS credentials
     ) throws DBException {
         // do nothing
-    }
-
-    @Override
-    public boolean isDatabaseCredentialsPresent(DBPProject project, DBPConnectionConfiguration configuration) {
-        return configuration.getUserName() != null
-            || configuration.getUserPassword() != null
-            || !CommonUtils.isEmpty(configuration.getAuthProperties());
     }
 }
