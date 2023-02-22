@@ -121,7 +121,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     private long oid;
     private long xmin;
-    private boolean procWasCreatedOrReplaced;
+    private boolean wasCreatedOrReplaced;
     private PostgreProcedureKind kind;
     private String procSrc;
     private String body;
@@ -164,7 +164,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
         this.oid = JDBCUtils.safeGetLong(dbResult, "poid");
         this.xmin = JDBCUtils.safeGetLong(dbResult, "pxmin");
-        this.procWasCreatedOrReplaced = false;
+        this.wasCreatedOrReplaced = false;
         setName(JDBCUtils.safeGetString(dbResult, "proname"));
         this.ownerId = JDBCUtils.safeGetLong(dbResult, "proowner");
         this.languageId = JDBCUtils.safeGetLong(dbResult, "prolang");
@@ -336,17 +336,16 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         return oid;
     }
     
-    @Property(order = 6)    
     public long getXmin() {
         return xmin;
     }
     
-    public boolean getProcWasCreatedOrReplaced() {
-        return procWasCreatedOrReplaced;
+    public boolean getWasCreatedOrReplaced() {
+        return wasCreatedOrReplaced;
     }
     
-    public void setProcWasCreatedOrReplaced(boolean value) {
-        this.procWasCreatedOrReplaced = value;
+    public void setWasCreatedOrReplaced(boolean value) {
+        this.wasCreatedOrReplaced = value;
     }
     
     @Override
@@ -832,17 +831,15 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        boolean oldProcWasCreatedOrReplaced = this.procWasCreatedOrReplaced;
+        boolean oldWasCreatedOrReplaced = this.wasCreatedOrReplaced;
         long oldOid = this.getObjectId();
         long oldXmin = this.getXmin();
         PostgreProcedure pgProc = getContainer().getProceduresCache().refreshObject(monitor, getContainer(), this);
-        if (oldProcWasCreatedOrReplaced) {
-            if ((oldOid != 0) && (oldXmin != 0) && (pgProc.oid == oldOid) && (pgProc.xmin == oldXmin)) {
-                DBWorkbench.getPlatformUI().showWarningMessageBox(PostgreSQLMessages.procedure_warning_name, 
+        if (oldWasCreatedOrReplaced && oldOid != 0 && oldXmin != 0 && pgProc.oid == oldOid && pgProc.xmin == oldXmin) {
+            DBWorkbench.getPlatformUI().showWarningMessageBox(PostgreSQLMessages.procedure_warning_name,
                     PostgreSQLMessages.procedure_warning_text);
-                this.setProcWasCreatedOrReplaced(false); // let throw warning once
-                pgProc.setProcWasCreatedOrReplaced(false);
-            }
+            this.setWasCreatedOrReplaced(false); // let throw warning once
+            pgProc.setWasCreatedOrReplaced(false);
         }
         return pgProc;
     }

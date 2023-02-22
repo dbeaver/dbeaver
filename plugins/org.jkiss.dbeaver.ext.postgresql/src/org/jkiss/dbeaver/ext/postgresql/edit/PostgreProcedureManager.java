@@ -109,8 +109,8 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
 
     private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, PostgreProcedure procedure)
     {
-        actions.add(
-            new PostgreDatabasePersistAction("Create function", true, procedure));
+        actions.add(new PostgreDatabasePersistAction("Create function", true, procedure,
+            PostgreDatabasePersistAction.ActionType.CREATE));
     }
 
     @Override

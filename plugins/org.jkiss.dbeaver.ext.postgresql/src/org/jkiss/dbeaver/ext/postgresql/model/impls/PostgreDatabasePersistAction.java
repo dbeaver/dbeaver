@@ -16,28 +16,39 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 
 public class PostgreDatabasePersistAction extends SQLDatabasePersistAction {
+
+    public enum ActionType {
+        UNKNOWN,
+        DROP,
+        CREATE,
+        COMMENT
+    }
     
     private PostgreProcedure procedure;
     private String title;
+    private ActionType actionType;
 
-    public PostgreDatabasePersistAction(String title, boolean complex, PostgreProcedure procedure) {
+    public PostgreDatabasePersistAction(@NotNull String title, boolean complex,
+            @NotNull PostgreProcedure procedure, ActionType actionType) {
         super(title, procedure.getBody(), complex);
         this.procedure = procedure;
         this.title = title;
+        this.actionType = actionType;
     }
        
 
     @Override
     public void afterExecute(DBCSession session, Throwable error)
             throws DBCException {
-        if ((procedure != null) && ("Create function".equals(this.title))) {
-            procedure.setProcWasCreatedOrReplaced(true);
+        if (ActionType.CREATE.equals(this.actionType)) {
+            procedure.setWasCreatedOrReplaced(true);
         }
     }
 
