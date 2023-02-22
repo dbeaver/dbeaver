@@ -323,6 +323,16 @@ public final class DBUtils {
                 if (!(sc instanceof DBSObjectContainer)) {
                     return null;
                 }
+            } else if (CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(schemaName) && sc instanceof DBSCatalog) {
+                // Just check a side case - then we have catalog with schema inside with equal names.
+                // Probably on this step we found a catalog, but not a schema.
+                Class<? extends DBSObject> childType = ((DBSCatalog) sc).getPrimaryChildType(monitor);
+                if (DBSSchema.class.isAssignableFrom(childType)) {
+                    DBSObject child = ((DBSCatalog) sc).getChild(monitor, schemaName);
+                    if (child instanceof DBSSchema) {
+                        sc = child;
+                    }
+                }
             }
             rootSC = (DBSObjectContainer) sc;
         }
