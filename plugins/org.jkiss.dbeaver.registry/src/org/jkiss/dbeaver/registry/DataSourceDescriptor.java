@@ -868,7 +868,7 @@ public class DataSourceDescriptor
             var secret = saveToSecret();
             secretController.setSecretValue(getSecretKeyId(), secret);
             this.secretsContainsDatabaseCreds =
-                isSavePassword() && this.connectionInfo.getAuthModel().isDatabaseCredentialsPresent(getProject(), this.connectionInfo);
+                this.connectionInfo.getAuthModel().isDatabaseCredentialsPresent(getProject(), this.connectionInfo);
         }
         secretsResolved = true;
     }
@@ -880,7 +880,7 @@ public class DataSourceDescriptor
                 String secretValue = secretController.getSecretValue(getSecretKeyId());
                 loadFromSecret(secretValue);
                 this.secretsContainsDatabaseCreds =
-                    isSavePassword() && this.connectionInfo.getAuthModel().isDatabaseCredentialsPresent(getProject(), this.connectionInfo);
+                    this.connectionInfo.getAuthModel().isDatabaseCredentialsPresent(getProject(), this.connectionInfo);
                 if (secretValue == null && !DBWorkbench.isDistributed()) {
                     // Backward compatibility
                     loadFromLegacySecret(secretController);
@@ -1950,7 +1950,7 @@ public class DataSourceDescriptor
         // Primary props
         var dbUserName = JSONUtils.getString(props, RegistryConstants.ATTR_USER);
         var dbPassword = JSONUtils.getString(props, RegistryConstants.ATTR_PASSWORD);
-        var dbAuthProperties = JSONUtils.deserializeStringMap(props, RegistryConstants.TAG_PROPERTIES);
+        var dbAuthProperties = JSONUtils.deserializeStringMapOrNull(props, RegistryConstants.TAG_PROPERTIES);
         connectionInfo.setUserName(dbUserName);
         connectionInfo.setUserPassword(dbPassword);
         // Additional auth props
