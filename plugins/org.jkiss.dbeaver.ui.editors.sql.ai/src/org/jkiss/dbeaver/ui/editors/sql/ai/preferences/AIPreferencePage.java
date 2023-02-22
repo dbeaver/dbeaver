@@ -39,7 +39,7 @@ import java.io.IOException;
 
 public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
     private static final Log log = Log.getLog(AIPreferencePage.class);
-    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.gpt";
+    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ai";
     private final AISettings settings;
 
     private IObjectPropertyConfigurator<GPTCompletionEngine, AISettings> configurator;
