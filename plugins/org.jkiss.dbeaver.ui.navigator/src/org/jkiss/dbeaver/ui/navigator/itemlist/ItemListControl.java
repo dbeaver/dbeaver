@@ -244,7 +244,7 @@ public class ItemListControl extends NodeListControl
 //        }
         UIUtils.dispose(searchHighlightColor);
         //UIUtils.dispose(disabledCellColor);
-        UIUtils.dispose(boldFont);
+        //UIUtils.dispose(boldFont);
         
         super.disposeControl();
     }

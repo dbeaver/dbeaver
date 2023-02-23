@@ -85,8 +85,14 @@ public abstract class AbstractObjectReference<CONTAINER extends DBSObject> imple
         if (extraInfo != null) {
             return extraInfo;
         }
-        String fqName;
+        if (container == null) {
+            return name;
+        }
         DBPDataSource dataSource = container.getDataSource();
+        if (dataSource == null) {
+            return name;
+        }
+        String fqName;
         if (container == dataSource) {
             // In case if there are no schemas/catalogs supported
             // and data source is a root container
