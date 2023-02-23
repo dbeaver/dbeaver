@@ -139,6 +139,11 @@ class SQLGeneratorDialog extends ViewSQLDialog {
 
                     return Status.OK_STATUS;
                 } catch (DBException e) {
+                    UIUtils.syncExec(() -> {
+                        if (SQLGeneratorDialog.this.getShell() != null && !SQLGeneratorDialog.this.getShell().isDisposed()) {
+                            setSQLText("Error running DDL generation");
+                        }
+                    });
                     log.error(e);
                     return Status.error("Error running DDL generation", e);
                 }
