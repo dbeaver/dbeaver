@@ -44,6 +44,7 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     };
 
     private static final String[] FIREBIRD_KEYWORDS = new String[] {
+        "COMMENT",
         "CURRENT_USER",
         "CURRENT_ROLE",
         "NCHAR",
