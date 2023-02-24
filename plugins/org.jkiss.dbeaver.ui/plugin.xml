@@ -115,6 +115,7 @@
                 label="%fontDefinition.org.jkiss.dbeaver.ui.fonts.main.label"
                 value="Segoe UI-regular-9">
             <description>%fontDefinition.org.jkiss.dbeaver.ui.fonts.main.description</description>
+            <fontValue os="macosx" value="Sans-regular-11"/>
         </fontDefinition>
        
     </extension>
