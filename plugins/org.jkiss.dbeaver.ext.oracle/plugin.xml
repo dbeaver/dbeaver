@@ -85,7 +85,7 @@
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDependency" label="%tree.dependencies.node.name" description="Table dependency/dependent objects">
-                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/link.png">
+                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.png">
                                         <items label="%tree.dependencies.node.name" path="entry" property="entries" navigable="false" inline="true">
                                         </items>
                                     </items>
@@ -115,7 +115,7 @@
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDependency" label="%tree.dependencies.node.name" description="Table dependency/dependent objects">
-                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/link.png">
+                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.png">
                                         <items label="%tree.dependencies.node.name" path="entry" property="entries" navigable="false" inline="true">
                                         </items>
                                     </items>
@@ -171,7 +171,7 @@
                                         </items>
                                     </items>
                                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDependency" label="%tree.dependencies.node.name" description="Procedure dependency/dependent objects">
-                                        <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/link.png">
+                                        <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.png">
                                             <items label="%tree.dependencies.node.name" path="entry" property="entries" navigable="false" inline="true">
                                             </items>
                                         </items>
@@ -184,14 +184,14 @@
                                         <items label="%tree.attributes.node.name" itemLabel="%tree.attribute.node.name" path="attribute" property="attributes" icon="#attribute" navigable="false" inline="true" visibleIf="object.hasAttributes()"/>
                                     </items>
                                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDependency" label="%tree.dependencies.node.name" description="Procedure dependency/dependent objects">
-                                        <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/link.png">
+                                        <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.png">
                                             <items label="%tree.dependencies.node.name" path="entry" property="entries" navigable="false" inline="true">
                                             </items>
                                         </items>
                                     </folder>
                                 </items>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDependency" label="%tree.dependencies.node.name" description="Table dependency/dependent objects">
-                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/link.png">
+                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.png">
                                         <items label="%tree.dependencies.node.name" path="entry" property="entries" navigable="false" inline="true">
                                         </items>
                                     </items>
@@ -202,7 +202,7 @@
                             <items label="%tree.procedure.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure" id="Procedure">
                                 <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="argument" property="parameters" icon="#argument" navigable="false" inline="false"/>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDependency" label="%tree.dependencies.node.name" description="Procedure dependency/dependent objects">
-                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/link.png">
+                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.png">
                                         <items label="%tree.dependencies.node.name" path="entry" property="entries" navigable="false" inline="true">
                                         </items>
                                     </items>
@@ -213,7 +213,7 @@
                             <items label="%tree.function.node.name" itemLabel="%tree.function.node.name" path="function" property="functionsOnly" icon="#function" id="Function">
                                 <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="argument" property="parameters" icon="#argument" navigable="false" inline="false"/>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDependency" label="%tree.dependencies.node.name" description="Function dependency/dependent objects">
-                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/link.png">
+                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.png">
                                         <items label="%tree.dependencies.node.name" path="entry" property="entries" navigable="false" inline="true">
                                         </items>
                                     </items>
