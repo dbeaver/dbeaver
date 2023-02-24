@@ -349,10 +349,14 @@ public class EditorUtils {
         }
     }
 
+    /**
+     * Associated inout file with editor input.
+     * Can be used with INonPersistentEditorInput only.
+     */
     public static void setInputInputFile(
         @NotNull IEditorInput editorInput,
-        @NotNull IFile file)
-    {
+        @NotNull IFile file
+    ) {
         if (editorInput instanceof INonPersistentEditorInput) {
             ((INonPersistentEditorInput) editorInput).setProperty(PROP_INPUT_FILE, file);
         }

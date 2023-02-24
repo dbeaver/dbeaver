@@ -1850,6 +1850,9 @@ public class SQLEditor extends SQLEditorBase implements
         });
     }
 
+    /**
+     * Toggles editor/results maximization
+     */
     public void toggleEditorMaximize() {
         if (isHideQueryText()) {
             return;
