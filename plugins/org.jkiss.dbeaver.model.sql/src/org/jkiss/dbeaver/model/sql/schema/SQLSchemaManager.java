@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.sql.schema;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCTransaction;
@@ -81,8 +82,6 @@ public final class SQLSchemaManager {
     public void updateSchema(DBRProgressMonitor monitor) throws DBException {
         try {
             Connection dbCon = connectionProvider.getDatabaseConnection(monitor);
-            var autoCommit = dbCon.getAutoCommit();
-            dbCon.setAutoCommit(false);
             try (JDBCTransaction txn = new JDBCTransaction(dbCon)) {
                 try {
                     int currentSchemaVersion = versionManager.getCurrentSchemaVersion(monitor, dbCon, targetDatabaseName);
@@ -110,7 +109,7 @@ public final class SQLSchemaManager {
                             versionManager.getLatestSchemaVersion()
                         );
                     } else if (schemaVersionActual > currentSchemaVersion) {
-                        upgradeSchemaVersion(monitor, dbCon, currentSchemaVersion);
+                        upgradeSchemaVersion(monitor, dbCon, txn, currentSchemaVersion);
                     }
 
                     txn.commit();
@@ -119,15 +118,18 @@ public final class SQLSchemaManager {
                     log.warn(schemaId + " migration has been rolled back");
                     throw e;
                 }
-            } finally {
-                dbCon.setAutoCommit(autoCommit);
             }
         } catch (IOException | SQLException e) {
             throw new DBException("Error updating " + schemaId + " schema version", e);
         }
     }
 
-    private void upgradeSchemaVersion(DBRProgressMonitor monitor, Connection connection, int currentSchemaVersion) throws IOException, DBException, SQLException {
+    private void upgradeSchemaVersion(
+        DBRProgressMonitor monitor,
+        @NotNull Connection connection,
+        @NotNull JDBCTransaction txn,
+        int currentSchemaVersion
+    ) throws IOException, DBException, SQLException {
         for (int curVer = currentSchemaVersion; curVer < schemaVersionActual; curVer++) {
             int updateToVer = curVer + 1;
             Reader ddlStream = scriptSource.openSchemaUpdateScript(monitor, updateToVer);
@@ -139,6 +141,7 @@ public final class SQLSchemaManager {
                 executeScript(monitor, connection, ddlStream, true);
                 // Update schema version
                 versionManager.updateCurrentSchemaVersion(monitor, connection, targetDatabaseName, updateToVer);
+                txn.commit();
             } catch (Exception e) {
                 log.warn("Error updating " + schemaId + " schema version from " + curVer + " to " + updateToVer, e);
                 throw e;
