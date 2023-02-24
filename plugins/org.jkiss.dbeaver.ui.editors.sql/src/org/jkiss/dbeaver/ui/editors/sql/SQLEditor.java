@@ -868,8 +868,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    public void createPartControl(Composite parent)
-    {
+    public void createPartControl(Composite parent) {
         setRangeIndicator(new DefaultRangeIndicator());
 
         // divides editor area and results/panels area
@@ -987,6 +986,10 @@ public class SQLEditor extends SQLEditorBase implements
 
         // Update controls
         UIExecutionQueue.queueExec(this::onDataSourceChange);
+    }
+
+    protected boolean isHideQueryText() {
+        return false;
     }
 
     private void onTextChange(ModifyEvent e) {
@@ -1123,8 +1126,7 @@ public class SQLEditor extends SQLEditorBase implements
         return res;
     }
 
-    private void createResultTabs()
-    {
+    private void createResultTabs() {
         resultTabs = new CTabFolder(resultsSash, SWT.TOP | SWT.FLAT);
         CSSUtils.setCSSClass(resultTabs, DBStyles.COLORED_BY_CONNECTION_TYPE);
         resultTabsReorder = new TabFolderReorder(resultTabs);
@@ -1199,7 +1201,11 @@ public class SQLEditor extends SQLEditorBase implements
 
         // Create results tab
         createQueryProcessor(true, true);
-        resultsSash.setMaximizedControl(sqlEditorPanel);
+        if (isHideQueryText()) {
+            resultsSash.setMaximizedControl(resultTabs);
+        } else {
+            resultsSash.setMaximizedControl(sqlEditorPanel);
+        }
 
         {
             resultTabs.addMouseListener(new MouseAdapter() {
@@ -1821,6 +1827,9 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public void toggleResultPanel(boolean switchFocus, boolean createQueryProcessor) {
+        if (isHideQueryText()) {
+            return;
+        }
         UIUtils.syncExec(() -> {
             if (resultsSash.getMaximizedControl() == null) {
                 resultsSash.setMaximizedControl(sqlEditorPanel);
@@ -1841,8 +1850,10 @@ public class SQLEditor extends SQLEditorBase implements
         });
     }
 
-    public void toggleEditorMaximize()
-    {
+    public void toggleEditorMaximize() {
+        if (isHideQueryText()) {
+            return;
+        }
         if (resultsSash.getMaximizedControl() == null) {
             resultsSash.setMaximizedControl(resultTabs);
             switchFocus(true);
@@ -1907,7 +1918,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void run() {
-            if (resultsSash.getMaximizedControl() != null) {
+            if (!isHideQueryText() && resultsSash.getMaximizedControl() != null) {
                 resultsSash.setMaximizedControl(null);
             }
             setChecked(!isChecked());
@@ -2036,8 +2047,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    protected void doSetInput(IEditorInput editorInput)
-    {
+    protected void doSetInput(IEditorInput editorInput) throws CoreException {
         // Check for file existence
         try {
             if (editorInput instanceof IFileEditorInput) {
@@ -2080,11 +2090,15 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         setPartName(getEditorName());
-        if (isNonPersistentEditor()) {
+        if (isNonPersistentEditor() && isDetectTitleImageFromInput()) {
             setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_CONSOLE));
         }
         baseEditorImage = getTitleImage();
         editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
+    }
+
+    protected boolean isDetectTitleImageFromInput() {
+        return true;
     }
 
     @Override
@@ -2145,7 +2159,7 @@ public class SQLEditor extends SQLEditorBase implements
         return tip.toString();
     }
 
-    private String getEditorName() {
+    protected String getEditorName() {
         final IFile file = EditorUtils.getFileFromInput(getEditorInput());
         String scriptName;
         if (file != null) {
@@ -2513,7 +2527,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
 
-        if (resultsSash.getMaximizedControl() != null) {
+        if (!isHideQueryText() && resultsSash.getMaximizedControl() != null) {
             resultsSash.setMaximizedControl(null);
         }
 
@@ -2700,14 +2714,12 @@ public class SQLEditor extends SQLEditorBase implements
     /**
      * Handles datasource change action in UI
      */
-    private void fireDataSourceChange()
-    {
+    private void fireDataSourceChange() {
         updateExecutionContext(null);
         UIUtils.syncExec(this::onDataSourceChange);
     }
 
-    private void onDataSourceChange()
-    {
+    protected void onDataSourceChange() {
         if (resultsSash == null || resultsSash.isDisposed()) {
             reloadSyntaxRules();
             return;
@@ -2757,11 +2769,13 @@ public class SQLEditor extends SQLEditorBase implements
             reloadSyntaxRules();
         }
 
-        if (dsContainer == null) {
-            resultsSash.setMaximizedControl(sqlEditorPanel);
-        } else {
-            if (curQueryProcessor != null && curQueryProcessor.getFirstResults().hasData()) {
-                resultsSash.setMaximizedControl(null);
+        if (!isHideQueryText()) {
+            if (dsContainer == null) {
+                resultsSash.setMaximizedControl(sqlEditorPanel);
+            } else {
+                if (curQueryProcessor != null && curQueryProcessor.getFirstResults().hasData()) {
+                    resultsSash.setMaximizedControl(null);
+                }
             }
         }
 
@@ -3736,14 +3750,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public IResultSetDecorator createResultSetDecorator() {
-            return new QueryResultsDecorator() {
-                @Override
-                public String getEmptyDataDescription() {
-                    String execQuery = ActionUtils.findCommandDescription(SQLEditorCommands.CMD_EXECUTE_STATEMENT, getSite(), true);
-                    String execScript = ActionUtils.findCommandDescription(SQLEditorCommands.CMD_EXECUTE_SCRIPT, getSite(), true);
-                    return NLS.bind(ResultSetMessages.sql_editor_resultset_filter_panel_control_execute_to_see_reslut, execQuery, execScript);
-                }
-            };
+            return createQueryResultsDecorator();
         }
 
         @Override
@@ -4044,6 +4051,18 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    @NotNull
+    protected QueryResultsDecorator createQueryResultsDecorator() {
+        return new QueryResultsDecorator() {
+            @Override
+            public String getEmptyDataDescription() {
+                String execQuery = ActionUtils.findCommandDescription(SQLEditorCommands.CMD_EXECUTE_STATEMENT, getSite(), true);
+                String execScript = ActionUtils.findCommandDescription(SQLEditorCommands.CMD_EXECUTE_SCRIPT, getSite(), true);
+                return NLS.bind(ResultSetMessages.sql_editor_resultset_filter_panel_control_execute_to_see_reslut, execQuery, execScript);
+            }
+        };
+    }
+
     private int getMaxResultsTabIndex() {
         int maxIndex = 0;
         for (CTabItem tab : resultTabs.getItems()) {
@@ -4098,7 +4117,9 @@ public class SQLEditor extends SQLEditorBase implements
                         return;
                     }
                     if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE)
-                        && isResultSetAutoFocusEnabled) {
+                        && isResultSetAutoFocusEnabled
+                        && !isHideQueryText()
+                    ) {
                         resultsSash.setMaximizedControl(sqlEditorPanel);
                     }
                     clearProblems(null);
@@ -4291,9 +4312,11 @@ public class SQLEditor extends SQLEditorBase implements
                         // Editor closed
                         return;
                     }
-                    resultsSash.setMaximizedControl(null);
-                    if (!hasErrors) {
-                        getSelectionProvider().setSelection(originalSelection);
+                    if (!isHideQueryText()) {
+                        resultsSash.setMaximizedControl(null);
+                        if (!hasErrors) {
+                            getSelectionProvider().setSelection(originalSelection);
+                        }
                     }
                     QueryResultsContainer results = queryProcessor.getFirstResults();
                     ResultSetViewer viewer = results.getResultSetController();

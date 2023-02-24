@@ -75,6 +75,7 @@ public class EditorUtils {
     private static final String PROP_SQL_DATA_SOURCE_CONTAINER = "sql-editor-data-source-container"; //$NON-NLS-1$
     private static final String PROP_EDITOR_CONTEXT = "database-editor-context"; //$NON-NLS-1$
     private static final String PROP_EXECUTION_CONTEXT = "sql-editor-execution-context"; //$NON-NLS-1$
+    private static final String PROP_INPUT_FILE = "sql-editor-input-file"; //$NON-NLS-1$
 
     public static final String PROP_NAMESPACE = "org.jkiss.dbeaver"; //$NON-NLS-1$
 
@@ -105,6 +106,11 @@ public class EditorUtils {
         } else if (editorInput instanceof IPathEditorInput) {
             final IPath path = ((IPathEditorInput) editorInput).getPath();
             return path == null ? null : ResourceUtils.convertPathToWorkspaceFile(path);
+        } else if (editorInput instanceof INonPersistentEditorInput) {
+            IFile file = (IFile) ((INonPersistentEditorInput) editorInput).getProperty(PROP_INPUT_FILE);
+            if (file != null) {
+                return file;
+            }
         } else if (editorInput instanceof IURIEditorInput) {
             // Most likely it is an external file
             return null;
@@ -340,6 +346,15 @@ public class EditorUtils {
             } else {
                 log.error("Can't set datasource for input " + editorInput);
             }
+        }
+    }
+
+    public static void setInputInputFile(
+        @NotNull IEditorInput editorInput,
+        @NotNull IFile file)
+    {
+        if (editorInput instanceof INonPersistentEditorInput) {
+            ((INonPersistentEditorInput) editorInput).setProperty(PROP_INPUT_FILE, file);
         }
     }
 
