@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.ACC;
 import org.eclipse.swt.accessibility.Accessible;
@@ -48,6 +49,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.CommonUtils;
@@ -569,37 +571,43 @@ public class Spreadsheet extends LightGrid implements Listener {
                     boolean isReadOnly = getContentProvider().isElementReadOnly(cell.getColumn());
                     Object rawValue = getContentProvider().getCellValue(cell.getColumn(), cell.getRow(), false);
                     String valueStr;
-                    String valuePrefix = "";
+                    String valueType = "";
                     String lobContentType = rawValue instanceof DBDContent ? ((DBDContent) rawValue).getContentType() : null;
                     String collType = rawValue instanceof DBDCollection ? ((DBDCollection) rawValue).getComponentType().getName() : null;
                     if (lobContentType != null && lobMimeTypeNames.get(lobContentType) != null) {
-                        valueStr = "object of type " + lobMimeTypeNames.get(lobContentType);
+                        valueStr = NLS.bind(
+                            DataEditorsMessages.spreadsheet_accessibility_object_of_type,
+                            lobMimeTypeNames.get(lobContentType)
+                        );
                     } else if (collType != null) {
-                        valueStr = "collection of type " + collType;
+                        valueStr = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_collection_of_type, collType);
                     } else if (rawValue instanceof Boolean) {
-                        valuePrefix = " boolean";
+                        valueType = DataEditorsMessages.spreadsheet_accessibility_boolean;
                         valueStr = rawValue.toString();
                     } else {
                         if (rawValue instanceof String) {
-                            valuePrefix = "string";
+                            valueType = DataEditorsMessages.spreadsheet_accessibility_string;
                         } else if (rawValue instanceof Number) {
-                            valuePrefix = "numeric";
+                            valueType = DataEditorsMessages.spreadsheet_accessibility_numeric;
                         }
                         valueStr = getContentProvider().getCellValue(cell.getColumn(), cell.getRow(), true).toString();
                     }
                     if (valueStr.isEmpty()) {
-                        valueStr = "empty string";
+                        valueStr = DataEditorsMessages.spreadsheet_accessibility_empty_string;
                     }
                     if (isReadOnly) {
-                        valuePrefix = (isReadOnly ? " readonly" : "") + valuePrefix;
+                        valueType = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_readonly, valueType);
                     }
-                    e.result = "at row " + rowLabel + " column " + columnLabel + valuePrefix + " value is " + valueStr;
+                    e.result = NLS.bind(
+                        DataEditorsMessages.spreadsheet_accessibility_grid_value_explanation,
+                        java.util.List.of(valueStr, columnLabel, rowLabel, valueType).toArray()
+                    );
                 } else if (rowsCount == 1) {
-                    e.result = colsCount + " columns selected";
+                    e.result = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_rows_selected, colsCount);
                 } else if (colsCount == 1) {
-                    e.result = rowsCount + " rows selected";
+                    e.result = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_rows_selected, rowsCount);
                 } else {
-                    e.result = "a freeform range selected";
+                    e.result = DataEditorsMessages.spreadsheet_accessibility_freeform_range_selected;
                 }
             }
         });
@@ -608,7 +616,7 @@ public class Spreadsheet extends LightGrid implements Listener {
     private static class GridAccessibleListener implements AccessibleListener {
         @Override
         public void getName(AccessibleEvent e) {
-            e.result = "Results grid";
+            e.result = DataEditorsMessages.spreadsheet_accessibility_description;
         }
 
         @Override
@@ -621,7 +629,7 @@ public class Spreadsheet extends LightGrid implements Listener {
 
         @Override
         public void getDescription(AccessibleEvent e) {
-            e.result = "Results grid";
+            e.result = DataEditorsMessages.spreadsheet_accessibility_description;
         }
     }
 }
