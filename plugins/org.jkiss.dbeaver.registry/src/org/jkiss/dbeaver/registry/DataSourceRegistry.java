@@ -819,7 +819,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     @Override
     public void saveDataSources() {
-        saveDataSources(new VoidProgressMonitor());
+        //FIXME: remove global sync after implementing file locking
+        // and fixing data synchronization in multiuser project
+        synchronized (DataSourceRegistry.class) {
+            saveDataSources(new VoidProgressMonitor());
+        }
     }
 
     protected void saveDataSources(DBRProgressMonitor monitor) {
@@ -1045,7 +1049,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         }
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
-            synchronized (DataSourceRegistry.this) {
+            //FIXME: remove global sync after implementing file locking
+            // and fixing data synchronization in multiuser project
+            synchronized (DataSourceRegistry.class) {
                 //log.debug("Save column config " + System.currentTimeMillis());
                 saveDataSources(monitor);
             }
