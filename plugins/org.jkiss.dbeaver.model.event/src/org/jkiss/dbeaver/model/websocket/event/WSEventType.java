@@ -34,6 +34,9 @@ public enum WSEventType {
         WSSessionLogUpdatedEvent.class
     ),
 
+    PROJECT_CREATED("cb_project_created", WSEventTopic.PROJECTS, WSProjectLifeCycleEvent.class),
+    PROJECT_REMOVED("cb_project_removed", WSEventTopic.PROJECTS, WSProjectLifeCycleEvent.class),
+
     DATASOURCE_CREATED("cb_datasource_created", WSEventTopic.DATASOURCE, WSDataSourceEvent.class),
     DATASOURCE_UPDATED("cb_datasource_updated", WSEventTopic.DATASOURCE, WSDataSourceEvent.class),
     DATASOURCE_DELETED("cb_datasource_deleted", WSEventTopic.DATASOURCE, WSDataSourceEvent.class),
