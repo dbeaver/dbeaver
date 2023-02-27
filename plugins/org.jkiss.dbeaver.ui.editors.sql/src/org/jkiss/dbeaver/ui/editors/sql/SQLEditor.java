@@ -3214,6 +3214,8 @@ public class SQLEditor extends SQLEditorBase implements
                 return;
         }
 
+        topBarMan.update(true);
+
         fireDataSourceChanged(event);
         super.preferenceChange(event);
     }
@@ -3225,7 +3227,7 @@ public class SQLEditor extends SQLEditorBase implements
                 try {
                     listener.onDataSourceChanged(event);
                 } catch (Throwable ex) {
-                    ex.printStackTrace();
+                    log.debug(ex);
                 }
             }
         }
