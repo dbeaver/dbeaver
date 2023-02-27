@@ -130,18 +130,18 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
                 bytes = (byte[]) object;
             }
             try {
-                Geometry jtsGeometry = convertGeometryFromBinaryFormat(session, bytes);
-//            if (invertCoordinates) {
-//                jtsGeometry.apply(GeometryConverter.INVERT_COORDINATE_FILTER);
-//            }
-                geometry = new DBGeometry(jtsGeometry);
+                geometry = new DBGeometry(convertGeometryFromBinaryFormat(session, bytes));
             } catch (DBCException e) {
-                throw new DBCException("Error parsing geometry value from binary", e);
+                try {
+                    // Might be a WKT
+                    geometry = new DBGeometry(new WKTReader().read(new String(bytes)));
+                } catch (Exception ignored) {
+                    throw new DBCException("Error parsing geometry value from binary", e);
+                }
             }
         } else if (object instanceof String) {
             try {
-                Geometry jtsGeometry = new WKTReader().read((String) object);
-                geometry = new DBGeometry(jtsGeometry);
+                geometry = new DBGeometry(new WKTReader().read((String) object));
             } catch (Exception e) {
                 throw new DBCException("Error parsing geometry value from string", e);
             }

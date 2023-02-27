@@ -69,6 +69,7 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
             normalFont = theme.getFontRegistry().get(TREE_TABLE_FONT);
             boldFont = theme.getFontRegistry().getBold(TREE_TABLE_FONT);
             italicFont = theme.getFontRegistry().getItalic(TREE_TABLE_FONT);
+            viewer.getControl().setFont(normalFont);
             viewer.refresh();
         };
         this.themeChangeListener.propertyChange(null);
