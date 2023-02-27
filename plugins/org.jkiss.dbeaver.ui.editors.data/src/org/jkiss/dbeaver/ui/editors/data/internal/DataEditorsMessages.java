@@ -135,7 +135,10 @@ public class DataEditorsMessages extends NLS {
     public static String spreadsheet_accessibility_numeric;
     public static String spreadsheet_accessibility_empty_string;
     public static String spreadsheet_accessibility_readonly;
-    public static String spreadsheet_accessibility_grid_value_explanation;
+    public static String spreadsheet_accessibility_foreign_key;
+    public static String spreadsheet_accessibility_grid_value_row;
+    public static String spreadsheet_accessibility_grid_value_col;
+    public static String spreadsheet_accessibility_grid_value_row_col;
     public static String spreadsheet_accessibility_columns_selected;
     public static String spreadsheet_accessibility_rows_selected;
     public static String spreadsheet_accessibility_freeform_range_selected;
