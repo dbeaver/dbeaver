@@ -106,6 +106,7 @@ public class PostgreConstants {
     public static final String TYPE_JSONB = "jsonb";
     public static final String TYPE_BIT = "bit";
     public static final String TYPE_VARBIT = "varbit";
+    public static final String TYPE_VARBYTE = "varbyte";
     public static final String TYPE_REFCURSOR = "refcursor";
     public static final String TYPE_MONEY = "money";
     public static final String TYPE_GEOMETRY = "geometry";
