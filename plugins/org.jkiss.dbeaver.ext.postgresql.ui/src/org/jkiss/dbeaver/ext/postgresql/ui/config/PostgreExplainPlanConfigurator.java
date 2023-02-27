@@ -133,16 +133,29 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
                     analyse = analyseCheckbox.getSelection();
                     if (walCheckbox != null) {
                         walCheckbox.setEnabled(analyseCheckboxSelection);
+                        if (walCheckbox.getSelection() && !analyseCheckboxSelection) {
+                            walCheckbox.setSelection(false);
+                            wal = false;
+                        }
                     }
                     if (timingCheckbox != null) {
                         timingCheckbox.setEnabled(analyseCheckboxSelection);
+                        if (timingCheckbox.getSelection() && !analyseCheckboxSelection) {
+                            timingCheckbox.setSelection(false);
+                            timing = false;
+                        }
                     }
                     if (summaryCheckbox != null && analyseCheckboxSelection) {
                         // SUMMARY has default value for ANALYZE parameter as true
                         summaryCheckbox.setSelection(true);
+                        summary = true;
                     }
                     if (buffersCheckbox != null && !isServerAtLeast13) {
                         buffersCheckbox.setEnabled(analyseCheckboxSelection);
+                        if (buffersCheckbox.getSelection() && !analyseCheckboxSelection) {
+                            buffersCheckbox.setSelection(false);
+                            buffers = false;
+                        }
                     }
                 }
             });
