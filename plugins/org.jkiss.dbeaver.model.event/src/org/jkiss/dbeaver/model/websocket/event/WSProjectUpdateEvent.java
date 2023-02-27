@@ -19,9 +19,9 @@ package org.jkiss.dbeaver.model.websocket.event;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-public class WSProjectLifeCycleEvent extends WSAbstractProjectEvent {
+public class WSProjectUpdateEvent extends WSAbstractProjectEvent {
 
-    public WSProjectLifeCycleEvent(
+    public WSProjectUpdateEvent(
         @NotNull WSEventType eventType,
         @Nullable String sessionId,
         @Nullable String userId,
@@ -30,19 +30,19 @@ public class WSProjectLifeCycleEvent extends WSAbstractProjectEvent {
         super(eventType, sessionId, userId, projectId);
     }
 
-    public static WSProjectLifeCycleEvent create(
+    public static WSProjectUpdateEvent create(
         @Nullable String sessionId,
         @Nullable String userId,
         @NotNull String projectId
     ) {
-        return new WSProjectLifeCycleEvent(WSEventType.PROJECT_CREATED, sessionId, userId, projectId);
+        return new WSProjectUpdateEvent(WSEventType.PROJECT_CREATED, sessionId, userId, projectId);
     }
 
-    public static WSProjectLifeCycleEvent remove(
+    public static WSProjectUpdateEvent remove(
         @Nullable String sessionId,
         @Nullable String userId,
         @NotNull String projectId
     ) {
-        return new WSProjectLifeCycleEvent(WSEventType.PROJECT_REMOVED, sessionId, userId, projectId);
+        return new WSProjectUpdateEvent(WSEventType.PROJECT_REMOVED, sessionId, userId, projectId);
     }
 }
