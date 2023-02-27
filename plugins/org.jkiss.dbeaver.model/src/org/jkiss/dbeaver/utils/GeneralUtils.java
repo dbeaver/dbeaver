@@ -482,9 +482,14 @@ public class GeneralUtils {
         }
         return null;
     }
-
+    
     @NotNull
     public static String replaceVariables(@NotNull String string, IVariableResolver resolver) {
+        return replaceVariables(string, resolver, false);
+    }
+
+    @NotNull
+    public static String replaceVariables(@NotNull String string, IVariableResolver resolver, boolean isUpperCaseVarName) {
         if (CommonUtils.isEmpty(string)) {
             return string;
         }
@@ -495,7 +500,8 @@ public class GeneralUtils {
             int pos = 0;
             while (matcher.find(pos)) {
                 pos = matcher.end();
-                String varName = matcher.group(2);
+                String matchedName = matcher.group(2);
+                String varName = isUpperCaseVarName ? matchedName.toUpperCase(Locale.ENGLISH) : matchedName;
                 String varValue = null;
                 if (resolvedVars != null) {
                     varValue = resolvedVars.get(varName); 

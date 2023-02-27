@@ -128,6 +128,18 @@ public class DataEditorsMessages extends NLS {
     public static String complex_object_editor_dialog_menu_move_up_element;
     public static String complex_object_editor_dialog_menu_move_down_element;
 
+    public static String spreadsheet_accessibility_object_of_type;
+    public static String spreadsheet_accessibility_collection_of_type;
+    public static String spreadsheet_accessibility_boolean;
+    public static String spreadsheet_accessibility_string;
+    public static String spreadsheet_accessibility_numeric;
+    public static String spreadsheet_accessibility_empty_string;
+    public static String spreadsheet_accessibility_readonly;
+    public static String spreadsheet_accessibility_grid_value_explanation;
+    public static String spreadsheet_accessibility_columns_selected;
+    public static String spreadsheet_accessibility_rows_selected;
+    public static String spreadsheet_accessibility_freeform_range_selected;
+    public static String spreadsheet_accessibility_description;
 
 
     static {

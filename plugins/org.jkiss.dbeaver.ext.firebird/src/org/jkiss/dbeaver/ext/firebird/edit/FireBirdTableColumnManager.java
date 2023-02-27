@@ -78,6 +78,14 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
         return new ColumnModifier[] {DataTypeModifier, DefaultModifier, NotNullModifier};
     }
 
+    @Override
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+        super.addObjectCreateActions(monitor, executionContext, actions, command, options);
+        if (CommonUtils.isNotEmpty(command.getObject().getDescription())) {
+            addColumnCommentAction(actions, command.getObject(), command.getObject().getTable());
+        }
+    }
+
     /**
      * Is is pretty standard
      */
