@@ -69,8 +69,6 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         }, "END", "IF");   
     }};
 
-    private static final String DATA_TYPE_VARCHAR = "VARCHAR";
-
     // Keywords
     private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<>();
 
@@ -743,9 +741,6 @@ public abstract class AbstractSQLDialect implements SQLDialect {
                         return null;
                     }
                     return "(" + maxLength + ")";
-                } else if (DATA_TYPE_VARCHAR.equals(typeName)) {
-                    // Default max length value for varchar column, because many databases do not support varchar without modifiers
-                    return "(100)";
                 }
             }
         } else if ((dataKind == DBPDataKind.CONTENT || dataKind == DBPDataKind.BINARY) && !typeName.contains("LOB")) {
