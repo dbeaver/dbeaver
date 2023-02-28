@@ -17,14 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.accessibility.ACC;
-import org.eclipse.swt.accessibility.Accessible;
-import org.eclipse.swt.accessibility.AccessibleControlAdapter;
-import org.eclipse.swt.accessibility.AccessibleControlEvent;
-import org.eclipse.swt.accessibility.AccessibleEvent;
-import org.eclipse.swt.accessibility.AccessibleListener;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -42,16 +35,12 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDCollection;
-import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
-import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
@@ -530,106 +519,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         refreshData(true, false, fitValue);
     }
 
-    ////////////////////////////////////////////////////////////
-    // Accessibility support
-    
-    private static final Map<String, String> lobMimeTypeNames = Map.of(
-        MimeTypes.TEXT_HTML, "html",
-        MimeTypes.TEXT_XML, "xml",
-        MimeTypes.TEXT_CSS, "css",
-        MimeTypes.TEXT_JSON, "json",
-        MimeTypes.APPLICATION_JSON, "json",
-        MimeTypes.OCTET_STREAM, "blob",
-        MimeTypes.MULTIPART_ANY, "multipart",
-        MimeTypes.MULTIPART_RELATED, "multipart"
-    );
-
     private void hookAccessibility() {
-        final Accessible accessible = getAccessible();
-
-        accessible.addAccessibleListener(new GridAccessibleListener());
-        addCursorChangeListener(event -> {
-            accessible.selectionChanged();
-
-            GridCell cell = getFocusCell();
-            if (cell != null) {
-                accessible.sendEvent(ACC.EVENT_VALUE_CHANGED, new Object[] { null,  cell.getRow().getElement()});
-            }
-        });
-
-        accessible.addAccessibleControlListener(new AccessibleControlAdapter() {
-            @Override
-            public void getValue(AccessibleControlEvent e) {
-                int rowsCount = getRowSelectionSize();
-                int colsCount = getColumnSelectionSize();
-                int cellsCount = getCellSelectionSize();
-               
-                if (cellsCount == 1) {
-                    GridCell cell = posToCell(getCursorPosition());
-                    String rowLabel = getLabelProvider().getText(cell.getRow());
-                    String columnLabel = getLabelProvider().getText(cell.getColumn());
-                    boolean isReadOnly = getContentProvider().isElementReadOnly(cell.getColumn());
-                    Object rawValue = getContentProvider().getCellValue(cell.getColumn(), cell.getRow(), false);
-                    String valueStr;
-                    String valueType = "";
-                    String lobContentType = rawValue instanceof DBDContent ? ((DBDContent) rawValue).getContentType() : null;
-                    String collType = rawValue instanceof DBDCollection ? ((DBDCollection) rawValue).getComponentType().getName() : null;
-                    if (lobContentType != null && lobMimeTypeNames.get(lobContentType) != null) {
-                        valueStr = NLS.bind(
-                            DataEditorsMessages.spreadsheet_accessibility_object_of_type,
-                            lobMimeTypeNames.get(lobContentType)
-                        );
-                    } else if (collType != null) {
-                        valueStr = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_collection_of_type, collType);
-                    } else if (rawValue instanceof Boolean) {
-                        valueType = DataEditorsMessages.spreadsheet_accessibility_boolean;
-                        valueStr = rawValue.toString();
-                    } else {
-                        if (rawValue instanceof String) {
-                            valueType = DataEditorsMessages.spreadsheet_accessibility_string;
-                        } else if (rawValue instanceof Number) {
-                            valueType = DataEditorsMessages.spreadsheet_accessibility_numeric;
-                        }
-                        valueStr = getContentProvider().getCellValue(cell.getColumn(), cell.getRow(), true).toString();
-                    }
-                    if (valueStr.isEmpty()) {
-                        valueStr = DataEditorsMessages.spreadsheet_accessibility_empty_string;
-                    }
-                    if (isReadOnly) {
-                        valueType = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_readonly, valueType);
-                    }
-                    e.result = NLS.bind(
-                        DataEditorsMessages.spreadsheet_accessibility_grid_value_explanation,
-                        java.util.List.of(valueStr, columnLabel, rowLabel, valueType).toArray()
-                    );
-                } else if (rowsCount == 1) {
-                    e.result = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_rows_selected, colsCount);
-                } else if (colsCount == 1) {
-                    e.result = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_rows_selected, rowsCount);
-                } else {
-                    e.result = DataEditorsMessages.spreadsheet_accessibility_freeform_range_selected;
-                }
-            }
-        });
-    }
-
-    private static class GridAccessibleListener implements AccessibleListener {
-        @Override
-        public void getName(AccessibleEvent e) {
-            e.result = DataEditorsMessages.spreadsheet_accessibility_description;
-        }
-
-        @Override
-        public void getHelp(AccessibleEvent e) {
-        }
-
-        @Override
-        public void getKeyboardShortcut(AccessibleEvent e) {
-        }
-
-        @Override
-        public void getDescription(AccessibleEvent e) {
-            e.result = DataEditorsMessages.spreadsheet_accessibility_description;
-        }
+        SpreadsheetAccessibleAdapter.install(this);
     }
 }

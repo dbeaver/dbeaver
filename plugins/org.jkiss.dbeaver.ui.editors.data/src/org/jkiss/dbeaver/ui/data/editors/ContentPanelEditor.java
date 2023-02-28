@@ -571,7 +571,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                 monitor.subTask("Prime LOB value");
                 UIUtils.syncExec(() -> {
                     try {
-                        if (!control.isDisposed()) {
+                        if (streamEditor != null && !control.isDisposed()) {
                             streamEditor.primeEditorValue(monitor, control, content);
                         }
                     } catch (Exception e) {

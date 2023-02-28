@@ -15,5 +15,7 @@ Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.model.ai
 Require-Bundle: org.jkiss.dbeaver.model,
- org.jkiss.bundle.gpt3
+ org.jkiss.dbeaver.registry,
+ org.jkiss.bundle.gpt3,
+ com.google.gson
 
