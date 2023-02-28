@@ -25,7 +25,8 @@ public class WSProjectUpdateEvent extends WSAbstractProjectEvent {
         @NotNull WSEventType eventType,
         @Nullable String sessionId,
         @Nullable String userId,
-        @NotNull String projectId) {
+        @NotNull String projectId
+    ) {
         super(eventType, sessionId, userId, projectId);
     }
 
