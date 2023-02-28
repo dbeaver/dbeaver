@@ -45,6 +45,7 @@ public interface SQLEditorCommands
     String CMD_SQL_SHOW_VARIABLES = "org.jkiss.dbeaver.ui.editors.sql.show.variables";
     String CMD_SQL_EDITOR_MAXIMIZE_PANEL = "org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel";
     String CMD_SQL_EDITOR_CLOSE_TAB = "org.jkiss.dbeaver.ui.editors.sql.close.tab";
+    String CMD_SQL_EDITOR_TOGGLE_TAB_PINNED = "org.jkiss.dbeaver.ui.editors.sql.toggle.pinned.tab";
     String CMD_SQL_ASSIST_TEMPLATES = "org.jkiss.dbeaver.ui.editors.sql.assist.templates"; //$NON-NLS-1$
     String CMD_SYNC_CONNECTION = "org.jkiss.dbeaver.ui.editors.sql.sync.connection";
     String CMD_SQL_RENAME = "org.jkiss.dbeaver.ui.editors.sql.rename";
