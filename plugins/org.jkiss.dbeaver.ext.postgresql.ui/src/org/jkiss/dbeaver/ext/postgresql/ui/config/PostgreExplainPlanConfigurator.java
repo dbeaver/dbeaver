@@ -51,7 +51,6 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
     private static boolean buffers;
     private static boolean wal;
     private static boolean timing = true;
-    private static boolean summary;
 
     private static PostgreDataSource dataSource;
 
@@ -84,9 +83,9 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
                     if (isVersionSupports(9, 2)) {
                         parameters.put(PostgreQueryPlaner.PARAM_TIMING, timing);
                     }
-                    if (isVersionSupports(10, 0)) {
+                    /*if (isVersionSupports(10, 0)) {
                         parameters.put(PostgreQueryPlaner.PARAM_SUMMARY, summary);
-                    }
+                    }*/
                     return configuration;
                 }
                 return null;
@@ -102,7 +101,6 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
 
         private Button walCheckbox;
         private Button timingCheckbox;
-        private Button summaryCheckbox;
         private Button buffersCheckbox;
 
         public PlanConfigDialog() {
@@ -140,16 +138,17 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
                     }
                     if (timingCheckbox != null) {
                         timingCheckbox.setEnabled(analyseCheckboxSelection);
-                        if (timingCheckbox.getSelection() && !analyseCheckboxSelection) {
-                            timingCheckbox.setSelection(false);
+                        if (!analyseCheckboxSelection) {
                             timing = false;
+                        } else if (timingCheckbox.getSelection() && !timing) {
+                            timing = true;
                         }
                     }
-                    if (summaryCheckbox != null && analyseCheckboxSelection) {
+                    /*if (summaryCheckbox != null && analyseCheckboxSelection) {
                         // SUMMARY has default value for ANALYZE parameter as true
                         summaryCheckbox.setSelection(true);
                         summary = true;
-                    }
+                    }*/
                     if (buffersCheckbox != null && !isServerAtLeast13) {
                         buffersCheckbox.setEnabled(analyseCheckboxSelection);
                         if (buffersCheckbox.getSelection() && !analyseCheckboxSelection) {
@@ -253,7 +252,8 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
                 timingCheckbox.setEnabled(analyseCheckbox.getSelection());
             }
 
-            if (isVersionSupports(10, 0)) {
+            // Summary needs special support. Maybe we will add it some day.
+            /*if (isVersionSupports(10, 0)) {
                 summaryCheckbox = UIUtils.createCheckbox(
                     settingsGroup,
                     PostgreMessages.dialog_query_planner_settings_summary,
@@ -266,7 +266,7 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
                         summary = summaryCheckbox.getSelection();
                     }
                 });
-            }
+            }*/
 
             return dialogArea;
         }
