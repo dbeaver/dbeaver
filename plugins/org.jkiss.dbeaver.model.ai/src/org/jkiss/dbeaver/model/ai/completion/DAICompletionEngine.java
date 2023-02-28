@@ -54,4 +54,5 @@ public interface DAICompletionEngine {
         int maxResults
     ) throws DBException;
 
+    boolean isValidConfiguration();
 }

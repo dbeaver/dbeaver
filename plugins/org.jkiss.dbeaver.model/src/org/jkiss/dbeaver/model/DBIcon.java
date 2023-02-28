@@ -46,6 +46,7 @@ public class DBIcon implements DBPImage
     public static final DBIcon TREE_DATABASE_CATEGORY = new DBIcon("database_category", "tree/database_category.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_DATABASE_SHARED = new DBIcon("database_shared", "tree/database_shared.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_DATASET = new DBIcon("dataset", "tree/dataset.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_DATASET_FOLDER = new DBIcon("dataset", "tree/dataset_folder.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_SCHEMA = new DBIcon("schema", "tree/schema.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_SCHEMA_SHARED = new DBIcon("schema_shared", "tree/schema_shared.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_SCHEMA_SYSTEM = new DBIcon("schema_system", "tree/schema_system.png"); //$NON-NLS-1$ //$NON-NLS-2$
