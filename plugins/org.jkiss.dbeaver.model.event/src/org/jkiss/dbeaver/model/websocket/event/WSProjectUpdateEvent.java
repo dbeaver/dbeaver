@@ -36,7 +36,7 @@ public class WSProjectUpdateEvent extends WSAbstractProjectEvent {
         @NotNull String projectId
     ) {
         return new WSProjectUpdateEvent(
-            WSEventType.RM_PROJECT_CREATED,
+            WSEventType.RM_PROJECT_ADDED,
             sessionId,
             userId,
             projectId

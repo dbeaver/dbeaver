@@ -62,8 +62,8 @@ public enum WSEventType {
     RM_RESOURCE_UPDATED("cb_rm_resource_updated", WSEventTopic.RM_SCRIPTS, WSResourceUpdatedEvent.class),
     RM_RESOURCE_DELETED("cb_rm_resource_deleted", WSEventTopic.RM_SCRIPTS, WSResourceUpdatedEvent.class),
 
-    RM_PROJECT_CREATED("cb_rm_project_created", WSEventTopic.PROJECTS, WSProjectUpdateEvent.class),
-    RM_PROJECT_REMOVED("cb_rm_project_deleted", WSEventTopic.PROJECTS, WSProjectUpdateEvent.class);
+    RM_PROJECT_ADDED("cb_rm_project_added", WSEventTopic.PROJECTS, WSProjectUpdateEvent.class),
+    RM_PROJECT_REMOVED("cb_rm_project_removed", WSEventTopic.PROJECTS, WSProjectUpdateEvent.class);
 
     private final String eventId;
     private final WSEventTopic topic;
