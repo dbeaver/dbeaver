@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCContentValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCNumberValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -61,6 +62,8 @@ public class PostgreValueHandlerProvider extends JDBCStandardValueHandlerProvide
                 }
             default:
                 switch (typedObject.getTypeName()) {
+                    case PostgreConstants.TYPE_VARBYTE:
+                        return JDBCContentValueHandler.INSTANCE;
                     case PostgreConstants.TYPE_JSONB:
                     case PostgreConstants.TYPE_JSON:
                         return PostgreJSONValueHandler.INSTANCE;
