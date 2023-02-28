@@ -23,7 +23,8 @@ public enum WSEventTopic {
     DATASOURCE("cb_datasource"),
     DATASOURCE_FOLDER("cb_datasource_folder"),
     RM_SCRIPTS("cb_scripts"),
-    PROJECTS("cb_projects");
+    PROJECTS("cb_projects"),
+    PERMISSIONS("cb_permissions");
 
     private final String topicId;
 
