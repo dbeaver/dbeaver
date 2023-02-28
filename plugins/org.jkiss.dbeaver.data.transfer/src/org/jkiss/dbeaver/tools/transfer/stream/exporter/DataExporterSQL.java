@@ -344,7 +344,7 @@ public class DataExporterSQL extends StreamExporterAbstract implements IAppendab
                 } catch (Exception e) {
                     log.warn(e);
                 } finally {
-                    content.release();
+                    DTUtils.closeContents(resultSet, content);
                 }
             } else if (value instanceof File) {
                 out.write("@");

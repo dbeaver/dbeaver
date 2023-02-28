@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.IDocumentDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -136,7 +137,7 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
                             }
                         }
                     } finally {
-                        content.release();
+                        DTUtils.closeContents(resultSet, content);
                     }
                 } else {
                     if (cellValue instanceof Number || cellValue instanceof Boolean) {

@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.model.ai.gpt3;
 /**
  * GPT preference constants
  */
-public class GPTPreferences {
+public class GPTConstants {
+
+    public static final String OPENAI_ENGINE = "openai";
 
     public static final String GPT_API_TOKEN = "gpt.token";
     public static final String GPT_MODEL = "gpt.model";
