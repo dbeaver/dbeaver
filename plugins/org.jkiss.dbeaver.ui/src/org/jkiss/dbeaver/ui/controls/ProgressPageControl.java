@@ -493,8 +493,19 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
     @Override
     public boolean performSearch(SearchType searchType)
     {
+        return performSearch(searchType, true);
+    }
+
+    /**
+     * Create search controls and perform search according to the searchType
+     * @param searchType is a type of search
+     * @param isSetFocusToSearchText defines if focus should be set to the search text area if searchType is {@link SearchType.NONE}
+     * @return operation success indicator
+     */
+    public boolean performSearch(SearchType searchType, boolean isSetFocusToSearchText)
+    {
         getProgressControl().createSearchControls();
-        if (searchType == SearchType.NONE) {
+        if (searchType == SearchType.NONE && isSetFocusToSearchText) {
             getProgressControl().searchText.setFocus();
         }
         if (!CommonUtils.isEmpty(getProgressControl().curSearchText)) {
@@ -513,6 +524,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         }
     }
 
+    
     private void cancelSearch(boolean hide)
     {
         if (curSearchJob != null) {
