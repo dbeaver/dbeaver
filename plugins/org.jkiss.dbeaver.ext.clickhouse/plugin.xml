@@ -58,7 +58,7 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/yandex/clickhouse-jdbc"
                     categories="sql,analytic,columns">
-                    <file type="jar" path="maven:/com.clickhouse:clickhouse-jdbc:RELEASE[0.3.2-patch11]" load-optional-dependencies="true" bundle="!drivers.clickhouse_com" />
+                    <file type="jar" path="maven:/com.clickhouse:clickhouse-jdbc:all:RELEASE[0.4.1]" load-optional-dependencies="true" bundle="!drivers.clickhouse_com" />
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.clickhouse"/>
                     <file type="jar" path="drivers/clickhouse_com" bundle="drivers.clickhouse_com"/>
                     <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.clickhouse"/>
