@@ -3236,7 +3236,9 @@ public class SQLEditor extends SQLEditorBase implements
                 return;
         }
 
-        topBarMan.update(true);
+        UIUtils.asyncExec(() -> {
+            topBarMan.update(true);
+        });
 
         fireDataSourceChanged(event);
         super.preferenceChange(event);
