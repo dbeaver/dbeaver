@@ -19,12 +19,11 @@ package org.jkiss.dbeaver.model.websocket.event;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-public class WSProjectUpdateEvent extends WSEvent implements WSProjectEvent {
-
+public class WSProjectResourceEvent extends WSEvent implements WSProjectEvent {
     @NotNull
     protected final String projectId;
 
-    public WSProjectUpdateEvent(
+    public WSProjectResourceEvent(
         @NotNull WSEventType eventType,
         @Nullable String sessionId,
         @Nullable String userId,
@@ -34,33 +33,7 @@ public class WSProjectUpdateEvent extends WSEvent implements WSProjectEvent {
         this.projectId = projectId;
     }
 
-    public static WSProjectUpdateEvent create(
-        @Nullable String sessionId,
-        @Nullable String userId,
-        @NotNull String projectId
-    ) {
-        return new WSProjectUpdateEvent(
-            WSEventType.RM_PROJECT_ADDED,
-            sessionId,
-            userId,
-            projectId
-        );
-    }
-
-    public static WSProjectUpdateEvent delete(
-        @Nullable String sessionId,
-        @Nullable String userId,
-        @NotNull String projectId
-    ) {
-        return new WSProjectUpdateEvent(
-            WSEventType.RM_PROJECT_REMOVED,
-            sessionId,
-            userId,
-            projectId
-        );
-    }
-
-    @Override
+    @NotNull
     public String getProjectId() {
         return projectId;
     }

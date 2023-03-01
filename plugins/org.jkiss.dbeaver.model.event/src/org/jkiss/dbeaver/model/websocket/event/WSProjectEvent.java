@@ -16,25 +16,8 @@
  */
 package org.jkiss.dbeaver.model.websocket.event;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+public interface WSProjectEvent {
+    String getId();
+    String getProjectId();
 
-public class WSAbstractProjectEvent extends WSEvent {
-    @NotNull
-    protected final String projectId;
-
-    public WSAbstractProjectEvent(
-        @NotNull WSEventType eventType,
-        @Nullable String sessionId,
-        @Nullable String userId,
-        @NotNull String projectId
-    ) {
-        super(eventType, sessionId, userId);
-        this.projectId = projectId;
-    }
-
-    @NotNull
-    public String getProjectId() {
-        return projectId;
-    }
 }
