@@ -60,6 +60,7 @@ public class WSProjectUpdateEvent extends WSEvent implements WSProjectEvent {
         );
     }
 
+    @NotNull
     @Override
     public String getProjectId() {
         return projectId;
