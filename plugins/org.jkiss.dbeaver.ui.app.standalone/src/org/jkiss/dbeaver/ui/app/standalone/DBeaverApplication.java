@@ -102,8 +102,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private static final String PROP_EXIT_DATA = IApplicationContext.EXIT_DATA_PROPERTY; //$NON-NLS-1$
     private static final String PROP_EXIT_CODE = "eclipse.exitcode"; //$NON-NLS-1$
 
-    private static final String VALUE_TRUST_STRORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
-
     public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
     
     private final String WORKSPACE_DIR_6; //$NON-NLS-1$
@@ -286,7 +284,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE))
             && ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
         ) {
-            System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, VALUE_TRUST_STRORE_TYPE_WINDOWS);
+            System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STRORE_TYPE_WINDOWS);
         }
 
         // Prefs default

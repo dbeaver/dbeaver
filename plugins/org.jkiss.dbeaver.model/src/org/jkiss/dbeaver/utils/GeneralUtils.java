@@ -80,7 +80,8 @@ public class GeneralUtils {
     
     public static final String PROP_TRUST_STORE = "javax.net.ssl.trustStore"; //$NON-NLS-1$
     public static final String PROP_TRUST_STORE_TYPE = "javax.net.ssl.trustStoreType"; //$NON-NLS-1$
-    
+    public static final String VALUE_TRUST_STRORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
+
     static {
         // Compose byte to hex map
         for (int i = 0; i < 256; ++i) {
