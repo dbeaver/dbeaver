@@ -247,6 +247,8 @@
                     description="OpenSearch open source search and analytics suite"
                     categories="sql">
                     <file type="jar" path="https://artifacts.opensearch.org/opensearch-clients/jdbc/opensearch-sql-jdbc-1.1.0.1.jar" bundle="!drivers.opensearch"/>
+                    <file type="jar" path="drivers/opensearch" bundle="drivers.opensearch"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.opensearch"/>
                     <parameter name="read-only-data" value="true"/>
                     <parameter name="read-only-meta-data" value="true"/>
                 </driver>
