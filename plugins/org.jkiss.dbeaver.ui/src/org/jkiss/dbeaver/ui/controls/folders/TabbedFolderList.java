@@ -92,6 +92,8 @@ public class TabbedFolderList extends Composite {
     private Color bottomNavigationElementShadowStroke1;
     private Color bottomNavigationElementShadowStroke2;
 
+    private Font boldFont;
+
     private final Map<Image, Image> grayedImages = new IdentityHashMap<>();
 
     /**
@@ -223,12 +225,14 @@ public class TabbedFolderList extends Composite {
                     textIndent = textIndent - 3;
                 }
                 Image image = DBeaverIcons.getImage(tab.getImage());
+                final Rectangle imageBounds = image.getBounds();
+                final int imageMiddle = (bounds.height - imageBounds.height) / 2;
                 if (selected || hover) {
-                    e.gc.drawImage(image, textIndent, textMiddle - 1);
+                    e.gc.drawImage(image, textIndent, imageMiddle - 1);
                 } else {
-                    e.gc.drawImage(getGrayedImage(image), textIndent, textMiddle - 1);
+                    e.gc.drawImage(getGrayedImage(image), textIndent, imageMiddle - 1);
                 }
-                textIndent = textIndent + image.getBounds().width + 4;
+                textIndent = textIndent + imageBounds.width + 4;
             } else if (tab.isIndented()) {
                 textIndent = textIndent + INDENT_LEFT;
             }
@@ -237,7 +241,7 @@ public class TabbedFolderList extends Composite {
             e.gc.setForeground(widgetForeground);
             if (selected) {
 				/* selected tab is bold font */
-                e.gc.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT));
+                e.gc.setFont(boldFont);
             }
             e.gc.drawText(tab.getText(), textIndent, textMiddle, true);
             if (((TabbedFolderList) getParent()).focus && selected) {
@@ -449,6 +453,8 @@ public class TabbedFolderList extends Composite {
         initColours();
         initAccessible();
 
+        boldFont = UIUtils.makeBoldFont(getFont());
+
         this.addFocusListener(new FocusListener() {
 
             public void focusGained(FocusEvent e) {
@@ -479,6 +485,7 @@ public class TabbedFolderList extends Composite {
                 UIUtils.dispose(di);
             }
             grayedImages.clear();
+            UIUtils.dispose(boldFont);
         });
     }
 
@@ -560,24 +567,31 @@ public class TabbedFolderList extends Composite {
             removeAll();
         }
         elements = new ListElement[children.length];
-        if (children.length == 0) {
+
+        for (int i = 0; i < children.length; i++) {
+            elements[i] = new ListElement(this, children[i], i);
+            elements[i].setVisible(false);
+            elements[i].setLayoutData(null);
+        }
+
+        computeTabsWidth();
+    }
+
+    private void computeTabsWidth() {
+        if (elements.length == 0) {
             widestLabelIndex = NONE;
         } else {
             widestLabelIndex = 0;
-            for (int i = 0; i < children.length; i++) {
-                elements[i] = new ListElement(this, children[i], i);
-                elements[i].setVisible(false);
-                elements[i].setLayoutData(null);
-
+            for (int i = 0; i < elements.length; i++) {
                 if (i != widestLabelIndex) {
-                    int width = getTabWidth(children[i]);
-                    if (width > getTabWidth(children[widestLabelIndex])) {
+                    int width = getTabWidth(elements[i].tab);
+                    if (width > getTabWidth(elements[widestLabelIndex].tab)) {
                         widestLabelIndex = i;
                     }
                 }
             }
         }
-        int maxTabWidth = getTabWidth(children[widestLabelIndex]);
+        int maxTabWidth = getTabWidth(elements[widestLabelIndex].tab);
         Object layoutData = getLayoutData();
         if (layoutData instanceof GridData) {
             ((GridData) layoutData).widthHint = maxTabWidth + INDENT_LEFT + INDENT_RIGHT;
@@ -684,8 +698,7 @@ public class TabbedFolderList extends Composite {
      */
     private Point getTextDimension(String text) {
         GC gc = new GC(this);
-        gc.setFont(JFaceResources.getFontRegistry().getBold(
-            JFaceResources.DEFAULT_FONT));
+        gc.setFont(boldFont);
         Point point = gc.textExtent(text);
         point.x++;
         gc.dispose();
@@ -767,6 +780,22 @@ public class TabbedFolderList extends Composite {
             topNavigationElement.redraw();
             bottomNavigationElement.redraw();
         });
+    }
+
+    @Override
+    public void setFont(Font font) {
+        super.setFont(font);
+
+        if (boldFont != null) {
+            boldFont.dispose();
+            boldFont = null;
+        }
+
+        if (font != null) {
+            boldFont = UIUtils.makeBoldFont(font);
+        }
+
+        computeTabsWidth();
     }
 
     /**
