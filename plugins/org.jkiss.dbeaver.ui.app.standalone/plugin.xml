@@ -47,11 +47,11 @@
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver"/>
             <property name="startupForegroundColor" value="000000"/>
-            <property name="versionInfoCoord" value="455,105"/>
+            <property name="versionInfoCoord" value="120,228"/>
             <property name="versionInfoSize" value="12"/>
-            <property name="versionInfoColor" value="255,255,255"/>
-            <property name="startupMessageRect" value="348,275,230,25"/>
-            <property name="startupProgressRect" value="348,260,230,10"/>
+            <property name="versionInfoColor" value="212,72,40"/>
+            <property name="startupMessageRect" value="22,6,157,25"/>
+            <property name="startupProgressRect" value="74,280,206,6"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
