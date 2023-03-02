@@ -242,6 +242,11 @@ public class ModelMessages extends NLS {
     public static String no_corresponding_table_column_text;
     public static String cannot_determine_unique_row_identifier_text;
 
+    public static String dialog_user_password_change_label;
+    public static String dialog_user_password_change_question_label;
+    public static String dialog_user_password_change_question_message;
+    public static String dialog_user_password_change_error_message;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, ModelMessages.class);

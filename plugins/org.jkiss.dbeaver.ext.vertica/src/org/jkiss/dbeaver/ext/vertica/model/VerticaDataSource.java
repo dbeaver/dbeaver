@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
+import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -146,6 +147,14 @@ public class VerticaDataSource extends GenericDataSource {
                  warning = warning.getNextWarning()
             ) {
                 if (checkForPasswordWillExpireWarning(warning)) {
+                    DBAUserPasswordManager manager = getAdapter(DBAUserPasswordManager.class);
+                    if (manager != null &&
+                        DBWorkbench.getPlatformUI().confirmAction(
+                            "Change password now",
+                            "Would you like to change your password now?")
+                    ) {
+                        DBAuthUtils.promptAndChangePasswordForCurrentUser(monitor, getContainer(), manager);
+                    }
                     isPasswordExpireWarningShown = true;
                 }
             }
