@@ -33,4 +33,7 @@ public class VerticaMessages extends NLS {
 
     public static String vertica_password_will_expire_warn_name;
     public static String vertica_password_will_expire_warn_description;
+    public static String data_source_prompt_to_change_pass_title;
+    public static String data_source_prompt_to_change_pass_message;
+
 }

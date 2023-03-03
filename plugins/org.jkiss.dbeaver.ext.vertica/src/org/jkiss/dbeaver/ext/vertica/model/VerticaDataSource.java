@@ -150,8 +150,8 @@ public class VerticaDataSource extends GenericDataSource {
                     DBAUserPasswordManager manager = getAdapter(DBAUserPasswordManager.class);
                     if (manager != null &&
                         DBWorkbench.getPlatformUI().confirmAction(
-                            "Change password now",
-                            "Would you like to change your password now?")
+                            VerticaMessages.data_source_prompt_to_change_pass_title,
+                            VerticaMessages.data_source_prompt_to_change_pass_message)
                     ) {
                         DBAuthUtils.promptAndChangePasswordForCurrentUser(monitor, getContainer(), manager);
                     }
