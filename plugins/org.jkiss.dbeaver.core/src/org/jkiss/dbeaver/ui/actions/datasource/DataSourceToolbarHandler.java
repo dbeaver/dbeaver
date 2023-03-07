@@ -145,6 +145,7 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
         DBPDataSourceContainer currentDataSource = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
 
         if ((event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getObject() == currentDataSource) ||
+            (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && currentDataSource != null && event.getData() == currentDataSource.getRegistry()) ||
             (event.getAction() == DBPEvent.Action.OBJECT_SELECT && Boolean.TRUE.equals(event.getEnabled()) &&
                 DBUtils.getContainer(event.getObject()) == currentDataSource)
             ) {

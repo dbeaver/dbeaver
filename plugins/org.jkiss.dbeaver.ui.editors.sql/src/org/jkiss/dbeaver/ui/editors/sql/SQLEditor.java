@@ -2974,8 +2974,9 @@ public class SQLEditor extends SQLEditorBase implements
     public void handleDataSourceEvent(final DBPEvent event)
     {
         final boolean dsEvent = event.getObject() == getDataSourceContainer();
-        final boolean objectEvent = event.getObject().getDataSource() == getDataSource();
-        if (dsEvent || objectEvent) {
+        final boolean objectEvent = event.getObject() != null && event.getObject().getDataSource() == getDataSource();
+        final boolean registryEvent = getDataSourceContainer() != null && event.getData() == getDataSourceContainer().getRegistry(); 
+        if (dsEvent || objectEvent || registryEvent) {
             UIUtils.asyncExec(
                 () -> {
                     switch (event.getAction()) {
@@ -3205,6 +3206,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public void preferenceChange(PreferenceChangeEvent event) {
+        System.out.println("preferenceChange: " + event.getProperty());
         switch (event.getProperty()) {
             case ModelPreferences.SCRIPT_STATEMENT_DELIMITER:
             case ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER:
