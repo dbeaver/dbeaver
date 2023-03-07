@@ -20,8 +20,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -90,7 +88,6 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     private TabbedFolderComposite folderComposite;
     private ObjectEditorPageControl pageControl;
     private final List<ITabbedFolderListener> folderListeners = new ArrayList<>();
-    private final IPropertyChangeListener themeChangeListener = e -> UIUtils.asyncExec(() -> UIUtils.applyMainFont(this.mainComposite));
     private String curFolderId;
 
     private final List<ISaveablePart> nestedSaveable = new ArrayList<>();
@@ -104,7 +101,6 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     public ObjectPropertiesEditor()
     {
-        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
     }
 
     @Override
@@ -176,7 +172,6 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 //UIUtils.asyncExec(sashUpdater);
                 updateSashWidths();
             }
-            UIUtils.applyMainFont(container);
             pageControl.layout(true, true);
         } finally {
             pageControl.setRedraw(true);
@@ -359,7 +354,6 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             contributorManager.removeContributor(contributor, this);
         }
         pageContributors.clear();
-        PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
         //PropertiesContributor.getInstance().removeLazyListener(this);
 
         super.dispose();
