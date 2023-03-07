@@ -207,7 +207,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
             // (i.e. do not validate, trust all when encrypt option is enabled)
             boolean trustCertificate = CommonUtils.getBoolean(
                 connectionInfo.getProviderProperty(SQLServerConstants.PROP_SSL_TRUST_SERVER_CERTIFICATE),
-                true);
+                false);
             if (trustCertificate) {
                 properties.put(SQLServerConstants.PROP_DRIVER_TRUST_SERVER_CERTIFICATE, Boolean.TRUE.toString());
             }
