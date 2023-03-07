@@ -3206,7 +3206,6 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public void preferenceChange(PreferenceChangeEvent event) {
-        System.out.println("preferenceChange: " + event.getProperty());
         switch (event.getProperty()) {
             case ModelPreferences.SCRIPT_STATEMENT_DELIMITER:
             case ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER:

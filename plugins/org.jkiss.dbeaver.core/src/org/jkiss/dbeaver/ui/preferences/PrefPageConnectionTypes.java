@@ -454,7 +454,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 }
             }
         }
-        for (DBPDataSourceRegistry dsReg: affectedDataSourceRegs) {
+        for (DBPDataSourceRegistry dsReg : affectedDataSourceRegs) {
             dsReg.notifyDataSourceListeners(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, null, dsReg));
         }
         return super.performOk();
