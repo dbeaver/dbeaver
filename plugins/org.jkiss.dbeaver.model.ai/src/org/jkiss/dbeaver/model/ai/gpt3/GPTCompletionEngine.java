@@ -267,7 +267,11 @@ public class GPTCompletionEngine implements DAICompletionEngine {
     private static CompletionRequest createCompletionRequest(@NotNull String request) throws DBException {
         int maxTokens = GPT_MODEL_MAX_TOKENS;
         Double temperature = getPreferenceStore().getDouble(GPTConstants.GPT_MODEL_TEMPERATURE);
-        String model = getPreferenceStore().getString(GPTConstants.GPT_MODEL);
+        String modelId = getPreferenceStore().getString(GPTConstants.GPT_MODEL);
+        GPTModel model = CommonUtils.isEmpty(modelId) ? null : GPTModel.getByName(modelId);
+        if (model == null) {
+            model = GPTModel.TEXT_DAVINCI02;
+        }
         CompletionRequest.CompletionRequestBuilder builder = CompletionRequest.builder().prompt(request);
 
 //        int maxChoices = getPreferenceStore().getInt(AICompletionConstants.AI_COMPLETION_MAX_CHOICES);
@@ -281,11 +285,11 @@ public class GPTCompletionEngine implements DAICompletionEngine {
 
         return builder
             .temperature(temperature)
-            .maxTokens(maxTokens)
+            //.maxTokens(maxTokens)
             .frequencyPenalty(0.0)
             .presencePenalty(0.0)
             .stop(List.of("#", ";"))
-            .model(model)
+            .model(modelId)
             //.echo(true)
             .build();
     }
