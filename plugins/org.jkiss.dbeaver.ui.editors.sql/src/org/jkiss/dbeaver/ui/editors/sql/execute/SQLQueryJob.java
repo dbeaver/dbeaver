@@ -910,7 +910,7 @@ public class SQLQueryJob extends DataSourceJob
     }
 */
 
-    public void extractData(@NotNull DBCSession session, @NotNull SQLScriptElement query, int resultNumber)
+    public void extractData(@NotNull DBCSession session, @NotNull SQLScriptElement query, int resultNumber, boolean fireEvents)
         throws DBCException
     {
         // Reset query to original. Otherwise multiple filters will corrupt it
@@ -921,7 +921,7 @@ public class SQLQueryJob extends DataSourceJob
         //session.getProgressMonitor().beginTask(CommonUtils.truncateString(query.getText(), 512), 1);
         session.getProgressMonitor().subTask(CommonUtils.truncateString(query.getText(), 512));
 
-        boolean result = executeSingleQuery(session, query, true);
+        boolean result = executeSingleQuery(session, query, fireEvents);
         if (!result && lastError != null) {
             if (lastError instanceof DBCException) {
                 throw (DBCException) lastError;

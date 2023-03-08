@@ -91,6 +91,7 @@ public class SQLEditorMessages extends NLS {
     public static String action_result_tabs_pin_tab;
     public static String action_result_tabs_unpin_tab;
     public static String action_result_tabs_unpin_all_tabs;
+    public static String action_result_tabs_detach_tab;
     public static String action_result_tabs_set_name;
     public static String action_result_tabs_set_name_title;
     public static String action_result_tabs_assign_variable;

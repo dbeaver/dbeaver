@@ -1338,6 +1338,13 @@ public class SQLEditor extends SQLEditorBase implements
                             }
                         });
 
+                        manager.add(new Action(SQLEditorMessages.action_result_tabs_detach_tab) {
+                            @Override
+                            public void run() {
+                                container.detach();
+                            }
+                        });
+
                         if (container.getQuery() != null) {
                             manager.add(new Separator());
                             AssignVariableAction action = new AssignVariableAction(SQLEditor.this, container.getQuery().getText());
@@ -3623,52 +3630,36 @@ public class SQLEditor extends SQLEditorBase implements
         private DBSDataContainer dataContainer;
         private CTabItem resultsTab;
         private String tabName;
+        private boolean detached;
 
         private QueryResultsContainer(QueryProcessor queryProcessor, int resultSetNumber, int resultSetIndex, boolean makeDefault) {
             this.queryProcessor = queryProcessor;
             this.resultSetNumber = resultSetNumber;
             this.resultSetIndex = resultSetIndex;
 
-            boolean detachedViewer = false;
-            SQLResultsView sqlView = null;
-            if (detachedViewer) {
-                try {
-                    sqlView = (SQLResultsView) getSite().getPage().showView(SQLResultsView.VIEW_ID, null, IWorkbenchPage.VIEW_CREATE);
-                } catch (Throwable e) {
-                    DBWorkbench.getPlatformUI().showError("Detached results", "Can't open results view", e);
-                }
-            }
+            this.viewer = new ResultSetViewer(resultTabs, getSite(), this);
+            this.viewer.addListener(this);
 
-            if (sqlView != null) {
-                // Detached results viewer
-                sqlView.setContainer(this);
-                this.viewer = sqlView.getViewer();
-            } else {
-                // Embedded results viewer
-                this.viewer = new ResultSetViewer(resultTabs, getSite(), this);
-                this.viewer.addListener(this);
-
-                int tabCount = resultTabs.getItemCount();
-                int tabIndex = 0;
-                if (!makeDefault) {
-                    for (int i = tabCount; i > 0; i--) {
-                        if (resultTabs.getItem(i - 1).getData() instanceof QueryResultsContainer) {
-                            tabIndex = i;
-                            break;
-                        }
+            int tabCount = resultTabs.getItemCount();
+            int tabIndex = 0;
+            if (!makeDefault) {
+                for (int i = tabCount; i > 0; i--) {
+                    if (resultTabs.getItem(i - 1).getData() instanceof QueryResultsContainer) {
+                        tabIndex = i;
+                        break;
                     }
                 }
-                resultsTab = new CTabItem(resultTabs, SWT.NONE, tabIndex);
-                resultsTab.setImage(IMG_DATA_GRID);
-                resultsTab.setData(this);
-                resultsTab.setShowClose(true);
-                resultsTab.setText(getResultsTabName(resultSetNumber, getQueryIndex(), null));
-                CSSUtils.setCSSClass(resultsTab, DBStyles.COLORED_BY_CONNECTION_TYPE);
-
-                resultsTab.setControl(viewer.getControl());
-                resultsTab.addDisposeListener(resultTabDisposeListener);
-                UIUtils.disposeControlOnItemDispose(resultsTab);
             }
+            resultsTab = new CTabItem(resultTabs, SWT.NONE, tabIndex);
+            resultsTab.setImage(IMG_DATA_GRID);
+            resultsTab.setData(this);
+            resultsTab.setShowClose(true);
+            resultsTab.setText(getResultsTabName(resultSetNumber, getQueryIndex(), null));
+            CSSUtils.setCSSClass(resultsTab, DBStyles.COLORED_BY_CONNECTION_TYPE);
+
+            resultsTab.setControl(viewer.getControl());
+            resultsTab.addDisposeListener(resultTabDisposeListener);
+            UIUtils.disposeControlOnItemDispose(resultsTab);
 
             viewer.getControl().addDisposeListener(e -> {
                 QueryResultsContainer.this.queryProcessor.removeResults(QueryResultsContainer.this);
@@ -3682,6 +3673,26 @@ public class SQLEditor extends SQLEditorBase implements
             this(queryProcessor, resultSetNumber, resultSetIndex, false);
             this.dataContainer = dataContainer;
             updateResultsName(getResultsTabName(resultSetNumber, 0, dataContainer.getName()), null);
+        }
+
+        public void detach() {
+            try {
+                detached = true;
+                getSite().getPage().openEditor(
+                    new SQLResultsEditorInput(this),
+                    SQLResultsEditor.class.getName(),
+                    true,
+                    IWorkbenchPage.MATCH_NONE
+                );
+            } catch (Throwable e) {
+                DBWorkbench.getPlatformUI().showError("Detached results", "Can't open results view", e);
+                detached = false;
+            }
+
+            if (detached) {
+                resultsTab.dispose();
+                resultsTab = null;
+            }
         }
 
         private CTabItem getTabItem() {
@@ -3837,7 +3848,7 @@ public class SQLEditor extends SQLEditorBase implements
                 job.setFetchSize(fetchSize);
                 job.setFetchFlags(flags);
 
-                job.extractData(session, this.query, resultCounts > 1 ? 0 : resultSetNumber);
+                job.extractData(session, this.query, resultCounts > 1 ? 0 : resultSetNumber, !detached);
 
                 lastGoodQuery = job.getLastGoodQuery();
 

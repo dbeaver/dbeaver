@@ -62,6 +62,11 @@
                 id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
         </editor>
+        <editor name="%editor.sql.results.name"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/grid.png"
+                class="org.jkiss.dbeaver.ui.editors.sql.SQLResultsEditor"
+                id="org.jkiss.dbeaver.ui.editors.sql.SQLResultsEditor">
+        </editor>
     </extension>
 
     <extension point="org.eclipse.ui.workbench.texteditor.rulerColumns">
