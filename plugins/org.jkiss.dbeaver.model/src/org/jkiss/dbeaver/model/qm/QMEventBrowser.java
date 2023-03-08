@@ -21,7 +21,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Query manager history
@@ -30,7 +29,6 @@ public interface QMEventBrowser {
 
     @NotNull
     QMEventCursor getQueryHistoryCursor(
-        @NotNull DBRProgressMonitor monitor,
         @NotNull QMEventCriteria criteria,
         @Nullable QMEventFilter filter)
         throws DBException;

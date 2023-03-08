@@ -1200,7 +1200,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 } else {
                     monitor.subTask("Load all queries"); //$NON-NLS-1$
                 }
-                try (QMEventCursor cursor = eventBrowser.getQueryHistoryCursor(monitor, criteria, filter != null ? filter : (useDefaultFilter ? defaultFilter : null))) {
+                try (QMEventCursor cursor = eventBrowser.getQueryHistoryCursor(criteria, filter != null ? filter : (useDefaultFilter ? defaultFilter : null))) {
                     while (events.size() < entriesPerPage && cursor.hasNextEvent(monitor)) {
                         if (monitor.isCanceled()) {
                             break;
