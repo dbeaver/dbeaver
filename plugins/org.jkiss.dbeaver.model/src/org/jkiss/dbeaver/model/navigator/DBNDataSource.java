@@ -307,7 +307,8 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
 
     @NotNull
     public static String makeDataSourceItemPath(DBPDataSourceContainer dataSource) {
-        return NodePathType.database.getPrefix() + dataSource.getId();
+        var projectId = dataSource.getProject().getId();
+        return NodePathType.database.getPrefix() + projectId + "/" + dataSource.getId();
     }
 
 }

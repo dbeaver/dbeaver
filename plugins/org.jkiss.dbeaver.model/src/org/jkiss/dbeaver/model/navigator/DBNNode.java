@@ -48,9 +48,11 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         database,
         ext,
         other;
+        
+        public static final String LEGACY_PREFIX_DELIMITER = "://";
 
         public String getPrefix() {
-            return name() + "://";
+            return name() + "/";
         }
     }
 
@@ -229,7 +231,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
     }
 
     /**
-     * Node item path in form [nodeType://]<path>
+     * Node item path in form [nodeType/]<path>
      * nodeType can be 'resource', 'folder' or 'database'.
      * If missing then 'database' will be used (backward compatibility).
      * <p>
