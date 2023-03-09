@@ -17,27 +17,29 @@
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.QualifiedName;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.reconciler.DirtyRegion;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
 import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.IAnnotationModel;
+import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
+import org.eclipse.ui.editors.text.EditorsUI;
+import org.eclipse.ui.texteditor.spelling.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
-
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -54,20 +56,53 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     private final SQLEditorBase editor;
 
     private IDocument document;
+    private IProgressMonitor monitor;
+
+    // Spelling
+    private ISpellingProblemCollector spellingProblemCollector;
+    private SpellingService spellingService;
+    private SpellingContext spellingContext;
 
     public SQLReconcilingStrategy(SQLEditorBase editor) {
         this.editor = editor;
+    }
+
+    protected IAnnotationModel getAnnotationModel() {
+        return editor.getAnnotationModel();
+    }
+
+    private boolean isSpellingEnabled() {
+        return EditorsUI.getPreferenceStore().getBoolean("spellingEnabled");
     }
 
     @Override
     public void setDocument(IDocument document) {
         this.document = document;
         this.cache.clear();
+
+        spellingService = EditorsUI.getSpellingService();
+        if (spellingService.getActiveSpellingEngineDescriptor(editor.getViewerConfiguration().getPreferenceStore()) != null) {
+            this.spellingProblemCollector = createSpellingProblemCollector();
+            this.spellingContext = new SpellingContext();
+            this.spellingContext.setContentType(SQLEditorUtils.getSQLContentType());
+        }
+    }
+
+    /**
+     * Creates a new spelling problem collector.
+     *
+     * @return the collector or <code>null</code> if none is available
+     */
+    protected ISpellingProblemCollector createSpellingProblemCollector() {
+        IAnnotationModel model= getAnnotationModel();
+        if (model == null)
+            return null;
+        return new SpellingProblemCollector(model);
     }
 
     @Override
     public void setProgressMonitor(IProgressMonitor monitor) {
-        //todo use monitor
+        this.monitor = monitor;
     }
 
     @Override
@@ -236,6 +271,13 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         model.modifyAnnotations(deletions, additions, null);
         cache.removeAll(deletedPositions);
         cache.addAll(additions.values());
+
+        if (isSpellingEnabled() &&  spellingProblemCollector != null) {
+            IRegion[] regions = new IRegion[] {
+                new Region(damagedRegionOffset, damagedRegionLength)
+            };
+            spellingService.check(document, regions, spellingContext, spellingProblemCollector, monitor);
+        }
     }
 
     @Nullable
@@ -376,4 +418,62 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
             //do nothing
         }
     }
+
+    /**
+     * Spelling
+     */
+    private static class SpellingProblemCollector implements ISpellingProblemCollector {
+
+        private final IAnnotationModel fAnnotationModel;
+        private Map<Annotation, Position> fAddAnnotations;
+        private final Object fLockObject;
+
+        public SpellingProblemCollector(IAnnotationModel annotationModel) {
+            Assert.isLegal(annotationModel != null);
+            fAnnotationModel= annotationModel;
+            if (fAnnotationModel instanceof ISynchronizable)
+                fLockObject= ((ISynchronizable)fAnnotationModel).getLockObject();
+            else
+                fLockObject= fAnnotationModel;
+        }
+
+        @Override
+        public void accept(SpellingProblem problem) {
+            fAddAnnotations.put(new SpellingAnnotation(problem), new Position(problem.getOffset(), problem.getLength()));
+        }
+
+        @Override
+        public void beginCollecting() {
+            fAddAnnotations= new HashMap<>();
+        }
+
+        @Override
+        public void endCollecting() {
+            List<Annotation> toRemove= new ArrayList<>();
+
+            synchronized (fLockObject) {
+                Iterator<Annotation> iter= fAnnotationModel.getAnnotationIterator();
+                while (iter.hasNext()) {
+                    Annotation annotation= iter.next();
+                    if (SpellingAnnotation.TYPE.equals(annotation.getType()))
+                        toRemove.add(annotation);
+                }
+                Annotation[] annotationsToRemove= toRemove.toArray(new Annotation[0]);
+
+                if (fAnnotationModel instanceof IAnnotationModelExtension)
+                    ((IAnnotationModelExtension)fAnnotationModel).replaceAnnotations(annotationsToRemove, fAddAnnotations);
+                else {
+                    for (Annotation element : annotationsToRemove) {
+                        fAnnotationModel.removeAnnotation(element);
+                    }
+                    for (Map.Entry<Annotation, Position> entry : fAddAnnotations.entrySet()) {
+                        fAnnotationModel.addAnnotation(entry.getKey(), entry.getValue());
+                    }
+                }
+            }
+
+            fAddAnnotations= null;
+        }
+    }
+
 }
