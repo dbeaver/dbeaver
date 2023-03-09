@@ -55,6 +55,8 @@ public enum WSEventType {
         WSDatasourceFolderEvent.class
     ),
 
+    DATASOURCE_SECRET_UPDATED("cb_user_secret_updated", WSEventTopic.USER_SECRET, WSUserSecretEvent.class),
+
     RM_RESOURCE_CREATED("cb_rm_resource_created", WSEventTopic.RM_SCRIPTS, WSResourceUpdatedEvent.class),
     RM_RESOURCE_UPDATED("cb_rm_resource_updated", WSEventTopic.RM_SCRIPTS, WSResourceUpdatedEvent.class),
     RM_RESOURCE_DELETED("cb_rm_resource_deleted", WSEventTopic.RM_SCRIPTS, WSResourceUpdatedEvent.class);
