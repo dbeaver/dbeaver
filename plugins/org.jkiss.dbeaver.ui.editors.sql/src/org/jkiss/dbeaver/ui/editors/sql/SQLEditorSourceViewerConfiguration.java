@@ -427,6 +427,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         if (reconcilingStrategy == null) {
             return null;
         }
-        return new MonoReconciler(reconcilingStrategy, false);
+        return new MonoReconciler(reconcilingStrategy, true);
     }
 }

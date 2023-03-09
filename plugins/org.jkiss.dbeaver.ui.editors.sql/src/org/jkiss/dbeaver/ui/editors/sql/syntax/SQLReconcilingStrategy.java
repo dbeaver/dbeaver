@@ -425,7 +425,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     private static class SpellingProblemCollector implements ISpellingProblemCollector {
 
         private final IAnnotationModel fAnnotationModel;
-        private Map<Annotation, Position> fAddAnnotations;
+        private Map<Annotation, Position> addedAnnotations;
         private final Object fLockObject;
 
         public SpellingProblemCollector(IAnnotationModel annotationModel) {
@@ -439,12 +439,12 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
         @Override
         public void accept(SpellingProblem problem) {
-            fAddAnnotations.put(new SpellingAnnotation(problem), new Position(problem.getOffset(), problem.getLength()));
+            addedAnnotations.put(new SpellingAnnotation(problem), new Position(problem.getOffset(), problem.getLength()));
         }
 
         @Override
         public void beginCollecting() {
-            fAddAnnotations= new HashMap<>();
+            addedAnnotations = new HashMap<>();
         }
 
         @Override
@@ -461,18 +461,18 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
                 Annotation[] annotationsToRemove= toRemove.toArray(new Annotation[0]);
 
                 if (fAnnotationModel instanceof IAnnotationModelExtension)
-                    ((IAnnotationModelExtension)fAnnotationModel).replaceAnnotations(annotationsToRemove, fAddAnnotations);
+                    ((IAnnotationModelExtension)fAnnotationModel).replaceAnnotations(annotationsToRemove, addedAnnotations);
                 else {
                     for (Annotation element : annotationsToRemove) {
                         fAnnotationModel.removeAnnotation(element);
                     }
-                    for (Map.Entry<Annotation, Position> entry : fAddAnnotations.entrySet()) {
+                    for (Map.Entry<Annotation, Position> entry : addedAnnotations.entrySet()) {
                         fAnnotationModel.addAnnotation(entry.getKey(), entry.getValue());
                     }
                 }
             }
 
-            fAddAnnotations= null;
+            addedAnnotations = null;
         }
     }
 
