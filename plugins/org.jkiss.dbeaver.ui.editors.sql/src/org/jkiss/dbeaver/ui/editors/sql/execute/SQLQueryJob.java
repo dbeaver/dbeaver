@@ -706,10 +706,7 @@ public class SQLQueryJob extends DataSourceJob
     }
 
     private void showExecutionResult(DBCSession session) {
-        int statementsCount = statistics.getStatementsCount();
-        if (statementsCount > 1 || // Many statements
-            (statementsCount == 1 && resultSetNumber == 0) || // Single non-select statement
-            (resultSetNumber == 0 && (statistics.getRowsUpdated() >= 0 || statistics.getRowsFetched() >= 0))) { // Single statement with some stats
+        if (isShowExecutionResult()) { // Single statement with some stats
             SQLQuery query = new SQLQuery(session.getDataSource(), "", -1, -1);
             if (queries.size() == 1) {
                 query.setText(queries.get(0).getText());
@@ -723,6 +720,21 @@ public class SQLQueryJob extends DataSourceJob
                     log.error("Error generating execution result stats", e);
                 }
             }
+        } else {
+            resultsConsumer.releaseDataReceiver(resultSetNumber);
+        }
+    }
+
+    public boolean isShowExecutionResult() {
+        boolean hasResults = resultSetNumber > 0 && (statistics.getRowsUpdated() >= 0 || statistics.getRowsFetched() >= 0);
+
+        if (hasResults) {
+            // If there are multiple results with result sets, display statistics if `showStatisticsForQueriesWithResults`
+            final DBPPreferenceStore store = getDataSourceContainer().getPreferenceStore();
+            return statistics.getStatementsCount() > 1 && store.getBoolean(SQLPreferenceConstants.SHOW_STATISTICS_FOR_QUERIES_WITH_RESULTS);
+        } else {
+            // If there are no results, always display statistics
+            return true;
         }
     }
 
