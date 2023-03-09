@@ -361,7 +361,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
                     (PostgreSchema.isUtilitySchema(name) && !owner.getDataSource().getContainer().getNavigatorSettings().isShowUtilityObjects())) {
                     return null;
                 }
-                return owner.createSchemaImpl(owner, name, resultSet);
+                return new RedshiftSchema(owner, name, resultSet);
             }
         }
 
