@@ -107,7 +107,7 @@ public class SQLPreferenceConstants
 
     public final static String RESET_CURSOR_ON_EXECUTE                  = "SQLEditor.resetCursorOnExecute";
     public final static String MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE        = "SQLEditor.maxEditorOnScriptExecute";
-    public final static String SHOW_STATISTICS_FOR_QUERIES_WITH_RESULTS = "SQLEditor.showStatisticsForQueriesWithResults";
+    public static final String SHOW_STATISTICS_FOR_QUERIES_WITH_RESULTS = "SQLEditor.showStatisticsForQueriesWithResults";
 
     public final static String SQL_FORMAT_KEYWORD_CASE_AUTO             = "SQLEditor.format.keywordCaseAuto";
     public final static String SQL_FORMAT_EXTRACT_FROM_SOURCE           = "SQLEditor.format.extractFromSource";

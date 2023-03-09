@@ -725,7 +725,7 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
-    public boolean isShowExecutionResult() {
+    private boolean isShowExecutionResult() {
         boolean hasResults = resultSetNumber > 0 && (statistics.getRowsUpdated() >= 0 || statistics.getRowsFetched() >= 0);
 
         if (hasResults) {

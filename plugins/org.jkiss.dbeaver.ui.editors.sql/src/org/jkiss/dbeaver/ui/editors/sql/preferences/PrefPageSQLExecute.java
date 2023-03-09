@@ -280,7 +280,9 @@ public class PrefPageSQLExecute extends TargetPrefPage
             fetchResultSetsCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS));
             resetCursorCheck.setSelection(store.getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE));
             maxEditorCheck.setSelection(store.getBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE));
-            showStatisticsForQueriesWithResultsCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SHOW_STATISTICS_FOR_QUERIES_WITH_RESULTS));
+            showStatisticsForQueriesWithResultsCheck.setSelection(
+                store.getBoolean(SQLPreferenceConstants.SHOW_STATISTICS_FOR_QUERIES_WITH_RESULTS)
+            );
 
             statementDelimiterText.setText(store.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER));
             ignoreNativeDelimiter.setSelection(store.getBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER));
@@ -315,7 +317,10 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS, fetchResultSetsCheck.getSelection());
             store.setValue(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE, resetCursorCheck.getSelection());
             store.setValue(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE, maxEditorCheck.getSelection());
-            store.setValue(SQLPreferenceConstants.SHOW_STATISTICS_FOR_QUERIES_WITH_RESULTS, showStatisticsForQueriesWithResultsCheck.getSelection());
+            store.setValue(
+                SQLPreferenceConstants.SHOW_STATISTICS_FOR_QUERIES_WITH_RESULTS,
+                showStatisticsForQueriesWithResultsCheck.getSelection()
+            );
 
             store.setValue(ModelPreferences.SCRIPT_STATEMENT_DELIMITER, statementDelimiterText.getText());
             store.setValue(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER, ignoreNativeDelimiter.getSelection());
