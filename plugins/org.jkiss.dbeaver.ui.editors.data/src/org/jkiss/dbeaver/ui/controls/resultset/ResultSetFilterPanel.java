@@ -468,7 +468,11 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             if (ResultSetViewer.DEFAULT_QUERY_TEXT.equals(query)) {
                 return;
             }
-            final Collection<String> history = viewer.getFilterManager().getQueryFilterHistory(query);
+            DBCExecutionContext context = viewer.getExecutionContext();
+            if (context == null) {
+                return;
+            }
+            final Collection<String> history = viewer.getFilterManager().getQueryFilterHistory(context, query);
             filtersHistory.addAll(history);
         } catch (Throwable e) {
             log.debug("Error reading history", e);
@@ -503,7 +507,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         filtersHistory.add(whereCondition);
         if (!oldFilter) {
             try {
-                viewer.getFilterManager().saveQueryFilterValue(getActiveSourceQueryNormalized(), whereCondition);
+                DBCExecutionContext context = viewer.getExecutionContext();
+                if (context != null) {
+                    viewer.getFilterManager().saveQueryFilterValue(context, getActiveSourceQueryNormalized(), whereCondition);
+                }
             } catch (Throwable e) {
                 log.debug("Error saving filter", e);
             }
@@ -939,7 +946,14 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                             case SWT.DEL:
                                 final String filterValue = item.getText();
                                 try {
-                                    viewer.getFilterManager().deleteQueryFilterValue(getActiveSourceQueryNormalized(), filterValue);
+                                    DBCExecutionContext context = viewer.getExecutionContext();
+                                    if (context != null) {
+                                        viewer.getFilterManager().deleteQueryFilterValue(
+                                            context,
+                                            getActiveSourceQueryNormalized(),
+                                            filterValue
+                                        );
+                                    }
                                 } catch (DBException e1) {
                                     log.warn("Error deleting filter value [" + filterValue + "]", e1);
                                 }

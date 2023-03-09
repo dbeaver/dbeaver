@@ -4721,7 +4721,7 @@ public class ResultSetViewer extends Viewer
         private final Map<String, List<String>> filterHistory = new HashMap<>();
         @NotNull
         @Override
-        public List<String> getQueryFilterHistory(@NotNull String query) {
+        public List<String> getQueryFilterHistory(@Nullable DBCExecutionContext context, @NotNull String query) {
             final List<String> filters = filterHistory.get(query);
             if (filters != null) {
                 return filters;
@@ -4730,13 +4730,13 @@ public class ResultSetViewer extends Viewer
         }
 
         @Override
-        public void saveQueryFilterValue(@NotNull String query, @NotNull String filterValue) {
+        public void saveQueryFilterValue(@Nullable DBCExecutionContext context, @NotNull String query, @NotNull String filterValue) {
             List<String> filters = filterHistory.computeIfAbsent(query, k -> new ArrayList<>());
             filters.add(filterValue);
         }
 
         @Override
-        public void deleteQueryFilterValue(@NotNull String query, String filterValue) {
+        public void deleteQueryFilterValue(@Nullable DBCExecutionContext context, @NotNull String query, String filterValue) {
             List<String> filters = filterHistory.get(query);
             if (filters != null) {
                 filters.add(filterValue);
