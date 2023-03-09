@@ -260,14 +260,16 @@ public class DBNModel implements IResourceChangeListener {
 
     @NotNull
     private NodePath getNodePath(@NotNull String path) {
-        if (path.contains(DBNNode.NodePathType.LEGACY_PREFIX_DELIMITER)) {
-            path = path.replace(DBNNode.NodePathType.LEGACY_PREFIX_DELIMITER, "/");
-        }
         DBNNode.NodePathType nodeType = DBNNode.NodePathType.other;
         for (DBNNode.NodePathType type : DBNNode.NodePathType.values()) {
-            final String prefix = type.getPrefix();
+            String prefix = type.getPrefix();
+            String legacyPrefix = type.getLegacyPrefix();
             if (path.startsWith(prefix)) {
                 path = path.substring(prefix.length());
+                nodeType = type;
+                break;
+            } else if (path.startsWith(legacyPrefix)) {
+                path = path.substring(legacyPrefix.length());
                 nodeType = type;
                 break;
             }

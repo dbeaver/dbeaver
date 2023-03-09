@@ -261,4 +261,13 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
             model.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.UPDATE, oldProjectNode));
         }
     }
+
+    public <T> T getExtraNode(Class<T> nodeType) {
+        for (DBNNode node : extraNodes) {
+            if (nodeType.isAssignableFrom(node.getClass())) {
+                return nodeType.cast(node);
+            }
+        }
+        return null;
+    }
 }

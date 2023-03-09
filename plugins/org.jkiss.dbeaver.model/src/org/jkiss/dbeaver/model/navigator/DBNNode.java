@@ -48,11 +48,15 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         database,
         ext,
         other;
-        
-        public static final String LEGACY_PREFIX_DELIMITER = "://";
+
+        public static final String LEGACY_PREFIX = "://";
 
         public String getPrefix() {
             return name() + "/";
+        }
+
+        public String getLegacyPrefix() {
+            return name() + LEGACY_PREFIX;
         }
     }
 
