@@ -93,13 +93,13 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
                 return this.append(DBConstants.NULL_VALUE_LABEL);
             } else {
                 try {
-                    this.append(rawBlobOpen);
+                    this.append(RAW_BLOB_OPEN);
                     // flush all the buffered data to the underlying output stream before writing raw data
                     this.flush();
                     writer.flush();
                     getSite().writeBinaryData(cs);
-                    this.append(rawBlobClose);
-                    return (int) Math.min(Integer.MAX_VALUE, rawBlobOpen.length() + cs.getContentLength() + rawBlobClose.length());
+                    this.append(RAW_BLOB_CLOSE);
+                    return (int) Math.min(Integer.MAX_VALUE, RAW_BLOB_OPEN.length() + cs.getContentLength() + RAW_BLOB_CLOSE.length());
                 } finally {
                     cs.release();
                 }
@@ -142,7 +142,7 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
         @Override
         public int getTextLength() {
             try {
-                long length = content.getContentLength() + rawBlobOpen.length() + rawBlobClose.length();
+                long length = content.getContentLength() + RAW_BLOB_OPEN.length() + RAW_BLOB_CLOSE.length();
                 return (int) Math.min(Integer.MAX_VALUE, length);
             } catch (DBCException ex) {
                 return 0;
@@ -181,13 +181,13 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
     private Deque<CellValue[]> batchQueue;
 
     // The followings may be a setting some time
-    private final boolean quoteBlobs = true;
-    private final char quoteBlobChar = '"';
-    private final String quoteBlobReplacement = "\\\"";
-    private final String blobOverflowMark = " [BLOB is too large]";
-    private final int blobContentMinLength = 20;
-    private final String rawBlobOpen = "[BLOB[";
-    private final String rawBlobClose = "]]";
+    private static final boolean QUOTE_BLOBS = true;
+    private static final char QUOTE_BLOB_CHAR = '"';
+    private static final String QUOTE_BLOB_REPLACEMENT = "\\\"";
+    private static final String BLOB_OVERFLOW_MARK = " [BLOB is too large]";
+    private static final int BLOB_CONTENT_MIN_LENGTH = 20;
+    private static final String RAW_BLOB_OPEN = "[BLOB[";
+    private static final String RAW_BLOB_CLOSE = "]]";
     
     private final StringBuilder blobContentBuffer = new StringBuilder();
     private DBDAttributeBinding[] columns;
@@ -212,9 +212,9 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
             this.maxColumnSize = Math.max(this.maxColumnSize, this.minColumnSize);
         }
         
-        this.blobContentMaxLength = Math.min(this.maxColumnSize, Integer.MAX_VALUE) - blobOverflowMark.length();
+        this.blobContentMaxLength = Math.min(this.maxColumnSize, Integer.MAX_VALUE) - BLOB_OVERFLOW_MARK.length();
         if (this.blobContentMaxLength < 0) {
-            this.blobContentMaxLength = this.blobContentMinLength;
+            this.blobContentMaxLength = this.BLOB_CONTENT_MIN_LENGTH;
         }
     }
 
@@ -270,8 +270,8 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
             blobContentBuffer.insert(batchSize, "");
             
             int rest = blobContentMaxLength;
-            if (quoteBlobs) { 
-                blobContentBuffer.append(quoteBlobChar);
+            if (QUOTE_BLOBS) {
+                blobContentBuffer.append(QUOTE_BLOB_CHAR);
                 rest -= 2;
             }
             // Copy reader
@@ -281,15 +281,15 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
                 if (count <= 0) {
                     break;
                 }
-                if (quoteBlobs && quoteBlobReplacement != null) {
-                    if (quoteBlobReplacement.length() > 1) {
+                if (QUOTE_BLOBS && QUOTE_BLOB_REPLACEMENT != null) {
+                    if (QUOTE_BLOB_REPLACEMENT.length() > 1) {
                         for (int i = 0; i < count; i++) {
-                            if (buffer[i] == quoteBlobChar) {
-                                if (blobContentBuffer.length() + quoteBlobReplacement.length() > blobContentMaxLength) {
+                            if (buffer[i] == QUOTE_BLOB_CHAR) {
+                                if (blobContentBuffer.length() + QUOTE_BLOB_REPLACEMENT.length() > blobContentMaxLength) {
                                     break;
                                 } else {
-                                    blobContentBuffer.append(quoteBlobReplacement);
-                                    rest -= (quoteBlobReplacement.length() - 1);
+                                    blobContentBuffer.append(QUOTE_BLOB_REPLACEMENT);
+                                    rest -= (QUOTE_BLOB_REPLACEMENT.length() - 1);
                                 }
                             } else {
                                 blobContentBuffer.append(buffer[i]);
@@ -298,8 +298,8 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
                     } else {
                         int limit = Math.min(count, rest);
                         for (int i = 0; i < limit; i++) {
-                            if (buffer[i] == quoteBlobChar) {
-                                blobContentBuffer.append(quoteBlobReplacement);
+                            if (buffer[i] == QUOTE_BLOB_CHAR) {
+                                blobContentBuffer.append(QUOTE_BLOB_REPLACEMENT);
                             } else {
                                 blobContentBuffer.append(buffer[i]);
                             }
@@ -309,14 +309,14 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
                     blobContentBuffer.append(buffer, 0, Math.min(count, rest));
                 }
                 if (rest < count) {
-                    blobContentBuffer.append(blobOverflowMark);
+                    blobContentBuffer.append(BLOB_OVERFLOW_MARK);
                     break;
                 } else {
                     rest -= count;
                 }
             }
-            if (quoteBlobs) {
-                blobContentBuffer.append(quoteBlobChar);
+            if (QUOTE_BLOBS) {
+                blobContentBuffer.append(QUOTE_BLOB_CHAR);
             }
             return blobContentBuffer.toString();
         } finally {
