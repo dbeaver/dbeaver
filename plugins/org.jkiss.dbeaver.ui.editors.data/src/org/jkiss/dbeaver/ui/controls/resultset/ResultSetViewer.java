@@ -138,6 +138,7 @@ public class ResultSetViewer extends Viewer
 
     private static final String SETTINGS_SECTION_PRESENTATIONS = "presentations";
 
+    private static final String ACTIONS_TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.controls.resultset.actions";
     private static final String TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status";
     private static final String CONFIRM_SERVER_SIDE_ORDERING_UNAVAILABLE = "org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable";
 
@@ -1626,8 +1627,9 @@ public class ResultSetViewer extends Viewer
         //this.updateStatusMessage();
     }
 
-    private void createStatusBar()
-    {
+    private void createStatusBar() {
+        final IMenuService menuService = getSite().getService(IMenuService.class);
+
         Composite statusComposite = UIUtils.createPlaceholder(viewerPanel, 3);
         statusComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -1644,6 +1646,18 @@ public class ResultSetViewer extends Viewer
         //toolbarsLayout.fill = true;
         statusBar.setLayout(toolbarsLayout);
 
+        {
+            ToolBarManager firstToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+            firstToolBarManager.add(new GroupMarker(TOOLBAR_GROUP_ADDITIONS));
+            if (menuService != null) {
+                menuService.populateContributionManager(firstToolBarManager, ACTIONS_TOOLBAR_CONTRIBUTION_ID);
+            }
+            if (firstToolBarManager.getItems().length > 1) {
+                ToolBar addToolBar = firstToolBarManager.createControl(statusBar);
+                CSSUtils.setCSSClass(addToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+                toolbarList.add(firstToolBarManager);
+            }
+        }
         {
             ToolBar rsToolbar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             // Refresh
@@ -1712,8 +1726,7 @@ public class ResultSetViewer extends Viewer
         }
 
         {
-            ToolBarManager addToolbBarManagerar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            //addToolbBarManagerar.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT));
+            ToolBarManager additionalToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             CommandContributionItem saveItem = ActionUtils.makeCommandContribution(
                 site,
                 ResultSetHandlerMain.CMD_EXPORT,
@@ -1721,18 +1734,17 @@ public class ResultSetViewer extends Viewer
                 null, null, null, true,
                 Map.of(ResultSetHandlerMain.PARAM_EXPORT_WITH_PARAM, Boolean.TRUE.toString()));
             saveItem.setId("org.jkiss.dbeaver.resultset.export.pulldown");
-            addToolbBarManagerar.add(saveItem);
+            additionalToolBarManager.add(saveItem);
 
-            addToolbBarManagerar.add(new GroupMarker(TOOLBAR_GROUP_PRESENTATIONS));
-            addToolbBarManagerar.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
+            additionalToolBarManager.add(new GroupMarker(TOOLBAR_GROUP_PRESENTATIONS));
+            additionalToolBarManager.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
 
-            final IMenuService menuService = getSite().getService(IMenuService.class);
             if (menuService != null) {
-                menuService.populateContributionManager(addToolbBarManagerar, TOOLBAR_CONTRIBUTION_ID);
+                menuService.populateContributionManager(additionalToolBarManager, TOOLBAR_CONTRIBUTION_ID);
             }
-            ToolBar addToolBar = addToolbBarManagerar.createControl(statusBar);
+            ToolBar addToolBar = additionalToolBarManager.createControl(statusBar);
             CSSUtils.setCSSClass(addToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
-            toolbarList.add(addToolbBarManagerar);
+            toolbarList.add(additionalToolBarManager);
         }
 
         {
