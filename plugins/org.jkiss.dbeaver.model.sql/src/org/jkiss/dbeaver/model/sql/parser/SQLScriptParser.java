@@ -362,9 +362,14 @@ public class SQLScriptParser {
      * @param cursorPosition   the cursor position
      * @return the sql script element
      */
-    public static SQLScriptElement parseQuery(SQLDialect dialect, DBPPreferenceStore preferenceStore, String sqlScriptContent,
-                                              int cursorPosition) {
-        SQLParserContext parserContext = prepareSqlParserContext(dialect, preferenceStore, sqlScriptContent);
+    public static SQLScriptElement parseQuery(
+        DBPDataSource dataSource,
+        SQLDialect dialect,
+        DBPPreferenceStore preferenceStore,
+        String sqlScriptContent,
+        int cursorPosition
+    ) {
+        SQLParserContext parserContext = prepareSqlParserContext(dataSource, dialect, preferenceStore, sqlScriptContent);
         return SQLScriptParser.extractQueryAtPos(parserContext, cursorPosition);
     }
 
@@ -420,6 +425,28 @@ public class SQLScriptParser {
         final int docLength = document.getLength();
         IDocumentPartitioner partitioner = document instanceof IDocumentExtension3 ? ((IDocumentExtension3)document).getDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING) : null;
         if (partitioner != null) {
+            try {
+                int currLineIndex = document.getLineOfOffset(currentPos);
+                IRegion currLine = document.getLineInformation(currLineIndex);
+                int currLineEnd = currLine.getOffset() + currLine.getLength(); 
+                boolean hasNextLine = currLineIndex + 1 < document.getNumberOfLines();
+                boolean inTailComment = SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(partitioner.getContentType(currentPos)); 
+                if (!inTailComment && currentPos >= currLineEnd &&
+                    (!hasNextLine || (hasNextLine && currentPos < document.getLineInformation(currLineIndex + 1).getOffset()))
+                ) { 
+                    inTailComment = SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(partitioner.getContentType(currLineEnd - 1));
+                }
+                if (inTailComment) {
+                    int observablePosition = currentPos < document.getLength() ? currentPos : currentPos - 1;
+                    int letterBeforeComment = skipCommentsBackTillLetter(document, partitioner, observablePosition, currLine.getOffset());
+                    if (letterBeforeComment >= currLine.getOffset()) {
+                        // if we are in the single-line comment and there are letters before the comment, then extract  
+                        currentPos = letterBeforeComment;
+                    }
+                }
+            } catch (BadLocationException ex) { 
+                return null; 
+            }
             // Move to default partition. We don't want to be in the middle of multi-line comment or string
             while (currentPos < docLength && isMultiCommentPartition(partitioner, currentPos)) {
                 currentPos++;
@@ -530,8 +557,7 @@ public class SQLScriptParser {
         } catch (BadLocationException e) {
             log.warn(e);
         }
-        return parseQuery(context,
-            startPos, document.getLength(), currentPos, false, false);
+        return parseQuery(context, startPos, document.getLength(), currentPos, false, false);
     }
 
     private static boolean isDefaultPartition(IDocumentPartitioner partitioner, int currentPos) {
@@ -541,7 +567,7 @@ public class SQLScriptParser {
     private static boolean isMultiCommentPartition(IDocumentPartitioner partitioner, int currentPos) {
         return partitioner != null && SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(partitioner.getContentType(currentPos));
     }
-
+    
     public static SQLScriptElement extractNextQuery(SQLParserContext context, int offset, boolean next) {
         SQLScriptElement curElement = extractQueryAtPos(context, offset);
         if (curElement == null) {
@@ -549,6 +575,9 @@ public class SQLScriptParser {
         }
 
         IDocument document = context.getDocument();
+        IDocumentPartitioner partitioner = document instanceof IDocumentExtension3
+            ? ((IDocumentExtension3) document).getDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING)
+            : null;
         try {
             int docLength = document.getLength();
             int curPos;
@@ -556,6 +585,16 @@ public class SQLScriptParser {
                 final String[] statementDelimiters = context.getSyntaxManager().getStatementDelimiters();
                 curPos = curElement.getOffset() + curElement.getLength();
                 while (curPos < docLength) {
+                    if (partitioner != null) { 
+                        ITypedRegion region = partitioner.getPartition(curPos);
+                        switch (region.getType()) {
+                            case SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT:
+                            case SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT: {
+                                curPos = region.getOffset() + region.getLength();
+                                continue;
+                            }   
+                        }
+                    }
                     char c = document.getChar(curPos);
                     if (!Character.isWhitespace(c)) {
                         boolean isDelimiter = false;
@@ -572,13 +611,7 @@ public class SQLScriptParser {
                 }
             } else {
                 curPos = curElement.getOffset() - 1;
-                while (curPos >= 0) {
-                    char c = document.getChar(curPos);
-                    if (Character.isLetter(c)) {
-                        break;
-                    }
-                    curPos--;
-                }
+                curPos = skipCommentsBackTillLetter(document, partitioner, curPos, 0);
             }
             if (curPos <= 0 || curPos >= docLength) {
                 return null;
@@ -589,7 +622,34 @@ public class SQLScriptParser {
             return null;
         }
     }
-
+    
+    private static int skipCommentsBackTillLetter(
+        @NotNull IDocument document,
+        @Nullable IDocumentPartitioner partitioner,
+        int pos,
+        int limit
+    ) throws BadLocationException {
+        int curPos = pos;
+        while (curPos >= limit) {
+            if (partitioner != null) { 
+                ITypedRegion region = partitioner.getPartition(curPos);
+                switch (region.getType()) {
+                    case SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT:
+                    case SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT: {
+                        curPos = region.getOffset() - 1;
+                        continue;
+                    }   
+                }
+            }
+            char c = document.getChar(curPos);
+            if (Character.isLetter(c)) {
+                return curPos;
+            }
+            curPos--;
+        }
+        return -1;
+    }
+    
     @Nullable
     public static SQLScriptElement extractActiveQuery(SQLParserContext context, int selOffset, int selLength) {
         return extractActiveQuery(context, new IRegion[]{new Region(selOffset, selLength)});
@@ -781,7 +841,13 @@ public class SQLScriptParser {
                         }
 
                         if (param == null) {
-                            param = new SQLQueryParameter(syntaxManager, orderPos, matcher.group(0), start, matcher.end() - matcher.start());
+                            param = new SQLQueryParameter(
+                                syntaxManager,
+                                orderPos,
+                                matcher.group(SQLQueryParameter.VARIABLE_NAME_GROUP_NAME).toUpperCase(Locale.ENGLISH),
+                                start,
+                                matcher.end() - matcher.start()
+                            );
                             if (parameters == null) {
                                 parameters = new ArrayList<>();
                             }
@@ -858,14 +924,23 @@ public class SQLScriptParser {
         return SQLScriptParser.extractScriptQueries(parserContext, 0, sqlScriptContent.length(), true, false, true);
     }
 
-    public static List<SQLScriptElement> parseScript(SQLDialect dialect, DBPPreferenceStore preferenceStore, String sqlScriptContent) {
-        SQLParserContext parserContext = prepareSqlParserContext(dialect, preferenceStore, sqlScriptContent);
+    public static List<SQLScriptElement> parseScript(
+        DBPDataSource dataSource,
+        SQLDialect dialect,
+        DBPPreferenceStore preferenceStore,
+        String sqlScriptContent
+    ) {
+        SQLParserContext parserContext = prepareSqlParserContext(dataSource, dialect, preferenceStore, sqlScriptContent);
         return SQLScriptParser.extractScriptQueries(parserContext, 0, sqlScriptContent.length(), true, false, true);
     }
 
     @NotNull
-    private static SQLParserContext prepareSqlParserContext(SQLDialect dialect, DBPPreferenceStore preferenceStore,
-                                                            String sqlScriptContent) {
+    private static SQLParserContext prepareSqlParserContext(
+        DBPDataSource dataSource,
+        SQLDialect dialect,
+        DBPPreferenceStore preferenceStore,
+        String sqlScriptContent
+    ) {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dialect, preferenceStore);
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
@@ -873,7 +948,7 @@ public class SQLScriptParser {
 
         Document sqlDocument = new Document(sqlScriptContent);
 
-        SQLParserContext parserContext = new SQLParserContext(null, syntaxManager, ruleManager, sqlDocument);
+        SQLParserContext parserContext = new SQLParserContext(dataSource, syntaxManager, ruleManager, sqlDocument);
         parserContext.setPreferenceStore(preferenceStore);
         return parserContext;
     }

@@ -330,6 +330,8 @@ public interface SQLDialect {
 
     String getUnquotedIdentifier(String identifier);
 
+    String getUnquotedIdentifier(String identifier, boolean unescapeQuotesInsideIdentifier);
+
     boolean isQuotedString(String string);
 
     String getQuotedString(String string);
@@ -441,7 +443,15 @@ public interface SQLDialect {
      */
     String formatStoredProcedureCall(DBPDataSource dataSource, String sqlText);
 
-    void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters);
+    /**
+     * Generates stored procedure call. Parameters (optionally) can be surrounded by cast(:param as paramType).
+     */
+    void generateStoredProcedureCall(
+        StringBuilder sql, 
+        DBSProcedure proc, 
+        Collection<? extends DBSProcedureParameter> parameters,
+        boolean castParams
+    );
 
     boolean isDisableScriptEscapeProcessing();
 

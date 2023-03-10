@@ -68,6 +68,8 @@
 
 								<!-- Web sockets -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jetty.websocket:LATEST</id></artifact>
+								<!-- GPT -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gpt3:LATEST</id></artifact>
 
 								<!-- Tests. Mockito-all is kept for old version build support. -->
 <!--								<artifact><id>org.mockito:mockito-all:1.10.19</id></artifact>-->

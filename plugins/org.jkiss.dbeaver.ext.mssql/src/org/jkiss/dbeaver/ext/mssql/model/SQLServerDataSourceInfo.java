@@ -48,7 +48,7 @@ class SQLServerDataSourceInfo extends JDBCDataSourceInfo {
 
     @Override
     public boolean isMultipleResultsFetchBroken() {
-        return isSybase;
+        return true;
     }
 
     @Override

@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.runtime.LocalFileStorage;
 import org.jkiss.dbeaver.ui.IDataSourceContainerUpdate;
 import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -56,6 +57,8 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 /**
  * EditorUtils
@@ -72,6 +75,7 @@ public class EditorUtils {
     private static final String PROP_SQL_DATA_SOURCE_CONTAINER = "sql-editor-data-source-container"; //$NON-NLS-1$
     private static final String PROP_EDITOR_CONTEXT = "database-editor-context"; //$NON-NLS-1$
     private static final String PROP_EXECUTION_CONTEXT = "sql-editor-execution-context"; //$NON-NLS-1$
+    private static final String PROP_INPUT_FILE = "sql-editor-input-file"; //$NON-NLS-1$
 
     public static final String PROP_NAMESPACE = "org.jkiss.dbeaver"; //$NON-NLS-1$
 
@@ -102,6 +106,11 @@ public class EditorUtils {
         } else if (editorInput instanceof IPathEditorInput) {
             final IPath path = ((IPathEditorInput) editorInput).getPath();
             return path == null ? null : ResourceUtils.convertPathToWorkspaceFile(path);
+        } else if (editorInput instanceof INonPersistentEditorInput) {
+            IFile file = (IFile) ((INonPersistentEditorInput) editorInput).getProperty(PROP_INPUT_FILE);
+            if (file != null) {
+                return file;
+            }
         } else if (editorInput instanceof IURIEditorInput) {
             // Most likely it is an external file
             return null;
@@ -126,6 +135,13 @@ public class EditorUtils {
     }
 
     public static IStorage getStorageFromInput(Object element) {
+        if (element instanceof IStorageEditorInput) {
+            try {
+                return ((IStorageEditorInput) element).getStorage();
+            } catch (CoreException e) {
+                log.error(e);
+            }
+        }
         if (element instanceof IAdaptable) {
             IStorage storage = ((IAdaptable) element).getAdapter(IStorage.class);
             if (storage != null) {
@@ -136,6 +152,13 @@ public class EditorUtils {
             IFile file = getFileFromInput((IEditorInput) element);
             if (file != null) {
                 return file;
+            }
+            if (element instanceof IURIEditorInput) {
+                URI uri = ((IURIEditorInput) element).getURI();
+                File localFile = new File(uri);
+                if (localFile.exists()) {
+                    return new LocalFileStorage(localFile, StandardCharsets.UTF_8.name());
+                }
             }
         }
         return null;
@@ -323,6 +346,19 @@ public class EditorUtils {
             } else {
                 log.error("Can't set datasource for input " + editorInput);
             }
+        }
+    }
+
+    /**
+     * Associated inout file with editor input.
+     * Can be used with INonPersistentEditorInput only.
+     */
+    public static void setInputInputFile(
+        @NotNull IEditorInput editorInput,
+        @NotNull IFile file
+    ) {
+        if (editorInput instanceof INonPersistentEditorInput) {
+            ((INonPersistentEditorInput) editorInput).setProperty(PROP_INPUT_FILE, file);
         }
     }
 

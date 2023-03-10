@@ -719,7 +719,14 @@ public class PostgreDatabase extends JDBCRemoteInstance
                         PostgreUtils.getQueryForSystemColumnChecking("pg_type", "typcategory"));
                     supportTypColumn = true;
                 } catch (SQLException e) {
-                    log.debug("Error reading system information from the pg_type table", e);
+                    log.debug("Error reading system information from the pg_type table: " + e.getMessage());
+                    try {
+                        if (!session.isClosed() && !session.getAutoCommit()) {
+                            session.rollback();
+                        }
+                    } catch (SQLException ex) {
+                        log.warn("Can't rollback transaction", e);
+                    }
                     supportTypColumn = false;
                 }
             } else {

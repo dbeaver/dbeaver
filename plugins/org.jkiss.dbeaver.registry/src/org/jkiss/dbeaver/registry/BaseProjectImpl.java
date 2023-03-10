@@ -37,13 +37,13 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.impl.app.DefaultValueEncryptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -51,6 +51,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 public abstract class BaseProjectImpl implements DBPProject {
 
@@ -82,7 +84,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     private volatile DBPDataSourceRegistry dataSourceRegistry;
     private volatile TaskManagerImpl taskManager;
     private volatile Map<String, Object> properties;
-    private volatile Map<String, Map<String, Object>> resourceProperties;
+    protected volatile Map<String, Map<String, Object>> resourceProperties;
     private UUID projectID;
 
     protected final Object metadataSync = new Object();
@@ -322,7 +324,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     @Override
     public Object getResourceProperty(@NotNull String resourcePath, @NotNull String propName) {
         loadMetadata();
-        resourcePath = normalizeResourcePath(resourcePath);
+        resourcePath = CommonUtils.normalizeResourcePath(resourcePath);
         synchronized (metadataSync) {
             Map<String, Object> resProps = resourceProperties.get(resourcePath);
             if (resProps != null) {
@@ -336,7 +338,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     @Override
     public Map<String, Object> getResourceProperties(@NotNull String resourcePath) {
         loadMetadata();
-        resourcePath = normalizeResourcePath(resourcePath);
+        resourcePath = CommonUtils.normalizeResourcePath(resourcePath);
         synchronized (metadataSync) {
             return resourceProperties.get(resourcePath);
         }
@@ -345,7 +347,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     @Override
     public void setResourceProperty(@NotNull String resourcePath, @NotNull String propName, @Nullable Object propValue) {
         loadMetadata();
-        resourcePath = normalizeResourcePath(resourcePath);
+        resourcePath = CommonUtils.normalizeResourcePath(resourcePath);
         synchronized (metadataSync) {
             Map<String, Object> resProps = resourceProperties.get(resourcePath);
             if (resProps == null) {
@@ -379,8 +381,8 @@ public abstract class BaseProjectImpl implements DBPProject {
     @Override
     public void moveResourceProperties(@NotNull String oldResourcePath, @NotNull String newResourcePath) {
         loadMetadata();
-        oldResourcePath = normalizeResourcePath(oldResourcePath);
-        newResourcePath = normalizeResourcePath(newResourcePath);
+        oldResourcePath = CommonUtils.normalizeResourcePath(oldResourcePath);
+        newResourcePath = CommonUtils.normalizeResourcePath(newResourcePath);
         synchronized (metadataSync) {
             Map<String, Object> resProps = resourceProperties.remove(oldResourcePath);
             if (resProps != null) {
@@ -397,7 +399,7 @@ public abstract class BaseProjectImpl implements DBPProject {
 
     public boolean resetResourceProperties(@NotNull String resourcePath) {
         loadMetadata();
-        resourcePath = normalizeResourcePath(resourcePath);
+        resourcePath = CommonUtils.normalizeResourcePath(resourcePath);
         boolean hadProperties;
         synchronized (metadataSync) {
             hadProperties = resourceProperties.remove(resourcePath) != null;
@@ -406,12 +408,6 @@ public abstract class BaseProjectImpl implements DBPProject {
             flushMetadata();
         }
         return hadProperties;
-    }
-
-    @NotNull
-    private static String normalizeResourcePath(@NotNull String resourcePath) {
-        while (resourcePath.startsWith("/")) resourcePath = resourcePath.substring(1);
-        return resourcePath;
     }
 
     @Override
@@ -428,7 +424,7 @@ public abstract class BaseProjectImpl implements DBPProject {
         boolean cacheChanged = false;
         synchronized (metadataSync) {
             if (resourceProperties != null) {
-                String resPath = normalizeResourcePath(path.toString());
+                String resPath = CommonUtils.normalizeResourcePath(path.toString());
                 cacheChanged = (resourceProperties.remove(resPath) != null);
             }
         }
@@ -441,10 +437,10 @@ public abstract class BaseProjectImpl implements DBPProject {
         boolean cacheChanged = false;
         synchronized (metadataSync) {
             if (resourceProperties != null) {
-                String oldResPath = normalizeResourcePath(oldPath.toString());
+                String oldResPath = CommonUtils.normalizeResourcePath(oldPath.toString());
                 Map<String, Object> props = resourceProperties.remove(oldResPath);
                 if (props != null) {
-                    String newResPath = normalizeResourcePath(newPath.toString());
+                    String newResPath = CommonUtils.normalizeResourcePath(newPath.toString());
                     resourceProperties.put(newResPath, props);
                     cacheChanged = true;
                 }
@@ -485,7 +481,7 @@ public abstract class BaseProjectImpl implements DBPProject {
         this.format = format;
     }
 
-    private void loadMetadata() {
+    protected void loadMetadata() {
         if (isInMemory()) {
             return;
         }
@@ -561,7 +557,12 @@ public abstract class BaseProjectImpl implements DBPProject {
             if (metadataSyncJob == null) {
                 metadataSyncJob = new ProjectSyncJob();
             }
-            metadataSyncJob.schedule(100);
+            // if this is a web app, we want to wait the sync job
+            if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+                metadataSyncJob.run(new VoidProgressMonitor());
+            } else {
+                metadataSyncJob.schedule(100);
+            }
         }
     }
 
@@ -587,41 +588,36 @@ public abstract class BaseProjectImpl implements DBPProject {
                     // Nothing to save and metadata file doesn't exist
                     return Status.OK_STATUS;
                 }
-                try {
-                    if (!CommonUtils.isEmpty(resourceProperties)) {
-                        try (Writer mdWriter = Files.newBufferedWriter(mdFile, StandardCharsets.UTF_8)) {
-                            try (JsonWriter jsonWriter = METADATA_GSON.newJsonWriter(mdWriter)) {
-                                jsonWriter.beginObject();
+                try (Writer mdWriter = Files.newBufferedWriter(mdFile, StandardCharsets.UTF_8);
+                     JsonWriter jsonWriter = METADATA_GSON.newJsonWriter(mdWriter)
+                ) {
+                    jsonWriter.beginObject();
 
-                                jsonWriter.name("resources");
-                                jsonWriter.beginObject();
-                                for (Map.Entry<String, Map<String, Object>> resEntry : resourceProperties.entrySet()) {
-                                    jsonWriter.name(resEntry.getKey());
-                                    jsonWriter.beginObject();
-                                    Map<String, Object> resProps = resEntry.getValue();
-                                    for (Map.Entry<String, Object> propEntry : resProps.entrySet()) {
-                                        jsonWriter.name(propEntry.getKey());
-                                        Object value = propEntry.getValue();
-                                        if (value == null) {
-                                            jsonWriter.nullValue();
-                                        } else if (value instanceof Number) {
-                                            jsonWriter.value((Number) value);
-                                        } else if (value instanceof Boolean) {
-                                            jsonWriter.value((Boolean) value);
-                                        } else {
-                                            jsonWriter.value(CommonUtils.toString(value));
-                                        }
-                                    }
-                                    jsonWriter.endObject();
-                                }
-                                jsonWriter.endObject();
-
-                                jsonWriter.endObject();
-                                jsonWriter.flush();
+                    jsonWriter.name("resources");
+                    jsonWriter.beginObject();
+                    for (var resEntry : resourceProperties.entrySet()) {
+                        jsonWriter.name(resEntry.getKey());
+                        jsonWriter.beginObject();
+                        Map<String, Object> resProps = resEntry.getValue();
+                        for (var propEntry : resProps.entrySet()) {
+                            jsonWriter.name(propEntry.getKey());
+                            Object value = propEntry.getValue();
+                            if (value == null) {
+                                jsonWriter.nullValue();
+                            } else if (value instanceof Number) {
+                                jsonWriter.value((Number) value);
+                            } else if (value instanceof Boolean) {
+                                jsonWriter.value((Boolean) value);
+                            } else {
+                                jsonWriter.value(CommonUtils.toString(value));
                             }
                         }
+                        jsonWriter.endObject();
                     }
+                    jsonWriter.endObject();
 
+                    jsonWriter.endObject();
+                    jsonWriter.flush();
                 } catch (IOException e) {
                     log.error("Error flushing project metadata", e);
                 }

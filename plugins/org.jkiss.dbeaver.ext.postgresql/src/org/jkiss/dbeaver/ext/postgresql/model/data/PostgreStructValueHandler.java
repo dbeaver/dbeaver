@@ -94,7 +94,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         }
         try {
             if (object == null) {
-                return new JDBCCompositeStatic(session, structType, new JDBCStructImpl(structType.getTypeName(), null, ""));
+                return new JDBCCompositeStatic(session, structType, null);
             } else if (object instanceof JDBCCompositeStatic) {
                 return copy ? ((JDBCCompositeStatic) object).cloneValue(session.getProgressMonitor()) : object;
             } else {

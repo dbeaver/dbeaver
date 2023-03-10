@@ -45,6 +45,8 @@ public class GlobalPropertyTester extends PropertyTester {
     public static final String PROP_CAN_EDIT_RESOURCE = "canEditResource";
     public static final String PROP_CURRENT_PROJECT_RESOURCE_EDITABLE = "currentProjectResourceEditable";
     public static final String PROP_CURRENT_PROJECT_RESOURCE_VIEWABLE = "currentProjectResourceViewable";
+    public static final String PROP_HAS_PREFERENCE = "hasPreference";
+    public static final String PROP_HAS_ENV_VARIABLE = "hasEnvVariable";
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
@@ -83,6 +85,22 @@ public class GlobalPropertyTester extends PropertyTester {
             case PROP_CURRENT_PROJECT_RESOURCE_VIEWABLE: {
                 DBPProject project = NavigatorUtils.getSelectedProject();
                 return project != null && project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW);
+            }
+            case PROP_HAS_PREFERENCE: {
+                String prefName = CommonUtils.toString(expectedValue);
+                String prefValue = DBWorkbench.getPlatform().getPreferenceStore().getString(prefName);
+                if (CommonUtils.isEmpty(prefValue)) {
+                    prefValue = System.getProperty(prefName);
+                    if (prefValue != null && prefValue.isEmpty()) {
+                        prefValue = Boolean.TRUE.toString();
+                    }
+                }
+                return CommonUtils.toBoolean(prefValue);
+            }
+            case PROP_HAS_ENV_VARIABLE: {
+                String prefName = CommonUtils.toString(expectedValue);
+                String prefValue = System.getenv(prefName);
+                return (prefValue != null && prefValue.isEmpty()) || CommonUtils.toBoolean(prefValue);
             }
         }
         return false;

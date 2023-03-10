@@ -48,7 +48,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.registry.DesktopApplicationImpl;
 import org.jkiss.dbeaver.registry.SWTBrowserRegistry;
-import org.jkiss.dbeaver.registry.TimezoneRegistry;
+import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
@@ -64,7 +64,10 @@ import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Version;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.file.Files;
@@ -335,7 +338,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
     }
 
-
     private void markLocationReadOnly(Location instanceLoc) {
         try {
             Field isReadOnlyField = instanceLoc.getClass().getDeclaredField("isReadOnly");
@@ -479,13 +481,20 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 // with no message.
                 shell.setText(ChooseWorkspaceDialog.getWindowTitle());
                 shell.setImages(Window.getDefaultImages());
+
+                Log.Listener splashListener = (message, t) -> {
+                    DBeaverSplashHandler.showMessage(CommonUtils.toString(message));
+                };
+                Log.addListener(splashListener);
+                shell.addDisposeListener(e -> {
+                    Log.removeListener(splashListener);
+                });
             }
         } catch (Throwable e) {
             e.printStackTrace(System.err);
             System.err.println("Error updating splash shell");
         }
 
-        Log.addListener((message, t) -> DBeaverSplashHandler.showMessage(CommonUtils.toString(message)));
     }
 
     protected IInstanceController createInstanceController() {

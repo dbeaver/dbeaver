@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -110,6 +111,8 @@ public class DataSourceDescriptor
     @NotNull
     private DBPDriver driver;
     @NotNull
+    private DBPDriver originalDriver;
+    @NotNull
     private DBPConnectionConfiguration connectionInfo;
     // Copy of connection info with resolved params (cache)
     private DBPConnectionConfiguration resolvedConnectionInfo;
@@ -187,13 +190,27 @@ public class DataSourceDescriptor
         @NotNull DBPDataSourceOrigin origin,
         @NotNull String id,
         @NotNull DBPDriver driver,
-        @NotNull DBPConnectionConfiguration connectionInfo) {
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) {
+        this(registry, storage, origin, id, driver, driver, connectionInfo);
+    }
+
+    public DataSourceDescriptor(
+        @NotNull DBPDataSourceRegistry registry,
+        @NotNull DBPDataSourceConfigurationStorage storage,
+        @NotNull DBPDataSourceOrigin origin,
+        @NotNull String id,
+        @NotNull DBPDriver originalDriver,
+        @NotNull DBPDriver substitutedDriver,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) {
         this.registry = registry;
         this.storage = storage;
         this.origin = origin;
         this.manageable = storage.isDefault();
         this.id = id;
-        this.driver = driver;
+        this.originalDriver = originalDriver;
+        this.driver = substitutedDriver;
         this.connectionInfo = connectionInfo;
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.virtualModel = new DBVModel(this);
@@ -226,6 +243,7 @@ public class DataSourceDescriptor
         this.connectionReadOnly = source.connectionReadOnly;
         this.forceUseSingleConnection = source.forceUseSingleConnection;
         this.driver = source.driver;
+        this.originalDriver = source.originalDriver;
         this.clientHome = source.clientHome;
 
         this.connectionModifyRestrictions = source.connectionModifyRestrictions == null ? null : new ArrayList<>(source.connectionModifyRestrictions);
@@ -290,6 +308,11 @@ public class DataSourceDescriptor
     @Override
     public DBPDriver getDriver() {
         return driver;
+    }
+
+    @NotNull
+    public DBPDriver getOriginalDriver() {
+        return originalDriver;
     }
 
     @NotNull
@@ -392,7 +415,17 @@ public class DataSourceDescriptor
             return savePassword;
         }
         resolveSecretsIfNeeded();
-        return secretsResolved && secretsContainsDatabaseCreds;
+
+        if (secretsResolved && secretsContainsDatabaseCreds) {
+            return true;
+        }
+        if (savePassword) {
+            // Check actual credentials
+            // They may be ready if we are in test connection mode
+            DBAAuthCredentials authCreds = getConnectionConfiguration().getAuthModel().loadCredentials(this, getConnectionConfiguration());
+            return authCreds.isComplete();
+        }
+        return false;
     }
 
     @Override
@@ -834,8 +867,6 @@ public class DataSourceDescriptor
         if (!isSharedCredentials()) {
             var secret = saveToSecret();
             secretController.setSecretValue(getSecretKeyId(), secret);
-            this.secretsContainsDatabaseCreds =
-                isSavePassword() && this.connectionInfo.getAuthModel().isDatabaseCredentialsPresent(getProject(), this.connectionInfo);
         }
         secretsResolved = true;
     }
@@ -846,8 +877,6 @@ public class DataSourceDescriptor
             if (!isSharedCredentials()) {
                 String secretValue = secretController.getSecretValue(getSecretKeyId());
                 loadFromSecret(secretValue);
-                this.secretsContainsDatabaseCreds =
-                    isSavePassword() && this.connectionInfo.getAuthModel().isDatabaseCredentialsPresent(getProject(), this.connectionInfo);
                 if (secretValue == null && !DBWorkbench.isDistributed()) {
                     // Backward compatibility
                     loadFromLegacySecret(secretController);
@@ -1089,6 +1118,10 @@ public class DataSourceDescriptor
 
     private void resolveSecretsIfNeeded() throws DBException {
         if (secretsResolved || !getProject().isUseSecretStorage()) {
+            return;
+        }
+        if (registry.getDataSource(getId()) == null) {
+            // Datasource not saved yet - secrets are unavailable
             return;
         }
         var secretController = DBSSecretController.getProjectSecretController(getProject());
@@ -1636,7 +1669,12 @@ public class DataSourceDescriptor
         return
             CommonUtils.equalOrEmptyStrings(this.name, source.name) &&
                 CommonUtils.equalOrEmptyStrings(this.description, source.description) &&
-                CommonUtils.equalObjects(this.savePassword, source.savePassword) &&
+                equalConfiguration(source);
+    }
+
+    public boolean equalConfiguration(DataSourceDescriptor source) {
+        return
+            CommonUtils.equalObjects(this.savePassword, source.savePassword) &&
                 CommonUtils.equalObjects(this.sharedCredentials, source.sharedCredentials) &&
                 CommonUtils.equalObjects(this.connectionReadOnly, source.connectionReadOnly) &&
                 CommonUtils.equalObjects(this.forceUseSingleConnection, source.forceUseSingleConnection) &&
@@ -1858,6 +1896,10 @@ public class DataSourceDescriptor
             if (!CommonUtils.isEmpty(connectionInfo.getAuthProperties())) {
                 props.put(RegistryConstants.TAG_PROPERTIES, connectionInfo.getAuthProperties());
             }
+            if (props.isEmpty()) {
+                props.put(RegistryConstants.ATTR_EMPTY_DATABASE_CREDENTIALS, true);
+            }
+            this.secretsContainsDatabaseCreds = true;
         }
         if (CommonUtils.isEmpty(connectionInfo.getConfigProfileName())) {
             // Handlers. If config profile is set then props are saved there
@@ -1893,6 +1935,7 @@ public class DataSourceDescriptor
             connectionInfo.getHandlers().forEach(handler ->
                 handler.setSavePassword(false)
             );
+            setSavePassword(false);
             return;
         }
 
@@ -1907,11 +1950,17 @@ public class DataSourceDescriptor
         // Primary props
         var dbUserName = JSONUtils.getString(props, RegistryConstants.ATTR_USER);
         var dbPassword = JSONUtils.getString(props, RegistryConstants.ATTR_PASSWORD);
-        var dbAuthProperties = JSONUtils.deserializeStringMap(props, RegistryConstants.TAG_PROPERTIES);
+        var dbAuthProperties = JSONUtils.deserializeStringMapOrNull(props, RegistryConstants.TAG_PROPERTIES);
         connectionInfo.setUserName(dbUserName);
         connectionInfo.setUserPassword(dbPassword);
         // Additional auth props
         connectionInfo.setAuthProperties(dbAuthProperties);
+
+        boolean emptyDatabaseCredsSaved = CommonUtils.toBoolean(props.getOrDefault(RegistryConstants.ATTR_EMPTY_DATABASE_CREDENTIALS, false));
+        this.secretsContainsDatabaseCreds = props.containsKey(RegistryConstants.ATTR_USER)
+            || props.containsKey(RegistryConstants.ATTR_PASSWORD)
+            || props.containsKey(RegistryConstants.TAG_PROPERTIES)
+            || emptyDatabaseCredsSaved;
 
         // Handlers
         List<Map<String, Object>> handlerList = JSONUtils.getObjectList(props, RegistryConstants.TAG_HANDLERS);

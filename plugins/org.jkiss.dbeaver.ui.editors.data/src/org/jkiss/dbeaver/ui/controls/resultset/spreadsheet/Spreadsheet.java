@@ -18,13 +18,12 @@ package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.accessibility.Accessible;
-import org.eclipse.swt.accessibility.AccessibleEvent;
-import org.eclipse.swt.accessibility.AccessibleListener;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.MenuDetectEvent;
+import org.eclipse.swt.events.MenuDetectListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
@@ -143,6 +142,11 @@ public class Spreadsheet extends LightGrid implements Listener {
     @NotNull
     public SpreadsheetPresentation getPresentation() {
         return presentation;
+    }
+    
+    @NotNull
+    public IWorkbenchPartSite getSite() {
+        return site;
     }
 
     public Clipboard getClipboard() {
@@ -377,18 +381,48 @@ public class Spreadsheet extends LightGrid implements Listener {
     }
 
     private void hookContextMenu() {
+        addMenuDetectListener(new MenuDetectListener() {
+            @Override
+            public void menuDetected(MenuDetectEvent e) {
+                if (e.detail == SWT.MENU_KEYBOARD) {
+                    GridCell focusCell = getFocusCell();
+                    Object focusColumnElement = getFocusColumnElement();
+                    if (focusCell != null) {
+                        GridPos focusPos = cellToPos(focusCell);
+                        patchEventWithLocalRect(e, getCellBounds(focusPos.col, focusPos.row));
+                    } else if (focusColumnElement != null) {
+                        IGridColumn focusColumn = getColumnByElement(focusColumnElement);
+                        patchEventWithLocalRect(e, getColumnBounds(focusColumn.getIndex()));
+                    }
+                }
+            }
+            
+            private void patchEventWithLocalRect(MenuDetectEvent e, Rectangle r) {
+                Point p = toDisplay(new Point(r.x + r.width, r.y));
+                e.x = p.x;
+                e.y = p.y;
+            }
+        });
+        
         MenuManager menuMgr = new MenuManager(null, AbstractPresentation.RESULT_SET_PRESENTATION_CONTEXT_MENU);
         Menu menu = menuMgr.createContextMenu(this);
         menuMgr.addMenuListener(manager -> {
             // Let controller to provide it's own menu items
             GridPos focusPos = getFocusPos();
-            presentation.fillContextMenu(
-                manager,
-                isHoveringOnRowHeader() ? null :
-                    focusPos.col >= 0 && focusPos.col < getColumnCount() ? getColumn(focusPos.col) : null,
-                isHoveringOnHeader() ? null :
-                    (focusPos.row >= 0 && focusPos.row < gridRows.length ? gridRows[focusPos.row] : null)
-            );
+            if (isColumnContextMenuShouldBeShown()) {
+                boolean isRecordMode = presentation.getController().isRecordMode();
+                presentation.fillContextMenu(
+                    manager,
+                    isRecordMode ? null : getColumnByPosition(focusPos),
+                    isRecordMode ? getRowByPosition(focusPos) : null
+                );
+            } else {
+                presentation.fillContextMenu(
+                    manager,
+                    isHoveringOnRowHeader() ? null : getColumnByPosition(focusPos),
+                    isHoveringOnHeader() ? null : getRowByPosition(focusPos)
+                );
+            }
         });
         menuMgr.setRemoveAllWhenShown(true);
         super.setMenu(menu);
@@ -398,6 +432,22 @@ public class Spreadsheet extends LightGrid implements Listener {
         } else {
             site.registerContextMenu(menuMgr, presentation);
         }
+    }
+
+    /**
+     * Returns grid column by grid position
+     */
+    @Nullable
+    private GridColumn getColumnByPosition(GridPos focusPos) {
+        return focusPos.col >= 0 && focusPos.col < getColumnCount() ? getColumn(focusPos.col) : null;
+    }
+
+    /**
+     * Returns grid row by grid position
+     */
+    @Nullable
+    private IGridRow getRowByPosition(GridPos focusPos) {
+        return focusPos.row >= 0 && focusPos.row < gridRows.length ? gridRows[focusPos.row] : null;
     }
 
     public void cancelInlineEditor() {
@@ -469,33 +519,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         refreshData(true, false, fitValue);
     }
 
-    ////////////////////////////////////////////////////////////
-    // Accessibility support
-
     private void hookAccessibility() {
-        final Accessible accessible = getAccessible();
-
-        accessible.addAccessibleListener(new GridAccessibleListener());
-        addCursorChangeListener(event -> accessible.selectionChanged());
-    }
-
-    private static class GridAccessibleListener implements AccessibleListener {
-        @Override
-        public void getName(AccessibleEvent e) {
-            e.result = "Results grid";
-        }
-
-        @Override
-        public void getHelp(AccessibleEvent e) {
-        }
-
-        @Override
-        public void getKeyboardShortcut(AccessibleEvent e) {
-        }
-
-        @Override
-        public void getDescription(AccessibleEvent e) {
-            e.result = "Results grid";
-        }
+        SpreadsheetAccessibleAdapter.install(this);
     }
 }

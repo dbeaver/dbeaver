@@ -52,6 +52,7 @@ public class SQLServerConstants {
     public static final String PROP_SSL_KEYSTORE_PASSWORD = "sslKeyStorePassword";
     public static final String PROP_SSL_KEYSTORE_HOSTNAME = "sslKeyStoreHostname";
     public static final String PROP_SSL_TRUST_SERVER_CERTIFICATE = "sslTrustServerCertificate";
+    public static final String PROP_DRIVER_TRUST_SERVER_CERTIFICATE = "trustServerCertificate";
 
     public static final boolean USE_GSS = false;
 

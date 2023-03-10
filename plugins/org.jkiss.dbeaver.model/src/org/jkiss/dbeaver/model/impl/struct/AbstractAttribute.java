@@ -142,7 +142,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBSTypedObj
                 String modifiers = fullTypeName.substring(divPos + 1, divPos2);
                 int divPos3 = modifiers.indexOf(',');
                 if (divPos3 == -1) {
-                    maxLength = precision = CommonUtils.toInt(modifiers);
+                    maxLength = precision = CommonUtils.toInt(modifiers, -1);
                 } else {
                     precision= CommonUtils.toInt(modifiers.substring(0, divPos3).trim());
                     scale = CommonUtils.toInt(modifiers.substring(divPos3 + 1).trim());

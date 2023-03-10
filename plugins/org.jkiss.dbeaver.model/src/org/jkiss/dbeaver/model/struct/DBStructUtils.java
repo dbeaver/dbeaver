@@ -54,6 +54,9 @@ public final class DBStructUtils {
     private static final String REAL_DATA_TYPE = "real";
     private static final String DOUBLE_DATA_TYPE = "double";
     private static final String TEXT_DATA_TYPE = "text";
+    private static final String VARCHAR_DATA_TYPE = "varchar";
+    private static final String VARCHAR2_DATA_TYPE = "varchar2";
+    private static final int DEFAULT_VARCHAR_LENGTH = 100;
 
     @Nullable
     public static DBSEntityReferrer getEnumerableConstraint(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attribute) throws DBException {
@@ -276,7 +279,11 @@ public final class DBStructUtils {
         monitor.done();
     }
 
-    public static String mapTargetDataType(DBSObject objectContainer, DBSTypedObject srcTypedObject, boolean addModifiers) {
+    public static String mapTargetDataType(
+        @Nullable DBSObject objectContainer,
+        @NotNull DBSTypedObject srcTypedObject,
+        boolean addModifiers
+    ) {
         boolean isBindingWithEntityAttr = false;
         if (srcTypedObject instanceof DBDAttributeBinding) {
             DBDAttributeBinding attributeBinding = (DBDAttributeBinding) srcTypedObject;
@@ -297,7 +304,7 @@ public final class DBStructUtils {
         }
 
         {
-            SQLDataTypeConverter dataTypeConverter = objectContainer == null ? null :
+            SQLDataTypeConverter dataTypeConverter = objectContainer == null || objectContainer.getDataSource() == null ? null :
                 DBUtils.getAdapter(SQLDataTypeConverter.class, objectContainer.getDataSource().getSQLDialect());
             if (dataTypeConverter != null && srcTypedObject instanceof DBSObject) {
                 DBPDataSource srcDataSource = ((DBSObject) srcTypedObject).getDataSource();
@@ -323,6 +330,10 @@ public final class DBStructUtils {
             if (dataType == null && typeName.contains("(")) {
                 // It seems this data type has modifiers. Try to find without modifiers
                 dataType = dataTypeProvider.getLocalDataType(SQLUtils.stripColumnTypeModifiers(typeName));
+                if (dataType != null) {
+                    int startPos = typeName.indexOf("(");
+                    typeName = dataType + typeName.substring(startPos);
+                }
             }
             if (dataType == null && typeNameLower.equals(DOUBLE_DATA_TYPE)) {
                 dataType = dataTypeProvider.getLocalDataType("DOUBLE PRECISION");
@@ -395,12 +406,15 @@ public final class DBStructUtils {
                             }
                         }
                     } else if (targetType == null && dataKind == DBPDataKind.STRING) {
-                        if (typeNameLower.contains(TEXT_DATA_TYPE)) {
+                        if (typeNameLower.contains(TEXT_DATA_TYPE) || srcTypedObject.getMaxLength() <= 0) {
+                            // Search data types ending with "text" for the source data type including "text".
+                            // Like "longtext", "ntext", "mediumtext".
+                            // Other string data types can also be turned into the "text" data type if they have no length.
                             if (possibleTypes.containsKey(TEXT_DATA_TYPE)) {
                                 targetType = possibleTypes.get(TEXT_DATA_TYPE);
                             } else {
                                 for (Map.Entry<String, DBSDataType> type : possibleTypes.entrySet()) {
-                                    if (type.getKey().contains(TEXT_DATA_TYPE)) {
+                                    if (type.getKey().endsWith(TEXT_DATA_TYPE) && type.getValue().getDataKind() == DBPDataKind.STRING) {
                                         targetType = type.getValue();
                                         break;
                                     }
@@ -425,6 +439,10 @@ public final class DBStructUtils {
             }
             if (dataType != null) {
                 dataKind = dataType.getDataKind();
+                // Datatype caches ignore case, but we probably should use it with the original case
+                if (typeName.equalsIgnoreCase(dataType.getTypeName())) {
+                    typeName = dataType.getTypeName();
+                }
             }
         }
 
@@ -434,6 +452,10 @@ public final class DBStructUtils {
             String modifiers = dialect.getColumnTypeModifiers((DBPDataSource)objectContainer, srcTypedObject, typeName, dataKind);
             if (modifiers != null) {
                 typeName += modifiers;
+            } else if (VARCHAR_DATA_TYPE.equals(typeNameLower) || VARCHAR2_DATA_TYPE.equals(typeNameLower)) {
+                // Default max length value for varchar column, because many databases do not support varchar without modifiers.
+                // VARCHAR2 - is a special Oracle and Oracle-based databases case.
+                typeName += "(" + DEFAULT_VARCHAR_LENGTH + ")";
             }
         }
         return typeName;

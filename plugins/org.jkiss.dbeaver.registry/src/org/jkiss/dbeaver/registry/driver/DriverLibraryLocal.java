@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.net.URL;
@@ -35,6 +36,7 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * DriverLibraryLocal
@@ -91,7 +93,14 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
         // Try to use direct path
         String localFilePath = this.getLocalFilePath();
         if (DBWorkbench.isDistributed()) {
-            Path resolvedCache = driver.getWorkspaceStorageFolder().resolve(localFilePath);
+            Path resolvedCache;
+            List<DriverDescriptor.DriverFileInfo> driverFileInfos = driver.getResolvedFiles().get(this);
+            if (!CommonUtils.isEmpty(driverFileInfos) && driverFileInfos.size() == 1) {
+                DriverDescriptor.DriverFileInfo driverFileInfo = driverFileInfos.get(0);
+                resolvedCache = driver.getWorkspaceStorageFolder().resolve(driverFileInfo.getFile());
+            } else {
+                resolvedCache = driver.getWorkspaceStorageFolder().resolve(localFilePath);
+            }
             if (Files.exists(resolvedCache)) {
                 localFilePath = resolvedCache.toAbsolutePath().toString();
             }

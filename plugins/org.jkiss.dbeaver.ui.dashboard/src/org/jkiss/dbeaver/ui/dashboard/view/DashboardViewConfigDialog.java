@@ -63,7 +63,9 @@ public class DashboardViewConfigDialog extends BaseDialog {
                     }
                 });
             //connectOnActivationCheck.setEnabled(false);
-            Button separateConnectionCheck = UIUtils.createCheckbox(viewGroup, UIDashboardMessages.dialog_dashboard_view_config_group_viewcfg_checkbox_use_separate_conn, UIDashboardMessages.dialog_dashboard_view_config_group_viewcfg_checkbox_use_separate_conn_tooltip, viewConfiguration.isUseSeparateConnection(), 2);
+
+            // #4209 Dashboard: disable separate connection option (too aggressive)
+            /*Button separateConnectionCheck = UIUtils.createCheckbox(viewGroup, UIDashboardMessages.dialog_dashboard_view_config_group_viewcfg_checkbox_use_separate_conn, UIDashboardMessages.dialog_dashboard_view_config_group_viewcfg_checkbox_use_separate_conn_tooltip, viewConfiguration.isUseSeparateConnection(), 2);
             separateConnectionCheck
                 .addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -71,7 +73,7 @@ public class DashboardViewConfigDialog extends BaseDialog {
                         viewConfiguration.setUseSeparateConnection(((Button)e.widget).getSelection());
                     }
                 });
-            separateConnectionCheck.setEnabled(false);
+            separateConnectionCheck.setEnabled(false);*/
         }
 
         return parent;

@@ -4,7 +4,7 @@
 
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,11 +47,11 @@
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver"/>
             <property name="startupForegroundColor" value="000000"/>
-            <property name="versionInfoCoord" value="455,105"/>
+            <property name="versionInfoCoord" value="120,228"/>
             <property name="versionInfoSize" value="12"/>
-            <property name="versionInfoColor" value="255,255,255"/>
-            <property name="startupMessageRect" value="348,275,230,25"/>
-            <property name="startupProgressRect" value="348,260,230,10"/>
+            <property name="versionInfoColor" value="212,72,40"/>
+            <property name="startupMessageRect" value="22,6,157,25"/>
+            <property name="startupProgressRect" value="74,280,206,6"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
@@ -339,6 +339,10 @@
         <key commandId="org.eclipse.ui.help.dynamicHelp" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F1"/>
 
         <key commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand" contextId="org.eclipse.ui.contexts.window" sequence="CTRL+ALT+SHIFT+F" schemeId="org.jkiss.dbeaver.defaultKeyScheme"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.bindings">
+        <scheme id="org.jkiss.dbeaver.keyboardOnlyKeyScheme" parentId="org.jkiss.dbeaver.defaultKeyScheme" name="%keyboardOnlyKeyScheme.name" description="%keyboardOnlyKeyScheme.description"/>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">

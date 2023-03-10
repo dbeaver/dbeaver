@@ -164,7 +164,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     protected void addTaskConfigPages() {
         // If we are in task edit mode then add special first page.
         // Do not add it if this is an ew task wizard (because this page is added separately)
-        if (isTaskEditor()) {
+        if (isTaskEditor() && !currentTask.isTemporary()) {
             // Task editor. Add first page
             addPage(new TaskConfigurationWizardPageTask(getCurrentTask()));
             addPage(new TaskConfigurationWizardPageSettings(getCurrentTask()));

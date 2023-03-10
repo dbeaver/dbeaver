@@ -25,7 +25,9 @@ public class RMEvent {
 
     public enum Action {
         RESOURCE_DELETE,
-        RESOURCE_ADD
+        RESOURCE_ADD,
+        PROJECT_DELETE,
+        PROJECT_ADD
     }
 
     @NotNull
