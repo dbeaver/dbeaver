@@ -48,6 +48,7 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
     private final String id;
     private final String name;
     private final DBPImage icon;
+    private final DBPImage folderIcon;
     private final boolean managable;
     private final List<IContentType> contentTypes = new ArrayList<>();
     private final List<ObjectType> resourceTypes = new ArrayList<>();
@@ -61,6 +62,7 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        this.folderIcon = iconToImage(config.getAttribute("folderIcon"));
         this.managable = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_MANAGABLE));
         for (IConfigurationElement contentTypeBinding : ArrayUtils.safeArray(config.getChildren("contentTypeBinding"))) {
             String contentTypeId = contentTypeBinding.getAttribute("contentTypeId");
@@ -106,6 +108,11 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
     @Override
     public DBPImage getIcon() {
         return icon;
+    }
+
+    @Override
+    public DBPImage getFolderIcon() {
+        return folderIcon;
     }
 
     @Override
