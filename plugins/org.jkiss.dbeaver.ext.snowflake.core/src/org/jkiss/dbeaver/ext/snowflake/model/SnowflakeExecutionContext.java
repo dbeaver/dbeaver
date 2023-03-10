@@ -97,7 +97,7 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
     void setDefaultCatalog(DBRProgressMonitor monitor, @NotNull GenericCatalog catalog, @Nullable DBSObject schema, boolean force)
             throws DBCException {
         String catalogName = catalog.getName();
-        if (!force && catalogName.equals(activeDatabaseName)) {
+        if (!force && catalogName.equals(activeDatabaseName) && (schema == null || schema.getName().equals(activeSchemaName))) {
             return;
         }
         DBSObject oldActiveDatabase = getDefaultCatalog();
