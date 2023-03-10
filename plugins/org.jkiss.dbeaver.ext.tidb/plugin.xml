@@ -42,7 +42,7 @@
                                         <items label="%tree.constraint_columns.node.name" path="column" property="attributeReferences" navigable="false" inline="true" visibleIf="object.constraintType!='CHECK'"/>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys" visibleIf="object.dataSource.info.databaseProductVersion>='6.6.0'">
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys" visibleIf="object.dataSource.isServerVersionAtLeast(6,6)">
                                     <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
                                         <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
@@ -58,7 +58,7 @@
                                         <items label="Index columns" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true"/>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLPartition" label="%tree.partitions.node.name" icon="#partitions" description="Table partitions" visibleIf="object.dataSource.info.databaseProductVersion>='5.1.6'">
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLPartition" label="%tree.partitions.node.name" icon="#partitions" description="Table partitions">
                                     <items label="%tree.partition.node.name" path="partition" property="partitions" icon="#partition">
                                         <items label="%tree.subpartitions.node.name" itemLabel="%tree.subpartition.node.name" path="subpartition" property="subPartitions" navigable="false" inline="true"/>
                                     </items>
