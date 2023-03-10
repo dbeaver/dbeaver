@@ -34,7 +34,7 @@ public enum WSEventType {
         WSSessionLogUpdatedEvent.class
     ),
 
-    WEBSOCKET_CONNECTED("cb_websocket_connected", WSEventTopic.WEBSOCKET, WSSocketConnectedEvent.class),
+    SESSION_WEBSOCKET_CONNECTED("cb_session_websocket_connected", WSEventTopic.SESSION, WSSocketConnectedEvent.class),
 
     DATASOURCE_CREATED("cb_datasource_created", WSEventTopic.DATASOURCE, WSDataSourceEvent.class),
     DATASOURCE_UPDATED("cb_datasource_updated", WSEventTopic.DATASOURCE, WSDataSourceEvent.class),

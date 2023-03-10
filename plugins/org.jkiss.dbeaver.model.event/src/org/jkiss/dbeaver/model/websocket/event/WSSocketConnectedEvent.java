@@ -23,7 +23,7 @@ public class WSSocketConnectedEvent extends WSEvent {
     private final String applicationRunId;
 
     public WSSocketConnectedEvent(@NotNull String applicationRunId) {
-        super(WSEventType.WEBSOCKET_CONNECTED);
+        super(WSEventType.SESSION_WEBSOCKET_CONNECTED);
         this.applicationRunId = applicationRunId;
     }
 
