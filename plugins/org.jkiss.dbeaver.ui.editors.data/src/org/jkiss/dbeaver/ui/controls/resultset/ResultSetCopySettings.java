@@ -155,19 +155,19 @@ public class ResultSetCopySettings {
         this.copyColumnType = copyColumnType;
     }
 
-    public boolean isСopyColumnNotNull() {
+    public boolean isCopyColumnNotNull() {
         return copyColumnNotNull;
     }
 
-    public void setСopyColumnNotNull(boolean copyColumnNotNull) {
+    public void setCopyColumnNotNull(boolean copyColumnNotNull) {
         this.copyColumnNotNull = copyColumnNotNull;
     }
 
-    public boolean isСopyColumnDefault() {
+    public boolean isCopyColumnDefault() {
         return copyColumnDefault;
     }
 
-    public void setСopyColumnDefault(boolean copyColumnDefault) {
+    public void setCopyColumnDefault(boolean copyColumnDefault) {
         this.copyColumnDefault = copyColumnDefault;
     }
 

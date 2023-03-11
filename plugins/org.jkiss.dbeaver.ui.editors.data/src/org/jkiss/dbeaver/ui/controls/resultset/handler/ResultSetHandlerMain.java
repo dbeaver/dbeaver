@@ -348,7 +348,8 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
 
                 ResultSetCopySettings settings = new ResultSetCopySettings();
                 if (attrs.size() >= 1) {
-                    ResultSetHandlerCopySpecial.CopyColumnsConfigDialog configDialog = new ResultSetHandlerCopySpecial.CopyColumnsConfigDialog(activeShell, "CopyGridNamesOptionsDialog");
+                    ResultSetHandlerCopySpecial.CopyColumnsConfigDialog configDialog =
+                        new ResultSetHandlerCopySpecial.CopyColumnsConfigDialog(activeShell, "CopyGridNamesOptionsDialog");
                     if (configDialog.open() != IDialogConstants.OK_ID) {
                         return null;
                     }
@@ -369,24 +370,27 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                         buffer.append(DBUtils.getQuotedIdentifier(dataSource, colName));
                         if (settings.isCopyColumnType()) {
                             buffer.append(' ').append(attr.getTypeName());
-                            DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, attr.getEntityAttribute());
+                            DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class,
+                                attr.getEntityAttribute());
                             if (dataTypeProvider != null) {
                                 DBSDataType dataType = dataTypeProvider.getLocalDataType(attr.getTypeName());
                                 if (dataType != null) {
                                     DBPDataKind dataKind = dataType.getDataKind();
-                                    String modifiers = SQLUtils.getColumnTypeModifiers(attr.getDataSource(), attr, attr.getTypeName(), dataKind);
+                                    String modifiers = SQLUtils.getColumnTypeModifiers(attr.getDataSource(), attr,
+                                        attr.getTypeName(), dataKind);
                                     if (modifiers != null) {
                                         buffer.append(modifiers);
                                     }
                                 } 
                             }
                         }
-                        if (settings.isСopyColumnNotNull()) {
+                        if (settings.isCopyColumnNotNull()) {
                             if (attr.isRequired()) {
                                 buffer.append(" NOT NULL"); //$NON-NLS-1$
                             }
                         }
-                        if (settings.isСopyColumnDefault() && (attr.getEntityAttribute() != null) && (attr.getEntityAttribute().getDefaultValue() != null)) {
+                        if (settings.isCopyColumnDefault() && (attr.getEntityAttribute() != null) &&
+                                (attr.getEntityAttribute().getDefaultValue() != null)) {
                             buffer.append(" default ");
                             buffer.append(attr.getEntityAttribute().getDefaultValue());
                         }
@@ -419,7 +423,8 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             case IWorkbenchCommandConstants.EDIT_COPY:
                 ResultSetUtils.copyToClipboard(
                     presentation.copySelection(
-                        new ResultSetCopySettings(false, false, false, true, false, null, null, null, DBDDisplayFormat.EDIT, false, false, false)));
+                        new ResultSetCopySettings(false, false, false, true, false, null, null, null, DBDDisplayFormat.EDIT,
+                            false, false, false)));
                 break;
             case IWorkbenchCommandConstants.EDIT_PASTE:
                 if (presentation instanceof IResultSetEditor) {
@@ -429,7 +434,8 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             case IWorkbenchCommandConstants.EDIT_CUT:
                 ResultSetUtils.copyToClipboard(
                     presentation.copySelection(
-                        new ResultSetCopySettings(false, false, true, true, false, null, null, null, DBDDisplayFormat.EDIT, false, false, false))
+                        new ResultSetCopySettings(false, false, true, true, false, null, null, null, DBDDisplayFormat.EDIT,
+                            false, false, false))
                 );
                 break;
             case IWorkbenchCommandConstants.FILE_PRINT:
