@@ -52,7 +52,7 @@ public class ResultSetCopySettings {
             boolean copyColumnType,
             boolean copyColumnNotNull,
             boolean copyColumnDefault
-            ) {
+    ) {
         this.copyHeader = copyHeader;
         this.copyRowNumbers = copyRowNumbers;
         this.cut = cut;
