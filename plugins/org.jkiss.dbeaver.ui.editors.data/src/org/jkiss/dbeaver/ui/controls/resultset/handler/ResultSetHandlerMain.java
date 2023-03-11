@@ -46,7 +46,9 @@ import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -55,10 +57,13 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
@@ -342,8 +347,8 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 }
 
                 ResultSetCopySettings settings = new ResultSetCopySettings();
-                if (attrs.size() > 1) {
-                    ResultSetHandlerCopySpecial.CopyConfigDialog configDialog = new ResultSetHandlerCopySpecial.CopyConfigDialog(activeShell, "CopyGridNamesOptionsDialog");
+                if (attrs.size() >= 1) {
+                    ResultSetHandlerCopySpecial.CopyColumnsConfigDialog configDialog = new ResultSetHandlerCopySpecial.CopyColumnsConfigDialog(activeShell, "CopyGridNamesOptionsDialog");
                     if (configDialog.open() != IDialogConstants.OK_ID) {
                         return null;
                     }
@@ -362,6 +367,29 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                         buffer.append(colName);
                     } else {
                         buffer.append(DBUtils.getQuotedIdentifier(dataSource, colName));
+                        if (settings.isCopyColumnType()) {
+                            buffer.append(' ').append(attr.getTypeName());
+                            DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, attr.getEntityAttribute());
+                            if (dataTypeProvider != null) {
+                                DBSDataType dataType = dataTypeProvider.getLocalDataType(attr.getTypeName());
+                                if (dataType != null) {
+                                    DBPDataKind dataKind = dataType.getDataKind();
+                                    String modifiers = SQLUtils.getColumnTypeModifiers(attr.getDataSource(), attr, attr.getTypeName(), dataKind);
+                                    if (modifiers != null) {
+                                        buffer.append(modifiers);
+                                    }
+                                } 
+                            }
+                        }
+                        if (settings.isСopyColumnNotNull()) {
+                            if (attr.isRequired()) {
+                                buffer.append(" NOT NULL"); //$NON-NLS-1$
+                            }
+                        }
+                        if (settings.isСopyColumnDefault() && (attr.getEntityAttribute() != null) && (attr.getEntityAttribute().getDefaultValue() != null)) {
+                            buffer.append(" default ");
+                            buffer.append(attr.getEntityAttribute().getDefaultValue());
+                        }
                     }
                 }
 
@@ -391,7 +419,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             case IWorkbenchCommandConstants.EDIT_COPY:
                 ResultSetUtils.copyToClipboard(
                     presentation.copySelection(
-                        new ResultSetCopySettings(false, false, false, true, false, null, null, null, DBDDisplayFormat.EDIT)));
+                        new ResultSetCopySettings(false, false, false, true, false, null, null, null, DBDDisplayFormat.EDIT, false, false, false)));
                 break;
             case IWorkbenchCommandConstants.EDIT_PASTE:
                 if (presentation instanceof IResultSetEditor) {
@@ -401,7 +429,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             case IWorkbenchCommandConstants.EDIT_CUT:
                 ResultSetUtils.copyToClipboard(
                     presentation.copySelection(
-                        new ResultSetCopySettings(false, false, true, true, false, null, null, null, DBDDisplayFormat.EDIT))
+                        new ResultSetCopySettings(false, false, true, true, false, null, null, null, DBDDisplayFormat.EDIT, false, false, false))
                 );
                 break;
             case IWorkbenchCommandConstants.FILE_PRINT:

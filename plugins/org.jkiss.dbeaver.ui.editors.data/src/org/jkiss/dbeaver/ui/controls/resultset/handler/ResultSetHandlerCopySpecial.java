@@ -148,7 +148,87 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
             super.okPressed();
         }
     }
+    
+    public static class CopyColumnsConfigDialog extends BaseDialog {
 
+        static final String PARAM_COL_TYPE = "col_type";
+        static final String PARAM_COL_NOT_NULL = "col_not_null";
+        static final String PARAM_COL_DEFAULT = "col_default";
+        static final String PARAM_COL_DELIMITER = "delimiter";
+        
+        protected final IDialogSettings settings;
+
+        private Button copyTypesCheck;
+        private Button copyNotNullCheck;
+        private Button copyDefaultCheck;
+        private Combo colDelimCombo;
+        
+        protected ResultSetCopySettings copySettings;
+
+        protected CopyColumnsConfigDialog(Shell shell, String dialogId)
+        {
+            super(shell, ResultSetMessages.copy_special_options, null);
+            settings = UIUtils.getDialogSettings(dialogId);
+            copySettings = new ResultSetCopySettings();
+            copySettings.setСopyColumnNotNull(resizeHasOccurred);
+            copySettings.setColumnDelimiter("\t");
+            if (settings.get(PARAM_COL_TYPE) != null) {
+                copySettings.setCopyColumnType(settings.getBoolean(PARAM_COL_TYPE));
+            }
+            if (settings.get(PARAM_COL_NOT_NULL) != null) {
+                copySettings.setСopyColumnNotNull(settings.getBoolean(PARAM_COL_NOT_NULL));
+            }
+            if (settings.get(PARAM_COL_DEFAULT) != null) {
+                copySettings.setСopyColumnDefault(settings.getBoolean(PARAM_COL_DEFAULT));
+            }
+            if (settings.get(PARAM_COL_DELIMITER) != null) {
+                copySettings.setColumnDelimiter(settings.get(PARAM_COL_DELIMITER));
+            }
+        }
+
+        @Override
+        protected void configureShell(Shell newShell) {
+            super.configureShell(newShell);
+        }
+
+        @Override
+        protected Composite createDialogArea(Composite parent) {
+            Composite group = super.createDialogArea(parent);
+            ((GridLayout)group.getLayout()).numColumns = 2;
+
+            createControlsBefore(group);
+            
+            copyTypesCheck = UIUtils.createCheckbox(group, ResultSetMessages.copy_special_copy_column_type_text, null, copySettings.isCopyColumnType(), 2);
+            copyNotNullCheck = UIUtils.createCheckbox(group, ResultSetMessages.copy_special_copy_column_not_null_text, null, copySettings.isСopyColumnNotNull(), 2);
+            copyDefaultCheck = UIUtils.createCheckbox(group, ResultSetMessages.copy_special_copy_column_default_text, null, copySettings.isСopyColumnDefault(), 2);
+            colDelimCombo = UIUtils.createDelimiterCombo(group, ResultSetMessages.copy_special_column_delimiter, new String[] {"\t", ";", ","}, copySettings.getColumnDelimiter(), false);
+            createControlsAfter(group);
+            return group;
+        }
+
+        protected void createControlsAfter(Composite group) {
+
+        }
+
+        protected void createControlsBefore(Composite group) {
+
+        }
+
+        @Override
+        protected void okPressed() {
+            copySettings.setCopyColumnType(copyTypesCheck.getSelection());
+            copySettings.setСopyColumnNotNull(copyNotNullCheck.getSelection());
+            copySettings.setСopyColumnDefault(copyDefaultCheck.getSelection());
+            copySettings.setColumnDelimiter(CommonUtils.unescapeDisplayString(colDelimCombo.getText()));
+            
+            settings.put(PARAM_COL_TYPE, copySettings.isCopyColumnType());
+            settings.put(PARAM_COL_NOT_NULL, copySettings.isСopyColumnNotNull());
+            settings.put(PARAM_COL_DEFAULT, copySettings.isСopyColumnDefault());
+            settings.put(PARAM_COL_DELIMITER, copySettings.getColumnDelimiter());
+            super.okPressed();
+        }
+    }
+    
     private static class AdvancedCopyConfigDialog extends CopyConfigDialog {
 
         static final String PARAM_COPY_HEADER = "copyHeader";

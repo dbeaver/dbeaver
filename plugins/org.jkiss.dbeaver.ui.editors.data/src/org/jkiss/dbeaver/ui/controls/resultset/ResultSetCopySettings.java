@@ -32,7 +32,10 @@ public class ResultSetCopySettings {
     private String quoteString;
     private DBDDisplayFormat format;
     private boolean copyHTML;
-
+    private boolean copyColumnType;
+    private boolean copyColumnNotNull;
+    private boolean copyColumnDefault;
+    
     public ResultSetCopySettings() {
     }
 
@@ -45,7 +48,11 @@ public class ResultSetCopySettings {
             String columnDelimiter,
             String rowDelimiter,
             String quoteString,
-            DBDDisplayFormat format) {
+            DBDDisplayFormat format,
+            boolean copyColumnType,
+            boolean copyColumnNotNull,
+            boolean copyColumnDefault
+            ) {
         this.copyHeader = copyHeader;
         this.copyRowNumbers = copyRowNumbers;
         this.cut = cut;
@@ -55,6 +62,9 @@ public class ResultSetCopySettings {
         this.rowDelimiter = rowDelimiter;
         this.quoteString = quoteString == null ? "\"" : quoteString;
         this.format = format;
+        this.copyColumnType = copyColumnType;
+        this.copyColumnNotNull = copyColumnNotNull;
+        this.copyColumnDefault = copyColumnDefault;
     }
 
     public boolean isCopyHeader() {
@@ -136,4 +146,29 @@ public class ResultSetCopySettings {
     public void setCopyHTML(boolean copyHTML) {
         this.copyHTML = copyHTML;
     }
+    
+    public boolean isCopyColumnType() {
+        return copyColumnType;
+    }
+
+    public void setCopyColumnType(boolean copyColumnType) {
+        this.copyColumnType = copyColumnType;
+    }
+
+    public boolean isСopyColumnNotNull() {
+        return copyColumnNotNull;
+    }
+
+    public void setСopyColumnNotNull(boolean copyColumnNotNull) {
+        this.copyColumnNotNull = copyColumnNotNull;
+    }
+
+    public boolean isСopyColumnDefault() {
+        return copyColumnDefault;
+    }
+
+    public void setСopyColumnDefault(boolean copyColumnDefault) {
+        this.copyColumnDefault = copyColumnDefault;
+    }
+
 }

@@ -414,6 +414,9 @@ public class ResultSetMessages extends NLS {
 
     public static String copy_special_options;
     public static String copy_special_column_delimiter;
+    public static String copy_special_copy_column_type_text;
+    public static String copy_special_copy_column_not_null_text;
+    public static String copy_special_copy_column_default_text;
     public static String copy_special_row_delimiter;
     public static String copy_special_quote_character;
     public static String copy_special_copy_header_text;
