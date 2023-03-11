@@ -30,7 +30,7 @@
                 icon="icons/tidb_icon.png"
                 label="TiDB data source"
                 path="tidb">
-                <folder type="org.jkiss.dbeaver.ext.tidb.mysql.model.TiDBMySQLCatalog" label="%tree.databases.node.name" icon="#folder_schema" description="%tree.databases.node.tip">
+                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog" label="%tree.databases.node.name" icon="#folder_schema" description="%tree.databases.node.tip">
                     <items label="%tree.database.node.name" path="database" property="catalogs" icon="#database">
                         <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
                             <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
@@ -164,8 +164,8 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.objectManager">
-        <manager class="org.jkiss.dbeaver.ext.tidb.mysql.model.TiDBMySQLDatabaseManager"
-            objectType="org.jkiss.dbeaver.ext.tidb.mysql.model.TiDBMySQLCatalog"
+        <manager class="org.jkiss.dbeaver.ext.mysql.model.MySQLDatabaseManager"
+            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"
             label="%manager.catalog.name"/>
     </extension>
 
