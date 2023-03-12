@@ -62,6 +62,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     private ISpellingProblemCollector spellingProblemCollector;
     private SpellingService spellingService;
     private SpellingContext spellingContext;
+    private boolean initialized;
 
     public SQLReconcilingStrategy(SQLEditorBase editor) {
         this.editor = editor;
@@ -121,7 +122,10 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
     @Override
     public void initialReconcile() {
-        reconcile(0, document.getLength(), true);
+        if (!initialized) {
+            initialized = true;
+            reconcile(0, document.getLength(), true);
+        }
     }
 
     private Set<Integer> getSavedCollapsedAnnotationsOffsets() {
@@ -190,7 +194,11 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         if (document == null) {
             return;
         }
-        reconcile(0, document.getLength(), true);
+        if (!initialized) {
+            initialReconcile();
+        } else {
+            reconcile(0, document.getLength(), true);
+        }
     }
 
     private void reconcile(int damagedRegionOffset, int damagedRegionLength, boolean restoreCollapsedAnnotations) {

@@ -2760,10 +2760,6 @@ public class SQLEditor extends SQLEditorBase implements
             bottomBarMan.getControl().setBackground(bgColor);
         }
 
-        if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
-            ((SQLEditorSourceViewerConfiguration) getSourceViewerConfiguration()).onDataSourceChange();
-        }
-
         DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null) {
             EditorUtils.setInputDataSource(getEditorInput(), new SQLNavigatorContext(executionContext));
@@ -2775,6 +2771,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (syntaxLoaded && lastExecutionContext == executionContext) {
             return;
         }
+
         if (curResultsContainer != null) {
             ResultSetViewer rsv = curResultsContainer.getResultSetController();
             if (rsv != null) {
