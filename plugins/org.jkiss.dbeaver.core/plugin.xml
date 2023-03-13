@@ -1280,4 +1280,9 @@
                 group="%confirmation.group.general.actions"/>
     </extension>
 
+    <extension point="org.eclipse.ui.preferencePages">
+        <page category="org.jkiss.dbeaver.preferences.main.common" class="org.jkiss.dbeaver.ui.preferences.PrefPageMenuCustomization" id="org.jkiss.dbeaver.preferences.main.menu.customization" name="Menu Customization" />
+    </extension>
+
+
 </plugin>
