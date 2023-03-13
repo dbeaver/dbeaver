@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.model.net.ssh;
 
-import com.jcraft.jsch.agentproxy.AgentProxy;
-import com.jcraft.jsch.agentproxy.connector.PageantConnector;
-import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector;
-import com.jcraft.jsch.agentproxy.usocket.JNAUSocketFactory;
+import com.jcraft.jsch.AgentConnector;
+import com.jcraft.jsch.AgentIdentityRepository;
+import com.jcraft.jsch.Identity;
+import com.jcraft.jsch.JUnixSocketFactory;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -38,9 +38,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * SSH tunnel
@@ -54,7 +52,7 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
 
     protected transient DBWHandlerConfiguration savedConfiguration;
     protected transient DBPConnectionConfiguration savedConnectionInfo;
-    protected AgentProxy agentProxy = null;
+    protected AgentConnector agentConnector;
 
     @Override
     public DBPConnectionConfiguration initTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
@@ -108,22 +106,22 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         for (SSHHostConfiguration host : hostConfigurations) {
             if (host.getAuthConfiguration().getType() == SSHConstants.AuthType.AGENT) {
                 try {
-                    agentProxy = new AgentProxy(new PageantConnector());
+                    agentConnector = new com.jcraft.jsch.PageantConnector();
                     log.debug("SSH: Connected with pageant");
                 } catch (Exception e) {
                     log.debug("pageant connect exception", e);
                 }
 
-                if (agentProxy == null) {
+                if (agentConnector == null) {
                     try {
-                        agentProxy = new AgentProxy(new SSHAgentConnector(new JNAUSocketFactory()));
+                        agentConnector = new com.jcraft.jsch.SSHAgentConnector(new JUnixSocketFactory());
                         log.debug("SSH: Connected with ssh-agent");
                     } catch (Exception e) {
                         log.debug("ssh-agent connection exception", e);
                     }
                 }
 
-                if (agentProxy == null) {
+                if (agentConnector == null) {
                     throw new DBException("Unable to initialize SSH agent");
                 }
 
@@ -153,20 +151,8 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
     }
 
     @NotNull
-    public byte[] agentSign(@NotNull byte [] blob, @NotNull byte[] data) {
-        return agentProxy.sign(blob, data);
-    }
-
-    @NotNull
-    protected List<SSHAgentIdentity> getAgentData() {
-        return Arrays.stream(agentProxy.getIdentities())
-            .map(i -> {
-                SSHAgentIdentity id = new SSHAgentIdentity();
-                id.setBlob(i.getBlob());
-                id.setComment(i.getComment());
-                return id;
-            })
-            .collect(Collectors.toList());
+    protected List<Identity> getAgentData() {
+        return new AgentIdentityRepository(agentConnector).getIdentities();
     }
 
     protected abstract void setupTunnel(

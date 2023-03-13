@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.net.ssh;
 
+import com.jcraft.jsch.Identity;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.connection.channel.direct.Parameters;
@@ -122,8 +123,8 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
                         break;
                     case AGENT: {
                         final List<AuthMethod> methods = new ArrayList<>();
-                        for (SSHAgentIdentity identity : getAgentData()) {
-                            methods.add(new DBeaverAuthAgent(this, identity));
+                        for (Identity identity : getAgentData()) {
+                            methods.add(new DBeaverAuthAgent(identity));
                         }
                         client.auth(host.getUsername(), methods);
                         break;
