@@ -62,16 +62,22 @@ public class DBNModel implements IResourceChangeListener {
     private static final Log log = Log.getLog(DBNModel.class);
 
     private static class NodePath {
-        DBNNode.NodePathType type;
-        List<String> pathItems;
+        final DBNNode.NodePathType type;
+        final List<String> pathItems;
+        final boolean isLegacyFormat;
 
-        NodePath(DBNNode.NodePathType type, List<String> pathItems) {
+        NodePath(DBNNode.NodePathType type, List<String> pathItems, boolean isLegacyFormat) {
             this.type = type;
             this.pathItems = pathItems;
+            this.isLegacyFormat = isLegacyFormat;
         }
 
         public String first() {
             return pathItems.isEmpty() ? null : pathItems.get(0);
+        }
+
+        public String second() {
+            return pathItems.size() < 2 ? null : pathItems.get(1);
         }
 
         @Override
@@ -261,6 +267,7 @@ public class DBNModel implements IResourceChangeListener {
     @NotNull
     private NodePath getNodePath(@NotNull String path) {
         DBNNode.NodePathType nodeType = DBNNode.NodePathType.other;
+        boolean isLegacyFormat = false;
         for (DBNNode.NodePathType type : DBNNode.NodePathType.values()) {
             String prefix = type.getPrefix();
             String legacyPrefix = type.getLegacyPrefix();
@@ -271,15 +278,16 @@ public class DBNModel implements IResourceChangeListener {
             } else if (path.startsWith(legacyPrefix)) {
                 path = path.substring(legacyPrefix.length());
                 nodeType = type;
+                isLegacyFormat = true;
                 break;
             }
         }
-        return new NodePath(nodeType, CommonUtils.splitString(path, '/'));
+        return new NodePath(nodeType, CommonUtils.splitString(path, '/'), isLegacyFormat);
     }
 
     @Nullable
     public DBNDataSource getDataSourceByPath(DBPProject project, String path) {
-        String dsId = getNodePath(path).first();
+        String dsId = getDataSourceIdFromNodePath(getNodePath(path));
         DBNProject projectNode = getRoot().getProjectNode(project);
         if (projectNode != null) {
             DBNDataSource dataSource = projectNode.getDatabases().getDataSource(dsId);
@@ -288,6 +296,16 @@ public class DBNModel implements IResourceChangeListener {
             }
         }
         return null;
+    }
+
+    @Nullable
+    private static String getDataSourceIdFromNodePath(@NotNull NodePath nodePath) {
+        if (nodePath.isLegacyFormat) {
+            // backward compatibility, before  path contained only datasource id
+            return nodePath.first();
+        }
+        // now contains project id and datasource id
+        return nodePath.second();
     }
 
     /**
@@ -304,16 +322,17 @@ public class DBNModel implements IResourceChangeListener {
                     hasLazyProjects = true;
                     continue;
                 }
-                DBNDataSource curNode = projectNode.getDatabases().getDataSource(nodePath.first());
+                DBNDataSource curNode = projectNode.getDatabases().getDataSource(getDataSourceIdFromNodePath(nodePath));
                 if (curNode != null) {
                     return findNodeByPath(monitor, nodePath, curNode, 1);
                 }
             }
             if (hasLazyProjects) {
-                // No try to search in uninitialized proejcts
+                // No try to search in uninitialized projects
                 for (DBNProject projectNode : getRoot().getProjects()) {
                     if (!projectNode.getProject().isRegistryLoaded()) {
-                        DBNDataSource curNode = projectNode.getDatabases().getDataSource(nodePath.first());
+                        String dsId = getDataSourceIdFromNodePath(nodePath);
+                        DBNDataSource curNode = projectNode.getDatabases().getDataSource(dsId);
                         if (curNode != null) {
                             return findNodeByPath(monitor, nodePath, curNode, 1);
                         }
@@ -365,7 +384,8 @@ public class DBNModel implements IResourceChangeListener {
         DBNNode curNode;
         switch (nodePath.type) {
             case database:
-                curNode = projectNode.getDatabases().getDataSource(nodePath.first());
+                String dsId = getDataSourceIdFromNodePath(nodePath);
+                curNode = projectNode.getDatabases().getDataSource(dsId);
                 break;
             case folder:
                 curNode = projectNode.getDatabases();
