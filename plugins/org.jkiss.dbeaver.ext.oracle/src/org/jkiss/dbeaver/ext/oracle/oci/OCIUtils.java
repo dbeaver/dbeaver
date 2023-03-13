@@ -63,11 +63,17 @@ public class OCIUtils
         return oraHomes;
     }
     
+    /** 
+     * Return first element of oraHomes, or null
+     */
     public static OracleHomeDescriptor getDefaultOraHome() {
         List<OracleHomeDescriptor> oraHomes = getOraHomes();
         return oraHomes.isEmpty() ? null : oraHomes.get(0);
     }
     
+    /** 
+     * Return path to first element of oraHomes, or null
+     */
     public static File getDefaultOraHomePath() {
         OracleHomeDescriptor defaultOraHome = getDefaultOraHome();
         return defaultOraHome == null ? null : defaultOraHome.getPath();

@@ -246,7 +246,7 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
             return connectionType;
         }
 
-        public void setOsAuth(OracleConstants.ConnectionType connectionType) {
+        public void setConnectionType(OracleConstants.ConnectionType connectionType) {
             this.connectionType = connectionType;
         }
 
@@ -276,9 +276,12 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
 
                     // database name should be set to network alias as with connections
                     // created within dbeaver
-                    String dbName = isTnsConnection ? info.getUrl() : CommonUtils.isEmpty(info.getSID()) ? info.getServiceName() : info.getSID();
+                    String dbName = isTnsConnection ? info.getUrl() 
+                        : CommonUtils.isEmpty(info.getSID()) ? info.getServiceName() : info.getSID();
 
-                    ImportConnectionInfo connectionInfo = new ImportConnectionInfo(oraDriver, null, conn.getName(), url, info.getHost(), info.getPort(), dbName, info.getUser(), null);
+                    ImportConnectionInfo connectionInfo = new ImportConnectionInfo(
+                            oraDriver, null, conn.getName(), url, info.getHost(), info.getPort(), dbName, info.getUser(), null
+                        );
                     if (!CommonUtils.isEmpty(info.getSID())) {
                         connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SID.name());
                     } else if (!CommonUtils.isEmpty(info.getServiceName())) {
@@ -368,7 +371,7 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
         url.append("jdbc:oracle:thin:@");
 
         // look for tnsNames
-        Map<String,String> tnsNames = OCIUtils.readTnsNames(OCIUtils.getDefaultOraHomePath(), false);
+        Map<String, String> tnsNames = OCIUtils.readTnsNames(OCIUtils.getDefaultOraHomePath(), false);
         // if not found, check tnsAdmin
         if (tnsNames == null) {
             tnsNames = OCIUtils.readTnsNames(null, true);
