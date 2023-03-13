@@ -46,13 +46,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.*;
+import org.jkiss.dbeaver.model.qm.filters.QMCursorFilter;
 import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -1031,16 +1031,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     }
 
     private DBPDataSourceContainer getDataSourceContainer(QMMStatementExecuteInfo stmtExec) {
-        DBPDataSourceContainer dsContainer = null;
         QMMConnectionInfo session = stmtExec.getStatement().getConnection();
-        DBPProject project = session.getProject();
+        var projectId = session.getProjectInfo().getId();
         String containerId = session.getContainerId();
-        if (project != null) {
-            dsContainer = project.getDataSourceRegistry().getDataSource(containerId);
-        } else {
-            dsContainer = DBUtils.findDataSource(containerId);
-        }
-        return dsContainer;
+        return DBUtils.findDataSource(projectId, containerId);
     }
 
     private class EventViewDialog extends BaseSQLDialog {
@@ -1200,7 +1194,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 } else {
                     monitor.subTask("Load all queries"); //$NON-NLS-1$
                 }
-                try (QMEventCursor cursor = eventBrowser.getQueryHistoryCursor(criteria, filter != null ? filter : (useDefaultFilter ? defaultFilter : null))) {
+                var cursorFilter = new QMCursorFilter(criteria, filter != null ? filter : (useDefaultFilter ? defaultFilter : null));
+                try (QMEventCursor cursor = eventBrowser.getQueryHistoryCursor(cursorFilter)) {
                     while (events.size() < entriesPerPage && cursor.hasNextEvent(monitor)) {
                         if (monitor.isCanceled()) {
                             break;

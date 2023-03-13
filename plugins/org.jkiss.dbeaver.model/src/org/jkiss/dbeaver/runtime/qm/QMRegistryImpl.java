@@ -17,11 +17,10 @@
 package org.jkiss.dbeaver.runtime.qm;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.qm.*;
-import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
+import org.jkiss.dbeaver.model.qm.filters.QMCursorFilter;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -176,12 +175,13 @@ public class QMRegistryImpl implements QMRegistry {
         @NotNull
         @Override
         public QMEventCursor getQueryHistoryCursor(
-            @NotNull QMEventCriteria criteria,
-            @Nullable QMEventFilter filter)
+            @NotNull QMCursorFilter cursorFilter)
             throws DBException
         {
             List<QMMetaEvent> pastEvents = metaHandler.getPastEvents();
             Collections.reverse(pastEvents);
+            var criteria = cursorFilter.getCriteria();
+            var filter = cursorFilter.getFilter();
             if (criteria.getObjectTypes() != null || criteria.getQueryTypes() != null) {
                 // Filter by query type and object type
                 for (Iterator<QMMetaEvent> iter = pastEvents.iterator(); iter.hasNext(); ) {

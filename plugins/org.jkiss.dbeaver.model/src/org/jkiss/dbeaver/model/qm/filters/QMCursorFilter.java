@@ -14,20 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.qm.filters;
 
-package org.jkiss.dbeaver.model.qm;
+import org.jkiss.dbeaver.model.qm.QMEventFilter;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.qm.filters.QMCursorFilter;
+public class QMCursorFilter {
+    private final QMEventCriteria criteria;
+    private final QMEventFilter filter;
 
-/**
- * Query manager history
- */
-public interface QMEventBrowser {
+    public QMCursorFilter(QMEventCriteria criteria, QMEventFilter filter) {
+        this.criteria = criteria;
+        this.filter = filter;
+    }
 
-    @NotNull
-    QMEventCursor getQueryHistoryCursor(@NotNull QMCursorFilter cursorFilter)
-        throws DBException;
+    public QMEventCriteria getCriteria() {
+        return criteria;
+    }
 
+    public QMEventFilter getFilter() {
+        return filter;
+    }
 }

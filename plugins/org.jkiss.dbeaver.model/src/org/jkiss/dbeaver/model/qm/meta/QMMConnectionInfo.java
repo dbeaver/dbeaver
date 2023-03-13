@@ -17,62 +17,50 @@
 package org.jkiss.dbeaver.model.qm.meta;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * Data source information
  */
 public class QMMConnectionInfo extends QMMObject {
 
-    private final DBPProject project;
+    private final QMMProjectInfo projectInfo;
     private final String containerId;
-    private final String driverId;
-    private UUID projectId;
-    private String projectName;
-    private String projectPath;
-    private boolean isAnonymousProject;
     private String containerName;
-    @Nullable
-    private DBPConnectionConfiguration connectionConfiguration;
+    private final String driverId;
+    private String connectionUserName;
+    private String connectionUrl;
     private String instanceId;
     private String contextName;
     @Nullable
-    private SQLDialect sqlDialect;
+    private transient SQLDialect sqlDialect;
     private boolean transactional;
 
-    private QMMStatementInfo statementStack;
-    private QMMStatementExecuteInfo executionStack;
-    private QMMTransactionInfo transaction;
+    private transient QMMStatementInfo statementStack;
+    private transient QMMStatementExecuteInfo executionStack;
+    private transient QMMTransactionInfo transaction;
     //private Throwable stack;
 
     public QMMConnectionInfo(DBCExecutionContext context, boolean transactional) {
-        this.project = context.getDataSource().getContainer().getProject();
+        super(QMMetaObjectType.CONNECTION_INFO);
         this.containerId = context.getDataSource().getContainer().getId();
         this.driverId = context.getDataSource().getContainer().getDriver().getFullId();
 
+        this.projectInfo = new QMMProjectInfo(context.getDataSource().getContainer().getProject());
         initFromContext(context, transactional);
     }
 
     private QMMConnectionInfo(Builder builder) {
-        super(builder.openTime, builder.closeTime);
-        project = builder.project;
-        projectId = builder.projectId;
-        projectName = builder.projectName;
-        projectPath = builder.projectPath;
-        isAnonymousProject = builder.isAnonymousProject;
+        super(QMMetaObjectType.CONNECTION_INFO, builder.openTime, builder.closeTime);
+        projectInfo = builder.projectInfo;
         containerId = builder.containerId;
         driverId = builder.driverId;
         containerName = builder.containerName;
-        connectionConfiguration = builder.connectionConfiguration;
+        connectionUserName = builder.connectionUserName;
+        connectionUrl = builder.connectionUrl;
         instanceId = builder.instanceId;
         contextName = builder.contextName;
         sqlDialect = builder.sqlDialect;
@@ -84,7 +72,9 @@ public class QMMConnectionInfo extends QMMObject {
 
     private void initFromContext(DBCExecutionContext context, boolean transactional) {
         this.containerName = context.getDataSource().getContainer().getName();
-        this.connectionConfiguration = context.getDataSource().getContainer().getConnectionConfiguration();
+        var connectionConfiguration = context.getDataSource().getContainer().getConnectionConfiguration();
+        this.connectionUserName = connectionConfiguration.getUserName();
+        this.connectionUrl = connectionConfiguration.getUrl();
         this.instanceId = context.getOwnerInstance().getName();
         this.contextName = context.getContextName();
         this.sqlDialect = context.getDataSource().getSQLDialect();
@@ -105,12 +95,13 @@ public class QMMConnectionInfo extends QMMObject {
         String contextName,
         boolean transactional)
     {
-        super(openTime, closeTime);
-        this.project = null;
+        super(QMMetaObjectType.CONNECTION_INFO, openTime, closeTime);
+        this.projectInfo = null;
         this.containerId = containerId;
         this.containerName = containerName;
         this.driverId = driverId;
-        this.connectionConfiguration = connectionConfiguration;
+        this.connectionUserName = connectionConfiguration.getUserName();
+        this.connectionUrl = connectionConfiguration.getUrl();
         this.instanceId = instanceID;
         this.contextName = contextName;
         this.transactional = transactional;
@@ -144,79 +135,13 @@ public class QMMConnectionInfo extends QMMObject {
     }
 
     @Override
-    public ObjectType getObjectType() {
-        return ObjectType.ConnectionInfo;
+    public QMMetaObjectType getObjectType() {
+        return QMMetaObjectType.CONNECTION_INFO;
     }
 
     @Override
     public QMMConnectionInfo getConnection() {
         return this;
-    }
-
-    @Override
-    public Map<String, Object> toMap() {
-        Map<String, Object> serializedConnectionInfo = new LinkedHashMap<>();
-        serializedConnectionInfo.put("containerId", getContainerId());
-        serializedConnectionInfo.put("containerName", getContainerName());
-        serializedConnectionInfo.put("driverId", getDriverId());
-        serializedConnectionInfo.put("instanceId", getInstanceId());
-        serializedConnectionInfo.put("contextName", getContextName());
-        serializedConnectionInfo.put("openTime", getOpenTime());
-        serializedConnectionInfo.put("closeTime", getCloseTime());
-        if (connectionConfiguration != null) {
-            serializedConnectionInfo.put("connectionUserName", connectionConfiguration.getUserName());
-            serializedConnectionInfo.put("connectionURL", connectionConfiguration.getUrl());
-        }
-        Map<String, Object> project = new LinkedHashMap<>();
-        if (getProject() != null) {
-            project.put("id", getProject().getProjectID());
-            project.put("name", getProject().getName());
-            project.put("path", getProject().getAbsolutePath().toString());
-            var projectSession = getProject()
-                .getSessionContext()
-                .findSpaceSession(getProject());
-            boolean isAnonymousProject = projectSession == null || projectSession.getSessionPrincipal() == null;
-            project.put("isAnonymous", isAnonymousProject);
-        }
-        serializedConnectionInfo.put("project", project);
-
-        return serializedConnectionInfo;
-    }
-
-    public static QMMConnectionInfo fromMap(Map<String, Object> objectMap) {
-        String containerId = CommonUtils.toString(objectMap.get("containerId"));
-        String containerName = CommonUtils.toString(objectMap.get("containerName"));
-        String driverId = CommonUtils.toString(objectMap.get("driverId"));
-        String instanceId = CommonUtils.toString(objectMap.get("instanceId"));
-        String contextName = CommonUtils.toString(objectMap.get("contextName"));
-        long openTime = CommonUtils.toLong(objectMap.get("openTime"));
-        long closeTime = CommonUtils.toLong(objectMap.get("closeTime"));
-        //Connection configuration
-        String connectionUserName = CommonUtils.toString(objectMap.get("connectionUserName"));
-        String connectionURL = CommonUtils.toString(objectMap.get("connectionURL"));
-        DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
-        configuration.setUserName(connectionUserName);
-        configuration.setUrl(connectionURL);
-        //Project information
-        Map<String, Object> project = JSONUtils.getObject(objectMap, "project");
-        UUID projectId = project.get("id") == null ? null : UUID.fromString(CommonUtils.toString(project.get("id")));
-        String projectName = CommonUtils.toString(project.get("name"));
-        String projectPath = CommonUtils.toString(project.get("path"));
-        boolean isAnonymous = CommonUtils.toBoolean(project.get("isAnonymous"));
-        return builder()
-            .setContainerId(containerId)
-            .setContainerName(containerName)
-            .setDriverId(driverId)
-            .setInstanceId(instanceId)
-            .setContextName(contextName)
-            .setConnectionConfiguration(configuration)
-            .setOpenTime(openTime)
-            .setCloseTime(closeTime)
-            .setProjectId(projectId)
-            .setProjectName(projectName)
-            .setProjectPath(projectPath)
-            .setIsAnonymousProject(isAnonymous)
-            .build();
     }
 
     public QMMTransactionInfo changeTransactional(boolean transactional) {
@@ -354,8 +279,8 @@ public class QMMConnectionInfo extends QMMObject {
         return exec;
     }
 
-    public DBPProject getProject() {
-        return project;
+    public QMMProjectInfo getProjectInfo() {
+        return projectInfo;
     }
 
     public String getContainerId() {
@@ -368,11 +293,6 @@ public class QMMConnectionInfo extends QMMObject {
 
     public String getDriverId() {
         return driverId;
-    }
-
-    @Nullable
-    public DBPConnectionConfiguration getConnectionConfiguration() {
-        return connectionConfiguration;
     }
 
     public String getInstanceId() {
@@ -402,6 +322,14 @@ public class QMMConnectionInfo extends QMMObject {
         return sqlDialect;
     }
 
+    public String getConnectionUserName() {
+        return connectionUserName;
+    }
+
+    public String getConnectionUrl() {
+        return connectionUrl;
+    }
+
     @Override
     public String toString()
     {
@@ -419,36 +347,17 @@ public class QMMConnectionInfo extends QMMObject {
             CommonUtils.equalObjects(contextName, si.contextName);
     }
 
-    public UUID getProjectId() {
-        return projectId;
-    }
-
-    public String getProjectName() {
-        return projectName;
-    }
-
-    public String getProjectPath() {
-        return projectPath;
-    }
-
     public static Builder builder() {
         return new Builder();
     }
 
-    public boolean isAnonymousProject() {
-        return isAnonymousProject;
-    }
-
-    private static final class Builder {
-        private DBPProject project;
-        private UUID projectId;
-        private String projectName;
-        private String projectPath;
-        private boolean isAnonymousProject;
+    public static final class Builder {
+        private QMMProjectInfo projectInfo;
         private String containerId;
         private String driverId;
         private String containerName;
-        private DBPConnectionConfiguration connectionConfiguration;
+        private String connectionUserName;
+        private String connectionUrl;
         private String instanceId;
         private long openTime;
         private long closeTime;
@@ -462,28 +371,8 @@ public class QMMConnectionInfo extends QMMObject {
         public Builder() {
         }
 
-        public Builder setProject(DBPProject project) {
-            this.project = project;
-            return this;
-        }
-
-        public Builder setProjectId(UUID projectId) {
-            this.projectId = projectId;
-            return this;
-        }
-
-        public Builder setProjectName(String projectName) {
-            this.projectName = projectName;
-            return this;
-        }
-
-        public Builder setProjectPath(String projectPath) {
-            this.projectPath = projectPath;
-            return this;
-        }
-
-        public Builder setIsAnonymousProject(boolean isAnonymousProject) {
-            this.isAnonymousProject = isAnonymousProject;
+        public Builder setProjectInfo(QMMProjectInfo projectInfo) {
+            this.projectInfo = projectInfo;
             return this;
         }
 
@@ -502,8 +391,13 @@ public class QMMConnectionInfo extends QMMObject {
             return this;
         }
 
-        public Builder setConnectionConfiguration(DBPConnectionConfiguration connectionConfiguration) {
-            this.connectionConfiguration = connectionConfiguration;
+        public Builder setConnectionUserName(String connectionUserName) {
+            this.connectionUserName = connectionUserName;
+            return this;
+        }
+
+        public Builder setConnectionUrl(String url) {
+            this.connectionUrl = url;
             return this;
         }
 

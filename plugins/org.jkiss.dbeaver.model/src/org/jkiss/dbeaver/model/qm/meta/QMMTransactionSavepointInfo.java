@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.qm.meta;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 
 import java.util.Iterator;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
 /**
@@ -37,6 +36,7 @@ public class QMMTransactionSavepointInfo extends QMMObject {
 
     QMMTransactionSavepointInfo(QMMTransactionInfo transaction, DBCSavepoint reference, String name, QMMTransactionSavepointInfo previous)
     {
+        super(QMMetaObjectType.TRANSACTION_SAVEPOINT_INFO);
         this.transaction = transaction;
         this.reference = reference;
         this.name = name;
@@ -141,8 +141,8 @@ public class QMMTransactionSavepointInfo extends QMMObject {
     }
 
     @Override
-    public ObjectType getObjectType() {
-        return ObjectType.TransactionSavepointInfo;
+    public QMMetaObjectType getObjectType() {
+        return QMMetaObjectType.TRANSACTION_SAVEPOINT_INFO;
     }
 
     @Override
@@ -150,8 +150,4 @@ public class QMMTransactionSavepointInfo extends QMMObject {
         return getTransaction().getConnection();
     }
 
-    @Override
-    public Map<String, Object> toMap() {
-        return null;
-    }
 }

@@ -32,4 +32,10 @@ public class QMConstants {
     public static final String PROP_STORE_LOG_FILE = PROP_PREFIX + "storeLogs";
     public static final String PROP_LOG_DIRECTORY = PROP_PREFIX + "logDirectory";
 
+    public static final int EVENT_TYPE_SESSION = 1;
+    public static final int EVENT_TYPE_TXN = 2;
+    public static final int EVENT_TYPE_SAVEPOINT = 3;
+    public static final int EVENT_TYPE_STATEMENT = 4;
+    public static final int EVENT_TYPE_EXECUTE = 5;
+    public static final int EVENT_TYPE_UNKNOWN = -1;
 }

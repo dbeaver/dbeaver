@@ -17,14 +17,10 @@
 
 package org.jkiss.dbeaver.model.qm.meta;
 
-import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
 * Statement execute info
@@ -50,6 +46,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
 
     QMMStatementExecuteInfo(QMMStatementInfo statement, QMMTransactionSavepointInfo savepoint, String queryString, QMMStatementExecuteInfo previous)
     {
+        super(QMMetaObjectType.STATEMENT_EXECUTE_INFO);
         this.statement = statement;
         this.previous = previous;
         this.savepoint = savepoint;
@@ -66,7 +63,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
     }
 
     public QMMStatementExecuteInfo(long openTime, long closeTime, QMMStatementInfo stmt, String queryString, long rowCount, int errorCode, String errorMessage, long fetchBeginTime, long fetchEndTime, boolean transactional) {
-        super(openTime, closeTime);
+        super(QMMetaObjectType.STATEMENT_EXECUTE_INFO, openTime, closeTime);
         this.statement = stmt;
         this.queryString = queryString;
         this.fetchRowCount = rowCount;
@@ -78,7 +75,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
     }
 
     private QMMStatementExecuteInfo(Builder builder) {
-        super(builder.openTime, builder.closeTime);
+        super(QMMetaObjectType.STATEMENT_EXECUTE_INFO, builder.openTime, builder.closeTime);
         statement = builder.statement;
         savepoint = builder.savepoint;
         queryString = builder.queryString;
@@ -198,8 +195,8 @@ public class QMMStatementExecuteInfo extends QMMObject {
     }
 
     @Override
-    public ObjectType getObjectType() {
-        return ObjectType.StatementExecuteInfo;
+    public QMMetaObjectType getObjectType() {
+        return QMMetaObjectType.STATEMENT_EXECUTE_INFO;
     }
 
     @Override
@@ -215,47 +212,6 @@ public class QMMStatementExecuteInfo extends QMMObject {
     @Override
     public QMMConnectionInfo getConnection() {
         return statement.getConnection();
-    }
-
-    @Override
-    public Map<String, Object> toMap() {
-        Map<String, Object> serializedInfo = new LinkedHashMap<>();
-        serializedInfo.put("query", getQueryString());
-        serializedInfo.put("statement", getStatement().toMap());
-        serializedInfo.put("updateRowCount", getUpdateRowCount());
-        serializedInfo.put("fetchRowCount", getFetchRowCount());
-        serializedInfo.put("errorCode", getErrorCode());
-        serializedInfo.put("errorMessage", getErrorMessage());
-        serializedInfo.put("openTime", getOpenTime());
-        serializedInfo.put("closeTime", getCloseTime());
-        serializedInfo.put("fetchBeginTime", getFetchBeginTime());
-        serializedInfo.put("fetchEndTime", getFetchEndTime());
-        return serializedInfo;
-    }
-
-    public static QMMStatementExecuteInfo fromMap(Map<String, Object> objectMap) {
-        String query = CommonUtils.toString(objectMap.get("query"));
-        QMMStatementInfo statement = QMMStatementInfo.fromMap(JSONUtils.getObject(objectMap, "statement"));
-        long updateRowCount = CommonUtils.toLong(objectMap.get("updateRowCount"));
-        long fetchRowCount = CommonUtils.toLong(objectMap.get("fetchRowCount"));
-        int errorCode = CommonUtils.toInt(objectMap.get("errorCode"));
-        String errorMessage = CommonUtils.toString(objectMap.get("errorMessage"), null);
-        long openTime = CommonUtils.toLong(objectMap.get("openTime"));
-        long closeTime = CommonUtils.toLong(objectMap.get("closeTime"));
-        long fetchBeginTime = CommonUtils.toLong(objectMap.get("fetchBeginTime"));
-        long fetchEndTime = CommonUtils.toLong(objectMap.get("fetchEndTime"));
-        return builder()
-            .setQueryString(query)
-            .setStatement(statement)
-            .setUpdateRowCount(updateRowCount)
-            .setFetchRowCount(fetchRowCount)
-            .setErrorCode(errorCode)
-            .setErrorMessage(errorMessage)
-            .setOpenTime(openTime)
-            .setCloseTime(closeTime)
-            .setFetchBeginTime(fetchBeginTime)
-            .setFetchEndTime(fetchEndTime)
-            .build();
     }
 
     public static final class Builder {

@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.model.qm.meta;
 
 import org.jkiss.dbeaver.Log;
 
-import java.util.Map;
-
 /**
  * Abstract QM meta object
  */
@@ -28,34 +26,8 @@ public abstract class QMMObject {
 
     static final Log log = Log.getLog(QMMObject.class);
 
-    public enum ObjectType {
-        ConnectionInfo("c"),
-        StatementExecuteInfo("x"),
-        StatementInfo("s"),
-        TransactionInfo("t"),
-        TransactionSavepointInfo("ts");
-
-        private final String id;
-
-        ObjectType(String id) {
-            this.id = id;
-        }
-
-        public static ObjectType getById(String id) {
-            for (ObjectType ot : values()) {
-                if (ot.id.equals(id)) {
-                    return ot;
-                }
-            }
-            return null;
-        }
-
-        public String getId() {
-            return id;
-        }
-    }
-
     private static int globalObjectId = 0;
+    private final int id;
 
     private final long objectId;
 
@@ -65,12 +37,14 @@ public abstract class QMMObject {
     private boolean synced;
     private boolean updated;
 
-    public QMMObject() {
+    public QMMObject(QMMetaObjectType type) {
+        this.id = type.getId();
         this.objectId = generateObjectId();
         this.openTime = getTimeStamp();
     }
 
-    protected QMMObject(long openTime, long closeTime) {
+    protected QMMObject(QMMetaObjectType type, long openTime, long closeTime) {
+        this.id = type.getId();
         this.objectId = generateObjectId();
         this.openTime = openTime;
         this.closeTime = closeTime;
@@ -113,7 +87,7 @@ public abstract class QMMObject {
     public abstract String getText();
 
     // fore serialization
-    public abstract ObjectType getObjectType();
+    public abstract QMMetaObjectType getObjectType();
 
     protected synchronized void update() {
         this.updated = true;
@@ -140,8 +114,10 @@ public abstract class QMMObject {
         return getCloseTime() - getOpenTime();
     }
 
-    public abstract QMMConnectionInfo getConnection();
+    public int getId() {
+        return id;
+    }
 
-    public abstract Map<String, Object> toMap();
+    public abstract QMMConnectionInfo getConnection();
 
 }
