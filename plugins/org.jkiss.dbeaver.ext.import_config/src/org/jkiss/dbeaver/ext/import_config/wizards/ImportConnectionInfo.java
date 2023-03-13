@@ -157,7 +157,7 @@ public class ImportConnectionInfo {
 
     public void setProviderProperty(String name, String value)
     {
-        properties.put(name, value);
+        providerProperties.put(name, value);
     }
 
     public void setHost(String host)

@@ -163,12 +163,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements
     @Override
     public DBPNativeClientLocation getDefaultLocalClientLocation()
     {
-        List<OracleHomeDescriptor> oraHomes = OCIUtils.getOraHomes();
-        if (!oraHomes.isEmpty()) {
-            return oraHomes.get(0);
-        }
-        return null;
-    }
+        return OCIUtils.getDefaultOraHome();    }
 
     @Override
     public String getProductName(DBPNativeClientLocation location) {

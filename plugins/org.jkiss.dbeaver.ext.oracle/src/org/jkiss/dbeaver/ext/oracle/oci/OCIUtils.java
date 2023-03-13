@@ -62,6 +62,16 @@ public class OCIUtils
         checkOraHomes();
         return oraHomes;
     }
+    
+    public static OracleHomeDescriptor getDefaultOraHome() {
+        List<OracleHomeDescriptor> oraHomes = getOraHomes();
+        return oraHomes.isEmpty() ? null : oraHomes.get(0);
+    }
+    
+    public static File getDefaultOraHomePath() {
+        OracleHomeDescriptor defaultOraHome = getDefaultOraHome();
+        return defaultOraHome == null ? null : defaultOraHome.getPath();
+    }
 
     private static boolean checkOraHomes() {
         if (!oraHomesSearched) {
