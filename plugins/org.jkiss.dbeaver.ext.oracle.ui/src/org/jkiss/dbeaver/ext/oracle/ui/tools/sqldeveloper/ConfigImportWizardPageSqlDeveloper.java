@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
+import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
+import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIActivator;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -173,6 +175,8 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
         private String customUrl;
         @SerializedName("OS_AUTHENTICATION")
         private String OsAuth;
+        @SerializedName("OracleConnectionType")
+        private OracleConstants.ConnectionType connectionType;
 
         public String getRole() {
             return role;
@@ -238,6 +242,14 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
             this.OsAuth = OS_AUTHENTICATION;
         }
 
+        public OracleConstants.ConnectionType getConnectionType() {
+            return connectionType;
+        }
+
+        public void setOsAuth(OracleConstants.ConnectionType connectionType) {
+            this.connectionType = connectionType;
+        }
+
     }
 
     private void parseJsonConnections(File connectionsFile, ImportData importData) throws JsonSyntaxException {
@@ -258,7 +270,10 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
 
                     String dbName = CommonUtils.isEmpty(info.getSID()) ? info.getServiceName() : info.getSID();
 
-                    ImportConnectionInfo connectionInfo = new ImportConnectionInfo(oraDriver, null, conn.getName(), info.getUrl(), info.getHost(), info.getPort(), dbName, info.getUser(), null);
+                    // if connection is of type TNS, connections file will contain alias in url field instead of actual url
+                    String url = info.getConnectionType() == OracleConstants.ConnectionType.TNS ? getTnsUrl(info.getUrl()) : info.getUrl();
+
+                    ImportConnectionInfo connectionInfo = new ImportConnectionInfo(oraDriver, null, conn.getName(), url, info.getHost(), info.getPort(), dbName, info.getUser(), null);
                     if (!CommonUtils.isEmpty(info.getSID())) {
                         connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SID.name());
                     } else if (!CommonUtils.isEmpty(info.getServiceName())) {
@@ -335,4 +350,21 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
         }
     }
 
+    private String getTnsUrl(String alias) {
+        StringBuilder url = new StringBuilder();
+        url.append("jdbc:oracle:thin:@");
+
+        // try to get client oraHome in order to locate tnsNames
+        List<OracleHomeDescriptor> oraHomes = OCIUtils.getOraHomes();
+        // try to get oraHome path
+        File defaultOraHome = oraHomes.isEmpty() ? null : oraHomes.get(0).getPath();
+        // look for tnsNames
+        Map<String,String> tnsNames = OCIUtils.readTnsNames(defaultOraHome, true);
+        // if tnsNames contains entry for alias, append to url
+        if (tnsNames.containsKey(alias)) {
+            url.append(tnsNames.get(alias));
+        }
+
+        return url.toString();
+    }
 }
