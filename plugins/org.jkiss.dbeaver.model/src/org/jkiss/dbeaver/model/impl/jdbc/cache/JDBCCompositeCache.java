@@ -390,27 +390,25 @@ public abstract class JDBCCompositeCache<
         // Fill global cache
         synchronized (this) {
             synchronized (objectCache) {
-                if (forParent != null || !parentObjectMap.isEmpty()) {
-                    if (forParent == null) {
-                        // Cache global object list
-                        List<OBJECT> globalCache = new ArrayList<>();
-                        for (Map<String, ObjectInfo> objMap : parentObjectMap.values()) {
-                            if (objMap != null) {
-                                for (ObjectInfo info : objMap.values()) {
-                                    if (!info.broken) {
-                                        globalCache.add(info.object);
-                                    }
+                if (forParent == null) {
+                    // Cache global object list
+                    List<OBJECT> globalCache = new ArrayList<>();
+                    for (Map<String, ObjectInfo> objMap : parentObjectMap.values()) {
+                        if (objMap != null) {
+                            for (ObjectInfo info : objMap.values()) {
+                                if (!info.broken) {
+                                    globalCache.add(info.object);
                                 }
                             }
                         }
-                        // Save precached objects in global cache
-                        for (List<OBJECT> objects : objectCache.values()) {
-                            globalCache.addAll(objects);
-                        }
-                        // Add precached objects to global cache too
-                        super.setCache(globalCache);
-                        this.invalidateObjects(monitor, owner, new CacheIterator());
                     }
+                    // Save precached objects in global cache
+                    for (List<OBJECT> objects : objectCache.values()) {
+                        globalCache.addAll(objects);
+                    }
+                    // Add precached objects to global cache too
+                    super.setCache(globalCache);
+                    this.invalidateObjects(monitor, owner, new CacheIterator());
                 }
 
                 // Cache data in individual objects only if we have read something or have certain parent object
