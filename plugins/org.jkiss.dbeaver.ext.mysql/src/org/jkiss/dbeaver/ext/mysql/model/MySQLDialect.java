@@ -135,13 +135,16 @@ public class MySQLDialect extends JDBCSQLDialect {
     public MySQLDialect() {
         super("MySQL", "mysql");
     }
+    
+    public MySQLDialect(String name, String id) {
+        super(name, id);
+    }
 
-    public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+    public void initBaseDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
         this.lowerCaseTableNames = ((MySQLDataSource)dataSource).getLowerCaseTableNames();
         this.setSupportsUnquotedMixedCase(lowerCaseTableNames != 2);
 
-        //addSQLKeyword("STATISTICS");
         Collections.addAll(tableQueryWords, SQLConstants.KEYWORD_EXPLAIN, "DESCRIBE", "DESC");
         addFunctions(Arrays.asList("SLEEP"));
 
@@ -153,8 +156,15 @@ public class MySQLDialect extends JDBCSQLDialect {
         // CHAR is data type, not function
         removeSQLKeyword("CHAR");
 
-        addDataTypes(Arrays.asList("GEOMETRY", "POINT", "CHAR"));
+        addDataTypes(Arrays.asList("CHAR"));
         addFunctions(Arrays.asList(MYSQL_EXTRA_FUNCTIONS));
+    }
+    
+    @Override
+    public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+    	initBaseDriverSettings(session, dataSource, metaData);
+
+        addDataTypes(Arrays.asList("GEOMETRY", "POINT"));
         addFunctions(Arrays.asList(MYSQL_GEOMETRY_FUNCTIONS));
     }
 

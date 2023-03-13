@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLHelpProvider;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -87,9 +88,13 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
     private transient boolean inServerTimezoneHandle;
 
-    public MySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
-        throws DBException {
-        super(monitor, container, new MySQLDialect());
+    public MySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+        this(monitor, container, new MySQLDialect());
+    }
+    
+    public MySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, SQLDialect dialect)
+            throws DBException {
+        super(monitor, container, dialect);
         dataTypeCache = new JDBCBasicDataTypeCache<>(this);
         hasStatistics = !container.getPreferenceStore().getBoolean(ModelPreferences.READ_EXPENSIVE_STATISTICS);
     }

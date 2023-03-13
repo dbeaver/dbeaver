@@ -54,7 +54,7 @@ public class TiDBMySQLDataSource extends MySQLDataSource {
     }
 
     public TiDBMySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
-        super(monitor, container);
+        super(monitor, container, new TiDBDialect());
     }
 
     @Override
