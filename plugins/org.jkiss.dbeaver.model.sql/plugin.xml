@@ -80,8 +80,8 @@
     <extension point="org.jkiss.dbeaver.resourceType">
         <type id="sql-script"
               name="SQL script"
-              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png"
-              folderIcon="platform:/plugin/org.jkiss.dbeaver.ui/icons/scripts.png"
+              icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png"
+              folderIcon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script_folder.png"
               managable="true">
             <root folder="Scripts"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>

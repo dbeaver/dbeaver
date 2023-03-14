@@ -145,26 +145,30 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
                 return root;
             }
         }
-        try {
-            IEclipsePreferences eclipsePreferences = getResourceHandlerPreferences(project, DBPResourceTypeDescriptor.RESOURCE_ROOT_FOLDER_NODE);
-            String root = eclipsePreferences.get(id, defaultRoot);
-            boolean isInvalidRoot = root != null && CommonUtils.isEmptyTrimmed(root);
-            synchronized (projectRoots) {
-                projectRoots.put(project.getName(), isInvalidRoot ? defaultRoot : root);
-            }
-            if (isInvalidRoot) {
-                root = defaultRoot;
-                eclipsePreferences.put(id, root);
-                try {
-                    eclipsePreferences.flush();
-                } catch (BackingStoreException e) {
-                    log.error(e);
+        if (project.getEclipseProject() != null) {
+            try {
+                IEclipsePreferences eclipsePreferences = getResourceHandlerPreferences(project, DBPResourceTypeDescriptor.RESOURCE_ROOT_FOLDER_NODE);
+                String root = eclipsePreferences.get(id, defaultRoot);
+                boolean isInvalidRoot = root != null && CommonUtils.isEmptyTrimmed(root);
+                synchronized (projectRoots) {
+                    projectRoots.put(project.getName(), isInvalidRoot ? defaultRoot : root);
                 }
+                if (isInvalidRoot) {
+                    root = defaultRoot;
+                    eclipsePreferences.put(id, root);
+                    try {
+                        eclipsePreferences.flush();
+                    } catch (BackingStoreException e) {
+                        log.error(e);
+                    }
+                }
+                return root;
+            } catch (Exception e) {
+                log.error("Can't obtain resource handler preferences", e);
+                return defaultRoot;
             }
-            return root;
-        } catch (Exception e) {
-            log.error("Can't obtain resource handler preferences", e);
-            return null;
+        } else {
+            return defaultRoot;
         }
     }
 
