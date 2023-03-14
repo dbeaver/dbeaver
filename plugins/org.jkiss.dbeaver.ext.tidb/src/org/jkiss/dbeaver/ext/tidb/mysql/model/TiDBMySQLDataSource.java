@@ -17,9 +17,6 @@
 
 package org.jkiss.dbeaver.ext.tidb.mysql.model;
 
-import java.sql.SQLException;
-import java.util.Collection;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -43,6 +40,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.osgi.framework.Version;
+
+import java.sql.SQLException;
+import java.util.Collection;
 
 public class TiDBMySQLDataSource extends MySQLDataSource {
     private static final Log log = Log.getLog(MySQLDataSource.class);

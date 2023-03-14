@@ -1,13 +1,13 @@
 package org.jkiss.dbeaver.ext.tidb.mysql.model;
 
-import java.util.Arrays;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.utils.ArrayUtils;
+
+import java.util.Arrays;
 
 public class TiDBDialect extends MySQLDialect {
     public static final String[] TIDB_NON_TRANSACTIONAL_KEYWORDS = new String[]{ "OPTIMISTIC", "PESSIMISTIC" };
