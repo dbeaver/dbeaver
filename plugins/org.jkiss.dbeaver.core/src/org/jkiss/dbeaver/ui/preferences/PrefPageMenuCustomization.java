@@ -17,50 +17,27 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.commands.common.NotDefinedException;
-import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.*;
-import org.eclipse.jface.viewers.CellEditor.LayoutData;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
-import org.eclipse.ui.menus.CommandContributionItem;
-import org.eclipse.ui.menus.IMenuService;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.model.app.DBPApplication;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.sql.SQLScriptCommitType;
-import org.jkiss.dbeaver.model.sql.SQLScriptErrorHandling;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.ToolBarConfigurationDescriptor;
 import org.jkiss.dbeaver.ui.actions.ToolBarConfigurationPropertyTester;
 import org.jkiss.dbeaver.ui.actions.ToolBarConfigurationRegistry;
-import org.jkiss.dbeaver.ui.controls.*;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
-import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.dbeaver.ui.registry.ConfirmationDescriptor;
-import org.jkiss.dbeaver.utils.PrefUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -163,6 +140,7 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
         }
     }
     
+    static protected final Log log = Log.getLog(PrefPageMenuCustomization.class);
     
     private final ICommandService cmdSvc;
     private final Collection<String> knownCommands;
@@ -180,9 +158,11 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
     
     @Override
     public void init(IWorkbench workbench) {
+        // do nothing
     }
 
-    private String getItemName(ToolBarConfigurationDescriptor.Item item) {
+    @NotNull
+    private String getItemName(@NotNull ToolBarConfigurationDescriptor.Item item) {
         if (item.getName() != null) {
             return item.getName();
         }
@@ -190,8 +170,7 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
             try {
                 return cmdSvc.getCommand(item.getCommandId()).getName();
             } catch (NotDefinedException e) {
-                // TODO: log error
-                e.printStackTrace();
+                log.debug(e);
             }
         }
         return item.getKey();
@@ -262,7 +241,7 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
         return composite;
     }
     
-    private void forEachToolItem(Consumer<ToolItemNode> action) {
+    private void forEachToolItem(@NotNull Consumer<ToolItemNode> action) {
         for (ToolBarNode toolBar: toolBarNodes) {
             for (ToolItemNode item: toolBar.subnodes) {
                 action.accept(item);

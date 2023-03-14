@@ -1300,15 +1300,15 @@
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side">
             <toolbar id="dbeaver-sqleditor-sidetools" label="SQL Editor Toolbar">
                 <separator name="additions" visible="false"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" />
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" />
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" />
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptFromPosition" />
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew" />
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.count" />
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression" />
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.all.rows" />
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" />
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptFromPosition"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.count"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.all.rows"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"/>
             </toolbar>
         </menuContribution>
     </extension>

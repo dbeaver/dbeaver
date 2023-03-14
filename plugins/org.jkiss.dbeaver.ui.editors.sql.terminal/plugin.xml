@@ -48,7 +48,7 @@
     
     <extension point="org.jkiss.dbeaver.toolBarConfiguration">
         <toolBar key="sqlEditor.side" name="SQL Editor side toolbar">
-            <item key="sqlEditor.show.terminalView" commandId="org.jkiss.dbeaver.ui.editors.sql.show.terminalView" defaultVisibility="true"/>
+            <item key="sqlEditor.show.terminalView" commandId="org.jkiss.dbeaver.ui.editors.sql.show.terminalView" defaultVisibility="false"/>
         </toolBar>
     </extension>
     
