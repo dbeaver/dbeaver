@@ -50,7 +50,7 @@ public class ProjectSelectorPanel {
     }
 
     public ProjectSelectorPanel(@NotNull Composite parent, @Nullable DBPProject activeProject, int style, boolean showOnlyEditable) {
-        final List<DBPProject> projects = DBWorkbench.getPlatform().getWorkspace().getProjects();
+        final List<? extends DBPProject> projects = DBWorkbench.getPlatform().getWorkspace().getProjects();
         if (showOnlyEditable) {
             projects.removeIf(p -> !p.hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT));
         }
