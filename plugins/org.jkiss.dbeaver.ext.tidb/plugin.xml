@@ -128,7 +128,6 @@
         <manager class="org.jkiss.dbeaver.ext.tidb.mysql.model.TiDBMySQLDatabaseManager"
             objectType="org.jkiss.dbeaver.ext.tidb.mysql.model.TiDBMySQLCatalog"
             label="%manager.catalog.name"/>
-        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLForeignKeyManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">

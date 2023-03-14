@@ -53,7 +53,7 @@ public class TiDBPlanAnalyzer extends MySQLPlanAnalyser {
         final String plainQuery = SQLUtils.stripComments(dialect, query).toUpperCase();
         final String firstKeyword = SQLUtils.getFirstKeyword(dialect, plainQuery);
         if (TiDBPlanAnalyzer.block(firstKeyword)) {
-            throw new DBCException("This statements could not produce execution plan");
+            throw new DBCException("This statement could not produce execution plan");
         }
 
         return new TiDBPlainClassic(session, query);
