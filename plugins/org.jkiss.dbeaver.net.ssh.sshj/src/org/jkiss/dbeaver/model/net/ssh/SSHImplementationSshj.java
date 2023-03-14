@@ -123,7 +123,7 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
                         break;
                     case AGENT: {
                         final List<AuthMethod> methods = new ArrayList<>();
-                        for (Identity identity : getAgentData()) {
+                        for (Identity identity : agentIdentityRepository.getIdentities()) {
                             methods.add(new DBeaverAuthAgent(identity));
                         }
                         client.auth(host.getUsername(), methods);

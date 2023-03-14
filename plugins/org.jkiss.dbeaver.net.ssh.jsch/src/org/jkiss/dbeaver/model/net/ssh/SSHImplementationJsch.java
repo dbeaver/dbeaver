@@ -80,7 +80,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
                 }
             } else if (auth.getType() == AuthType.AGENT) {
                 log.debug("Creating identity repository");
-                jsch.setIdentityRepository(new AgentIdentityRepository(agentConnector));
+                jsch.setIdentityRepository(agentIdentityRepository);
             }
 
             try {

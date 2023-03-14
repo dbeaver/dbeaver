@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.net.ssh;
 
 import com.jcraft.jsch.AgentConnector;
 import com.jcraft.jsch.AgentIdentityRepository;
-import com.jcraft.jsch.Identity;
 import com.jcraft.jsch.JUnixSocketFactory;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -52,7 +51,7 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
 
     protected transient DBWHandlerConfiguration savedConfiguration;
     protected transient DBPConnectionConfiguration savedConnectionInfo;
-    protected AgentConnector agentConnector;
+    protected AgentIdentityRepository agentIdentityRepository;
 
     @Override
     public DBPConnectionConfiguration initTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
@@ -105,25 +104,29 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
 
         for (SSHHostConfiguration host : hostConfigurations) {
             if (host.getAuthConfiguration().getType() == SSHConstants.AuthType.AGENT) {
+                AgentConnector connector = null;
+
                 try {
-                    agentConnector = new com.jcraft.jsch.PageantConnector();
+                    connector = new com.jcraft.jsch.PageantConnector();
                     log.debug("SSH: Connected with pageant");
                 } catch (Exception e) {
                     log.debug("pageant connect exception", e);
                 }
 
-                if (agentConnector == null) {
+                if (connector == null) {
                     try {
-                        agentConnector = new com.jcraft.jsch.SSHAgentConnector(new JUnixSocketFactory());
+                        connector = new com.jcraft.jsch.SSHAgentConnector(new JUnixSocketFactory());
                         log.debug("SSH: Connected with ssh-agent");
                     } catch (Exception e) {
                         log.debug("ssh-agent connection exception", e);
                     }
                 }
 
-                if (agentConnector == null) {
+                if (connector == null) {
                     throw new DBException("Unable to initialize SSH agent");
                 }
+
+                agentIdentityRepository = new AgentIdentityRepository(connector);
 
                 break;
             }
@@ -148,11 +151,6 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
             connectionInfo.setUrl(newURL);
         }
         return connectionInfo;
-    }
-
-    @NotNull
-    protected List<Identity> getAgentData() {
-        return new AgentIdentityRepository(agentConnector).getIdentities();
     }
 
     protected abstract void setupTunnel(
