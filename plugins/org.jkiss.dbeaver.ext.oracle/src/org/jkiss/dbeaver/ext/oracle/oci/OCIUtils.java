@@ -66,6 +66,7 @@ public class OCIUtils
     /** 
      * Return first element of oraHomes, or null
      */
+    @Nullable
     public static OracleHomeDescriptor getDefaultOraHome() {
         List<OracleHomeDescriptor> oraHomes = getOraHomes();
         return oraHomes.isEmpty() ? null : oraHomes.get(0);
@@ -74,6 +75,7 @@ public class OCIUtils
     /** 
      * Return path to first element of oraHomes, or null
      */
+    @Nullable
     public static File getDefaultOraHomePath() {
         OracleHomeDescriptor defaultOraHome = getDefaultOraHome();
         return defaultOraHome == null ? null : defaultOraHome.getPath();

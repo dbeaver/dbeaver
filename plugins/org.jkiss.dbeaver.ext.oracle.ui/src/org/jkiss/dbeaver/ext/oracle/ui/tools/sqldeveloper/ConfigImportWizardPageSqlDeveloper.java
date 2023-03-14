@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
@@ -293,7 +294,8 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
                     if (!CommonUtils.isEmpty(info.getRole())) {
                         connectionInfo.setProviderProperty(OracleConstants.PROP_INTERNAL_LOGON, info.getRole());
                         // dbeaver only supports SYSDBA, SYSOPER, and default auth logon roles
-                        if (info.getRole().equals("SYSDBA") || info.getRole().equals("SYSOPER")) {
+                        if (info.getRole().equals(OracleConnectionRole.SYSDBA.getTitle())
+                                || info.getRole().equals(OracleConnectionRole.SYSOPER.getTitle())) {
                             connectionInfo.setProviderProperty(OracleConstants.PROP_AUTH_LOGON_AS, info.getRole());
                         }
                     }
