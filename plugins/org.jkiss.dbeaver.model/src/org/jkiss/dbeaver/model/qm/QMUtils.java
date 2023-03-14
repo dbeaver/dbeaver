@@ -44,6 +44,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Query Manager utils
@@ -194,7 +195,20 @@ public class QMUtils {
             }
         }
         criteria.setQueryTypes(queryTypes.toArray(new DBCExecutionPurpose[0]));
+        var userId = getQmUserId(application.getWorkspace().getWorkspaceSession());
+        if (userId != null) {
+            criteria.setUsers(Set.of(userId));
+        }
         return criteria;
+    }
+
+    private static String getQmUserId(SMSession session) {
+        SMSessionPersistent sessionPersistent = DBUtils.getAdapter(SMSessionPersistent.class, session);
+        if (sessionPersistent == null) {
+            log.warn("Session persistent not found");
+            return null;
+        }
+        return session.getSessionPrincipal().getUserName();
     }
 
     /**
