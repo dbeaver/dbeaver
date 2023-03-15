@@ -44,7 +44,12 @@ public class QMMStatementExecuteInfo extends QMMObject {
 
     private QMMStatementExecuteInfo previous;
 
-    QMMStatementExecuteInfo(QMMStatementInfo statement, QMMTransactionSavepointInfo savepoint, String queryString, QMMStatementExecuteInfo previous)
+    QMMStatementExecuteInfo(
+        QMMStatementInfo statement,
+        QMMTransactionSavepointInfo savepoint,
+        String queryString,
+        QMMStatementExecuteInfo previous,
+        SQLDialect sqlDialect)
     {
         super(QMMetaObjectType.STATEMENT_EXECUTE_INFO);
         this.statement = statement;
@@ -54,7 +59,6 @@ public class QMMStatementExecuteInfo extends QMMObject {
         if (savepoint != null) {
             savepoint.setLastExecute(this);
         }
-        final SQLDialect sqlDialect = statement.getConnection().getSQLDialect();
         if (sqlDialect != null && queryString != null) {
             this.transactional = statement.getPurpose() != DBCExecutionPurpose.META && sqlDialect.isTransactionModifyingQuery(queryString);
         } else {

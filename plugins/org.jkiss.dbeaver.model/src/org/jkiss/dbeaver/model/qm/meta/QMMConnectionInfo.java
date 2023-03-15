@@ -16,10 +16,8 @@
  */
 package org.jkiss.dbeaver.model.qm.meta;
 
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -35,8 +33,6 @@ public class QMMConnectionInfo extends QMMObject {
     private String connectionUrl;
     private String instanceId;
     private String contextName;
-    @Nullable
-    private transient SQLDialect sqlDialect;
     private boolean transactional;
 
     private transient QMMStatementInfo statementStack;
@@ -63,7 +59,6 @@ public class QMMConnectionInfo extends QMMObject {
         connectionUrl = builder.connectionUrl;
         instanceId = builder.instanceId;
         contextName = builder.contextName;
-        sqlDialect = builder.sqlDialect;
         transactional = builder.transactional;
         statementStack = builder.statementStack;
         executionStack = builder.executionStack;
@@ -77,7 +72,6 @@ public class QMMConnectionInfo extends QMMObject {
         this.connectionUrl = connectionConfiguration.getUrl();
         this.instanceId = context.getOwnerInstance().getName();
         this.contextName = context.getContextName();
-        this.sqlDialect = context.getDataSource().getSQLDialect();
         this.transactional = transactional;
         if (transactional) {
             this.transaction = new QMMTransactionInfo(this, null);
@@ -239,11 +233,13 @@ public class QMMConnectionInfo extends QMMObject {
             final QMMTransactionSavepointInfo savepoint =
                 isTransactional() && getTransaction() != null ?
                     getTransaction().getCurrentSavepoint() : null;
+            var sqlDialect = statement.getSession().getDataSource().getSQLDialect();
             return this.executionStack = new QMMStatementExecuteInfo(
                 stat,
                 savepoint,
                 queryString,
-                this.executionStack);
+                this.executionStack,
+                sqlDialect);
         } else {
             return null;
         }
@@ -318,10 +314,6 @@ public class QMMConnectionInfo extends QMMObject {
         return transactional;
     }
 
-    public SQLDialect getSQLDialect() {
-        return sqlDialect;
-    }
-
     public String getConnectionUserName() {
         return connectionUserName;
     }
@@ -362,7 +354,6 @@ public class QMMConnectionInfo extends QMMObject {
         private long openTime;
         private long closeTime;
         private String contextName;
-        private SQLDialect sqlDialect;
         private boolean transactional;
         private QMMStatementInfo statementStack;
         private QMMStatementExecuteInfo executionStack;
@@ -418,11 +409,6 @@ public class QMMConnectionInfo extends QMMObject {
 
         public Builder setContextName(String contextName) {
             this.contextName = contextName;
-            return this;
-        }
-
-        public Builder setSqlDialect(SQLDialect sqlDialect) {
-            this.sqlDialect = sqlDialect;
             return this;
         }
 

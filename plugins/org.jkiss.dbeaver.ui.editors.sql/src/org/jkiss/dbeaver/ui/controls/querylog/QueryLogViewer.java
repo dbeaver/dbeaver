@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -60,6 +61,7 @@ import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.qm.DefaultEventFilter;
 import org.jkiss.dbeaver.ui.*;
@@ -1032,7 +1034,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     private DBPDataSourceContainer getDataSourceContainer(QMMStatementExecuteInfo stmtExec) {
         QMMConnectionInfo session = stmtExec.getStatement().getConnection();
-        var projectId = session.getProjectInfo().getId();
+        String projectId = session.getProjectInfo() == null ? null : session.getProjectInfo().getId();
         String containerId = session.getContainerId();
         return DBUtils.findDataSource(projectId, containerId);
     }
@@ -1130,12 +1132,35 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         @Override
         protected SQLDialect getSQLDialect() {
             if (object.getObject() instanceof QMMStatementExecuteInfo) {
-                SQLDialect dialect = ((QMMStatementExecuteInfo) object.getObject()).getStatement().getConnection().getSQLDialect();
-                if (dialect != null) {
-                    return dialect;
+                var executeInfo = (QMMStatementExecuteInfo) object.getObject();
+                var container = getDataSourceContainer(executeInfo);
+                var sqlDialect = getSqlDialectFromContainer(container);
+                if (getSqlDialectFromContainer(container) != null) {
+                    return sqlDialect;
                 }
             }
             return super.getSQLDialect();
+        }
+
+        @Nullable
+        private SQLDialect getSqlDialectFromContainer(DBPDataSourceContainer container) {
+            if (container == null) {
+                return null;
+            }
+            var dataSource = container.getDataSource();
+            if (dataSource != null) {
+                return container.getDataSource().getSQLDialect();
+            }
+            DBPDriver driver = DataSourceProviderRegistry.getInstance().findDriver(container.getDriver().getId());
+            if (driver == null) {
+                return null;
+            }
+            driver = driver.createOriginalCopy();
+            try {
+                return driver.createOriginalCopy().getScriptDialect().createInstance();
+            } catch (DBException e) {
+                return null;
+            }
         }
 
         @Override
