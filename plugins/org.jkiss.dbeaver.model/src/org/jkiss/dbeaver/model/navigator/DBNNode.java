@@ -117,6 +117,13 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
 
     public abstract String getNodeName();
 
+    /**
+     * @return
+     */
+    public String getNodeId() {
+        return getNodeName();
+    }
+
     @Nullable
     public String getNodeBriefInfo() {
         return null;
@@ -246,7 +253,10 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
      *
      * @return full item node path
      */
-    public abstract String getNodeItemPath();
+    public String getNodeItemPath() {
+        String parentPrefix = getParentNode() == null ? "" : getParentNode().getNodeItemPath() + "/";
+        return parentPrefix + getNodeId();
+    }
 
     @Override
     public <T> T getAdapter(Class<T> adapter) {

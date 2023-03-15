@@ -222,11 +222,6 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     }
 
     @Override
-    public String getNodeItemPath() {
-        return getParentNode().getNodeItemPath() + "/" + getName();
-    }
-
-    @Override
     public boolean supportsRename() {
         return false;
     }

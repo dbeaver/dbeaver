@@ -140,7 +140,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
 
     @Override
     public DBNProjectDatabases getParentNode() {
-        return (DBNProjectDatabases)super.getParentNode();
+        return (DBNProjectDatabases) super.getParentNode();
     }
 
     @Override
@@ -232,7 +232,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
                 }
             }
         }
-        DBNModel.updateConfigAndRefreshDatabases(this);
+        DBNModel.updateConfigAndRefreshDatabases(getParentNode());
     }
 
     @Override
@@ -245,7 +245,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException
     {
         getDataSourceRegistry().moveFolder(folder.getFolderPath(), generateNewFolderPath(folder.getParent(), newName));
-        DBNModel.updateConfigAndRefreshDatabases(this);
+        DBNModel.updateConfigAndRefreshDatabases(getParentNode());
     }
 
     public boolean hasConnected() {

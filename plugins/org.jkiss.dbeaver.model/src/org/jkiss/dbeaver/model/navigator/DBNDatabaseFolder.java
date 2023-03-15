@@ -90,6 +90,12 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
     }
 
     @Override
+    public String getNodeId() {
+        var idOrType = meta.getIdOrType();
+        return CommonUtils.isEmpty(idOrType) ? getNodeName() : idOrType;
+    }
+
+    @Override
     public String getLocalizedName(String locale) {
         return meta.getChildrenTypeLabel(getDataSource(), locale);
     }
@@ -109,6 +115,12 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
     @Override
     public DBPDataSource getDataSource() {
         return ((DBNDatabaseNode) parentNode).getDataSource();
+    }
+
+    @Nullable
+    @Override
+    protected String getDatabaseNodeItemPath() {
+        return getNodeId();
     }
 
     @Override

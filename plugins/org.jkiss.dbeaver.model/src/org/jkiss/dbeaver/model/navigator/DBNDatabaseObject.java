@@ -126,6 +126,12 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject {
         return parentObject == null ? null : parentObject.getDataSource();
     }
 
+    @Nullable
+    @Override
+    protected String getDatabaseNodeItemPath() {
+        return getNodeId().replace("/", DBNModel.SLASH_ESCAPE_TOKEN);
+    }
+
     @Override
     public boolean isPersisted() {
         return true;

@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -45,6 +44,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * DBNModel.
@@ -136,7 +136,6 @@ public class DBNModel implements IResourceChangeListener {
         this.root = new DBNRoot(this);
 
         if (isGlobal()) {
-            DBPPlatform platform = DBWorkbench.getPlatform();
             if (platform instanceof DBPPlatformDesktop) {
                 ((DBPPlatformDesktop)platform).getWorkspace().getEclipseWorkspace().addResourceChangeListener(this);
             }
@@ -147,9 +146,8 @@ public class DBNModel implements IResourceChangeListener {
     public void dispose()
     {
         if (isGlobal()) {
-            DBPPlatform platform = DBWorkbench.getPlatform();
             if (platform instanceof DBPPlatformDesktop) {
-                ((DBPPlatformDesktop)platform).getWorkspace().getEclipseWorkspace().removeResourceChangeListener(this);
+                ((DBPPlatformDesktop) platform).getWorkspace().getEclipseWorkspace().removeResourceChangeListener(this);
             }
         }
 
@@ -289,13 +287,7 @@ public class DBNModel implements IResourceChangeListener {
     public DBNDataSource getDataSourceByPath(DBPProject project, String path) {
         String dsId = getDataSourceIdFromNodePath(getNodePath(path));
         DBNProject projectNode = getRoot().getProjectNode(project);
-        if (projectNode != null) {
-            DBNDataSource dataSource = projectNode.getDatabases().getDataSource(dsId);
-            if (dataSource != null) {
-                return dataSource;
-            }
-        }
-        return null;
+        return projectNode == null ? null : projectNode.getDatabases().getDataSource(dsId);
     }
 
     @Nullable
@@ -316,10 +308,10 @@ public class DBNModel implements IResourceChangeListener {
     public DBNNode getNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull String path) throws DBException {
         final NodePath nodePath = getNodePath(path);
         if (nodePath.type == DBNNode.NodePathType.database) {
-            boolean hasLazyProjects = false;
+            List<DBNProject> lazyProjects = new ArrayList<>();
             for (DBNProject projectNode : getRoot().getProjects()) {
                 if (!projectNode.getProject().isRegistryLoaded()) {
-                    hasLazyProjects = true;
+                    lazyProjects.add(projectNode);
                     continue;
                 }
                 DBNDataSource curNode = projectNode.getDatabases().getDataSource(getDataSourceIdFromNodePath(nodePath));
@@ -327,49 +319,44 @@ public class DBNModel implements IResourceChangeListener {
                     return findNodeByPath(monitor, nodePath, curNode, 1);
                 }
             }
-            if (hasLazyProjects) {
-                // No try to search in uninitialized projects
-                for (DBNProject projectNode : getRoot().getProjects()) {
-                    if (!projectNode.getProject().isRegistryLoaded()) {
-                        String dsId = getDataSourceIdFromNodePath(nodePath);
-                        DBNDataSource curNode = projectNode.getDatabases().getDataSource(dsId);
-                        if (curNode != null) {
-                            return findNodeByPath(monitor, nodePath, curNode, 1);
-                        }
-                    }
+            // No try to search in uninitialized projects
+            for (DBNProject projectNode : lazyProjects) {
+                String dsId = getDataSourceIdFromNodePath(nodePath);
+                DBNDataSource curNode = projectNode.getDatabases().getDataSource(dsId);
+                if (curNode != null) {
+                    return findNodeByPath(monitor, nodePath, curNode, 1);
                 }
             }
         } else if (nodePath.type == DBNNode.NodePathType.ext) {
-            // works for rm resources, because their parent DBNRoot
-            var node = findNodeByPath(monitor, nodePath,
-                root, 0);
+            // works for rm resources and cloud explorer, because their parent DBNRoot
+            var node = findNodeByPath(monitor, nodePath, root, 0);
             if (node != null) {
                 return node;
             }
-            // works for cloud explorer
+            // works for cloud file explorer
             DBNProject[] projects = root.getProjects();
             if (ArrayUtils.isEmpty(projects)) {
                 throw new DBException("No projects in workspace");
             }
             if (projects.length > 1) {
-                boolean multiNode = Arrays.stream(projects).anyMatch(pr -> pr.getProject().isVirtual());
+                boolean multiNode = DBWorkbench.isDistributed()
+                    || DBWorkbench.getPlatform().getApplication().isMultiuser();
                 if (!multiNode) {
                     throw new DBException("Multi-project workspace. Extension nodes not supported");
                 }
             }
-            return findNodeByPath(monitor, nodePath,
-                projects[0], 0);
+            return findNodeByPath(monitor, nodePath, projects[0], 0);
         } else if (nodePath.type == DBNNode.NodePathType.other) {
-            return findNodeByPath(monitor, nodePath,
-                root, 0);
+            return findNodeByPath(monitor, nodePath, root, 0);
         } else {
             for (DBNProject projectNode : getRoot().getProjects()) {
                 if (projectNode.getName().equals(nodePath.first())) {
-                    return findNodeByPath(monitor, nodePath,
-                        nodePath.type == DBNNode.NodePathType.folder ? projectNode.getDatabases() : projectNode, 1);
+                    var currentNode = nodePath.type == DBNNode.NodePathType.folder ? projectNode.getDatabases() : projectNode;
+                    return findNodeByPath(monitor, nodePath, currentNode, 1);
                 }
             }
         }
+
         return null;
     }
 
@@ -431,42 +418,30 @@ public class DBNModel implements IResourceChangeListener {
 
             DBNNode[] children = curNode.getChildren(monitor);
             DBNNode nextChild = null;
-            if (children != null && children.length > 0) {
-                for (DBNNode child : children) {
-                    if (nodePath.type == DBNNode.NodePathType.resource) {
-                        if (child instanceof DBNResource && ((DBNResource) child).getResource().getName().equals(item)) {
-                            nextChild = child;
-                        } else if (child instanceof DBNProjectDatabases && child.getName().equals(item)) {
-                            nextChild = child;
+            if (children == null) {
+                break;
+            }
+            for (DBNNode child : children) {
+                boolean isTypeAccessible = true;
+                if (nodePath.type == DBNNode.NodePathType.resource) {
+                    isTypeAccessible = child instanceof DBNResource || child instanceof DBNProjectDatabases;
+                } else if (nodePath.type == DBNNode.NodePathType.folder) {
+                    isTypeAccessible = child instanceof DBNLocalFolder;
+                }
+                var nodeId = child.getNodeId();
+                if (isTypeAccessible && CommonUtils.equalObjects(nodeId, item)) {
+                    nextChild = child;
+                }
+
+                if (nextChild != null) {
+                    if (i < itemsSize - 1) {
+                        nextChild = findNodeByPath(monitor, nodePath, nextChild, i + 1);
+                        if (nextChild != null) {
+                            return nextChild;
                         }
-                    } else if (nodePath.type == DBNNode.NodePathType.folder) {
-                        if (child instanceof DBNLocalFolder && child.getName().equals(item)) {
-                            nextChild = child;
-                        }
-                    } else {
-                        if (child instanceof DBNDatabaseFolder) {
-                            DBXTreeFolder meta = ((DBNDatabaseFolder) child).getMeta();
-                            if (meta != null) {
-                                String idOrType = meta.getIdOrType();
-                                if (!CommonUtils.isEmpty(idOrType) && idOrType.equals(item)) {
-                                    nextChild = child;
-                                }
-                            }
-                        }
-                        if (child.getName().equals(item)) {
-                            nextChild = child;
-                        }
+                        continue;
                     }
-                    if (nextChild != null) {
-                        if (i < itemsSize - 1) {
-                            nextChild = findNodeByPath(monitor, nodePath, nextChild, i + 1);
-                            if (nextChild != null) {
-                                return nextChild;
-                            }
-                            continue;
-                        }
-                        break;
-                    }
+                    break;
                 }
             }
             if (nextChild == null) {
@@ -656,43 +631,43 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     @Override
-    public void resourceChanged(IResourceChangeEvent event)
-    {
-        if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
-            IResourceDelta delta = event.getDelta();
-            for (IResourceDelta childDelta : delta.getAffectedChildren()) {
-                if (childDelta.getResource() instanceof IProject) {
-                    IProject project = (IProject) childDelta.getResource();
-                    DBNProject projectNode = getRoot().getProjectNode(project);
-                    if (projectNode == null) {
-                        if (childDelta.getKind() == IResourceDelta.ADDED) {
-                            // New projectNode
-                            DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(project);
-                            if (projectMeta == null) {
-                                log.error("Can't find project '" + project.getName() + "' metadata");
-                            } else {
-                                getRoot().addProject(projectMeta, true);
-                            }
-                        } else if (childDelta.getKind() != IResourceDelta.REMOVED) {
-                            // Project not found - report an error
-                            log.error("Project '" + childDelta.getResource().getName() + "' not found in navigator");
-                        }
+    public void resourceChanged(IResourceChangeEvent event) {
+        if (event.getType() != IResourceChangeEvent.POST_CHANGE) {
+            return;
+        }
+        IResourceDelta delta = event.getDelta();
+        List<IResourceDelta> changedProjects = Arrays.stream(delta.getAffectedChildren())
+            .filter(childDelta -> childDelta.getResource() instanceof IProject)
+            .collect(Collectors.toList());
+        for (IResourceDelta childDelta : changedProjects) {
+            IProject project = (IProject) childDelta.getResource();
+            DBNProject projectNode = getRoot().getProjectNode(project);
+            int deltaKind = childDelta.getKind();
+            if (projectNode == null) {
+                if (deltaKind == IResourceDelta.ADDED) {
+                    // New projectNode
+                    DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(project);
+                    if (projectMeta == null) {
+                        log.error("Can't find project '" + project.getName() + "' metadata");
                     } else {
-                        if (childDelta.getKind() == IResourceDelta.REMOVED) {
-                            // Project deleted
-                            DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(project);
-                            if (projectMeta == null) {
-                                log.error("Can't find project '" + project.getName() + "' metadata");
-                            } else {
-                                getRoot().removeProject(projectMeta);
-                            }
-                        } else {
-                            // Some resource changed within the projectNode
-                            // Let it handle this event itself
-                            projectNode.handleResourceChange(childDelta);
-                        }
+                        getRoot().addProject(projectMeta, true);
                     }
+                } else if (deltaKind != IResourceDelta.REMOVED) {
+                    // Project not found - report an error
+                    log.error("Project '" + childDelta.getResource().getName() + "' not found in navigator");
                 }
+            } else if (deltaKind == IResourceDelta.REMOVED) {
+                // Project deleted
+                DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(project);
+                if (projectMeta == null) {
+                    log.error("Can't find project '" + project.getName() + "' metadata");
+                } else {
+                    getRoot().removeProject(projectMeta);
+                }
+            } else {
+                // Some resource changed within the projectNode
+                // Let it handle this event itself
+                projectNode.handleResourceChange(childDelta);
             }
         }
     }
@@ -715,16 +690,18 @@ public class DBNModel implements IResourceChangeListener {
         return new DBIconComposite(image, false, null, null, null, overlayImage);
     }
 
-    public static void updateConfigAndRefreshDatabases(DBNNode node)
-    {
+    public static void updateConfigAndRefreshDatabases(DBNNode node) {
         for (DBNNode parentNode = node; parentNode != null; parentNode = parentNode.getParentNode()) {
             if (parentNode instanceof DBNProjectDatabases) {
-                DBNProjectDatabases projectDatabases = (DBNProjectDatabases) parentNode;
-                projectDatabases.getDataSourceRegistry().flushConfig();
-                projectDatabases.refreshChildren();
+                updateConfigAndRefreshDatabases((DBNProjectDatabases) parentNode);
                 break;
             }
         }
+    }
+
+    public static void updateConfigAndRefreshDatabases(DBNProjectDatabases projectDatabases) {
+        projectDatabases.getDataSourceRegistry().flushConfig();
+        projectDatabases.refreshChildren();
     }
 
     public void ensureProjectLoaded(DBPProject project) {

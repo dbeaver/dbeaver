@@ -182,7 +182,7 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, NIOListe
 
     @Override
     public String getNodeItemPath() {
-        return NodePathType.dbvfs.getPrefix() + ((DBNProject)getParentNode()).getRawNodeItemPath() + "/" + getNodeName();
+        return NodePathType.dbvfs.getPrefix() + ((DBNProject) getParentNode()).getRawNodeItemPath() + "/" + getNodeId();
     }
 
     @Override

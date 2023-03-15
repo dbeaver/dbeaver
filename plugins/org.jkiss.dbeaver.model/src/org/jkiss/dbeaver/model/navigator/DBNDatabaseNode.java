@@ -792,34 +792,22 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         StringBuilder pathName = new StringBuilder(100);
 
         for (DBNNode node = this; node instanceof DBNDatabaseNode; node = node.getParentNode()) {
-            if (node instanceof DBNDataSource) {
-                if (pathName.length() > 0) {
-                    pathName.insert(0, '/');
-                }
-                pathName.insert(0, node.getNodeItemPath());
-            } else if (node instanceof DBNDatabaseFolder) {
-                if (pathName.length() > 0) {
-                    pathName.insert(0, '/');
-                }
-                DBXTreeFolder folderMeta = ((DBNDatabaseFolder) node).getMeta();
-                String type = folderMeta.getIdOrType();
-                if (CommonUtils.isEmpty(type)) {
-                    type = node.getName();
-                }
-                pathName.insert(0, type);
-            }
-            if (!(node instanceof DBNDatabaseItem) && !(node instanceof DBNDatabaseObject)) {
-                // skip folders
+            var dbNode = (DBNDatabaseNode) node;
+            var dbItemPath = dbNode.getDatabaseNodeItemPath();
+            if (dbItemPath == null) {
+                // skip unnecessary items like folders
                 continue;
             }
-
             if (pathName.length() > 0) {
                 pathName.insert(0, '/');
             }
-            pathName.insert(0, node.getNodeName().replace("/", DBNModel.SLASH_ESCAPE_TOKEN));
+            pathName.insert(0, dbItemPath);
         }
         return pathName.toString();
     }
+
+    @Nullable
+    protected abstract String getDatabaseNodeItemPath();
 
     private void reloadChildren(DBRProgressMonitor monitor, Object source, boolean reflect)
         throws DBException {

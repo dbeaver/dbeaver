@@ -123,8 +123,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
     }
 
     @Override
-    public String getNodeFullName()
-    {
+    public String getNodeFullName() {
         return getNodeName();
     }
 
@@ -133,15 +132,19 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
         return makeDataSourceItemPath(dataSource);
     }
 
+    @Nullable
     @Override
-    public boolean isManagable()
-    {
+    protected String getDatabaseNodeItemPath() {
+        return getNodeItemPath();
+    }
+
+    @Override
+    public boolean isManagable() {
         return true;
     }
 
     @Override
-    public DBXTreeNode getMeta()
-    {
+    public DBXTreeNode getMeta() {
         return treeRoot;
     }
 
@@ -303,6 +306,11 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
             }
         }
         return null;
+    }
+
+    @Override
+    public String getNodeId() {
+        return dataSource.getId();
     }
 
     @NotNull
