@@ -726,15 +726,13 @@ public class SQLQueryJob extends DataSourceJob
     }
 
     private boolean isShowExecutionResult() {
-        boolean hasResults = resultSetNumber > 0 && (statistics.getRowsUpdated() >= 0 || statistics.getRowsFetched() >= 0);
-
-        if (hasResults) {
-            // If there are multiple results with result sets, display statistics if `showStatisticsForQueriesWithResults`
+        if (resultSetNumber <= 0 || statistics.getRowsUpdated() >= 0) {
+            // If there are no results or we have updated some rows, always display statistics
+            return true;
+        } else {
+            // Otherwise, display statistics if the option is set
             final DBPPreferenceStore store = getDataSourceContainer().getPreferenceStore();
             return statistics.getStatementsCount() > 1 && store.getBoolean(SQLPreferenceConstants.SHOW_STATISTICS_FOR_QUERIES_WITH_RESULTS);
-        } else {
-            // If there are no results, always display statistics
-            return true;
         }
     }
 
