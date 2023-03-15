@@ -17,16 +17,26 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.commands.common.NotDefinedException;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandImageService;
 import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.internal.model.ContributionService;
+import org.eclipse.ui.internal.util.BundleUtility;
+import org.eclipse.ui.menus.IMenuService;
+import org.eclipse.ui.model.IContributionService;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
@@ -34,9 +44,12 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.ToolBarConfigurationDescriptor;
 import org.jkiss.dbeaver.ui.actions.ToolBarConfigurationPropertyTester;
 import org.jkiss.dbeaver.ui.actions.ToolBarConfigurationRegistry;
+import org.osgi.framework.Bundle;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -68,6 +81,8 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
         public void setGrayed(boolean value) {
             isGrayed = value;
         }
+
+        protected abstract Image getImage();
     }
     
     private class ToolBarNode extends CheckableNode {
@@ -103,6 +118,11 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
         }
         
         @Override
+        protected Image getImage() {
+            return toolBarImage;
+        }
+        
+        @Override
         public String toString() {
             return toolbar.getName();
         }
@@ -111,15 +131,22 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
     private class ToolItemNode extends CheckableNode {
         final ToolBarConfigurationDescriptor.Item item;
         final String name;
+        final Image icon;
         final ToolBarNode owner;
         
         public ToolItemNode(ToolBarNode owner, ToolBarConfigurationDescriptor.Item item) {
             super(item);
             this.item = item;
             this.name = getItemName(item);
+            this.icon = getItemIcon(item);
             this.owner = owner;
             
             setChecked(item.isVisible());
+        }
+        
+        @Override
+        protected Image getImage() {
+            return icon;
         }
         
         @Override
@@ -140,20 +167,38 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
         }
     }
     
-    static protected final Log log = Log.getLog(PrefPageMenuCustomization.class);
+    private static final Log log = Log.getLog(PrefPageMenuCustomization.class);
+    
+    private final Object syncRoot = new Object();
     
     private final ICommandService cmdSvc;
+    private final ICommandImageService cmdImageSvc;
     private final Collection<String> knownCommands;
+    private final HashMap<String, Image> commandImages = new HashMap<>();
     private final List<ToolBarNode> toolBarNodes;
+    private final Image toolBarImage;
 
     private CheckboxTreeViewer treeViewer;
     
     public PrefPageMenuCustomization() {
         cmdSvc = PlatformUI.getWorkbench().getService(ICommandService.class);
+        cmdImageSvc = PlatformUI.getWorkbench().getService(ICommandImageService.class);
         knownCommands = cmdSvc.getDefinedCommandIds();
+        toolBarImage = findBundleImage(PlatformUI.PLUGIN_ID, "$nl$/icons/full/obj16/toolbar.png");
         
         toolBarNodes = ToolBarConfigurationRegistry.getInstance().getKnownToolBars().stream()
             .map(t -> new ToolBarNode(t)).collect(Collectors.toList());
+    }
+    
+    private Image findBundleImage(String pluginId, String bundlePath) {
+        Bundle bundle = Platform.getBundle(pluginId);
+        if (bundle != null) {
+            ImageDescriptor imageDesc = ImageDescriptor.createFromURLSupplier(true, () -> FileLocator.find(bundle, new Path(bundlePath)));
+            if (imageDesc != null) {
+                return imageDesc.createImage();
+            }
+        }
+        return null;
     }
     
     @Override
@@ -174,6 +219,36 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
             }
         }
         return item.getKey();
+    }
+
+    private Image getItemIcon(@NotNull ToolBarConfigurationDescriptor.Item item) {
+        if (item.getCommandId() != null && knownCommands.contains(item.getCommandId())) {
+            synchronized (syncRoot) {
+                Image image = commandImages.get(item.getCommandId());
+                if (image != null) {
+                    return image;
+                }
+                ImageDescriptor imageDesc = cmdImageSvc.getImageDescriptor(item.getCommandId());
+                if (imageDesc != null) {
+                    image = imageDesc.createImage();
+                    commandImages.put(item.getCommandId(), image);
+                    return image;
+                }
+            }
+        }
+        return null;
+    }
+    
+    @Override
+    public void dispose() {
+        if (toolBarImage != null) {
+            toolBarImage.dispose();
+        }
+        synchronized (syncRoot) {
+            commandImages.values().forEach(image -> image.dispose());
+            commandImages.clear();
+        }
+        super.dispose();
     }
 
     @NotNull
@@ -231,6 +306,16 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
             }
         });
         treeViewer.setContentProvider(new TreeNodeContentProvider());
+        treeViewer.setLabelProvider(new LabelProvider() {
+            @Override
+            public Image getImage(Object element) {
+                if (element instanceof CheckableNode) {
+                    return ((CheckableNode)element).getImage();
+                } else {
+                    return null;
+                }
+            }
+        });
         treeViewer.setInput(toolBarNodes.toArray(ToolBarNode[]::new));
         
         forEachToolItem(node -> node.restore());
@@ -270,5 +355,4 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
         ToolBarConfigurationPropertyTester.fireVisibilityPropertyChange();
         return true;
     }
-
 }

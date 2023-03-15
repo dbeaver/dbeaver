@@ -27,9 +27,13 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 
 public class ToolBarConfigurationRegistry {
+    
     static final String EXTENSION_ID = "org.jkiss.dbeaver.toolBarConfiguration";
+    
+    private static final Log log = Log.getLog(ToolBarConfigurationRegistry.class);
 
     private static ToolBarConfigurationRegistry instance = null;
 
@@ -73,7 +77,7 @@ public class ToolBarConfigurationRegistry {
         if (toolBar != null) {
             return toolBar.isItemVisible(itemKey);
         } else {
-            // TODO log error unknown toolbar key
+            log.debug("Unknown toolbar key " + toolBarKey + " for item " + itemKey);
             return false;
         }
     }

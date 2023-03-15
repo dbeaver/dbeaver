@@ -137,7 +137,6 @@
         <page category="org.jkiss.dbeaver.preferences.eclipse.main" id="org.jkiss.dbeaver.preferences.main.common" class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface" name="%pref.page.name.user.interface">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
-
     </extension>
 
     <extension point="org.eclipse.ui.perspectiveExtensions">

@@ -25,12 +25,15 @@
 				<visibleWhen checkEnabled="true"/>
 			</command>
 		</menuContribution>
-		<menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side" >
+		<menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side.top" >
 			<command commandId="org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion">
 				<visibleWhen>
-					<with variable="activePart">
-						<not><test property="org.jkiss.dbeaver.core.global.hasPreference" value="ai.completion.disabled"/></not>
-					</with>
+				    <and>
+						<with variable="activePart">
+							<not><test property="org.jkiss.dbeaver.core.global.hasPreference" value="ai.completion.disabled"/></not>
+						</with>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.top,sqlEditor.ai.showCompletion"/>
+					</and>
 				</visibleWhen>
 			</command>
 		</menuContribution>
@@ -50,4 +53,10 @@
 			</enabledWhen>
 		</handler>
 	</extension>
+	
+    <extension point="org.jkiss.dbeaver.toolBarConfiguration">
+        <toolBar key="sqlEditor.side.top">
+            <item key="sqlEditor.ai.showCompletion" commandId="org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion" defaultVisibility="false"/>
+        </toolBar>
+    </extension>
 </plugin>

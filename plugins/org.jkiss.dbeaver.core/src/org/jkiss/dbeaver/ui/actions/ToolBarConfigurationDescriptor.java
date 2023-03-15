@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.actions;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.utils.CommonUtils;
 
@@ -86,6 +87,8 @@ public class ToolBarConfigurationDescriptor {
             isVisible = value;
         }
     }
+    
+    private static final Log log = Log.getLog(ToolBarConfigurationDescriptor.class);
 
     static final String TOOLBAR_ELEMENT_NAME = "toolBar";
     static final String ITEM_ELEMENT_NAME = "item";
@@ -128,7 +131,7 @@ public class ToolBarConfigurationDescriptor {
         if (item != null) {
             return item.isVisible();
         } else {
-            // TODO log error unknown item
+            log.debug("Unknown item key " + itemKey);
             return false;
         }
     }
