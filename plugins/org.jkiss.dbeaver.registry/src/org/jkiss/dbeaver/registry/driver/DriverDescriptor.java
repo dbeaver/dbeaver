@@ -1599,9 +1599,27 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             // We need to sync resolved files with real files of library
             // - Local files are linked directly
             // - Local folders are linked to folder's contents
-            if (library instanceof DriverLibraryLocal) {
+            if (library instanceof DriverLibraryLocal && !library.isDownloadable()) {
                 List<DriverFileInfo> libraryFiles = new ArrayList<>();
 
+                if (library.isCustom()) {
+                    // Resolve custom libraries directly from file
+                    Path customFile = targetFileLocation
+                        .resolve(DBConstants.DEFAULT_DRIVERS_FOLDER)
+                        .resolve(getId())
+                        .resolve(library.getPath());
+                    if (Files.exists(customFile)) {
+                        customFile = targetFileLocation.relativize(customFile);
+                        DriverFileInfo fileInfo = new DriverFileInfo(
+                            library.getId(),
+                            library.getVersion(),
+                            library.getType(),
+                            customFile);
+                        libraryFiles.add(fileInfo);
+                        resolvedFiles.put(library, libraryFiles);
+                        continue;
+                    }
+                }
                 Path srcLocalFile = library.getLocalFile();
                 if (srcLocalFile == null) {
                     if (library.getType() != DBPDriverLibrary.FileType.license) {

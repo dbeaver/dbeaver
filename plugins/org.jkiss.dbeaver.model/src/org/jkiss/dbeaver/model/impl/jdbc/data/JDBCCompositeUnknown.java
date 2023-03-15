@@ -35,6 +35,7 @@ public class JDBCCompositeUnknown extends JDBCComposite {
     }
 
     public JDBCCompositeUnknown(@NotNull DBCSession session, @Nullable Object structData) {
+        super(null);
         this.type = new StructType(session.getDataSource());
         this.attributes = new DBSEntityAttribute[0];// { new StructAttribute(type, 0, structData) };
         this.values = new Object[]{structData};

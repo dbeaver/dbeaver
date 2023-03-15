@@ -48,8 +48,7 @@
                         categories="sql,analytic,cloud">
                     <replace provider="generic" driver="azure_databricks"/>
 
-                    <file type="jar" path="maven:/com.databricks:databricks-jdbc:RELEASE[2.6.32]"
-                          bundle="!drivers.databricks"/>
+                    <file type="jar" path="maven:/com.databricks:databricks-jdbc:RELEASE[2.6.32]"/>
 
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="supports-multi-insert" value="true"/>
