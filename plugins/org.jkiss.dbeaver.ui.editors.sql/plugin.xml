@@ -1358,7 +1358,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.toolBarConfiguration">
-        <toolBar key="sqlEditor.side.top" name="SQL Editor top toolbar">
+        <toolBar key="sqlEditor.side.top" name="%org.jkiss.dbeaver.toolBarConfiguration.sqlEditor.side.top">
             <item key="sqlEditor.run.statement" commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" defaultVisibility="true"/>
             <item key="sqlEditor.run.statementNew" commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" defaultVisibility="false"/>
             <item key="sqlEditor.run.script" commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" defaultVisibility="true"/>
@@ -1368,7 +1368,7 @@
             <item key="sqlEditor.export.data" commandId="org.jkiss.dbeaver.ui.editors.sql.export.data" defaultVisibility="false"/>
             <item key="sqlEditor.cancel.query" commandId="org.jkiss.dbeaver.ui.editors.sql.cancel.query" defaultVisibility="false"/>
         </toolBar>
-        <toolBar key="sqlEditor.side.bottom" name="SQL Editor bottom toolbar">
+        <toolBar key="sqlEditor.side.bottom" name="%org.jkiss.dbeaver.toolBarConfiguration.sqlEditor.side.bottom">
             <item key="sqlEditor.show.output" commandId="org.jkiss.dbeaver.ui.editors.sql.show.output" defaultVisibility="false"/>
             <item key="sqlEditor.show.log" commandId="org.jkiss.dbeaver.ui.editors.sql.show.log" defaultVisibility="false"/>
             <item key="sqlEditor.show.variables" commandId="org.jkiss.dbeaver.ui.editors.sql.show.variables" defaultVisibility="false"/>

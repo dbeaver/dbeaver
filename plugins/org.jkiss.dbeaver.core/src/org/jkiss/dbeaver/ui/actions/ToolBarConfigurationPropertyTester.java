@@ -20,24 +20,20 @@ import org.eclipse.core.expressions.PropertyTester;
 import org.jkiss.dbeaver.ui.ActionUtils;
 
 public class ToolBarConfigurationPropertyTester extends PropertyTester {
-    public static final String NAMESPACE = "org.jkiss.dbeaver.ui.toolbar.configuration";
-    public static final String PROP_VISIBLE = "visible";
+    public static final String NAMESPACE = "org.jkiss.dbeaver.ui.toolbar.configuration"; //$NON-NLS-1$
+    public static final String PROP_VISIBLE = "visible"; //$NON-NLS-1$
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        switch (property) {
-            case PROP_VISIBLE: {
-                if (args != null && args.length == 2) {
-                    boolean result = ToolBarConfigurationRegistry.getInstance().isItemVisible(args[0].toString(), args[1].toString());
-                    return result;
-                }
-                break;
-            }   
+        if (PROP_VISIBLE.equals(property) && args != null && args.length == 2) {
+            return ToolBarConfigurationRegistry.getInstance().isItemVisible(args[0].toString(), args[1].toString());
         }
-        
         return true;
     }
 
+    /**
+     * Notify eclipse that visibility preferences were changed
+     */
     public static void fireVisibilityPropertyChange() {
         ActionUtils.evaluatePropertyState(NAMESPACE + "." + PROP_VISIBLE);
     }

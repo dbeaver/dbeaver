@@ -42,17 +42,17 @@ public class ToolBarConfigurationDescriptor {
         private final String prefKeyIsSet;
         private Boolean isVisible = null;
         
-        public Item(IConfigurationElement e) {
+        public Item(@NotNull IConfigurationElement e) {
             this.key = e.getAttribute(KEY_ATTR_NAME);
             this.name = e.getAttribute(NAME_ATTR_NAME);
             this.commandId = e.getAttribute(CMD_ID_ATTR_NAME);
-            this.defaultVisibility = CommonUtils.getBoolean(e.getAttribute(DEFVISIBILITY_ATTR_NAME));
+            this.defaultVisibility = CommonUtils.getBoolean(e.getAttribute(DEFAULT_VISIBILITY_ATTR_NAME));
             
             this.prefKeyVisibility = ToolBarConfigurationRegistry.makeItemVisibilityPreferenceKeyName(
-                ToolBarConfigurationDescriptor.this.key, this.key, "visibility"
+                ToolBarConfigurationDescriptor.this.key, this.key, "visibility"  //$NON-NLS-1$
             );
             this.prefKeyIsSet = ToolBarConfigurationRegistry.makeItemVisibilityPreferenceKeyName(
-                ToolBarConfigurationDescriptor.this.key, this.key, "isSet"
+                ToolBarConfigurationDescriptor.this.key, this.key, "isSet"  //$NON-NLS-1$
             );
         }
         
@@ -72,6 +72,9 @@ public class ToolBarConfigurationDescriptor {
             return defaultVisibility;
         }
 
+        /**
+         * Returns is toolbar item visible
+         */
         public boolean isVisible() {
             if (isVisible == null) {
                 IPreferenceStore prefs = DBeaverActivator.getInstance().getPreferenceStore();
@@ -79,7 +82,10 @@ public class ToolBarConfigurationDescriptor {
             }
             return isVisible;
         }
-        
+
+        /**
+         * Set visibility for toolbar item
+         */
         public void setVisible(boolean value) {
             IPreferenceStore prefs = DBeaverActivator.getInstance().getPreferenceStore();
             prefs.setValue(prefKeyIsSet, true);
@@ -90,12 +96,12 @@ public class ToolBarConfigurationDescriptor {
     
     private static final Log log = Log.getLog(ToolBarConfigurationDescriptor.class);
 
-    static final String TOOLBAR_ELEMENT_NAME = "toolBar";
-    static final String ITEM_ELEMENT_NAME = "item";
-    static final String KEY_ATTR_NAME = "key";
-    static final String NAME_ATTR_NAME = "name";
-    static final String CMD_ID_ATTR_NAME = "commandId";
-    static final String DEFVISIBILITY_ATTR_NAME = "defaultVisibility";
+    static final String TOOLBAR_ELEMENT_NAME = "toolBar"; //$NON-NLS-1$
+    static final String ITEM_ELEMENT_NAME = "item"; //$NON-NLS-1$
+    static final String KEY_ATTR_NAME = "key"; //$NON-NLS-1$
+    static final String NAME_ATTR_NAME = "name"; //$NON-NLS-1$
+    static final String CMD_ID_ATTR_NAME = "commandId"; //$NON-NLS-1$
+    static final String DEFAULT_VISIBILITY_ATTR_NAME = "defaultVisibility"; //$NON-NLS-1$
 
     private final String key;
     private final String name;
@@ -106,16 +112,18 @@ public class ToolBarConfigurationDescriptor {
         this.key = key;
         
         this.name = elements.stream().map(e -> e.getAttribute(NAME_ATTR_NAME))
-            .filter(s -> CommonUtils.isNotEmpty(s))
+            .filter(CommonUtils::isNotEmpty)
             .findFirst().orElse(key);
         
         this.itemsByKey = elements.stream()
             .flatMap(e -> Stream.of(e.getChildren(ITEM_ELEMENT_NAME)))
             .collect(Collectors.toMap(
-                e -> e.getAttribute(KEY_ATTR_NAME), 
-                e -> new Item(e),
-                (a, b) -> { throw new RuntimeException("Duplicate toolbar " + key + " configuration item " + a.key); },
-                () -> new LinkedHashMap<>()));
+                e -> e.getAttribute(KEY_ATTR_NAME),
+                Item::new,
+                (a, b) -> {
+                    throw new RuntimeException("Duplicate toolbar " + key + " configuration item " + a.key);
+                },
+                LinkedHashMap::new));
     }
 
     public String getKey() {
@@ -126,6 +134,9 @@ public class ToolBarConfigurationDescriptor {
         return name;
     }
 
+    /**
+     * Returns if item visible
+     */
     public boolean isItemVisible(@NotNull String itemKey) {
         Item item = itemsByKey.get(itemKey);
         if (item != null) {
@@ -136,8 +147,11 @@ public class ToolBarConfigurationDescriptor {
         }
     }
 
+    /**
+     * Return known toolbar items keys
+     */
     @NotNull
-    public Collection<Item> items() {
+    public Collection<Item> getItems() {
         return itemsByKey.values();
     }
 

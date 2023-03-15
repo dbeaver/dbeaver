@@ -31,13 +31,16 @@ import org.jkiss.dbeaver.Log;
 
 public class ToolBarConfigurationRegistry {
     
-    static final String EXTENSION_ID = "org.jkiss.dbeaver.toolBarConfiguration";
+    static final String EXTENSION_ID = "org.jkiss.dbeaver.toolBarConfiguration"; //$NON-NLS-1$
     
     private static final Log log = Log.getLog(ToolBarConfigurationRegistry.class);
 
     private static ToolBarConfigurationRegistry instance = null;
 
-    public synchronized static ToolBarConfigurationRegistry getInstance() {
+    /**
+     * Returns an instance of this singleton
+     */
+    public static synchronized ToolBarConfigurationRegistry getInstance() {
         if (instance == null) {
             instance = new ToolBarConfigurationRegistry();
             instance.loadExtensions(Platform.getExtensionRegistry());
@@ -58,20 +61,18 @@ public class ToolBarConfigurationRegistry {
             .collect(Collectors.groupingBy(e -> e.getAttribute(ToolBarConfigurationDescriptor.KEY_ATTR_NAME)));
 
         knownToolBars.clear();
-        for (Map.Entry<String, List<IConfigurationElement>> entry: toolBarElementsByKey.entrySet()) {
+        for (Map.Entry<String, List<IConfigurationElement>> entry : toolBarElementsByKey.entrySet()) {
             knownToolBars.put(entry.getKey(), new ToolBarConfigurationDescriptor(entry.getKey(), entry.getValue()));
         }
-    }
-
-    public void dispose()
-    {
-        knownToolBars.clear();
     }
 
     public Collection<ToolBarConfigurationDescriptor> getKnownToolBars() {
         return knownToolBars.values();
     }
 
+    /**
+     * Checks if item on the toolbar visible
+     */
     public boolean isItemVisible(@NotNull String toolBarKey, @NotNull String itemKey) {
         ToolBarConfigurationDescriptor toolBar = knownToolBars.get(toolBarKey);
         if (toolBar != null) {

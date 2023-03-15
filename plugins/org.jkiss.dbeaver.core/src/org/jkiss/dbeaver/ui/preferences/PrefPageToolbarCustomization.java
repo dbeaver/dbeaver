@@ -26,6 +26,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Resource;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -33,11 +34,8 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandImageService;
 import org.eclipse.ui.commands.ICommandService;
-import org.eclipse.ui.internal.model.ContributionService;
-import org.eclipse.ui.internal.util.BundleUtility;
-import org.eclipse.ui.menus.IMenuService;
-import org.eclipse.ui.model.IContributionService;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.ui.*;
@@ -47,7 +45,6 @@ import org.jkiss.dbeaver.ui.actions.ToolBarConfigurationRegistry;
 import org.osgi.framework.Bundle;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -55,14 +52,17 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 
-public class PrefPageMenuCustomization extends AbstractPrefPage implements IWorkbenchPreferencePage {
+public class PrefPageToolbarCustomization extends AbstractPrefPage implements IWorkbenchPreferencePage {
     
+    /**
+     * Tree node with checkbox
+     */
     private abstract class CheckableNode extends TreeNode {
 
         private boolean isChecked;
         private boolean isGrayed;
         
-        public CheckableNode(Object value) {
+        public CheckableNode(@NotNull Object value) {
             super(value);
         }
 
@@ -89,20 +89,20 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
         ToolBarConfigurationDescriptor toolbar;
         List<ToolItemNode> subnodes;
         
-        public ToolBarNode(ToolBarConfigurationDescriptor value) {
+        public ToolBarNode(@NotNull ToolBarConfigurationDescriptor value) {
             super(value.getName());
             this.toolbar = value;
-            this.subnodes = toolbar.items().stream().map(t -> new ToolItemNode(this, t)).collect(Collectors.toList());
+            this.subnodes = toolbar.getItems().stream().map(t -> new ToolItemNode(this, t)).collect(Collectors.toList());
             setChildren(subnodes.toArray(ToolItemNode[]::new));
             update();
         }
         
         public void update() {
-            long checkedCount = subnodes.stream().filter(t -> t.isChecked()).count();
+            long checkedCount = subnodes.stream().filter(CheckableNode::isChecked).count();
             if (checkedCount == 0) {
                 super.setChecked(false);
                 super.setGrayed(false);
-            } else if (toolbar.items().size() == checkedCount) {
+            } else if (toolbar.getItems().size() == checkedCount) {
                 super.setChecked(true);
                 super.setGrayed(false);
             } else {
@@ -134,7 +134,7 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
         final Image icon;
         final ToolBarNode owner;
         
-        public ToolItemNode(ToolBarNode owner, ToolBarConfigurationDescriptor.Item item) {
+        public ToolItemNode(@NotNull ToolBarNode owner, @NotNull ToolBarConfigurationDescriptor.Item item) {
             super(item);
             this.item = item;
             this.name = getItemName(item);
@@ -167,7 +167,7 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
         }
     }
     
-    private static final Log log = Log.getLog(PrefPageMenuCustomization.class);
+    private static final Log log = Log.getLog(PrefPageToolbarCustomization.class);
     
     private final Object syncRoot = new Object();
     
@@ -180,17 +180,18 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
 
     private CheckboxTreeViewer treeViewer;
     
-    public PrefPageMenuCustomization() {
+    public PrefPageToolbarCustomization() {
         cmdSvc = PlatformUI.getWorkbench().getService(ICommandService.class);
         cmdImageSvc = PlatformUI.getWorkbench().getService(ICommandImageService.class);
         knownCommands = cmdSvc.getDefinedCommandIds();
-        toolBarImage = findBundleImage(PlatformUI.PLUGIN_ID, "$nl$/icons/full/obj16/toolbar.png");
+        toolBarImage = findBundleImage(PlatformUI.PLUGIN_ID, "$nl$/icons/full/obj16/toolbar.png"); //$NON-NLS-1$
         
         toolBarNodes = ToolBarConfigurationRegistry.getInstance().getKnownToolBars().stream()
-            .map(t -> new ToolBarNode(t)).collect(Collectors.toList());
+            .map(ToolBarNode::new).collect(Collectors.toList());
     }
-    
-    private Image findBundleImage(String pluginId, String bundlePath) {
+
+    @Nullable
+    private Image findBundleImage(@NotNull String pluginId, @NotNull String bundlePath) {
         Bundle bundle = Platform.getBundle(pluginId);
         if (bundle != null) {
             ImageDescriptor imageDesc = ImageDescriptor.createFromURLSupplier(true, () -> FileLocator.find(bundle, new Path(bundlePath)));
@@ -221,6 +222,7 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
         return item.getKey();
     }
 
+    @Nullable
     private Image getItemIcon(@NotNull ToolBarConfigurationDescriptor.Item item) {
         if (item.getCommandId() != null && knownCommands.contains(item.getCommandId())) {
             synchronized (syncRoot) {
@@ -245,7 +247,7 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
             toolBarImage.dispose();
         }
         synchronized (syncRoot) {
-            commandImages.values().forEach(image -> image.dispose());
+            commandImages.values().forEach(Resource::dispose);
             commandImages.clear();
         }
         super.dispose();
@@ -256,9 +258,7 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Group groupEditors = UIUtils.createControlGroup(composite, "Toolbar items visiblity", 1, GridData.FILL_BOTH, 0);
-
-        treeViewer = new CheckboxTreeViewer(groupEditors, SWT.BORDER | SWT.UNDERLINE_SINGLE | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.CHECK);
+        treeViewer = new CheckboxTreeViewer(composite, SWT.BORDER | SWT.UNDERLINE_SINGLE | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.CHECK);
         treeViewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
         TreeViewerEditor.create(treeViewer, new ColumnViewerEditorActivationStrategy(treeViewer) { 
             @Override
@@ -266,43 +266,36 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
                 return false;
             }
         }, 0);
-        treeViewer.addDoubleClickListener(new IDoubleClickListener() {
-            @Override
-            public void doubleClick(DoubleClickEvent event) {
-                System.out.println(event);
+        treeViewer.addDoubleClickListener(event -> {
+            if (event.getSelection() instanceof TreeSelection) {
+                TreeSelection selection = (TreeSelection) event.getSelection();
+                if (selection.size() == 1 && selection.getFirstElement() instanceof ToolItemNode) {
+                    CheckableNode node = (CheckableNode) selection.getFirstElement();
+                    onNodeCheckChange(node, !node.isChecked());
+                }
             }
         });
         treeViewer.setCheckStateProvider(new ICheckStateProvider() {
             @Override
             public boolean isGrayed(Object element) { 
                 if (element instanceof CheckableNode) {
-                    return ((CheckableNode)element).isGrayed();
+                    return ((CheckableNode) element).isGrayed();
                 }
                 return false;
             }
+
             @Override
             public boolean isChecked(Object element) {
                 if (element instanceof CheckableNode) {
-                    return ((CheckableNode)element).isChecked();
+                    return ((CheckableNode) element).isChecked();
                 }
                 return false;
             }
         });
-        treeViewer.addCheckStateListener(new ICheckStateListener() {
-            @Override
-            public void checkStateChanged(CheckStateChangedEvent event) {
-                Object node = event.getElement();   
-                if (node instanceof CheckableNode) {
-                    ((CheckableNode)node).setChecked(event.getChecked());
-                    if (node instanceof ToolItemNode) {
-                        ((ToolItemNode)node).owner.update();
-                        treeViewer.refresh();
-                    }
-                    else if (node instanceof ToolBarNode) {
-                        ((ToolBarNode)node).update();
-                        treeViewer.refresh();
-                    }
-                }
+        treeViewer.addCheckStateListener(event -> {
+            Object node = event.getElement();
+            if (node instanceof CheckableNode) {
+                onNodeCheckChange((CheckableNode) node, event.getChecked());
             }
         });
         treeViewer.setContentProvider(new TreeNodeContentProvider());
@@ -310,7 +303,7 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
             @Override
             public Image getImage(Object element) {
                 if (element instanceof CheckableNode) {
-                    return ((CheckableNode)element).getImage();
+                    return ((CheckableNode) element).getImage();
                 } else {
                     return null;
                 }
@@ -318,7 +311,7 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
         });
         treeViewer.setInput(toolBarNodes.toArray(ToolBarNode[]::new));
         
-        forEachToolItem(node -> node.restore());
+        forEachToolItem(ToolItemNode::restore);
         
         treeViewer.refresh();
         treeViewer.expandAll();
@@ -326,9 +319,20 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
         return composite;
     }
     
+    private void onNodeCheckChange(CheckableNode node, boolean newValue) {
+        node.setChecked(newValue);
+        if (node instanceof ToolItemNode) {
+            ((ToolItemNode) node).owner.update();
+            treeViewer.refresh();
+        } else if (node instanceof ToolBarNode) {
+            ((ToolBarNode) node).update();
+            treeViewer.refresh();
+        }
+    }
+    
     private void forEachToolItem(@NotNull Consumer<ToolItemNode> action) {
-        for (ToolBarNode toolBar: toolBarNodes) {
-            for (ToolItemNode item: toolBar.subnodes) {
+        for (ToolBarNode toolBar : toolBarNodes) {
+            for (ToolItemNode item : toolBar.subnodes) {
                 action.accept(item);
             }   
             toolBar.update();
@@ -338,16 +342,16 @@ public class PrefPageMenuCustomization extends AbstractPrefPage implements IWork
     
     @Override
     protected void performDefaults() {
-        forEachToolItem(node -> node.reset());
+        forEachToolItem(ToolItemNode::reset);
     }
 
     @Override
     public final boolean performOk() {
-        forEachToolItem(node -> node.apply());
+        forEachToolItem(ToolItemNode::apply);
         IPreferenceStore prefs = DBeaverActivator.getInstance().getPreferenceStore();
         if (prefs.needsSaving() && prefs instanceof IPersistentPreferenceStore) {
             try {
-                ((IPersistentPreferenceStore)prefs).save();
+                ((IPersistentPreferenceStore) prefs).save();
             } catch (IOException e) {
                 e.printStackTrace();
             }
