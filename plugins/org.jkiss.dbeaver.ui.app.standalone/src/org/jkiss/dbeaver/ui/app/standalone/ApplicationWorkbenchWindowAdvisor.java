@@ -133,7 +133,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
             final MTrimBar trim = ((WorkbenchWindow) window).getTopTrim();
             final Object widget = trim.getWidget();
             if (widget instanceof Control) {
-                UIUtils.applyMainFont((Control) widget);
+                UIUtils.asyncExec(() -> UIUtils.applyMainFont((Control) widget));
             }
         }
     };
