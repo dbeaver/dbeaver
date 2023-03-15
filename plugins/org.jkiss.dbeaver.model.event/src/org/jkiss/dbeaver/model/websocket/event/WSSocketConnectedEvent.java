@@ -16,23 +16,19 @@
  */
 package org.jkiss.dbeaver.model.websocket.event;
 
-//TODO: implement event registry and describe possible events in plugin.xml
-public enum WSEventTopic {
-    SERVER_CONFIG("cb_config"),
-    SESSION_LOG("cb_session_log"),
-    SESSION("cb_session"),
-    DATASOURCE("cb_datasource"),
-    DATASOURCE_FOLDER("cb_datasource_folder"),
-    RM_SCRIPTS("cb_scripts"),
-    PROJECTS("cb_projects");
+import org.jkiss.code.NotNull;
 
-    private final String topicId;
+public class WSSocketConnectedEvent extends WSEvent {
 
-    WSEventTopic(String topicId) {
-        this.topicId = topicId;
+    private final String applicationRunId;
+
+    public WSSocketConnectedEvent(@NotNull String applicationRunId) {
+        super(WSEventType.SESSION_WEBSOCKET_CONNECTED);
+        this.applicationRunId = applicationRunId;
     }
 
-    public String getTopicId() {
-        return topicId;
+    @NotNull
+    public String getApplicationRunId() {
+        return applicationRunId;
     }
 }
