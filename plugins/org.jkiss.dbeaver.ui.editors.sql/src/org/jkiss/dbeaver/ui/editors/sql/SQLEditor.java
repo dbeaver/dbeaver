@@ -1526,31 +1526,30 @@ public class SQLEditor extends SQLEditorBase implements
         sqlExtraPanelToolbar.update(true);
     }
 
-    private ToolItem getViewToolItem(String commandId) {
-        ToolItem viewItem = null;
-        for (ToolItem item : topBarMan.getControl().getItems()) {
-            Object data = item.getData();
-            if (data instanceof CommandContributionItem) {
-                if (((CommandContributionItem) data).getCommand() != null
-                    && commandId.equals(((CommandContributionItem) data).getCommand().getId())
-                ) {
-                    viewItem = item;
-                    break;
-                }
-            }
-        }
-        for (ToolItem item : bottomBarMan.getControl().getItems()) {
-            Object data = item.getData();
-            if (data instanceof CommandContributionItem) {
-                if (((CommandContributionItem) data).getCommand() != null
-                    && commandId.equals(((CommandContributionItem) data).getCommand().getId())
-                ) {
-                    viewItem = item;
-                    break;
-                }
-            }
+    @Nullable
+    private ToolItem getViewToolItem(@NotNull String commandId) {
+        ToolItem viewItem = findViewItemByCommandId(topBarMan, commandId);
+        if (viewItem == null) {
+            viewItem = findViewItemByCommandId(bottomBarMan, commandId);
         }
         return viewItem;
+    }
+    
+    @Nullable
+    private ToolItem findViewItemByCommandId(@NotNull ToolBarManager toolbarManager, @NotNull String commandId) {
+        for (ToolItem item : toolbarManager.getControl().getItems()) {
+            Object data = item.getData();
+            if (data instanceof CommandContributionItem) {
+                if (((CommandContributionItem) data).getCommand() != null
+                    && commandId.equals(((CommandContributionItem) data).getCommand().getId())
+                ) {
+                    return item;
+                }
+            } else if (data instanceof ContributionItem && commandId.equals(((ContributionItem) data).getId())) {
+                return item;
+            }
+        }
+        return null;
     }
 
     private CTabItem getActiveResultsTab() {
