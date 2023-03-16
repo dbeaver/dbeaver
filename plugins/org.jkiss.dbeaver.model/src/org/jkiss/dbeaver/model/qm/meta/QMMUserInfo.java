@@ -14,30 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.qm.filters;
+package org.jkiss.dbeaver.model.qm.meta;
 
-import org.jkiss.dbeaver.model.qm.QMEventFilter;
+public class QMMUserInfo {
+    private final long userId;
+    private final String userName;
 
-public class QMCursorFilter {
-    private final QMEventCriteria criteria;
-    private final QMEventFilter filter;
-    private final String sessionId;
-
-    public QMCursorFilter(String sessionId, QMEventCriteria criteria, QMEventFilter filter) {
-        this.sessionId = sessionId;
-        this.criteria = criteria;
-        this.filter = filter;
+    public QMMUserInfo(long userId, String userName) {
+        this.userId = userId;
+        this.userName = userName;
     }
 
-    public String getSessionId() {
-        return sessionId;
+    public long getUserId() {
+        return userId;
     }
 
-    public QMEventCriteria getCriteria() {
-        return criteria;
-    }
-
-    public QMEventFilter getFilter() {
-        return filter;
+    public String getUserName() {
+        return userName;
     }
 }

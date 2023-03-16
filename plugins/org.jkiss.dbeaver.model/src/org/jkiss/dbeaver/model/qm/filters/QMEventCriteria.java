@@ -44,8 +44,6 @@ public class QMEventCriteria {
     @Nullable
     private Long lastEventId;
     @NotNull
-    private Set<String> users = Collections.emptySet();
-    @NotNull
     private Set<String> driverIds = Collections.emptySet();
     @NotNull
     private Set<QMEventStatus> eventStatuses = Collections.emptySet();
@@ -133,18 +131,6 @@ public class QMEventCriteria {
         this.skipEmptyQueries = skipEmptyQueries;
     }
 
-    public void setUsers(@NotNull Set<String> users) {
-        this.users = users;
-    }
-
-    @NotNull
-    public Set<String> getUsers() {
-        return users;
-    }
-
-    public boolean hasUsers() {
-        return !users.isEmpty();
-    }
 
     @NotNull
     public Set<String> getDriverIds() {

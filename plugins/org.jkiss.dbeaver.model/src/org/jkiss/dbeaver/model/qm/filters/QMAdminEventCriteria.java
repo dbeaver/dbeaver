@@ -16,28 +16,36 @@
  */
 package org.jkiss.dbeaver.model.qm.filters;
 
-import org.jkiss.dbeaver.model.qm.QMEventFilter;
+import org.jkiss.code.NotNull;
 
-public class QMCursorFilter {
+import java.util.Collections;
+import java.util.Set;
+
+public class QMAdminEventCriteria {
+
     private final QMEventCriteria criteria;
-    private final QMEventFilter filter;
-    private final String sessionId;
+    @NotNull
+    private Set<String> users = Collections.emptySet();
 
-    public QMCursorFilter(String sessionId, QMEventCriteria criteria, QMEventFilter filter) {
-        this.sessionId = sessionId;
+    public QMAdminEventCriteria(QMEventCriteria criteria, @NotNull Set<String> users) {
         this.criteria = criteria;
-        this.filter = filter;
+        this.users = users;
     }
 
-    public String getSessionId() {
-        return sessionId;
+    public void setUsers(@NotNull Set<String> users) {
+        this.users = users;
+    }
+
+    @NotNull
+    public Set<String> getUsers() {
+        return users;
+    }
+
+    public boolean hasUsers() {
+        return !users.isEmpty();
     }
 
     public QMEventCriteria getCriteria() {
         return criteria;
-    }
-
-    public QMEventFilter getFilter() {
-        return filter;
     }
 }

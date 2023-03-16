@@ -1155,9 +1155,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             if (driver == null) {
                 return null;
             }
-            driver = driver.createOriginalCopy();
             try {
-                return driver.createOriginalCopy().getScriptDialect().createInstance();
+                return driver.getScriptDialect().createInstance();
             } catch (DBException e) {
                 return null;
             }
@@ -1219,7 +1218,12 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 } else {
                     monitor.subTask("Load all queries"); //$NON-NLS-1$
                 }
-                var cursorFilter = new QMCursorFilter(criteria, filter != null ? filter : (useDefaultFilter ? defaultFilter : null));
+                var qmSessionId = QMUtils.getQmSessionId(DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession());
+                var cursorFilter = new QMCursorFilter(
+                    qmSessionId,
+                    criteria,
+                    filter != null ? filter : (useDefaultFilter ? defaultFilter : null)
+                );
                 try (QMEventCursor cursor = eventBrowser.getQueryHistoryCursor(cursorFilter)) {
                     while (events.size() < entriesPerPage && cursor.hasNextEvent(monitor)) {
                         if (monitor.isCanceled()) {

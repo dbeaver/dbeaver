@@ -195,20 +195,7 @@ public class QMUtils {
             }
         }
         criteria.setQueryTypes(queryTypes.toArray(new DBCExecutionPurpose[0]));
-        var userId = getQmUserId(application.getWorkspace().getWorkspaceSession());
-        if (userId != null) {
-            criteria.setUsers(Set.of(userId));
-        }
         return criteria;
-    }
-
-    private static String getQmUserId(SMSession session) {
-        SMSessionPersistent sessionPersistent = DBUtils.getAdapter(SMSessionPersistent.class, session);
-        if (sessionPersistent == null) {
-            log.warn("Session persistent not found");
-            return null;
-        }
-        return session.getSessionPrincipal().getUserName();
     }
 
     /**
@@ -229,6 +216,11 @@ public class QMUtils {
             session = workspace.getAuthContext().getSpaceSession(monitor, workspace, false);
         }
 
+        return getQmSessionId(session);
+    }
+
+    @Nullable
+    public static String getQmSessionId(SMSession session) {
         SMSessionPersistent sessionPersistent = DBUtils.getAdapter(SMSessionPersistent.class, session);
         if (sessionPersistent == null) {
             log.warn("Session persistent not found");

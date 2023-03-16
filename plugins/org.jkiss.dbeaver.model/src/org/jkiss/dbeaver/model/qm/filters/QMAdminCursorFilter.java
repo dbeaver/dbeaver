@@ -18,22 +18,30 @@ package org.jkiss.dbeaver.model.qm.filters;
 
 import org.jkiss.dbeaver.model.qm.QMEventFilter;
 
-public class QMCursorFilter {
-    private final QMEventCriteria criteria;
+import java.util.Set;
+
+public class QMAdminCursorFilter {
+    private final QMAdminEventCriteria criteria;
     private final QMEventFilter filter;
     private final String sessionId;
 
-    public QMCursorFilter(String sessionId, QMEventCriteria criteria, QMEventFilter filter) {
+    public QMAdminCursorFilter(String sessionId, QMAdminEventCriteria criteria, QMEventFilter filter) {
         this.sessionId = sessionId;
         this.criteria = criteria;
         this.filter = filter;
+    }
+
+    public QMAdminCursorFilter(QMCursorFilter cursorFilter, Set<String> userNames) {
+        this.sessionId = cursorFilter.getSessionId();
+        this.criteria = new QMAdminEventCriteria(cursorFilter.getCriteria(), userNames);
+        this.filter = cursorFilter.getFilter();
     }
 
     public String getSessionId() {
         return sessionId;
     }
 
-    public QMEventCriteria getCriteria() {
+    public QMAdminEventCriteria getAdminCriteria() {
         return criteria;
     }
 
