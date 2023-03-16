@@ -1114,6 +1114,15 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side.bottom" >
+            <dynamic class="org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution$Horizontal" id="sqlEditor.side.bottom.separator">
+                <visibleWhen checkEnabled="false">
+                    <or>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.bottom,sqlEditor.show.output"/>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.bottom,sqlEditor.show.log"/>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.bottom,sqlEditor.show.variables"/>
+                    </or>
+                </visibleWhen>
+            </dynamic>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.output">
                 <visibleWhen checkEnabled="false">
                     <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.bottom,sqlEditor.show.output"/>

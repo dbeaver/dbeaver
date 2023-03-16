@@ -1026,7 +1026,6 @@ public class SQLEditor extends SQLEditorBase implements
 
         bottomBarMan = new ToolBarManager(SWT.VERTICAL | SWT.FLAT);
         bottomBarMan.add(ActionUtils.makeActionContribution(new ShowPreferencesAction(), false));
-        bottomBarMan.add(new ToolbarSeparatorContribution(false));
         if (menuService != null) {
             menuService.populateContributionManager(bottomBarMan, SIDE_BOTTOM_TOOLBAR_CONTRIBUTION_ID);
         }
