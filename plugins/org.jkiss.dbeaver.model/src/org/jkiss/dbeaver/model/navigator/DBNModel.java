@@ -180,11 +180,15 @@ public class DBNModel implements IResourceChangeListener {
         }
     }
 
-    @Nullable
-    public DBNDatabaseNode getNodeByObject(DBSObject object)
-    {
+    /**
+     * @param object object to find Nodes for
+     * @param filterVirtual if virtual values should be filtered out
+     * @return list of nodes associated with object
+     */
+    @NotNull
+    public List<DBNDatabaseNode> getNodesByObject(DBSObject object, boolean filterVirtual) {
         if (object instanceof DBNDatabaseNode) {
-            return (DBNDatabaseNode)object;
+            return Collections.singletonList(((DBNDatabaseNode) object));
         }
         object = DBUtils.getPublicObjectContainer(object);
 
@@ -193,34 +197,37 @@ public class DBNModel implements IResourceChangeListener {
             obj = nodeMap.get(object);
         }
         if (obj == null) {
-            return null;
+            return Collections.emptyList();
         } else if (obj instanceof DBNDatabaseNode) {
-            return (DBNDatabaseNode)obj;
+            return Collections.singletonList(((DBNDatabaseNode) obj));
         } else if (obj instanceof List) {
             @SuppressWarnings("unchecked")
             List<DBNDatabaseNode> nodeList = (List<DBNDatabaseNode>) obj;
             if (nodeList.isEmpty()) {
-                return null;
+                return Collections.emptyList();
             }
             if (nodeList.size() > 1) {
+                ArrayList<DBNDatabaseNode> foundNodes = new ArrayList<>();
                 for (DBNDatabaseNode node : nodeList) {
-                    if (node instanceof DBNDatabaseItem && !((DBNDatabaseItem)node).getMeta().isVirtual()) {
-                        return node;
+                    if (node instanceof DBNDatabaseItem && (!filterVirtual || !node.getMeta().isVirtual())) {
+                        foundNodes.add(node);
                     }
                 }
+                return foundNodes;
+            } else {
+                return nodeList;
             }
-            // Get just first one
-            return nodeList.get(0);
         } else {
             // Never be here
             throw new IllegalStateException();
         }
-/*
-        if (node == null) {
-            log.warn("Can't find tree node for object " + object.getName() + " (" + object.getClass().getName() + ")");
-        }
-        return node;
-*/
+    }
+
+    @Nullable
+    public DBNDatabaseNode getNodeByObject(DBSObject object)
+    {
+        List<DBNDatabaseNode> nodeListByObject = getNodesByObject(object, true);
+        return nodeListByObject.isEmpty() ? null : nodeListByObject.get(0);
     }
 
     @Nullable

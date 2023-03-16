@@ -385,9 +385,14 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                 if (event.getObject() instanceof DBPDataSourceContainer) {
                     removeDataSource((DBPDataSourceContainer) event.getObject());
                 } else {
-                    final DBNDatabaseNode node = model.getNodeByObject(event.getObject());
-                    if (node != null && node.getParentNode() instanceof DBNDatabaseNode) {
-                        ((DBNDatabaseNode)node.getParentNode()).removeChildItem(event.getObject());
+                    List<DBNDatabaseNode> nodes;
+                    // Composite caches can have nodes pointing on the same object, if that happens we need to clean
+                    // all of them
+                    nodes = model.getNodesByObject(event.getObject(), false);
+                    for (DBNDatabaseNode node : nodes) {
+                        if (node != null && node.getParentNode() instanceof DBNDatabaseNode) {
+                            ((DBNDatabaseNode) node.getParentNode()).removeChildItem(event.getObject());
+                        }
                     }
                 }
                 break;
