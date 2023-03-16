@@ -32,7 +32,7 @@
 						<with variable="activePart">
 							<not><test property="org.jkiss.dbeaver.core.global.hasPreference" value="ai.completion.disabled"/></not>
 						</with>
-                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.top,sqlEditor.ai.showCompletion"/>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.top,org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion"/>
 					</and>
 				</visibleWhen>
 			</command>
@@ -56,7 +56,7 @@
 	
     <extension point="org.jkiss.dbeaver.toolBarConfiguration">
         <toolBar key="sqlEditor.side.top">
-            <item key="sqlEditor.ai.showCompletion" commandId="org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion" defaultVisibility="false"/>
+            <item key="org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion" commandId="org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion" defaultVisibility="false"/>
         </toolBar>
     </extension>
 </plugin>

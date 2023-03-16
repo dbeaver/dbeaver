@@ -37,7 +37,7 @@
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side.top" >
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.terminalView">
                 <visibleWhen checkEnabled="false">
-                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.top,sqlEditor.terminalView" />
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.top,org.jkiss.dbeaver.ui.editors.sql.show.terminalView"/>
                 </visibleWhen>
             </command>
         </menuContribution>
@@ -48,7 +48,7 @@
     
     <extension point="org.jkiss.dbeaver.toolBarConfiguration">
         <toolBar key="sqlEditor.side.top">
-            <item key="sqlEditor.terminalView" commandId="org.jkiss.dbeaver.ui.editors.sql.show.terminalView" defaultVisibility="false"/>
+            <item key="org.jkiss.dbeaver.ui.editors.sql.show.terminalView" commandId="org.jkiss.dbeaver.ui.editors.sql.show.terminalView" defaultVisibility="false"/>
         </toolBar>
     </extension>
     
