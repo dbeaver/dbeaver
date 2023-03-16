@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 public class DBAuthUtils {
 
@@ -47,6 +48,10 @@ public class DBAuthUtils {
         DBPConnectionConfiguration connectionInfo = dataSourceContainer.getConnectionConfiguration();
         String oldPassword = connectionInfo.getUserPassword();
         String userName = connectionInfo.getUserName();
+        if (CommonUtils.isEmpty(userName)) {
+            // Credentials not saved in the connection settings, use actual configuration
+            userName = dataSourceContainer.getActualConnectionConfiguration().getUserName();
+        }
         DBAPasswordChangeInfo userPassword = DBWorkbench.getPlatformUI().promptUserPasswordChange(
             ModelMessages.dialog_user_password_change_label,
             userName,
