@@ -258,7 +258,10 @@ public class PrefPageToolbarCustomization extends AbstractPrefPage implements IW
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        treeViewer = new CheckboxTreeViewer(composite, SWT.BORDER | SWT.UNDERLINE_SINGLE | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.CHECK);
+        treeViewer = new CheckboxTreeViewer(
+            composite,
+            SWT.BORDER | SWT.UNDERLINE_SINGLE | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.CHECK
+        );
         treeViewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
         TreeViewerEditor.create(treeViewer, new ColumnViewerEditorActivationStrategy(treeViewer) { 
             @Override
