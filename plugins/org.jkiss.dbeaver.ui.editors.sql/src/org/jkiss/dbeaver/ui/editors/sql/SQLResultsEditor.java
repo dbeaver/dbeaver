@@ -17,14 +17,17 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetListener;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
-public class SQLResultsEditor extends EditorPart {
+public class SQLResultsEditor extends EditorPart implements IResultSetListener {
     private ResultSetViewer viewer;
 
     @Override
@@ -39,31 +42,66 @@ public class SQLResultsEditor extends EditorPart {
     public void createPartControl(Composite parent) {
         final SQLResultsEditorInput input = (SQLResultsEditorInput) getEditorInput();
         viewer = new ResultSetViewer(parent, getSite(), input.getContainer());
+        viewer.addListener(this);
         viewer.refresh();
+        getSite().setSelectionProvider(viewer);
     }
 
     @Override
     public void setFocus() {
         viewer.getControl().setFocus();
+        getEditorSite().getActionBars().updateActionBars();
     }
 
     @Override
     public void doSave(IProgressMonitor monitor) {
-        // do nothing
+        viewer.doSave(monitor);
     }
 
     @Override
     public void doSaveAs() {
-        // do nothing
+        viewer.doSaveAs();
     }
 
     @Override
     public boolean isDirty() {
-        return false;
+        return viewer.isDirty();
     }
 
     @Override
     public boolean isSaveAsAllowed() {
-        return false;
+        return viewer.isSaveAsAllowed();
+    }
+
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        if (adapter.isInstance(viewer)) {
+            return adapter.cast(viewer);
+        }
+        return super.getAdapter(adapter);
+    }
+
+    @Override
+    public void dispose() {
+        if (viewer != null) {
+            viewer.removeListener(this);
+            viewer = null;
+        }
+        super.dispose();
+    }
+
+    @Override
+    public void handleResultSetChange() {
+        firePropertyChange(IEditorPart.PROP_DIRTY);
+    }
+
+    @Override
+    public void handleResultSetLoad() {
+        getEditorSite().getActionBars().updateActionBars();
+    }
+
+    @Override
+    public void handleResultSetSelectionChange(SelectionChangedEvent event) {
+        // do nothing
     }
 }
