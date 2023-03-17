@@ -254,6 +254,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_checkbox_create_script_folders;
     public static String pref_page_sql_editor_checkbox_reset_cursor;
     public static String pref_page_sql_editor_checkbox_max_editor_on_script_exec;
+    public static String pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results;
+    public static String pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results_tip;
     public static String pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters;
     public static String pref_page_sql_editor_text_anonymous_parameter_mark;
     public static String pref_page_sql_editor_text_named_parameter_prefix;
