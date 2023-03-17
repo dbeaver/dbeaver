@@ -72,13 +72,12 @@ public class ToolBarConfigurationRegistry {
 
     /**
      * Checks if item on the toolbar visible
-     */
-    public boolean isItemVisible(@NotNull String toolBarKey, @NotNull String itemKey) {
+     */    public boolean isItemVisible(@NotNull String toolBarKey, @NotNull String itemKey) {
         ToolBarConfigurationDescriptor toolBar = knownToolBars.get(toolBarKey);
         if (toolBar != null) {
             return toolBar.isItemVisible(itemKey);
         } else {
-            log.debug("Unknown toolbar key " + toolBarKey + " for item " + itemKey);
+            log.error("Unknown toolbar key " + toolBarKey + " for item " + itemKey);
             return false;
         }
     }

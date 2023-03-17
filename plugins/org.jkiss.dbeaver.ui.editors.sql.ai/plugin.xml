@@ -56,7 +56,7 @@
 	
     <extension point="org.jkiss.dbeaver.toolBarConfiguration">
         <toolBar key="sqlEditor.side.top">
-            <item key="org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion" commandId="org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion" defaultVisibility="false"/>
+            <item commandId="org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion" defaultVisibility="false"/>
         </toolBar>
     </extension>
 </plugin>

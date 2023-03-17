@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.core.commands.ParameterizedCommand;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
@@ -23,6 +24,8 @@ import org.eclipse.core.resources.IFileState;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.e4.ui.model.application.ui.menu.MHandledItem;
+import org.eclipse.e4.ui.workbench.renderers.swt.HandledContributionItem;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -1540,12 +1543,18 @@ public class SQLEditor extends SQLEditorBase implements
         for (ToolItem item : toolbarManager.getControl().getItems()) {
             Object data = item.getData();
             if (data instanceof CommandContributionItem) {
-                if (((CommandContributionItem) data).getCommand() != null
-                    && commandId.equals(((CommandContributionItem) data).getCommand().getId())
-                ) {
+                ParameterizedCommand cmd = ((CommandContributionItem) data).getCommand(); 
+                if (cmd != null && commandId.equals(cmd.getId())) {
                     return item;
                 }
-            } else if (data instanceof ContributionItem && commandId.equals(((ContributionItem) data).getId())) {
+            } else if (data instanceof HandledContributionItem) {
+                MHandledItem model = ((HandledContributionItem) data).getModel();
+                if (model != null ) {
+                    ParameterizedCommand cmd = model.getWbCommand();
+                    if (cmd != null && commandId.equals(cmd.getId())) {
+                        return item;
+                    }
+                }
                 return item;
             }
         }

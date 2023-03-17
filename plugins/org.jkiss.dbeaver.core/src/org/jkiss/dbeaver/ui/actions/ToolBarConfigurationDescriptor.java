@@ -43,11 +43,18 @@ public class ToolBarConfigurationDescriptor {
         private Boolean isVisible = null;
         
         public Item(@NotNull IConfigurationElement e) {
-            this.key = e.getAttribute(KEY_ATTR_NAME);
-            this.name = e.getAttribute(NAME_ATTR_NAME);
-            this.commandId = e.getAttribute(CMD_ID_ATTR_NAME);
+            String key = e.getAttribute(KEY_ATTR_NAME);
+            String name = e.getAttribute(NAME_ATTR_NAME);
+            String commandId = e.getAttribute(CMD_ID_ATTR_NAME);
+            
+            this.key = CommonUtils.isNotEmpty(key) ? key : (CommonUtils.isNotEmpty(commandId) ?  commandId : null);
+            this.name = name;
+            this.commandId = commandId;
             this.defaultVisibility = CommonUtils.getBoolean(e.getAttribute(DEFAULT_VISIBILITY_ATTR_NAME));
             
+            if (this.key == null) {
+                throw new RuntimeException("Failed to resolve toolbar configuration item key");
+            }
             this.prefKeyVisibility = ToolBarConfigurationRegistry.makeItemVisibilityPreferenceKeyName(
                 ToolBarConfigurationDescriptor.this.key, this.key, "visibility"  //$NON-NLS-1$
             );
@@ -117,11 +124,14 @@ public class ToolBarConfigurationDescriptor {
         
         this.itemsByKey = elements.stream()
             .flatMap(e -> Stream.of(e.getChildren(ITEM_ELEMENT_NAME)))
+            .map(e -> new Item(e))
             .collect(Collectors.toMap(
-                e -> e.getAttribute(KEY_ATTR_NAME),
-                Item::new,
+                item -> item.getKey(),
+                item -> item,
                 (a, b) -> {
-                    throw new RuntimeException("Duplicate toolbar " + key + " configuration item " + a.key);
+                    String msg = "Duplicate toolbar " + key + " configuration item " + a.key;
+                    log.error(msg);
+                    throw new RuntimeException(msg);
                 },
                 LinkedHashMap::new));
     }
@@ -142,7 +152,7 @@ public class ToolBarConfigurationDescriptor {
         if (item != null) {
             return item.isVisible();
         } else {
-            log.debug("Unknown item key " + itemKey);
+            log.error("Testing unknown item key " + itemKey + " for toolbar configuration " + key);
             return false;
         }
     }
