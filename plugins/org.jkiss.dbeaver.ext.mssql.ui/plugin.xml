@@ -6,7 +6,7 @@
     <extension point="org.jkiss.dbeaver.dataSourceView">
         <view
                 id="org.jkiss.dbeaver.ext.mssql.dataSourceWizardView"
-                dataSource="sqlserver,mssql"
+                dataSource="sqlserver,mssql,sybase"
                 targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
                 label="%sqlserver.dialog.connection.header"
                 class="org.jkiss.dbeaver.ext.mssql.ui.SQLServerConnectionPage"
@@ -16,7 +16,7 @@
                 class="org.jkiss.dbeaver.ext.mssql.ui.SQLServerConnectionPage"
                 icon="icons/database.png"
                 id="org.jkiss.dbeaver.ext.mssql.dataSourceEditorView"
-                dataSource="sqlserver,mssql"
+                dataSource="sqlserver,mssql,sybase"
                 label="%sqlserver.dialog.connection.header"
                 targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
         </view>
