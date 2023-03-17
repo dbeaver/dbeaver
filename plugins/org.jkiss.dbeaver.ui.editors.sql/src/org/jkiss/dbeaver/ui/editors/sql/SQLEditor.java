@@ -2760,10 +2760,6 @@ public class SQLEditor extends SQLEditorBase implements
             bottomBarMan.getControl().setBackground(bgColor);
         }
 
-        if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
-            ((SQLEditorSourceViewerConfiguration) getSourceViewerConfiguration()).onDataSourceChange();
-        }
-
         DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null) {
             EditorUtils.setInputDataSource(getEditorInput(), new SQLNavigatorContext(executionContext));
@@ -2775,6 +2771,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (syntaxLoaded && lastExecutionContext == executionContext) {
             return;
         }
+
         if (curResultsContainer != null) {
             ResultSetViewer rsv = curResultsContainer.getResultSetController();
             if (rsv != null) {
@@ -2974,8 +2971,9 @@ public class SQLEditor extends SQLEditorBase implements
     public void handleDataSourceEvent(final DBPEvent event)
     {
         final boolean dsEvent = event.getObject() == getDataSourceContainer();
-        final boolean objectEvent = event.getObject().getDataSource() == getDataSource();
-        if (dsEvent || objectEvent) {
+        final boolean objectEvent = event.getObject() != null && event.getObject().getDataSource() == getDataSource();
+        final boolean registryEvent = getDataSourceContainer() != null && event.getData() == getDataSourceContainer().getRegistry(); 
+        if (dsEvent || objectEvent || registryEvent) {
             UIUtils.asyncExec(
                 () -> {
                     switch (event.getAction()) {
@@ -3592,6 +3590,14 @@ public class SQLEditor extends SQLEditorBase implements
             }
             ResultSetViewer rsv = resultsProvider.getResultSetController();
             return rsv == null ? null : rsv.getDataReceiver();
+        }
+
+        @Override
+        public void releaseDataReceiver(int resultSetNumber) {
+            if (resultContainers.size() > resultSetNumber) {
+                final CTabItem tab = resultContainers.get(resultSetNumber).resultsTab;
+                UIUtils.syncExec(tab::dispose);
+            }
         }
 
         @Override
