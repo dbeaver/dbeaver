@@ -21,14 +21,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.utils.ArrayUtils;
@@ -62,21 +59,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
 
     @Override
     public final void initializeProjects() {
-        // Acquire workspace session
-        try {
-            this.getAuthContext().addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
-        } catch (DBException e) {
-            if (!(e instanceof DBInterruptedException)) {
-                log.debug(e);
-                DBWorkbench.getPlatformUI().showMessageBox(
-                    "Authentication error",
-                    "Error authenticating application user: " +
-                        "\n" + e.getMessage(),
-                    true);
-            }
-            dispose();
-            System.exit(101);
-        }
+        initializeWorkspaceSession();
 
         loadWorkspaceProjects();
 
