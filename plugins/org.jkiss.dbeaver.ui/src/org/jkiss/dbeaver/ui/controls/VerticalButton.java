@@ -66,6 +66,7 @@ public class VerticalButton extends Canvas {
         super(parent, style | SWT.NO_FOCUS);
 
         setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
+        setFont(parent.getFont());
         parent.addItem(this);
 
         this.addPaintListener(this::paint);
