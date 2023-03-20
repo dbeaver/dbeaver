@@ -34,12 +34,22 @@
     </extension>
     
     <extension point="org.eclipse.ui.menus">
-        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side" >
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.terminalView"/>
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side.top" >
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.terminalView">
+                <visibleWhen checkEnabled="false">
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.top,org.jkiss.dbeaver.ui.editors.sql.show.terminalView"/>
+                </visibleWhen>
+            </command>
         </menuContribution>
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.execute?after=plan">
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.terminalView"/>
         </menuContribution >
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.toolBarConfiguration">
+        <toolBar key="sqlEditor.side.top">
+            <item commandId="org.jkiss.dbeaver.ui.editors.sql.show.terminalView" defaultVisibility="false"/>
+        </toolBar>
     </extension>
     
     <extension point="org.eclipse.ui.commandImages">
