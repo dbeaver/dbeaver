@@ -428,7 +428,7 @@
             <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
         </task>
-        <task id="mysqlScriptExecute" name="%task.mysqlScriptExecute.name" description="%task.mysqlScriptExecute.description" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler">
+        <task id="mysqlScriptExecute" name="%task.mysqlScriptExecute.name" description="%task.mysqlScriptExecute.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler">
             <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
         </task>

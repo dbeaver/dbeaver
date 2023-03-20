@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -57,7 +58,6 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialog;
@@ -261,7 +261,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
 
                             UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
                             if (serviceSQL != null) {
-                                String query = serviceSQL.openSQLEditor(contextProvider, DTUIMessages.data_transfer_task_configurator_sql_query_title, UIIcon.SQL_SCRIPT, "");
+                                String query = serviceSQL.openSQLEditor(contextProvider, DTUIMessages.data_transfer_task_configurator_sql_query_title, DBIcon.TREE_SCRIPT, "");
                                 if (query != null) {
                                     SQLScriptContext scriptContext = new SQLScriptContext(null, contextProvider, null, new PrintWriter(System.err, true), null);
                                     SQLQueryDataContainer container = new SQLQueryDataContainer(contextProvider, new SQLQuery(dataSource, query), scriptContext, log);
@@ -299,7 +299,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                             String query = serviceSQL.openSQLEditor(
                                 contextProvider,
                                 DTUIMessages.data_transfer_task_configurator_sql_query_title,
-                                UIIcon.SQL_SCRIPT,
+                                DBIcon.TREE_SCRIPT,
                                 ((SQLQueryDataContainer) producer.getDatabaseObject()).getQuery().getText());
                             if (query != null) {
                                 SQLQueryDataContainer container = (SQLQueryDataContainer)producer.getDatabaseObject();

@@ -26,8 +26,10 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -36,6 +38,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
@@ -269,6 +272,18 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
     };
+    private final IPropertyChangeListener themeChangeListener = e -> {
+        final Font font = JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MAIN_FONT);
+        if (resultTabs != null) {
+            resultTabs.setFont(font);
+        }
+        if (this.switchPresentationSQLButton != null) {
+            this.switchPresentationSQLButton.setFont(font);
+        }
+        if (this.switchPresentationExtraButton != null) {
+            this.switchPresentationExtraButton.setFont(font);
+        }
+    };
     private VerticalButton switchPresentationSQLButton;
     private VerticalButton switchPresentationExtraButton;
 
@@ -277,6 +292,7 @@ public class SQLEditor extends SQLEditorBase implements
         super();
 
         this.extraPresentationDescriptor = SQLPresentationRegistry.getInstance().getPresentation(this);
+        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
     }
 
     public void setResultSetAutoFocusEnabled(boolean value) {
@@ -986,6 +1002,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         // Update controls
         UIExecutionQueue.queueExec(this::onDataSourceChange);
+        themeChangeListener.propertyChange(null);
     }
 
     protected boolean isHideQueryText() {
@@ -1070,7 +1087,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         switchPresentationSQLButton = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK);
         switchPresentationSQLButton.setText(SQLEditorMessages.editors_sql_description);
-        switchPresentationSQLButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
+        switchPresentationSQLButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCRIPT));
 
         switchPresentationExtraButton = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK);
         switchPresentationExtraButton.setData(extraPresentationDescriptor);
@@ -1174,6 +1191,7 @@ public class SQLEditor extends SQLEditorBase implements
             });
         }
         resultTabs.setSimple(true);
+        resultTabs.setFont(JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MAIN_FONT));
 
         resultTabs.addMouseListener(new MouseAdapter() {
             @Override
@@ -2906,6 +2924,7 @@ public class SQLEditor extends SQLEditorBase implements
             deleteFileIfEmpty(sqlFile);
         }
 
+        PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
         UIUtils.dispose(editorImage);
         baseEditorImage = null;
         editorImage = null;

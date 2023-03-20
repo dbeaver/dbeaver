@@ -55,7 +55,7 @@
     <extension point="org.eclipse.ui.editors">
         <editor name="%editor.sql.name"
                 extensions="sql"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png"
                 contributorClass="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributor"
                 class="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"
                 matchingStrategy="org.jkiss.dbeaver.ui.editors.sql.SQLEditorMatchingStrategy"
@@ -84,7 +84,7 @@
         <specification
                 annotationType="org.jkisss.dbeaver.ui.occurrences.underCursor"
                 label="SQL - word (under cursor) occurrences"
-                icon="icons/sql/sql_script.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png"
                 textPreferenceKey="occurrenceIndication"
                 textPreferenceValue="false"
                 highlightPreferenceKey="occurrenceHighlighting"
@@ -109,7 +109,7 @@
         <specification
                 annotationType="org.jkisss.dbeaver.ui.occurrences.forSelection"
                 label="SQL - selected word occurrences"
-                icon="icons/sql/sql_script.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png"
                 textPreferenceKey="writeOccurrenceIndication"
                 textPreferenceValue="false"
                 highlightPreferenceKey="writeOccurrenceHighlighting"
@@ -262,11 +262,11 @@
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.core.sql.editor.open" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png"/>
+        <image commandId="org.jkiss.dbeaver.core.sql.editor.open" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png"/>
         <image commandId="org.jkiss.dbeaver.core.sql.editor.recent" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_recent.png"/>
         <image commandId="org.jkiss.dbeaver.core.sql.editor.create" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_create.png"/>
         <image commandId="org.jkiss.dbeaver.core.sql.editor.console" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_console.png"/>
-        <image commandId="org.jkiss.dbeaver.core.sql.editor.forSelection" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png"/>
+        <image commandId="org.jkiss.dbeaver.core.sql.editor.forSelection" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec_new.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_exec.png"/>
@@ -796,7 +796,7 @@
             <command commandId="org.jkiss.dbeaver.core.sql.editor.defaultCommand"
                  label="SQL"
                  tooltip="%command.org.jkiss.dbeaver.core.sql.editor.open.description"
-                 icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png"
+                 icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png"
                  style="pulldown"
                  mode="FORCE_TEXT"
                  id="org.jkiss.dbeaver.menu.sql.open">
