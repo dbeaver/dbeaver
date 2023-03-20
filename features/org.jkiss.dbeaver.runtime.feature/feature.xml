@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.runtime.feature"
         label="%featureName"
-        version="23.0.0.qualifier"
+        version="23.0.1.qualifier"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.model">
 
@@ -23,10 +23,6 @@
         <import plugin="org.eclipse.core.resources"/>
         <import plugin="org.eclipse.core.expressions"/>
     </requires>
-
-    <!-- Bouncycastle -->
-    <plugin id="bcpg" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="bcprov" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <!-- 3rd party -->
     <plugin id="com.github.jsqlparser" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
