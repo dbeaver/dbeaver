@@ -67,7 +67,7 @@ public class NodeEditorInputFactory implements IElementFactory
         if (node.isDisposed()) {
             return;
         }
-        memento.putString(TAG_NODE, node.getNodeItemPath());
+        memento.putString(TAG_NODE, node.getNodeFullPath());
     }
 
 }

@@ -308,7 +308,7 @@ public class ERDEntity extends ERDElement<DBSEntity> {
         entityMap.put("id", context.addElementInfo(this));
         DBNDatabaseNode node = context.getNavigatorModel().getNodeByObject(context.getMonitor(), dbsEntity, true);
         if (node != null) {
-            entityMap.put("nodeId", node.getNodeItemPath());
+            entityMap.put("nodeId", node.getNodeFullPath());
         }
         entityMap.put("name", this.getName());
         if (!CommonUtils.isEmpty(this.getAlias())) {

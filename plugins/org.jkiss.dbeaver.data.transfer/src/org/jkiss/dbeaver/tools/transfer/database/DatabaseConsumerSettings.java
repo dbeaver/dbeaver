@@ -300,7 +300,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     @Override
     public void saveSettings(Map<String, Object> settings) {
         if (containerNode != null) {
-            settings.put("container", containerNode.getNodeItemPath());
+            settings.put("container", containerNode.getNodeFullPath());
         }
         settings.put("openNewConnections", openNewConnections);
         settings.put("useTransactions", useTransactions);

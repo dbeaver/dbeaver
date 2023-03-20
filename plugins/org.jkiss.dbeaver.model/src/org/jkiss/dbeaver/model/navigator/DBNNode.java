@@ -51,11 +51,8 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
 
         public static final String LEGACY_PREFIX = "://";
 
+        @Deprecated
         public String getPrefix() {
-            return name() + "/";
-        }
-
-        public String getLegacyPrefix() {
             return name() + LEGACY_PREFIX;
         }
     }
@@ -242,7 +239,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
     }
 
     /**
-     * Node item path in form [nodeType/]<path>
+     * Node item path in form [{parentPath}]/{currentNodePath}
      * nodeType can be 'resource', 'folder' or 'database'.
      * If missing then 'database' will be used (backward compatibility).
      * <p>
@@ -253,9 +250,33 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
      *
      * @return full item node path
      */
-    public String getNodeItemPath() {
-        String parentPrefix = getParentNode() == null ? "" : getParentNode().getNodeItemPath() + "/";
-        return parentPrefix + getNodeId();
+    public String getNodeFullPath() {
+        var pathBuilder = new StringBuilder();
+        for (
+            DBNNode currentNode = this;
+            (currentNode != null && !(currentNode instanceof DBNRoot));
+            currentNode = currentNode.getParentNode()
+        ) {
+            if (pathBuilder.length() > 0) {
+                pathBuilder.insert(0, '/');
+            }
+            pathBuilder.insert(0, currentNode.getNavNodePathItem().replace("/", DBNModel.SLASH_ESCAPE_TOKEN));
+        }
+
+        return pathBuilder.toString();
+    }
+
+    /**
+     * Node item path in form {node_type}-{node_id}
+     *
+     * @return part of the path that related to the current node
+     */
+    @NotNull
+    public String getNavNodePathItem() {
+        String prefix = CommonUtils.isEmpty(getNodeType())
+            ? ""
+            : getNodeType() + DBNModel.NODE_TYPE_DELIMITER;
+        return prefix + getNodeId().replace(DBNModel.NODE_TYPE_DELIMITER, DBNModel.NODE_TYPE_ESCAPE_TOKEN);
     }
 
     @Override

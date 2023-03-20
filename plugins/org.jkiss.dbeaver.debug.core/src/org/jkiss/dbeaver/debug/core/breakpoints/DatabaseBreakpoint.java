@@ -65,7 +65,7 @@ public class DatabaseBreakpoint extends Breakpoint implements IDatabaseBreakpoin
 
     protected void addDatabaseBreakpointAttributes(Map<String, Object> attributes, DBSObject databaseObject, DBNNode node, DBGBreakpointDescriptor breakpointDescriptor) {
         attributes.put(DBGConstants.BREAKPOINT_ATTRIBUTE_DATASOURCE_ID, databaseObject.getDataSource().getContainer().getId());
-        attributes.put(DBGConstants.BREAKPOINT_ATTRIBUTE_NODE_PATH, node.getNodeItemPath());
+        attributes.put(DBGConstants.BREAKPOINT_ATTRIBUTE_NODE_PATH, node.getNodeFullPath());
         attributes.put(DBGConstants.BREAKPOINT_ATTRIBUTE_OBJECT_NAME, DBUtils.getObjectFullName(databaseObject, DBPEvaluationContext.UI));
         attributes.putAll(breakpointDescriptor.toMap());
     }

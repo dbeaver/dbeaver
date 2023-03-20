@@ -333,12 +333,6 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
         }
     }
 
-    @Override
-    public String getNodeItemPath() {
-        String projectPath = getRawNodeItemPath();
-        return NodePathType.resource.getPrefix() + projectPath;
-    }
-
     @NotNull
     public String getRawNodeItemPath() {
         StringBuilder pathName = new StringBuilder();

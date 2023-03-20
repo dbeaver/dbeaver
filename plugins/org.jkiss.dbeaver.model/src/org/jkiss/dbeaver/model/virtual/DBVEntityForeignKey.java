@@ -141,7 +141,7 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
         if (refEntityId != null) {
             DBVModel.removeFromCache(this);
         }
-        this.refEntityId = refNode.getNodeItemPath();
+        this.refEntityId = refNode.getNodeFullPath();
         this.refConstraintId = constraint.getName();
         if (refEntityId != null) {
             DBVModel.addToCache(this);

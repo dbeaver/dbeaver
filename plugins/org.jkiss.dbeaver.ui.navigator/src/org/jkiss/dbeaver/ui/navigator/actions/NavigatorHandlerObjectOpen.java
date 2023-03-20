@@ -245,7 +245,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 if (editorInput instanceof INavigatorEditorInput) {
                     boolean matches;
                     if (editorInput instanceof DatabaseLazyEditorInput) {
-                        matches = node.getNodeItemPath().equals(((DatabaseLazyEditorInput) editorInput).getNodePath());
+                        matches = node.getNodeFullPath().equals(((DatabaseLazyEditorInput) editorInput).getNodePath());
                     } else {
                         matches = ((INavigatorEditorInput) editorInput).getNavigatorNode() == node;
                     }

@@ -39,15 +39,13 @@ import java.util.List;
 /**
  * DBNDataSource
  */
-public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAdaptable
-{
+public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAdaptable {
     private static final boolean USE_ICON_DECORATIONS = false; // Disabled in #9384
-
+    public static final String DATASOURCE_NODE_TYPE = "datasource";
     private final DBPDataSourceContainer dataSource;
     private DBXTreeNode treeRoot;
 
-    public DBNDataSource(@NotNull DBNNode parentNode, @NotNull DBPDataSourceContainer dataSource)
-    {
+    public DBNDataSource(@NotNull DBNNode parentNode, @NotNull DBPDataSourceContainer dataSource) {
         super(parentNode);
         this.dataSource = dataSource;
         this.treeRoot = dataSource.getDriver().getNavigatorRoot();
@@ -125,17 +123,6 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
     @Override
     public String getNodeFullName() {
         return getNodeName();
-    }
-
-    @Override
-    public String getNodeItemPath() {
-        return makeDataSourceItemPath(dataSource);
-    }
-
-    @Nullable
-    @Override
-    protected String getDatabaseNodeItemPath() {
-        return getNodeItemPath();
     }
 
     @Override
@@ -309,14 +296,13 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
     }
 
     @Override
-    public String getNodeId() {
-        return dataSource.getId();
+    public String getNodeType() {
+        return DATASOURCE_NODE_TYPE;
     }
 
-    @NotNull
-    public static String makeDataSourceItemPath(DBPDataSourceContainer dataSource) {
-        var projectId = dataSource.getProject().getId();
-        return NodePathType.database.getPrefix() + projectId + "/" + dataSource.getId();
+    @Override
+    public String getNodeId() {
+        return dataSource.getId();
     }
 
 }

@@ -116,10 +116,10 @@ public class DatabaseBrowserView extends NavigatorViewBase {
             }
         }
         if (project == null) {
-            throw new IllegalStateException("Navigator node " + node.getNodeItemPath() + " doesn't belong to a project");
+            throw new IllegalStateException("Navigator node " + node.getNodeFullPath() + " doesn't belong to a project");
         }
         // We can't use colon in secondary ID
-        return project.getName() + "|" + node.getNodeItemPath().replace(":", "~");
+        return project.getName() + "|" + node.getNodeFullPath().replace(":", "~");
     }
 
     public static DBNNode getNodeFromSecondaryId(String id) throws DBException {

@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -45,12 +44,6 @@ public class DBNDatabaseItem extends DBNDatabaseNode {
         unregisterNode(reflect);
         this.object = null;
         super.dispose(reflect);
-    }
-
-    @Nullable
-    @Override
-    protected String getDatabaseNodeItemPath() {
-        return getNodeId().replace("/", DBNModel.SLASH_ESCAPE_TOKEN);
     }
 
     @Override

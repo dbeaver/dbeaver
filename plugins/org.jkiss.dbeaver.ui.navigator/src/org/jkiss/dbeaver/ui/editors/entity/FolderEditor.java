@@ -65,7 +65,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
         getSite().setSelectionProvider(itemControl.getSelectionProvider());
 
         DBNNode rootNode = getRootNode();
-        history.add(rootNode.getNodeItemPath());
+        history.add(rootNode.getNodeFullPath());
     }
 
     @Override
@@ -232,7 +232,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
                     }
                 }
                 historyPosition++;
-                history.add(node.getNodeItemPath());
+                history.add(node.getNodeFullPath());
                 changeCurrentNode(node);
             } else {
                 super.openNodeEditor(node);

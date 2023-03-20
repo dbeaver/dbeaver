@@ -24,31 +24,31 @@ import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 import java.util.List;
 
 public class WSDatasourceFolderEvent extends WSAbstractProjectEvent {
-    private final List<String> nodePaths;
+    private final List<String> folderPaths;
 
     private WSDatasourceFolderEvent(
         WSEventType eventType,
         String sessionId,
         String userId,
         String projectId,
-        List<String> nodePaths
+        List<String> folderPaths
     ) {
         super(eventType, sessionId, userId, projectId);
-        this.nodePaths = nodePaths;
+        this.folderPaths = folderPaths;
     }
 
     public static WSDatasourceFolderEvent create(
         @Nullable String sessionId,
         @Nullable String userId,
         @NotNull String projectId,
-        @NotNull List<String> datasourceIds
+        @NotNull List<String> folderPaths
     ) {
         return new WSDatasourceFolderEvent(
             WSEventType.DATASOURCE_FOLDER_CREATED,
             sessionId,
             userId,
             projectId,
-            datasourceIds
+            folderPaths
         );
     }
 
@@ -56,14 +56,14 @@ public class WSDatasourceFolderEvent extends WSAbstractProjectEvent {
         @Nullable String sessionId,
         @Nullable String userId,
         @NotNull String projectId,
-        @NotNull List<String> datasourceIds
+        @NotNull List<String> folderPaths
     ) {
         return new WSDatasourceFolderEvent(
             WSEventType.DATASOURCE_FOLDER_DELETED,
             sessionId,
             userId,
             projectId,
-            datasourceIds
+            folderPaths
         );
     }
 
@@ -71,18 +71,18 @@ public class WSDatasourceFolderEvent extends WSAbstractProjectEvent {
         @Nullable String sessionId,
         @Nullable String userId,
         @NotNull String projectId,
-        @NotNull List<String> datasourceIds
+        @NotNull List<String> folderPaths
     ) {
         return new WSDatasourceFolderEvent(
             WSEventType.DATASOURCE_FOLDER_UPDATED,
             sessionId,
             userId,
             projectId,
-            datasourceIds
+            folderPaths
         );
     }
 
-    public List<String> getNodePaths() {
-        return nodePaths;
+    public List<String> getFolderPaths() {
+        return folderPaths;
     }
 }

@@ -134,11 +134,6 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     }
 
     @Override
-    public String getNodeItemPath() {
-        return makeLocalFolderItemPath(folder);
-    }
-
-    @Override
     public DBNProjectDatabases getParentNode() {
         return (DBNProjectDatabases) super.getParentNode();
     }
@@ -283,16 +278,6 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
             return normalizePath(Path.of(newParent.getFolderPath()).resolve(newName).toString());
         }
         return normalizePath(folderPath.getFileName().resolveSibling(newName).toString());
-    }
-
-    @NotNull
-    public static String makeLocalFolderItemPath(DBPDataSourceFolder folder) {
-        return makeLocalFolderItemPath(folder.getDataSourceRegistry().getProject().getId(), folder.getFolderPath());
-    }
-
-    @NotNull
-    public static String makeLocalFolderItemPath(@NotNull String projectId, @NotNull String folderPath) {
-        return NodePathType.folder.getPrefix() + projectId + "/" + folderPath;
     }
 
     @Override

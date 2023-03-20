@@ -62,7 +62,12 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, NIOListe
 
     @Override
     public String getNodeType() {
-        return "FileSystemRoot";
+        return "fileSystemRoot";
+    }
+
+    @Override
+    public String getNodeId() {
+        return "root";
     }
 
     @Override
@@ -178,11 +183,6 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, NIOListe
     public void resetFileSystems() {
         children = null;
         getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
-    }
-
-    @Override
-    public String getNodeItemPath() {
-        return NodePathType.dbvfs.getPrefix() + ((DBNProject) getParentNode()).getRawNodeItemPath() + "/" + getNodeId();
     }
 
     @Override

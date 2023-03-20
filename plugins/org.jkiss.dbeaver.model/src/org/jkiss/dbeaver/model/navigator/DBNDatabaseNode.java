@@ -787,28 +787,6 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return filtered;
     }
 
-    @Override
-    public String getNodeItemPath() {
-        StringBuilder pathName = new StringBuilder(100);
-
-        for (DBNNode node = this; node instanceof DBNDatabaseNode; node = node.getParentNode()) {
-            var dbNode = (DBNDatabaseNode) node;
-            var dbItemPath = dbNode.getDatabaseNodeItemPath();
-            if (dbItemPath == null) {
-                // skip unnecessary items like folders
-                continue;
-            }
-            if (pathName.length() > 0) {
-                pathName.insert(0, '/');
-            }
-            pathName.insert(0, dbItemPath);
-        }
-        return pathName.toString();
-    }
-
-    @Nullable
-    protected abstract String getDatabaseNodeItemPath();
-
     private void reloadChildren(DBRProgressMonitor monitor, Object source, boolean reflect)
         throws DBException {
         DBNDatabaseNode[] oldChildren;

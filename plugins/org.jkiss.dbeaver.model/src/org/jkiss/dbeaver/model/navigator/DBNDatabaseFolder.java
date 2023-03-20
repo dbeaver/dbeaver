@@ -117,12 +117,6 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         return ((DBNDatabaseNode) parentNode).getDataSource();
     }
 
-    @Nullable
-    @Override
-    protected String getDatabaseNodeItemPath() {
-        return getNodeId();
-    }
-
     @Override
     public boolean isPersisted() {
         return getParentNode() != null && getParentNode().isPersisted();

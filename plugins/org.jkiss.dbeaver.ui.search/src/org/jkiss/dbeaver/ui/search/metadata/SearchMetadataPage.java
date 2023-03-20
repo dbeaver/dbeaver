@@ -567,7 +567,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
             if (sourcesString.length() > 0) {
                 sourcesString.append("|"); //$NON-NLS-1$
             }
-            sourcesString.append(node.getNodeItemPath());
+            sourcesString.append(node.getNodeFullPath());
         }
         store.setValue(propName, sourcesString.toString());
     }

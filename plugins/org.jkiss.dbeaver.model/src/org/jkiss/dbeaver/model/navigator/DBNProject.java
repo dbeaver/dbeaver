@@ -317,11 +317,6 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     }
 
     @Override
-    public String getNodeItemPath() {
-        return NodePathType.resource.getPrefix() + getNodeId();
-    }
-
-    @Override
     public String getNodeId() {
         return project.getId();
     }

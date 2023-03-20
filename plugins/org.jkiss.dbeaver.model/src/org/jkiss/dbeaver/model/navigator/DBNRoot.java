@@ -170,7 +170,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
     }
 
     @Override
-    public String getNodeItemPath() {
+    public String getNodeFullPath() {
         return "";
     }
 

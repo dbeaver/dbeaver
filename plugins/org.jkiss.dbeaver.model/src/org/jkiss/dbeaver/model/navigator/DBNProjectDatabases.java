@@ -36,7 +36,7 @@ import java.util.*;
  */
 public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEventListener
 {
-    private List<DBNDataSource> dataSources = new ArrayList<>();
+    private final List<DBNDataSource> dataSources = new ArrayList<>();
     private DBPDataSourceRegistry dataSourceRegistry;
     private volatile DBNNode[] children;
     private final IdentityHashMap<DBPDataSourceFolder, DBNLocalFolder> folderNodes = new IdentityHashMap<>();
@@ -75,19 +75,21 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     }
 
     @Override
-    public String getNodeType()
-    {
-        return "connections";
+    public String getNodeType() {
+        return "datasources";
     }
 
-    public DBPDataSourceRegistry getDataSourceRegistry()
-    {
+    @Override
+    public String getNodeId() {
+        return "root";
+    }
+
+    public DBPDataSourceRegistry getDataSourceRegistry() {
         return dataSourceRegistry;
     }
 
     @Override
-    public Object getValueObject()
-    {
+    public Object getValueObject() {
         return dataSourceRegistry;
     }
 
