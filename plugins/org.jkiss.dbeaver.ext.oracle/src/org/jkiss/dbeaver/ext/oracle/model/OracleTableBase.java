@@ -43,10 +43,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * OracleTable base
@@ -85,6 +82,8 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     protected abstract String getTableTypeName();
 
     protected boolean valid;
+    private Date created;
+    private Date lastDDLTime;
     private String comment;
 
     protected OracleTableBase(OracleSchema schema, String name, boolean persisted)
@@ -97,6 +96,8 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         super(oracleSchema, true);
         setName(JDBCUtils.safeGetString(dbResult, "OBJECT_NAME"));
         this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
+        this.created = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
+        this.lastDDLTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_DDL_TIME");
         //this.comment = JDBCUtils.safeGetString(dbResult, "COMMENTS");
     }
 
@@ -126,6 +127,16 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     public String getDescription()
     {
         return getComment();
+    }
+
+    @Property(viewable = true, order = 13)
+    public Date getCreated() {
+        return created;
+    }
+
+    @Property(viewable = true, order = 14)
+    public Date getLastDDLTime() {
+        return lastDDLTime;
     }
 
     @NotNull
