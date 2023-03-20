@@ -56,8 +56,9 @@ import java.util.stream.Collectors;
  * (e.g. TreeViewer sometimes update only first TreeItem corresponding to model certain model object).
  */
 public class DBNModel implements IResourceChangeListener {
-    public static final String NODE_TYPE_DELIMITER = ":";
-    public static final String NODE_TYPE_ESCAPE_TOKEN = "%3A";
+    //FIXME change delimiter
+    public static final String NODE_TYPE_DELIMITER = "!";
+    public static final String NODE_TYPE_ESCAPE_TOKEN = "!";
     public static final String SLASH_ESCAPE_TOKEN = "%2F";
 
     private static final Log log = Log.getLog(DBNModel.class);
@@ -325,7 +326,7 @@ public class DBNModel implements IResourceChangeListener {
         int currentLevel
     ) throws DBException {
         if (CommonUtils.isEmpty(nodePath.pathItems)) {
-            return getRoot();
+            return currentNode;
         }
         String expectedNodePathName = nodePath.pathItems.get(currentLevel);
         DBNNode[] children = currentNode.getChildren(monitor);
