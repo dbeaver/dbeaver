@@ -2174,4 +2174,27 @@ public class UIUtils {
             widget.addDisposeListener(e -> onFocusLost.run());
         }
     }
+
+    public static void applyMainFont(@Nullable Control control) {
+        if (control == null || control.isDisposed() || mainFontIsDefault()) {
+            return;
+        }
+        applyMainFont(control, JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MAIN_FONT));
+    }
+
+    private static void applyMainFont(@NotNull Control control, @NotNull Font font) {
+        control.setFont(font);
+
+        if (control instanceof Composite) {
+            for (Control element : ((Composite) control).getChildren()) {
+                applyMainFont(element, font);
+            }
+        }
+    }
+
+    private static boolean mainFontIsDefault() {
+        final FontData[] mainFontData = JFaceResources.getFontRegistry().getFontData(UIFonts.DBEAVER_FONTS_MAIN_FONT);
+        final FontData[] defaultFontData = JFaceResources.getFontRegistry().getFontData(JFaceResources.DEFAULT_FONT);
+        return Arrays.equals(mainFontData, defaultFontData);
+    }
 }
