@@ -246,7 +246,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     @NotNull
     protected DatabaseNavigatorLabelProvider createLabelProvider(DatabaseNavigatorTree tree) {
-        return new DatabaseNavigatorLabelProvider(tree.treeViewer);
+        return new DatabaseNavigatorLabelProvider(tree);
     }
 
     public boolean isFilterShowConnected() {
