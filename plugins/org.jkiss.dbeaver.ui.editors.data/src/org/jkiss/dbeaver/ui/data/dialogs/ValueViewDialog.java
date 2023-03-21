@@ -288,7 +288,7 @@ public abstract class ValueViewDialog extends BaseDialog implements IValueEditor
             this.placeholder = placeholder;
         }
 
-        @NotNull
+        @Nullable
         @Override
         public DBCExecutionContext getExecutionContext() {
             return valueController.getExecutionContext();
