@@ -335,7 +335,7 @@ public class DBNModel implements IResourceChangeListener {
 
         DBNNode detectedNode = null;
         for (DBNNode child : children) {
-            if (child.getNavNodePathItem().equals(expectedNodePathName)) {
+            if (child.getCurrentNodePathItem().equals(expectedNodePathName)) {
                 detectedNode = child;
                 break;
             }
@@ -343,7 +343,7 @@ public class DBNModel implements IResourceChangeListener {
 
         if (detectedNode == null) {
             log.debug("Node '" + expectedNodePathName + "' not found in parent node '"
-                + currentNode.getNodeFullPath() + "'." + "\nAllowed children: " + Arrays.toString(children));
+                + currentNode.getNodeItemPath() + "'." + "\nAllowed children: " + Arrays.toString(children));
             return null;
         }
 

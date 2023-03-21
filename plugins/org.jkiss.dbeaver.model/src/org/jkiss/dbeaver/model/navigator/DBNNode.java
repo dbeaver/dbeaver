@@ -239,18 +239,17 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
     }
 
     /**
-     * Node item path in form [{parentPath}]/{currentNodePath}
-     * nodeType can be 'resource', 'folder' or 'database'.
-     * If missing then 'database' will be used (backward compatibility).
+     * Node item path in form [{parentNodeType:parentNodeId}]/{currentNodeType:currentNodeId}
+     * See {@link #getNodeType()}, {@link #getNodeId()} ()}
      * <p>
-     * For resources and folders path is just a hierarchy path divided with / (slash).
+     * Path contains the complete node hierarchy and includes all parents
      * <p>
      * For database nodes path has form: type1=name1/type2=name2/...[/typeX]
      * Where typeN is path element for particular database item, name is database object name.
      *
      * @return full item node path
      */
-    public String getNodeFullPath() {
+    public String getNodeItemPath() {
         var pathBuilder = new StringBuilder();
         for (
             DBNNode currentNode = this;
@@ -260,7 +259,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
             if (pathBuilder.length() > 0) {
                 pathBuilder.insert(0, '/');
             }
-            pathBuilder.insert(0, currentNode.getNavNodePathItem().replace("/", DBNModel.SLASH_ESCAPE_TOKEN));
+            pathBuilder.insert(0, currentNode.getCurrentNodePathItem().replace("/", DBNModel.SLASH_ESCAPE_TOKEN));
         }
 
         return pathBuilder.toString();
@@ -272,7 +271,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
      * @return part of the path that related to the current node
      */
     @NotNull
-    public String getNavNodePathItem() {
+    public String getCurrentNodePathItem() {
         String prefix = CommonUtils.isEmpty(getNodeType())
             ? ""
             : getNodeType() + DBNModel.NODE_TYPE_DELIMITER;

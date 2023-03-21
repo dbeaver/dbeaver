@@ -141,7 +141,7 @@ public class DebugUtils {
             final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
             DBNDatabaseNode node = navigatorModel.getNodeByObject(new VoidProgressMonitor(), dbsObject, false);
             if (node != null) {
-                return node.getNodeFullPath();
+                return node.getNodeItemPath();
             }
         }
         if (object instanceof String) {

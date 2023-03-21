@@ -178,7 +178,7 @@ public class DBNLegacyUtils {
                 }
             }
             if (nextChild == null) {
-                log.debug("Legacy node '" + item + "' not found in parent node '" + curNode.getNodeFullPath() + "'."
+                log.debug("Legacy node '" + item + "' not found in parent node '" + curNode.getNodeItemPath() + "'."
                     + "Full legacy path [" + nodePath + "]."
                     + "\nAllowed children: " + Arrays.toString(children));
             }

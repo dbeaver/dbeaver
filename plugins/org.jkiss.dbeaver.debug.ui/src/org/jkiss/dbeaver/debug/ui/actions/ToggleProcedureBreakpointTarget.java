@@ -70,7 +70,7 @@ public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTarget
         if (node == null) {
             return;
         }
-        String nodeItemPath = node.getNodeFullPath();
+        String nodeItemPath = node.getNodeItemPath();
 
         ITextSelection textSelection = (ITextSelection) selection;
         int lineNumber = textSelection.getStartLine();

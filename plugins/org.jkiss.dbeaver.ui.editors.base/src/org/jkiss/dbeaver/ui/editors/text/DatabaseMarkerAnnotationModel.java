@@ -47,7 +47,7 @@ public class DatabaseMarkerAnnotationModel extends ResourceMarkerAnnotationModel
         this.databaseObject = databaseObject;
         this.node = node;
         this.datasourceId = databaseObject.getDataSource().getContainer().getId();
-        this.nodeItemPath = node.getNodeFullPath();
+        this.nodeItemPath = node.getNodeItemPath();
     }
 
     protected DBSObject getDatabaseObject() {

@@ -72,7 +72,7 @@ public class DBNEmptyNode extends DBNNode
     }
 
     @Override
-    public String getNodeFullPath() {
+    public String getNodeItemPath() {
         return null;
     }
 
