@@ -247,6 +247,8 @@
                     description="OpenSearch open source search and analytics suite"
                     categories="sql">
                     <file type="jar" path="https://artifacts.opensearch.org/opensearch-clients/jdbc/opensearch-sql-jdbc-1.1.0.1.jar" bundle="!drivers.opensearch"/>
+                    <file type="jar" path="drivers/opensearch" bundle="drivers.opensearch"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.opensearch"/>
                     <parameter name="read-only-data" value="true"/>
                     <parameter name="read-only-meta-data" value="true"/>
                 </driver>
@@ -327,7 +329,7 @@
                 </driver>
                 <driver
                     id="odbc"
-                    label="ODBC"
+                    label="ODBC - Legacy"
                     icon="icons/odbc_icon.png"
                     iconBig="icons/odbc_icon_big.png"
                     class="sun.jdbc.odbc.JdbcOdbcDriver"
@@ -336,7 +338,6 @@
                     description="ODBC bridge driver"
                     supportedConfigurationTypes="MANUAL,URL"
                     supportsDistributedMode="false"
-                    promoted="1"
                     categories="sql">
                     <os name="win32"/>
                     <file type="jar" path="https://github.com/dbeaver/jdbc-odbc-bridge-jre7/raw/main/jdbc-odbc-bridge-jre7.jar" bundle="!drivers.odbc"/>
@@ -501,7 +502,10 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,object">
 <!--                    <replace provider="generic" driver="cache"/>-->
-                    <file type="jar" path="https://github.com/intersystems-community/iris-driver-distribution/raw/main/JDBC/JDK18/intersystems-jdbc-3.6.1.jar"/>
+                    <file type="jar" path="https://github.com/intersystems-community/iris-driver-distribution/raw/main/JDBC/JDK18/intersystems-jdbc-3.6.1.jar" bundle="!drivers.intersystem"/>
+                    <file type="license" path="https://raw.githubusercontent.com/intersystems-community/iris-driver-distribution/main/LICENSE" bundle="!drivers.intersystem"/>
+                    <file type="jar" path="drivers/intersystem" bundle="drivers.intersystem"/>
+                    <file type="license" path="drivers/mit_lic/LICENSE.txt" bundle="drivers.intersystem"/>
                 </driver>
                 <driver
                     id="ingres"
@@ -566,8 +570,9 @@
                         supportedConfigurationTypes="MANUAL,URL"
                         promoted="1"
                         categories="sql,embedded">
-                    <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:RELEASE"/>
+                    <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:RELEASE" bundle="!drivers.duckdb"/>
                     <file type="license" path="https://raw.githubusercontent.com/duckdb/duckdb/master/LICENSE"/>
+                    <file type="jar" path="drivers/duckdb" bundle="drivers.duckdb"/>
                 </driver>
 
                 <!-- Teradata -->
@@ -868,8 +873,10 @@
                     category="Hadoop"
                     categories="hadoop"
                     singleConnection="true">
-                    <file type="jar" path="maven:/org.apache.drill.exec:drill-jdbc-all:RELEASE"/>
+                    <file type="jar" path="maven:/org.apache.drill.exec:drill-jdbc-all:RELEASE" bundle="!drivers.apache_drill"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.apache_drill"/>
+                    <file type="jar" path="drivers/apache_drill" bundle="drivers.apache_drill"/>
 
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="supports-references" value="false"/>
@@ -1004,8 +1011,9 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/neo4j-contrib/neo4j-jdbc"
                     categories="graph">
-                    <file type="jar" path="maven:/org.neo4j:neo4j-jdbc-driver:RELEASE"/>
+                    <file type="jar" path="maven:/org.neo4j:neo4j-jdbc-driver:RELEASE" bundle="!drivers.neo4j"/>
                     <file type="license" path="https://www.gnu.org/licenses/lgpl-3.0.txt"/>
+                    <file type="jar" path="drivers/neo4j" bundle="drivers.neo4j"/>
                     <parameter name="supports-truncate" value="false"/>
                     <property name="@dbeaver-default-sql.parameter.enabled" value="false"/>
                 </driver>
@@ -1160,7 +1168,10 @@
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://docs.dremio.com/drivers/dremio-jdbc-driver.html"
                         categories="analytic,hadoop,sql">
-                    <file type="jar" path="https://download.dremio.com/jdbc-driver/24.0.0-202302100528110223-3a169b7c/dremio-jdbc-driver-24.0.0-202302100528110223-3a169b7c.jar"/>
+                    <file type="jar" path="https://download.dremio.com/jdbc-driver/24.0.0-202302100528110223-3a169b7c/dremio-jdbc-driver-24.0.0-202302100528110223-3a169b7c.jar" bundle="!drivers.dremio"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.dremio"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.dremio"/>
+                    <file type="jar" path="drivers/dremio" bundle="drivers.dremio"/>
                     <parameter name="omit-catalog" value="true"/>
                 </driver>
 
@@ -1178,8 +1189,10 @@
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://apacheignite-sql.readme.io/docs/jdbc-driver"
                         categories="hadoop">
-                    <file type="jar" path="maven:/org.apache.ignite:ignite-core:RELEASE"/>
+                    <file type="jar" path="maven:/org.apache.ignite:ignite-core:RELEASE" bundle="!drivers.apache_ignite"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
+                    <file type="jar" path="drivers/apache_ignite" bundle="drivers.apache_ignite"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.apache_ignite"/>
                 </driver>
 
                 <!-- OmniSci MapD -->
@@ -1308,7 +1321,10 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://calcite.apache.org/avatica/docs/client_reference.html"
                     categories="sql">
-                    <file type="jar" path="maven:/org.apache.calcite.avatica:avatica-core:RELEASE[1.17.0]"/>
+                    <file type="jar" path="maven:/org.apache.calcite.avatica:avatica-core:RELEASE[1.17.0]" bundle="!drivers.apache_calcite"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.apache_calcite"/>
+                    <file type="jar" path="drivers/apache_calcite" bundle="drivers.apache_calcite"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.apache_calcite"/>
 
                     <parameter name="omit-catalog-name" value="true"/>
                     <parameter name="supports-indexes" value="false"/>
@@ -1631,7 +1647,10 @@
                         description="Salesforce CDP JDBC driver"
                         webURL="https://github.com/forcedotcom/Salesforce-CDP-jdbc"
                         categories="sql">
-                    <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/release_2021.12A/Salesforce-CDP-jdbc-1.11.0.jar"/>
+                    <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/release_2021.12A/Salesforce-CDP-jdbc-1.11.0.jar" bundle="!drivers.salesforce"/>
+                    <file type="jar" path="drivers/salesforce" bundle="drivers.salesforce"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.salesforce"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.salesforce"/>
                 </driver>
 
                 <!-- AWS -->

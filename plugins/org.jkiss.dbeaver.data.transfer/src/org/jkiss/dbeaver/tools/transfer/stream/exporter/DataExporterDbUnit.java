@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.Base64;
@@ -168,7 +169,7 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
                     }
                 }
                 finally {
-                    content.release();
+                    DTUtils.closeContents(resultSet, content);
                 }
             } else {
                 writeTextCell(super.getValueDisplayString(column, columnValue));

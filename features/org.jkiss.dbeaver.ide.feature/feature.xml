@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.ide.feature"
         label="%featureName"
-        version="22.3.5.qualifier"
+        version="23.0.1.qualifier"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.ui.app.eclipse">
 
@@ -24,7 +24,6 @@
     <includes id="org.jkiss.dbeaver.db.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.db.ui.feature" version="0.0.0"/>
 
-    <includes id="org.jkiss.dbeaver.app.local.feature" version="0.0.0"/>
     <plugin id="org.jkiss.dbeaver.ui.app.eclipse" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <!-- Include JNA plugins because they may miss in older Eclipse versions -->

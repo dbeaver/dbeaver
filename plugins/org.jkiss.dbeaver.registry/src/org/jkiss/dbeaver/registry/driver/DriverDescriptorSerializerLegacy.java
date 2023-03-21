@@ -304,7 +304,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                 }
                 case RegistryConstants.TAG_LIBRARY: {
                     if (curDriver == null) {
-                        log.warn("Library outside of driver");
+                        log.warn("Library outside of driver (" + atts.getValue(RegistryConstants.ATTR_PATH) + ")");
                         return;
                     }
                     isLibraryUpgraded = false;

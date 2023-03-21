@@ -24,8 +24,10 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -61,7 +63,7 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     protected Color transientForeground;
     private ILabelDecorator labelDecorator;
 
-    public DatabaseNavigatorLabelProvider(Viewer viewer) {
+    public DatabaseNavigatorLabelProvider(@NotNull DatabaseNavigatorTree tree) {
         this.lockedForeground = Display.getDefault().getSystemColor(SWT.COLOR_GRAY);
         this.transientForeground = Display.getDefault().getSystemColor(SWT.COLOR_DARK_RED);
         this.themeChangeListener = e -> {
@@ -69,7 +71,15 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
             normalFont = theme.getFontRegistry().get(TREE_TABLE_FONT);
             boldFont = theme.getFontRegistry().getBold(TREE_TABLE_FONT);
             italicFont = theme.getFontRegistry().getItalic(TREE_TABLE_FONT);
+
+            final TreeViewer viewer = tree.getViewer();
+            viewer.getControl().setFont(normalFont);
             viewer.refresh();
+
+            final Text filter = tree.getFilterControl();
+            if (filter != null) {
+                filter.setFont(normalFont);
+            }
         };
         this.themeChangeListener.propertyChange(null);
 

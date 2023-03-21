@@ -3,11 +3,11 @@
 
 <plugin>
 	<extension point="org.eclipse.core.runtime.preferences">
-		<initializer class="org.jkiss.dbeaver.ui.editors.sql.ai.gpt3.GPTPreferencesInitializer"/>
+		<initializer class="org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencesInitializer"/>
 	</extension>
 
 	<extension point="org.eclipse.ui.preferencePages">
-		<page id="org.jkiss.dbeaver.preferences.gpt" category="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.ui.editors.sql.ai.gpt3.GPTPreferencePage" name="%pref.page.name.gpt">
+		<page id="org.jkiss.dbeaver.preferences.ai" category="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePage" name="%pref.page.name.gpt">
 			<keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
 			<keywordReference id="org.jkiss.dbeaver.ui.editors.ai.keyword.gtp"/>
 		</page>
@@ -25,9 +25,16 @@
 				<visibleWhen checkEnabled="true"/>
 			</command>
 		</menuContribution>
-		<menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side" >
+		<menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side.top" >
 			<command commandId="org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion">
-<!--				<visibleWhen checkEnabled="true"/>-->
+				<visibleWhen>
+				    <and>
+						<with variable="activePart">
+							<not><test property="org.jkiss.dbeaver.core.global.hasPreference" value="ai.completion.disabled"/></not>
+						</with>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.top,org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion"/>
+					</and>
+				</visibleWhen>
 			</command>
 		</menuContribution>
 	</extension>
@@ -46,4 +53,10 @@
 			</enabledWhen>
 		</handler>
 	</extension>
+	
+    <extension point="org.jkiss.dbeaver.toolBarConfiguration">
+        <toolBar key="sqlEditor.side.top">
+            <item commandId="org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion" defaultVisibility="false"/>
+        </toolBar>
+    </extension>
 </plugin>

@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
@@ -38,7 +39,10 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.StringJoiner;
 
 /**
  * Abstract node
@@ -178,6 +182,13 @@ public class DTUtils {
         }
         DBPIdentifierCase identifierCase = dialect.storesUnquotedCase();
         return identifierCase.transform(name);
+    }
+
+    public static void closeContents(@NotNull DBCResultSet resultSet, @NotNull DBDContent content) {
+        if (resultSet.getFeature(DBCResultSet.FEATURE_NAME_LOCAL) != null) {
+            return;
+        }
+        content.release();
     }
 
     @NotNull
