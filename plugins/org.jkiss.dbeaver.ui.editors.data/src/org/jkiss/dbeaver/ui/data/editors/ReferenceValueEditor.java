@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -90,9 +91,12 @@ public class ReferenceValueEditor {
     public ReferenceValueEditor(IValueController valueController, IValueEditor valueEditor) {
         this.valueController = valueController;
         this.valueEditor = valueEditor;
-        this.maxResults =
-            valueController.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getInt(
-                ModelPreferences.DICTIONARY_MAX_ROWS);
+        DBCExecutionContext executionContext = valueController.getExecutionContext();
+        if (executionContext != null) {
+            this.maxResults =
+                executionContext.getDataSource().getContainer().getPreferenceStore().getInt(
+                    ModelPreferences.DICTIONARY_MAX_ROWS);
+        }
     }
 
     public void setValueEditor(IValueEditor valueEditor) {
@@ -453,7 +457,7 @@ public class ReferenceValueEditor {
 
         @Override
         public EnumValuesData evaluate(DBRProgressMonitor monitor) {
-            if (editorSelector.isDisposed()) {
+            if (editorSelector.isDisposed() || valueController.getExecutionContext() == null) {
                 return null;
             }
             EnumValuesData[] result = new EnumValuesData[1];
