@@ -36,6 +36,8 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.views.properties.IPropertySource2;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -52,6 +54,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.*;
 import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
 import org.jkiss.dbeaver.ui.UIElementAlignment;
+import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.controls.bool.BooleanMode;
@@ -102,6 +105,7 @@ public class PropertyTreeViewer extends TreeViewer {
     private ExpandMode expandMode = ExpandMode.ALL;
 
     private final List<IPropertyChangeListener> propertyListeners = new ArrayList<>();
+    private final IPropertyChangeListener themeChangeListener;
 
     public PropertyTreeViewer(Composite parent, int style)
     {
@@ -120,11 +124,6 @@ public class PropertyTreeViewer extends TreeViewer {
         treeControl.setHeaderVisible(true);
         //treeControl.setLinesVisible(true);
         treeControl.addListener(SWT.PaintItem, new PaintListener());
-        this.boldFont = UIUtils.makeBoldFont(treeControl.getFont());
-
-        treeControl.addDisposeListener(e -> {
-            UIUtils.dispose(boldFont);
-        });
 
         new DefaultViewerToolTipSupport(this);
 
@@ -190,6 +189,17 @@ public class PropertyTreeViewer extends TreeViewer {
                 return UIElementAlignment.LEFT;
             }
         };
+
+        this.themeChangeListener = e -> {
+            final ITheme theme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+            boldFont = theme.getFontRegistry().getBold(UIFonts.DBEAVER_FONTS_MAIN_FONT);
+            getControl().setFont(theme.getFontRegistry().get(UIFonts.DBEAVER_FONTS_MAIN_FONT));
+            refresh();
+        };
+        this.themeChangeListener.propertyChange(null);
+
+        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
+        getControl().addDisposeListener(e -> PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener));
     }
 
     public boolean isNamesEditable() {

@@ -56,7 +56,7 @@ public class SQLServerGenericDataSource extends GenericDataSource {
             ));
     }
 
-    SQLServerGenericDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, SQLServerMetaModel metaModel)
+    public SQLServerGenericDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, SQLServerMetaModel metaModel)
         throws DBException
     {
         super(monitor, container, metaModel, new SQLServerDialect());
