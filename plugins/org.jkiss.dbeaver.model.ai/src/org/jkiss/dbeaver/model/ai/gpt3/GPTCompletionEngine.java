@@ -285,7 +285,7 @@ public class GPTCompletionEngine implements DAICompletionEngine {
 
         return builder
             .temperature(temperature)
-            //.maxTokens(maxTokens)
+            .maxTokens(maxTokens)
             .frequencyPenalty(0.0)
             .presencePenalty(0.0)
             .stop(List.of("#", ";"))
