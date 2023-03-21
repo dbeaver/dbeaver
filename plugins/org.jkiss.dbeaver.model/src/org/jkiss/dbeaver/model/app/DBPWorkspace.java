@@ -49,7 +49,7 @@ public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm
     Path getMetadataFolder();
 
     @NotNull
-    List<DBPProject> getProjects();
+    List<? extends DBPProject> getProjects();
     DBPProject getActiveProject();
     DBPProject getProject(@NotNull String projectName);
 
