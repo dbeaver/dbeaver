@@ -14,20 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.model.qm;
+package org.jkiss.dbeaver.model.qm.filters;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.qm.filters.QMCursorFilter;
 
-/**
- * Query manager history
- */
-public interface QMEventBrowser {
+import java.util.Collections;
+import java.util.Set;
+
+public class QMAdminEventCriteria {
+
+    private final QMEventCriteria criteria;
+    @NotNull
+    private Set<String> users = Collections.emptySet();
+
+    public QMAdminEventCriteria(QMEventCriteria criteria, @NotNull Set<String> users) {
+        this.criteria = criteria;
+        this.users = users;
+    }
+
+    public void setUsers(@NotNull Set<String> users) {
+        this.users = users;
+    }
 
     @NotNull
-    QMEventCursor getQueryHistoryCursor(@NotNull QMCursorFilter cursorFilter)
-        throws DBException;
+    public Set<String> getUsers() {
+        return users;
+    }
 
+    public boolean hasUsers() {
+        return !users.isEmpty();
+    }
+
+    public QMEventCriteria getCriteria() {
+        return criteria;
+    }
 }
