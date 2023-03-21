@@ -84,6 +84,7 @@ public class NavigatorObjectsDeleter {
 
     private final Set<Option> supportedOptions;
     private final Set<Option> enabledOptions = new HashSet<>();
+    private boolean deleteWarningShowed;
 
     private NavigatorObjectsDeleter(IWorkbenchWindow window, List<?> selection, boolean selectedFromNavigator, boolean supportsShowViewScript,
                                     boolean supportsDeleteContents, Set<Option> supportedOptions) {
@@ -262,13 +263,14 @@ public class NavigatorObjectsDeleter {
                 final NavigatorHandlerObjectBase.ObjectSaver deleter = new NavigatorHandlerObjectBase.ObjectSaver(commandTarget.getContext(), deleteOptions);
                 tasksToExecute.add(deleter);
             }
-            if (commandTarget.getEditor() != null && selectedFromNavigator) {
+            if (commandTarget.getEditor() != null && selectedFromNavigator && !deleteWarningShowed) {
                 UIUtils.getActiveWorkbenchWindow().getActivePage().activate(commandTarget.getEditor());
                 DBWorkbench.getPlatformUI().showMessageBox(
                     UINavigatorMessages.actions_navigator_persist_delete_in_the_editor_title,
                     NLS.bind(UINavigatorMessages.actions_navigator_persist_delete_in_the_editor_message, commandTarget.getEditor().getTitle()),
                     false
                 );
+                deleteWarningShowed = true;
             }
         } catch (Throwable e) {
             DBWorkbench.getPlatformUI().showError(

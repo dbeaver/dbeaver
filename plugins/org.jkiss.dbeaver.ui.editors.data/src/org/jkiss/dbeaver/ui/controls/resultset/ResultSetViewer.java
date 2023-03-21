@@ -23,14 +23,17 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.*;
@@ -418,6 +421,18 @@ public class ResultSetViewer extends Viewer
 
         // Listen property change
         themeChangeListener = event -> {
+            final Font font = JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MAIN_FONT);
+            if (panelFolder != null) {
+                panelFolder.setFont(font);
+            }
+            if (statusBar != null) {
+                UIUtils.applyMainFont(statusBar);
+                updateToolbar();
+            }
+
+            UIUtils.applyMainFont(presentationSwitchFolder);
+            UIUtils.applyMainFont(panelSwitchFolder);
+
             if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME) ||
                 event.getProperty().startsWith(ThemeConstants.RESULTS_PROP_PREFIX))
             {
@@ -430,6 +445,7 @@ public class ResultSetViewer extends Viewer
             }
         };
         PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
+        themeChangeListener.propertyChange(new PropertyChangeEvent(this, "", null, null));
 
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(dataPropertyListener);
         DBWorkbench.getPlatform().getDataSourceProviderRegistry().getGlobalDataSourcePreferenceStore().addPropertyChangeListener(dataPropertyListener);

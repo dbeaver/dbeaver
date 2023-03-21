@@ -29,6 +29,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPResourceCreator;
 import org.jkiss.dbeaver.model.fs.nio.NIOFile;
@@ -36,7 +37,6 @@ import org.jkiss.dbeaver.model.fs.nio.NIOFileStore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNNodeWithResource;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
@@ -96,10 +96,10 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler implements DBPRe
         super.updateNavigatorNodeFromResource(node, resource);
         if (resource instanceof IFolder) {
             if (node instanceof DBNResource && ((DBNResource)node).isRootResource(resource)) {
-                node.setResourceImage(UIIcon.SCRIPTS);
+                node.setResourceImage(DBIcon.TREE_SCRIPT_FOLDER);
             }
         } else {
-            node.setResourceImage(UIIcon.SQL_SCRIPT);
+            node.setResourceImage(DBIcon.TREE_SCRIPT);
         }
     }
 
