@@ -44,6 +44,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Query Manager utils
@@ -215,6 +216,11 @@ public class QMUtils {
             session = workspace.getAuthContext().getSpaceSession(monitor, workspace, false);
         }
 
+        return getQmSessionId(session);
+    }
+
+    @Nullable
+    public static String getQmSessionId(SMSession session) {
         SMSessionPersistent sessionPersistent = DBUtils.getAdapter(SMSessionPersistent.class, session);
         if (sessionPersistent == null) {
             log.warn("Session persistent not found");
