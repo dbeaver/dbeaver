@@ -591,4 +591,12 @@ public class CommonUtilsTest {
         Assert.assertEquals(normalizedTwoLevelPath, CommonUtils.normalizeResourcePath(pathWithWrongBackslash));
         Assert.assertEquals(normalizedTwoLevelPath, CommonUtils.normalizeResourcePath(mixedCasesPath));
     }
+
+    @Test
+    public void testReplaceLast() {
+        Assert.assertEquals(CommonUtils.replaceLast("foobarfoobar", "foo", "bar"), "foobarbarbar");
+        Assert.assertEquals(CommonUtils.replaceLast("foobarbarbar", "foo", "bar"), "barbarbarbar");
+        Assert.assertEquals(CommonUtils.replaceLast("foo", "bar", "foo"), "foo");
+        Assert.assertEquals(CommonUtils.replaceLast("", "bar", "foo"), "");
+    }
 }
