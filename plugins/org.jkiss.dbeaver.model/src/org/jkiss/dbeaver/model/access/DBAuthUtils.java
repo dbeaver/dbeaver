@@ -47,17 +47,15 @@ public class DBAuthUtils {
         }
         DBPConnectionConfiguration connectionInfo = dataSourceContainer.getConnectionConfiguration();
         String oldPassword = connectionInfo.getUserPassword();
-        String userName = connectionInfo.getUserName();
         DBPConnectionConfiguration actualConnectionConfiguration = dataSourceContainer.getActualConnectionConfiguration();
+        String userName = actualConnectionConfiguration.getUserName();
         if (CommonUtils.isEmpty(userName)) {
-            // Credentials not saved in the connection settings, use actual configuration
-            userName = actualConnectionConfiguration.getUserName();
+            // Look at the actual configuration first, then on connection info
+            userName = connectionInfo.getUserName();
         }
-        boolean useActualConfig = false;
         if (CommonUtils.isEmpty(oldPassword)) {
             // Credentials not saved in the connection settings, use actual configuration
             oldPassword = actualConnectionConfiguration.getUserPassword();
-            useActualConfig = true;
         }
         DBAPasswordChangeInfo userPassword = DBWorkbench.getPlatformUI().promptUserPasswordChange(
             ModelMessages.dialog_user_password_change_label,
@@ -73,11 +71,8 @@ public class DBAuthUtils {
                     ModelMessages.dialog_user_password_change_question_label,
                     ModelMessages.dialog_user_password_change_question_message)
                 ) {
-                    if (useActualConfig) {
-                        actualConnectionConfiguration.setUserPassword(newPassword);
-                    } else {
-                        connectionInfo.setUserPassword(newPassword);
-                    }
+                    actualConnectionConfiguration.setUserPassword(newPassword);
+                    connectionInfo.setUserPassword(newPassword);
                     dataSourceContainer.persistConfiguration();
                     return true;
                 }
