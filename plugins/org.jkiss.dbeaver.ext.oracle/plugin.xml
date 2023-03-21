@@ -487,7 +487,7 @@
         <category id="oracle" name="Oracle" description="%org.jkiss.dbeaver.task.category.oracle.description" icon="icons/oracle_icon.png"/>
         <category id="oracleTool" parent="oracle" name="%org.jkiss.dbeaver.task.category.oracleTool.name" description="%org.jkiss.dbeaver.task.category.oracleTool.description" icon="icons/oracle_icon.png"/>
 
-        <task id="oracleScriptExecute" name="%task.oracleScriptExecute.name" description="%task.oracleScriptExecute.description" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png" type="oracle" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleScriptExecuteHandler">
+        <task id="oracleScriptExecute" name="%task.oracleScriptExecute.name" description="%task.oracleScriptExecute.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png" type="oracle" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleScriptExecuteHandler">
             <datasource id="oracle"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataSource"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>

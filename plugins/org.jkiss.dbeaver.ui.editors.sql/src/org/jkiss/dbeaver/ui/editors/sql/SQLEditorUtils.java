@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.code.NotNull;
@@ -289,6 +290,10 @@ public class SQLEditorUtils {
             }
         }
         return "";
+    }
+
+    public static IContentType getSQLContentType() {
+        return Platform.getContentTypeManager().getContentType("org.jkiss.dbeaver.sql");
     }
 
     public static class ResourceInfo {
