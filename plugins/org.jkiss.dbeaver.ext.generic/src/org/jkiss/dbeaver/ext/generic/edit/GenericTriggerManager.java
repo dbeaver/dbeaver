@@ -19,16 +19,13 @@ package org.jkiss.dbeaver.ext.generic.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTriggerManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.dbeaver.model.struct.cache.ListCache;
 
 import java.util.List;
 import java.util.Map;
@@ -53,7 +50,7 @@ public class GenericTriggerManager extends SQLTriggerManager<GenericTrigger, Gen
         GenericTrigger trigger,
         boolean create
     ) {
-
+        throw new IllegalStateException("Not implemented");
     }
 
     @Override
@@ -64,7 +61,7 @@ public class GenericTriggerManager extends SQLTriggerManager<GenericTrigger, Gen
         Object copyFrom,
         Map<String, Object> options
     ) throws DBException {
-        throw new IllegalStateException("Not implemented");
+        throw new DBException("Not Implemented");
     }
 
     @Nullable

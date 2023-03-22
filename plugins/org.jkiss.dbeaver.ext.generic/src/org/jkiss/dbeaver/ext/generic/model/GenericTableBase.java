@@ -283,6 +283,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        this.getContainer().getTableTriggerCache().clearObjectCache(this);
         this.getContainer().getIndexCache().clearObjectCache(this);
         this.getContainer().getConstraintKeysCache().clearObjectCache(this);
         this.getContainer().getForeignKeysCache().clearObjectCache(this);
