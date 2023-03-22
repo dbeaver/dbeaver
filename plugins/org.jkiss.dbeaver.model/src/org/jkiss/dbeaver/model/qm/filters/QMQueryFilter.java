@@ -14,20 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.model.qm;
+package org.jkiss.dbeaver.model.qm.filters;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.qm.filters.QMCursorFilter;
+import org.jkiss.code.Nullable;
 
-/**
- * Query manager history
- */
-public interface QMEventBrowser {
+public class QMQueryFilter {
+    @NotNull
+    private final String query;
+    @Nullable
+    private final String filterValue;
+
+    public QMQueryFilter(@NotNull String query, @Nullable String filterValue) {
+        this.query = query;
+        this.filterValue = filterValue;
+    }
+
+    @Nullable
+    public String getFilterValue() {
+        return filterValue;
+    }
 
     @NotNull
-    QMEventCursor getQueryHistoryCursor(@NotNull QMCursorFilter cursorFilter)
-        throws DBException;
-
+    public String getQuery() {
+        return query;
+    }
 }
