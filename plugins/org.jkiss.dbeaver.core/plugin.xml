@@ -22,6 +22,7 @@
     <!-- UI extensions -->
     <extension-point id="org.jkiss.dbeaver.workbenchHandler" name="%extension-point.org.jkiss.dbeaver.workbenchHandler.name" schema="schema/org.jkiss.dbeaver.workbenchHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.clearHistoryHandler" name="%extension-point.org.jkiss.dbeaver.clearHistoryHandler.name" schema="schema/org.jkiss.dbeaver.clearHistoryHandler.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.toolBarConfiguration" name="%extension-point.org.jkiss.dbeaver.toolbarConfiguration.name" schema="schema/org.jkiss.dbeaver.toolBarConfiguration.exsd" />
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
@@ -48,8 +49,14 @@
             namespace="org.jkiss.dbeaver.runtime.process"
             properties="running"
             type="org.eclipse.ui.IWorkbenchPart"/>
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.actions.ToolBarConfigurationPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.ToolBarConfigurationPropertyTester"
+            namespace="org.jkiss.dbeaver.ui.toolbar.configuration"
+            properties="visible"
+            type="java.lang.Object"/>
     </extension>
-
+    
     <extension point="org.eclipse.ui.views">
         <view
                 id="org.jkiss.dbeaver.core.queryManager"
@@ -1279,5 +1286,14 @@
                 toggleMessage="%confirm.general.toggleMessage"
                 group="%confirmation.group.general.actions"/>
     </extension>
+
+    <extension point="org.eclipse.ui.preferencePages">
+        <page
+            category="org.jkiss.dbeaver.preferences.main"
+            id="org.jkiss.dbeaver.preferences.main.toolbar.customization"
+            class="org.jkiss.dbeaver.ui.preferences.PrefPageToolbarCustomization"
+            name="%org.jkiss.dbeaver.preferences.main.toolbar.customization.name"/>
+    </extension>
+
 
 </plugin>

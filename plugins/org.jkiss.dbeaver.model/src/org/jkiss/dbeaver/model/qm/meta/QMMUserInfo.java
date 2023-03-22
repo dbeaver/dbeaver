@@ -14,20 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.qm.meta;
 
-package org.jkiss.dbeaver.model.qm;
+public class QMMUserInfo {
+    private final long userId;
+    private final String userName;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.qm.filters.QMCursorFilter;
+    public QMMUserInfo(long userId, String userName) {
+        this.userId = userId;
+        this.userName = userName;
+    }
 
-/**
- * Query manager history
- */
-public interface QMEventBrowser {
+    public long getUserId() {
+        return userId;
+    }
 
-    @NotNull
-    QMEventCursor getQueryHistoryCursor(@NotNull QMCursorFilter cursorFilter)
-        throws DBException;
-
+    public String getUserName() {
+        return userName;
+    }
 }
