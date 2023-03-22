@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
  */
 public class StringValueManager extends ContentValueManager {
 
-    private static final long PLAIN_STRING_MAX_LENGTH = 100;
+    private static final long PLAIN_STRING_MAX_LENGTH = 32;
 
     @NotNull
     @Override

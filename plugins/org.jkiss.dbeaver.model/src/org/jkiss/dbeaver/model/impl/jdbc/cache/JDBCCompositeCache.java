@@ -140,6 +140,16 @@ public abstract class JDBCCompositeCache<
     public List<OBJECT> getCachedObjects(PARENT forParent)
     {
         if (forParent == null) {
+            synchronized (objectCache) {
+                if (!objectCache.isEmpty()) {
+                    // Collect objects from object cache
+                    List<OBJECT> allChildren = new ArrayList<>();
+                    for (List<OBJECT> children : objectCache.values()) {
+                        allChildren.addAll(children);
+                    }
+                    return allChildren;
+                }
+            }
             return getCachedObjects();
         } else {
             synchronized (objectCache) {
@@ -423,7 +433,7 @@ public abstract class JDBCCompositeCache<
                         continue;
                     }
                     Collection<ObjectInfo> objectInfos = colEntry.getValue().values();
-                    ArrayList<OBJECT> objects = new ArrayList<>(objectInfos.size());
+                    List<OBJECT> objects = new ArrayList<>(objectInfos.size());
                     for (ObjectInfo objectInfo : objectInfos) {
                         objectInfo.needsCaching = true;
                         objects.add(objectInfo.object);
@@ -434,11 +444,11 @@ public abstract class JDBCCompositeCache<
                 if (forParent == null) {
                     for (PARENT tmpParent : parentCache.getTypedObjects(monitor, owner, parentType)) {
                         if (!parentObjectMap.containsKey(tmpParent) && !objectCache.containsKey(tmpParent)) {
-                            objectCache.put(tmpParent, new ArrayList<OBJECT>());
+                            objectCache.put(tmpParent, new ArrayList<>());
                         }
                     }
                 } else if (!parentObjectMap.containsKey(forParent) && !objectCache.containsKey(forParent)) {
-                    objectCache.put(forParent, new ArrayList<OBJECT>());
+                    objectCache.put(forParent, new ArrayList<>());
                 }
             }
             // Cache children lists (we do it in the end because children caching may operate with other model objects)
