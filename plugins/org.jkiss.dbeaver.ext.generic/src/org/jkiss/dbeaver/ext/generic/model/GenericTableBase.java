@@ -61,7 +61,6 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     private boolean isUtility;
     private String description;
     private Long rowCount;
-    private List<? extends GenericTrigger> triggers;
     private final String tableCatalogName;
     private final String tableSchemaName;
 
@@ -496,31 +495,14 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     @Nullable
     @Association
     public List<? extends GenericTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (triggers == null) {
-            GenericStructContainer parentObject = getParentObject();
-            if (parentObject != null) {
-                TableTriggerCache tableTriggerCache = parentObject.getTableTriggerCache();
-                if (tableTriggerCache != null) {
-                    triggers = tableTriggerCache.getObjects(monitor, parentObject, this);
-                }
-            } else {
-                loadTriggers(monitor);
+        GenericStructContainer parentObject = getParentObject();
+        if (parentObject != null) {
+            TableTriggerCache tableTriggerCache = parentObject.getTableTriggerCache();
+            if (tableTriggerCache != null) {
+                return tableTriggerCache.getObjects(monitor, parentObject, this);
             }
         }
-        return triggers;
-    }
-
-    private void loadTriggers(DBRProgressMonitor monitor) throws DBException {
-        triggers = getDataSource().getMetaModel().loadTriggers(monitor, getContainer(), this);
-        if (triggers == null) {
-            triggers = new ArrayList<>();
-        } else {
-            DBUtils.orderObjects(triggers);
-        }
-    }
-
-    public List<? extends GenericTrigger> getTriggerCache() {
-        return triggers;
+        return null;
     }
 
     public boolean supportUniqueIndexes() {
