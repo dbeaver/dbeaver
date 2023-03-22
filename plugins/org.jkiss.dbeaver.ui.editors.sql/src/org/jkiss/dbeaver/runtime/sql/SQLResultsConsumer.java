@@ -36,4 +36,10 @@ public interface SQLResultsConsumer
     @Nullable
     DBDDataReceiver getDataReceiver(SQLQuery statement, int resultSetNumber);
 
+    /**
+     * Releases data receiver.
+     *
+     * @param resultSetNumber number of the result set which data receiver to release
+     */
+    void releaseDataReceiver(int resultSetNumber);
 }

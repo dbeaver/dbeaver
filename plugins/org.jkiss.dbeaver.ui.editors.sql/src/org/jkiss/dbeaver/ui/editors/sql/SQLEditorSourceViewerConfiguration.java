@@ -69,9 +69,10 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     /**
      * The editor with which this configuration is associated.
      */
-    private SQLEditorBase editor;
-    private SQLRuleScanner ruleManager;
-    private SQLContextInformer contextInformer;
+    private final SQLEditorBase editor;
+    private final SQLRuleScanner ruleManager;
+    private final SQLContextInformer contextInformer;
+    private final IPreferenceStore preferenceStore;
 
     private IContentAssistProcessor completionProcessor;
     private SQLHyperlinkDetector hyperlinkDetector;
@@ -95,13 +96,22 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         this(editor, preferenceStore, new SQLReconcilingStrategy(editor));
     }
 
-    public SQLEditorSourceViewerConfiguration(SQLEditorBase editor, IPreferenceStore preferenceStore, @Nullable SQLReconcilingStrategy reconcilingStrategy) {
+    public SQLEditorSourceViewerConfiguration(
+        SQLEditorBase editor,
+        IPreferenceStore preferenceStore,
+        @Nullable SQLReconcilingStrategy reconcilingStrategy
+    ) {
         super(preferenceStore);
         this.editor = editor;
+        this.preferenceStore = preferenceStore;
         this.ruleManager = editor.getRuleScanner();
         this.contextInformer = new SQLContextInformer(editor, editor.getSyntaxManager());
         this.hyperlinkDetector = new SQLHyperlinkDetector(editor, this.contextInformer);
         this.reconcilingStrategy = reconcilingStrategy;
+    }
+
+    public IPreferenceStore getPreferenceStore() {
+        return preferenceStore;
     }
 
     public SQLContextInformer getContextInformer() {
@@ -417,6 +427,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         if (reconcilingStrategy == null) {
             return null;
         }
-        return new MonoReconciler(reconcilingStrategy, false);
+        return new MonoReconciler(reconcilingStrategy, true);
     }
 }
