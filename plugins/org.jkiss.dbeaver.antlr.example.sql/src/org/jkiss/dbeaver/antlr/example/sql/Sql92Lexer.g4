@@ -4,7 +4,7 @@ lexer grammar Sql92Lexer;
     package org.jkiss.dbeaver.antlr.example.sql;
 }
 
-
+// letters to support case-insensitivity for keywords
 fragment A:[aA];
 fragment B:[bB];
 fragment C:[cC];
@@ -32,8 +32,11 @@ fragment X:[xX];
 fragment Y:[yY];
 fragment Z:[zZ];
 
+
+// keywords
 ABSOLUTE: A B S O L U T E ;
 ACTION: A C T I O N ;
+ADA: A D A;
 ADD: A D D ;
 ALL: A L L ;
 ALLOCATE: A L L O C A T E ;
@@ -69,6 +72,7 @@ CHECK: C H E C K ;
 CLASS_ORIGIN: C L A S S '_'O R I G I N ;
 CLOSE: C L O S E ;
 COALESCE: C O A L E S C E ;
+COBOL: C O B O L;
 COLLATE: C O L L A T E ;
 COLLATION: C O L L A T I O N ;
 COLLATION_CATALOG: C O L L A T I O N '_'C A T A L O G ;
@@ -138,6 +142,7 @@ FIRST: F I R S T ;
 FLOAT: F L O A T ;
 FOR: F O R ;
 FOREIGN: F O R E I G N ;
+FORTRAN: F O R T R A N;
 FROM: F R O M ;
 FULL: F U L L ;
 GET: G E T ;
@@ -182,6 +187,7 @@ MIN: M I N ;
 MINUTE: M I N U T E ;
 MODULE: M O D U L E ;
 MONTH: M O N T H ;
+MUMPS: M U M P S;
 MORE_KW: M O R E;
 NAME: N A M E ;
 NAMES: N A M E S ;
@@ -208,8 +214,10 @@ OUTER: O U T E R ;
 OUTPUT: O U T P U T ;
 OVERLAPS: O V E R L A P S ;
 PAD: P A D ;
+PASCAL: P A S C A L ;
 PARTIAL: P A R T I A L ;
 POSITION: P O S I T I O N ;
+PLI: P L I ;
 PRECISION: P R E C I S I O N ;
 PREPARE: P R E P A R E ;
 PRESERVE: P R E S E R V E ;
@@ -293,6 +301,8 @@ WRITE: W R I T E ;
 YEAR: Y E A R ;
 ZONE: Z O N E ;
 
+
+// symbols
 EqualsOperator: '=';
 NotEqualsOperator: '<>';
 RightParen: '(';
@@ -321,21 +331,32 @@ QuestionMark: '?';
 Underscore: '_';
 VerticalBar: '|';
 
+
+// characters
 fragment SimpleLatinLetter: (SimpleLatinUpperCaseLetter|SimpleLatinLowerCaseLetter);
 fragment SimpleLatinUpperCaseLetter: ('A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L'|'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z');
 fragment SimpleLatinLowerCaseLetter: ('a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|'o'|'p'|'q'|'r'|'s'|'t'|'u'|'v'|'w'|'x'|'y'|'z');
+
+
+// numeric fragments
 fragment Digit: ('0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9');
 fragment Hexit: (Digit|'A'|'B'|'C'|'D'|'E'|'F'|'a'|'b'|'c'|'d'|'e'|'f');
 fragment Bit: ('0'|'1');
 
+
+// numeric literals
+UnsignedNumericLiteral: (ExactNumericLiteral|ApproximateNumericLiteral);
 ExactNumericLiteral: (UnsignedInteger (Period (UnsignedInteger)?)?|Period UnsignedInteger);
 UnsignedInteger: (Digit)+;
 ApproximateNumericLiteral: ExactNumericLiteral 'E' SignedInteger;
 SignedInteger: (Sign)? UnsignedInteger;
 Sign: (PlusSign|MinusSign);
 
+
+// special characters and character sequences
 fragment NonquoteCharacter: ~'~';
 QuoteSymbol: Quote Quote;
+Introducer: Underscore;
 NewLine: '\r'? '\n';
 Space: [ \r\n\t]+ -> skip ; // toss out whitespace
 Separator: ((Comment|Space|NewLine))+;
@@ -343,30 +364,23 @@ Comment: CommentIntroducer ((CommentCharacter)+)? NewLine;
 fragment CommentIntroducer: MinusSign MinusSign ((MinusSign)+)?;
 fragment CommentCharacter: (NonquoteCharacter|Quote);
 
+
+// identifiers
 DelimitedIdentifier: DoubleQuote DelimitedIdentifierBody DoubleQuote;
 fragment DelimitedIdentifierBody: (DelimitedIdentifierPart)+;
 fragment DelimitedIdentifierPart: (NondoublequoteCharacter|DoublequoteSymbol);
 fragment NondoublequoteCharacter: ~'"';
 fragment DoublequoteSymbol: DoubleQuote DoubleQuote;
 
+Identifier: IdentifierBody;
 fragment IdentifierBody: IdentifierStart (((Underscore|IdentifierPart))+)?;
-fragment IdentifierStart: SimpleLatinUpperCaseLetter|SimpleLatinLowerCaseLetter;
+fragment IdentifierStart: SimpleLatinLetter;
 fragment IdentifierPart: (IdentifierStart|Digit);
 
-SqlEmbeddedLanguageCharacter: (LeftBracket|RightBracket);
-RegularIdentifier: IdentifierBody;
 
-SqlLanguageIdentifier: SqlLanguageIdentifierStart (((Underscore|SqlLanguageIdentifierPart))+)?;
-fragment SqlLanguageIdentifierStart: SimpleLatinLetter;
-fragment SqlLanguageIdentifierPart: (SimpleLatinLetter|Digit);
-
-UnsignedNumericLiteral: (ExactNumericLiteral|ApproximateNumericLiteral);
-
+// literals
 NationalCharacterStringLiteral: 'N' Quote ((CharacterRepresentation)+)? Quote (((Separator)+ Quote ((CharacterRepresentation)+)? Quote)+)?;
 CharacterRepresentation: (NonquoteCharacter|QuoteSymbol);
-
 BitStringLiteral: 'B' Quote ((Bit)+)? Quote (((Separator)+ Quote ((Bit)+)? Quote)+)?;
-
 HexStringLiteral: 'X' Quote ((Hexit)+)? Quote (((Separator)+ Quote ((Hexit)+)? Quote)+)?;
 
-Introducer: Underscore;

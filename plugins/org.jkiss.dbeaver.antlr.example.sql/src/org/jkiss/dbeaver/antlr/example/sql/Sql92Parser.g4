@@ -1,4 +1,4 @@
-parser grammar Sql92;
+parser grammar Sql92Parser;
 
 options {
     tokenVocab=Sql92Lexer;
@@ -8,19 +8,17 @@ options {
     package org.jkiss.dbeaver.antlr.example.sql;
 }
 
-characterSetSpecification: (standardCharacterRepertoireName|implementationDefinedCharacterRepertoireName|userDefinedCharacterRepertoireName|standardUniversalCharacterFormOfUseName|implementationDefinedUniversalCharacterFormOfUseName);
-standardCharacterRepertoireName: characterSetName;
-characterSetName: (schemaName Period)? SqlLanguageIdentifier;
+
+// identifiers
+characterSetSpecification: characterSetName;
+characterSetName: (schemaName Period)? Identifier;
 schemaName: (catalogName Period)? unqualifiedSchemaName;
 unqualifiedSchemaName: identifier;
 catalogName: identifier;
 identifier: (Introducer characterSetSpecification)? actualIdentifier;
-actualIdentifier: (RegularIdentifier|DelimitedIdentifier);
+actualIdentifier: (Identifier|DelimitedIdentifier);
 
-implementationDefinedCharacterRepertoireName: characterSetName;
-userDefinedCharacterRepertoireName: characterSetName;
-standardUniversalCharacterFormOfUseName: characterSetName;
-implementationDefinedUniversalCharacterFormOfUseName: characterSetName;
+// date-time literals
 dateString: Quote dateValue Quote;
 dateValue: yearsValue MinusSign monthsValue MinusSign daysValue;
 yearsValue: datetimeValue;
@@ -41,15 +39,19 @@ yearMonthLiteral: (yearsValue|(yearsValue MinusSign)? monthsValue);
 dayTimeLiteral: (dayTimeInterval|timeInterval);
 dayTimeInterval: daysValue (Space hoursValue (Colon minutesValue (Colon secondsValue)?)?)?;
 timeInterval: (hoursValue (Colon minutesValue (Colon secondsValue)?)?|minutesValue (Colon secondsValue)?|secondsValue);
+
+// module declaration - base rules
+module: moduleNameClause languageClause moduleAuthorizationClause ((temporaryTableDeclaration)+)? (moduleContents)+;
+moduleNameClause: MODULE (moduleName)? (moduleCharacterSetSpecification)?;
+moduleName: identifier;
+moduleCharacterSetSpecification: NAMES ARE characterSetSpecification;
+languageClause: LANGUAGE languageName;
+languageName: (ADA|C|COBOL|FORTRAN|MUMPS|PASCAL|PLI);
+moduleAuthorizationClause: (SCHEMA schemaName|AUTHORIZATION moduleAuthorizationIdentifier|SCHEMA schemaName AUTHORIZATION moduleAuthorizationIdentifier);
+moduleAuthorizationIdentifier: authorizationIdentifier;
 authorizationIdentifier: identifier;
-temporaryTableDeclaration: DECLARE LOCAL TEMPORARY TABLE qualifiedLocalTableName tableElementList (ON COMMIT (PRESERVE|DELETE) ROWS)?;
-qualifiedLocalTableName: MODULE Period localTableName;
-localTableName: qualifiedIdentifier;
-qualifiedIdentifier: identifier;
-tableElementList: LeftParen tableElement ((Comma tableElement)+)? RightParen;
-tableElement: (columnDefinition|tableConstraintDefinition);
-columnDefinition: columnName (dataType|domainName) (defaultClause)? ((columnConstraintDefinition)+)? (collateClause)?;
-columnName: identifier;
+
+// data types
 dataType: (characterStringType (CHARACTER SET characterSetSpecification)?|nationalCharacterStringType|bitStringType|numericType|datetimeType|intervalType);
 characterStringType: (CHARACTER (LeftParen length RightParen)?|CHAR (LeftParen length RightParen)?|CHARACTER VARYING (LeftParen length RightParen)?|CHAR VARYING (LeftParen length RightParen)?|VARCHAR (LeftParen length RightParen)?);
 length: UnsignedInteger;
@@ -72,10 +74,28 @@ intervalLeadingFieldPrecision: UnsignedInteger;
 endField: (nonSecondDatetimeField|SECOND (LeftParen intervalFractionalSecondsPrecision RightParen)?);
 intervalFractionalSecondsPrecision: UnsignedInteger;
 singleDatetimeField: (nonSecondDatetimeField (LeftParen intervalLeadingFieldPrecision RightParen)?|SECOND (LeftParen intervalLeadingFieldPrecision (Comma intervalFractionalSecondsPrecision)? RightParen)?);
+
+// table definition
+temporaryTableDeclaration: DECLARE LOCAL TEMPORARY TABLE qualifiedLocalTableName tableElementList (ON COMMIT (PRESERVE|DELETE) ROWS)?;
+qualifiedLocalTableName: MODULE Period localTableName;
+localTableName: qualifiedIdentifier;
+qualifiedIdentifier: identifier;
+tableElementList: LeftParen tableElement ((Comma tableElement)+)? RightParen;
+tableElement: (columnDefinition|tableConstraintDefinition);
+
+// column definition
+columnDefinition: columnName (dataType|domainName) (defaultClause)? ((columnConstraintDefinition)+)? (collateClause)?;
+columnName: identifier;
+
+// domain
 domainName: qualifiedName;
 qualifiedName: (schemaName Period)? qualifiedIdentifier;
+
+// default
 defaultClause: DEFAULT defaultOption;
 defaultOption: (literal|datetimeValueFunction|USER|CURRENT_USER|SESSION_USER|SYSTEM_USER|NULL);
+
+// data type literals
 literal: (signedNumericLiteral|generalLiteral);
 signedNumericLiteral: (Sign)? UnsignedNumericLiteral;
 characterStringLiteral: (Introducer characterSetSpecification)? Quote ((CharacterRepresentation)+)? Quote (((Separator)+ Quote ((CharacterRepresentation)+)? Quote)+)?;
@@ -89,6 +109,8 @@ datetimeValueFunction: (currentDateValueFunction|currentTimeValueFunction|curren
 currentDateValueFunction: CURRENT_DATE;
 currentTimeValueFunction: CURRENT_TIME (LeftParen timePrecision RightParen)?;
 currentTimestampValueFunction: CURRENT_TIMESTAMP (LeftParen timestampPrecision RightParen)?;
+
+// column constraints
 columnConstraintDefinition: (constraintNameDefinition)? columnConstraint (constraintAttributes)?;
 constraintNameDefinition: CONSTRAINT constraintName;
 constraintName: qualifiedName;
@@ -134,6 +156,8 @@ setFunctionSpecification: (COUNT LeftParen Asterisk RightParen|generalSetFunctio
 generalSetFunction: setFunctionType LeftParen (setQuantifier)? valueExpression RightParen;
 setFunctionType: (AVG|MAX|MIN|SUM|COUNT);
 setQuantifier: (DISTINCT|ALL);
+
+// select, subquery
 scalarSubquery: subquery;
 subquery: LeftParen queryExpression RightParen;
 unionTerm: UNION (ALL)? (correspondingSpec)? queryTerm;
@@ -149,23 +173,21 @@ selectSublist: (derivedColumn|qualifier Period Asterisk);
 derivedColumn: valueExpression (asClause)?;
 asClause: (AS)? columnName;
 tableExpression: fromClause (whereClause)? (groupByClause)? (havingClause)?;
-
-
-
 queryPrimary: (nonJoinQueryPrimary|joinedTable);
 queryTerm: (nonJoinQueryTerm|joinedTable);
 queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
 
+// from
 fromClause: FROM tableReference ((Comma tableReference)+)?;
-
 nonjoinedTableReference: (tableName (correlationSpecification)?)|(derivedTable correlationSpecification);
 tableReference: nonjoinedTableReference|joinedTable;
 joinedTable: (nonjoinedTableReference|(LeftParen joinedTable RightParen)) (naturalJoinTerm|crossJoinTerm)+;
-
 correlationSpecification: (AS)? correlationName (LeftParen derivedColumnList RightParen)?;
 derivedColumnList: columnNameList;
 derivedTable: tableSubquery;
 tableSubquery: subquery;
+
+//joins
 crossJoinTerm: CROSS JOIN tableReference;
 naturalJoinTerm: (NATURAL)? (joinType)? JOIN tableReference (joinSpecification)?;
 joinType: (INNER|outerJoinType (OUTER)?|UNION);
@@ -174,6 +196,8 @@ joinSpecification: (joinCondition|namedColumnsJoin);
 joinCondition: ON searchCondition;
 namedColumnsJoin: USING LeftParen joinColumnList RightParen;
 joinColumnList: columnNameList;
+
+// conditions
 whereClause: WHERE searchCondition;
 groupByClause: GROUP BY groupingColumnReferenceList;
 groupingColumnReferenceList: groupingColumnReference ((Comma groupingColumnReference)+)?;
@@ -207,6 +231,8 @@ characterValueExpression: (concatenation|characterFactor);
 concatenation: characterFactor (ConcatenationOperator characterFactor)+;
 characterFactor: characterPrimary (collateClause)?;
 characterPrimary: (valueExpressionPrimary|stringValueFunction);
+
+// functions and operatore
 stringValueFunction: (characterValueFunction|bitValueFunction);
 characterValueFunction: (characterSubstringFunction|fold|formOfUseConversion|characterTranslation|trimFunction);
 characterSubstringFunction: SUBSTRING LeftParen characterValueExpression FROM startPosition (FOR stringLength)? RightParen;
@@ -267,12 +293,14 @@ quantifier: (all|some);
 all: ALL;
 some: (SOME|ANY);
 existsPredicate: EXISTS tableSubquery;
-uniquePredicate: UNIQUE tableSubquery;
+// uniquePredicate: UNIQUE tableSubquery;
 matchPredicate: rowValueConstructor MATCH (UNIQUE)? ((PARTIAL|FULL))? tableSubquery;
 overlapsPredicate: rowValueConstructor1 OVERLAPS rowValueConstructor2;
 rowValueConstructor1: rowValueConstructor;
 rowValueConstructor2: rowValueConstructor;
 truthValue: (TRUE|FALSE|UNKNOWN);
+
+// constraints
 constraintAttributes: (constraintCheckTime ((NOT)? DEFERRABLE)?|(NOT)? DEFERRABLE (constraintCheckTime)?);
 constraintCheckTime: (INITIALLY DEFERRED|INITIALLY IMMEDIATE);
 tableConstraintDefinition: (constraintNameDefinition)? tableConstraint (constraintCheckTime)?;
@@ -281,6 +309,8 @@ uniqueConstraintDefinition: uniqueSpecification LeftParen uniqueColumnList Right
 uniqueColumnList: columnNameList;
 referentialConstraintDefinition: FOREIGN KEY LeftParen referencingColumns RightParen referencesSpecification;
 referencingColumns: referenceColumnList;
+
+// cursor and procedure
 moduleContents: (declareCursor|dynamicDeclareCursor|procedure);
 declareCursor: DECLARE cursorName (INSENSITIVE)? (SCROLL)? CURSOR FOR cursorSpecification;
 cursorName: identifier;
@@ -299,6 +329,8 @@ parameterDeclarationList: LeftParen parameterDeclaration ((Comma parameterDeclar
 parameterDeclaration: (parameterName dataType|statusParameter);
 statusParameter: (SQLCODE|SQLSTATE);
 sqlProcedureStatement: (sqlSchemaStatement|sqlDataStatement|sqlTransactionStatement|sqlConnectionStatement|sqlSessionStatement|sqlDynamicStatement|sqlDiagnosticsStatement);
+
+// schema definition
 sqlSchemaStatement: (sqlSchemaDefinitionStatement|sqlSchemaManipulationStatement);
 sqlSchemaDefinitionStatement: (schemaDefinition|tableDefinition|viewDefinition|grantStatement|domainDefinition|characterSetDefinition|collationDefinition|translationDefinition|assertionDefinition);
 schemaDefinition: CREATE SCHEMA schemaNameClause (schemaCharacterSetSpecification)? ((schemaElement)+)?;
@@ -306,12 +338,16 @@ schemaNameClause: (schemaName|AUTHORIZATION schemaAuthorizationIdentifier|schema
 schemaAuthorizationIdentifier: authorizationIdentifier;
 schemaCharacterSetSpecification: DEFAULT CHARACTER SET characterSetSpecification;
 schemaElement: (domainDefinition|tableDefinition|viewDefinition|grantStatement|assertionDefinition|characterSetDefinition|collationDefinition|translationDefinition);
+
+// domain definition
 domainDefinition: CREATE DOMAIN domainName (AS)? dataType (defaultClause)? (domainConstraint)? (collateClause)?;
 domainConstraint: (constraintNameDefinition)? checkConstraintDefinition (constraintAttributes)?;
 tableDefinition: CREATE ((GLOBAL|LOCAL) TEMPORARY)? TABLE tableName tableElementList (ON COMMIT (DELETE|PRESERVE) ROWS)?;
 viewDefinition: CREATE VIEW tableName (LeftParen viewColumnList RightParen)? AS queryExpression (WITH (levelsClause)? CHECK OPTION)?;
 viewColumnList: columnNameList;
 levelsClause: (CASCADED|LOCAL);
+
+// privileges
 grantStatement: GRANT privileges ON objectName TO grantee ((Comma grantee)+)? (WITH GRANT OPTION)?;
 privileges: (ALL PRIVILEGES|actionList);
 actionList: action ((Comma action)+)?;
@@ -319,20 +355,20 @@ action: (SELECT|DELETE|INSERT (LeftParen privilegeColumnList RightParen)?|UPDATE
 privilegeColumnList: columnNameList;
 objectName: ((TABLE)? tableName|DOMAIN domainName|COLLATION collationName|CHARACTER SET characterSetName|TRANSLATION translationName);
 grantee: (PUBLIC|authorizationIdentifier);
+
+// assertion
 assertionDefinition: CREATE ASSERTION constraintName assertionCheck (constraintAttributes)?;
 assertionCheck: CHECK LeftParen searchCondition RightParen;
 characterSetDefinition: CREATE CHARACTER SET characterSetName (AS)? characterSetSource ((collateClause|limitedCollationDefinition))?;
 characterSetSource: GET existingCharacterSetName;
-existingCharacterSetName: (standardCharacterRepertoireName|implementationDefinedCharacterRepertoireName|schemaCharacterSetName);
+existingCharacterSetName: (characterSetName|schemaCharacterSetName);
 schemaCharacterSetName: characterSetName;
+
+// collation
 limitedCollationDefinition: COLLATION FROM collationSource;
 collationSource: (collatingSequenceDefinition|translationCollation);
-collatingSequenceDefinition: (externalCollation|schemaCollationName|DESC LeftParen collationName RightParen|DEFAULT);
-externalCollation: EXTERNAL LeftParen Quote externalCollationName Quote RightParen;
-externalCollationName: (standardCollationName|implementationDefinedCollationName);
-standardCollationName: collationName;
-implementationDefinedCollationName: collationName;
-schemaCollationName: collationName;
+collatingSequenceDefinition: (externalCollation|collationName|DESC LeftParen collationName RightParen|DEFAULT);
+externalCollation: EXTERNAL LeftParen Quote collationName Quote RightParen;
 translationCollation: TRANSLATION translationName (THEN COLLATION collationName)?;
 collationDefinition: CREATE COLLATION collationName FOR characterSetSpecification FROM collationSource (padAttribute)?;
 padAttribute: (NO PAD|PAD SPACE);
@@ -340,12 +376,10 @@ translationDefinition: CREATE TRANSLATION translationName FOR sourceCharacterSet
 sourceCharacterSetSpecification: characterSetSpecification;
 targetCharacterSetSpecification: characterSetSpecification;
 translationSource: translationSpecification;
-translationSpecification: (externalTranslation|IDENTITY|schemaTranslationName);
-externalTranslation: EXTERNAL LeftParen Quote externalTranslationName Quote RightParen;
-externalTranslationName: (standardTranslationName|implementationDefinedTranslationName);
-standardTranslationName: translationName;
-implementationDefinedTranslationName: translationName;
-schemaTranslationName: translationName;
+translationSpecification: (externalTranslation|IDENTITY|translationName);
+externalTranslation: EXTERNAL LeftParen Quote translationName Quote RightParen;
+
+// schema ddl
 sqlSchemaManipulationStatement: (dropSchemaStatement|alterTableStatement|dropTableStatement|dropViewStatement|revokeStatement|alterDomainStatement|dropDomainStatement|dropCharacterSetStatement|dropCollationStatement|dropTranslationStatement|dropAssertionStatement);
 dropSchemaStatement: DROP SCHEMA schemaName dropBehaviour;
 dropBehaviour: (CASCADE|RESTRICT);
@@ -373,6 +407,8 @@ dropCharacterSetStatement: DROP CHARACTER SET characterSetName;
 dropCollationStatement: DROP COLLATION collationName;
 dropTranslationStatement: DROP TRANSLATION translationName;
 dropAssertionStatement: DROP ASSERTION constraintName;
+
+// cursor
 sqlDataStatement: (openStatement|fetchStatement|closeStatement|selectStatementSingleRow|sqlDataChangeStatement);
 openStatement: OPEN cursorName;
 fetchStatement: FETCH ((fetchOrientation)? FROM)? cursorName INTO fetchTargetList;
@@ -383,6 +419,8 @@ targetSpecification: (parameterSpecification);
 closeStatement: CLOSE cursorName;
 selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetList tableExpression;
 selectTargetList: targetSpecification ((Comma targetSpecification)+)?;
+
+// data change statements
 sqlDataChangeStatement: (deleteStatementPositioned|deleteStatementSearched|insertStatement|updateStatementPositioned|updateStatementSearched);
 deleteStatementPositioned: DELETE FROM tableName WHERE CURRENT OF cursorName;
 deleteStatementSearched: DELETE FROM tableName (WHERE searchCondition)?;
@@ -395,6 +433,8 @@ setClause: objectColumn EqualsOperator updateSource;
 objectColumn: columnName;
 updateSource: (valueExpression|nullSpecification|DEFAULT);
 updateStatementSearched: UPDATE tableName SET setClauseList (WHERE searchCondition)?;
+
+// transactions
 sqlTransactionStatement: (setTransactionStatement|setConstraintsModeStatement|commitStatement|rollbackStatement);
 setTransactionStatement: SET TRANSACTION transactionMode ((Comma transactionMode)+)?;
 transactionMode: (isolationLevel|transactionAccessMode|diagnosticsSize);
@@ -407,6 +447,8 @@ setConstraintsModeStatement: SET CONSTRAINTS constraintNameList (DEFERRED|IMMEDI
 constraintNameList: (ALL|constraintName ((Comma constraintName)+)?);
 commitStatement: COMMIT (WORK)?;
 rollbackStatement: ROLLBACK (WORK)?;
+
+// connection
 sqlConnectionStatement: (connectStatement|setConnectionStatement|disconnectStatement);
 connectStatement: CONNECT TO connectionTarget;
 connectionTarget: (sqlServerName (AS connectionName)? (USER userName)?|DEFAULT);
@@ -417,6 +459,8 @@ setConnectionStatement: SET CONNECTION connectionObject;
 connectionObject: (DEFAULT|connectionName);
 disconnectStatement: DISCONNECT disconnectObject;
 disconnectObject: (connectionObject|ALL|CURRENT);
+
+// session
 sqlSessionStatement: (setCatalogStatement|setSchemaStatement|setNamesStatement|setSessionAuthorizationIdentifierStatement|setLocalTimeZoneStatement);
 setCatalogStatement: SET CATALOG valueSpecification;
 valueSpecification: (literal|generalValueSpecification);
@@ -432,6 +476,8 @@ descriptorName: (scopeOption)? simpleValueSpecification;
 scopeOption: (GLOBAL|LOCAL);
 occurrences: simpleValueSpecification;
 deallocateDescriptorStatement: DEALLOCATE DESCRIPTOR descriptorName;
+
+// descriptor
 setDescriptorStatement: SET DESCRIPTOR descriptorName setDescriptorInformation;
 setDescriptorInformation: (setCount|VALUE itemNumber setItemInformation ((Comma setItemInformation)+)?);
 setCount: COUNT EqualsOperator simpleValueSpecification1;
@@ -447,6 +493,8 @@ simpleTargetSpecification1: simpleTargetSpecification;
 simpleTargetSpecification: (parameterName);
 getItemInformation: simpleTargetSpecification2 EqualsOperator descriptorItemName;
 simpleTargetSpecification2: simpleTargetSpecification;
+
+// prepare statement
 prepareStatement: PREPARE sqlStatementName FROM sqlStatementVariable;
 sqlStatementName: (statementName|extendedStatementName);
 extendedStatementName: (scopeOption)? simpleValueSpecification;
@@ -456,6 +504,8 @@ describeStatement: (describeInputStatement|describeOutputStatement);
 describeInputStatement: DESCRIBE INPUT sqlStatementName usingDescriptor;
 usingDescriptor: (USING|INTO) SQL DESCRIPTOR descriptorName;
 describeOutputStatement: DESCRIBE (OUTPUT)? sqlStatementName usingDescriptor;
+
+// execute statement
 executeStatement: EXECUTE sqlStatementName (resultUsingClause)? (parameterUsingClause)?;
 resultUsingClause: usingClause;
 usingClause: (usingArguments|usingDescriptor);
@@ -463,6 +513,8 @@ usingArguments: (USING|INTO) argument ((Comma argument)+)?;
 argument: targetSpecification;
 parameterUsingClause: usingClause;
 executeImmediateStatement: EXECUTE IMMEDIATE sqlStatementVariable;
+
+// dynamic data statements
 sqlDynamicDataStatement: (allocateCursorStatement|dynamicOpenStatement|dynamicCloseStatement|dynamicFetchStatement|dynamicDeleteStatementPositioned|dynamicUpdateStatementPositioned);
 allocateCursorStatement: ALLOCATE extendedCursorName (INSENSITIVE)? (SCROLL)? CURSOR FOR extendedStatementName;
 extendedCursorName: (scopeOption)? simpleValueSpecification;
@@ -472,6 +524,8 @@ dynamicCloseStatement: CLOSE dynamicCursorName;
 dynamicFetchStatement: FETCH ((fetchOrientation)? FROM)? dynamicCursorName;
 dynamicDeleteStatementPositioned: DELETE FROM tableName WHERE CURRENT OF dynamicCursorName;
 dynamicUpdateStatementPositioned: UPDATE tableName SET setClause ((Comma setClause)+)? WHERE CURRENT OF dynamicCursorName;
+
+// diagnostics statement
 sqlDiagnosticsStatement: getDiagnosticsStatement;
 getDiagnosticsStatement: GET DIAGNOSTICS sqlDiagnosticsInformation;
 sqlDiagnosticsInformation: (statementInformation|conditionInformation);
@@ -482,7 +536,11 @@ conditionInformation: EXCEPTION conditionNumber conditionInformationItem ((Comma
 conditionNumber: simpleValueSpecification;
 conditionInformationItem: simpleTargetSpecification EqualsOperator conditionInformationItemName;
 conditionInformationItemName: (CONDITION_NUMBER|RETURNED_SQLSTATE|CLASS_ORIGIN|SUBCLASS_ORIGIN|SERVER_NAME|CONNECTION_NAME|CONSTRAINT_CATALOG|CONSTRAINT_SCHEMA|CONSTRAINT_NAME|CATALOG_NAME|SCHEMA_NAME|TABLE_NAME|COLUMN_NAME|CURSOR_NAME|MESSAGE_TEXT|MESSAGE_LENGTH|MESSAGE_OCTET_LENGTH);
+
+// statement or declaration - base rule
 statementOrDeclaration: (declareCursor|dynamicDeclareCursor|temporaryTableDeclaration|sqlProcedureStatement);
+
+// preparable statement - base rule
 preparableStatement: (preparableSqlDataStatement|preparableSqlSchemaStatement|preparableSqlTransactionStatement|preparableSqlSessionStatement);
 preparableSqlDataStatement: (deleteStatementSearched|dynamicSingleRowSelectStatement|insertStatement|dynamicSelectStatement|updateStatementSearched|preparableDynamicDeleteStatementPositioned|preparableDynamicUpdateStatementPositioned);
 dynamicSingleRowSelectStatement: querySpecification;
@@ -492,8 +550,11 @@ preparableDynamicUpdateStatementPositioned: UPDATE (tableName)? SET setClause WH
 preparableSqlSchemaStatement: sqlSchemaStatement;
 preparableSqlTransactionStatement: sqlTransactionStatement;
 preparableSqlSessionStatement: sqlSessionStatement;
+
+// direct statement - base rule
 directSqlStatement: (directSqlDataStatement|sqlSchemaStatement|sqlTransactionStatement|sqlConnectionStatement|sqlSessionStatement);
 directSqlDataStatement: (deleteStatementSearched|directSelectStatementMultipleRows|insertStatement|updateStatementSearched|temporaryTableDeclaration);
 directSelectStatementMultipleRows: queryExpression (orderByClause)?;
 
-sqlScript: (directSqlStatement ';'?)+;
+// root rule for script
+sqlScript: ((directSqlStatement|preparableStatement|module|statementOrDeclaration) ';'?)*;

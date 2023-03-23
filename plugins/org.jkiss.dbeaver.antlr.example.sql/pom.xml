@@ -31,7 +31,7 @@
             <visitor>true</visitor>
             <sourceDirectory>${basedir}</sourceDirectory>
             <includes>
-                <include>Sql92.g4</include>
+                <include>Sql92Parser.g4</include>
                 <include>Sql92Lexer.g4</include>
             </includes>
         </configuration>
