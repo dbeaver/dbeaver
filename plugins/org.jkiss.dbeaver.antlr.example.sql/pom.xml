@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.jkiss.dbeaver</groupId>
+        <artifactId>plugins</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+    </parent>
+    <artifactId>org.jkiss.dbeaver.antlr.example.sql</artifactId>
+    <packaging>eclipse-plugin</packaging>
+    
+    <repositories>
+        <repository>
+            <id>antlr4-bundle-local-target-repository</id>
+            <name>antlr4-bundle-local-target</name>
+            <layout>p2</layout>
+            <url>file:///D:/github.com/dbeaver/eclipse-bundle-antlr4/target</url>
+        </repository>
+    </repositories>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-maven-plugin</artifactId>
+        <version>4.12.0</version>
+        <configuration>
+            <visitor>true</visitor>
+            <sourceDirectory>${basedir}</sourceDirectory>
+            <includes>
+                <include>Sql92.g4</include>
+                <include>Sql92Lexer.g4</include>
+            </includes>
+        </configuration>
+        <executions>
+            <execution>
+                <phase>generate-sources</phase>
+                <goals>
+                    <goal>antlr4</goal>
+                </goals>
+                <configuration>
+                    <sourceDirectory>src/org/jkiss/dbeaver/antlr/example/sql</sourceDirectory>
+                    <outputDirectory>src-gen/org/jkiss/dbeaver/antlr/example/sql</outputDirectory>
+                </configuration>
+            </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
