@@ -18,15 +18,19 @@ package org.jkiss.dbeaver.ext.sqlite.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 
+import java.util.Set;
+
 public class SQLiteSQLDialect extends GenericSQLDialect {
 
     public SQLiteSQLDialect() {
         super("SQLite", "sqlite");
+        addKeywords(Set.of("STRICT"), DBPKeywordType.OTHER);
     }
 
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
