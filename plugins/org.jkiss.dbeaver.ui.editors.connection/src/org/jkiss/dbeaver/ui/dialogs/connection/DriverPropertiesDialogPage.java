@@ -23,6 +23,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Link;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -151,7 +152,7 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
         propsControl.createPropertiesToolBar(linksComposite);
 
         {
-            CLabel infoLabel = UIUtils.createInfoLabel(linksComposite, UIConnectionMessages.dialog_setting_connection_driver_properties_advanced);
+            Control infoLabel = UIUtils.createInfoLabel(linksComposite, UIConnectionMessages.dialog_setting_connection_driver_properties_advanced);
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.grabExcessHorizontalSpace = true;
             infoLabel.setLayoutData(gd);

@@ -22,6 +22,7 @@ import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -60,7 +61,7 @@ public class PasswordChangeDialog extends BaseDialog
         Composite credGroup = super.createDialogArea(parent);
         ((GridLayout)credGroup.getLayout()).numColumns = 2;
 
-        CLabel infoLabel = UIUtils.createInfoLabel(credGroup, getTitle());
+        Control infoLabel = UIUtils.createInfoLabel(credGroup, getTitle());
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
         gd.widthHint = 300;

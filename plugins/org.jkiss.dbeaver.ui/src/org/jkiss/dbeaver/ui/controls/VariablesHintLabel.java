@@ -20,8 +20,6 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.TableEditor;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -39,8 +37,8 @@ import org.jkiss.utils.CommonUtils;
 public class VariablesHintLabel {
 
     private final String[][] variables;
+    private final Control infoLabel;
     private IVariableResolver resolver;
-    private CLabel infoLabel;
 
     public VariablesHintLabel(Composite parent, String hintLabel, String hintTitle, String[][] vars) {
         this(parent, hintLabel, hintTitle, vars, true);
@@ -51,33 +49,28 @@ public class VariablesHintLabel {
 
         String varsText = GeneralUtils.generateVariablesLegend(vars);
 
-        infoLabel = UIUtils.createInfoLabel(parent, hintLabel);
         Layout layout = parent.getLayout();
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         if (stretch && layout instanceof GridLayout) {
             gd.horizontalSpan = ((GridLayout) layout).numColumns;
         }
-        infoLabel.setLayoutData(gd);
-        infoLabel.setCursor(infoLabel.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
-        infoLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseDown(MouseEvent e) {
-                if (resolver != null) {
-                    VariableListDialog dialog = new VariableListDialog(parent.getShell(), hintTitle);
-                    dialog.open();
-                } else {
-                    EditTextDialog dialog = new EditTextDialog(parent.getShell(), hintTitle, varsText, true);
-                    dialog.setMonospaceFont(true);
-                    dialog.setAutoSize(true);
-                    dialog.open();
-                }
+        infoLabel = UIUtils.createInfoLabel(parent, hintLabel, () -> {
+            if (resolver != null) {
+                VariableListDialog dialog = new VariableListDialog(parent.getShell(), hintTitle);
+                dialog.open();
+            } else {
+                EditTextDialog dialog = new EditTextDialog(parent.getShell(), hintTitle, varsText, true);
+                dialog.setMonospaceFont(true);
+                dialog.setAutoSize(true);
+                dialog.open();
             }
         });
+        infoLabel.setLayoutData(gd);
         infoLabel.setToolTipText(varsText);
 
     }
 
-    public CLabel getInfoLabel() {
+    public Control getInfoLabel() {
         return infoLabel;
     }
 

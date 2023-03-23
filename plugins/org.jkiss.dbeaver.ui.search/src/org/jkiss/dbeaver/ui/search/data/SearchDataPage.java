@@ -256,7 +256,7 @@ public class SearchDataPage extends AbstractSearchPage {
                 }
             });
 
-            CLabel infoLabel = UIUtils.createInfoLabel(
+            Control infoLabel = UIUtils.createInfoLabel(
                 optionsGroup2,
                 UISearchMessages.dialog_data_search_info_label_use_ctrl,
                 GridData.FILL_BOTH,

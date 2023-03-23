@@ -296,7 +296,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
             }
         }
 
-        CLabel infoLabel = UIUtils.createInfoLabel(group, CoreMessages.dialog_connection_wizard_connection_init_hint);
+        Control infoLabel = UIUtils.createInfoLabel(group, CoreMessages.dialog_connection_wizard_connection_init_hint);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
         gd.grabExcessHorizontalSpace = true;
         infoLabel.setLayoutData(gd);
