@@ -23,14 +23,17 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.*;
@@ -142,6 +145,8 @@ public class ResultSetViewer extends Viewer
     private static final String TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status";
     private static final String CONFIRM_SERVER_SIDE_ORDERING_UNAVAILABLE = "org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable";
 
+    private static final int THEME_UPDATE_DELAY_MS = 500;
+
     public static final String EMPTY_TRANSFORMER_NAME = "Default";
     public static final String CONTROL_ID = ResultSetViewer.class.getSimpleName();
     public static final String DEFAULT_QUERY_TEXT = "SQL";
@@ -227,6 +232,7 @@ public class ResultSetViewer extends Viewer
 
     // Theme listener
     private IPropertyChangeListener themeChangeListener;
+    private final AbstractJob themeUpdateJob;
     private long lastThemeUpdateTime;
 
     private volatile boolean nextSegmentReadingBlocked;
@@ -417,20 +423,51 @@ public class ResultSetViewer extends Viewer
             project.getDataSourceRegistry().addDataSourceListener(this);
         }
 
-        // Listen property change
+        themeUpdateJob = new AbstractJob("Update theme") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                if (!getControl().isDisposed()) {
+                    lastThemeUpdateTime = System.currentTimeMillis();
+                    UIUtils.asyncExec(ResultSetViewer.this::applyCurrentPresentationThemeSettings);
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        themeUpdateJob.setSystem(true);
+        themeUpdateJob.setUser(false);
+
         themeChangeListener = event -> {
+            final Font font = JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MAIN_FONT);
+            if (panelFolder != null) {
+                panelFolder.setFont(font);
+            }
+            if (statusBar != null) {
+                UIUtils.applyMainFont(statusBar);
+                updateToolbar();
+            }
+
+            UIUtils.applyMainFont(presentationSwitchFolder);
+            UIUtils.applyMainFont(panelSwitchFolder);
+
             if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME) ||
                 event.getProperty().startsWith(ThemeConstants.RESULTS_PROP_PREFIX))
             {
-                if (lastThemeUpdateTime > 0 && System.currentTimeMillis() - lastThemeUpdateTime < 500) {
-                    // Do not update too often (theme change may trigger this hundreds of times)
-                    return;
+                final long currentTime = System.currentTimeMillis();
+                final long elapsedTime = currentTime - lastThemeUpdateTime;
+
+                if (!themeUpdateJob.isCanceled()) {
+                    themeUpdateJob.cancel();
                 }
-                lastThemeUpdateTime = System.currentTimeMillis();
-                UIUtils.asyncExec(this::applyCurrentPresentationThemeSettings);
+
+                if (lastThemeUpdateTime > 0 && elapsedTime < THEME_UPDATE_DELAY_MS) {
+                    themeUpdateJob.schedule(THEME_UPDATE_DELAY_MS - elapsedTime);
+                } else {
+                    themeUpdateJob.schedule();
+                }
             }
         };
         PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
+        themeChangeListener.propertyChange(new PropertyChangeEvent(this, "", null, null));
 
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(dataPropertyListener);
         DBWorkbench.getPlatform().getDataSourceProviderRegistry().getGlobalDataSourcePreferenceStore().addPropertyChangeListener(dataPropertyListener);
@@ -1942,6 +1979,9 @@ public class ResultSetViewer extends Viewer
 
     private void dispose()
     {
+        if (!themeUpdateJob.isCanceled()) {
+            themeUpdateJob.cancel();
+        }
         if (themeChangeListener != null) {
             PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
             themeChangeListener = null;
@@ -4733,7 +4773,7 @@ public class ResultSetViewer extends Viewer
         private final Map<String, List<String>> filterHistory = new HashMap<>();
         @NotNull
         @Override
-        public List<String> getQueryFilterHistory(@NotNull String query) {
+        public List<String> getQueryFilterHistory(@Nullable DBCExecutionContext context, @NotNull String query) {
             final List<String> filters = filterHistory.get(query);
             if (filters != null) {
                 return filters;
@@ -4742,13 +4782,13 @@ public class ResultSetViewer extends Viewer
         }
 
         @Override
-        public void saveQueryFilterValue(@NotNull String query, @NotNull String filterValue) {
+        public void saveQueryFilterValue(@Nullable DBCExecutionContext context, @NotNull String query, @NotNull String filterValue) {
             List<String> filters = filterHistory.computeIfAbsent(query, k -> new ArrayList<>());
             filters.add(filterValue);
         }
 
         @Override
-        public void deleteQueryFilterValue(@NotNull String query, String filterValue) {
+        public void deleteQueryFilterValue(@Nullable DBCExecutionContext context, @NotNull String query, String filterValue) {
             List<String> filters = filterHistory.get(query);
             if (filters != null) {
                 filters.add(filterValue);

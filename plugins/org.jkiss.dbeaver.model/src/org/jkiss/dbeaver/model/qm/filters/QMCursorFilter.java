@@ -14,27 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.net.ssh;
+package org.jkiss.dbeaver.model.qm.filters;
 
-public class SSHAgentIdentity {
-    private byte[] blob;
-    private byte[] comment;
+import org.jkiss.dbeaver.model.qm.QMEventFilter;
 
-    public byte[] getBlob() {
-        return blob;
+public class QMCursorFilter {
+    private final QMEventCriteria criteria;
+    private final QMEventFilter filter;
+    private final String sessionId;
+
+    public QMCursorFilter(String sessionId, QMEventCriteria criteria, QMEventFilter filter) {
+        this.sessionId = sessionId;
+        this.criteria = criteria;
+        this.filter = filter;
     }
 
-    public void setBlob(byte[] blob) {
-        this.blob = blob;
+    public String getSessionId() {
+        return sessionId;
     }
 
-    public byte[] getComment() {
-        return comment;
+    public QMEventCriteria getCriteria() {
+        return criteria;
     }
 
-    public void setComment(byte[] comment) {
-        this.comment = comment;
+    public QMEventFilter getFilter() {
+        return filter;
     }
-
-
 }

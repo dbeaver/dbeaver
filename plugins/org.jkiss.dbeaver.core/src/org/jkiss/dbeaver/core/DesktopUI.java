@@ -555,14 +555,22 @@ public class DesktopUI implements DBPPlatformUI {
                     }
                 };
 
-                for (Shell shell : display.getShells()) {
-                    shell.setEnabled(false);
+                IWorkbench workbench = PlatformUI.isWorkbenchRunning() ? PlatformUI.getWorkbench() : null;
+                boolean workbenchInitializing = workbench == null || workbench.isStarting() || workbench.isClosing();
+
+                Shell[] shells = display.getShells();
+                if (!workbenchInitializing) {
+                    for (Shell shell : shells) {
+                        shell.setEnabled(false);
+                    }
                 }
                 try {
                     BusyIndicator.showWhile(display, modalShortWait);
                 } finally {
-                    for (Shell shell : display.getShells()) {
-                        shell.setEnabled(true);
+                    if (!workbenchInitializing) {
+                        for (Shell shell : display.getShells()) {
+                            shell.setEnabled(true);
+                        }
                     }
                 }
                 

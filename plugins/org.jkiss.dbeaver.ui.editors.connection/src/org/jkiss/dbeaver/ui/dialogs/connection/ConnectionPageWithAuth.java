@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
@@ -44,7 +45,13 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
 
     protected void createAuthPanel(Composite parent, int hSpan, Runnable panelExtender) {
         Assert.isLegal(isAuthEnabled());
-        authModelSelector = new AuthModelSelector(parent, panelExtender, () -> getSite().updateButtons());
+        authModelSelector = new AuthModelSelector(parent, () -> {
+            // Apply font on auth mode change
+            Dialog.applyDialogFont(authModelSelector);
+            if (panelExtender != null) {
+                panelExtender.run();
+            }
+        }, () -> getSite().updateButtons());
         authModelSelector.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         ((GridData)authModelSelector.getLayoutData()).horizontalSpan = hSpan;
     }

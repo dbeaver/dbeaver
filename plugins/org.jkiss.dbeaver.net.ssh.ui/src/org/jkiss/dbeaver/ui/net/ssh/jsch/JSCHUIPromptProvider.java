@@ -21,7 +21,6 @@ import com.jcraft.jsch.UserInfo;
 import org.eclipse.jsch.ui.UserInfoPrompter;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.net.ssh.JSCHUserInfoPromptProvider;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
@@ -81,15 +80,6 @@ public class JSCHUIPromptProvider implements JSCHUserInfoPromptProvider {
 
         @Override
         public boolean promptYesNo(String question) {
-            // HACK: There's a bug in JSCH: in the message, it includes the original hostname instead of its alias
-            if (question.startsWith("The authenticity of host '")) {
-                final int index = question.indexOf('\'', 26);
-                final String hostname = question.substring(26, index);
-                if (hostname.equals(DBConstants.HOST_LOCALHOST)) {
-                    question = question.substring(0, 26) + configuration.getHostname() + question.substring(index);
-                }
-            }
-
             return DBWorkbench.getPlatformUI().confirmAction(
                 SSHUIMessages.jsch_remote_host_identifier_changed_warning_title,
                 question,

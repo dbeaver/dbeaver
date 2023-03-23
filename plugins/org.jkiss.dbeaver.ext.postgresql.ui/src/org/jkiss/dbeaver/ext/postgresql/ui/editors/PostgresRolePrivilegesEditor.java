@@ -105,7 +105,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             isRoleEditor() ? new DatabaseObjectFilter() : null);
         roleOrObjectTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         final TreeViewer treeViewer = roleOrObjectTable.getViewer();
-        treeViewer.setLabelProvider(new DatabaseNavigatorLabelProvider(treeViewer) {
+        treeViewer.setLabelProvider(new DatabaseNavigatorLabelProvider(roleOrObjectTable) {
             @Override
             public Font getFont(Object element) {
                 if (element instanceof DBNDatabaseNode) {

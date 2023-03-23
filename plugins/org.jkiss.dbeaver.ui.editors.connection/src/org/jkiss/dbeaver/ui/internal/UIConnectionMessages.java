@@ -270,9 +270,6 @@ public class UIConnectionMessages extends NLS {
 
     public static String dialog_connection_driver_project;
 
-    public static String dialog_user_password_change_label;
-    public static String dialog_user_password_change_question_label;
-    public static String dialog_user_password_change_question_message;
     public static String dialog_edit_driver_edit_maven_raw;
     public static String dialog_edit_driver_edit_maven_settings;
     public static String dialog_edit_driver_edit_maven_manual;
