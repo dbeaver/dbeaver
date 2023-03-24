@@ -14,10 +14,9 @@
     
     <repositories>
         <repository>
-            <id>antlr4-bundle-local-target-repository</id>
-            <name>antlr4-bundle-local-target</name>
+            <id>local-contrib</id>
+            <url>${local-p2-repo.url}</url>
             <layout>p2</layout>
-            <url>file:///D:/github.com/dbeaver/eclipse-bundle-antlr4/target</url>
         </repository>
     </repositories>
 
@@ -27,14 +26,6 @@
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-maven-plugin</artifactId>
         <version>4.12.0</version>
-        <configuration>
-            <visitor>true</visitor>
-            <sourceDirectory>${basedir}</sourceDirectory>
-            <includes>
-                <include>Sql92Parser.g4</include>
-                <include>Sql92Lexer.g4</include>
-            </includes>
-        </configuration>
         <executions>
             <execution>
                 <phase>generate-sources</phase>
