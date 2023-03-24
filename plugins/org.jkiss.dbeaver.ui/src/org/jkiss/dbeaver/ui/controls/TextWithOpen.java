@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -25,10 +27,16 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.ui.ide.IDE;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * TextWithOpen
@@ -46,7 +54,7 @@ public class TextWithOpen extends Composite {
         gl.horizontalSpacing = 0;
         setLayout(gl);
 
-        boolean useTextEditor = isPlainTextEditor();
+        boolean useTextEditor = isShowFileContentEditor();
         text = new Text(this, SWT.BORDER | (useTextEditor ? SWT.MULTI | SWT.V_SCROLL : SWT.SINGLE));
         GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER);
         if (useTextEditor) {
@@ -69,15 +77,42 @@ public class TextWithOpen extends Composite {
                 }
             });
         }
-        final ToolItem toolItem = new ToolItem(toolbar, SWT.NONE);
-        toolItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
-        toolItem.setToolTipText("Browse");
-        toolItem.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                openBrowser();
-            }
-        });
+        {
+            final ToolItem toolItem = new ToolItem(toolbar, SWT.NONE);
+            toolItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
+            toolItem.setToolTipText("Browse");
+            toolItem.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    openBrowser();
+                }
+            });
+        }
+
+        if (!useTextEditor && !isBinaryContents()) {
+            // Open file text in embedded editor
+            final ToolItem editItem = new ToolItem(toolbar, SWT.NONE);
+            editItem.setImage(DBeaverIcons.getImage(UIIcon.EDIT));
+            editItem.setToolTipText("Edit file");
+            editItem.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    String filePath = TextWithOpen.this.text.getText();
+
+                    IFileStore store = EFS.getLocalFileSystem().getStore(Path.of(filePath).toUri());
+                    try {
+                        IDE.openEditorOnFileStore(UIUtils.getActiveWorkbenchWindow().getActivePage(), store);
+                    } catch (Exception ex) {
+                        DBWorkbench.getPlatformUI().showError("File open error", null, ex);
+                    }
+                }
+            });
+            TextWithOpen.this.text.addModifyListener(e -> {
+                Path targetFile = Path.of(TextWithOpen.this.text.getText()).toAbsolutePath();
+                editItem.setEnabled(Files.exists(targetFile) && !Files.isDirectory(targetFile));
+            });
+            editItem.setEnabled(false);
+        }
 
         gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_CENTER);
         toolbar.setLayoutData(gd);
@@ -91,7 +126,11 @@ public class TextWithOpen extends Composite {
         text.setText(str);
     }
 
-    protected boolean isPlainTextEditor() {
+    protected boolean isShowFileContentEditor() {
+        return false;
+    }
+
+    protected boolean isBinaryContents() {
         return false;
     }
 
