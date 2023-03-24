@@ -17,24 +17,11 @@
 package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
-public class WSAbstractProjectEvent extends WSEvent {
+public interface WSProjectEvent {
     @NotNull
-    protected final String projectId;
-
-    public WSAbstractProjectEvent(
-        @NotNull WSEventType eventType,
-        @Nullable String sessionId,
-        @Nullable String userId,
-        @NotNull String projectId
-    ) {
-        super(eventType, sessionId, userId);
-        this.projectId = projectId;
-    }
+    String getId();
 
     @NotNull
-    public String getProjectId() {
-        return projectId;
-    }
+    String getProjectId();
 }
