@@ -19,10 +19,10 @@ package org.jkiss.dbeaver.model.websocket.event.resource;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.rm.RMResource;
-import org.jkiss.dbeaver.model.websocket.event.WSAbstractProjectEvent;
+import org.jkiss.dbeaver.model.websocket.event.WSProjectResourceEvent;
 import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
-public class WSResourceUpdatedEvent extends WSAbstractProjectEvent {
+public class WSResourceUpdatedEvent extends WSProjectResourceEvent {
     @NotNull
     private final String resourcePath;
     @NotNull

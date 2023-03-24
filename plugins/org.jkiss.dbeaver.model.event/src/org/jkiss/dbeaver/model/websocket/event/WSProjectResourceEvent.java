@@ -16,24 +16,25 @@
  */
 package org.jkiss.dbeaver.model.websocket.event;
 
-//TODO: implement event registry and describe possible events in plugin.xml
-public enum WSEventTopic {
-    SERVER_CONFIG("cb_config"),
-    SESSION_LOG("cb_session_log"),
-    DATASOURCE("cb_datasource"),
-    DATASOURCE_FOLDER("cb_datasource_folder"),
-    USER_SECRET("cb_user_secret"),
-    RM_SCRIPTS("cb_scripts"),
-    PROJECTS("cb_projects"),
-    PERMISSIONS("cb_permissions");
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
-    private final String topicId;
+public class WSProjectResourceEvent extends WSEvent implements WSProjectEvent {
+    @NotNull
+    protected final String projectId;
 
-    WSEventTopic(String topicId) {
-        this.topicId = topicId;
+    public WSProjectResourceEvent(
+        @NotNull WSEventType eventType,
+        @Nullable String sessionId,
+        @Nullable String userId,
+        @NotNull String projectId
+    ) {
+        super(eventType, sessionId, userId);
+        this.projectId = projectId;
     }
 
-    public String getTopicId() {
-        return topicId;
+    @NotNull
+    public String getProjectId() {
+        return projectId;
     }
 }

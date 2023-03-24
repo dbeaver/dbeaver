@@ -947,7 +947,7 @@ public class DataSourceDescriptor
                 authProvided = authProvider.provideAuthParameters(monitor, this, resolvedConnectionInfo);
             } else {
                 // 3. USe legacy password provider
-                if (!isCredentialsSaved() && !getDriver().isAnonymousAccess()) {
+                if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
                     // Ask for password
                     authProvided = askForPassword(this, null, DBWTunnel.AuthCredentials.CREDENTIALS);
                 }
