@@ -108,7 +108,7 @@ public class TextWithOpen extends Composite {
                 }
             });
             TextWithOpen.this.text.addModifyListener(e -> {
-                Path targetFile = Path.of(TextWithOpen.this.text.getText()).toAbsolutePath();
+                Path targetFile = Path.of(TextWithOpen.this.text.getText().trim()).toAbsolutePath();
                 editItem.setEnabled(Files.exists(targetFile) && !Files.isDirectory(targetFile));
             });
             editItem.setEnabled(false);
