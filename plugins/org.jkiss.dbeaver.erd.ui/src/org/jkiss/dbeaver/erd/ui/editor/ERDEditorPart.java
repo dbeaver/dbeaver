@@ -1378,15 +1378,21 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 }
                 if (!CommonUtils.isEmpty(nodes)) {
                     Color color = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_SEARCH_HIGHLIGHTING);
+                    DBPNamedObject focusedNode = null;
                     for (DBPNamedObject erdNode : nodes) {
                         if (matchesSearch(erdNode)) {
+                            if (resultsFound == false) {
+                                focusedNode = erdNode; // let's focus on the first found node after search complete
+                            }
                             resultsFound = true;
                             results.add(erdNode);
                             if (erdNode instanceof GraphicalEditPart) {
                                 highlightings.add(highlightingManager.highlight(((GraphicalEditPart) erdNode).getFigure(), color));
                             }
-                            graphicalViewer.reveal((EditPart) erdNode);
                         }
+                    }
+                    if (resultsFound && focusedNode != null) {
+                        graphicalViewer.reveal((EditPart) focusedNode);
                     }
                 }
                 resultsIterator = results.listIterator();
