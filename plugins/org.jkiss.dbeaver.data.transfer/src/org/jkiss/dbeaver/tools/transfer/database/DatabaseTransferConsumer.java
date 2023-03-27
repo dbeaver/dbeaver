@@ -305,6 +305,15 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     @Override
     public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException {
+        final Object document;
+
+        if (session.getDataSource().getInfo().isDynamicMetadata()) {
+            final DBDAttributeBinding attr = DBUtils.getAttributeBindings(session, getSourceObject(), resultSet.getMeta())[0];
+            document = attr.getValueHandler().fetchValueObject(session, resultSet, attr, attr.getOrdinalPosition());
+        } else {
+            document = null;
+        }
+
         Object[] rowValues = new Object[targetAttributes.size()];
         for (int i = 0; i < columnMappings.length; i++) {
             ColumnMapping column = columnMappings[i];
@@ -350,9 +359,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     rowValues[column.targetIndex] = column.valueTransformer.transformAttribute(
                         session,
                         rsAttributes,
-                        rowValues,
+                        document != null ? new Object[]{document} : rowValues,
                         column.sourceAttr,
-                        attrValue,
+                        document != null ? document : attrValue,
                         column.valueTransformerProperties);
                 } catch (DBException e) {
                     throw new DBCException(

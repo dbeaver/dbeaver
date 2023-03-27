@@ -47,6 +47,7 @@ public class SQLiteDataSource extends GenericDataSource {
         GenericMetaModel metaModel
     ) throws DBException {
         super(monitor, container, metaModel, new SQLiteSQLDialect());
+
     }
 
     public SQLiteDataSource(

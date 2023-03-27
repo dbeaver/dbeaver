@@ -17,12 +17,7 @@
 
 package org.jkiss.dbeaver.model.qm.meta;
 
-import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
-import org.jkiss.utils.CommonUtils;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * QM Transaction info
@@ -35,13 +30,14 @@ public class QMMTransactionInfo extends QMMObject {
     private final QMMTransactionSavepointInfo savepointStack;
 
     QMMTransactionInfo(QMMConnectionInfo connection, QMMTransactionInfo previous) {
+        super(QMMetaObjectType.TRANSACTION_INFO);
         this.connection = connection;
         this.previous = previous;
         this.savepointStack = new QMMTransactionSavepointInfo(this, null, null, null);
     }
 
     private QMMTransactionInfo(Builder builder) {
-        super(builder.openTime, builder.closeTime);
+        super(QMMetaObjectType.TRANSACTION_INFO, builder.openTime, builder.closeTime);
         connection = builder.connection;
         previous = builder.previous;
         committed = builder.committed;
@@ -79,27 +75,6 @@ public class QMMTransactionInfo extends QMMObject {
         return connection;
     }
 
-    @Override
-    public Map<String, Object> toMap() {
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("connection", getConnection().toMap());
-        result.put("openTime", getOpenTime());
-        result.put("closeTime", getCloseTime());
-        return result;
-    }
-
-    public static QMMTransactionInfo fromMap(Map<String, Object> objectMap) {
-        QMMConnectionInfo connectionInfo = QMMConnectionInfo.fromMap(
-            JSONUtils.getObject(objectMap, "connection"));
-        long openTime = CommonUtils.toLong(objectMap.get("openTime"));
-        long closeTime = CommonUtils.toLong(objectMap.get("closeTime"));
-        return builder()
-            .setConnection(connectionInfo)
-            .setOpenTime(openTime)
-            .setCloseTime(closeTime)
-            .build();
-    }
-
     public QMMTransactionInfo getPrevious() {
         return previous;
     }
@@ -135,8 +110,8 @@ public class QMMTransactionInfo extends QMMObject {
     }
 
     @Override
-    public ObjectType getObjectType() {
-        return ObjectType.TransactionInfo;
+    public QMMetaObjectType getObjectType() {
+        return QMMetaObjectType.TRANSACTION_INFO;
     }
 
     public static final class Builder {

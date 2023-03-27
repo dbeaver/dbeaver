@@ -14,27 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.net.ssh;
+package org.jkiss.dbeaver.model.websocket.event;
 
-public class SSHAgentIdentity {
-    private byte[] blob;
-    private byte[] comment;
+import org.jkiss.code.NotNull;
 
-    public byte[] getBlob() {
-        return blob;
-    }
+public interface WSProjectEvent {
+    @NotNull
+    String getId();
 
-    public void setBlob(byte[] blob) {
-        this.blob = blob;
-    }
-
-    public byte[] getComment() {
-        return comment;
-    }
-
-    public void setComment(byte[] comment) {
-        this.comment = comment;
-    }
-
-
+    @NotNull
+    String getProjectId();
 }
