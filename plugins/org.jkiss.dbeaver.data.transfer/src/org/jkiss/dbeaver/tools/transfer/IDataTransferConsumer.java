@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -57,6 +58,16 @@ public interface IDataTransferConsumer<SETTINGS extends IDataTransferSettings, P
      * @param last called in the very end of all transfers
      */
     void finishTransfer(DBRProgressMonitor monitor, boolean last);
+
+    /**
+     * Finishes this transfer
+     * @param monitor monitor
+     * @param exception an exception caught during transfer, or {@code null} if transfer was successful
+     * @param last called in the very end of all transfers
+     */
+    default void finishTransfer(@NotNull DBRProgressMonitor monitor, @Nullable Exception exception, boolean last) {
+        finishTransfer(monitor, last);
+    }
 
     // Target object. May be null or target database object (table)
     @Nullable

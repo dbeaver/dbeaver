@@ -599,14 +599,19 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     @Override
     public void finishTransfer(DBRProgressMonitor monitor, boolean last) {
-        if (!last) {
+        finishTransfer(monitor, null, last);
+    }
+
+    @Override
+    public void finishTransfer(@NotNull DBRProgressMonitor monitor, @Nullable Exception exception, boolean last) {
+        if (!last && exception == null) {
             exportFooterInFile(monitor);
 
             closeExporter();
             return;
         }
 
-        if (!parameters.isBinary && settings.isOutputClipboard()) {
+        if (!parameters.isBinary && settings.isOutputClipboard() && exception == null) {
             if (outputBuffer != null) {
                 String strContents = outputBuffer.toString();
                 DBWorkbench.getPlatformUI().copyTextToClipboard(strContents, parameters.isHTML);
@@ -623,7 +628,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }
             try {
                 final IDataTransferEventProcessor<StreamTransferConsumer> processor = descriptor.create();
-                processor.processEvent(monitor, IDataTransferEventProcessor.Event.FINISH, this, entry.getValue());
+
+                if (exception == null) {
+                    processor.processEvent(monitor, IDataTransferEventProcessor.Event.FINISH, this, entry.getValue());
+                } else {
+                    processor.processError(monitor, exception, this, entry.getValue());
+                }
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Transfer event processor", "Error executing data transfer event processor '" + entry.getKey() + "'", e);
                 log.error("Error executing event processor '" + entry.getKey() + "'", e);
