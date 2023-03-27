@@ -11,6 +11,7 @@ Export-Package: org.jkiss.dbeaver.model.websocket,
  org.jkiss.dbeaver.model.websocket.event,
  org.jkiss.dbeaver.model.websocket.event.client,
  org.jkiss.dbeaver.model.websocket.event.datasource,
+ org.jkiss.dbeaver.model.websocket.event.permissions,
  org.jkiss.dbeaver.model.websocket.event.resource,
  org.jkiss.dbeaver.model.websocket.registry
 Bundle-ClassPath: .
@@ -18,6 +19,7 @@ Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.runtime,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.registry;visibility:=reexport,
- com.google.gson
+ com.google.gson,
+ org.jkiss.dbeaver.model.sm
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.model.event

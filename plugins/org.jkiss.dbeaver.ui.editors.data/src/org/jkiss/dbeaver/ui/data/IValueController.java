@@ -45,7 +45,7 @@ public interface IValueController
      * Active execution context. Context lifetime is longer than value handler lifetime.
      * @return execution context
      */
-    @NotNull
+    @Nullable
     DBCExecutionContext getExecutionContext();
 
     @NotNull

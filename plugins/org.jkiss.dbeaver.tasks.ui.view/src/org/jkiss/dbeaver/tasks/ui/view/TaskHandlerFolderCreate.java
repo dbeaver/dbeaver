@@ -107,7 +107,7 @@ public class TaskHandlerFolderCreate extends AbstractHandler {
                 getButton(IDialogConstants.OK_ID).setEnabled(!name.isEmpty());
             });
 
-            List<DBPProject> projects = DBWorkbench.getPlatform().getWorkspace().getProjects();
+            List<? extends DBPProject> projects = DBWorkbench.getPlatform().getWorkspace().getProjects();
             UIUtils.createControlLabel(composite, TaskUIViewMessages.task_handler_folder_create_dialog_text_label_folder_project);
 
             final Combo projectCombo = new Combo(composite, SWT.DROP_DOWN | SWT.READ_ONLY);
