@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.websocket.event.WSEvent;
 /**
  * CB web event handlers
  */
-public interface WSEventHandler {
+public interface WSEventHandler<EVENT extends WSEvent> {
     /**
      * Expected cb event type
      */
@@ -32,5 +32,5 @@ public interface WSEventHandler {
     /**
      * Handle associated cb event
      */
-    void handleEvent(@NotNull WSEvent event);
+    void handleEvent(@NotNull EVENT event);
 }
