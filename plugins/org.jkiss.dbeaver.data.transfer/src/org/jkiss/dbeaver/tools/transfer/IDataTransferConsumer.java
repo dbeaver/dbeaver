@@ -61,9 +61,10 @@ public interface IDataTransferConsumer<SETTINGS extends IDataTransferSettings, P
 
     /**
      * Finishes this transfer
-     * @param monitor monitor
+     *
+     * @param monitor   monitor
      * @param exception an exception caught during transfer, or {@code null} if transfer was successful
-     * @param last called in the very end of all transfers
+     * @param last      called in the very end of all transfers
      */
     default void finishTransfer(@NotNull DBRProgressMonitor monitor, @Nullable Exception exception, boolean last) {
         finishTransfer(monitor, last);
