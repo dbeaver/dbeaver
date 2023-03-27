@@ -173,9 +173,13 @@ public class TPRuleBasedScanner implements TPCharacterScanner, TPTokenScanner, T
 
 		if (fRules != null) {
 			for (TPRule fRule : fRules) {
+				int offset = fOffset;
 				TPToken token= (fRule.evaluate(this));
-				if (!token.isUndefined())
+				if (!token.isUndefined()) {
 					return token;
+				} else if (fOffset != offset) {
+					throw new java.lang.IllegalStateException("Text parser rule inconsistency: rule failed and the scanned should have been fallbacked, but the current offset is different after attempt to evaluate " + fRule);
+				}
 			}
 		}
 

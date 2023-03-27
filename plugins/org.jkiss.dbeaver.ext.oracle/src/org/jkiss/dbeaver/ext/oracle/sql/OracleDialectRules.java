@@ -71,10 +71,12 @@ class OracleDialectRules implements TPRuleProvider {
                             scanner.unread();
                         }
                     }
-                } else {
+                }
+                if (!resume) {
                     scanner.unread();
                 }
-            } else {
+            }
+            if (!resume) {
                 scanner.unread();
             }
             return TPTokenAbstract.UNDEFINED;
