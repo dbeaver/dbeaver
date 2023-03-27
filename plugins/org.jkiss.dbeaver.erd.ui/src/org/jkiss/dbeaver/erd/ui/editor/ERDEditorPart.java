@@ -1381,7 +1381,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                     DBPNamedObject focusedNode = null;
                     for (DBPNamedObject erdNode : nodes) {
                         if (matchesSearch(erdNode)) {
-                            if (resultsFound == false) {
+                            if (!resultsFound) {
                                 focusedNode = erdNode; // let's focus on the first found node after search complete
                             }
                             resultsFound = true;
