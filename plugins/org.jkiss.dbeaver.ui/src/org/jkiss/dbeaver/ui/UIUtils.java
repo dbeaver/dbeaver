@@ -2168,7 +2168,7 @@ public class UIUtils {
     }
 
     public static Font getMonospaceFont() {
-        return JFaceResources.getFont(JFaceResources.TEXT_FONT);
+        return JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MONOSPACE);
     }
 
     public static <T extends Control> T getParentOfType(Control control, Class<T> parentType) {
