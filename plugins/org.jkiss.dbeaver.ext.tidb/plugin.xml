@@ -105,6 +105,7 @@
                     <property name="connectTimeout" value="20000"/>
 
                     <property name="enabledTLSProtocols" value="TLSv1.2,TLSv1.3"/>
+                    <property name="connectionAttributes" value="program_name:dbeaver_tidb_plugin"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
