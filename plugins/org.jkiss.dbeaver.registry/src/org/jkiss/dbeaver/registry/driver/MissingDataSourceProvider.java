@@ -53,7 +53,7 @@ public class MissingDataSourceProvider implements DBPDataSourceProvider {
     @NotNull
     @Override
     public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
-        throw new DBException("Data source provider not found");
+        throw new DBException("Corrupted datasource configuration. Driver '" + container.getDriver().getFullName() + "' not found.");
     }
 
     @Override
