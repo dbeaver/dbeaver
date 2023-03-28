@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 
 public class GenericContainerTrigger extends GenericTrigger<GenericStructContainer> {
@@ -28,5 +30,11 @@ public class GenericContainerTrigger extends GenericTrigger<GenericStructContain
     @Override
     public DBSTable getTable() {
         return null;
+    }
+
+    @NotNull
+    @Override
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
+        return DBUtils.getFullQualifiedName(getDataSource(), getParentObject(), this);
     }
 }
