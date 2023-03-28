@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
@@ -233,6 +234,18 @@ public class PostgreDatabase extends JDBCRemoteInstance
     @Override
     public boolean isInstanceConnected() {
         return metaContext != null || executionContext != null || sharedInstance != null;
+    }
+
+    @Override
+    public boolean isMetaConnectionSeparate(DBPDataSourceContainer container, ModelPreferences.SeparateConnectionBehavior behavior) {
+        switch (behavior) {
+            case NEVER:
+                return false;
+            case DEFAULT:
+            case ALWAYS:
+            default:
+                return true;
+        }
     }
 
     protected void loadInfo(ResultSet dbResult) {

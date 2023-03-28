@@ -50,7 +50,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             true,
             false,
             false,
-            false,
+            true,
+            1800,
             true,
             null); //$NON-NLS-1$ //$NON-NLS-3$
         TEST = new DBPConnectionType(
@@ -61,7 +62,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             true,
             false,
             true,
-            false,
+            true,
+            600,
             true,
             null); //$NON-NLS-1$ //$NON-NLS-3$
         PROD = new DBPConnectionType(
@@ -73,6 +75,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             true,
             true,
             true,
+            600,
             true,
             null); //$NON-NLS-1$ //$NON-NLS-3$
 
@@ -88,6 +91,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     private boolean confirmExecute;
     private boolean confirmDataChange;
     private boolean autoCloseTransactions;
+    private long closeIdleConnectionPeriod;
 
     private final boolean predefined;
     private List<DBPDataSourcePermission> connectionModifyRestrictions;
@@ -102,6 +106,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             source.confirmExecute,
             source.confirmDataChange,
             source.autoCloseTransactions,
+            source.closeIdleConnectionPeriod,
             source.predefined,
             source.connectionModifyRestrictions);
     }
@@ -114,9 +119,10 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         boolean autocommit,
         boolean confirmExecute,
         boolean confirmDataChange,
-        boolean autoCloseTransactions)
+        boolean autoCloseTransactions,
+        long closeIdleConnectionPeriod)
     {
-        this(id, name, color, description, autocommit, confirmExecute, confirmDataChange, autoCloseTransactions, false, null);
+        this(id, name, color, description, autocommit, confirmExecute, confirmDataChange, autoCloseTransactions, closeIdleConnectionPeriod, false, null);
     }
 
     private DBPConnectionType(
@@ -128,6 +134,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         boolean confirmExecute,
         boolean confirmDataChange,
         boolean autoCloseTransactions,
+        long closeIdleConnectionPeriod,
         boolean predefined,
         List<DBPDataSourcePermission> connectionModifyRestrictions)
     {
@@ -139,6 +146,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         this.confirmExecute = confirmExecute;
         this.confirmDataChange = confirmDataChange;
         this.autoCloseTransactions = autoCloseTransactions;
+        this.closeIdleConnectionPeriod = closeIdleConnectionPeriod;
         this.predefined = predefined;
         if (connectionModifyRestrictions != null) {
             this.connectionModifyRestrictions = new ArrayList<>(connectionModifyRestrictions);
@@ -211,6 +219,14 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
 
     public void setAutoCloseTransactions(boolean autoCloseTransactions) {
         this.autoCloseTransactions = autoCloseTransactions;
+    }
+
+    public long getCloseIdleConnectionPeriod() {
+        return closeIdleConnectionPeriod;
+    }
+
+    public void setCloseIdleConnectionPeriod(long closeIdleConnectionPeriod) {
+        this.closeIdleConnectionPeriod = closeIdleConnectionPeriod;
     }
 
     @Override

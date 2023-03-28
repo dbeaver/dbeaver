@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -31,20 +33,32 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCTransactionIsolation;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * PostgreExecutionContext
  */
 public class PostgreExecutionContext extends JDBCExecutionContext implements DBCExecutionContextDefaults<PostgreDatabase, PostgreSchema> {
+
+    private static final Log log = Log.getLog(PostgreExecutionContext.class);
+
+    private static final String LEVEL_READ_UNCOMMITTED = "READ UNCOMMITTED";
+    private static final String LEVEL_REPEATABLE_READ = "REPEATABLE READ";
+    private static final String LEVEL_SERIALIZABLE = "SERIALIZABLE";
+    private static final String LEVEL_READ_COMMITTED = "READ COMMITTED";
+
     private final List<String> searchPath = new ArrayList<>();
     private List<String> defaultSearchPath = new ArrayList<>();
     private String activeUser;
@@ -328,5 +342,72 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
 
     public void setIsolatedContext(boolean isolatedContext) {
         this.isolatedContext = isolatedContext;
+    }
+
+    /**
+     * The logic in this method is just a copy from the original PG driver PgConnection#getTransactionIsolation().
+     * We need to use it from our side in the META connection to avoid the "idle in transaction" main connection status.
+     *
+     * @return transaction isolation level from the executed query
+     * @throws DBCException in the timeout case and in other cases
+     */
+    @Override
+    public DBPTransactionIsolation getTransactionIsolation() throws DBCException {
+        if (transactionIsolationLevel == null) {
+            if (!txnIsolationLevelReadInProgress) {
+                txnIsolationLevelReadInProgress = true;
+                try {
+                    if (!RuntimeUtils.runTask(monitor -> {
+                        try {
+                            DBExecUtils.tryExecuteRecover(monitor, getDataSource(), monitor1 -> {
+                                try (JDBCSession session = openSession(monitor1, DBCExecutionPurpose.META, "Read query meta data")) {
+                                    try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW TRANSACTION ISOLATION LEVEL")) {
+                                        try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                                            if (dbResult.next()) {
+                                                String level = JDBCUtils.safeGetString(dbResult, 1);
+                                                if (CommonUtils.isEmpty(level)) {
+                                                    transactionIsolationLevel = Connection.TRANSACTION_READ_COMMITTED; // Best guess.
+                                                } else {
+                                                    level = level.toUpperCase(Locale.ENGLISH);
+                                                    switch (level) {
+                                                        case LEVEL_READ_UNCOMMITTED:
+                                                            transactionIsolationLevel = Connection.TRANSACTION_READ_UNCOMMITTED;
+                                                            break;
+                                                        case LEVEL_REPEATABLE_READ:
+                                                            transactionIsolationLevel = Connection.TRANSACTION_REPEATABLE_READ;
+                                                            break;
+                                                        case LEVEL_SERIALIZABLE:
+                                                            transactionIsolationLevel = Connection.TRANSACTION_SERIALIZABLE;
+                                                            break;
+                                                        case LEVEL_READ_COMMITTED:
+                                                        default:
+                                                            transactionIsolationLevel = Connection.TRANSACTION_READ_COMMITTED;
+                                                            break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } catch (SQLException e) {
+                                        transactionIsolationLevel = Connection.TRANSACTION_NONE;
+                                        log.error("Error getting transaction isolation level", e);
+                                    }
+                                }
+                            });
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    }, "Get transaction isolation level", 5000, true)) {
+                        throw new DBCException("Can't determine transaction isolation - timeout");
+                    }
+                } finally {
+                    txnIsolationLevelReadInProgress = false;
+                }
+            }
+            if (transactionIsolationLevel == null) {
+                transactionIsolationLevel = Connection.TRANSACTION_NONE;
+                log.error("Cannot determine transaction isolation level due to connection hanging. Setting to NONE.");
+            }
+        }
+        return JDBCTransactionIsolation.getByCode(transactionIsolationLevel);
     }
 }

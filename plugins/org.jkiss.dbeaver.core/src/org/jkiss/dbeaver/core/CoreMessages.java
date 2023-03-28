@@ -454,6 +454,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_connection_types_label_table_column_description;
 	public static String pref_page_connection_types_label_delete_connection_type;
 	public static String pref_page_connection_types_label_delete_connection_type_description;
+    public static String pref_page_connection_types_group_parameters;
 	public static String pref_page_connection_types_group_settings;
 	public static String pref_page_connection_types_label_id;
 	public static String pref_page_connection_types_label_name;
@@ -465,6 +466,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_connection_types_label_confirm_sql_execution_tip;
 	public static String pref_page_connection_types_label_confirm_data_change;
 	public static String pref_page_connection_types_label_confirm_data_change_tip;
+    public static String pref_page_connection_types_wiki_link;
 
 	public static String pref_page_connection_label_general;
 	public static String pref_page_connection_label_use_environment;
@@ -603,6 +605,7 @@ public class CoreMessages extends NLS {
     public static String pref_page_connections_use_win_cert_label;
     public static String pref_page_connections_use_win_cert_tip;
     public static String pref_page_connections_use_win_cert_disabled_tip;
+    public static String pref_page_connections_wiki_link;
 
     public static String pref_page_transactions_notify_name_group_label;
     public static String pref_page_transactions_notifications_show_check_label;

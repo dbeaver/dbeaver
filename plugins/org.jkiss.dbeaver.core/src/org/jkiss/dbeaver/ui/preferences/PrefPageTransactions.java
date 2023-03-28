@@ -76,7 +76,12 @@ public class PrefPageTransactions extends TargetPrefPage
             smartCommitCheck = UIUtils.createCheckbox(txnNameGroup, CoreMessages.action_menu_transaction_smart_auto_commit, CoreMessages.action_menu_transaction_smart_auto_commit_tip, false, 2);
             smartCommitRecoverCheck = UIUtils.createCheckbox(txnNameGroup, CoreMessages.action_menu_transaction_smart_auto_commit_recover, CoreMessages.action_menu_transaction_smart_auto_commit_recover_tip, false, 2);
 
-            autoCloseTransactionsCheck = UIUtils.createCheckbox(txnNameGroup, CoreMessages.action_menu_transaction_auto_close_enabled, CoreMessages.action_menu_transaction_auto_close_enabled_tip, false, 1);
+            autoCloseTransactionsCheck = UIUtils.createCheckbox(
+                txnNameGroup,
+                CoreMessages.action_menu_transaction_auto_close_enabled,
+                CoreMessages.action_menu_transaction_auto_close_enabled_tip,
+                true,
+                1);
             autoCloseTransactionsTtlText = new Text(txnNameGroup, SWT.BORDER);
             autoCloseTransactionsTtlText.setToolTipText(CoreMessages.action_menu_transaction_auto_close_ttl_tip);
             autoCloseTransactionsTtlText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));

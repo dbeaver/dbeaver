@@ -116,19 +116,7 @@ public class JDBCRemoteInstance implements DBSInstance {
         SeparateConnectionBehavior behavior = SeparateConnectionBehavior.parse(
             container.getPreferenceStore().getString(ModelPreferences.META_SEPARATE_CONNECTION)
         );
-        boolean isMetaConnectionSeparate;
-        switch (behavior) {
-            case ALWAYS:
-                isMetaConnectionSeparate = true;
-                break;
-            case NEVER:
-                isMetaConnectionSeparate = false;
-                break;
-            case DEFAULT:
-            default: 
-                isMetaConnectionSeparate = !container.getDriver().isEmbedded() && !container.isForceUseSingleConnection();
-                break;
-        }
+        boolean isMetaConnectionSeparate = isMetaConnectionSeparate(container, behavior);
 
         if (isMetaConnectionSeparate) {
             // FIXME: do not sync expensive operations
@@ -139,6 +127,18 @@ public class JDBCRemoteInstance implements DBSInstance {
             //}
         } else {
             return this.executionContext;
+        }
+    }
+
+    public boolean isMetaConnectionSeparate(DBPDataSourceContainer container, SeparateConnectionBehavior behavior) {
+        switch (behavior) {
+            case ALWAYS:
+                return true;
+            case NEVER:
+                return false;
+            case DEFAULT:
+            default:
+                return !container.getDriver().isEmbedded() && !container.isForceUseSingleConnection();
         }
     }
 
