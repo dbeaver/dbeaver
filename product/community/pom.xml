@@ -10,7 +10,7 @@
         <relativePath>../../</relativePath>
     </parent>
     <version>23.0.1-SNAPSHOT</version>
-    <artifactId>standalone</artifactId>
+    <artifactId>community</artifactId>
     <packaging>eclipse-repository</packaging>
     <name>DBeaver CE Standalone</name>
 
