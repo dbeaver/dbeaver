@@ -1699,6 +1699,7 @@
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericForeignKeyManager"    objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey"/>
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericIndexManager"         objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex"/>
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericProcedureManager"     objectType="org.jkiss.dbeaver.ext.generic.model.GenericProcedure"/>
+        <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericTriggerManager"       objectType="org.jkiss.dbeaver.ext.generic.model.GenericTrigger"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
