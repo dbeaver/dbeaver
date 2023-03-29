@@ -14,27 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event;
+package org.jkiss.dbeaver.model.websocket.event.session;
 
-//TODO: implement event registry and describe possible events in plugin.xml
-public enum WSEventTopic {
-    SERVER_CONFIG("cb_config"),
-    SESSION_LOG("cb_session_log"),
-    SESSION("cb_session"),
-    DATASOURCE("cb_datasource"),
-    DATASOURCE_FOLDER("cb_datasource_folder"),
-    USER_SECRET("cb_user_secret"),
-    RM_SCRIPTS("cb_scripts"),
-    PROJECTS("cb_projects"),
-    PERMISSIONS("cb_permissions");
+import org.jkiss.dbeaver.model.websocket.event.WSEvent;
+import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
-    private final String topicId;
+public class WSSessionExpiredEvent extends WSEvent {
 
-    WSEventTopic(String topicId) {
-        this.topicId = topicId;
-    }
-
-    public String getTopicId() {
-        return topicId;
+    public WSSessionExpiredEvent() {
+        super(WSEventType.SESSION_EXPIRED);
     }
 }
