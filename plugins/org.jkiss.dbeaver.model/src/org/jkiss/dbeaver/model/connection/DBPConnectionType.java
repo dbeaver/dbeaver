@@ -51,7 +51,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             false,
             false,
             true,
-            1800,
+            DBWorkbench.getPlatform().getPreferenceStore().getInt(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL),
             true,
             null); //$NON-NLS-1$ //$NON-NLS-3$
         TEST = new DBPConnectionType(

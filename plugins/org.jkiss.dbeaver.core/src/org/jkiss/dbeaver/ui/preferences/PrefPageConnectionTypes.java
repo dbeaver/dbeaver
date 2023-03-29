@@ -133,7 +133,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                         true,
                         false,
                         true,
-                        false,
+                        true,
                         1800);
                     addTypeToTable(newType, newType);
                     typeTable.select(typeTable.getItemCount() - 1);

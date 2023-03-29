@@ -168,7 +168,7 @@ public class DataSourceMonitorJob extends AbstractJob {
             return;
         }
 
-        int ttlSeconds = dsDescriptor.getPreferenceStore().getInt(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL);
+        long ttlSeconds = dsDescriptor.getConnectionConfiguration().getConnectionType().getCloseIdleConnectionPeriod();
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
 
         long lastUserActivityTime = -1;
