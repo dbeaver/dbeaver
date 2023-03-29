@@ -16,8 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPSystemObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 
@@ -31,5 +34,11 @@ public class FireBirdTableTrigger extends FireBirdTrigger<GenericTableBase> impl
     @Property(viewable = true, order = 4)
     public DBSTable getTable() {
         return (DBSTable) getParentObject();
+    }
+
+    @NotNull
+    @Override
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
+        return DBUtils.getFullQualifiedName(getDataSource(), this);
     }
 }
