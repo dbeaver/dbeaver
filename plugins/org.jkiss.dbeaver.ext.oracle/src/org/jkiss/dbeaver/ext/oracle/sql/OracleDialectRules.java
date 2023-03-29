@@ -51,11 +51,13 @@ class OracleDialectRules implements TPRuleProvider {
                 c = resume ? '\'' : scanner.read();
                 if (c == '\'') {
                     boolean quoteCharRead = false;
+                    boolean quoteCharNeedsToBeUnread = false;
                     if (resume && quoteStartChar != -1) {
                         quoteCharRead = true;
                     }
                     if (!quoteCharRead) {
                         quoteStartChar = (char) scanner.read();
+                        quoteCharRead = true;
                     }
 
                     if (!Character.isLetterOrDigit(quoteStartChar)) {
@@ -68,8 +70,11 @@ class OracleDialectRules implements TPRuleProvider {
                     } else {
                         quoteStartChar = (char) -1;
                         if (quoteCharRead) {
-                            scanner.unread();
+                            //scanner.unread();
                         }
+                    }
+                    if (quoteCharRead) {
+                        scanner.unread();
                     }
                 }
                 if (!resume) {

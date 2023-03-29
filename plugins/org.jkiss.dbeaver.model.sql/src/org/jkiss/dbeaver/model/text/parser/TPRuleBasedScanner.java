@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.text.parser;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLDelimiterRule;
 
 
@@ -28,6 +29,8 @@ import org.jkiss.dbeaver.model.sql.parser.rules.SQLDelimiterRule;
  */
 public class TPRuleBasedScanner implements TPCharacterScanner, TPTokenScanner, TPEvalScanner {
 
+    Log log = Log.getLog(TPRuleBasedScanner.class);
+    
 	/** The list of rules of this scanner */
 	private TPRule[] fRules;
 	/** The token to be returned by default if no rule fires */
@@ -178,7 +181,10 @@ public class TPRuleBasedScanner implements TPCharacterScanner, TPTokenScanner, T
 				if (!token.isUndefined()) {
 					return token;
 				} else if (fOffset != offset) {
-					throw new java.lang.IllegalStateException("Text parser rule inconsistency: rule failed and the scanned should have been fallbacked, but the current offset is different after attempt to evaluate " + fRule);
+					log.debug("Text parser rule inconsistency: "
+							+ "rule failed and the scanned should have been fallbacked, "
+							+ "but the current offset is different after attempt to evaluate " + fRule);
+					fOffset = offset;
 				}
 			}
 		}

@@ -30,7 +30,10 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
+import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
+import org.jkiss.dbeaver.model.text.parser.TPToken;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.junit.Assert;
 import org.junit.Before;
@@ -498,6 +501,52 @@ public class SQLScriptParserTest {
     	SQLParserContext context = createParserContext(setDialect("oracle"), query);
     	SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 15, false, false);
     	Assert.assertEquals("@set col1 = '1'", element.getText());
+    }
+    
+    @Test
+    public void parseOracleQStringRule() throws DBException {
+        final List<String> queries = List.of(
+            "q'[What's a quote among friends?]';",
+            "q'!What's a quote among friends?!';",
+            "q'(That's a really funny 'joke'.)';",
+            "q'#That's a really funny 'joke'.#';",
+            "q''All the king's horses'';",
+            "q'>All the king's horses>';",
+            "q'['Hello,' said the child, who didn't like goodbyes.]';",
+            "q'{'Hello,' said the child, who didn't like goodbyes.}';",
+            "Q'('Hello,' said the child, who didn't like goodbyes.)';",
+            "q'<'Hello,' said the child, who didn't like goodbyes.>';" 
+        );
+        
+        for (String query : queries) {
+            SQLParserContext context = createParserContext(setDialect("oracle"), query);
+            TPRuleBasedScanner scanner = context.getScanner();
+            scanner.setRange(context.getDocument(), 0, query.length());
+            TPToken token = scanner.nextToken();
+            int tokenLength = scanner.getTokenLength();
+            Assert.assertEquals(SQLTokenType.T_STRING, token.getData());
+            Assert.assertEquals(query.length() - 1, tokenLength);
+            scanner.nextToken();
+        }
+        final List<String> badQueries = List.of(
+            "q'(That''s a really funny ''joke''.(';",
+            "q'#That's a really funny 'joke'.$';",
+            "q'>All the king's horses<';",
+            "q'<All the king's horses<';",
+            "q'<All the king's horses<;",
+            "q'<All the king's horses>;'",
+            "q'abcd'"
+        );
+        
+        for (String query : badQueries) {
+            SQLParserContext context = createParserContext(setDialect("oracle"), query);
+            TPRuleBasedScanner scanner = context.getScanner();
+            scanner.setRange(context.getDocument(), 0, query.length());
+            TPToken token = scanner.nextToken();
+            int tokenLength = scanner.getTokenLength();
+            Assert.assertNotEquals(SQLTokenType.T_STRING, token.getData());
+            Assert.assertNotEquals(query.length() - 1, tokenLength);
+        }
     }
     
     @Test
