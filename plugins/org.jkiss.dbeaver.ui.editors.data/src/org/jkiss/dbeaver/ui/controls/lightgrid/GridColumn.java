@@ -214,18 +214,31 @@ public class GridColumn implements IGridColumn {
         }
         {
             int textWidth;
-            if (Boolean.TRUE.equals(labelProvider.getGridOption(IGridLabelProvider.OPTION_EXCLUDE_COLUMN_NAME_FOR_WIDTH_CALC))) {
-                textWidth = grid.sizingGC.stringExtent("X").x;
-            } else {
-                String text = labelProvider.getText(this);
-                String description = labelProvider.getDescription(this);
-                textWidth = grid.sizingGC.stringExtent(text).x;
-                if (!CommonUtils.isEmpty(description)) {
-                    int descWidth = grid.sizingGC.stringExtent(description).x;
-                    if (descWidth > textWidth) {
-                        textWidth = descWidth;
+            Object calcWidthMethod = labelProvider.getGridOption(IGridLabelProvider.OPTION_CALC_COLUMN_WIDTH_METHOD);
+            String text = "X";
+            switch ((int) calcWidthMethod) {
+                case (0):
+                    text = labelProvider.getText(this);
+                    textWidth = grid.sizingGC.stringExtent(text).x;
+                    break;
+                case (1):
+                    textWidth = grid.sizingGC.stringExtent(text).x;
+                    break;
+                case (2):
+                    text = labelProvider.getText(this);
+                    String description = labelProvider.getDescription(this);
+                    textWidth = grid.sizingGC.stringExtent(text).x;                    
+                    if (Boolean.TRUE.equals(labelProvider.getGridOption(IGridLabelProvider.OPTION_SHOW_DESCRIPTION)) 
+                            && (!CommonUtils.isEmpty(description))) {
+                      int descWidth = grid.sizingGC.stringExtent(description).x;
+                      if (descWidth > textWidth) {
+                          textWidth = descWidth;
+                      }
                     }
-                }
+                    break;
+                default:
+                    textWidth = grid.sizingGC.stringExtent("X").x;
+                    break;
             }
             x += textWidth + rightMargin;
         }

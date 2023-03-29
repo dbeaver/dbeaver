@@ -20,9 +20,11 @@ package org.jkiss.dbeaver.ui.editors.data.preferences;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -45,7 +47,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
 
     private Button autoSwitchMode;
     private Button showDescription;
-    private Button columnWidthByValue;
+    private Combo columnWidthCalcCombo;
     private Button showConnectionName;
     private Button transformComplexTypes;
     private Button rightJustifyNumbers;
@@ -64,7 +66,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         return
         	store.contains(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE) ||
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION) ||
-            store.contains(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES) ||
+            store.contains(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_METHOD) ||
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME) ||	
         	store.contains(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES) ||
             store.contains(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS) ||
@@ -88,7 +90,11 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             ((GridData)uiGroup.getLayoutData()).horizontalSpan = 2;
             autoSwitchMode = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_switch_mode_on_rows, false);
             showDescription = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_column_description, false);
-            columnWidthByValue = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_calc_column_width_by_values, DataEditorsMessages.pref_page_database_resultsets_label_calc_column_width_by_values_tip, false, 1);
+            UIUtils.createControlLabel(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_calc_column_width_method);
+            columnWidthCalcCombo = new Combo(uiGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            columnWidthCalcCombo.add(DataEditorsMessages.pref_page_database_resultsets_label_calc_column_width_method_0);
+            columnWidthCalcCombo.add(DataEditorsMessages.pref_page_database_resultsets_label_calc_column_width_method_1);
+            columnWidthCalcCombo.add(DataEditorsMessages.pref_page_database_resultsets_label_calc_column_width_method_2);
             showConnectionName = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_connection_name, false);
             transformComplexTypes = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_structurize_complex_types, DataEditorsMessages.pref_page_database_resultsets_label_structurize_complex_types_tip, false, 1);
             rightJustifyNumbers = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_right_justify_numbers_and_date, null, false, 1);
@@ -105,7 +111,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         try {
         	autoSwitchMode.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE));
             showDescription.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION));
-            columnWidthByValue.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES));
+            columnWidthCalcCombo.select(store.getInt(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_METHOD));
             showConnectionName.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME));
             rightJustifyNumbers.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS));
             rightJustifyDateTime.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME));
@@ -122,7 +128,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         try {
             store.setValue(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE, autoSwitchMode.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION, showDescription.getSelection());
-            store.setValue(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES, columnWidthByValue.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_METHOD, columnWidthCalcCombo.getSelectionIndex());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME, showConnectionName.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS, rightJustifyNumbers.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME, rightJustifyDateTime.getSelection());
@@ -139,7 +145,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     {
     	store.setToDefault(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION);
-        store.setToDefault(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_METHOD);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME);
         store.setToDefault(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
         store.setToDefault(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME);

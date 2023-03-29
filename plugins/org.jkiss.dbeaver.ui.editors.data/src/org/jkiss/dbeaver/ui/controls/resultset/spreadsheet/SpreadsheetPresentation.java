@@ -146,7 +146,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
     private boolean autoFetchSegments;
     private boolean showAttributeIcons;
     private boolean showAttributeDescription;
-    private boolean calcColumnWidthByValue;
+    private boolean showDescription;
+    private int calcColumnWidthMethod;
 
     private boolean rightJustifyNumbers = true;
     private boolean rightJustifyDateTime = true;
@@ -848,7 +849,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 controller.getDataContainer().isFeatureSupported(DBSDataContainer.FEATURE_DATA_FILTER) &&
                 controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS);
         autoFetchSegments = controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT);
-        calcColumnWidthByValue = getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES);
+        calcColumnWidthMethod = getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_METHOD);
+        showDescription = getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION);
         showCollectionsInline = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_COLLECTIONS_INLINE);
         showBooleanAsCheckbox = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX);
         showWhitespaceCharacters = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_WHITESPACE_CHARACTERS);
@@ -2646,8 +2648,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Override
         public Object getGridOption(String option) {
-            if (OPTION_EXCLUDE_COLUMN_NAME_FOR_WIDTH_CALC.equals(option)) {
-                return calcColumnWidthByValue;
+            if (OPTION_CALC_COLUMN_WIDTH_METHOD.equals(option)) {
+                return calcColumnWidthMethod;
+            }
+            if (OPTION_SHOW_DESCRIPTION.equals(option)) {
+                return showDescription;
             }
             return null;
         }

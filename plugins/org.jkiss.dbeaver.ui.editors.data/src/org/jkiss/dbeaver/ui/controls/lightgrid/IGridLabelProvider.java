@@ -25,8 +25,9 @@ import org.jkiss.code.Nullable;
 
 public interface IGridLabelProvider {
 
-    String OPTION_EXCLUDE_COLUMN_NAME_FOR_WIDTH_CALC = "OPTION_EXCLUDE_COLUMN_NAME_FOR_WIDTH_CALC";
-
+    String OPTION_CALC_COLUMN_WIDTH_METHOD = "OPTION_CALC_COLUMN_WIDTH_METHOD";
+    String OPTION_SHOW_DESCRIPTION = "OPTION_SHOW_DESCRIPTION";
+    
     @NotNull
     String getText(@NotNull IGridItem element);
 

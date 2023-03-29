@@ -31,8 +31,11 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_switch_mode_on_rows;
     public static String pref_page_database_resultsets_label_show_column_description;
     public static String pref_page_database_resultsets_label_show_connection_name;
-    public static String pref_page_database_resultsets_label_calc_column_width_by_values;
-    public static String pref_page_database_resultsets_label_calc_column_width_by_values_tip;
+    public static String pref_page_database_resultsets_label_calc_column_width_method;
+    public static String pref_page_database_resultsets_label_calc_column_width_method_0;
+    public static String pref_page_database_resultsets_label_calc_column_width_method_1;
+    public static String pref_page_database_resultsets_label_calc_column_width_method_2;
+    
     public static String pref_page_database_resultsets_label_structurize_complex_types;
     public static String pref_page_database_resultsets_label_structurize_complex_types_tip;
     public static String pref_page_database_resultsets_label_right_justify_numbers_and_date;
