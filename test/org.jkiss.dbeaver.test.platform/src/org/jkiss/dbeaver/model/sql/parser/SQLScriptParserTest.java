@@ -522,10 +522,8 @@ public class SQLScriptParserTest {
             SQLParserContext context = createParserContext(setDialect("oracle"), query);
             TPRuleBasedScanner scanner = context.getScanner();
             scanner.setRange(context.getDocument(), 0, query.length());
-            TPToken token = scanner.nextToken();
-            int tokenLength = scanner.getTokenLength();
-            Assert.assertEquals(SQLTokenType.T_STRING, token.getData());
-            Assert.assertEquals(query.length() - 1, tokenLength);
+            Assert.assertEquals(SQLTokenType.T_STRING, scanner.nextToken().getData());
+            Assert.assertEquals(query.length() - 1, scanner.getTokenLength());
             scanner.nextToken();
         }
         final List<String> badQueries = List.of(
@@ -542,10 +540,8 @@ public class SQLScriptParserTest {
             SQLParserContext context = createParserContext(setDialect("oracle"), query);
             TPRuleBasedScanner scanner = context.getScanner();
             scanner.setRange(context.getDocument(), 0, query.length());
-            TPToken token = scanner.nextToken();
-            int tokenLength = scanner.getTokenLength();
-            Assert.assertNotEquals(SQLTokenType.T_STRING, token.getData());
-            Assert.assertNotEquals(query.length() - 1, tokenLength);
+            Assert.assertNotEquals(SQLTokenType.T_STRING, scanner.nextToken().getData());
+            Assert.assertNotEquals(query.length() - 1, scanner.getTokenLength());
         }
     }
     

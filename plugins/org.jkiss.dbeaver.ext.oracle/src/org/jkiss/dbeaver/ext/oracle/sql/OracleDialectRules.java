@@ -57,7 +57,7 @@ class OracleDialectRules implements TPRuleProvider {
                     }
                     if (!quoteCharRead) {
                         quoteStartChar = (char) scanner.read();
-                        quoteCharRead = true;
+                        quoteCharNeedsToBeUnread = true;
                     }
 
                     if (!Character.isLetterOrDigit(quoteStartChar)) {
@@ -67,14 +67,14 @@ class OracleDialectRules implements TPRuleProvider {
                         if (tryReadQString(scanner, quoteEndChar)) {
                             return stringToken;
                         }
+                        if (quoteCharNeedsToBeUnread) {
+                            scanner.unread();
+                        }
                     } else {
                         quoteStartChar = (char) -1;
-                        if (quoteCharRead) {
-                            //scanner.unread();
+                        if (quoteCharRead || quoteCharNeedsToBeUnread) {
+                            scanner.unread();
                         }
-                    }
-                    if (quoteCharRead) {
-                        scanner.unread();
                     }
                 }
                 if (!resume) {

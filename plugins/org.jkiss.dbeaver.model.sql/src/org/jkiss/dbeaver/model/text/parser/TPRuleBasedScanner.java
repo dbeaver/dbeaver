@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.sql.parser.rules.SQLDelimiterRule;
  */
 public class TPRuleBasedScanner implements TPCharacterScanner, TPTokenScanner, TPEvalScanner {
 
-    Log log = Log.getLog(TPRuleBasedScanner.class);
+	Log log = Log.getLog(TPRuleBasedScanner.class);
     
 	/** The list of rules of this scanner */
 	private TPRule[] fRules;
