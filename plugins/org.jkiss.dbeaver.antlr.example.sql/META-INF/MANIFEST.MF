@@ -9,5 +9,6 @@ Require-Bundle: org.jkiss.bundle.antlr4;bundle-version=1.0.0
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: org.jkiss.dbeaver.antlr.example,
   org.jkiss.dbeaver.antlr.example.sql
-Import-Package: org.apache.log4j
+Import-Package: org.apache.log4j,
+ org.jkiss.code
 Automatic-Module-Name: org.jkiss.dbeaver.antlr.example.sql

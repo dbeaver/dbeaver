@@ -87,7 +87,6 @@ BIT: B I T ;
 BIT_LENGTH: B I T '_'L E N G T H ;
 BOTH: B O T H ;
 BY: B Y ;
-C_: C;
 CASCADE: C A S C A D E ;
 CASCADED: C A S C A D E D ;
 CASE: C A S E ;
@@ -417,3 +416,5 @@ CharacterRepresentation: (NonquoteCharacter|QuoteSymbol);
 BitStringLiteral: 'B' Quote ((Bit)+)? Quote (((Separator)+ Quote ((Bit)+)? Quote)+)?;
 HexStringLiteral: 'X' Quote ((Hexit)+)? Quote (((Separator)+ Quote ((Hexit)+)? Quote)+)?;
 
+
+C_: C;

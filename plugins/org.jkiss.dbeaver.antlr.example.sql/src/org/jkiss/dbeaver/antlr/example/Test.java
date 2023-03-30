@@ -1,3 +1,19 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2023 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.antlr.example;
 
 import java.io.IOException;
@@ -8,8 +24,11 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.xml.stream.FactoryConfigurationError;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.transform.TransformerException;
+
 import org.antlr.v4.runtime.ANTLRErrorListener;
-import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -24,22 +43,31 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.Tree;
 import org.antlr.v4.runtime.tree.Trees;
 import org.jkiss.dbeaver.antlr.example.util.CaseChangingCharStream;
-import org.jkiss.dbeaver.antlr.example.sql.Sql92;
+import org.jkiss.dbeaver.antlr.model.SyntaxModel;
 import org.jkiss.dbeaver.antlr.example.sql.Sql92Lexer;
+import org.jkiss.dbeaver.antlr.example.sql.Sql92Parser;
+import org.jkiss.dbeaver.antlr.example.sql.model.SelectStatement;
 
 public class Test {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, XMLStreamException, FactoryConfigurationError, TransformerException {
         // prepareGrammarKeywords();
         
-        //var input = CharStreams.fromString("SELECT s.v.a*w.b AS c FROM xxx ORDER BY yyy,zzz");
-        var input = CharStreams.fromFileName("D:\\github.com\\dbeaver\\sql-server-sakila-insert-data.sql");
+        var input = CharStreams.fromString("SELECT c.s.v.a,w.b AS x " +
+            // "FROM xxx yy, (SELECT * FROM ttab) AS sub " +
+            "FROM xxx yy, cc.ss.vv AS sub " +
+            "cross JOIN aB c " +
+            "NATURAL INNER JOIN cd.er ON cd.er.id = aBc.id " +
+            "LEFT OUTER join qwe ON qwe.id = aBc.id " +
+            "UNION JOIN jd " +
+            "ORDER BY yyy,zzz");
+        //var input = CharStreams.fromFileName("D:\\github.com\\dbeaver\\sql-server-sakila-insert-data.sql");
         var ll = new Sql92Lexer(input); //new CaseChangingCharStream(input, true));
         var tokens = new CommonTokenStream(ll);
-        //tokens.fill();
-        //tokens.getTokens().forEach(t -> System.out.println(t.toString() + " - " + ll.getVocabulary().getSymbolicName(t.getType())));
+        tokens.fill();
+        tokens.getTokens().forEach(t -> System.out.println(t.toString() + " - " + ll.getVocabulary().getSymbolicName(t.getType())));
         
-        var pp = new Sql92(tokens);
+        var pp = new Sql92Parser(tokens);
         pp.setBuildParseTree(true);
         pp.addErrorListener(new ANTLRErrorListener() {
             @Override
@@ -67,13 +95,22 @@ public class Test {
             public void reportAmbiguity(Parser arg0, DFA arg1, int arg2, int arg3, boolean arg4, BitSet arg5, ATNConfigSet arg6) {
             }
         });
-        var stmt = pp.sqlScript();
+        //var stmt = pp.sqlScript();
+        var tree = pp.queryExpression();
         
         System.out.println();
         var sb = new StringBuilder();
-        collect(stmt, pp, sb, "");
-        //System.out.println(sb.toString());
+        collect(tree, pp, sb, "");
+        System.out.println(sb.toString());
         Files.writeString(Path.of("D:\\github.com\\dbeaver\\sql-server-sakila-insert-data.log"), sb.toString());
+        
+        Path dir = Path.of("D:\\github.com\\dbeaver\\dbeaver\\plugins\\org.jkiss.dbeaver.antlr.example.sql\\src\\org\\jkiss\\dbeaver\\antlr\\example\\sql\\");
+        var model = new SyntaxModel(pp);
+        model.introduce(SelectStatement.class);
+        Files.writeString(dir.resolve("parsed.xml"), model.toXml(tree));
+
+        var stmt = model.map(tree, SelectStatement.class);
+        Files.writeString(dir.resolve("model.json"), model.stringify(stmt.model));
     }
     
     private static void collect(Tree ctx, Parser pp, StringBuilder sb, String indent) {
