@@ -70,7 +70,8 @@
 								<!-- DBCP -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.dbcp:LATEST</id></artifact>
 
-								<!-- Web sockets -->
+								<!-- Jetty -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jetty.server:LATEST</id></artifact>
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jetty.websocket:LATEST</id></artifact>
 								<!-- GPT -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gpt3:LATEST</id></artifact>

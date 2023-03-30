@@ -14,32 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry.maven;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+package org.jkiss.dbeaver.model.access;
+
+import javax.security.auth.Subject;
 
 /**
- * Maven artifact reference
+ * Auth credentials with associated subject.
  */
-public interface IMavenIdentifier
-{
-    @NotNull
-    String getGroupId();
+public interface DBAAuthSubjectCredentials {
 
-    @NotNull
-    String getArtifactId();
-
-    @Nullable
-    String getClassifier();
-
-    @Nullable
-    String getFallbackVersion();
-
-    @NotNull
-    String getVersion();
-
-    @NotNull
-    String getId();
+    Subject getAuthSubject();
 
 }
