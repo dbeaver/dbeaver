@@ -288,6 +288,8 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 return this.isViewable();
             case DBConstants.PROP_FEATURE_PASSWORD:
                 return this.isPassword();
+            case DBConstants.PROP_FEATURE_NON_SECURED:
+                return this.isNonSecuredProperty();
         }
 
         return ArrayUtils.contains(propInfo.features(), feature);

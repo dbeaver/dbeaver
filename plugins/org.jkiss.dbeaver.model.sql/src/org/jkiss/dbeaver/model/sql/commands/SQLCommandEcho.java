@@ -32,7 +32,7 @@ public class SQLCommandEcho implements SQLControlCommandHandler {
     public boolean handleCommand(SQLControlCommand command, SQLScriptContext scriptContext) throws DBException {
         String parameter = command.getParameter();
         if (parameter != null) {
-            parameter = GeneralUtils.replaceVariables(parameter, new ScriptVariablesResolver(scriptContext));
+            parameter = GeneralUtils.replaceVariables(parameter, new ScriptVariablesResolver(scriptContext), true);
         }
         scriptContext.getOutputWriter().println(null, parameter);
 

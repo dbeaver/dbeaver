@@ -25,19 +25,23 @@ import org.jkiss.code.Nullable;
 public abstract class WSEvent {
     @Nullable
     private final String sessionId;
+    @Nullable
+    private final String userId;
     @NotNull
     private final String id;
     @NotNull
     private final String topicId;
+    private final long timestamp = System.currentTimeMillis();
 
     protected WSEvent(@NotNull WSEventType eventType) {
-        this(eventType, null);
+        this(eventType, null, null);
     }
 
-    protected WSEvent(@NotNull WSEventType eventType, @Nullable String sessionId) {
+    protected WSEvent(@NotNull WSEventType eventType, @Nullable String sessionId, @Nullable String userId) {
         this.id = eventType.getEventId();
         this.topicId = eventType.getTopic().getTopicId();
         this.sessionId = sessionId;
+        this.userId = userId;
     }
 
     @NotNull
@@ -53,5 +57,14 @@ public abstract class WSEvent {
     @NotNull
     public String getTopicId() {
         return topicId;
+    }
+
+    @Nullable
+    public String getUserId() {
+        return userId;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
     }
 }

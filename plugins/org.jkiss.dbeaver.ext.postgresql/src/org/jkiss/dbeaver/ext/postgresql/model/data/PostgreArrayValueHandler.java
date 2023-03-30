@@ -165,7 +165,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
         @Nullable Object value,
         @NotNull DBDDisplayFormat format
     ) {
-        if (value == null) {
+        if (DBUtils.isNullValue(value)) {
             return SQLConstants.NULL_VALUE;
         }
 

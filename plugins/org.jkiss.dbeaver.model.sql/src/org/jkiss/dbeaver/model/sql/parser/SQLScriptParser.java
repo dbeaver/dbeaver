@@ -362,9 +362,14 @@ public class SQLScriptParser {
      * @param cursorPosition   the cursor position
      * @return the sql script element
      */
-    public static SQLScriptElement parseQuery(SQLDialect dialect, DBPPreferenceStore preferenceStore, String sqlScriptContent,
-                                              int cursorPosition) {
-        SQLParserContext parserContext = prepareSqlParserContext(dialect, preferenceStore, sqlScriptContent);
+    public static SQLScriptElement parseQuery(
+        DBPDataSource dataSource,
+        SQLDialect dialect,
+        DBPPreferenceStore preferenceStore,
+        String sqlScriptContent,
+        int cursorPosition
+    ) {
+        SQLParserContext parserContext = prepareSqlParserContext(dataSource, dialect, preferenceStore, sqlScriptContent);
         return SQLScriptParser.extractQueryAtPos(parserContext, cursorPosition);
     }
 
@@ -919,14 +924,23 @@ public class SQLScriptParser {
         return SQLScriptParser.extractScriptQueries(parserContext, 0, sqlScriptContent.length(), true, false, true);
     }
 
-    public static List<SQLScriptElement> parseScript(SQLDialect dialect, DBPPreferenceStore preferenceStore, String sqlScriptContent) {
-        SQLParserContext parserContext = prepareSqlParserContext(dialect, preferenceStore, sqlScriptContent);
+    public static List<SQLScriptElement> parseScript(
+        DBPDataSource dataSource,
+        SQLDialect dialect,
+        DBPPreferenceStore preferenceStore,
+        String sqlScriptContent
+    ) {
+        SQLParserContext parserContext = prepareSqlParserContext(dataSource, dialect, preferenceStore, sqlScriptContent);
         return SQLScriptParser.extractScriptQueries(parserContext, 0, sqlScriptContent.length(), true, false, true);
     }
 
     @NotNull
-    private static SQLParserContext prepareSqlParserContext(SQLDialect dialect, DBPPreferenceStore preferenceStore,
-                                                            String sqlScriptContent) {
+    private static SQLParserContext prepareSqlParserContext(
+        DBPDataSource dataSource,
+        SQLDialect dialect,
+        DBPPreferenceStore preferenceStore,
+        String sqlScriptContent
+    ) {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dialect, preferenceStore);
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
@@ -934,7 +948,7 @@ public class SQLScriptParser {
 
         Document sqlDocument = new Document(sqlScriptContent);
 
-        SQLParserContext parserContext = new SQLParserContext(null, syntaxManager, ruleManager, sqlDocument);
+        SQLParserContext parserContext = new SQLParserContext(dataSource, syntaxManager, ruleManager, sqlDocument);
         parserContext.setPreferenceStore(preferenceStore);
         return parserContext;
     }

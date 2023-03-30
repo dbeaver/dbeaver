@@ -51,7 +51,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
-import org.jkiss.dbeaver.ui.editors.sql.ai.gpt3.GPTPreferencePage;
+import org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -156,7 +156,7 @@ public class AISuggestionPopup extends AbstractPopupPanel {
                     selectionEvent -> showScopeConfiguration()));
             UIUtils.createToolItem(tb, "Settings", UIIcon.CONFIGURATION,
                 SelectionListener.widgetSelectedAdapter(
-                    selectionEvent -> UIUtils.showPreferencesFor(getShell(), null, GPTPreferencePage.PAGE_ID)));
+                    selectionEvent -> UIUtils.showPreferencesFor(getShell(), null, AIPreferencePage.PAGE_ID)));
             tb.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         }
 
@@ -410,7 +410,13 @@ public class AISuggestionPopup extends AbstractPopupPanel {
             DBSObjectContainer objectContainer,
             Set<String> checkedObjectIds
         )  throws DBException {
-            Collection<? extends DBSObject> children = objectContainer.getChildren(monitor);
+            Collection<? extends DBSObject> children;
+            try {
+                children = objectContainer.getChildren(monitor);
+            } catch (Exception e) {
+                log.debug("Error loading container '" + objectContainer.getName() + "' contents: " + e.getMessage());
+                return;
+            }
             if (children == null) {
                 return;
             }

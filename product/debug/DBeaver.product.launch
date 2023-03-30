@@ -27,13 +27,15 @@
     <stringAttribute key="product" value="org.jkiss.dbeaver.ui.app.standalone.product"/>
     <stringAttribute key="productFile" value="\org.jkiss.dbeaver.ce.standalone\DBeaver.product"/>
     <setAttribute key="selected_target_bundles">
+        <setEntry value="bcpg@default:default"/>
+        <setEntry value="bcprov@default:default"/>
         <setEntry value="com.github.jsqlparser@default:default"/>
         <setEntry value="com.google.gson@default:default"/>
         <setEntry value="com.google.guava@default:default"/>
         <setEntry value="com.ibm.icu@default:default"/>
         <setEntry value="com.jcraft.jsch@default:default"/>
-        <setEntry value="com.sun.jna*5.8.0@default:default"/>
-        <setEntry value="com.sun.jna.platform*5.8.0@default:default"/>
+        <setEntry value="com.sun.jna*5.12.1@default:default"/>
+        <setEntry value="com.sun.jna.platform*5.12.1@default:default"/>
         <setEntry value="javaewah@default:default"/>
         <setEntry value="javax.annotation@default:default"/>
         <setEntry value="javax.inject@default:default"/>
@@ -45,7 +47,7 @@
         <setEntry value="org.apache.batik.util@default:default"/>
         <setEntry value="org.apache.commons.cli@default:default"/>
         <setEntry value="org.apache.commons.codec@default:default"/>
-        <setEntry value="org.apache.commons.commons-io@default:default"/>
+        <setEntry value="org.apache.commons.io@default:default"/>
         <setEntry value="org.apache.commons.jexl@default:default"/>
         <setEntry value="org.apache.commons.jxpath@default:default"/>
         <setEntry value="org.apache.commons.logging@default:default"/>
@@ -55,9 +57,7 @@
         <setEntry value="org.apache.felix.scr@1:true"/>
         <setEntry value="org.apache.xml.serializer@default:default"/>
         <setEntry value="org.apache.xmlgraphics@default:default"/>
-        <setEntry value="org.bouncycastle.bcpg*1.70.0.v20220507-1208@default:default"/>
         <setEntry value="org.bouncycastle.bcpkix@default:default"/>
-        <setEntry value="org.bouncycastle.bcprov*1.70.0.v20220507-1208@default:default"/>
         <setEntry value="org.bouncycastle.bcutil@default:default"/>
         <setEntry value="org.eclipse.compare.core@default:default"/>
         <setEntry value="org.eclipse.compare@default:default"/>
@@ -204,7 +204,7 @@
         <setEntry value="org.jkiss.bundle.gis@default:default"/>
         <setEntry value="org.jkiss.bundle.jfreechart@default:default"/>
         <setEntry value="org.jkiss.bundle.sshj@default:default"/>
-        <setEntry value="org.objectweb.asm@default:default"/>
+        <setEntry value="org.objectweb.asm*9.4.0.v20221107-1714@default:default"/>
         <setEntry value="org.osgi.annotation.bundle@default:default"/>
         <setEntry value="org.osgi.annotation.versioning@default:default"/>
         <setEntry value="org.osgi.service.cm@default:default"/>

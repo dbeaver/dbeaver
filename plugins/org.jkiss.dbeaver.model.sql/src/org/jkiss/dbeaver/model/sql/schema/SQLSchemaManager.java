@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.sql.schema;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCTransaction;
@@ -41,7 +42,6 @@ import java.sql.Statement;
  * SQL schema manager.
  * Upgrades schema version if needed.
  * Converts schema create/update scripts into target database dialect.
- *
  */
 public final class SQLSchemaManager {
     private static final Log log = Log.getLog(SQLSchemaManager.class);
@@ -51,11 +51,11 @@ public final class SQLSchemaManager {
     private final SQLSchemaConnectionProvider connectionProvider;
     private final SQLSchemaVersionManager versionManager;
 
-    private SQLDialect targetDatabaseDialect;
-    private String targetDatabaseName;
+    private final SQLDialect targetDatabaseDialect;
+    private final String targetDatabaseName;
 
-    private int schemaVersionActual;
-    private int schemaVersionObsolete;
+    private final int schemaVersionActual;
+    private final int schemaVersionObsolete;
 
     public SQLSchemaManager(
         String schemaId,
@@ -65,8 +65,8 @@ public final class SQLSchemaManager {
         SQLDialect targetDatabaseDialect,
         String targetDatabaseName,
         int schemaVersionActual,
-        int schemaVersionObsolete)
-    {
+        int schemaVersionObsolete
+    ) {
         this.schemaId = schemaId;
 
         this.scriptSource = scriptSource;
@@ -83,49 +83,70 @@ public final class SQLSchemaManager {
         try {
             Connection dbCon = connectionProvider.getDatabaseConnection(monitor);
             try (JDBCTransaction txn = new JDBCTransaction(dbCon)) {
-                int currentSchemaVersion = versionManager.getCurrentSchemaVersion(monitor, dbCon, targetDatabaseName);
-                // Do rollback in case some error happened during version check (makes sense for PG)
-                txn.rollback();
-                if (currentSchemaVersion < 0) {
-                    createNewSchema(monitor, dbCon);
+                try {
+                    int currentSchemaVersion = versionManager.getCurrentSchemaVersion(monitor, dbCon, targetDatabaseName);
+                    // Do rollback in case some error happened during version check (makes sense for PG)
+                    txn.rollback();
+                    if (currentSchemaVersion < 0) {
+                        createNewSchema(monitor, dbCon);
 
-                    // Update schema version
-                    versionManager.updateCurrentSchemaVersion(monitor, dbCon, targetDatabaseName);
-                } else if (schemaVersionObsolete > 0 && currentSchemaVersion < schemaVersionObsolete) {
-                    dropSchema(monitor, dbCon);
-                    createNewSchema(monitor, dbCon);
+                        // Update schema version
+                        versionManager.updateCurrentSchemaVersion(
+                            monitor,
+                            dbCon,
+                            targetDatabaseName,
+                            versionManager.getLatestSchemaVersion()
+                        );
+                    } else if (schemaVersionObsolete > 0 && currentSchemaVersion < schemaVersionObsolete) {
+                        dropSchema(monitor, dbCon);
+                        createNewSchema(monitor, dbCon);
 
-                    // Update schema version
-                    versionManager.updateCurrentSchemaVersion(monitor, dbCon, targetDatabaseName);
-                } else if (schemaVersionActual > currentSchemaVersion) {
-                    upgradeSchemaVersion(monitor, dbCon, currentSchemaVersion);
+                        // Update schema version
+                        versionManager.updateCurrentSchemaVersion(
+                            monitor,
+                            dbCon,
+                            targetDatabaseName,
+                            versionManager.getLatestSchemaVersion()
+                        );
+                    } else if (schemaVersionActual > currentSchemaVersion) {
+                        upgradeSchemaVersion(monitor, dbCon, txn, currentSchemaVersion);
+                    }
+
+                    txn.commit();
+                } catch (Exception e) {
+                    txn.rollback();
+                    log.warn(schemaId + " migration has been rolled back");
+                    throw e;
                 }
-
-                txn.commit();
             }
-        }
-        catch (IOException | SQLException e) {
+        } catch (IOException | SQLException e) {
             throw new DBException("Error updating " + schemaId + " schema version", e);
         }
     }
 
-    private void upgradeSchemaVersion(DBRProgressMonitor monitor, Connection connection, int currentSchemaVersion) throws IOException, DBException, SQLException {
+    private void upgradeSchemaVersion(
+        DBRProgressMonitor monitor,
+        @NotNull Connection connection,
+        @NotNull JDBCTransaction txn,
+        int currentSchemaVersion
+    ) throws IOException, DBException, SQLException {
         for (int curVer = currentSchemaVersion; curVer < schemaVersionActual; curVer++) {
             int updateToVer = curVer + 1;
             Reader ddlStream = scriptSource.openSchemaUpdateScript(monitor, updateToVer);
-            if (ddlStream != null) {
-                log.debug("Update schema " + schemaId + " version from " + curVer + " to " + updateToVer);
-                try {
-                    executeScript(monitor, connection, ddlStream, true);
-                } catch (Exception e) {
-                    log.warn("Error updating " + schemaId + " schema version from " + curVer + " to " + updateToVer, e);
-                    throw e;
-                } finally {
-                    ContentUtils.close(ddlStream);
-                }
+            if (ddlStream == null) {
+                continue;
+            }
+            log.debug("Update schema " + schemaId + " version from " + curVer + " to " + updateToVer);
+            try {
+                executeScript(monitor, connection, ddlStream, true);
                 // Update schema version
-                versionManager.updateCurrentSchemaVersion(
-                    monitor, connection, targetDatabaseName);
+                versionManager.updateCurrentSchemaVersion(monitor, connection, targetDatabaseName, updateToVer);
+                txn.commit();
+            } catch (Exception e) {
+                log.warn("Error updating " + schemaId + " schema version from " + curVer + " to " + updateToVer, e);
+                throw e;
+            } finally {
+                ContentUtils.close(ddlStream);
             }
         }
     }

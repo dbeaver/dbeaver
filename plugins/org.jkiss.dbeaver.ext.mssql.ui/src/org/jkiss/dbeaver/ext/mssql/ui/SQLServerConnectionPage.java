@@ -206,7 +206,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
                     secureGroup,
                     SQLServerUIMessages.dialog_setting_trust_server_certificate,
                     SQLServerUIMessages.dialog_setting_trust_server_certificate_tip,
-                    true,
+                    false,
                     1);
             }
         }
@@ -293,7 +293,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         showAllSchemas.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS)));
         if (trustServerCertificate != null) {
             trustServerCertificate.setSelection(CommonUtils.getBoolean(
-                connectionInfo.getProviderProperty(SQLServerConstants.PROP_SSL_TRUST_SERVER_CERTIFICATE), true));
+                connectionInfo.getProviderProperty(SQLServerConstants.PROP_SSL_TRUST_SERVER_CERTIFICATE), false));
         }
 
         if (!isSqlServer() && encryptPassword != null) {

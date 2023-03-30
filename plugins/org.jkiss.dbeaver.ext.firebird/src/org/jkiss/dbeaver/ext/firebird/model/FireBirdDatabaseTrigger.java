@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 
 public class FireBirdDatabaseTrigger extends FireBirdTrigger<GenericStructContainer> {
@@ -28,5 +31,11 @@ public class FireBirdDatabaseTrigger extends FireBirdTrigger<GenericStructContai
     @Override
     public DBSTable getTable() {
         return null;
+    }
+
+    @NotNull
+    @Override
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
+        return DBUtils.getFullQualifiedName(getDataSource(), this);
     }
 }

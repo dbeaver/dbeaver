@@ -18,66 +18,85 @@ package org.jkiss.dbeaver.model.websocket.event.datasource;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.websocket.event.WSAbstractProjectEvent;
+import org.jkiss.dbeaver.model.websocket.event.WSProjectResourceEvent;
 import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
 import java.util.List;
 
-public class WSDataSourceEvent extends WSAbstractProjectEvent {
+public class WSDataSourceEvent extends WSProjectResourceEvent {
     @Nullable
     private final List<String> dataSourceIds;
+    @NotNull
+    private final WSDataSourceProperty property;
 
     private WSDataSourceEvent(
         @NotNull WSEventType eventType,
         @Nullable String sessionId,
+        @Nullable String userId,
         @NotNull String projectId,
-        @Nullable List<String> dataSourceIds
+        @Nullable List<String> dataSourceIds,
+        @NotNull WSDataSourceProperty property
     ) {
-        super(eventType, sessionId, projectId);
+        super(eventType, sessionId, userId, projectId);
         this.dataSourceIds = dataSourceIds;
+        this.property = property;
     }
 
     public static WSDataSourceEvent create(
         @Nullable String sessionId,
+        @Nullable String userId,
         @NotNull String projectId,
-        @Nullable List<String> datasourceIds
+        @Nullable List<String> datasourceIds,
+        @NotNull WSDataSourceProperty property
     ) {
         return new WSDataSourceEvent(
             WSEventType.DATASOURCE_CREATED,
             sessionId,
+            userId,
             projectId,
-            datasourceIds
-        );
+            datasourceIds,
+            property);
     }
 
     public static WSDataSourceEvent delete(
         @Nullable String sessionId,
+        @Nullable String userId,
         @NotNull String projectId,
-        @Nullable List<String> datasourceIds
+        @Nullable List<String> datasourceIds,
+        @NotNull WSDataSourceProperty property
     ) {
         return new WSDataSourceEvent(
             WSEventType.DATASOURCE_DELETED,
             sessionId,
+            userId,
             projectId,
-            datasourceIds
-        );
+            datasourceIds,
+            property);
     }
 
     public static WSDataSourceEvent update(
         @Nullable String sessionId,
+        @Nullable String userId,
         @NotNull String projectId,
-        @Nullable List<String> datasourceIds
+        @Nullable List<String> datasourceIds,
+        @NotNull WSDataSourceProperty property
     ) {
         return new WSDataSourceEvent(
             WSEventType.DATASOURCE_UPDATED,
             sessionId,
+            userId,
             projectId,
-            datasourceIds
-        );
+            datasourceIds,
+            property);
     }
 
     @Nullable
     public List<String> getDataSourceIds() {
         return dataSourceIds;
+    }
+
+    @NotNull
+    public WSDataSourceProperty getProperty() {
+        return property;
     }
 }

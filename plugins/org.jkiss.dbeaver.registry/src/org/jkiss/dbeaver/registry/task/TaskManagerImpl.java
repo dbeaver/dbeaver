@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.BaseProjectImpl;
+import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -58,7 +59,7 @@ public class TaskManagerImpl implements DBTTaskManager {
         .setPrettyPrinting()
         .create();
 
-    static final SimpleDateFormat systemDateFormat = new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH);
+    final SimpleDateFormat systemDateFormat;
 
     private final Set<TaskRunJob> runningTasks = Collections.synchronizedSet(new HashSet<>());
     private final BaseProjectImpl projectMetadata;
@@ -69,7 +70,8 @@ public class TaskManagerImpl implements DBTTaskManager {
     public TaskManagerImpl(BaseProjectImpl projectMetadata) {
         this.projectMetadata = projectMetadata;
         this.statisticsFolder = projectMetadata.getWorkspace().getMetadataFolder().resolve(TaskConstants.TASK_STATS_FOLDER);
-
+        this.systemDateFormat = new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH);
+        systemDateFormat.setTimeZone(TimeZone.getTimeZone(TimezoneRegistry.getUserDefaultTimezone()));
         loadConfiguration();
     }
 

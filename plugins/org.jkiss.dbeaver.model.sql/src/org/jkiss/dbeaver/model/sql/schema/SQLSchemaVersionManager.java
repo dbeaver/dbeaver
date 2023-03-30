@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.sql.schema;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -35,9 +36,19 @@ public interface SQLSchemaVersionManager {
     int getCurrentSchemaVersion(DBRProgressMonitor monitor, Connection connection, String schemaName) throws DBException, SQLException;
 
     /**
+     * Returns an actual schema version
+     */
+    int getLatestSchemaVersion();
+
+    /**
      * Updates current schema version
      */
-    void updateCurrentSchemaVersion(DBRProgressMonitor monitor, Connection connection, String schemaName) throws DBException, SQLException;
+    void updateCurrentSchemaVersion(
+        DBRProgressMonitor monitor,
+        @NotNull Connection connection,
+        @NotNull String schemaName,
+        int version
+    ) throws DBException, SQLException;
 
     default void fillInitialSchemaData(DBRProgressMonitor monitor, Connection connection) throws DBException, SQLException {
 

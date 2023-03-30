@@ -218,7 +218,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     // True if we need multiple databases
     protected boolean isReadDatabaseList(DBPConnectionConfiguration configuration) {
         // It is configurable by default
-        return CommonUtils.getBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), false);
+        return configuration.getConfigurationType() != DBPDriverConfigurationType.URL &&
+            CommonUtils.getBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), false);
     }
 
     protected PreparedStatement prepareReadDatabaseListStatement(
@@ -498,7 +499,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             log.debug("Initiate connection to " + getServerType().getServerTypeName() + " database [" + instance.getName() + "@" + conConfig.getHostName() + "] for " + purpose);
         }
         try {
-            if (instance instanceof PostgreDatabase && !CommonUtils.equalObjects(instance.getName(), conConfig.getDatabaseName())) {
+            if (conConfig.getConfigurationType() != DBPDriverConfigurationType.URL &&
+                instance instanceof PostgreDatabase &&
+                !CommonUtils.equalObjects(instance.getName(), conConfig.getDatabaseName())
+            ) {
                 // If database was changed then use new name for connection
                 final DBPConnectionConfiguration originalConfig = new DBPConnectionConfiguration(conConfig);
                 try {

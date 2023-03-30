@@ -21,7 +21,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.internal.ide.IDEWorkbenchMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.utils.CommonUtils;
@@ -44,12 +43,12 @@ class ProjectCreateRemotePage extends ActiveWizardPage<ProjectCreateWizard> {
         Composite panel = UIUtils.createControlGroup(parent, "Project", 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
         panel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        Text nameText = UIUtils.createLabelText(panel, IDEWorkbenchMessages.WizardNewProjectCreationPage_nameLabel, null);
+        Text nameText = UIUtils.createLabelText(panel, "Project name", null);
         nameText.addModifyListener(e -> {
             projectName = nameText.getText();
             updatePageCompletion();
         });
-        Text descriptionText = UIUtils.createLabelText(panel, "Description", null, SWT.MULTI | SWT.BORDER);
+        Text descriptionText = UIUtils.createLabelText(panel, "Description", null, SWT.SINGLE | SWT.BORDER);
         descriptionText.addModifyListener(e -> {
             projectDescription = descriptionText.getText();
             updatePageCompletion();

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.websocket.event;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.websocket.event.datasource.WSDataSourceEvent;
 import org.jkiss.dbeaver.model.websocket.event.datasource.WSDatasourceFolderEvent;
+import org.jkiss.dbeaver.model.websocket.event.permissions.WSObjectPermissionEvent;
 import org.jkiss.dbeaver.model.websocket.event.resource.WSResourceUpdatedEvent;
 
 public enum WSEventType {
@@ -55,9 +56,16 @@ public enum WSEventType {
         WSDatasourceFolderEvent.class
     ),
 
+    OBJECT_PERMISSIONS_UPDATED("cb_object_permissions_updated", WSEventTopic.PERMISSIONS, WSObjectPermissionEvent.class),
+
+    DATASOURCE_SECRET_UPDATED("cb_user_secret_updated", WSEventTopic.USER_SECRET, WSUserSecretEvent.class),
+
     RM_RESOURCE_CREATED("cb_rm_resource_created", WSEventTopic.RM_SCRIPTS, WSResourceUpdatedEvent.class),
     RM_RESOURCE_UPDATED("cb_rm_resource_updated", WSEventTopic.RM_SCRIPTS, WSResourceUpdatedEvent.class),
-    RM_RESOURCE_DELETED("cb_rm_resource_deleted", WSEventTopic.RM_SCRIPTS, WSResourceUpdatedEvent.class);
+    RM_RESOURCE_DELETED("cb_rm_resource_deleted", WSEventTopic.RM_SCRIPTS, WSResourceUpdatedEvent.class),
+
+    RM_PROJECT_ADDED("cb_rm_project_added", WSEventTopic.PROJECTS, WSProjectUpdateEvent.class),
+    RM_PROJECT_REMOVED("cb_rm_project_removed", WSEventTopic.PROJECTS, WSProjectUpdateEvent.class);
 
     private final String eventId;
     private final WSEventTopic topic;

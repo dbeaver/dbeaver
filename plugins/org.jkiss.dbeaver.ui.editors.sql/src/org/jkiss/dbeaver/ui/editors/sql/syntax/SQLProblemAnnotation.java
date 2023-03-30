@@ -41,4 +41,5 @@ public class SQLProblemAnnotation extends MarkerAnnotation implements IAnnotatio
     public void paint(GC gc, Canvas canvas, Rectangle r) {
         ImageUtilities.drawImage(DBeaverIcons.getImage(DBIcon.TINY_ERROR), gc, canvas, r, SWT.CENTER, SWT.TOP);
     }
+
 }

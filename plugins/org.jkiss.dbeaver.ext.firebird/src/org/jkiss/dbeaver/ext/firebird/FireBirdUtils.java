@@ -217,16 +217,16 @@ public class FireBirdUtils {
         String domainName = domainNames.get(paramName.trim());
         if (domainName != null) {
             sql.append(domainName);
-            return;
-        }
-        sql.append(param.getTypeName());
-        String typeModifiers = SQLUtils.getColumnTypeModifiers(param.getDataSource(), param, param.getTypeName(), param.getDataKind());
-        if (typeModifiers != null) {
-            sql.append(typeModifiers);
-        }
-        boolean notNull = param.isRequired();
-        if (notNull) {
-            sql.append(" NOT NULL");
+        } else {
+            sql.append(param.getTypeName());
+            String typeModifiers = SQLUtils.getColumnTypeModifiers(param.getDataSource(), param, param.getTypeName(), param.getDataKind());
+            if (typeModifiers != null) {
+                sql.append(typeModifiers);
+            }
+            boolean notNull = param.isRequired();
+            if (notNull) {
+                sql.append(" NOT NULL");
+            }
         }
         if (param instanceof FireBirdProcedureParameter && param.getParameterKind() == DBSProcedureParameterKind.IN) {
             String defaultValue = ((FireBirdProcedureParameter) param).getDefaultValue();

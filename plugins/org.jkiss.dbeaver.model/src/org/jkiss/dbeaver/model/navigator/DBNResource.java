@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.internal.resources.Resource;
 import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -35,6 +32,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -416,6 +414,11 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
             protected IStatus run(DBRProgressMonitor monitor) {
                 monitor.beginTask("Copy files", nodes.size());
                 try {
+                    if (!resource.exists()) {
+                        if (resource instanceof IFolder) {
+                            ((IFolder) resource).create(true, true, new NullProgressMonitor());
+                        }
+                    }
                     for (DBNNode node : nodes) {
                         IResource otherResource = node.getAdapter(IResource.class);
                         if (otherResource != null) {
@@ -426,6 +429,9 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
                                         true,
                                         monitor.getNestedMonitor());
                                 } else {
+                                    if (DBWorkbench.isDistributed() && !CommonUtils.equalObjects(otherResource.getProject(), resource.getProject())) {
+                                        throw new DBException("Cross-project resource move is not supported in distributed workspaces");
+                                    }
                                     otherResource.move(
                                         resource.getFullPath().append(otherResource.getName()),
                                         true,
