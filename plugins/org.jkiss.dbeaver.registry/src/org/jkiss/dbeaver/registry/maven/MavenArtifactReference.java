@@ -82,7 +82,10 @@ public class MavenArtifactReference implements IMavenIdentifier
         } else {
             groupId = parts[0];
             artifactId = parts[1];
-            if (parts.length == 3) {
+            if (parts.length == 2) {
+                classifier = null;
+                fallbackVersion = null;
+            } else if (parts.length == 3) {
                 classifier = null;
                 fallbackVersion = parts[2];
             } else {
