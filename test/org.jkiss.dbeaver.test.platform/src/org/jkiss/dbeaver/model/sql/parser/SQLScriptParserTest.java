@@ -505,7 +505,7 @@ public class SQLScriptParserTest {
     
     @Test
     public void parseOracleQStringRule() throws DBException {
-        final List<String> queries = List.of(
+        final List<String> qstrings = List.of(
             "q'[What's a quote among friends?]';",
             "q'!What's a quote among friends?!';",
             "q'(That's a really funny 'joke'.)';",
@@ -518,15 +518,15 @@ public class SQLScriptParserTest {
             "q'<'Hello,' said the child, who didn't like goodbyes.>';" 
         );
         
-        for (String query : queries) {
-            SQLParserContext context = createParserContext(setDialect("oracle"), query);
+        for (String qstring : qstrings) {
+            SQLParserContext context = createParserContext(setDialect("oracle"), qstring);
             TPRuleBasedScanner scanner = context.getScanner();
-            scanner.setRange(context.getDocument(), 0, query.length());
+            scanner.setRange(context.getDocument(), 0, qstring.length());
             Assert.assertEquals(SQLTokenType.T_STRING, scanner.nextToken().getData());
-            Assert.assertEquals(query.length() - 1, scanner.getTokenLength());
+            Assert.assertEquals(qstring.length() - 1, scanner.getTokenLength());
             scanner.nextToken();
         }
-        final List<String> badQueries = List.of(
+        final List<String> badQstrings = List.of(
             "q'(That''s a really funny ''joke''.(';",
             "q'#That's a really funny 'joke'.$';",
             "q'>All the king's horses<';",
@@ -536,14 +536,31 @@ public class SQLScriptParserTest {
             "q'abcd'"
         );
         
-        for (String query : badQueries) {
-            SQLParserContext context = createParserContext(setDialect("oracle"), query);
+        for (String badQstring : badQstrings) {
+            SQLParserContext context = createParserContext(setDialect("oracle"), badQstring);
             TPRuleBasedScanner scanner = context.getScanner();
-            scanner.setRange(context.getDocument(), 0, query.length());
+            scanner.setRange(context.getDocument(), 0, badQstring.length());
             Assert.assertNotEquals(SQLTokenType.T_STRING, scanner.nextToken().getData());
-            Assert.assertNotEquals(query.length() - 1, scanner.getTokenLength());
+            Assert.assertNotEquals(badQstring.length() - 1, scanner.getTokenLength());
         }
     }
+    
+    /**
+     * Check that QStringRule doesn't interfere in this case
+     * See #19319
+     */
+    @Test
+    public void parseOracleNamedByQTable() throws DBException {
+        String query = "select * from q;";
+        SQLParserContext context = createParserContext(setDialect("oracle"), query);
+        TPRuleBasedScanner scanner = context.getScanner();
+        scanner.setRange(context.getDocument(), 14, query.length());
+        Assert.assertEquals(SQLTokenType.T_OTHER, scanner.nextToken().getData());
+        Assert.assertEquals(1, scanner.getTokenLength());;
+        Assert.assertEquals(SQLTokenType.T_DELIMITER, scanner.nextToken().getData());
+        Assert.assertEquals(1, scanner.getTokenLength());
+    }
+    
     
     @Test
     public void parseBeginTransaction() throws DBException {
