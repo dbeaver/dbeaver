@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
+import org.jkiss.dbeaver.model.access.DBAAuthSubjectCredentials;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -49,14 +50,15 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.dbeaver.utils.SecurityManagerUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
+import javax.security.auth.Subject;
 import java.io.IOException;
 import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.PrivilegedExceptionAction;
 import java.sql.*;
 import java.util.*;
 
@@ -155,6 +157,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
             int openTimeout = getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT);
 
             // Init authentication first (it may affect driver properties or driver configuration or even driver libraries)
+            Object authResult;
             try {
                 DBAAuthCredentials credentials = authModel.loadCredentials(getContainer(), connectionInfo);
 
@@ -162,7 +165,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
                     // Refresh credentials
                     authModel.refreshCredentials(monitor, getContainer(), connectionInfo, credentials);
                 }
-                authModel.initAuthentication(monitor, this, credentials, connectionInfo, connectProps);
+                authResult = authModel.initAuthentication(monitor, this, credentials, connectionInfo, connectProps);
             } catch (DBException e) {
                 throw new DBCException("Authentication error: " + e.getMessage(), e);
             }
@@ -200,11 +203,28 @@ public abstract class JDBCDataSource extends AbstractDataSource
 
             DBRRunnableWithProgress connectTask = monitor1 -> {
                 try {
-                    if (driverInstanceFinal == null) {
-                        connection[0] = DriverManager.getConnection(url, connectProps);
-                    } else {
-                        connection[0] = driverInstanceFinal.connect(url, connectProps);
+                    // Use PrivilegedAction in case we have explicit subject
+                    // Otherwise just open connection directly
+                    PrivilegedExceptionAction<Connection> pa = () -> {
+                        if (driverInstanceFinal == null) {
+                            return DriverManager.getConnection(url, connectProps);
+                        } else {
+                            return driverInstanceFinal.connect(url, connectProps);
+                        }
+                    };
+                    Connection jdbcConnection = null;
+                    boolean connected = false;
+                    if (authResult instanceof DBAAuthSubjectCredentials) {
+                        Subject authSubject = ((DBAAuthSubjectCredentials) authResult).getAuthSubject();
+                        if (authSubject != null) {
+                            jdbcConnection = Subject.doAs(authSubject, pa);
+                            connected = true;
+                        }
                     }
+                    if (!connected) {
+                        jdbcConnection = pa.run();
+                    }
+                    connection[0] = jdbcConnection;
                 } catch (Exception e) {
                     error[0] = e;
                 } finally {
@@ -220,14 +240,12 @@ public abstract class JDBCDataSource extends AbstractDataSource
 
             boolean openTaskFinished;
             try {
-                openTaskFinished = SecurityManagerUtils.wrapDriverActions(getContainer(), () -> {
-                    if (openTimeout <= 0) {
-                        connectTask.run(monitor);
-                        return true;
-                    } else {
-                        return RuntimeUtils.runTask(connectTask, "Opening database connection", openTimeout + 2000);
-                    }
-                });
+                if (openTimeout <= 0) {
+                    connectTask.run(monitor);
+                    openTaskFinished = true;
+                } else {
+                    openTaskFinished = RuntimeUtils.runTask(connectTask, "Opening database connection", openTimeout + 2000);
+                }
             } finally {
                 authModel.endAuthentication(container, connectionInfo, connectProps);
             }
@@ -332,10 +350,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
                         }
                     }
                     try {
-                        SecurityManagerUtils.wrapDriverActions(getContainer(), () -> {
-                            connection.close();
-                            return null;
-                        });
+                        connection.close();
                     } catch (Throwable ex) {
                         log.debug("Error closing connection", ex);
                     }
