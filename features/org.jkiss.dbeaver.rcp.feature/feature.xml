@@ -129,8 +129,6 @@
 
     <plugin id="org.eclipse.e4.core.di.annotations" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.e4.emf.xpath" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.apache.commons.jxpath" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.apache.commons.io" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <!-- OS dependent -->
 
