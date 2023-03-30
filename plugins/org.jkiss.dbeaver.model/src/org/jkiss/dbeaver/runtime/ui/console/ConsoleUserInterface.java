@@ -153,6 +153,11 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
+    public String promptProperty(String prompt, String defValue) {
+        return null;
+    }
+
+    @Override
     public boolean acceptLicense(String message, String licenseText) {
         return true;
     }

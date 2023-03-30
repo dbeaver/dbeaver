@@ -62,6 +62,11 @@ public class TextWithOpenFile extends TextWithOpen
         this.openFolder = openFolder;
     }
 
+    @Override
+    protected boolean isBinaryContents() {
+        return binary;
+    }
+
     protected void openBrowser() {
         String directory = getDialogDirectory();
         String selected;
@@ -83,7 +88,7 @@ public class TextWithOpenFile extends TextWithOpen
             }
             selected = DialogUtils.openFileDialog(fd);
 
-            if (selected != null && isPlainTextEditor()) {
+            if (selected != null && isShowFileContentEditor()) {
                 Path filePath = Path.of(selected);
                 try {
                     if (binary) {
