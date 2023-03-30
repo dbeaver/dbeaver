@@ -14,27 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls;
 
-import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+package org.jkiss.dbeaver.model.access;
+
+import javax.security.auth.Subject;
 
 /**
- * ConfigurationFileSelector
+ * Auth credentials with associated subject.
  */
-public class ConfigurationFileSelector extends TextWithOpenFile {
+public interface DBAAuthSubjectCredentials {
 
-    public ConfigurationFileSelector(Composite parent, String title, String[] filterExt) {
-        super(parent, title, filterExt);
-    }
-
-    public ConfigurationFileSelector(Composite parent, String title, String[] filterExt, boolean binaryFile) {
-        super(parent, title, filterExt, binaryFile);
-    }
-
-    @Override
-    protected boolean isShowFileContentEditor() {
-        return DBWorkbench.isDistributed();
-    }
+    Subject getAuthSubject();
 
 }

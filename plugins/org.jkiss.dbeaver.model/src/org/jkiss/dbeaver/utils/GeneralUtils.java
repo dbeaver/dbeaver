@@ -611,6 +611,9 @@ public class GeneralUtils {
     }
 
     public static IStatus makeExceptionStatus(int severity, String message, Throwable ex) {
+        if (CommonUtils.equalObjects(message, ex.getMessage())) {
+            return makeExceptionStatus(severity, ex);
+        }
         return new MultiStatus(
             ModelPreferences.PLUGIN_ID,
             0,
