@@ -230,10 +230,10 @@ public class GridColumn implements IGridColumn {
                     textWidth = grid.sizingGC.stringExtent(text).x;                    
                     if (Boolean.TRUE.equals(labelProvider.getGridOption(IGridLabelProvider.OPTION_SHOW_DESCRIPTION)) 
                             && (!CommonUtils.isEmpty(description))) {
-                      int descWidth = grid.sizingGC.stringExtent(description).x;
-                      if (descWidth > textWidth) {
-                          textWidth = descWidth;
-                      }
+                        int descWidth = grid.sizingGC.stringExtent(description).x;
+                        if (descWidth > textWidth) {
+                            textWidth = descWidth;
+                        }
                     }
                     break;
                 default:
