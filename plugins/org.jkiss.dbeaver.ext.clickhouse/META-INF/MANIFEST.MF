@@ -7,9 +7,11 @@ Bundle-Release-Date: 20230327
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.parser.common,
- org.jkiss.dbeaver.ext.generic;visibility:=reexport
+ org.jkiss.dbeaver.ext.generic;visibility:=reexport,
+ com.google.guava;resolution:=optional
 Export-Package: org.jkiss.dbeaver.ext.clickhouse,
  org.jkiss.dbeaver.ext.clickhouse.model
+Import-Package: org.slf4j
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: %Bundle-Vendor

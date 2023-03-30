@@ -947,7 +947,7 @@ public class DataSourceDescriptor
                 authProvided = authProvider.provideAuthParameters(monitor, this, resolvedConnectionInfo);
             } else {
                 // 3. USe legacy password provider
-                if (!isCredentialsSaved() && !getDriver().isAnonymousAccess()) {
+                if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
                     // Ask for password
                     authProvided = askForPassword(this, null, DBWTunnel.AuthCredentials.CREDENTIALS);
                 }
@@ -1076,7 +1076,7 @@ public class DataSourceDescriptor
             return true;
         } catch (Throwable e) {
             lastConnectionError = e.getMessage();
-            log.debug("Connection failed (" + getId() + ")", e);
+            //log.debug("Connection failed (" + getId() + ")", e);
             if (dataSource != null) {
                 try {
                     dataSource.shutdown(monitor);
