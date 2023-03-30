@@ -189,7 +189,12 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         if (this.localVersion == null) {
             MavenArtifactReference ref = reference;
             if (preferredVersion != null) {
-                ref = new MavenArtifactReference(reference.getGroupId(), reference.getArtifactId(), reference.getFallbackVersion(), preferredVersion);
+                ref = new MavenArtifactReference(
+                    reference.getGroupId(),
+                    reference.getArtifactId(),
+                    reference.getClassifier(),
+                    reference.getFallbackVersion(),
+                    preferredVersion);
                 if (loadOptionalDependencies) {
                     ref.setResolveOptionalDependencies(true);
                 }
