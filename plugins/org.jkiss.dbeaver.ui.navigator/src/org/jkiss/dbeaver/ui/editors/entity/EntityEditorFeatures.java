@@ -14,18 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.core;
+package org.jkiss.dbeaver.ui.editors.entity;
 
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 
 /**
- * DBeaver core features
+ * Entity editor features
  */
-public interface CoreFeatures {
+public interface EntityEditorFeatures {
 
-    DBRFeature CATEGORY_GENERAL = DBRFeature.createCategory("General", "General app actions");
-    DBRFeature GENERAL_SHOW_VIEW = DBRFeature.createCommandFeature(CATEGORY_GENERAL, IWorkbenchCommandConstants.VIEWS_SHOW_VIEW);
-    DBRFeature GENERAL_SHOW_PERSPECTIVE = DBRFeature.createFeature(CATEGORY_GENERAL, "Show perspective");
+    DBRFeature CATEGORY_ENTITY_EDITOR = DBRFeature.createCategory("Entity editor", "Entity editor features");
+
+    DBRFeature ENTITY_EDITOR_OPEN = DBRFeature.createFeature(CATEGORY_ENTITY_EDITOR, "Open entity editor");
+    DBRFeature ENTITY_EDITOR_MODIFY = DBRFeature.createFeature(CATEGORY_ENTITY_EDITOR, "Change object properties");
+    DBRFeature ENTITY_EDITOR_SAVE = DBRFeature.createFeature(CATEGORY_ENTITY_EDITOR, "Save object properties");
+    DBRFeature ENTITY_EDITOR_REJECT = DBRFeature.createFeature(CATEGORY_ENTITY_EDITOR, "Reject object properties changes");
 
 }

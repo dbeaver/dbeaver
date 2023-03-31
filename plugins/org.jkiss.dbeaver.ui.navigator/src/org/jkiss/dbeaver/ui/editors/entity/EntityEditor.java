@@ -622,6 +622,12 @@ public class EntityEditor extends MultiPageDatabaseEditor
         // Add contributed pages
         addContributions(EntityEditorDescriptor.POSITION_END);
 
+        if (databaseObject != null) {
+            EntityEditorFeatures.ENTITY_EDITOR_OPEN.use(Map.of(
+                "className", databaseObject.getClass().getSimpleName()
+            ));
+        }
+
         String defPageId = editorInput.getDefaultPageId();
         String defFolderId = editorInput.getDefaultFolderId();
         if (defPageId == null && editorDefaults != null) {

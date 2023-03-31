@@ -6,6 +6,8 @@ Bundle-Version: 1.0.78.qualifier
 Bundle-Release-Date: 20230327
 Bundle-Vendor: %Bundle-Vendor
 Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: org.jkiss.dbeaver.ui.editors.sql.terminal.internal.SQLTerminalActivator
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.console,
  org.eclipse.osgi,

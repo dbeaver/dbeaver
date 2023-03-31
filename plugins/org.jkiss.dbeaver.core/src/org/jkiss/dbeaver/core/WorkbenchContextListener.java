@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -118,6 +119,8 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
                     contextService.deactivateContext(perspectiveActivation);
                     perspectiveActivation = null;
                 }
+
+                CoreFeatures.GENERAL_SHOW_PERSPECTIVE.use(Map.of("perspective", perspective.getId()));
             }
 
             @Override
@@ -261,15 +264,14 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
 
         @Override
         public void postExecuteSuccess(String commandId, Object returnValue) {
-            final DBRFeature commandFeature = DBRFeatureRegistry.getInstance().findCommandFeature(commandId);
-            if (commandFeature != null) {
-                commandFeature.use();
-            }
         }
 
         @Override
         public void preExecute(String commandId, ExecutionEvent event) {
-
+            final DBRFeature commandFeature = DBRFeatureRegistry.getInstance().findCommandFeature(commandId);
+            if (commandFeature != null) {
+                commandFeature.use(event.getParameters());
+            }
         }
     }
     

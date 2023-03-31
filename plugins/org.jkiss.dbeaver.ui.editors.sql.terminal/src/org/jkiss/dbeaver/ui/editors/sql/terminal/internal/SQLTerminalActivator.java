@@ -14,26 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.data.internal;
+package org.jkiss.dbeaver.ui.editors.sql.terminal.internal;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
-import org.jkiss.dbeaver.ui.DataEditorFeatures;
+import org.jkiss.dbeaver.ui.editors.sql.terminal.SQLTerminalFeatures;
 import org.osgi.framework.BundleContext;
 
-public class DataEditorsActivator extends AbstractUIPlugin {
+public class SQLTerminalActivator extends AbstractUIPlugin {
 
     // The plug-in ID
-    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ui.editors.data";
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ui.editors.sql.terminal";
 
     // The shared instance
-    private static DataEditorsActivator plugin;
+    private static SQLTerminalActivator plugin;
     private DBPPreferenceStore preferences;
 
-    public DataEditorsActivator() {
+    public SQLTerminalActivator() {
     }
 
     @Override
@@ -42,7 +42,7 @@ public class DataEditorsActivator extends AbstractUIPlugin {
         plugin = this;
         preferences = new BundlePreferenceStore(getBundle());
 
-        DBRFeatureRegistry.getInstance().registerFeatures(DataEditorFeatures.class);
+        DBRFeatureRegistry.getInstance().registerFeatures(SQLTerminalFeatures.class);
     }
 
     @Override
@@ -51,7 +51,7 @@ public class DataEditorsActivator extends AbstractUIPlugin {
         super.stop(context);
     }
 
-    public static DataEditorsActivator getDefault() {
+    public static SQLTerminalActivator getDefault() {
         return plugin;
     }
 

@@ -97,7 +97,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI.UserChoiceResponse;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;

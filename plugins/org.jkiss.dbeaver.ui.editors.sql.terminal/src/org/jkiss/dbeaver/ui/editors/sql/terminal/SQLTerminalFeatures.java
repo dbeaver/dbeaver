@@ -14,18 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.core;
+package org.jkiss.dbeaver.ui.editors.sql.terminal;
 
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorFeatures;
 
 /**
- * DBeaver core features
+ * SQL terminal features
  */
-public interface CoreFeatures {
+public interface SQLTerminalFeatures {
 
-    DBRFeature CATEGORY_GENERAL = DBRFeature.createCategory("General", "General app actions");
-    DBRFeature GENERAL_SHOW_VIEW = DBRFeature.createCommandFeature(CATEGORY_GENERAL, IWorkbenchCommandConstants.VIEWS_SHOW_VIEW);
-    DBRFeature GENERAL_SHOW_PERSPECTIVE = DBRFeature.createFeature(CATEGORY_GENERAL, "Show perspective");
+    DBRFeature SQL_TERMINAL_OPEN = DBRFeature.createFeature(SQLEditorFeatures.CATEGORY_SQL_EDITOR, "Open SQL terminal");
 
 }

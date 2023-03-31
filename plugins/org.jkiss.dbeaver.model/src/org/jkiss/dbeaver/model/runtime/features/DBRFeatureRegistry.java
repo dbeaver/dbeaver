@@ -81,6 +81,7 @@ public class DBRFeatureRegistry {
     }
 
     public static void useFeature(DBRFeature feature, Map<String, Object> parameters) {
+        log.debug("::: Use feature " + feature.getId() + " " + parameters);
         QMUtils.getDefaultHandler().handleFeatureUsage(feature, parameters);
     }
 
