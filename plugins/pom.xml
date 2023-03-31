@@ -78,60 +78,6 @@
 
         <module>org.jkiss.dbeaver.headless</module>
     </modules>
-    <dependencies>
-        <dependency>
-            <groupId>org.jkiss.dbeaver</groupId>
-            <artifactId>org.jkiss.dbeaver.model</artifactId>
-            <version>1.0.191-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jkiss.dbeaver</groupId>
-            <artifactId>org.jkiss.utils</artifactId>
-            <version>2.1.185-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jkiss.dbeaver</groupId>
-            <artifactId>org.jkiss.dbeaver.ext.generic</artifactId>
-            <version>2.3.188-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>p2.osgi.bundle</groupId>
-            <artifactId>org.eclipse.osgi</artifactId>
-            <version>3.18.200.v20221116-1324</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jkiss.dbeaver</groupId>
-            <artifactId>org.jkiss.dbeaver.ui.editors.connection</artifactId>
-            <version>1.0.93-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jkiss.dbeaver</groupId>
-            <artifactId>org.jkiss.dbeaver.ui</artifactId>
-            <version>5.1.117-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>p2.osgi.bundle</groupId>
-            <artifactId>org.eclipse.swt.cocoa.macosx.aarch64</artifactId>
-            <version>3.122.0.v20221123-2302</version>
-        </dependency>
-    </dependencies>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>7</source>
-                    <target>7</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 
     <profiles>
         <profile>
