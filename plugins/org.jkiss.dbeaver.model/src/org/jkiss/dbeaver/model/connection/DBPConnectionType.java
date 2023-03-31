@@ -122,7 +122,18 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         boolean autoCloseTransactions,
         long closeIdleConnectionPeriod)
     {
-        this(id, name, color, description, autocommit, confirmExecute, confirmDataChange, autoCloseTransactions, closeIdleConnectionPeriod, false, null);
+        this(
+            id,
+            name,
+            color,
+            description,
+            autocommit,
+            confirmExecute,
+            confirmDataChange,
+            autoCloseTransactions,
+            closeIdleConnectionPeriod,
+            false,
+            null);
     }
 
     private DBPConnectionType(

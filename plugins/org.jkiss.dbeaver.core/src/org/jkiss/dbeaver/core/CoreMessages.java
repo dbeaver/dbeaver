@@ -449,23 +449,23 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_general_label_schema_selector_width;
 	public static String pref_page_database_general_label_schema_selector_width_tip;
 
-	// ConnectionTypes
-	public static String pref_page_connection_types_label_table_column_name;
-	public static String pref_page_connection_types_label_table_column_description;
-	public static String pref_page_connection_types_label_delete_connection_type;
-	public static String pref_page_connection_types_label_delete_connection_type_description;
+    // ConnectionTypes
+    public static String pref_page_connection_types_label_table_column_name;
+    public static String pref_page_connection_types_label_table_column_description;
+    public static String pref_page_connection_types_label_delete_connection_type;
+    public static String pref_page_connection_types_label_delete_connection_type_description;
     public static String pref_page_connection_types_group_parameters;
-	public static String pref_page_connection_types_group_settings;
-	public static String pref_page_connection_types_label_id;
-	public static String pref_page_connection_types_label_name;
-	public static String pref_page_connection_types_label_description;
-	public static String pref_page_connection_types_label_color;
-	public static String pref_page_connection_types_label_auto_commit_by_default;
-	public static String pref_page_connection_types_label_auto_commit_by_default_tip;
-	public static String pref_page_connection_types_label_confirm_sql_execution;
-	public static String pref_page_connection_types_label_confirm_sql_execution_tip;
-	public static String pref_page_connection_types_label_confirm_data_change;
-	public static String pref_page_connection_types_label_confirm_data_change_tip;
+    public static String pref_page_connection_types_group_settings;
+    public static String pref_page_connection_types_label_id;
+    public static String pref_page_connection_types_label_name;
+    public static String pref_page_connection_types_label_description;
+    public static String pref_page_connection_types_label_color;
+    public static String pref_page_connection_types_label_auto_commit_by_default;
+    public static String pref_page_connection_types_label_auto_commit_by_default_tip;
+    public static String pref_page_connection_types_label_confirm_sql_execution;
+    public static String pref_page_connection_types_label_confirm_sql_execution_tip;
+    public static String pref_page_connection_types_label_confirm_data_change;
+    public static String pref_page_connection_types_label_confirm_data_change_tip;
     public static String pref_page_connection_types_wiki_link;
 
 	public static String pref_page_connection_label_general;

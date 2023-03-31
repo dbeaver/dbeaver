@@ -61,7 +61,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.connectionTypes"; //$NON-NLS-1$
 
-    private final String HELP_CONNECTION_TYPES_LINK = "Connection-Types";
+    private static final String HELP_CONNECTION_TYPES_LINK = "Connection-Types";
 
     private Table typeTable;
     private Text typeId;

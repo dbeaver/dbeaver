@@ -60,7 +60,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.connections";
 
     private static final String VALUE_TRUST_STRORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
-    private final String HELP_CONNECTIONS_LINK = "Database-Connections";
+    private static final String HELP_CONNECTIONS_LINK = "Database-Connections";
     
     private CSmartCombo<DBPConnectionType> connectionTypeCombo;
     private Combo navigatorSettingsCombo;

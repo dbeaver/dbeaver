@@ -130,6 +130,9 @@ public class JDBCRemoteInstance implements DBSInstance {
         }
     }
 
+    /**
+     * Returns true if we need to open a separate connection to read metadata from the database.
+     */
     public boolean isMetaConnectionSeparate(DBPDataSourceContainer container, SeparateConnectionBehavior behavior) {
         switch (behavior) {
             case ALWAYS:
