@@ -21,6 +21,7 @@ import org.eclipse.draw2dl.ConnectionAnchor;
 import org.eclipse.draw2dl.IFigure;
 import org.eclipse.gef3.*;
 import org.eclipse.gef3.tools.DragEditPartsTracker;
+import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
@@ -53,6 +54,7 @@ public class AttributePart extends NodePart {
     public static final String PROP_CHECKED = "CHECKED";
 
     private ERDHighlightingHandle associatedRelationsHighlighing = null;
+    private AccessibleGraphicalEditPart accPart;
 
     public AttributePart() {
 
@@ -288,5 +290,23 @@ public class AttributePart extends NodePart {
     @Override
     public ConnectionAnchor getTargetConnectionAnchor(Request request) {
         return new ChopboxAnchor(getFigure());
+    }
+
+    @Override
+    protected AccessibleEditPart getAccessibleEditPart() {
+        if (this.accPart == null) {
+            this.accPart = new AccessibleGraphicalEditPart() {
+                public void getName(AccessibleEvent e) {
+                    e.result =
+                        "Attribute: " + ERDUIUtils.getFullAttributeLabel(getDiagram(), getAttribute(), true, true);
+                }
+
+                public void getDescription(AccessibleEvent e) {
+                    e.result = null;
+                }
+            };
+        }
+
+        return this.accPart;
     }
 }

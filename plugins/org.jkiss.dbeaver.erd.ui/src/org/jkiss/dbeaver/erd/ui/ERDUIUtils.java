@@ -38,26 +38,22 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
-public class ERDUIUtils
-{
+public class ERDUIUtils {
     private static final Log log = Log.getLog(ERDUIUtils.class);
 
     public static final boolean OPEN_OBJECT_PROPERTIES = true;
 
-    public static void openObjectEditor(@NotNull EntityDiagram diagram, @NotNull ERDObject object) {
+    public static void openObjectEditor(@Nullable EntityDiagram diagram, @NotNull ERDObject object) {
+        openObjectEditor(object);
+        return;
+    }
+
+    public static void openObjectEditor(@NotNull ERDObject object) {
         Object dbObject = object.getObject();
         if (dbObject instanceof DBSObject) {
             UIUtils.runUIJob("Open object editor", monitor -> {
                 if (!(dbObject instanceof DBSEntity) && OPEN_OBJECT_PROPERTIES) {
-                    try {
-                        IWorkbenchPage activePage = UIUtils.getActiveWorkbenchWindow().getActivePage();
-                        IViewPart propsView = activePage.showView(IPageLayout.ID_PROP_SHEET);
-                        if (propsView != null) {
-                            propsView.setFocus();
-                        }
-                    } catch (PartInitException e) {
-                        DBWorkbench.getPlatformUI().showError("Object open", "Can't open property view", e);
-                    }
+                    openProperties();
                 } else {
                     DBNDatabaseNode node = DBNUtils.getNodeByObject(
                         monitor,
@@ -72,19 +68,63 @@ public class ERDUIUtils
         }
     }
 
+    public static void openProperties() {
+        try {
+            IWorkbenchPage activePage = UIUtils.getActiveWorkbenchWindow().getActivePage();
+            IViewPart propsView = activePage.showView(IPageLayout.ID_PROP_SHEET);
+            if (propsView != null) {
+                propsView.setFocus();
+            }
+        } catch (PartInitException e) {
+            DBWorkbench.getPlatformUI().showError("Object open", "Can't open property view", e);
+        }
+    }
+
+    public static void openOutline() {
+        try {
+            IWorkbenchPage activePage = UIUtils.getActiveWorkbenchWindow().getActivePage();
+            IViewPart propsView = activePage.showView(IPageLayout.ID_OUTLINE);
+            if (propsView != null) {
+                propsView.setFocus();
+            }
+        } catch (PartInitException e) {
+            DBWorkbench.getPlatformUI().showError("Object open", "Can't open property view", e);
+        }
+    }
+
     public static String getFullAttributeLabel(EntityDiagram diagram, ERDEntityAttribute attribute, boolean includeType) {
+        return getFullAttributeLabel(diagram, attribute, includeType, false);
+    }
+
+    public static String getFullAttributeLabel(
+        EntityDiagram diagram,
+        ERDEntityAttribute attribute,
+        boolean includeType,
+        boolean accessible
+    ) {
         String attributeLabel = attribute.getName();
         if (includeType && diagram.hasAttributeStyle(ERDViewStyle.TYPES)) {
+            if (accessible) {
+                attributeLabel += "Attribute type: ";
+            }
             attributeLabel += ": " + attribute.getObject().getFullTypeName();
         }
         if (includeType && diagram.hasAttributeStyle(ERDViewStyle.NULLABILITY)) {
+            if (accessible) {
+                attributeLabel += "Attribute Nullability: ";
+            }
             if (attribute.getObject().isRequired()) {
                 attributeLabel += " NOT NULL";
+            } else if (accessible) {
+                attributeLabel += " CAN BE NULL";
             }
         }
         if (diagram.hasAttributeStyle(ERDViewStyle.COMMENTS)) {
             String comment = attribute.getObject().getDescription();
             if (!CommonUtils.isEmpty(comment)) {
+                if (accessible) {
+                    attributeLabel += "Attribute Comments: ";
+                }
                 attributeLabel += " - " + comment;
             }
         }

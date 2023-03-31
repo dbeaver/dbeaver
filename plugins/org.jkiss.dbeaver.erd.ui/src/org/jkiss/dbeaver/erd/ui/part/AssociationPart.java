@@ -27,11 +27,9 @@ import org.eclipse.draw2dl.geometry.Rectangle;
 import org.eclipse.gef3.*;
 import org.eclipse.gef3.editpolicies.ConnectionEndpointEditPolicy;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.graphics.Color;
-import org.jkiss.dbeaver.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.erd.model.ERDAttributeVisibility;
-import org.jkiss.dbeaver.erd.model.ERDEntity;
-import org.jkiss.dbeaver.erd.model.ERDUtils;
+import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
 import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
@@ -62,6 +60,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     private Integer oldLineWidth;
 
     private ERDHighlightingHandle associatedAttributesHighlighing = null;
+    private AccessibleGraphicalEditPart accPart;
 
     public AssociationPart() {
     }
@@ -414,4 +413,37 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         }
     }
 
+    @Override
+    protected AccessibleEditPart getAccessibleEditPart() {
+        if (this.accPart == null) {
+            this.accPart = new AccessibleGraphicalEditPart() {
+                public void getName(AccessibleEvent e) {
+                    StringBuilder stringBuilder = new StringBuilder(100);
+                    ERDAssociation association = AssociationPart.this.getAssociation();
+                    if (association.isLogical()) {
+                        stringBuilder.append("Logical ");
+                    }
+                    stringBuilder.append("association: ").append(association.getName()).append(", ");
+                    stringBuilder.append("source entity: ").append(association.getSourceEntity().getName()).append(" ");
+                    stringBuilder.append("has following source attributes: ");
+                    for (ERDEntityAttribute sourceAttribute : association.getSourceAttributes()) {
+                        stringBuilder.append("Attribute name: ").append(sourceAttribute.getName()).append(" ");
+                    }
+                    stringBuilder.append("target entity: ").append(association.getTargetEntity().getName()).append(" ");
+                    stringBuilder.append("has following target attributes: ");
+                    for (ERDEntityAttribute targetAttribute : association.getTargetAttributes()) {
+                        stringBuilder.append("Attribute name: ").append(targetAttribute.getName());
+                    }
+
+                    e.result = stringBuilder.toString();
+                }
+
+                public void getDescription(AccessibleEvent e) {
+                    e.result = null;
+                }
+            };
+        }
+
+        return this.accPart;
+    }
 }

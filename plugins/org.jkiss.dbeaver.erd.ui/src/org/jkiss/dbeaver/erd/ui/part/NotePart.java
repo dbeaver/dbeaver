@@ -26,6 +26,7 @@ import org.eclipse.gef3.*;
 import org.eclipse.gef3.commands.Command;
 import org.eclipse.gef3.requests.DirectEditRequest;
 import org.eclipse.gef3.tools.DirectEditManager;
+import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.jkiss.dbeaver.erd.model.ERDElement;
 import org.jkiss.dbeaver.erd.model.ERDNote;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
@@ -49,6 +50,7 @@ import java.beans.PropertyChangeEvent;
 public class NotePart extends NodePart
 {
     private DirectEditManager manager;
+    private AccessibleGraphicalEditPart accPart;
 
     public NotePart() {
     }
@@ -120,7 +122,7 @@ public class NotePart extends NodePart
         return figure.containsPoint(requestLoc);
     }
 
-    private void performDirectEdit() {
+    public void performDirectEdit() {
         if (manager == null) {
             NoteFigure figure = (NoteFigure) getFigure();
             manager = new ExtendedDirectEditManager(
@@ -274,5 +276,21 @@ public class NotePart extends NodePart
     @Override
     public ERDElement getElement() {
         return getNote();
+    }
+
+    @Override
+    protected AccessibleEditPart getAccessibleEditPart() {
+        if (this.accPart == null) {
+            this.accPart = new AccessibleGraphicalEditPart() {
+                public void getName(AccessibleEvent e) {
+                    e.result = "Note with following contents: " + NotePart.this.getName();
+                }
+
+                public void getDescription(AccessibleEvent e) {
+                    e.result = null;
+                }
+            };
+        }
+        return accPart;
     }
 }
