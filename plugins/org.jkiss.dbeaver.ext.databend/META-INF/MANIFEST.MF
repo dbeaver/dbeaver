@@ -1,19 +1,19 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
-Bundle-SymbolicName: org.jkiss.dbeaver.ext.clickhouse;singleton:=true
-Bundle-Version: 1.0.107.qualifier
-Bundle-Release-Date: 20230327
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.databend;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Release-Date: 20230331
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.parser.common,
  org.jkiss.dbeaver.ext.generic;visibility:=reexport,
  com.google.guava;resolution:=optional
-Export-Package: org.jkiss.dbeaver.ext.clickhouse,
- org.jkiss.dbeaver.ext.clickhouse.model
+Export-Package: org.jkiss.dbeaver.ext.databend,
+ org.jkiss.dbeaver.ext.databend.model
 Import-Package: org.slf4j
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: %Bundle-Vendor
 Bundle-ClassPath: .
-Automatic-Module-Name: org.jkiss.dbeaver.ext.clickhouse
+Automatic-Module-Name: org.jkiss.dbeaver.ext.databend
