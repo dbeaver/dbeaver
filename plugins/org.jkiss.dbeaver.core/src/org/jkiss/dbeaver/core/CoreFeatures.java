@@ -24,6 +24,11 @@ import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
  */
 public interface CoreFeatures {
 
+    DBRFeature CATEGORY_APPLICATION = DBRFeature.createCategory("Application", "Application lifecycle actions");
+
+    DBRFeature GENERAL_APP_OPEN = DBRFeature.createFeature(CATEGORY_APPLICATION, "Open application");
+    DBRFeature GENERAL_APP_CLOSE = DBRFeature.createFeature(CATEGORY_APPLICATION, "Close application");
+
     DBRFeature CATEGORY_GENERAL = DBRFeature.createCategory("General", "General app actions");
     DBRFeature GENERAL_SHOW_VIEW = DBRFeature.createCommandFeature(CATEGORY_GENERAL, IWorkbenchCommandConstants.VIEWS_SHOW_VIEW);
     DBRFeature GENERAL_SHOW_PERSPECTIVE = DBRFeature.createFeature(CATEGORY_GENERAL, "Show perspective");

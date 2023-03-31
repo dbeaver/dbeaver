@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.runtime.features;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Field;
@@ -35,6 +36,10 @@ public class DBRFeatureRegistry {
 
     private static final Log log = Log.getLog(DBRFeatureRegistry.class);
 
+    public static final String PREF_FEATURE_TRACKING_ENABLED = "feature.tracking.enabled";
+
+    private static DBRFeatureTracker tracker;
+
     private final Map<String, DBRFeature> allFeatures = new HashMap<>();
     private final Map<String, DBRFeature> commandFeatures = new HashMap<>();
 
@@ -48,7 +53,17 @@ public class DBRFeatureRegistry {
     }
 
     private DBRFeatureRegistry() {
+        if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode() &&
+            !DBWorkbench.getPlatform().getApplication().isMultiuser())
+        {
+            tracker = new DBRFeatureTracker();
+        }
+    }
 
+    public void endTracking() {
+        if (tracker != null) {
+            tracker.dispose();
+        }
     }
 
     public synchronized void registerFeatures(Class<?> theClass) {
@@ -81,6 +96,9 @@ public class DBRFeatureRegistry {
     }
 
     public static void useFeature(DBRFeature feature, Map<String, Object> parameters) {
+        if (tracker != null) {
+            tracker.trackFeature(feature, parameters);
+        }
         log.debug("::: Use feature " + feature.getId() + " " + parameters);
         QMUtils.getDefaultHandler().handleFeatureUsage(feature, parameters);
     }
