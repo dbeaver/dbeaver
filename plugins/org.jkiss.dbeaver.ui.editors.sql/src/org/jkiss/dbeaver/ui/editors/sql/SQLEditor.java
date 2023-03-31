@@ -995,8 +995,6 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        SQLEditorFeatures.SQL_EDITOR_OPEN.use();
-
         // Start output reader
         new ServerOutputReader().schedule();
 
@@ -2130,6 +2128,13 @@ public class SQLEditor extends SQLEditorBase implements
         }
         baseEditorImage = getTitleImage();
         editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
+
+        {
+            DBPDataSourceContainer dataSource = EditorUtils.getInputDataSource(editorInput);
+            SQLEditorFeatures.SQL_EDITOR_OPEN.use(Map.of(
+                "driver", dataSource == null ? "" : dataSource.getDriver().getPreconfiguredId()
+            ));
+        }
     }
 
     protected boolean isDetectTitleImageFromInput() {

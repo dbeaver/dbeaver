@@ -41,7 +41,6 @@ class DBRFeatureTracker {
 
     private static final Log log = Log.getLog(DBRFeatureTracker.class);
 
-    public static final String PREF_FEATURE_TRACKING_ENABLED = "feature.tracking.enabled";
     private static final long TRACK_PERIOD = 5000;
     public static final String ACTIVITY_LOGS_DIR = ".activity-logs";
 
@@ -65,11 +64,11 @@ class DBRFeatureTracker {
         String toPlainText() {
             StringBuilder text = new StringBuilder();
             text.append(timestamp - applicationStartTime).append(":").append(feature.getId());
-            if (parameters != null) {
+            if (parameters != null && !parameters.isEmpty()) {
                 text.append(":");
                 boolean first = true;
                 for (Map.Entry<?, ?> entry : parameters.entrySet()) {
-                    if (first) {
+                    if (!first) {
                         text.append("&");
                     }
                     text.append(normalizeString(entry.getKey())).append("=").append(normalizeString(entry.getValue()));
@@ -92,13 +91,13 @@ class DBRFeatureTracker {
     }
 
     DBRFeatureTracker() {
-        if (isTrackingEnabled()) {
+        if (DBRFeatureRegistry.isTrackingEnabled()) {
             startMonitor();
         }
         applicationStartTime = DBWorkbench.getPlatform().getApplication().getApplicationStartTime();
     }
 
-    private void startMonitor() {
+    void startMonitor() {
         if (trackMonitor != null) {
             trackMonitor.cancel();
         }
@@ -117,10 +116,19 @@ class DBRFeatureTracker {
                 return Status.OK_STATUS;
             }
         };
+        trackMonitor.schedule(TRACK_PERIOD);
+    }
+
+    void stopMonitor() {
+        if (trackMonitor != null) {
+            trackMonitor.cancel();
+            trackMonitor = null;
+        }
     }
 
     public void dispose() {
         stopMonitor();
+        flushStatistics();
         if (trackStream != null) {
             try {
                 trackStream.close();
@@ -138,16 +146,13 @@ class DBRFeatureTracker {
                 Files.createDirectories(logsDir);
             }
             Path logFile = logsDir
-                .resolve(DBWorkbench.getPlatform().getApplication().getApplicationRunId() + ".log");
+                .resolve((System.currentTimeMillis() / 1000) + "_" + DBWorkbench.getPlatform().getApplication().getApplicationRunId() + ".log");
             trackStream = Files.newBufferedWriter(logFile, StandardCharsets.UTF_8);
         }
         return trackStream;
     }
 
     private void flushStatistics() {
-        if (DBWorkbench.getPlatform().isShuttingDown()) {
-            return;
-        }
         TrackingMessage[] messagesCopy;
         synchronized (messages) {
             if (messages.isEmpty()) {
@@ -157,7 +162,7 @@ class DBRFeatureTracker {
             messages.clear();
         }
 
-        if (!isTrackingEnabled()) {
+        if (!DBRFeatureRegistry.isTrackingEnabled()) {
             return;
         }
 
@@ -174,27 +179,10 @@ class DBRFeatureTracker {
         }
     }
 
-    private void stopMonitor() {
-        if (trackMonitor != null) {
-            trackMonitor.cancel();
-            trackMonitor = null;
-        }
-    }
-
-    public boolean isTrackingEnabled() {
-        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_FEATURE_TRACKING_ENABLED);
-    }
-
-    public void setTrackingEnabled(boolean enabled) {
-        DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_FEATURE_TRACKING_ENABLED, enabled);
-        if (enabled) {
-            startMonitor();
-        } else {
-            stopMonitor();
-        }
-    }
-
     void trackFeature(DBRFeature feature, Map<String, Object> parameters) {
+        if (!DBRFeatureRegistry.isTrackingEnabled()) {
+            return;
+        }
         synchronized (messages) {
             messages.add(new TrackingMessage(feature, parameters));
         }

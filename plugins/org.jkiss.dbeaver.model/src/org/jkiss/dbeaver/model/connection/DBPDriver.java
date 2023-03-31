@@ -195,4 +195,9 @@ public interface DBPDriver extends DBPNamedObject
         return getProviderId() + ":" + getId();
     }
 
+    // Anonymized driver ID for statistics
+    default String getPreconfiguredId() {
+        return isCustom() ? getProviderId() + ":custom-driver" : getFullId();
+    }
+
 }

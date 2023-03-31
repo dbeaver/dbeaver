@@ -65,7 +65,10 @@ import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.ByteNumberFormat;
+import org.jkiss.utils.StandardConstants;
 
 import java.util.*;
 
@@ -221,6 +224,24 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     @Override
     public void preStartup() {
         super.preStartup();
+
+        {
+            Map<String, Object> params = new LinkedHashMap<>();
+            params.put("startTime", DBWorkbench.getPlatform().getApplication().getApplicationStartTime());
+            params.put("appName", GeneralUtils.getProductName());
+            params.put("appVersion", GeneralUtils.getProductVersion());
+            params.put("osName", System.getProperty(StandardConstants.ENV_OS_NAME));
+            try {
+                com.sun.management.OperatingSystemMXBean bean =
+                    (com.sun.management.OperatingSystemMXBean)
+                        java.lang.management.ManagementFactory.getOperatingSystemMXBean();
+                long totalMemory = bean.getTotalPhysicalMemorySize();
+                params.put("totalMemory", new ByteNumberFormat().format(totalMemory));
+            } catch (Throwable e) {
+                log.debug(e);
+            }
+            CoreFeatures.APP_OPEN.use(params);
+        }
     }
 
     @Override
@@ -233,8 +254,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         if (!application.isDistributed()) {
             startVersionChecker();
         }
-
-        CoreFeatures.GENERAL_APP_OPEN.use();
     }
 
     @Override
@@ -315,7 +334,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             // User rejected to exit
             return false;
         } else {
-            CoreFeatures.GENERAL_APP_CLOSE.use();
+            CoreFeatures.APP_CLOSE.use();
             return super.preShutdown();
         }
     }

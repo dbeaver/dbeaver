@@ -136,6 +136,11 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
 
         window.addPageListener(this);
         for (IWorkbenchPage page : window.getPages()) {
+            for (IViewReference vr : page.getViewReferences()) {
+                if (vr.getView(false) != null) {
+                    CoreFeatures.GENERAL_VIEW_OPEN.use(Map.of("view", vr.getId()));
+                }
+            }
             page.addPartListener(this);
         }
     }
@@ -239,11 +244,20 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
 
     @Override
     public void partClosed(IWorkbenchPart part) {
-
+        if (part instanceof IViewPart) {
+            CoreFeatures.GENERAL_VIEW_CLOSE.use(Map.of(
+                "view", ((IViewPart) part).getViewSite().getId()
+            ));
+        }
     }
 
     @Override
     public void partOpened(IWorkbenchPart part) {
+        if (part instanceof IViewPart) {
+            CoreFeatures.GENERAL_VIEW_OPEN.use(Map.of(
+                "view", ((IViewPart) part).getViewSite().getId()
+            ));
+        }
         fireOnNewSqlEditorListener(part);
     }
 

@@ -1288,6 +1288,11 @@
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">
+        <page category="org.eclipse.ui.preferencePages.Workbench"
+              id="org.jkiss.dbeaver.preferences.main.usageStatistics"
+              class="org.jkiss.dbeaver.ui.preferences.PrefPageUsageStatistics"
+              name="%page.org.jkiss.dbeaver.preferences.main.usageStatistics"/>
+
         <page
             category="org.jkiss.dbeaver.preferences.main"
             id="org.jkiss.dbeaver.preferences.main.toolbar.customization"

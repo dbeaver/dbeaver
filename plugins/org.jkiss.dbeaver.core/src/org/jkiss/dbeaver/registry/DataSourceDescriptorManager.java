@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -119,6 +120,7 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
         } else {
             remover.run();
         }
+        CoreFeatures.CONNECTION_DELETE.use(Map.of("driver", object.getDriver().getPreconfiguredId()));
     }
 
 

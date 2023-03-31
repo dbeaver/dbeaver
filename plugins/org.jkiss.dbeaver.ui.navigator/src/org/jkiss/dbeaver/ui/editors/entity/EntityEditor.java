@@ -624,7 +624,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
         if (databaseObject != null) {
             EntityEditorFeatures.ENTITY_EDITOR_OPEN.use(Map.of(
-                "className", databaseObject.getClass().getSimpleName()
+                "className", databaseObject.getClass().getSimpleName(),
+                "driver", databaseObject.getDataSource() == null ? "" :
+                    databaseObject.getDataSource().getContainer().getDriver().getPreconfiguredId()
             ));
         }
 

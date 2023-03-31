@@ -34,9 +34,8 @@ import java.util.Map;
  */
 public class DBRFeatureRegistry {
 
-    private static final Log log = Log.getLog(DBRFeatureRegistry.class);
-
     public static final String PREF_FEATURE_TRACKING_ENABLED = "feature.tracking.enabled";
+    private static final Log log = Log.getLog(DBRFeatureRegistry.class);
 
     private static DBRFeatureTracker tracker;
 
@@ -60,6 +59,22 @@ public class DBRFeatureRegistry {
         }
     }
 
+    public static boolean isTrackingEnabled() {
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_FEATURE_TRACKING_ENABLED);
+    }
+
+    public static void setTrackingEnabled(boolean enabled) {
+        if (enabled == isTrackingEnabled()) {
+            return;
+        }
+        DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_FEATURE_TRACKING_ENABLED, enabled);
+        if (enabled) {
+            tracker.startMonitor();
+        } else {
+            tracker.stopMonitor();
+        }
+    }
+
     public void endTracking() {
         if (tracker != null) {
             tracker.dispose();
@@ -74,8 +89,11 @@ public class DBRFeatureRegistry {
             try {
                 DBRFeature feature = (DBRFeature) field.get(null);
                 if (feature != null) {
-                    String id = theClass.getSimpleName() + "." + field.getName();
+                    String id = field.getName();
                     feature.setId(id);
+                    if (allFeatures.containsKey(id)) {
+                        log.warn("Duplicate feature definition: " + id);
+                    }
                     allFeatures.put(id, feature);
                     if (!CommonUtils.isEmpty(feature.getCommandId())) {
                         commandFeatures.put(feature.getCommandId(), feature);
@@ -99,7 +117,6 @@ public class DBRFeatureRegistry {
         if (tracker != null) {
             tracker.trackFeature(feature, parameters);
         }
-        log.debug("::: Use feature " + feature.getId() + " " + parameters);
         QMUtils.getDefaultHandler().handleFeatureUsage(feature, parameters);
     }
 
