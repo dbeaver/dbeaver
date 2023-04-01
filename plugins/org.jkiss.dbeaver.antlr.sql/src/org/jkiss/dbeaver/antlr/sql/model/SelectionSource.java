@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.antlr.example.sql.model;
+package org.jkiss.dbeaver.antlr.sql.model;
 
 import org.jkiss.dbeaver.antlr.model.AbstractSyntaxNode;
 import org.jkiss.dbeaver.antlr.model.SyntaxLiteral;

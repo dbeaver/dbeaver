@@ -3,12 +3,12 @@ Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver ANTLR SQL Script Example - Runtime
 Bundle-Vendor: DBeaver Corp
 Bundle-Version: 1.0.0.qualifier
-Bundle-SymbolicName: org.jkiss.dbeaver.antlr.example.sql;singleton:=true
+Bundle-SymbolicName: org.jkiss.dbeaver.antlr.sql;singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.bundle.antlr4;bundle-version=1.0.0
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Export-Package: org.jkiss.dbeaver.antlr.example,
-  org.jkiss.dbeaver.antlr.example.sql
+Export-Package: org.jkiss.dbeaver.antlr,
+  org.jkiss.dbeaver.antlr.sql
 Import-Package: org.apache.log4j,
  org.jkiss.code
-Automatic-Module-Name: org.jkiss.dbeaver.antlr.example.sql
+Automatic-Module-Name: org.jkiss.dbeaver.antlr.sql

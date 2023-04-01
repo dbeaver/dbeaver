@@ -9,7 +9,7 @@
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
-    <artifactId>org.jkiss.dbeaver.antlr.example.sql</artifactId>
+    <artifactId>org.jkiss.dbeaver.antlr.sql</artifactId>
     <packaging>eclipse-plugin</packaging>
     
     <repositories>
@@ -33,8 +33,8 @@
                     <goal>antlr4</goal>
                 </goals>
                 <configuration>
-                    <sourceDirectory>src/org/jkiss/dbeaver/antlr/example/sql</sourceDirectory>
-                    <outputDirectory>src-gen/org/jkiss/dbeaver/antlr/example/sql</outputDirectory>
+                    <sourceDirectory>src/org/jkiss/dbeaver/antlr/sql</sourceDirectory>
+                    <outputDirectory>src-gen/org/jkiss/dbeaver/antlr/sql</outputDirectory>
                 </configuration>
             </execution>
         </executions>

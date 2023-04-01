@@ -37,7 +37,7 @@ options {
      * See the License for the specific language governing permissions and
      * limitations under the License.
      */
-    package org.jkiss.dbeaver.antlr.example.sql;
+    package org.jkiss.dbeaver.antlr.sql;
 }
 
 

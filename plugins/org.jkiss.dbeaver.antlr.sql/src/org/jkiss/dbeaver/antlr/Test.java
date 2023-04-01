@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.antlr.example;
+package org.jkiss.dbeaver.antlr;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -42,11 +42,11 @@ import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.Tree;
 import org.antlr.v4.runtime.tree.Trees;
-import org.jkiss.dbeaver.antlr.example.util.CaseChangingCharStream;
+import org.jkiss.dbeaver.antlr.util.CaseChangingCharStream;
 import org.jkiss.dbeaver.antlr.model.SyntaxModel;
-import org.jkiss.dbeaver.antlr.example.sql.Sql92Lexer;
-import org.jkiss.dbeaver.antlr.example.sql.Sql92Parser;
-import org.jkiss.dbeaver.antlr.example.sql.model.SelectStatement;
+import org.jkiss.dbeaver.antlr.sql.Sql92Lexer;
+import org.jkiss.dbeaver.antlr.sql.Sql92Parser;
+import org.jkiss.dbeaver.antlr.sql.model.SelectStatement;
 
 public class Test {
 

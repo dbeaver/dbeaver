@@ -14,28 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.antlr.example.sql.model;
+package org.jkiss.dbeaver.antlr.sql.model;
 
 import org.jkiss.dbeaver.antlr.model.AbstractSyntaxNode;
 import org.jkiss.dbeaver.antlr.model.SyntaxNode;
 import org.jkiss.dbeaver.antlr.model.SyntaxTerm;
 
-@SyntaxNode(name = "selectSublist")
-public class SelectionItem extends AbstractSyntaxNode {
+import java.util.List;
+
+@SyntaxNode(name = "nonjoinedTableReference")
+public class SourceItem extends AbstractSyntaxNode {
     
-    @SyntaxTerm(xpath = ".//columnReference//catalogName/identifier")
+    @SyntaxTerm(xpath = ".//tableName//qualifiedName/schemaName/catalogName/identifier")
     public String catalogName;
-    @SyntaxTerm(xpath = ".//columnReference//schemaName/unqualifiedSchemaName/identifier")
+    @SyntaxTerm(xpath = ".//tableName//qualifiedName/schemaName/unqualifiedSchemaName/identifier")
     public String schemaName;
-    @SyntaxTerm(xpath = ".//columnReference//tableName/qualifiedName/qualifiedIdentifier/identifier")
+    @SyntaxTerm(xpath = ".//tableName//qualifiedName/qualifiedIdentifier/identifier")
     public String tableName;
-    @SyntaxTerm(xpath = ".//columnReference//columnName/identifier/actualIdentifier")
-    public String columnName;
-    // TODO:
-    public ValueExpression expression;
     
-    @SyntaxTerm(xpath = "./derivedColumn/asClause/columnName/identifier/actualIdentifier")
+    @SyntaxTerm(xpath = "./correlationSpecification/correlationName/identifier")
     public String alias;
+
+    //TODO:
+    public List<String> derivedColumns;
 
 }
 
