@@ -25,10 +25,6 @@ public class DatabendMessages extends NLS {
 
     public static String dialog_connection_page_checkbox_use_ssl;
     public static String dialog_connection_page_checkbox_tip_use_ssl;
-    public static String dialog_connection_page_text_ssl_file_path;
-    public static String dialog_connection_page_text_ssl_file_path_tip;
-    public static String dialog_connection_page_text_ssl_file_key;
-    public static String dialog_connection_page_text_ssl_file_key_tip;
     public static String dialog_connection_page_text_ssl_mode;
     public static String dialog_connection_page_text_ssl_mode_tip;
     public static String dialog_connection_page_text_ssl_group;
