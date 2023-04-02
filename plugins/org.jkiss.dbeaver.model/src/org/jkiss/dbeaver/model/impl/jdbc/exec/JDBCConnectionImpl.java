@@ -134,16 +134,28 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                 }
                 catch (Throwable e) {
                     try {
-                        statement = createStatement();
+                        if (isInternalDriverError(e)) {
+                            statement = createStatement();
+                        } else {
+                            throw e;
+                        }
                     } catch (Throwable e1) {
                         try {
-                            statement = prepareStatement(
-                                sqlQuery,
-                                scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
-                                updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
+                            if (isInternalDriverError(e1)) {
+                                statement = prepareStatement(
+                                    sqlQuery,
+                                    scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
+                                    updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
+                            } else {
+                                throw e;
+                            }
                         } catch (Throwable e2) {
-                            log.debug(e);
-                            statement = prepareStatement(sqlQuery);
+                            if (isInternalDriverError(e2)) {
+                                log.debug(e);
+                                statement = prepareStatement(sqlQuery);
+                            } else {
+                                throw e2;
+                            }
                         }
                     }
                 }
@@ -196,6 +208,10 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         catch (SQLException e) {
             throw new JDBCException(e, getExecutionContext());
         }
+    }
+
+    private static boolean isInternalDriverError(Throwable e) {
+        return !(e instanceof SQLException) || e instanceof SQLFeatureNotSupportedException;
     }
 
     // Disable escaping (#3512)
