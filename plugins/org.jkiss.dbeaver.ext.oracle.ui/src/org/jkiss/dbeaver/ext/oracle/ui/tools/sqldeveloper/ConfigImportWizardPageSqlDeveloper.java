@@ -388,10 +388,18 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
     }
     
     private String getDefaultTnsNamesPath() {
-        String tnsNamesPath = System.getenv(OracleConstants.VAR_TNS_ADMIN);
-        if (tnsNamesPath == null) {
-            tnsNamesPath = OCIUtils.getDefaultOraHomePath() + "/" + OCIUtils.TNSNAMES_FILE_PATH;
+        String tnsNamesPath;
+        // try tnsAdmin by default
+        tnsNamesPath = System.getenv(OracleConstants.VAR_TNS_ADMIN);
+        // if found, return as is
+        if (tnsNamesPath != null) {
+            return tnsNamesPath;
         }
-        return tnsNamesPath;
+        // else check default oraHome
+        else {
+            tnsNamesPath = OCIUtils.getDefaultOraHomePath().getPath();
+        }
+        // if found append tns path and return, else return nothing
+        return tnsNamesPath == null ? null : tnsNamesPath + "/" + OCIUtils.TNSNAMES_FILE_PATH;
     }
 }
