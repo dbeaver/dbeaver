@@ -14,9 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event;
+package org.jkiss.dbeaver.model.websocket.event.session;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.websocket.event.WSEvent;
+import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
 public class WSSocketConnectedEvent extends WSEvent {
 
