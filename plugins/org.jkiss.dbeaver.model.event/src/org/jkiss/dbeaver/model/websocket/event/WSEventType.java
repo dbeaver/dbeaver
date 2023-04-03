@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.websocket.event.datasource.WSDatasourceFolderEven
 import org.jkiss.dbeaver.model.websocket.event.permissions.WSObjectPermissionEvent;
 import org.jkiss.dbeaver.model.websocket.event.resource.WSResourceUpdatedEvent;
 import org.jkiss.dbeaver.model.websocket.event.session.WSSessionExpiredEvent;
+import org.jkiss.dbeaver.model.websocket.event.session.WSSocketConnectedEvent;
 
 public enum WSEventType {
     SERVER_CONFIG_CHANGED(
