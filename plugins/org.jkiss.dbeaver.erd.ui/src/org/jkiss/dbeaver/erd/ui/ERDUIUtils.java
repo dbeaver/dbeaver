@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.erd.ui;
 
 import org.eclipse.gef3.palette.PaletteContainer;
 import org.eclipse.gef3.palette.PaletteEntry;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.erd.model.ERDObject;
 import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -105,27 +107,33 @@ public class ERDUIUtils {
         String attributeLabel = attribute.getName();
         if (includeType && diagram.hasAttributeStyle(ERDViewStyle.TYPES)) {
             if (accessible) {
-                attributeLabel += "Attribute type: ";
+                attributeLabel += NLS.bind(ERDUIMessages.erd_accessibility_attribute_part_type, attribute.getObject().getFullTypeName());
+            } else {
+                attributeLabel += ": " + attribute.getObject().getFullTypeName();
             }
-            attributeLabel += ": " + attribute.getObject().getFullTypeName();
         }
         if (includeType && diagram.hasAttributeStyle(ERDViewStyle.NULLABILITY)) {
-            if (accessible) {
-                attributeLabel += "Attribute Nullability: ";
-            }
+            String type = "";
             if (attribute.getObject().isRequired()) {
-                attributeLabel += " NOT NULL";
+                type += " NOT NULL";
             } else if (accessible) {
-                attributeLabel += " CAN BE NULL";
+                type += " CAN BE NULL";
             }
+            if (accessible) {
+                attributeLabel += NLS.bind(ERDUIMessages.erd_accessibility_attribute_part_nullability, type);
+            } else {
+                attributeLabel += type;
+            }
+
         }
         if (diagram.hasAttributeStyle(ERDViewStyle.COMMENTS)) {
             String comment = attribute.getObject().getDescription();
             if (!CommonUtils.isEmpty(comment)) {
                 if (accessible) {
-                    attributeLabel += "Attribute Comments: ";
+                    attributeLabel += NLS.bind(ERDUIMessages.erd_accessibility_attribute_part_comments, comment);
+                } else {
+                    attributeLabel += " - " + comment;
                 }
-                attributeLabel += " - " + comment;
             }
         }
         return attributeLabel;

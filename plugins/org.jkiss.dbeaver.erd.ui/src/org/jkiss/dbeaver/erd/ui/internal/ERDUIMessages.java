@@ -129,6 +129,18 @@ public class ERDUIMessages extends NLS {
 
 	public static String erd_entity_add_command_select_table_dialog;
 
+	public static String erd_accessibility_note_part;
+	public static String erd_accessibility_entity_part;
+	public static String erd_accessibility_attribute_part;
+
+	public static String erd_accessibility_association_part_logical;
+	public static String erd_accessibility_association_part;
+	public static String erd_accessibility_association_part_attribute;
+
+	public static String erd_accessibility_attribute_part_type;
+	public static String erd_accessibility_attribute_part_nullability;
+	public static String erd_accessibility_attribute_part_comments;
+
 	private ERDUIMessages() {
 	}
 }

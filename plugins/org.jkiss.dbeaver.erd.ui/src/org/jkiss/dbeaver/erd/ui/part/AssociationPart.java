@@ -26,6 +26,7 @@ import org.eclipse.draw2dl.geometry.PointList;
 import org.eclipse.draw2dl.geometry.Rectangle;
 import org.eclipse.gef3.*;
 import org.eclipse.gef3.editpolicies.ConnectionEndpointEditPolicy;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.graphics.Color;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.erd.ui.editor.ERDHighlightingHandle;
 import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationEditPolicy;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -418,28 +420,30 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         if (this.accPart == null) {
             this.accPart = new AccessibleGraphicalEditPart() {
                 public void getName(AccessibleEvent e) {
-                    StringBuilder stringBuilder = new StringBuilder(100);
                     ERDAssociation association = AssociationPart.this.getAssociation();
+                    String result = "";
                     if (association.isLogical()) {
-                        stringBuilder.append("Logical ");
+                        result += ERDUIMessages.erd_accessibility_association_part_logical;
                     }
-                    stringBuilder.append("association: ").append(association.getName()).append(", ");
-                    stringBuilder.append("source entity: ").append(association.getSourceEntity().getName()).append(" ");
-                    stringBuilder.append("has following source attributes: ");
+                    StringBuilder sourceString = new StringBuilder();
                     for (ERDEntityAttribute sourceAttribute : association.getSourceAttributes()) {
-                        stringBuilder.append("Attribute name: ").append(sourceAttribute.getName()).append(" ");
+                        sourceString.append(NLS.bind(ERDUIMessages.erd_accessibility_association_part_attribute,
+                            sourceAttribute.getName()));
                     }
-                    stringBuilder.append("target entity: ").append(association.getTargetEntity().getName()).append(" ");
-                    stringBuilder.append("has following target attributes: ");
+                    StringBuilder targetString = new StringBuilder();
                     for (ERDEntityAttribute targetAttribute : association.getTargetAttributes()) {
-                        stringBuilder.append("Attribute name: ").append(targetAttribute.getName());
+                        targetString.append(NLS.bind(
+                            ERDUIMessages.erd_accessibility_association_part_attribute,
+                            targetAttribute.getName()));
                     }
-
-                    e.result = stringBuilder.toString();
-                }
-
-                public void getDescription(AccessibleEvent e) {
-                    e.result = null;
+                    result += NLS.bind(ERDUIMessages.erd_accessibility_association_part, new Object[]{
+                        association.getName(),
+                        association.getSourceEntity().getName(),
+                        sourceString.toString(),
+                        association.getTargetEntity().getName(),
+                        targetString.toString()
+                    });
+                    e.result = result;
                 }
             };
         }

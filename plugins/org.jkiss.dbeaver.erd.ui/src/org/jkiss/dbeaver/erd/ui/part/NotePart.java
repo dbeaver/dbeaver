@@ -26,6 +26,7 @@ import org.eclipse.gef3.*;
 import org.eclipse.gef3.commands.Command;
 import org.eclipse.gef3.requests.DirectEditRequest;
 import org.eclipse.gef3.tools.DirectEditManager;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.jkiss.dbeaver.erd.model.ERDElement;
 import org.jkiss.dbeaver.erd.model.ERDNote;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.directedit.ExtendedDirectEditManager;
 import org.jkiss.dbeaver.erd.ui.directedit.FigureEditorLocator;
 import org.jkiss.dbeaver.erd.ui.figures.NoteFigure;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.policy.EntityConnectionEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.NoteDirectEditPolicy;
@@ -283,11 +285,7 @@ public class NotePart extends NodePart
         if (this.accPart == null) {
             this.accPart = new AccessibleGraphicalEditPart() {
                 public void getName(AccessibleEvent e) {
-                    e.result = "Note with following contents: " + NotePart.this.getName();
-                }
-
-                public void getDescription(AccessibleEvent e) {
-                    e.result = null;
+                    e.result = NLS.bind(ERDUIMessages.erd_accessibility_note_part, NotePart.this.getName());
                 }
             };
         }

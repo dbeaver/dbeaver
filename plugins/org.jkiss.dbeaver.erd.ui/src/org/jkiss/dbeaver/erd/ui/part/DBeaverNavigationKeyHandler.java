@@ -31,6 +31,7 @@ public class DBeaverNavigationKeyHandler extends GraphicalViewerKeyHandler {
     }
 
     boolean additionalOutOfContainer(KeyEvent event) {
+        // Backspace
         return event.keyCode == 8;
     }
 

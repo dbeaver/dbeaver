@@ -21,6 +21,7 @@ import org.eclipse.draw2dl.ConnectionAnchor;
 import org.eclipse.draw2dl.IFigure;
 import org.eclipse.gef3.*;
 import org.eclipse.gef3.tools.DragEditPartsTracker;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.erd.model.*;
@@ -297,12 +298,8 @@ public class AttributePart extends NodePart {
         if (this.accPart == null) {
             this.accPart = new AccessibleGraphicalEditPart() {
                 public void getName(AccessibleEvent e) {
-                    e.result =
-                        "Attribute: " + ERDUIUtils.getFullAttributeLabel(getDiagram(), getAttribute(), true, true);
-                }
-
-                public void getDescription(AccessibleEvent e) {
-                    e.result = null;
+                    e.result = NLS.bind(ERDUIMessages.erd_accessibility_attribute_part,ERDUIUtils.getFullAttributeLabel(getDiagram(), getAttribute(),
+                        true, true));
                 }
             };
         }
