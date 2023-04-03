@@ -2196,6 +2196,19 @@ public class UIUtils {
         }
     }
 
+    public static void drawTextWithBackground(@NotNull GC gc, @NotNull String text, int x, int y) {
+        final Point size = gc.textExtent(text);
+        final int centerX = x - size.x / 2;
+        final int centerY = y - size.y;
+
+        gc.setForeground(UIStyles.getDefaultTextForeground());
+        gc.setBackground(UIStyles.getDefaultTextBackground());
+
+        gc.fillRectangle(centerX - 2, centerY - 2, size.x + 4, size.y + 4);
+        gc.drawText(text, centerX, centerY, true);
+        gc.drawRoundRectangle(centerX - 3, centerY - 3, size.x + 5, size.y + 5, 5, 5);
+    }
+
     public static void installMacOSFocusLostSubstitution(@NotNull Widget widget, @NotNull Runnable onFocusLost) {
         if (!RuntimeUtils.isMacOS()) {
             return;
