@@ -122,6 +122,11 @@ public interface DBPPlatformUI {
     DBAPasswordChangeInfo promptUserPasswordChange(String prompt, @Nullable String userName, @Nullable String oldPassword, boolean userEditable, boolean oldPasswordVisible);
 
     /**
+     * Ask user to enter some property value
+     */
+    String promptProperty(String prompt, String defValue);
+
+    /**
      * Ask user to accept license agreement
      */
     boolean acceptLicense(String message, String licenseText);

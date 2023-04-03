@@ -62,18 +62,23 @@ public interface DBAAuthModel<CREDENTIALS extends DBAAuthCredentials> {
         @NotNull DBPConnectionConfiguration configuration,
         @NotNull Properties connProperties) throws DBException;
 
-    void endAuthentication(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties);
+    /**
+     * Finishes authentication
+     */
+    void endAuthentication(
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull DBPConnectionConfiguration configuration,
+        @NotNull Properties connProperties);
 
     /**
      * Refresh credentials in current session
      * @param monitor progress monitor
-     * @param credentials
      */
     void refreshCredentials(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer dataSource,
         @NotNull DBPConnectionConfiguration configuration,
         @NotNull CREDENTIALS credentials
-    )
-        throws DBException;
+    ) throws DBException;
+
 }

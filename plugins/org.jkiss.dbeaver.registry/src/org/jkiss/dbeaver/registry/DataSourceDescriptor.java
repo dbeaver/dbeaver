@@ -1076,7 +1076,7 @@ public class DataSourceDescriptor
             return true;
         } catch (Throwable e) {
             lastConnectionError = e.getMessage();
-            log.debug("Connection failed (" + getId() + ")", e);
+            //log.debug("Connection failed (" + getId() + ")", e);
             if (dataSource != null) {
                 try {
                     dataSource.shutdown(monitor);
@@ -1961,6 +1961,10 @@ public class DataSourceDescriptor
             || props.containsKey(RegistryConstants.ATTR_PASSWORD)
             || props.containsKey(RegistryConstants.TAG_PROPERTIES)
             || emptyDatabaseCredsSaved;
+
+        if (this.secretsContainsDatabaseCreds) {
+            this.savePassword = true;
+        }
 
         // Handlers
         List<Map<String, Object>> handlerList = JSONUtils.getObjectList(props, RegistryConstants.TAG_HANDLERS);

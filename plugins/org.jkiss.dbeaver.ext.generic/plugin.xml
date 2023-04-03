@@ -581,7 +581,7 @@
                     label="Teradata"
                     icon="icons/teradata_icon.png"
                     iconBig="icons/teradata_icon_big.png"
-                    class="com.ncr.teradata.TeraDriver"
+                    class="com.teradata.jdbc.TeraDriver"
                     sampleURL="jdbc:teradata://{host}/DATABASE={database},DBS_PORT={port}"
                     defaultPort="1025"
                     webURL="https://downloads.teradata.com/download/connectivity/jdbc-driver"
@@ -589,8 +589,7 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,analytic">
 
-                    <file type="jar" path="repo:/drivers/teradata/terajdbc4.jar" bundle="!drivers.teradata"/>
-                    <file type="jar" path="repo:/drivers/teradata/tdgssconfig.jar" bundle="!drivers.teradata"/>
+                    <file type="jar" path="maven:/com.teradata.jdbc:terajdbc:RELEASE" bundle="!drivers.teradata"/>
                     <file type="license" path="repo:/drivers/teradata/LICENSE.txt" bundle="!drivers.teradata"/>
 
                     <file type="jar" path="drivers/teradata" bundle="drivers.teradata"/>
@@ -1699,6 +1698,7 @@
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericForeignKeyManager"    objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey"/>
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericIndexManager"         objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex"/>
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericProcedureManager"     objectType="org.jkiss.dbeaver.ext.generic.model.GenericProcedure"/>
+        <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericTriggerManager"       objectType="org.jkiss.dbeaver.ext.generic.model.GenericTrigger"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.generic.meta">

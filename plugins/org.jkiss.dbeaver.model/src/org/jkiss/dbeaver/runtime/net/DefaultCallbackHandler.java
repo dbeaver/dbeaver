@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.runtime.net;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.callback.*;
 import java.io.IOException;
 
 /**
@@ -47,6 +44,10 @@ public class DefaultCallbackHandler implements CallbackHandler {
                 } else {
                     ((PasswordCallback) callback).setPassword(password);
                 }
+            } else if (callback instanceof NameCallback) {
+                NameCallback nameCallback = (NameCallback) callback;
+                String propValue = DBWorkbench.getPlatformUI().promptProperty(nameCallback.getPrompt(), nameCallback.getName());
+                nameCallback.setName(propValue);
             } else {
                 throw new UnsupportedCallbackException(callback);
             }
