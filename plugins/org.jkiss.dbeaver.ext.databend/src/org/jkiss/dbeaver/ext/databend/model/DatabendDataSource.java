@@ -26,11 +26,12 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.ext.databend.model.DatabendConstants;
 import org.jkiss.dbeaver.ext.databend.model.DatabendMetaModel;
 import org.jkiss.dbeaver.ext.databend.model.DatabendSQLDialect;
+import org.jkiss.utils.CommonUtils;
+
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -60,7 +61,8 @@ public class DatabendDataSource extends GenericDataSource {
 
     @Nullable
     @Override
-    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo)
+            throws DBCException {
         Properties properties = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
 
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler("databend-ssl");

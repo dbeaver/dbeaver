@@ -96,7 +96,8 @@ public class DatabendMetaModel extends GenericMetaModel implements DBCQueryTrans
         return false;
     }
 
-    private String getObjectDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options, String ddlStatement) throws DBException {
+    private String getObjectDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options, String ddlStatement)
+            throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Databend object DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                     ddlStatement + " " + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL))) {
