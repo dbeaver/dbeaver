@@ -107,7 +107,7 @@
                 value="Courier New-regular-10">
             <description>%fontDefinition.org.jkiss.dbeaver.ui.fonts.monospace.description</description>
             <fontValue os="linux" value="Monospace-regular-10"/>
-            <fontValue os="macosx" value="Courier-regular-11"/>
+            <fontValue os="macosx" value="Courier-regular-13"/>
         </fontDefinition>
         <fontDefinition
                 id="org.jkiss.dbeaver.dbeaver.ui.fonts.main"
@@ -115,7 +115,7 @@
                 label="%fontDefinition.org.jkiss.dbeaver.ui.fonts.main.label"
                 value="Segoe UI-regular-9">
             <description>%fontDefinition.org.jkiss.dbeaver.ui.fonts.main.description</description>
-            <fontValue os="macosx" value="Sans-regular-11"/>
+            <fontValue os="macosx" value="Sans-regular-13"/>
         </fontDefinition>
        
     </extension>

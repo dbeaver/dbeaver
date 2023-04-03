@@ -1962,6 +1962,10 @@ public class DataSourceDescriptor
             || props.containsKey(RegistryConstants.TAG_PROPERTIES)
             || emptyDatabaseCredsSaved;
 
+        if (this.secretsContainsDatabaseCreds) {
+            this.savePassword = props.containsKey(RegistryConstants.ATTR_PASSWORD);
+        }
+
         // Handlers
         List<Map<String, Object>> handlerList = JSONUtils.getObjectList(props, RegistryConstants.TAG_HANDLERS);
         if (!CommonUtils.isEmpty(handlerList)) {

@@ -30,6 +30,8 @@ import java.nio.file.Path;
  */
 public interface DBPApplication {
 
+    default void beforeWorkspaceInitialization() {}
+
     @NotNull
     DBPWorkspace createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace);
 
@@ -97,5 +99,6 @@ public interface DBPApplication {
      * Application start time
      */
     long getApplicationStartTime();
+
 
 }

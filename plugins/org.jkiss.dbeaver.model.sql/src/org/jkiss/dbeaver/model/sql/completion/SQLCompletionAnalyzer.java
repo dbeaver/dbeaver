@@ -115,7 +115,9 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             if (!CommonUtils.isEmpty(prevKeyWord)) {
                 if (syntaxManager.getDialect().isEntityQueryWord(prevKeyWord)) {
                     // TODO: its an ugly hack. Need a better way
-                    if (SQLConstants.KEYWORD_DELETE.equals(prevKeyWord)) {
+                    if (SQLConstants.KEYWORD_DELETE.equals(prevKeyWord) ||
+                        SQLConstants.KEYWORD_INSERT.equals(prevKeyWord)
+                    ) {
                         request.setQueryType(null);
                     } else if (SQLConstants.KEYWORD_INTO.equals(prevKeyWord) &&
                         !isPrevWordEmpty && ("(".equals(prevDelimiter) || ",".equals(prevDelimiter)))
@@ -203,6 +205,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                                     return;
                                 }
                                 // Fall-thru
+                            case SQLConstants.KEYWORD_SET:
                             case SQLConstants.KEYWORD_WHERE:
                             case SQLConstants.KEYWORD_AND:
                             case SQLConstants.KEYWORD_OR:
@@ -367,9 +370,14 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 allowedKeywords = new HashSet<>();
                 if (SQLConstants.KEYWORD_DELETE.equals(prevKeyWord)) {
                     allowedKeywords.add(SQLConstants.KEYWORD_FROM);
+                } else if (SQLConstants.KEYWORD_INSERT.equals(prevKeyWord)) {
+                    allowedKeywords.add(SQLConstants.KEYWORD_INTO);
+                } else if (SQLConstants.KEYWORD_UPDATE.equals(prevKeyWord)) {
+                    allowedKeywords.add(SQLConstants.KEYWORD_SET);
                 } else {
                     if (!SQLConstants.KEYWORD_WHERE.equalsIgnoreCase(wordDetector.getNextWord()) &&
-                        !SQLConstants.KEYWORD_INTO.equals(prevKeyWord)) {
+                        !SQLConstants.KEYWORD_INTO.equals(prevKeyWord)
+                    ) {
                         allowedKeywords.add(SQLConstants.KEYWORD_WHERE);
                     }
                 }
@@ -1290,7 +1298,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         String alias = null;
         SQLTableAliasInsertMode aliasMode = SQLTableAliasInsertMode.NONE;
         String prevWord = request.getWordDetector().getPrevKeyWord();
-        if (SQLConstants.KEYWORD_FROM.equals(prevWord) || SQLConstants.KEYWORD_JOIN.equals(prevWord)) {
+        if (SQLConstants.KEYWORD_FROM.equals(prevWord) ||
+            SQLConstants.KEYWORD_INTO.equals(prevWord) ||
+            SQLConstants.KEYWORD_JOIN.equals(prevWord)
+        ) {
             if (object instanceof DBSEntity) {
                 aliasMode = SQLTableAliasInsertMode.fromPreferences(((DBSEntity) object).getDataSource().getContainer().getPreferenceStore());
             }
