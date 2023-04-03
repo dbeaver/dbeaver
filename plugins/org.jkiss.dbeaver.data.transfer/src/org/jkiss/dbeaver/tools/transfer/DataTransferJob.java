@@ -110,21 +110,15 @@ public class DataTransferJob implements DBRRunnableWithProgress {
             //consumer.initTransfer(producer.getDatabaseObject(), consumerSettings, );
 
             IDataTransferProcessor processor = settings.getProcessor() == null ? null : settings.getProcessor().getInstance();
-            try {
-                producer.transferData(
-                    monitor,
-                    consumer,
-                    processor,
-                    nodeSettings,
-                    task);
+            producer.transferData(monitor, consumer, processor, nodeSettings, task);
 
-                totalStatistics.accumulate(producer.getStatistics());
-                totalStatistics.accumulate(consumer.getStatistics());
-            } finally {
-                consumer.finishTransfer(monitor, false);
-            }
+            totalStatistics.accumulate(producer.getStatistics());
+            totalStatistics.accumulate(consumer.getStatistics());
+
+            consumer.finishTransfer(monitor, false);
             return true;
         } catch (Exception e) {
+            consumer.finishTransfer(monitor, e, false);
             log.error("Error transfering data from " + producer.getObjectName() + " to " + consumer.getObjectName(), e);
             throw e;
         } finally {

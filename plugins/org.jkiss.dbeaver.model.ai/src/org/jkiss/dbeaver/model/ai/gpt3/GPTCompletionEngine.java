@@ -17,9 +17,13 @@
 package org.jkiss.dbeaver.model.ai.gpt3;
 
 import com.google.gson.Gson;
-import com.theokanning.openai.OpenAiService;
 import com.theokanning.openai.completion.CompletionChoice;
 import com.theokanning.openai.completion.CompletionRequest;
+import com.theokanning.openai.completion.chat.ChatCompletionChoice;
+import com.theokanning.openai.completion.chat.ChatCompletionRequest;
+import com.theokanning.openai.completion.chat.ChatCompletionResult;
+import com.theokanning.openai.completion.chat.ChatMessage;
+import com.theokanning.openai.service.OpenAiService;
 import okhttp3.ResponseBody;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -174,21 +178,26 @@ public class GPTCompletionEngine implements DAICompletionEngine {
         if (monitor.isCanceled()) {
             return "";
         }
-        CompletionRequest completionRequest = createCompletionRequest(modifiedRequest);
+
+        Object completionRequest = createCompletionRequest(modifiedRequest);
         monitor.subTask("Request GPT completion");
         try {
             if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(GPTConstants.GPT_LOG_QUERY)) {
-                log.debug("GPT request:\n" + completionRequest.getPrompt());
+                if (completionRequest instanceof ChatCompletionRequest) {
+                    log.debug("Chat GPT request:\n" + ((ChatCompletionRequest) completionRequest).getMessages().get(0).getContent());
+                } else {
+                    log.debug("GPT request:\n" + ((CompletionRequest) completionRequest).getPrompt());
+                }
             }
             if (monitor.isCanceled()) {
                 return null;
             }
 
             try {
-                List<CompletionChoice> choices;
+                List<?> choices;
                 for (int i = 0; ; i++) {
                     try {
-                        choices = service.createCompletion(completionRequest).getChoices();
+                        choices = getCompletionChoices(service, completionRequest);
                         break;
                     } catch (Exception e) {
                         if (e instanceof HttpException && ((HttpException) e).code() == 429) {
@@ -203,8 +212,13 @@ public class GPTCompletionEngine implements DAICompletionEngine {
                         throw e;
                     }
                 }
-                Optional<CompletionChoice> choice = choices.stream().findFirst();
-                String completionText = choice.orElseThrow().getText();
+                String completionText;
+                Object choice = choices.stream().findFirst().orElseThrow();
+                if (choice instanceof CompletionChoice) {
+                    completionText = ((CompletionChoice) choice).getText();
+                } else {
+                    completionText = ((ChatCompletionChoice) choice).getMessage().getContent();
+                }
                 if (CommonUtils.isEmpty(completionText)) {
                     return null;
                 }
@@ -260,28 +274,61 @@ public class GPTCompletionEngine implements DAICompletionEngine {
         }
     }
 
+    private List<?> getCompletionChoices(OpenAiService service, Object completionRequest) {
+        if (completionRequest instanceof CompletionRequest) {
+            return service.createCompletion((CompletionRequest) completionRequest).getChoices();
+        } else {
+            return service.createChatCompletion((ChatCompletionRequest) completionRequest).getChoices();
+        }
+    }
+
     private static DBPPreferenceStore getPreferenceStore() {
         return DBWorkbench.getPlatform().getPreferenceStore();
     }
 
-    private static CompletionRequest createCompletionRequest(@NotNull String request) throws DBException {
+    private static Object createCompletionRequest(@NotNull String request) throws DBException {
         int maxTokens = GPT_MODEL_MAX_TOKENS;
         Double temperature = getPreferenceStore().getDouble(GPTConstants.GPT_MODEL_TEMPERATURE);
         String modelId = getPreferenceStore().getString(GPTConstants.GPT_MODEL);
         GPTModel model = CommonUtils.isEmpty(modelId) ? null : GPTModel.getByName(modelId);
         if (model == null) {
-            model = GPTModel.TEXT_DAVINCI02;
+            model = GPTModel.GPT_TURBO;
         }
-        CompletionRequest.CompletionRequestBuilder builder = CompletionRequest.builder().prompt(request);
+        if (model.isChatAPI()) {
+            return buildChatRequest(request, maxTokens, temperature, modelId);
+        } else {
+            return buildLegacyAPIRequest(request, maxTokens, temperature, modelId);
+        }
+    }
 
-//        int maxChoices = getPreferenceStore().getInt(AICompletionConstants.AI_COMPLETION_MAX_CHOICES);
-//        if (maxChoices > 1) {
-//            builder.n(maxChoices);
-//            maxTokens -= request.length() / 2;
-//            if (maxTokens <= 0) {
-//                maxTokens = 100;
-//            }
-//        }
+    private static CompletionRequest buildLegacyAPIRequest(
+        @NotNull String request,
+        int maxTokens,
+        Double temperature,
+        String modelId
+    ) {
+        CompletionRequest.CompletionRequestBuilder builder =
+            CompletionRequest.builder().prompt(request);
+        return builder
+            .temperature(temperature)
+            .maxTokens(maxTokens)
+            .frequencyPenalty(0.0)
+            .presencePenalty(0.0)
+            .stop(List.of("#", ";"))
+            .model(modelId)
+            //.echo(true)
+            .build();
+    }
+
+    private static ChatCompletionRequest buildChatRequest(
+        @NotNull String request,
+        int maxTokens,
+        Double temperature,
+        String modelId
+    ) {
+        ChatMessage message = new ChatMessage("user", request);
+        ChatCompletionRequest.ChatCompletionRequestBuilder builder =
+            ChatCompletionRequest.builder().messages(Collections.singletonList(message));
 
         return builder
             .temperature(temperature)

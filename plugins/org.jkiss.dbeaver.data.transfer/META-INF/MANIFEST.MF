@@ -8,7 +8,6 @@ Bundle-Release-Date: 20230327
 Bundle-Activator: org.jkiss.dbeaver.tools.transfer.internal.DTActivator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.tools.sql,
  org.jkiss.dbeaver.tools.transfer,
  org.jkiss.dbeaver.tools.transfer.database,
