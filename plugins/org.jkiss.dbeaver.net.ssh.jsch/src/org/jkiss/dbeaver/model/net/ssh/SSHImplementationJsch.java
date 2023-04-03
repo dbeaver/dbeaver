@@ -58,6 +58,13 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         if (jsch == null) {
             jsch = new JSch();
             JSch.setLogger(new JschLoggerProxy());
+            String serverHostKeys = JSch.getConfig("server_host_key");
+            String pubkeyAcceptedAlgorithms = JSch.getConfig("PubkeyAcceptedAlgorithms");
+            if (!CommonUtils.isEmpty(pubkeyAcceptedAlgorithms) && !CommonUtils.isEmpty(serverHostKeys) && !pubkeyAcceptedAlgorithms.contains(
+                "ssh-rsa")) {
+                JSch.setConfig("server_host_key", serverHostKeys + ",ssh-rsa");
+                JSch.setConfig("PubkeyAcceptedAlgorithms", pubkeyAcceptedAlgorithms + ",ssh-rsa");
+            }
         }
 
         sessions = new Session[hosts.length];
