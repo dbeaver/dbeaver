@@ -96,6 +96,9 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         throws DBCException
     {
         try {
+            // Check that connection is alive
+            getOriginal();
+
             if (type == DBCStatementType.EXEC && JDBCUtils.queryHasOutputParameters(getDataSource().getSQLDialect(), sqlQuery)) {
                 // Execute as call - only if we query has out parameters bounds
                 try {
@@ -133,15 +136,24 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                     }
                 }
                 catch (Throwable e) {
+                    if (!isInternalDriverError(e)) {
+                        throw e;
+                    }
                     try {
                         statement = createStatement();
                     } catch (Throwable e1) {
+                        if (!isInternalDriverError(e)) {
+                            throw e;
+                        }
                         try {
                             statement = prepareStatement(
                                 sqlQuery,
                                 scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
                                 updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
                         } catch (Throwable e2) {
+                            if (!isInternalDriverError(e)) {
+                                throw e;
+                            }
                             log.debug(e);
                             statement = prepareStatement(sqlQuery);
                         }
@@ -196,6 +208,10 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         catch (SQLException e) {
             throw new JDBCException(e, getExecutionContext());
         }
+    }
+
+    private static boolean isInternalDriverError(Throwable e) {
+        return !(e instanceof SQLException) || e instanceof SQLFeatureNotSupportedException;
     }
 
     // Disable escaping (#3512)

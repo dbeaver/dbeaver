@@ -14,32 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry.maven;
+package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
-/**
- * Maven artifact reference
- */
-public interface IMavenIdentifier
-{
-    @NotNull
-    String getGroupId();
+public class WSSocketConnectedEvent extends WSEvent {
 
-    @NotNull
-    String getArtifactId();
+    private final String applicationRunId;
 
-    @Nullable
-    String getClassifier();
-
-    @Nullable
-    String getFallbackVersion();
+    public WSSocketConnectedEvent(@NotNull String applicationRunId) {
+        super(WSEventType.SESSION_WEBSOCKET_CONNECTED);
+        this.applicationRunId = applicationRunId;
+    }
 
     @NotNull
-    String getVersion();
-
-    @NotNull
-    String getId();
-
+    public String getApplicationRunId() {
+        return applicationRunId;
+    }
 }

@@ -36,6 +36,7 @@ public enum WSEventType {
         WSSessionLogUpdatedEvent.class
     ),
 
+    SESSION_WEBSOCKET_CONNECTED("cb_session_websocket_connected", WSEventTopic.SESSION, WSSocketConnectedEvent.class),
     SESSION_EXPIRED("cb_session_expired", WSEventTopic.SESSION, WSSessionExpiredEvent.class),
 
     DATASOURCE_CREATED("cb_datasource_created", WSEventTopic.DATASOURCE, WSDataSourceEvent.class),

@@ -1028,7 +1028,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                     getDiagram().setAttributeStyles(ERDViewStyle.getDefaultStyles(ERDUIActivator.getDefault().getPreferences()));
                 }
             };
-            configAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
+            configAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.PANEL_CUSTOMIZE));
             toolBarManager.add(configAction);
         }
     }
