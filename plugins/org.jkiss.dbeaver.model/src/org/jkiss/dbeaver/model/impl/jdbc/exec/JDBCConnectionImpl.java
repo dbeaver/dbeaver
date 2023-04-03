@@ -133,29 +133,26 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                     }
                 }
                 catch (Throwable e) {
+                    if (!isInternalDriverError(e)) {
+                        throw e;
+                    }
                     try {
-                        if (isInternalDriverError(e)) {
-                            statement = createStatement();
-                        } else {
+                        statement = createStatement();
+                    } catch (Throwable e1) {
+                        if (!isInternalDriverError(e)) {
                             throw e;
                         }
-                    } catch (Throwable e1) {
                         try {
-                            if (isInternalDriverError(e1)) {
-                                statement = prepareStatement(
-                                    sqlQuery,
-                                    scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
-                                    updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
-                            } else {
+                            statement = prepareStatement(
+                                sqlQuery,
+                                scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
+                                updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
+                        } catch (Throwable e2) {
+                            if (!isInternalDriverError(e)) {
                                 throw e;
                             }
-                        } catch (Throwable e2) {
-                            if (isInternalDriverError(e2)) {
-                                log.debug(e);
-                                statement = prepareStatement(sqlQuery);
-                            } else {
-                                throw e2;
-                            }
+                            log.debug(e);
+                            statement = prepareStatement(sqlQuery);
                         }
                     }
                 }
