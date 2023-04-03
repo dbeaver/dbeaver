@@ -318,6 +318,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             }
         }
 
+        UIUtils.installAndUpdateMainFont(propertiesGroup);
         refreshPropertyValues(allProps, firstInit);
     }
 
