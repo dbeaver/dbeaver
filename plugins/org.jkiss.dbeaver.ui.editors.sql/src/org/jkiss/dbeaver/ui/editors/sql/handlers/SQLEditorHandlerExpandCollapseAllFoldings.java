@@ -25,7 +25,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
 public class SQLEditorHandlerExpandCollapseAllFoldings extends AbstractHandler {
-    private static final String PREFIX = "command.org.jkiss.dbeaver.ui.editors.sql.";
+    private static final String PREFIX = "org.jkiss.dbeaver.ui.editors.sql.";
     private static final String SUFFIX = "AllFoldings";
     private static final String EXPAND_COMMAND_ID = PREFIX + "Expand" + SUFFIX;
     private static final String COLLAPSE_COMMAND_ID = PREFIX + "Collapse" + SUFFIX;

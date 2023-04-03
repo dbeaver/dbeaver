@@ -4677,6 +4677,7 @@ public abstract class LightGrid extends Canvas {
         UIUtils.dispose(italicFont);
         boldFont = UIUtils.makeBoldFont(normalFont);
         italicFont = UIUtils.modifyFont(normalFont, SWT.ITALIC);
+        redraw();
     }
 
     @NotNull

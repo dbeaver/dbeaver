@@ -78,7 +78,6 @@ public class ConnectJob extends AbstractJob
             }
         }
         catch (Throwable ex) {
-            log.debug(ex);
             connectError = ex;
             connectStatus = GeneralUtils.makeExceptionStatus(ex);
         }

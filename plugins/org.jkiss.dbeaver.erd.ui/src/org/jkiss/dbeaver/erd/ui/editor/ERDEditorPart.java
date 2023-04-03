@@ -1028,7 +1028,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                     getDiagram().setAttributeStyles(ERDViewStyle.getDefaultStyles(ERDUIActivator.getDefault().getPreferences()));
                 }
             };
-            configAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
+            configAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.PANEL_CUSTOMIZE));
             toolBarManager.add(configAction);
         }
     }
@@ -1120,17 +1120,23 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 for (ERDEntity entity : diagram.getEntities()) {
                     entity.reloadAttributes(diagram);
                 }
+                for (Object object : getGraphicalViewer().getContents().getChildren()) {
+                    if (object instanceof EntityPart) {
+                        ((EntityPart) object).refresh();
+                    }
+                }
             } else {
                 for (Object object : ((IStructuredSelection)getGraphicalViewer().getSelection()).toArray()) {
                     if (object instanceof EntityPart) {
                         ((EntityPart) object).getEntity().setAttributeVisibility(visibility);
-                        UIUtils.asyncExec(() -> ((EntityPart) object).getEntity().reloadAttributes(diagram));
+                        UIUtils.asyncExec(() -> {
+                            ((EntityPart) object).getEntity().reloadAttributes(diagram);
+                            ((EntityPart) object).refresh();
+                        });
+
                     }
                 }
             }
-            diagram.setNeedsAutoLayout(true);
-
-            UIUtils.asyncExec(() -> getGraphicalViewer().setContents(diagram));
         }
     }
 
@@ -1158,9 +1164,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 for (ERDEntity entity : diagram.getEntities()) {
                     entity.reloadAttributes(diagram);
                 }
-                diagram.setNeedsAutoLayout(true);
-
-                UIUtils.asyncExec(() -> graphicalViewer.setContents(diagram));
+                for (Object object : getGraphicalViewer().getContents().getChildren()) {
+                    if (object instanceof EntityPart) {
+                        ((EntityPart) object).refresh();
+                    }
+                }
             } else if (ERDConstants.PREF_ATTR_STYLES.equals(event.getProperty())) {
                 refreshDiagram(true, false);
             } else if (ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS.equals(event.getProperty()) || ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS.equals(event.getProperty())) {
@@ -1378,15 +1386,21 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 }
                 if (!CommonUtils.isEmpty(nodes)) {
                     Color color = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_SEARCH_HIGHLIGHTING);
+                    DBPNamedObject focusedNode = null;
                     for (DBPNamedObject erdNode : nodes) {
                         if (matchesSearch(erdNode)) {
+                            if (!resultsFound) {
+                                focusedNode = erdNode; // let's set focus to the first found node after search complete
+                            }
                             resultsFound = true;
                             results.add(erdNode);
                             if (erdNode instanceof GraphicalEditPart) {
                                 highlightings.add(highlightingManager.highlight(((GraphicalEditPart) erdNode).getFigure(), color));
                             }
-                            graphicalViewer.reveal((EditPart) erdNode);
                         }
+                    }
+                    if (resultsFound && focusedNode != null) {
+                        graphicalViewer.reveal((EditPart) focusedNode);
                     }
                 }
                 resultsIterator = results.listIterator();

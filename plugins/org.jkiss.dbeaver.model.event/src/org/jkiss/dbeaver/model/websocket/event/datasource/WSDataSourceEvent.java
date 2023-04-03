@@ -18,12 +18,12 @@ package org.jkiss.dbeaver.model.websocket.event.datasource;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.websocket.event.WSAbstractProjectEvent;
+import org.jkiss.dbeaver.model.websocket.event.WSProjectResourceEvent;
 import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
 import java.util.List;
 
-public class WSDataSourceEvent extends WSAbstractProjectEvent {
+public class WSDataSourceEvent extends WSProjectResourceEvent {
     @Nullable
     private final List<String> dataSourceIds;
     @NotNull

@@ -20,10 +20,13 @@ package org.jkiss.dbeaver.model.websocket.event;
 public enum WSEventTopic {
     SERVER_CONFIG("cb_config"),
     SESSION_LOG("cb_session_log"),
+    SESSION("cb_session"),
     DATASOURCE("cb_datasource"),
     DATASOURCE_FOLDER("cb_datasource_folder"),
+    USER_SECRET("cb_user_secret"),
     RM_SCRIPTS("cb_scripts"),
-    PROJECTS("cb_projects");
+    PROJECTS("cb_projects"),
+    PERMISSIONS("cb_permissions");
 
     private final String topicId;
 
