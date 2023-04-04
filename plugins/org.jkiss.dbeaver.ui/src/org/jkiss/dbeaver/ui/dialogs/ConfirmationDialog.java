@@ -85,12 +85,17 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
     {
         DBPPreferenceStore prefStore = DBWorkbench.getPlatform().getPreferenceStore();
         if (toggleMessage != null) {
-            String storeString = prefStore.getString(key);
-            if (ConfirmationDialog.ALWAYS.equals(storeString) || !CommonUtils.getBoolean(storeString, true)) {
+            if (ConfirmationDialog.ALWAYS.equals(prefStore.getString(key))) {
                 if (kind == QUESTION || kind == QUESTION_WITH_CANCEL) {
                     return IDialogConstants.YES_ID;
                 } else {
                     return IDialogConstants.OK_ID;
+                }
+            } else if (ConfirmationDialog.NEVER.equals(prefStore.getString(key))) {
+                if (kind == QUESTION || kind == QUESTION_WITH_CANCEL) {
+                    return IDialogConstants.NO_ID;
+                } else {
+                    return IDialogConstants.CANCEL_ID;
                 }
             }
         }
@@ -215,10 +220,12 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
         IPreferenceStore prefStore = getPrefStore();
         String prefKey = getPrefKey();
 
-        if (buttonId != IDialogConstants.CANCEL_ID && getToggleState()
-            && prefStore != null && CommonUtils.isNotEmpty(prefKey)) {
-            // Do not ask again in this case
-            prefStore.setValue(prefKey, Boolean.FALSE.toString());
+        if (buttonId != IDialogConstants.CANCEL_ID && getToggleState() && prefStore != null && CommonUtils.isNotEmpty(prefKey)) {
+            if (buttonId == IDialogConstants.NO_ID) {
+                prefStore.setValue(prefKey, ConfirmationDialog.NEVER);
+            } else {
+                prefStore.setValue(prefKey, ConfirmationDialog.ALWAYS);
+            }
         }
     }
 }

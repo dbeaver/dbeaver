@@ -69,7 +69,7 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
             Path keyPath = root.resolve(secretId);
 
             getNodeByPath(keyPath.getParent())
-                .put(keyPath.getFileName().toString(), secretValue, true);
+                .put(keyPath.getFileName().toString(), secretValue, false);
         } catch (StorageException e) {
             throw new DBException("Error setting preference value '" + secretId + "'", e);
         }
