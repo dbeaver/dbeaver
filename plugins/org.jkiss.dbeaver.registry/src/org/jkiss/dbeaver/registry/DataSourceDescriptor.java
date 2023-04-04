@@ -504,10 +504,11 @@ public class DataSourceDescriptor
 
     @Override
     public boolean isAutoCloseTransactions() {
-        if (getPreferenceStore().isDefault(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED)) {
-            return connectionInfo.getConnectionType().isAutoCloseTransactions();
+        if (getPreferenceStore().contains(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED)) {
+            // First check data source settings
+            return getPreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED);
         }
-        return getPreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED);
+        return connectionInfo.getConnectionType().isAutoCloseTransactions();
     }
 
     @Nullable

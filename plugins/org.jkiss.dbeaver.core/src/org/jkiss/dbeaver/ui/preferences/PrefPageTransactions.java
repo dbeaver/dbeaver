@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.ui.preferences;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.dialogs.PreferenceLinkArea;
+import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -89,6 +91,13 @@ public class PrefPageTransactions extends TargetPrefPage
             GridData gd = new GridData();
             gd.widthHint = UIUtils.getFontHeight(autoCloseTransactionsTtlText) * 6;
             autoCloseTransactionsTtlText.setLayoutData(gd);
+
+            if (!isDataSourcePreferencePage()) {
+                new PreferenceLinkArea(txnNameGroup, SWT.NONE,
+                    PrefPageConnectionTypes.PAGE_ID,
+                    CoreMessages.action_menu_transaction_pref_page_link,
+                    (IWorkbenchPreferenceContainer) getContainer(), null);
+            }
 
 /*
             autoCloseTransactionsCheck.addSelectionListener(new SelectionAdapter() {

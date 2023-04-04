@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMTransactionState;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -168,7 +169,15 @@ public class DataSourceMonitorJob extends AbstractJob {
             return;
         }
 
-        long ttlSeconds = dsDescriptor.getConnectionConfiguration().getConnectionType().getCloseIdleConnectionPeriod();
+        DBPPreferenceStore preferenceStore = dsDescriptor.getPreferenceStore();
+        long ttlSeconds = 0;
+        if (preferenceStore.getBoolean(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED)) {
+            // First check datasource settings from the Transactions preference page
+            ttlSeconds = preferenceStore.getLong(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL);
+        }
+        if (ttlSeconds == 0) {
+            ttlSeconds = dsDescriptor.getConnectionConfiguration().getConnectionType().getCloseIdleConnectionPeriod();
+        }
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
 
         long lastUserActivityTime = -1;
