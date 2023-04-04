@@ -171,6 +171,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
             DBeaverActivator.getInstance().getStateLocation().toFile().toPath().resolve("security"));
 
         // Create workspace
+        getApplication().beforeWorkspaceInitialization();
         this.workspace = (DesktopWorkspaceImpl) getApplication().createWorkspace(this, ResourcesPlugin.getWorkspace());
         // Init workspace in UI because it may need some UI interactions to initialize
         this.workspace.initializeProjects();

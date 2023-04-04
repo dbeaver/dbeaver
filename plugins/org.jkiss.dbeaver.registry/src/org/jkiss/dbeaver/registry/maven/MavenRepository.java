@@ -65,7 +65,7 @@ public class MavenRepository
     private String description;
     private final DBPAuthInfo authInfo = new DBPAuthInfo();
 
-    private Map<String, MavenArtifact> cachedArtifacts = new LinkedHashMap<>();
+    private final transient Map<String, MavenArtifact> cachedArtifacts = new LinkedHashMap<>();
 
     public MavenRepository(IConfigurationElement config)
     {
@@ -187,7 +187,7 @@ public class MavenRepository
         boolean newArtifact = false;
         MavenArtifact artifact = cachedArtifacts.get(ref.getId());
         if (artifact == null) {
-            artifact = new MavenArtifact(this, ref.getGroupId(), ref.getArtifactId(), ref.getFallbackVersion());
+            artifact = new MavenArtifact(this, ref.getGroupId(), ref.getArtifactId(), ref.getClassifier(), ref.getFallbackVersion());
             newArtifact = true;
         }
         try {

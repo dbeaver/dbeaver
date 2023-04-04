@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
@@ -395,16 +396,19 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
                 connectionInfo.setHostName(hostText.getText().trim());
                 connectionInfo.setHostPort(portText.getText().trim());
                 connectionInfo.setDatabaseName(serviceNameCombo.getText().trim());
+                connectionInfo.setConfigurationType(DBPDriverConfigurationType.MANUAL);
                 break;
             case TNS:
                 connectionInfo.setDatabaseName(tnsNameCombo.getText().trim());
                 connectionInfo.setProviderProperty(OracleConstants.PROP_TNS_PATH, tnsPathText.getText().trim());
+                connectionInfo.setConfigurationType(DBPDriverConfigurationType.MANUAL);
                 break;
             case CUSTOM:
                 connectionInfo.setUrl(connectionUrlText.getText().trim());
                 connectionInfo.setHostName(hostText.getText().trim());
                 connectionInfo.setHostPort(portText.getText().trim());
                 connectionInfo.setDatabaseName(serviceNameCombo.getText().trim());
+                connectionInfo.setConfigurationType(DBPDriverConfigurationType.URL);
                 break;
         }
         connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.getTypeForTitle(sidServiceCombo.getText()).name());
