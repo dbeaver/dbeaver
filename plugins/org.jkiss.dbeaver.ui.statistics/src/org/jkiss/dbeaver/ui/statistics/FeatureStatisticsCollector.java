@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.statistics;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -52,7 +53,7 @@ public class FeatureStatisticsCollector implements DBRFeatureTracker {
 
     private BufferedWriter trackStream;
 
-    private class TrackingMessage {
+    private static class TrackingMessage {
         long timestamp;
         DBRFeature feature;
         Map<String, Object> parameters;
@@ -128,31 +129,23 @@ public class FeatureStatisticsCollector implements DBRFeatureTracker {
         }
     }
 
-    @Override
-    public void dispose() {
-        stopMonitor();
-        flushStatistics();
-        if (trackStream != null) {
-            try {
-                trackStream.close();
-            } catch (IOException e) {
-                log.debug(e);
-            }
-            trackStream = null;
-        }
-    }
-
     private BufferedWriter getTrackStream() throws IOException {
         if (trackStream == null) {
-            Path logsDir = GeneralUtils.getMetadataFolder().resolve(ACTIVITY_LOGS_DIR);
-            if (!Files.exists(logsDir)) {
-                Files.createDirectories(logsDir);
-            }
+            Path logsDir = getLogsFolder();
             Path logFile = logsDir
                 .resolve((System.currentTimeMillis() / 1000) + "_" + DBWorkbench.getPlatform().getApplication().getApplicationRunId() + ".log");
             trackStream = Files.newBufferedWriter(logFile, StandardCharsets.UTF_8);
         }
         return trackStream;
+    }
+
+    @NotNull
+    static Path getLogsFolder() throws IOException {
+        Path logsDir = GeneralUtils.getMetadataFolder().resolve(ACTIVITY_LOGS_DIR);
+        if (!Files.exists(logsDir)) {
+            Files.createDirectories(logsDir);
+        }
+        return logsDir;
     }
 
     private void flushStatistics() {
@@ -190,6 +183,34 @@ public class FeatureStatisticsCollector implements DBRFeatureTracker {
         synchronized (messages) {
             messages.add(new TrackingMessage(feature, parameters));
         }
+    }
+
+    @Override
+    public void startTracking() {
+        if (UIStatisticsActivator.isTrackingEnabled()) {
+            sendCollectedStatistics(true);
+        }
+    }
+
+    @Override
+    public void dispose() {
+        stopMonitor();
+        flushStatistics();
+        if (trackStream != null) {
+            try {
+                trackStream.close();
+            } catch (IOException e) {
+                log.debug(e);
+            }
+            trackStream = null;
+        }
+        if (UIStatisticsActivator.isTrackingEnabled()) {
+            sendCollectedStatistics(false);
+        }
+    }
+
+    private void sendCollectedStatistics(boolean detached) {
+        new StatisticsTransmitter().send(detached);
     }
 
 }

@@ -48,6 +48,9 @@ public class DBRFeatureRegistry {
 
     private DBRFeatureRegistry() {
         this.tracker = GeneralUtils.adapt(this, DBRFeatureTracker.class);
+        if (this.tracker != null) {
+            this.tracker.startTracking();
+        }
     }
 
     public void endTracking() {

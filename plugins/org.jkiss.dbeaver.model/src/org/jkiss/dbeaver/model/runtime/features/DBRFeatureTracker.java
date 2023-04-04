@@ -26,5 +26,8 @@ public interface DBRFeatureTracker {
 
     void trackFeature(DBRFeature feature, Map<String, Object> parameters);
 
+    void startTracking();
+
     void dispose();
+
 }
