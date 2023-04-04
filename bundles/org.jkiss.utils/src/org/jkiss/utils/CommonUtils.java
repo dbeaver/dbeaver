@@ -1047,4 +1047,19 @@ public class CommonUtils {
         resourcePath = resourcePath.replace('\\', '/');
         return resourcePath;
     }
+
+    /**
+     * Replaces the last {@code toReplace} entry in {@code string} with {@code replacement}
+     */
+    @NotNull
+    public static String replaceLast(@NotNull String string, @NotNull String toReplace, @NotNull String replacement) {
+        int pos = string.lastIndexOf(toReplace);
+        if (pos > -1) {
+            return string.substring(0, pos)
+                + replacement
+                + string.substring(pos + toReplace.length());
+        } else {
+            return string;
+        }
+    }
 }
