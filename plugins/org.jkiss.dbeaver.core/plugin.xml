@@ -1300,5 +1300,8 @@
             name="%org.jkiss.dbeaver.preferences.main.toolbar.customization.name"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.workbenchHandler">
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.dialogs.statistics.WorkbenchInitializerDataShareConfirm" priority="5"/>
+    </extension>
 
 </plugin>

@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -26,9 +28,8 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -38,6 +39,7 @@ public class PrefPageUsageStatistics extends AbstractPrefPage implements IWorkbe
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.usageStatistics"; //$NON-NLS-1$
 
     private Button checkSendUsageStatistics;
+    private Button checkShowStatisticsDetails;
 
     @Override
     public void init(IWorkbench workbench) {
@@ -49,21 +51,36 @@ public class PrefPageUsageStatistics extends AbstractPrefPage implements IWorkbe
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Composite group = UIUtils.createComposite(composite, 1);
-        group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Composite group = UIUtils.createControlGroup(composite, "Data sharing", 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
 
         checkSendUsageStatistics = UIUtils.createCheckbox(group, "Send usage statistics", false);
+        createDataShareComposite(group);
+
+        UIUtils.createEmptyLabel(group, 1, 1);
+        checkShowStatisticsDetails = UIUtils.createCheckbox(group, "Show statistics details before sending", false);
+        UIUtils.createLabel(group, "Show the exact information we are going to send.\n");
 
         performDefaults();
 
         return composite;
     }
 
+    public static void createDataShareComposite(Composite group) {
+        UIUtils.createLink(group,
+            "Help DBeaver to improve by sending anonymous data about features used,\n" +
+                "hardware and software configuration.\n" +
+                "\n" +
+                "Please note that this will not include personal data or any sensitive information,\n" +
+                "such as database connection configurations, executed queries, database information, etc.\n" +
+                "The data sent complies with <a>DBeaver Corporation Privacy Policy</a>.",
+            SelectionListener.widgetSelectedAdapter(selectionEvent ->
+                ShellUtils.launchProgram("https://dbeaver.com/privacy/")));
+    }
+
     @Override
     protected void performDefaults() {
-        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-
         checkSendUsageStatistics.setSelection(DBRFeatureRegistry.isTrackingEnabled());
+        checkShowStatisticsDetails.setSelection(DBRFeatureRegistry.isDetailsPreviewEnabled());
 
         super.performDefaults();
     }
@@ -71,6 +88,7 @@ public class PrefPageUsageStatistics extends AbstractPrefPage implements IWorkbe
     @Override
     public boolean performOk() {
         DBRFeatureRegistry.setTrackingEnabled(checkSendUsageStatistics.getSelection());
+        DBRFeatureRegistry.setDetailsPreviewEnabled(checkShowStatisticsDetails.getSelection());
 
         return super.performOk();
     }
