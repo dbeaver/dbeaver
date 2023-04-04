@@ -52,7 +52,7 @@ import java.util.Map;
 public class TiDBMySQLDataSource extends MySQLDataSource {
     private static final Log log = Log.getLog(MySQLDataSource.class);
     private static final String CONN_ATTR_NAME = "connectionAttributes";
-    private static final String CONN_ATTR_VALUE = "program_name:dbeaver_tidb_plugin";
+    private static final String PROP_APPLICATION_NAME = "program_names";
 
     private String tidbVersion = "";
 
@@ -156,12 +156,15 @@ public class TiDBMySQLDataSource extends MySQLDataSource {
     @Override
     protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         Map<String, String> props = super.getInternalConnectionProperties(monitor, driver, context, purpose, connectionInfo);
+        // build application name
+        String appName = DBUtils.getClientApplicationName(getContainer(), context, purpose);
+        appName = "dbeaver_tidb_plugin" + (appName.isEmpty() ? "" : "(" + appName + ")");
+        
+        // build conAttr value
         String connAttr = props.get(CONN_ATTR_NAME);
-        if (connAttr == null || connAttr.isEmpty()) {
-            props.put(CONN_ATTR_NAME, CONN_ATTR_VALUE);
-        } else {
-            props.put(CONN_ATTR_NAME, CONN_ATTR_VALUE + "," + connAttr);
-        }
+        connAttr = PROP_APPLICATION_NAME + ":" + appName + (connAttr == null || connAttr.isEmpty() ? "" : "," + connAttr);
+        
+        props.put(CONN_ATTR_NAME, connAttr);
         return props;
     }
 }
