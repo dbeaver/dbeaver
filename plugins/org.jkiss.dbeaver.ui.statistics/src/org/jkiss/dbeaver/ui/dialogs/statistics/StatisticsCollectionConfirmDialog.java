@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
-import org.jkiss.dbeaver.ui.preferences.PrefPageUsageStatistics;
 
 /**
  * StatisticsCollectionConfirmDialog

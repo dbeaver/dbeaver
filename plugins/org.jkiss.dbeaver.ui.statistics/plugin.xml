@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.workbenchHandler">
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.dialogs.statistics.WorkbenchInitializerDataShareConfirm" priority="5"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.preferencePages">
+        <page category="org.eclipse.ui.preferencePages.Workbench"
+              id="org.jkiss.dbeaver.preferences.main.usageStatistics"
+              class="org.jkiss.dbeaver.ui.dialogs.statistics.PrefPageUsageStatistics"
+              name="%page.org.jkiss.dbeaver.preferences.main.usageStatistics"/>
+    </extension>
+
+</plugin>
