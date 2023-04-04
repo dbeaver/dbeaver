@@ -141,7 +141,7 @@ public class ResultSetViewer extends Viewer
     private static final String TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status";
     private static final String CONFIRM_SERVER_SIDE_ORDERING_UNAVAILABLE = "org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable";
 
-    private static final int THEME_UPDATE_DELAY_MS = 500;
+    private static final int THEME_UPDATE_DELAY_MS = 250;
 
     public static final String EMPTY_TRANSFORMER_NAME = "Default";
     public static final String CONTROL_ID = ResultSetViewer.class.getSimpleName();
@@ -422,8 +422,8 @@ public class ResultSetViewer extends Viewer
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 if (!getControl().isDisposed()) {
+                    UIUtils.syncExec(ResultSetViewer.this::applyCurrentPresentationThemeSettings);
                     lastThemeUpdateTime = System.currentTimeMillis();
-                    UIUtils.asyncExec(ResultSetViewer.this::applyCurrentPresentationThemeSettings);
                 }
                 return Status.OK_STATUS;
             }
