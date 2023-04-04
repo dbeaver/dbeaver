@@ -65,6 +65,7 @@ import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsActivator;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -317,6 +318,10 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
                 monitor,
                 new StringContentStorage(control.getText()));
         }
+    }
+
+    public File getExternalFile(StyledText control) {
+        return null;
     }
 
     private static IDialogSettings viewerSettings;

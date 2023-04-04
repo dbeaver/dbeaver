@@ -20,10 +20,13 @@ package org.jkiss.dbeaver.ui.data;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.io.File;
 
 /**
  * Stream Value Editor.
@@ -66,5 +69,8 @@ public interface IStreamValueEditor<CONTROL extends Control>
             throws DBCException;
 
     void disposeEditor();
+
+    @Nullable
+    File getExternalFile(@NotNull CONTROL control);
 
 }

@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -42,6 +43,8 @@ import java.io.InputStream;
 */
 public class ImagePanelEditor implements IStreamValueEditor<AbstractImageViewer> {
 
+    private AbstractImageViewer imageViewer;
+
     @Override
     public AbstractImageViewer createControl(IValueController valueController) {
         DBPPreferenceStore preferenceStore = valueController.getExecutionContext()
@@ -49,9 +52,14 @@ public class ImagePanelEditor implements IStreamValueEditor<AbstractImageViewer>
             .getContainer()
             .getPreferenceStore();
         if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER)) {
-            return new BrowserImageViewer(valueController.getEditPlaceholder(), SWT.NONE);
+            imageViewer = new BrowserImageViewer(
+                valueController.getEditPlaceholder(),
+                SWT.NONE
+            );
+            return imageViewer;
         } else {
-            return new SWTImageViewer(valueController.getEditPlaceholder(), SWT.NONE);
+            imageViewer = new SWTImageViewer(valueController.getEditPlaceholder(), SWT.NONE);
+            return imageViewer;
         }
     }
 
@@ -103,5 +111,10 @@ public class ImagePanelEditor implements IStreamValueEditor<AbstractImageViewer>
     public void disposeEditor() {
 
     }
+
+    public File getExternalFile(@NotNull AbstractImageViewer control) {
+        return control.getExternalFile();
+    }
+
 
 }

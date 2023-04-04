@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.controls.imageview;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.widgets.Composite;
 
+import java.io.File;
+
 public abstract class AbstractImageViewer extends Composite implements ImageViewer {
 
     public AbstractImageViewer(Composite parent, int style) {
@@ -32,5 +34,9 @@ public abstract class AbstractImageViewer extends Composite implements ImageView
      */
     public void fillToolBar(IContributionManager toolBar) {
 
+    }
+
+    public File getExternalFile() {
+        return null;
     }
 }

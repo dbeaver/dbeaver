@@ -46,7 +46,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
-import org.jkiss.dbeaver.ui.data.IExternalFileProvider;
+import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.dialogs.TextViewDialog;
@@ -98,11 +98,15 @@ public class ContentValueManager extends BaseValueManager {
                         }
                         if (value instanceof DBDContent) {
                             boolean isExternalFileOpened = false;
-                            Control control = activeEditor.getControl();
-                            if (control instanceof IExternalFileProvider && !control.isDisposed()) {
-                                isExternalFileOpened = ((IExternalFileProvider) control).openExternalFile();
+                            IStreamValueEditor<Control> streamEditor
+                                = ((ContentPanelEditor) activeEditor).getStreamEditor();
+                            if (streamEditor != null) {
+                                File externalFile = streamEditor.getExternalFile(activeEditor.getControl());
+                                if (externalFile != null) {
+                                    isExternalFileOpened = openExternalFile(externalFile);
+                                }
                             }
-                            if (!isExternalFileOpened){
+                            if (!isExternalFileOpened) {
                                 getDBDContent(value);
                             }
                         } else {
@@ -137,6 +141,19 @@ public class ContentValueManager extends BaseValueManager {
                 }
             });
             manager.add(new Separator());
+        }
+    }
+
+    private static boolean openExternalFile(@NotNull File file) {
+        if (!file.exists()) {
+            return false;
+        }
+        try {
+            Desktop.getDesktop().open(file);
+            return true;
+        } catch (IOException e) {
+            log.error(e);
+            return false;
         }
     }
 

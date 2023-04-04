@@ -33,14 +33,13 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.data.IExternalFileProvider;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
-import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -54,7 +53,7 @@ import java.util.Locale;
 /**
  * Image viewer control
  */
-public class BrowserImageViewer extends AbstractImageViewer implements IExternalFileProvider {
+public class BrowserImageViewer extends AbstractImageViewer {
     private static final Log log = Log.getLog(BrowserImageViewer.class);
 
     private Browser browser;
@@ -191,18 +190,7 @@ public class BrowserImageViewer extends AbstractImageViewer implements IExternal
         tempFile = null;
     }
 
-
-    @Override
-    public boolean openExternalFile() {
-        if (!tempFile.toFile().exists()) {
-            return false;
-        }
-        try {
-            Desktop.getDesktop().open(tempFile.toFile());
-            return true;
-        } catch (IOException e) {
-            log.error(e);
-            return false;
-        }
+    public File getExternalFile() {
+        return tempFile.toFile();
     }
 }
