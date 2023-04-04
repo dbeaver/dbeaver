@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dialogs.statistics;
+package org.jkiss.dbeaver.ui.statistics;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
@@ -27,7 +27,6 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
@@ -79,16 +78,16 @@ public class PrefPageUsageStatistics extends AbstractPrefPage implements IWorkbe
 
     @Override
     protected void performDefaults() {
-        checkSendUsageStatistics.setSelection(DBRFeatureRegistry.isTrackingEnabled());
-        checkShowStatisticsDetails.setSelection(DBRFeatureRegistry.isDetailsPreviewEnabled());
+        checkSendUsageStatistics.setSelection(UIStatisticsActivator.isTrackingEnabled());
+        checkShowStatisticsDetails.setSelection(UIStatisticsActivator.isDetailsPreviewEnabled());
 
         super.performDefaults();
     }
 
     @Override
     public boolean performOk() {
-        DBRFeatureRegistry.setTrackingEnabled(checkSendUsageStatistics.getSelection());
-        DBRFeatureRegistry.setDetailsPreviewEnabled(checkShowStatisticsDetails.getSelection());
+        UIStatisticsActivator.setTrackingEnabled(checkSendUsageStatistics.getSelection());
+        UIStatisticsActivator.setDetailsPreviewEnabled(checkShowStatisticsDetails.getSelection());
 
         return super.performOk();
     }

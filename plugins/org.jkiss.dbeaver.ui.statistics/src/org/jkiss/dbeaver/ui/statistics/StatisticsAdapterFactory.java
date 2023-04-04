@@ -14,22 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dialogs.statistics;
 
-import org.eclipse.ui.IWorkbenchWindow;
+package org.jkiss.dbeaver.ui.statistics;
+
+import org.eclipse.core.runtime.IAdapterFactory;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
-import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
+import org.jkiss.dbeaver.model.runtime.features.DBRFeatureTracker;
 
-public class WorkbenchInitializerDataShareConfirm implements IWorkbenchWindowInitializer {
+public class StatisticsAdapterFactory implements IAdapterFactory {
+
+    private static final Class<?>[] CLASSES = new Class[] { DBRFeatureTracker.class };
+    
+    @Override
+    public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
+        if (adaptableObject instanceof DBRFeatureRegistry) {
+            return adapterType.cast(new FeatureStatisticsCollector());
+        }
+        return null;
+    }
 
     @Override
-    public void initializeWorkbenchWindow(IWorkbenchWindow window) {
-        if (DBRFeatureRegistry.isSkipDataShareConfirmation() || DBRFeatureRegistry.isTrackingEnabled()) {
-            return;
-        }
-        StatisticsCollectionConfirmDialog dialog = new StatisticsCollectionConfirmDialog(window.getShell());
-        dialog.open();
+    public Class<?>[] getAdapterList() {
+        return CLASSES;
     }
 
 }
-

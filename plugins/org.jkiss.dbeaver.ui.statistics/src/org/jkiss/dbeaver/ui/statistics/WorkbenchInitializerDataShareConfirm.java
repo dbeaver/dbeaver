@@ -14,17 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ui.statistics;
 
-package org.jkiss.dbeaver.model.runtime.features;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 
-import java.util.Map;
+public class WorkbenchInitializerDataShareConfirm implements IWorkbenchWindowInitializer {
 
-/**
- * DBeaver feature description
- */
-public interface DBRFeatureTracker {
+    @Override
+    public void initializeWorkbenchWindow(IWorkbenchWindow window) {
+        if (UIStatisticsActivator.isSkipDataShareConfirmation() || UIStatisticsActivator.isTrackingEnabled()) {
+            return;
+        }
+        StatisticsCollectionConfirmDialog dialog = new StatisticsCollectionConfirmDialog(window.getShell());
+        dialog.open();
+    }
 
-    void trackFeature(DBRFeature feature, Map<String, Object> parameters);
-
-    void dispose();
 }
+

@@ -18,12 +18,10 @@
 package org.jkiss.dbeaver.model.runtime.features;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMUtils;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -35,14 +33,9 @@ public class DBRFeatureRegistry {
 
     private static final Log log = Log.getLog(DBRFeatureRegistry.class);
 
-    public static final String PREF_FEATURE_TRACKING_ENABLED = "feature.tracking.enabled";
-    public static final String PREF_STATISTICS_PREVIEW_ENABLED = "feature.statistics.preview.enabled";
-    public static final String PREF_SKIP_DATA_SHARE_CONFIRMATION = "feature.tracking.skipConfirmation";
-
-    private static DBRFeatureTracker tracker;
-
     private final Map<String, DBRFeature> allFeatures = new LinkedHashMap<>();
     private final Map<String, DBRFeature> commandFeatures = new HashMap<>();
+    private DBRFeatureTracker tracker;
 
     private static DBRFeatureRegistry instance = null;
 
@@ -54,53 +47,7 @@ public class DBRFeatureRegistry {
     }
 
     private DBRFeatureRegistry() {
-        if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode() &&
-            !DBWorkbench.getPlatform().getApplication().isMultiuser())
-        {
-            tracker = new DBRFeatureTracker();
-        }
-    }
-
-    public static boolean isTrackingEnabled() {
-        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_FEATURE_TRACKING_ENABLED);
-    }
-
-    public static void setTrackingEnabled(boolean enabled) {
-        if (enabled == isTrackingEnabled()) {
-            return;
-        }
-        setPreferenceValue(PREF_FEATURE_TRACKING_ENABLED, enabled);
-        if (enabled) {
-            tracker.startMonitor();
-        } else {
-            tracker.stopMonitor();
-        }
-    }
-
-    public static boolean isDetailsPreviewEnabled() {
-        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_STATISTICS_PREVIEW_ENABLED);
-    }
-
-    public static void setDetailsPreviewEnabled(boolean enabled) {
-        setPreferenceValue(PREF_STATISTICS_PREVIEW_ENABLED, enabled);
-    }
-
-    public static boolean isSkipDataShareConfirmation() {
-        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_SKIP_DATA_SHARE_CONFIRMATION);
-    }
-
-    public static void setSkipDataShareConfirmation(boolean skip) {
-        setPreferenceValue(PREF_SKIP_DATA_SHARE_CONFIRMATION, skip);
-    }
-
-    private static void setPreferenceValue(String key, boolean value) {
-        DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-        preferenceStore.setValue(key, value);
-        try {
-            preferenceStore.save();
-        } catch (IOException e) {
-            log.debug(e);
-        }
+        this.tracker = GeneralUtils.adapt(this, DBRFeatureTracker.class);
     }
 
     public void endTracking() {
@@ -142,8 +89,8 @@ public class DBRFeatureRegistry {
     }
 
     public static void useFeature(DBRFeature feature, Map<String, Object> parameters) {
-        if (tracker != null) {
-            tracker.trackFeature(feature, parameters);
+        if (instance.tracker != null) {
+            instance.tracker.trackFeature(feature, parameters);
         }
         QMUtils.getDefaultHandler().handleFeatureUsage(feature, parameters);
     }

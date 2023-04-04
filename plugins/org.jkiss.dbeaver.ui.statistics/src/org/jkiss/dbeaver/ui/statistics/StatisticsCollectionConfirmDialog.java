@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dialogs.statistics;
+package org.jkiss.dbeaver.ui.statistics;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.JFaceResources;
@@ -24,7 +24,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
@@ -72,8 +71,8 @@ public class StatisticsCollectionConfirmDialog extends BaseDialog {
 
     @Override
     protected void buttonPressed(int buttonId) {
-        DBRFeatureRegistry.setSkipDataShareConfirmation(true);
-        DBRFeatureRegistry.setTrackingEnabled(buttonId == IDialogConstants.YES_ID);
+        UIStatisticsActivator.setSkipDataShareConfirmation(true);
+        UIStatisticsActivator.setTrackingEnabled(buttonId == IDialogConstants.YES_ID);
         close();
 
         super.buttonPressed(buttonId);
