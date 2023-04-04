@@ -264,6 +264,9 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.search.web" name="%command.org.jkiss.dbeaver.ui.editors.sql.web.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.web.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.disableSQLSyntaxParser" name="%command.org.jkiss.dbeaver.ui.editors.sql.disableSQLSyntaxParser.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.disableSQLSyntaxParser.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.copy.query" name="%command.org.jkiss.dbeaver.ui.editors.sql.copy.query.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.copy.query.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.FoldingsEnabled" name="%command.org.jkiss.dbeaver.ui.editors.sql.FoldingsEnabled.name" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.ExpandAllFoldings" name="%command.org.jkiss.dbeaver.ui.editors.sql.ExpandAllFoldings.name" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.CollapseAllFoldings" name="%command.org.jkiss.dbeaver.ui.editors.sql.CollapseAllFoldings.name" categoryId="org.jkiss.dbeaver.core.sql"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -580,7 +583,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="command.org.jkiss.dbeaver.ui.editors.sql.FoldingsEnabled" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerEnableDisableFolding">
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.FoldingsEnabled" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerEnableDisableFolding">
             <enabledWhen>
                 <and>
                     <with variable="activeEditor">
@@ -591,7 +594,7 @@
                 </and>
             </enabledWhen>
         </handler>
-        <handler commandId="command.org.jkiss.dbeaver.ui.editors.sql.ExpandAllFoldings" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerExpandCollapseAllFoldings">
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.ExpandAllFoldings" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerExpandCollapseAllFoldings">
             <enabledWhen>
                 <and>
                     <with variable="activeEditor">
@@ -607,7 +610,7 @@
                 </and>
             </enabledWhen>
         </handler>
-        <handler commandId="command.org.jkiss.dbeaver.ui.editors.sql.CollapseAllFoldings" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerExpandCollapseAllFoldings">
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.CollapseAllFoldings" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerExpandCollapseAllFoldings">
             <enabledWhen>
                 <and>
                     <with variable="activeEditor">
@@ -1064,13 +1067,13 @@
 
         <menuContribution allPopups="false" locationURI="popup:#SQLRulerContext?before=additions">
             <separator name="foldings" visible="true"/>
-            <command commandId="command.org.jkiss.dbeaver.ui.editors.sql.FoldingsEnabled" label="%command.org.jkiss.dbeaver.ui.editors.sql.FoldingsEnabled.name" style="toggle">
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.FoldingsEnabled" label="%command.org.jkiss.dbeaver.ui.editors.sql.FoldingsEnabled.name" style="toggle">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="command.org.jkiss.dbeaver.ui.editors.sql.ExpandAllFoldings" label="%command.org.jkiss.dbeaver.ui.editors.sql.ExpandAllFoldings.name" style="push">
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.ExpandAllFoldings" label="%command.org.jkiss.dbeaver.ui.editors.sql.ExpandAllFoldings.name" style="push">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="command.org.jkiss.dbeaver.ui.editors.sql.CollapseAllFoldings" label="%command.org.jkiss.dbeaver.ui.editors.sql.CollapseAllFoldings.name" style="push">
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.CollapseAllFoldings" label="%command.org.jkiss.dbeaver.ui.editors.sql.CollapseAllFoldings.name" style="push">
                 <visibleWhen checkEnabled="true"/>
             </command>
         </menuContribution>
