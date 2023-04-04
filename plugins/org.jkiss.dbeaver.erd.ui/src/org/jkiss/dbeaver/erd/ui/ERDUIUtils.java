@@ -90,7 +90,7 @@ public class ERDUIUtils {
                 propsView.setFocus();
             }
         } catch (PartInitException e) {
-            DBWorkbench.getPlatformUI().showError("Object open", "Can't open property view", e);
+            DBWorkbench.getPlatformUI().showError("Object open", "Can't open outline view", e);
         }
     }
 
@@ -98,6 +98,14 @@ public class ERDUIUtils {
         return getFullAttributeLabel(diagram, attribute, includeType, false);
     }
 
+    /**
+     *
+     * @param diagram diagram
+     * @param attribute attribute to provide label from
+     * @param includeType is type included in the label
+     * @param accessible is accessibility text needed
+     * @return attribute label
+     */
     public static String getFullAttributeLabel(
         EntityDiagram diagram,
         ERDEntityAttribute attribute,

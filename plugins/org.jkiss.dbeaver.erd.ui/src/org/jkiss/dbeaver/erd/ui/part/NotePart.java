@@ -124,6 +124,9 @@ public class NotePart extends NodePart
         return figure.containsPoint(requestLoc);
     }
 
+    /**
+     * Open edit box
+     */
     public void performDirectEdit() {
         if (manager == null) {
             NoteFigure figure = (NoteFigure) getFigure();

@@ -298,8 +298,8 @@ public class AttributePart extends NodePart {
         if (this.accPart == null) {
             this.accPart = new AccessibleGraphicalEditPart() {
                 public void getName(AccessibleEvent e) {
-                    e.result = NLS.bind(ERDUIMessages.erd_accessibility_attribute_part,ERDUIUtils.getFullAttributeLabel(getDiagram(), getAttribute(),
-                        true, true));
+                    e.result = NLS.bind(ERDUIMessages.erd_accessibility_attribute_part,
+                        ERDUIUtils.getFullAttributeLabel(getDiagram(), getAttribute(), true, true));
                 }
             };
         }

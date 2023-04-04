@@ -31,10 +31,11 @@ import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
 
 public class ERDHandlerFocus extends AbstractHandler {
     
-    private static final String DIAGRAM_FOCUS= "org.jkiss.dbeaver.erd.focus.diagram";
-    private static final String PALETTE_FOCUS= "org.jkiss.dbeaver.erd.focus.palette";
-    private static final String OUTLINE_FOCUS= "org.jkiss.dbeaver.erd.focus.outline";
+    private static final String DIAGRAM_FOCUS = "org.jkiss.dbeaver.erd.focus.diagram";
+    private static final String PALETTE_FOCUS = "org.jkiss.dbeaver.erd.focus.palette";
+    private static final String OUTLINE_FOCUS = "org.jkiss.dbeaver.erd.focus.outline";
     private static final String PARAMETER_FOCUS= "org.jkiss.dbeaver.erd.focus.parameter";
+
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         ERDEditorPart part = getPart(event);
@@ -47,7 +48,7 @@ public class ERDHandlerFocus extends AbstractHandler {
                 break;
             case PALETTE_FOCUS:
                 Object adapter = part.getAdapter(PalettePage.class);
-                if(adapter instanceof EditDomain && ((EditDomain) adapter).getPaletteViewer() != null) {
+                if (adapter instanceof EditDomain && ((EditDomain) adapter).getPaletteViewer() != null) {
                     ((EditDomain) adapter).getPaletteViewer().getControl().setFocus();
                 }
                 break;
