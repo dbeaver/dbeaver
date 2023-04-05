@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ArrayUtils;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -43,7 +44,7 @@ public class ExasolTableIndex extends JDBCTableIndex<ExasolSchema, ExasolTable> 
 	private List<ExasolTableIndexColumn> columns;
 	private Boolean isGeometry;
 	private DBSIndexType type;
-	
+
 	public ExasolTableIndex(ExasolTable table, String indexName, DBSIndexType indexType, boolean persisted) {
 		super(table.getContainer(), table, indexName, indexType, persisted);
 		this.size = -1;
@@ -51,7 +52,7 @@ public class ExasolTableIndex extends JDBCTableIndex<ExasolSchema, ExasolTable> 
 		this.table = table;
 		this.isGeometry = false;
 	}
-	
+
 	public ExasolTableIndex(DBRProgressMonitor monitor, ExasolTable table, String indexName, ResultSet dbResult)
 	{
 		super(
@@ -67,7 +68,7 @@ public class ExasolTableIndex extends JDBCTableIndex<ExasolSchema, ExasolTable> 
 		this.table = table;
 		this.type = super.getIndexType();
 		this.isGeometry = JDBCUtils.safeGetBoolean(dbResult, "IS_GEOMETRY", false);
-		
+
 	}
 
 	@Override
@@ -90,7 +91,7 @@ public class ExasolTableIndex extends JDBCTableIndex<ExasolSchema, ExasolTable> 
 	public DBSIndexType getIndexType() {
 		return DBSIndexType.STATISTIC;
 	}
-	
+
 	@Property(viewable = true, editable = false, order = 15)
 	public String getName()
 	{
@@ -120,7 +121,7 @@ public class ExasolTableIndex extends JDBCTableIndex<ExasolSchema, ExasolTable> 
 
 	@Override
 	public List<ExasolTableIndexColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
-		return this.columns;	
+		return this.columns;
 	}
 
 	@Override
@@ -129,7 +130,7 @@ public class ExasolTableIndex extends JDBCTableIndex<ExasolSchema, ExasolTable> 
 	}
 
 	@Override
-	@Property(viewable = false,  order = 100)	
+	@Property(viewable = false,  order = 100)
 	public String getDescription() {
 		// no description possible
 		return null;
@@ -147,7 +148,7 @@ public class ExasolTableIndex extends JDBCTableIndex<ExasolSchema, ExasolTable> 
 	public void setColumns(List<ExasolTableIndexColumn> columns) {
 		this.columns = columns;
 	}
-	
+
 	public ExasolTableIndexColumn getColumn(String columnName) {
 		return DBUtils.findObject(columns, columnName);
 	}
@@ -155,25 +156,25 @@ public class ExasolTableIndex extends JDBCTableIndex<ExasolSchema, ExasolTable> 
 	public Boolean getIsGeometry() {
 		return isGeometry;
 	}
-	
+
 	public String getSimpleColumnString( ) {
 		String[] colNames = this.columns.stream().map(c -> c.getName()).toArray(String[]::new);
-		return "(" + CommonUtils.joinStrings(",",colNames ) + ")";
+		return "(" + ArrayUtils.joinStrings(",",colNames ) + ")";
 	}
-	
+
 	public String getColumnString() {
 		String[] colNames = this.columns.stream().map(c -> DBUtils.getQuotedIdentifier(c)).toArray(String[]::new);
-		return "(" + CommonUtils.joinStrings(",", colNames ) + ")";
-		
+		return "(" + ArrayUtils.joinStrings(",", colNames ) + ")";
+
 	}
-	
+
 	public void addColumn(ExasolTableIndexColumn column) {
 		if (columns == null) {
 			columns = new ArrayList<ExasolTableIndexColumn>();
 		}
 		columns.add(column);
 	}
-	
-	
+
+
 
 }

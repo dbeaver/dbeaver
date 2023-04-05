@@ -626,16 +626,6 @@ public class CommonUtils {
         return str;
     }
 
-    public static String joinStrings(String divider, String ... array) {
-        if (array == null) return "";
-        StringBuilder str = new StringBuilder();
-        for (int i = 0; i < array.length; i++) {
-            if (i > 0) str.append(divider);
-            str.append(array[i]);
-        }
-        return str.toString();
-    }
-
     public static String joinStrings(String divider, Collection<String> col) {
         if (col == null) return "";
         StringBuilder str = new StringBuilder();

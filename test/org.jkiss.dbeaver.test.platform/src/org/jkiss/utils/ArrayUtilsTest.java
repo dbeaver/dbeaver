@@ -182,4 +182,11 @@ public class ArrayUtilsTest {
     list.add("a");
     Assert.assertEquals(new String[]{"a"}, ArrayUtils.toArray(Object.class, list));
   }
+
+  @Test
+  public void testJoinStringsArray() {
+    final String[] nullArray = null;
+    Assert.assertEquals("", ArrayUtils.joinStrings(":", nullArray));
+    Assert.assertEquals("abc:def", ArrayUtils.joinStrings(":", new String[] { "abc", "def" }));
+  }
 }

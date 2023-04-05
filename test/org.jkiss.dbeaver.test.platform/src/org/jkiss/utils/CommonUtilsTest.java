@@ -389,13 +389,6 @@ public class CommonUtilsTest {
   }
 
   @Test
-  public void testJoinStringsArray() {
-    final String[] nullArray = null;
-    Assert.assertEquals("", CommonUtils.joinStrings(":", nullArray));
-    Assert.assertEquals("abc:def", CommonUtils.joinStrings(":", new String[] { "abc", "def" }));
-  }
-
-  @Test
   public void testJoinStringsCollection() {
     final ArrayList<String> nullCol = null;
     final ArrayList<String> col = new ArrayList<String>();

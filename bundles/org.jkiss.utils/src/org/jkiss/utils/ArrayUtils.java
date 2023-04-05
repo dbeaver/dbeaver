@@ -175,7 +175,7 @@ public class ArrayUtils {
     }
 
     /**
-     * Returns index of the first found element satisfying a given predicate in the provided array 
+     * Returns index of the first found element satisfying a given predicate in the provided array
      */
     public static <T> int indexOf(@NotNull T[] array, @NotNull Predicate<T> condition) {
         for (int i = 0; i < array.length; i++) {
@@ -307,5 +307,15 @@ public class ArrayUtils {
             array[j] = array[i];
             array[i] = tmp;
         }
+    }
+
+    public static String joinStrings(String divider, String ... array) {
+        if (array == null) return "";
+        StringBuilder str = new StringBuilder();
+        for (int i = 0; i < array.length; i++) {
+            if (i > 0) str.append(divider);
+            str.append(array[i]);
+        }
+        return str.toString();
     }
 }
