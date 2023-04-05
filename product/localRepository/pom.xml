@@ -58,7 +58,7 @@
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jfreechart:LATEST</id></artifact>
 
 								<!-- SSH and BouncyCastle -->
-								<artifact><id>com.jcraft:jsch:0.2.6</id></artifact>
+								<artifact><id>com.jcraft:jsch:0.2.7</id></artifact>
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:LATEST</id></artifact>
 								<!-- Ant minimized -->
 								<artifact><id>org.jkiss.bundle:org.apache.ant:1.10.0</id></artifact>
@@ -70,7 +70,8 @@
 								<!-- DBCP -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.dbcp:LATEST</id></artifact>
 
-								<!-- Web sockets -->
+								<!-- Jetty -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jetty.server:LATEST</id></artifact>
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jetty.websocket:LATEST</id></artifact>
 								<!-- GPT -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gpt3:LATEST</id></artifact>

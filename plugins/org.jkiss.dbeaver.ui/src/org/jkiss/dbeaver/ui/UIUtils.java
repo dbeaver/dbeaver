@@ -24,11 +24,14 @@ import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
@@ -50,6 +53,7 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.services.IDisposable;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.code.NotNull;
@@ -591,24 +595,57 @@ public class UIUtils {
         return imageLabel;
     }
 
-
-    public static CLabel createInfoLabel(Composite parent, String text) {
-        CLabel tipLabel = new CLabel(parent, SWT.NONE);
-        tipLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
-        tipLabel.setText(text);
-        return tipLabel;
+    @NotNull
+    public static Control createInfoLabel(@NotNull Composite parent, @NotNull String text) {
+        return createInfoLabel(parent, text, null);
     }
 
-    public static CLabel createInfoLabel(Composite parent, String text, int gridStyle, int hSpan) {
-        CLabel tipLabel = new CLabel(parent, SWT.NONE);
-        tipLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
-        tipLabel.setText(text);
-        GridData gd = new GridData(gridStyle);
-        if (hSpan > 1) {
-            gd.horizontalSpan = hSpan;
+    @NotNull
+    public static Control createInfoLabel(@NotNull Composite parent, @NotNull String text, @Nullable Runnable listener) {
+        return createInfoLabel(parent, text, SWT.NONE, 1, listener);
+    }
+
+    @NotNull
+    public static Control createInfoLabel(@NotNull Composite parent, @NotNull String text, int gridStyle, int hSpan) {
+        return createInfoLabel(parent, text, gridStyle, hSpan, null);
+    }
+
+    @NotNull
+    public static Control createInfoLabel(
+        @NotNull Composite parent,
+        @NotNull String text,
+        int gridStyle,
+        int hSpan,
+        @Nullable Runnable callback
+    ) {
+        final Control control;
+
+        if (callback == null) {
+            final CLabel label = new CLabel(parent, SWT.NONE);
+            label.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
+            label.setText(text);
+            control = label;
+        } else {
+            final Composite composite = new Composite(parent, SWT.NONE);
+            composite.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).create());
+            control = composite;
+
+            final Label imageLabel = new Label(composite, SWT.NONE);
+            imageLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
+
+            final Link link = new Link(composite, SWT.NONE);
+            link.setText("<a href=\"#\">" + text + "</a>");
+            link.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> callback.run()));
+            link.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
         }
-        tipLabel.setLayoutData(gd);
-        return tipLabel;
+
+        if (gridStyle != SWT.NONE || hSpan > 1) {
+            final GridData gd = new GridData(gridStyle);
+            gd.horizontalSpan = hSpan;
+            control.setLayoutData(gd);
+        }
+
+        return control;
     }
 
     public static Text createLabelText(Composite parent, String label, String value) {
@@ -2173,6 +2210,19 @@ public class UIUtils {
         } else {
             widget.addDisposeListener(e -> onFocusLost.run());
         }
+    }
+
+    public static void installAndUpdateMainFont(@NotNull Control control) {
+        final IPropertyChangeListener listener = event -> {
+            if (event.getProperty().equals(UIFonts.DBEAVER_FONTS_MAIN_FONT)) {
+                applyMainFont(control);
+            }
+        };
+
+        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(listener);
+        control.addDisposeListener(e -> PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(listener));
+
+        applyMainFont(control);
     }
 
     public static void applyMainFont(@Nullable Control control) {
