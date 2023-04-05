@@ -76,9 +76,9 @@ public class DatabaseEditorListener implements INavigatorListener
     public void nodeChanged(final DBNEvent event)
     {
         if (isValuableNode(event.getNode())) {
-            boolean closeEditor = false;
+            CloseStrategy closeStrategy = CloseStrategy.DO_NOTHING;
             if (event.getAction() == DBNEvent.Action.REMOVE) {
-                closeEditor = true;
+                closeStrategy = CloseStrategy.CLOSE;
             } else if (event.getAction() == DBNEvent.Action.UPDATE) {
                 if (event.getNodeChange() == DBNEvent.NodeChange.REFRESH ||
                     event.getNodeChange() == DBNEvent.NodeChange.LOAD)
@@ -90,13 +90,19 @@ public class DatabaseEditorListener implements INavigatorListener
                             event.getSource() == DBNEvent.FORCE_REFRESH);
                     }
                 } else if (event.getNodeChange() == DBNEvent.NodeChange.UNLOAD) {
-                    closeEditor = true;
+                    closeStrategy = CloseStrategy.KEEP;
                 }
             }
-            if (closeEditor) {
+            if (closeStrategy != CloseStrategy.DO_NOTHING) {
                 if (DBWorkbench.getPlatform().isShuttingDown()) {
                     // Do not update editors during shutdown, just remove listeners
                     dispose();
+                    return;
+                }
+                if (closeStrategy == CloseStrategy.KEEP &&
+                    DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DatabaseEditorPreferences.PROP_KEEP_EDITORS_ON_DISCONNECT) &&
+                    databaseEditor instanceof ILazyEditor && ((ILazyEditor) databaseEditor).unloadEditorInput()
+                ) {
                     return;
                 }
                 IWorkbenchWindow workbenchWindow = databaseEditor.getSite().getWorkbenchWindow();
@@ -116,4 +122,9 @@ public class DatabaseEditorListener implements INavigatorListener
         return node == editorNode || (editorNode != null && editorNode.isChildOf(node));
     }
 
+    private enum CloseStrategy {
+        DO_NOTHING,
+        CLOSE,
+        KEEP
+    }
 }

@@ -331,7 +331,11 @@ public class CoreMessages extends NLS {
     public static String pref_page_ui_general_combo_timezone_tip;
     public static String pref_page_ui_general_combo_language_tip;
 	public static String pref_page_ui_general_keep_database_editors;
+    public static String pref_page_ui_general_keep_database_editors_tip;
 	public static String pref_page_ui_general_refresh_editor_on_open;
+    public static String pref_page_ui_general_refresh_editor_on_open_tip;
+    public static String pref_page_ui_general_keep_database_editors_on_disconnect;
+    public static String pref_page_ui_general_keep_database_editors_on_disconnect_tip;
 	public static String pref_page_ui_general_group_general;
     public static String pref_page_ui_general_group_regional;
 	public static String pref_page_ui_general_group_language;
@@ -413,8 +417,6 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_general_server_side_object_filters_tip;
 	public static String pref_page_database_general_group_query_metadata;
 	// EntityEditor
-	public static String pref_page_ui_general_keep_database_editors_tip;
-	public static String pref_page_ui_general_refresh_editor_on_open_tip;
 	public static String pref_page_ui_general_show_full_name_in_editor;
 	public static String pref_page_ui_general_show_table_grid;
 	public static String pref_page_ui_general_show_preview_on_save;
