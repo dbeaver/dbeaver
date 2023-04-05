@@ -1,0 +1,43 @@
+
+
+select diSTinCt *
+from tablename as alias;
+
+select alias.*, columnname, alias.columnname,
+from tablename as alias;
+
+select dbname1.schemaname1.tablename1.columnname1, schemaname2.tablename2.columnname2, tablename3.columnname3
+from dbname1.schemaname1.tablename1, dbname2.schemaname2.tablename2, schemaname3.tablename3;
+
+SELECT c.s.v.a, w.b AS x
+FROM xxx yy, cc.ss.vv AS sub
+cross JOIN aB c
+NATURAL INNER JOIN cd.er ON cd.er.id = aBc.id
+LEFT OUTER join qwe ON qwe.id = aBc.id
+UNION JOIN jd
+ORDER BY yyy, zzz
+
+select a., columnname1 as alias1
+from (select * from dbname1.tablename1) fromalias1
+
+select a., columnname1 as alias1
+from (select * from dbname1.tablename1) fromalias1
+join othertable otable1 on otable1.id = fromalias1.id
+
+SELECT DISTINCT PRODUCT.ProductID, PRODUCT.Name
+FROM Production.Product PRODUCT
+INNER JOIN Sales.SalesOrderDetail DETAIL
+ON PRODUCT.ProductID = DETAIL.ProductID
+OR PRODUCT.rowguid = DETAIL.rowguid;
+
+SELECT PRODUCT.ProductID, PRODUCT.Name
+FROM Production.Product PRODUCT
+INNER JOIN Sales.SalesOrderDetail DETAIL
+ON PRODUCT.ProductID = DETAIL.ProductID
+UNION
+    SELECT PRODUCT.ProductID, PRODUCT.Name
+    FROM Production.Product PRODUCT
+    INNER JOIN Sales.SalesOrderDetail DETAIL
+    ON PRODUCT.rowguid = DETAIL.rowguid
+
+

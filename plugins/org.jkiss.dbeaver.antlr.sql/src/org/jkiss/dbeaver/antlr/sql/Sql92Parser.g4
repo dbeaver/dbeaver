@@ -130,7 +130,7 @@ defaultOption: (literal|datetimeValueFunction|USER|CURRENT_USER|SESSION_USER|SYS
 // data type literals
 literal: (signedNumericLiteral|generalLiteral);
 signedNumericLiteral: (Sign)? UnsignedNumericLiteral;
-characterStringLiteral: (Introducer characterSetSpecification)? Quote ((CharacterRepresentation)+)? Quote (((Separator)+ Quote ((CharacterRepresentation)+)? Quote)+)?;
+characterStringLiteral: (Introducer characterSetSpecification)? StringLiteralContent;
 generalLiteral: (characterStringLiteral|NationalCharacterStringLiteral|BitStringLiteral|HexStringLiteral|datetimeLiteral|intervalLiteral);
 datetimeLiteral: (dateLiteral|timeLiteral|timestampLiteral);
 dateLiteral: DATE dateString;
@@ -589,4 +589,4 @@ directSqlDataStatement: (deleteStatementSearched|directSelectStatementMultipleRo
 directSelectStatementMultipleRows: queryExpression (orderByClause)?;
 
 // root rule for script
-sqlScript: ((directSqlStatement|preparableStatement|module|statementOrDeclaration|Separator) ';'?)* EOF; // don't stop early. must match all input
+sqlScript: ((directSqlStatement|preparableStatement|module|statementOrDeclaration) ';'?)* EOF; // don't stop early. must match all input

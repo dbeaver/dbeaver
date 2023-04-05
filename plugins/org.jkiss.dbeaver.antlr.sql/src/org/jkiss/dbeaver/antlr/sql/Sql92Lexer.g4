@@ -416,5 +416,7 @@ CharacterRepresentation: (NonquoteCharacter|QuoteSymbol);
 BitStringLiteral: 'B' Quote ((Bit)+)? Quote (((Separator)+ Quote ((Bit)+)? Quote)+)?;
 HexStringLiteral: 'X' Quote ((Hexit)+)? Quote (((Separator)+ Quote ((Hexit)+)? Quote)+)?;
 
+StringLiteralContent: Quote ((CharacterRepresentation)+)? Quote (((Separator)+ Quote ((CharacterRepresentation)+)? Quote)+)?;
 
 C_: C;
+WS: Separator;
