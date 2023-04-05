@@ -140,6 +140,10 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     private void createPropertyBrowser(Composite container)
     {
+        if (container.isDisposed()) {
+            // Disposed during editor opening
+            return;
+        }
         pageControl.setRedraw(false);
         try {
             TabbedFolderInfo[] folders = collectFolders(this);

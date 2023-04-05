@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.search.data;
 
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -256,7 +255,7 @@ public class SearchDataPage extends AbstractSearchPage {
                 }
             });
 
-            CLabel infoLabel = UIUtils.createInfoLabel(
+            Control infoLabel = UIUtils.createInfoLabel(
                 optionsGroup2,
                 UISearchMessages.dialog_data_search_info_label_use_ctrl,
                 GridData.FILL_BOTH,

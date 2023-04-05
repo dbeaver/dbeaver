@@ -259,16 +259,18 @@ public class CoreMessages extends NLS {
 	public static String model_project_Script;
 	public static String model_project_Scripts;
 
-	public static String pref_page_confirmations_combo_always;
-	public static String pref_page_confirmations_combo_never;
-	public static String pref_page_confirmations_combo_prompt;
-	public static String pref_page_confirmations_group_general_actions;
-	public static String pref_page_confirmations_group_object_editor;
-	public static String pref_page_confirmations_table_column_confirmation;
-	public static String pref_page_confirmations_table_column_confirmation_tip;
-	public static String pref_page_confirmations_table_column_group;
-	public static String pref_page_confirmations_table_column_value;
-	public static String pref_page_confirmations_table_column_value_tip;
+    public static String pref_page_confirmations_combo_always;
+    public static String pref_page_confirmations_combo_never;
+    public static String pref_page_confirmations_combo_prompt;
+    public static String pref_page_confirmations_group_general_actions;
+    public static String pref_page_confirmations_group_object_editor;
+    public static String pref_page_confirmations_table_column_confirmation;
+    public static String pref_page_confirmations_table_column_confirmation_tip;
+    public static String pref_page_confirmations_table_column_group;
+    public static String pref_page_confirmations_table_column_value;
+    public static String pref_page_confirmations_table_column_value_tip;
+    public static String pref_page_confirmations_table_column_confirm;
+    public static String pref_page_confirmations_table_column_confirm_tip;
 
 	public static String pref_page_database_general_separate_meta_connection;
 	public static String pref_page_database_general_checkbox_case_sensitive_names;
@@ -329,7 +331,11 @@ public class CoreMessages extends NLS {
     public static String pref_page_ui_general_combo_timezone_tip;
     public static String pref_page_ui_general_combo_language_tip;
 	public static String pref_page_ui_general_keep_database_editors;
+    public static String pref_page_ui_general_keep_database_editors_tip;
 	public static String pref_page_ui_general_refresh_editor_on_open;
+    public static String pref_page_ui_general_refresh_editor_on_open_tip;
+    public static String pref_page_ui_general_keep_database_editors_on_disconnect;
+    public static String pref_page_ui_general_keep_database_editors_on_disconnect_tip;
 	public static String pref_page_ui_general_group_general;
     public static String pref_page_ui_general_group_regional;
 	public static String pref_page_ui_general_group_language;
@@ -411,8 +417,6 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_general_server_side_object_filters_tip;
 	public static String pref_page_database_general_group_query_metadata;
 	// EntityEditor
-	public static String pref_page_ui_general_keep_database_editors_tip;
-	public static String pref_page_ui_general_refresh_editor_on_open_tip;
 	public static String pref_page_ui_general_show_full_name_in_editor;
 	public static String pref_page_ui_general_show_table_grid;
 	public static String pref_page_ui_general_show_preview_on_save;
@@ -608,7 +612,7 @@ public class CoreMessages extends NLS {
     public static String pref_page_transactions_notifications_show_check_label;
     public static String pref_page_transactions_notifications_show_check_description;
 
-    public static String pref_page_label_edit_permissions; 
+    public static String pref_page_label_edit_permissions;
     public static String pref_page_logs_files_max_size_label;
     public static String pref_page_logs_files_max_count_label;
 

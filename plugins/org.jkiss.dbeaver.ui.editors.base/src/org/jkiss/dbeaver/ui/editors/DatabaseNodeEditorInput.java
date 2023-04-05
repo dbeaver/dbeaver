@@ -18,26 +18,36 @@ package org.jkiss.dbeaver.ui.editors;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSFolder;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.util.Objects;
+
 /**
  * DatabaseNodeEditorInput
  */
-public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode>
+public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode> implements IUnloadableEditorInput
 {
+    private final String nodePath;
+    private final String nodeName;
+
     public DatabaseNodeEditorInput(@NotNull DBNDatabaseNode dbmNode)
     {
-        super(dbmNode);
+        this(dbmNode, null);
     }
 
     public DatabaseNodeEditorInput(@NotNull DBNDatabaseNode dbnDatabaseNode, @Nullable DBECommandContext commandContext)
     {
         super(dbnDatabaseNode, commandContext);
+
+        this.nodePath = dbnDatabaseNode.getNodeItemPath();
+        this.nodeName = dbnDatabaseNode.getNodeName();
     }
     
     @Override
@@ -73,5 +83,24 @@ public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode
     @Override
     public boolean equals(Object obj) {
         return obj instanceof DatabaseNodeEditorInput && super.equals(obj);
+    }
+
+    @NotNull
+    @Override
+    public ILazyEditorInput unloadInput() {
+        final DBCExecutionContext context = Objects.requireNonNull(getExecutionContext());
+        final DBPDataSourceContainer container = context.getDataSource().getContainer();
+
+        return new DatabaseLazyEditorInput(
+            nodePath,
+            nodeName,
+            getDefaultPageId(),
+            getDefaultFolderId(),
+            container.getId(),
+            getClass().getName(),
+            container.getProject(),
+            container,
+            false
+        );
     }
 }
