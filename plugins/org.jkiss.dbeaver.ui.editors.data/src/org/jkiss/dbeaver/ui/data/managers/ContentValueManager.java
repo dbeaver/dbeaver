@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
+import org.jkiss.dbeaver.ui.data.IStreamValueEditorPersistent;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.dialogs.TextViewDialog;
@@ -62,6 +63,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import java.awt.*;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 
 
 /**
@@ -100,8 +102,10 @@ public class ContentValueManager extends BaseValueManager {
                             boolean isExternalFileOpened = false;
                             IStreamValueEditor<Control> streamEditor
                                 = ((ContentPanelEditor) activeEditor).getStreamEditor();
-                            if (streamEditor != null) {
-                                File externalFile = streamEditor.getExternalFile(activeEditor.getControl());
+                            if (streamEditor instanceof IStreamValueEditorPersistent) {
+                                Path externalFilePath =
+                                    ((IStreamValueEditorPersistent) streamEditor).getExternalFilePath(activeEditor.getControl());
+                                File externalFile = externalFilePath == null ? null : externalFilePath.toFile();
                                 if (externalFile != null) {
                                     isExternalFileOpened = openExternalFile(externalFile);
                                 }

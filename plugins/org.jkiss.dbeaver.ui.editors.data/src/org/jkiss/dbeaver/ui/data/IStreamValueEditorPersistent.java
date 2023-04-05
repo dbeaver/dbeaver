@@ -14,29 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.imageview;
+package org.jkiss.dbeaver.ui.data;
 
-import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.nio.file.Path;
 
-public abstract class AbstractImageViewer extends Composite implements ImageViewer {
-
-    public AbstractImageViewer(Composite parent, int style) {
-        super(parent, style);
-    }
+public interface IStreamValueEditorPersistent <CONTROL extends Control> {
 
     /**
-     * Fills provided toolbar with actions
-     *
-     * @param toolBar toolbar to fill
+     * @param control Control to acquire filepath from
+     * @return filepath of external file or null if not found
      */
-    public void fillToolBar(IContributionManager toolBar) {
+    @Nullable
+    Path getExternalFilePath(@NotNull CONTROL control);
 
-    }
-
-    public Path getExternalFilePath() {
-        return null;
-    }
 }

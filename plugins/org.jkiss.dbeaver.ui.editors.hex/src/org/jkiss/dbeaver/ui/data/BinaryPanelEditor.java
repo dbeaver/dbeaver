@@ -43,7 +43,6 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -160,7 +159,4 @@ public class BinaryPanelEditor implements IStreamValueEditor<HexEditControl> {
 
     }
 
-    public File getExternalFile(@NotNull HexEditControl control) {
-        return null;
-    }
 }

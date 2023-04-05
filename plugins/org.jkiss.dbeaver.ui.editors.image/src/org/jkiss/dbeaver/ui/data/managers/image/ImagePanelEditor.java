@@ -32,16 +32,17 @@ import org.jkiss.dbeaver.ui.controls.imageview.BrowserImageViewer;
 import org.jkiss.dbeaver.ui.controls.imageview.SWTImageViewer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
+import org.jkiss.dbeaver.ui.data.IStreamValueEditorPersistent;
 import org.jkiss.dbeaver.ui.data.IValueController;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 
 /**
 * ImagePanelEditor
 */
-public class ImagePanelEditor implements IStreamValueEditor<AbstractImageViewer> {
+public class ImagePanelEditor implements IStreamValueEditor<AbstractImageViewer>, IStreamValueEditorPersistent<AbstractImageViewer> {
 
     private AbstractImageViewer imageViewer;
 
@@ -112,9 +113,9 @@ public class ImagePanelEditor implements IStreamValueEditor<AbstractImageViewer>
 
     }
 
-    public File getExternalFile(@NotNull AbstractImageViewer control) {
-        return control.getExternalFile();
+    @Nullable
+    @Override
+    public Path getExternalFilePath(@NotNull AbstractImageViewer control) {
+        return control.getExternalFilePath();
     }
-
-
 }
