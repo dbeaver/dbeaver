@@ -49,7 +49,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     public static final String PROP_PROJECT_ARTIFACT_ID = "project.artifactId";
     private static final String DEFAULT_PROFILE_ID = "#root";
 
-    private MavenArtifact artifact;
+    private final MavenArtifact artifact;
     private String name;
     private String version;
     private String packaging;
@@ -61,7 +61,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     private final List<MavenProfile> profiles = new ArrayList<>();
     private final List<MavenRepository> repositories = new ArrayList<>();
 
-    private IVariableResolver propertyResolver = new IVariableResolver() {
+    private final IVariableResolver propertyResolver = new IVariableResolver() {
         @Override
         public String get(String name) {
             switch (name) {
@@ -89,7 +89,12 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         }
     };
 
-    MavenArtifactVersion(@NotNull DBRProgressMonitor monitor, @NotNull MavenArtifact artifact, @NotNull String version, boolean resolveOptionalDependencies) throws IOException {
+    MavenArtifactVersion(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull MavenArtifact artifact,
+        @NotNull String version,
+        boolean resolveOptionalDependencies
+    ) throws IOException {
         this.artifact = artifact;
         this.version = CommonUtils.trim(version);
 
@@ -117,6 +122,12 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     @Override
     public String getArtifactId() {
         return artifact.getArtifactId();
+    }
+
+    @Nullable
+    @Override
+    public String getClassifier() {
+        return artifact.getClassifier();
     }
 
     @Nullable
@@ -285,6 +296,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
             if (parentElement != null) {
                 String parentGroupId = CommonUtils.trim(XMLUtils.getChildElementBody(parentElement, "groupId"));
                 String parentArtifactId = CommonUtils.trim(XMLUtils.getChildElementBody(parentElement, "artifactId"));
+                String parentClassifier = CommonUtils.trim(XMLUtils.getChildElementBody(parentElement, "classifier"));
                 String parentVersion = CommonUtils.trim(XMLUtils.getChildElementBody(parentElement, "version"));
                 if (parentGroupId == null || parentArtifactId == null || parentVersion == null) {
                     log.error("Broken parent reference: " + parentGroupId + ":" + parentArtifactId + ":" + parentVersion);
@@ -292,6 +304,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                     MavenArtifactReference parentReference = new MavenArtifactReference(
                         parentGroupId,
                         parentArtifactId,
+                        parentClassifier,
                         null,
                         parentVersion);
                     if (this.version == null) {
@@ -473,6 +486,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                         groupId,
                         artifactId,
                         classifier,
+                        MavenArtifactReference.VERSION_PATTERN_RELEASE,
                         version);
                     if (resolveOptionalDependencies) {
                         importReference.setResolveOptionalDependencies(true);
@@ -513,6 +527,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                                 new MavenArtifactReference(
                                     CommonUtils.notEmpty(XMLUtils.getChildElementBody(exclusion, "groupId")),
                                     CommonUtils.notEmpty(XMLUtils.getChildElementBody(exclusion, "artifactId")),
+                                    CommonUtils.notEmpty(XMLUtils.getChildElementBody(exclusion, "classifier")),
                                     null,
                                     ""));
                         }

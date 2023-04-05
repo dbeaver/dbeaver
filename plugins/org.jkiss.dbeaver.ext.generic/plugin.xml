@@ -581,7 +581,7 @@
                     label="Teradata"
                     icon="icons/teradata_icon.png"
                     iconBig="icons/teradata_icon_big.png"
-                    class="com.ncr.teradata.TeraDriver"
+                    class="com.teradata.jdbc.TeraDriver"
                     sampleURL="jdbc:teradata://{host}/DATABASE={database},DBS_PORT={port}"
                     defaultPort="1025"
                     webURL="https://downloads.teradata.com/download/connectivity/jdbc-driver"
@@ -589,8 +589,7 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,analytic">
 
-                    <file type="jar" path="repo:/drivers/teradata/terajdbc4.jar" bundle="!drivers.teradata"/>
-                    <file type="jar" path="repo:/drivers/teradata/tdgssconfig.jar" bundle="!drivers.teradata"/>
+                    <file type="jar" path="maven:/com.teradata.jdbc:terajdbc:RELEASE" bundle="!drivers.teradata"/>
                     <file type="license" path="repo:/drivers/teradata/LICENSE.txt" bundle="!drivers.teradata"/>
 
                     <file type="jar" path="drivers/teradata" bundle="drivers.teradata"/>
@@ -759,8 +758,10 @@
                     categories="hadoop"
                     singleConnection="true">
                     <parameter name="omit-type-cache" value="true"/>
-                    <file type="jar" path="maven:/org.apache.phoenix:phoenix-client:RELEASE[4.14.1-HBase-1.4]" ignore-dependencies="true"/>
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
+                    <file type="jar" path="maven:/org.apache.phoenix:phoenix-client:RELEASE[4.14.1-HBase-1.4]" ignore-dependencies="true" bundle="!drivers.apache_phoenix"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.apache_phoenix"/>
+                    <file type="jar" path="drivers/apache_phoenix" bundle="drivers.apache_phoenix"/>
+                    <file type="jar" path="drivers/apache_lic" bundle="drivers.apache_phoenix"/>
                 </driver>
                 <driver
                     id="gemfire_xd"
