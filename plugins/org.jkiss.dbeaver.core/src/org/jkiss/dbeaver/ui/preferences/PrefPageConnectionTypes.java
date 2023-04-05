@@ -23,10 +23,7 @@ import org.eclipse.jface.preference.ColorSelector;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ControlAdapter;
-import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -286,12 +283,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             GridData grd = new GridData();
             grd.widthHint = UIUtils.getFontHeight(autoCloseTransactionsTtlText) * 6;
             autoCloseTransactionsTtlText.setLayoutData(grd);
-            autoCloseTransactionsTtlText.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    getSelectedType().setCloseIdleConnectionPeriod(CommonUtils.toLong(autoCloseTransactionsTtlText.getText(), 1800));
-                }
-            });
+            autoCloseTransactionsTtlText.addModifyListener(e ->
+                getSelectedType().setCloseIdleConnectionPeriod(CommonUtils.toLong(autoCloseTransactionsTtlText.getText(), 1800)));
 
             confirmDataChangeCheck = UIUtils.createCheckbox(
                 placeholder,
@@ -495,6 +488,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 source.setConfirmDataChange(changed.isConfirmDataChange());
                 source.setColor(changed.getColor());
                 source.setModifyPermissions(changed.getModifyPermission());
+                source.setAutoCloseTransactions(changed.isAutoCloseTransactions());
+                source.setCloseIdleConnectionPeriod(changed.getCloseIdleConnectionPeriod());
                 hasChanges = true;
             }
             if (hasChanges) {
