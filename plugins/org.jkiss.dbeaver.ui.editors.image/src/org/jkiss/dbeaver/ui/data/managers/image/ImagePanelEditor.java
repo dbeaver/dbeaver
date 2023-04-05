@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.ui.controls.imageview.AbstractImageViewer;
 import org.jkiss.dbeaver.ui.controls.imageview.BrowserImageViewer;
 import org.jkiss.dbeaver.ui.controls.imageview.SWTImageViewer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
-import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditorPersistent;
 import org.jkiss.dbeaver.ui.data.IValueController;
 
@@ -42,9 +41,7 @@ import java.nio.file.Path;
 /**
 * ImagePanelEditor
 */
-public class ImagePanelEditor implements IStreamValueEditor<AbstractImageViewer>, IStreamValueEditorPersistent<AbstractImageViewer> {
-
-    private AbstractImageViewer imageViewer;
+public class ImagePanelEditor implements IStreamValueEditorPersistent<AbstractImageViewer> {
 
     @Override
     public AbstractImageViewer createControl(IValueController valueController) {
@@ -53,14 +50,9 @@ public class ImagePanelEditor implements IStreamValueEditor<AbstractImageViewer>
             .getContainer()
             .getPreferenceStore();
         if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER)) {
-            imageViewer = new BrowserImageViewer(
-                valueController.getEditPlaceholder(),
-                SWT.NONE
-            );
-            return imageViewer;
+            return new BrowserImageViewer(valueController.getEditPlaceholder(), SWT.NONE);
         } else {
-            imageViewer = new SWTImageViewer(valueController.getEditPlaceholder(), SWT.NONE);
-            return imageViewer;
+            return new SWTImageViewer(valueController.getEditPlaceholder(), SWT.NONE);
         }
     }
 

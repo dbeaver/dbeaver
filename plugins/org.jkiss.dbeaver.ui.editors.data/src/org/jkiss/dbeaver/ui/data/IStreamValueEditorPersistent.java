@@ -22,10 +22,16 @@ import org.jkiss.code.Nullable;
 
 import java.nio.file.Path;
 
-public interface IStreamValueEditorPersistent <CONTROL extends Control> {
+/**
+ * Value editor which provides external files
+ * @param <CONTROL> editor control
+ */
+public interface IStreamValueEditorPersistent<CONTROL extends Control> extends IStreamValueEditor<CONTROL> {
 
     /**
-     * @param control Control to acquire filepath from
+     * returns path of the file used by editor
+     *
+     * @param control editor control
      * @return filepath of external file or null if not found
      */
     @Nullable

@@ -103,11 +103,9 @@ public class ContentValueManager extends BaseValueManager {
                             IStreamValueEditor<Control> streamEditor
                                 = ((ContentPanelEditor) activeEditor).getStreamEditor();
                             if (streamEditor instanceof IStreamValueEditorPersistent) {
-                                Path externalFilePath =
-                                    ((IStreamValueEditorPersistent) streamEditor).getExternalFilePath(activeEditor.getControl());
-                                File externalFile = externalFilePath == null ? null : externalFilePath.toFile();
-                                if (externalFile != null) {
-                                    isExternalFileOpened = openExternalFile(externalFile);
+                                Path externalFilePath = ((IStreamValueEditorPersistent) streamEditor).getExternalFilePath(activeEditor.getControl());
+                                if (externalFilePath != null) {
+                                    isExternalFileOpened = openExternalFile(externalFilePath);
                                 }
                             }
                             if (!isExternalFileOpened) {
@@ -148,7 +146,8 @@ public class ContentValueManager extends BaseValueManager {
         }
     }
 
-    private static boolean openExternalFile(@NotNull File file) {
+    private static boolean openExternalFile(@NotNull Path path) {
+        File file = path.toFile();
         if (!file.exists()) {
             return false;
         }
@@ -156,7 +155,7 @@ public class ContentValueManager extends BaseValueManager {
             Desktop.getDesktop().open(file);
             return true;
         } catch (IOException e) {
-            log.error(e);
+            log.error("Unable to open external file", e);
             return false;
         }
     }
