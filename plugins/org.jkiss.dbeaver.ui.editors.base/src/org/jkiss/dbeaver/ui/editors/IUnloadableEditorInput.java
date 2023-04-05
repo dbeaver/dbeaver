@@ -16,12 +16,20 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
+import org.eclipse.ui.IEditorInput;
+import org.jkiss.code.NotNull;
+
 /**
- * DatabaseEditorPreferences
+ * An editor input can can be unloaded back to its lazy variant.
  */
-public class DatabaseEditorPreferences
-{
-    public static final String PROP_TITLE_SHOW_FULL_NAME = "navigator.editor.full-name"; //$NON-NLS-1$
-    public static final String PROP_SAVE_EDITORS_STATE = "ui.editors.reopen-after-restart"; //$NON-NLS-1$
-    public static final String PROP_KEEP_EDITORS_ON_DISCONNECT = "ui.editors.keep-editors-on-disconnect"; //$NON-NLS-1$
+public interface IUnloadableEditorInput extends IEditorInput {
+
+    /**
+     * Creates a new editor input that represent this editor input
+     * but in a lazy variant so it can be loaded on demand later.
+     *
+     * @return a new editor input instance
+     */
+    @NotNull
+    ILazyEditorInput unloadInput();
 }
