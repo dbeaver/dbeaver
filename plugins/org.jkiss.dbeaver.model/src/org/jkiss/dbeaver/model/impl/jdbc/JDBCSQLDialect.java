@@ -399,18 +399,10 @@ public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConver
     }
 
     protected void loadFunctions(JDBCSession session, JDBCDatabaseMetaData metaData, Set<String> allFunctions) throws DBException, SQLException {
-        for (String func : makeStringList(metaData.getNumericFunctions())) {
-            allFunctions.add(func.toUpperCase());
-        }
-        for (String func : makeStringList(metaData.getStringFunctions())) {
-            allFunctions.add(func.toUpperCase());
-        }
-        for (String func : makeStringList(metaData.getSystemFunctions())) {
-            allFunctions.add(func.toUpperCase());
-        }
-        for (String func : makeStringList(metaData.getTimeDateFunctions())) {
-            allFunctions.add(func.toUpperCase());
-        }
+        allFunctions.addAll(makeStringList(metaData.getNumericFunctions()));
+        allFunctions.addAll(makeStringList(metaData.getStringFunctions()));
+        allFunctions.addAll(makeStringList(metaData.getSystemFunctions()));
+        allFunctions.addAll(makeStringList(metaData.getTimeDateFunctions()));
     }
 
     private static List<String> makeStringList(String source) {

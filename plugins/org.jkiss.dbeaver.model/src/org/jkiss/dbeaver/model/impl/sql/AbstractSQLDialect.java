@@ -172,7 +172,9 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     protected void addKeywords(Collection<String> set, DBPKeywordType type) {
         if (set != null) {
             for (String keyword : set) {
-                keyword = keyword.toUpperCase(Locale.ENGLISH);
+                if (type != DBPKeywordType.FUNCTION) {
+                    keyword = keyword.toUpperCase(Locale.ENGLISH);
+                }
                 reservedWords.add(keyword);
                 DBPKeywordType oldType = allKeywords.get(keyword);
                 if (oldType != DBPKeywordType.KEYWORD) {
@@ -202,9 +204,15 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return types;
     }
 
+    @Nullable
     @Override
     public DBPKeywordType getKeywordType(@NotNull String word) {
-        return allKeywords.get(word.toUpperCase(Locale.ENGLISH));
+        for (Map.Entry<String, DBPKeywordType> entry : allKeywords.entrySet()) {
+            if (word.equalsIgnoreCase(entry.getKey())) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 
     @NotNull
@@ -212,11 +220,9 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     public List<String> getMatchedKeywords(@NotNull String word) {
         word = word.toUpperCase(Locale.ENGLISH);
         List<String> result = new ArrayList<>();
-        for (String keyword : allKeywords.tailMap(word).keySet()) {
-            if (keyword.startsWith(word)) {
+        for (String keyword : allKeywords.keySet()) {
+            if (keyword.toUpperCase(Locale.ENGLISH).startsWith(word)) {
                 result.add(keyword);
-            } else {
-                break;
             }
         }
         return result;
