@@ -30,11 +30,11 @@ public class SecurityUtils {
     public static String ECRYPTION_ALGORYTHM = "MD5";
 
     private static java.util.Random random;
-    private static java.util.Random secureRand;
+    private static java.util.Random secureRandom;
 
     static {
-        secureRand = new java.util.Random(System.currentTimeMillis());
-        long secureInitializer = secureRand.nextLong();
+        secureRandom = new java.util.Random(System.currentTimeMillis());
+        long secureInitializer = secureRandom.nextLong();
         random = new java.util.Random(secureInitializer);
     }
 
@@ -54,12 +54,12 @@ public class SecurityUtils {
         }
 
         long time = System.currentTimeMillis();
-        long rand;
+        long randomNumber;
 
         if (secure) {
-            rand = secureRand.nextLong();
+            randomNumber = secureRandom.nextLong();
         } else {
-            rand = SecurityUtils.random.nextLong();
+            randomNumber = SecurityUtils.random.nextLong();
         }
 
         // This StringBuilder can be a long as you need; the MD5
@@ -73,7 +73,7 @@ public class SecurityUtils {
             .append(":")
             .append(Long.toString(time))
             .append(":")
-            .append(Long.toString(rand));
+            .append(Long.toString(randomNumber));
 
 
         byte[] array;
@@ -112,7 +112,7 @@ public class SecurityUtils {
 
     public static String generateUniqueId() {
         long curTime = System.currentTimeMillis();
-        int random = secureRand.nextInt();
+        int random = secureRandom.nextInt();
         if (random < 0) {
             random = -random;
         }
