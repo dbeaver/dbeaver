@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
@@ -45,6 +46,8 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
+import org.jkiss.dbeaver.ui.data.IStreamValueEditorPersistent;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.dialogs.TextViewDialog;
@@ -60,6 +63,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import java.awt.*;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 
 
 /**
@@ -95,7 +99,18 @@ public class ContentValueManager extends BaseValueManager {
                             DBWorkbench.getPlatformUI().showError("Data is empty", "Can not save null data value");
                         }
                         if (value instanceof DBDContent) {
-                            getDBDContent(value);
+                            boolean isExternalFileOpened = false;
+                            IStreamValueEditor<Control> streamEditor
+                                = ((ContentPanelEditor) activeEditor).getStreamEditor();
+                            if (streamEditor instanceof IStreamValueEditorPersistent) {
+                                Path externalFilePath = ((IStreamValueEditorPersistent) streamEditor).getExternalFilePath(activeEditor.getControl());
+                                if (externalFilePath != null) {
+                                    isExternalFileOpened = openExternalFile(externalFilePath);
+                                }
+                            }
+                            if (!isExternalFileOpened) {
+                                getDBDContent(value);
+                            }
                         } else {
                             String str = controller.getValueHandler()
                                     .getValueDisplayString(controller.getValueType(), 
@@ -128,6 +143,20 @@ public class ContentValueManager extends BaseValueManager {
                 }
             });
             manager.add(new Separator());
+        }
+    }
+
+    private static boolean openExternalFile(@NotNull Path path) {
+        File file = path.toFile();
+        if (!file.exists()) {
+            return false;
+        }
+        try {
+            Desktop.getDesktop().open(file);
+            return true;
+        } catch (IOException e) {
+            log.error("Unable to open external file", e);
+            return false;
         }
     }
 
