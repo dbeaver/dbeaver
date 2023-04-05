@@ -14,6 +14,7 @@ Require-Bundle: org.eclipse.equinox.preferences,
  org.eclipse.core.runtime,
  org.eclipse.ui,
  org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.ui
 Automatic-Module-Name: org.jkiss.dbeaver.ui.statistics
 

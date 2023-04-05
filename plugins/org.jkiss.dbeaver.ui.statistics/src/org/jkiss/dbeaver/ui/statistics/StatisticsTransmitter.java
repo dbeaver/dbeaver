@@ -27,21 +27,25 @@ import org.jkiss.dbeaver.runtime.WebUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class StatisticsTransmitter {
 
     private static final Log log = Log.getLog(StatisticsTransmitter.class);
 
-    private static final String ENDPOINT = "https://stats.dbeaver.com/send-statistics";
+    private static final String ENDPOINT = "http://stats.dbeaver.com:8000/send-statistics";
 
-    public StatisticsTransmitter() {
+    private final String workspaceId;
+
+    public StatisticsTransmitter(String workspaceId) {
+        this.workspaceId = workspaceId;
     }
-
 
     public void send(boolean detached) {
         if (detached) {
@@ -96,11 +100,18 @@ public class StatisticsTransmitter {
 
     private void sendLogFile(Path logFile, String timestamp, String sessionId) {
         try {
-            URLConnection urlConnection = WebUtils.openConnection(
-                ENDPOINT + "?session=" + sessionId + "&time" + timestamp,
-                DBWorkbench.getPlatform().getWorkspace().getWorkspaceId());
-            urlConnection.setConnectTimeout(5);
-            urlConnection.connect();
+            URLConnection urlConnection = WebUtils.openURLConnection(
+                ENDPOINT + "?session=" + sessionId + "&time=" + timestamp,
+                null,
+                workspaceId,
+                "POST",
+                0,
+                5000,
+                Map.of(
+                    "Content-Type", "text/plain"));
+
+            ((HttpURLConnection)urlConnection).setFixedLengthStreamingMode(Files.size(logFile));
+
             try (OutputStream outputStream = urlConnection.getOutputStream()) {
                 Files.copy(logFile, outputStream);
             }
