@@ -73,12 +73,16 @@ public class SyntaxModel {
         public final Class<?> type;
         public final XPathExpression stringExpr;
         public final Map<Object, XPathExpression> exprByValue;
+        public final Map<String, Object> valuesByName;
+        public final boolean isCaseSensitive;
         
-        public LiteralTypeInfo(String ruleName, Class<?> type, XPathExpression stringExpr, Map<Object, XPathExpression> exprByValue) {
+        public LiteralTypeInfo(String ruleName, Class<?> type, XPathExpression stringExpr, Map<Object, XPathExpression> exprByValue, Map<String, Object> valuesByName, boolean isCaseSensitive) {
             this.ruleName = ruleName;
             this.type = type;
             this.stringExpr = stringExpr;
             this.exprByValue = exprByValue;
+            this.valuesByName = valuesByName;
+            this.isCaseSensitive = isCaseSensitive;
         }        
     }
     
@@ -255,7 +259,7 @@ public class SyntaxModel {
                                     throw new RuntimeException(e); // TODO collect errors
                                 }
                             } else {                                
-                                throw new RuntimeException("Not supported");
+                                value = null;
                             }
                             break;
                         default:
@@ -913,17 +917,15 @@ public class SyntaxModel {
         LiteralTypeInfo typeInfo = literalTypeByRuleName.get(ruleAnnotation.name());
         
         if (typeInfo != null) {
-            if (ruleAnnotation.xstring().length() > 0) {
-                try {
-                    String str = typeInfo.stringExpr.evaluateExpression(nodeInfo, String.class);
-                    if (str != null && str.length() > 0) {
-                        // System.out.println(str + " | " + nodeInfo.getNodeValue());
-                        Object value = Enum.valueOf((Class<Enum>)type, str);
-                        return value;
-                    }
-                } catch (XPathExpressionException e) {
-                    e.printStackTrace(); // TODO collect errors
+            try {
+                String str = typeInfo.stringExpr == null ? nodeInfo.getTextContent() : typeInfo.stringExpr.evaluateExpression(nodeInfo, String.class);
+                if (str != null && str.length() > 0) {
+                    // System.out.println(str + " | " + nodeInfo.getNodeValue());
+                    Object value = typeInfo.valuesByName.get(typeInfo.isCaseSensitive ? str : str.toUpperCase());
+                    return value;
                 }
+            } catch (XPathExpressionException e) {
+                e.printStackTrace(); // TODO collect errors
             }
             
             for (var literalCase : typeInfo.exprByValue.entrySet()) {
@@ -937,7 +939,7 @@ public class SyntaxModel {
                 }
             }
         }
-        
+
         return null;
     }
     
@@ -1131,6 +1133,26 @@ public class SyntaxModel {
         return result;
     }
     
+    @FunctionalInterface
+    private interface ThrowableFunction<T, R> {
+        R apply(T obj) throws Throwable;
+    }
+    
+    private <T, R, E extends Throwable> Function<T, R> captureExceptionInfo(Class<E> exceptionType, ThrowableFunction<T, R> mapper) {
+        return o -> {
+            try { return mapper.apply(o); }
+            catch (Throwable ex) {
+                if (exceptionType.isInstance(ex)) {
+                    // TODO collect errors
+                    ex.printStackTrace();
+                    return null;
+                } else {
+                    throw new RuntimeException(ex);
+                }
+            }
+        };
+    }
+    
     private void introduceEnum(Class<?> type) throws XPathExpressionException { // TODO collect errors
         SyntaxLiteral literalAnnotation = type.getAnnotation(SyntaxLiteral.class);
         if (literalAnnotation == null) {
@@ -1141,22 +1163,31 @@ public class SyntaxModel {
         
         var existing = literalTypeByRuleName.get(literalAnnotation.name());
         if (existing == null) {
-            var values = type.getEnumConstants();
-            var exprByValue = new LinkedHashMap<Object, XPathExpression>(values.length);
-            for (Field field : type.getFields()) {
-                var literalCaseAnnotation = field.getAnnotation(SyntaxLiteralCase.class);
-                if (field.isEnumConstant() && literalCaseAnnotation != null) {
-                    XPathExpression expr = xpath.compile(literalCaseAnnotation.xcondition());
-                    try {
-                        exprByValue.put(field.get(null), expr);
-                    } catch (IllegalArgumentException | IllegalAccessException e) {
-                        // TODO collect errors
-                        e.printStackTrace();
-                    } 
-                }
-            }
+            // var values = type.getEnumConstants();
+            var enumEntries = Stream.of(type.getFields()).filter(f -> f.isEnumConstant()).map(captureExceptionInfo(IllegalAccessException.class, f -> new Object() {
+               public final Field field = f;
+               public final Object value = f.get(null);
+               public final String name = f.getName();
+               public final String upperCasedName = f.getName().toUpperCase();
+               public final SyntaxLiteralCase literalCaseAnnotation = f.getAnnotation(SyntaxLiteralCase.class);
+            })).collect(Collectors.toList());
+            
+            var countOfDefaultCasedNames = enumEntries.stream().map(e -> e.name).collect(Collectors.toSet()).size(); 
+            var countOfUpperCasedNames = enumEntries.stream().map(e -> e.upperCasedName).collect(Collectors.toSet()).size();
+            var isCaseSensitive = countOfDefaultCasedNames != countOfUpperCasedNames;
+            var valuesByName = isCaseSensitive ? enumEntries.stream().collect(Collectors.toMap(e -> e.name, e -> e.value))
+                                               : enumEntries.stream().collect(Collectors.toMap(e -> e.upperCasedName, e -> e.value));
+            
+            var exprByValue = enumEntries.stream()
+                    .filter(e -> e.literalCaseAnnotation != null && e.literalCaseAnnotation.xcondition().length() > 0)
+                    .collect(Collectors.toMap(
+                            e -> e.value, 
+                            captureExceptionInfo(XPathExpressionException.class, e -> xpath.compile(e.literalCaseAnnotation.xcondition())),
+                            (x, y) -> { throw new IllegalStateException("Duplicated enum values"); /* should never happen*/ },
+                            LinkedHashMap::new
+                    ));
             var stringExpr = literalAnnotation.xstring().length() > 0 ? xpath.compile(literalAnnotation.xstring()) : null; // TODO collect errors
-            literalTypeByRuleName.put(literalAnnotation.name(), new LiteralTypeInfo(literalAnnotation.name(), type, stringExpr, exprByValue));
+            literalTypeByRuleName.put(literalAnnotation.name(), new LiteralTypeInfo(literalAnnotation.name(), type, stringExpr, exprByValue, valuesByName, isCaseSensitive));
         } else if (!existing.type.equals(type)) {
             throw new RuntimeException("Ambiguous syntax literal: both " + type.getName() + " and " + existing.type.getName() + "  are marked with the same name " + literalAnnotation.name()); // TODO collect errors
         } else {

@@ -21,11 +21,12 @@ import java.util.List;
 import org.jkiss.dbeaver.antlr.model.AbstractSyntaxNode;
 import org.jkiss.dbeaver.antlr.model.SyntaxNode;
 import org.jkiss.dbeaver.antlr.model.SyntaxSubnode;
+import org.jkiss.dbeaver.antlr.model.SyntaxTerm;
 
 @SyntaxNode(name = "queryExpression")
 public class SelectStatement extends AbstractSyntaxNode {
 
-    // TODO:
+    @SyntaxTerm(xpath = "./nonJoinQueryTerm/queryPrimary/nonJoinQueryPrimary/simpleTable/querySpecification/setQuantifier")
     public SelectQuantifier quantifier;
     
     @SyntaxSubnode(type = SelectionItem.class, xpath = "./nonJoinQueryTerm/queryPrimary/nonJoinQueryPrimary/simpleTable/querySpecification/selectList/selectSublist")

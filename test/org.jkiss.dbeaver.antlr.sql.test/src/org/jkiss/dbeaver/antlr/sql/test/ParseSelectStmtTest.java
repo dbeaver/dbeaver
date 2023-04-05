@@ -18,9 +18,13 @@ package org.jkiss.dbeaver.antlr.sql.test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.BitSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Scanner;
 
 import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.CharStreams;
@@ -44,25 +48,55 @@ public class ParseSelectStmtTest {
     
     private static final String _selectStatementsSqlTextResourceName = "SelectStatements.sql.txt";
     
+    private static List<String> readStatements(InputStream stream) {
+        List<String> result = new LinkedList<>();
+        
+        try (Scanner scanner = new Scanner(stream)) {
+            StringBuilder sb = new StringBuilder();
+            
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String trimmed = line.trim();
+                if (trimmed.length() > 0 && !(trimmed.startsWith("#") || trimmed.startsWith("--"))) {
+                    sb.append(line).append(" ");
+                } else if (sb.toString().trim().length() > 0) {
+                    result.add(sb.toString());
+                    sb.setLength(0);
+                }
+            }
+        }
+        
+        return result;
+    }
+    
     @Test
     public void testModel() throws IOException {
-        var inputStream = ParseSelectStmtTest.class.getResourceAsStream(_selectStatementsSqlTextResourceName);
-        var input = CharStreams.fromStream(inputStream);
-        var ll = new Sql92Lexer(input);
-        var tokens = new CommonTokenStream(ll);
-        tokens.fill();
+        var statementsToParse = readStatements(ParseSelectStmtTest.class.getResourceAsStream(_selectStatementsSqlTextResourceName));
         
-        var pp = new Sql92Parser(tokens);
-        pp.setBuildParseTree(true);
-        
-        var tree = pp.queryExpression();
-        
-        SyntaxModel model = new SyntaxModel(pp);
-        model.introduce(SelectStatement.class);
-        var result = model.map(tree, SelectStatement.class);
-        
-        Assert.assertTrue(result.isOk());
-        System.out.println(model.stringify(result.model));
+        for (String stmtText: statementsToParse) {
+            System.out.println();
+            System.out.println(stmtText);
+            System.out.println();
+            
+            var input = CharStreams.fromString(stmtText);
+            var ll = new Sql92Lexer(input);
+            var tokens = new CommonTokenStream(ll);
+            tokens.fill();
+            
+            var pp = new Sql92Parser(tokens);
+            pp.setBuildParseTree(true);
+            
+            var tree = pp.queryExpression();
+            Assert.assertTrue(pp.getNumberOfSyntaxErrors() == 0);
+            
+            SyntaxModel model = new SyntaxModel(pp);
+            model.introduce(SelectStatement.class);
+            var result = model.map(tree, SelectStatement.class);
+            
+            Assert.assertTrue(result.isOk());
+            System.out.println(model.stringify(result.model));
+            System.out.println();
+        }
     }
 
     

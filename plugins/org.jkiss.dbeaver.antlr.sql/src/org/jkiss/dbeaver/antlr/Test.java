@@ -93,12 +93,12 @@ public class Test {
         var tree = pp.queryExpression();
         
         System.out.println();
-        var sb = new StringBuilder();
-        collect(tree, pp, sb, "");
-        System.out.println(sb.toString());
-        Files.writeString(Path.of("D:\\github.com\\dbeaver\\sql-server-sakila-insert-data.log"), sb.toString());
+//        var sb = new StringBuilder();
+//        collect(tree, pp, sb, "");
+//        System.out.println(sb.toString());
+//         Files.writeString(Path.of("c:\\github.com\\dbeaver\\sql-server-sakila-insert-data.log"), sb.toString());
         
-        Path dir = Path.of("D:\\github.com\\dbeaver\\dbeaver\\plugins\\org.jkiss.dbeaver.antlr.example.sql\\src\\org\\jkiss\\dbeaver\\antlr\\example\\sql\\");
+        Path dir = Path.of("C:\\Projects\\dbeaver\\dbeaver\\plugins\\org.jkiss.dbeaver.antlr.sql\\src\\org\\jkiss\\dbeaver\\antlr\\sql\\");
         var model = new SyntaxModel(pp);
         model.introduce(SelectStatement.class);
         Files.writeString(dir.resolve("parsed.xml"), model.toXml(tree));

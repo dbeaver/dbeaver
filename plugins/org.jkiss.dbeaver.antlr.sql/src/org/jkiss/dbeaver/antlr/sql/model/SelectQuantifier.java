@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.antlr.sql.model;
 
+import org.jkiss.dbeaver.antlr.model.SyntaxLiteral;
+
+@SyntaxLiteral(name = "setQuantifier")
 public enum SelectQuantifier {
     DISTINCT,
     ALL
