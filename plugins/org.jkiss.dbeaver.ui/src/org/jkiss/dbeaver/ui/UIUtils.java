@@ -31,6 +31,7 @@ import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
@@ -52,6 +53,7 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.services.IDisposable;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.code.NotNull;
@@ -2208,6 +2210,19 @@ public class UIUtils {
         } else {
             widget.addDisposeListener(e -> onFocusLost.run());
         }
+    }
+
+    public static void installAndUpdateMainFont(@NotNull Control control) {
+        final IPropertyChangeListener listener = event -> {
+            if (event.getProperty().equals(UIFonts.DBEAVER_FONTS_MAIN_FONT)) {
+                applyMainFont(control);
+            }
+        };
+
+        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(listener);
+        control.addDisposeListener(e -> PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(listener));
+
+        applyMainFont(control);
     }
 
     public static void applyMainFont(@Nullable Control control) {

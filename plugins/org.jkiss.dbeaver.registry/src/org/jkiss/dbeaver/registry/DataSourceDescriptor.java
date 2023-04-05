@@ -1963,7 +1963,7 @@ public class DataSourceDescriptor
             || emptyDatabaseCredsSaved;
 
         if (this.secretsContainsDatabaseCreds) {
-            this.savePassword = true;
+            this.savePassword = props.containsKey(RegistryConstants.ATTR_PASSWORD);
         }
 
         // Handlers

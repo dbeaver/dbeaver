@@ -34,7 +34,6 @@ import org.eclipse.gef3.ui.actions.*;
 import org.eclipse.gef3.ui.palette.FlyoutPaletteComposite;
 import org.eclipse.gef3.ui.palette.PaletteViewerProvider;
 import org.eclipse.gef3.ui.parts.GraphicalEditorWithFlyoutPalette;
-import org.eclipse.gef3.ui.parts.GraphicalViewerKeyHandler;
 import org.eclipse.gef3.ui.properties.UndoablePropertySheetEntry;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -81,10 +80,7 @@ import org.jkiss.dbeaver.erd.ui.model.ERDContentProviderDecorated;
 import org.jkiss.dbeaver.erd.ui.model.ERDDecorator;
 import org.jkiss.dbeaver.erd.ui.model.ERDDecoratorDefault;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
-import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
-import org.jkiss.dbeaver.erd.ui.part.EntityPart;
-import org.jkiss.dbeaver.erd.ui.part.NodePart;
-import org.jkiss.dbeaver.erd.ui.part.NotePart;
+import org.jkiss.dbeaver.erd.ui.part.*;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -486,7 +482,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         // configure the viewer
         viewer.getControl().setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
         viewer.setRootEditPart(rootPart);
-        viewer.setKeyHandler(new GraphicalViewerKeyHandler(viewer));
+        viewer.setKeyHandler(new DBeaverNavigationKeyHandler(viewer));
 
         registerDropTargetListeners(viewer);
 
@@ -617,7 +613,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      */
     protected ERDOutlinePage getOverviewOutlinePage()
     {
-        if (null == outlinePage && null != getGraphicalViewer()) {
+        if ((null == outlinePage || outlinePage.getControl().isDisposed()) && null != getGraphicalViewer()) {
             RootEditPart rootEditPart = getGraphicalViewer().getRootEditPart();
             if (rootEditPart instanceof ScalableFreeformRootEditPart) {
                 outlinePage = new ERDOutlinePage((ScalableFreeformRootEditPart) rootEditPart);
@@ -1120,17 +1116,23 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 for (ERDEntity entity : diagram.getEntities()) {
                     entity.reloadAttributes(diagram);
                 }
+                for (Object object : getGraphicalViewer().getContents().getChildren()) {
+                    if (object instanceof EntityPart) {
+                        ((EntityPart) object).refresh();
+                    }
+                }
             } else {
                 for (Object object : ((IStructuredSelection)getGraphicalViewer().getSelection()).toArray()) {
                     if (object instanceof EntityPart) {
                         ((EntityPart) object).getEntity().setAttributeVisibility(visibility);
-                        UIUtils.asyncExec(() -> ((EntityPart) object).getEntity().reloadAttributes(diagram));
+                        UIUtils.asyncExec(() -> {
+                            ((EntityPart) object).getEntity().reloadAttributes(diagram);
+                            ((EntityPart) object).refresh();
+                        });
+
                     }
                 }
             }
-            diagram.setNeedsAutoLayout(true);
-
-            UIUtils.asyncExec(() -> getGraphicalViewer().setContents(diagram));
         }
     }
 
@@ -1158,9 +1160,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 for (ERDEntity entity : diagram.getEntities()) {
                     entity.reloadAttributes(diagram);
                 }
-                diagram.setNeedsAutoLayout(true);
-
-                UIUtils.asyncExec(() -> graphicalViewer.setContents(diagram));
+                for (Object object : getGraphicalViewer().getContents().getChildren()) {
+                    if (object instanceof EntityPart) {
+                        ((EntityPart) object).refresh();
+                    }
+                }
             } else if (ERDConstants.PREF_ATTR_STYLES.equals(event.getProperty())) {
                 refreshDiagram(true, false);
             } else if (ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS.equals(event.getProperty()) || ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS.equals(event.getProperty())) {
