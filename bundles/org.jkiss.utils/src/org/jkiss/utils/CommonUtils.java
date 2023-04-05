@@ -98,8 +98,9 @@ public class CommonUtils {
         StringBuilder res = new StringBuilder(str.length());
         for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);
-            if (Character.isISOControl(c) || c == '\\' || c == '/' || c == '<' || c == '>' || c == '|' || c == '"' || c == ':'
-                || c == '*' || c == '?') {
+            boolean isSpecialChar = Character.isISOControl(c) || c == '\\' || c == '/' || c == '<' || c == '>'
+                    || c == '|'|| c == '"' || c == ':' || c == '*' || c == '?';
+            if (isSpecialChar) {
                 res.append('_');
             } else {
                 res.append(c);
