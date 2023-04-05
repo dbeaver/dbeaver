@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
 import java.sql.SQLException;
@@ -158,11 +159,11 @@ public class TiDBMySQLDataSource extends MySQLDataSource {
         Map<String, String> props = super.getInternalConnectionProperties(monitor, driver, context, purpose, connectionInfo);
         // build application name
         String appName = DBUtils.getClientApplicationName(getContainer(), context, purpose);
-        appName = "dbeaver_tidb_plugin" + (appName.isEmpty() ? "" : "(" + appName + ")");
+        appName = "dbeaver_tidb_plugin" + (CommonUtils.isEmpty(appName) ? "" : "(" + appName + ")");
         
         // build conAttr value
         String connAttr = props.get(CONN_ATTR_NAME);
-        connAttr = PROP_APPLICATION_NAME + ":" + appName + (connAttr == null || connAttr.isEmpty() ? "" : "," + connAttr);
+        connAttr = PROP_APPLICATION_NAME + ":" + appName + (CommonUtils.isEmpty(connAttr) ? "" : "," + connAttr);
         
         props.put(CONN_ATTR_NAME, connAttr);
         return props;
