@@ -317,6 +317,49 @@ public class CSVParser {
     }
 
     /**
+     * Handles the case when 'nextLine' is null, returning either a single-element array containing the pending content,
+     * or null if there is no pending content.
+     *
+     * @return A single-element string array containing the pending content if it exists, otherwise null.
+     */
+    private String[] handleNullNextLine() {
+        if (pending != null) {
+            String s = pending;
+            pending = null;
+            return new String[]{s};
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Handles the case when there is pending content to be appended to the StringBuilder 'sb'.
+     *
+     * @param sb The StringBuilder to append the pending content to.
+     * @return The updated StringBuilder with the pending content appended, if it exists.
+     */
+    private StringBuilder handlePendingNextLine(StringBuilder sb) {
+        if (pending != null) {
+            sb.append(pending);
+            pending = null;
+        }
+        return sb;
+    }
+
+    /**
+     * Determines the initial value for the 'inQuotes' boolean variable based on whether there's pending content or not.
+     *
+     * @param inQuotes The current value of the 'inQuotes' boolean variable.
+     * @return The updated 'inQuotes' value: true if there is pending content and ignoreQuotations is false, otherwise the original value of 'inQuotes'.
+     */
+    private boolean handleInQuotes(boolean inQuotes) {
+        if (pending != null) {
+            return !this.ignoreQuotations;
+        }
+        return inQuotes;
+    }
+
+    /**
      * Parses an incoming String and returns an array of elements.
      *
      * @param nextLine the string to parse
@@ -331,24 +374,17 @@ public class CSVParser {
         }
 
         if (nextLine == null) {
-            if (pending != null) {
-                String s = pending;
-                pending = null;
-                return new String[]{s};
-            } else {
-                return null;
-            }
+            return handleNullNextLine();
         }
 
         List<String> tokensOnThisLine = new ArrayList<>();
         StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
         boolean inQuotes = false;
         boolean fromQuotedField = false;
-        if (pending != null) {
-            sb.append(pending);
-            pending = null;
-            inQuotes = !this.ignoreQuotations;//true;
-        }
+
+        sb = handlePendingNextLine(sb);
+        inQuotes = handleInQuotes(inQuotes);
+
         for (int i = 0; i < nextLine.length(); i++) {
 
             char c = nextLine.charAt(i);
