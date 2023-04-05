@@ -24,7 +24,10 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.action.DiagramLayoutAction;
+import org.jkiss.dbeaver.erd.ui.action.DiagramToggleGridAction;
+import org.jkiss.dbeaver.erd.ui.action.DiagramTogglePersistAction;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
@@ -68,7 +71,10 @@ public class ERDEditorContextMenuProvider extends MenuManager implements IMenuLi
             menu.add(new Separator());
             editor.fillAttributeVisibilityMenu(menu);
             menu.add(new DiagramLayoutAction(editor));
-
+            menu.add(new DiagramToggleGridAction());
+            if (editor instanceof ERDEditorEmbedded) {
+                menu.add(new DiagramTogglePersistAction((ERDEditorEmbedded) editor));
+            }
             menu.add(new Separator());
 
             menu.add(ActionUtils.makeCommandContribution(editor.getSite(), IWorkbenchCommandConstants.EDIT_COPY));
@@ -77,7 +83,7 @@ public class ERDEditorContextMenuProvider extends MenuManager implements IMenuLi
             }
 
             menu.add(new Separator());
-
+            menu.add(ActionUtils.makeCommandContribution(editor.getSite(), ERDUIConstants.CMD_SAVE_AS));
             menu.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS));
 //            menu.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS));
 //            menu.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS_END));
