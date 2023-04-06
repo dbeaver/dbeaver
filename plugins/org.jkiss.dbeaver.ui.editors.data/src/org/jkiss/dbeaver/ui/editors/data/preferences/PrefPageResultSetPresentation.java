@@ -92,9 +92,9 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             showDescription = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_column_description, false);
             UIUtils.createControlLabel(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_calc_column_width_method);
             columnWidthCalcCombo = new Combo(uiGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            columnWidthCalcCombo.add(DataEditorsMessages.pref_page_database_resultsets_label_calc_column_width_method_0);
-            columnWidthCalcCombo.add(DataEditorsMessages.pref_page_database_resultsets_label_calc_column_width_method_1);
-            columnWidthCalcCombo.add(DataEditorsMessages.pref_page_database_resultsets_label_calc_column_width_method_2);
+            columnWidthCalcCombo.add(DataEditorsMessages.pref_page_database_resultsets_label_calc_column_width_title_and_values);
+            columnWidthCalcCombo.add(DataEditorsMessages.pref_page_database_resultsets_label_calc_column_width_values);
+            columnWidthCalcCombo.add(DataEditorsMessages.pref_page_database_resultsets_label_calc_column_width_title_description_values);
             showConnectionName = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_connection_name, false);
             transformComplexTypes = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_structurize_complex_types, DataEditorsMessages.pref_page_database_resultsets_label_structurize_complex_types_tip, false, 1);
             rightJustifyNumbers = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_right_justify_numbers_and_date, null, false, 1);

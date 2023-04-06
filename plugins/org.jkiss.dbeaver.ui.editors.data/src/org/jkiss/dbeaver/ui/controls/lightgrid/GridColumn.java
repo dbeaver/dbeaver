@@ -23,6 +23,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -216,23 +217,24 @@ public class GridColumn implements IGridColumn {
             int textWidth;
             Object calcWidthMethod = labelProvider.getGridOption(IGridLabelProvider.OPTION_CALC_COLUMN_WIDTH_METHOD);
             String text = "X";
-            switch ((int) calcWidthMethod) {
-                case (0):
+            switch (ResultSetPreferences.GridColumnCalcWidthMethod.getByNum((Integer) calcWidthMethod)) {
+                case TITLE_AND_VALUES:
                     text = labelProvider.getText(this);
                     textWidth = grid.sizingGC.stringExtent(text).x;
                     break;
-                case (1):
+                case VALUES:
                     textWidth = grid.sizingGC.stringExtent(text).x;
                     break;
-                case (2):
+                case TITLE_DESCRIPTION_VALUES:
                     text = labelProvider.getText(this);
-                    String description = labelProvider.getDescription(this);
-                    textWidth = grid.sizingGC.stringExtent(text).x;                    
-                    if (Boolean.TRUE.equals(labelProvider.getGridOption(IGridLabelProvider.OPTION_SHOW_DESCRIPTION)) 
-                            && (!CommonUtils.isEmpty(description))) {
-                        int descWidth = grid.sizingGC.stringExtent(description).x;
-                        if (descWidth > textWidth) {
-                            textWidth = descWidth;
+                    textWidth = grid.sizingGC.stringExtent(text).x;
+                    if (Boolean.TRUE.equals(labelProvider.getGridOption(IGridLabelProvider.OPTION_SHOW_DESCRIPTION))) {
+                        String description = labelProvider.getDescription(this);
+                        if (!CommonUtils.isEmpty(description)) {
+                            int descWidth = grid.sizingGC.stringExtent(description).x;
+                            if (descWidth > textWidth) {
+                                textWidth = descWidth;
+                            }
                         }
                     }
                     break;
