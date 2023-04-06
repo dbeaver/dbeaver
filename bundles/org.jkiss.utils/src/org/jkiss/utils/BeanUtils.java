@@ -159,47 +159,6 @@ public class BeanUtils {
         return methodName;
     }
 
-    public static boolean isArrayType(Type type) {
-        return (type instanceof Class && ((Class<?>) type).isArray());
-    }
-
-    public static boolean isCollectionType(Type type) {
-        if (type instanceof Class && Collection.class.isAssignableFrom((Class<?>) type)) {
-/*
-            if (type instanceof ParameterizedType) {
-                ParameterizedType pt = (ParameterizedType)type;
-                if (pt.getActualTypeArguments().length == 1) {
-                    return true;
-                }
-            }
-*/
-            return true;
-        }
-        return isArrayType(type);
-    }
-
-    public static Class<?> getCollectionType(Type type) {
-        if (type instanceof ParameterizedType) {
-            ParameterizedType pt = (ParameterizedType) type;
-            if (pt.getActualTypeArguments().length == 1) {
-                final Type argType = pt.getActualTypeArguments()[0];
-                if (argType instanceof Class) {
-                    return (Class<?>) argType;
-                } else if (argType instanceof WildcardType) {
-                    final Type[] upperBounds = ((WildcardType) argType).getUpperBounds();
-                    if (upperBounds.length > 0 && upperBounds[0] instanceof Class) {
-                        return (Class<?>) upperBounds[0];
-                    }
-                    final Type[] lowerBounds = ((WildcardType) argType).getLowerBounds();
-                    if (lowerBounds.length > 0 && lowerBounds[0] instanceof Class) {
-                        return (Class<?>) lowerBounds[0];
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
     public static Object readObjectProperty(Object object, String propName)
         throws IllegalAccessException, InvocationTargetException {
         if (propName.indexOf('.') == -1) {
@@ -286,51 +245,6 @@ public class BeanUtils {
         return null;
     }
 
-    public static final Short DEFAULT_SHORT = (short) 0;
-    public static final Integer DEFAULT_INTEGER = 0;
-    public static final Long DEFAULT_LONG = 0L;
-    public static final Float DEFAULT_FLOAT = (float) 0.0;
-    public static final Double DEFAULT_DOUBLE = 0.0;
-    public static final Byte DEFAULT_BYTE = (byte) 0;
-    public static final Character DEFAULT_CHAR = (char) 0;
-
-    public static boolean isBooleanType(Type paramClass) {
-        return paramClass == Boolean.class || paramClass == Boolean.TYPE;
-    }
-
-    public static Object getDefaultPrimitiveValue(Class<?> paramClass) {
-        if (paramClass == Boolean.TYPE) {
-            return Boolean.FALSE;
-        } else if (paramClass == Short.TYPE) {
-            return DEFAULT_SHORT;
-        } else if (paramClass == Integer.TYPE) {
-            return DEFAULT_INTEGER;
-        } else if (paramClass == Long.TYPE) {
-            return DEFAULT_LONG;
-        } else if (paramClass == Float.TYPE) {
-            return DEFAULT_FLOAT;
-        } else if (paramClass == Double.TYPE) {
-            return DEFAULT_DOUBLE;
-        } else if (paramClass == Byte.TYPE) {
-            return DEFAULT_BYTE;
-        } else if (paramClass == Character.TYPE) {
-            return DEFAULT_CHAR;
-        } else {
-            throw new IllegalArgumentException("Class " + paramClass.getName() + " is not primitive type");
-        }
-    }
-
-    public static boolean isNumericType(Class<?> paramClass) {
-        return
-            Number.class.isAssignableFrom(paramClass) ||
-                paramClass == Short.TYPE ||
-                paramClass == Integer.TYPE ||
-                paramClass == Long.TYPE ||
-                paramClass == Double.TYPE ||
-                paramClass == Float.TYPE ||
-                paramClass == Byte.TYPE;
-    }
-
     public static Object invokeObjectMethod(Object object, String name, Class<?> paramTypes[], Object args[])
         throws Throwable {
         Method method = object.getClass().getMethod(name, paramTypes);
@@ -384,15 +298,6 @@ public class BeanUtils {
         } catch (InvocationTargetException e) {
             throw e.getTargetException();
         }
-    }
-
-    public static <T> Class<? extends T> findAssignableType(Class<?>[] types, Class<T> type) {
-        for (Class<?> childType : types) {
-            if (type.isAssignableFrom(childType)) {
-                return (Class<? extends T>) childType;
-            }
-        }
-        return null;
     }
 
     /**

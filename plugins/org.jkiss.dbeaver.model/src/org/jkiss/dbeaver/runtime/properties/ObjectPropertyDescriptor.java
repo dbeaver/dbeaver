@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
+import org.jkiss.utils.TypeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
@@ -141,7 +142,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
 
     public boolean isNumeric() {
         Class<?> propType = getGetter().getReturnType();
-        return propType != null && BeanUtils.isNumericType(propType);
+        return propType != null && TypeUtils.isNumericType(propType);
     }
 
     public boolean isDateTime() {

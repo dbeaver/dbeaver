@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.utils.BeanUtils;
+import org.jkiss.utils.TypeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
@@ -307,7 +308,7 @@ public class DatabaseTransferUtils {
                     throw new DBException("Table create not supported by " + executionContext.getDataSource().getContainer().getDriver().getName());
                 }
                 Class<?>[] childTypes = ((DBEStructEditor<?>) tableManager).getChildTypes();
-                attrClass = BeanUtils.findAssignableType(childTypes, DBSEntityAttribute.class);
+                attrClass = TypeUtils.findAssignableType(childTypes, DBSEntityAttribute.class);
                 if (attrClass == null) {
                     throw new DBException("Column manager not found for '" + tableClass.getName() + "'");
                 }

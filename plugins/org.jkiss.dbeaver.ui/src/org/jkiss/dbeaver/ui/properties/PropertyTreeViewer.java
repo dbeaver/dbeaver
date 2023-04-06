@@ -64,6 +64,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
+import org.jkiss.utils.TypeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Array;
@@ -353,11 +354,11 @@ public class PropertyTreeViewer extends TreeViewer {
                                 categories.putAll(loadTreeNodes(monitor, propNode, nestedCollector));
                             }
                         }
-                    } else if (BeanUtils.isCollectionType(propType)) {
+                    } else if (TypeUtils.isCollectionType(propType)) {
                         Object propertyValue = propertySource.getPropertyValue(monitor, prop.getId());
                         if (propertyValue != null) {
                             Collection<?> collection;
-                            if (BeanUtils.isArrayType(propType)) {
+                            if (TypeUtils.isArrayType(propType)) {
                                 collection = Arrays.asList((Object[]) propertyValue);
                             } else {
                                 collection = (Collection<?>) propertyValue;
@@ -1034,7 +1035,7 @@ public class PropertyTreeViewer extends TreeViewer {
                     } else if (isHidePropertyValue(node.property)) {
                         // Mask value
                         return maskHiddenPropertyValue(propertyValue);
-                    } else if (BeanUtils.isCollectionType(propertyValue.getClass())) {
+                    } else if (TypeUtils.isCollectionType(propertyValue.getClass())) {
                         StringBuilder str = new StringBuilder();
                         str.append("[");
                         if (propertyValue instanceof Collection) {

@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.utils.BeanUtils;
+import org.jkiss.utils.TypeUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -90,11 +91,11 @@ public class PropertyEditorUtils {
                 setValidator(editor, property, object);
                 return editor;
             }
-        } else if (BeanUtils.isNumericType(propertyType)) {
+        } else if (TypeUtils.isNumericType(propertyType)) {
             CustomNumberCellEditor editor = new CustomNumberCellEditor(parent, propertyType);
             setValidator(editor, property, object);
             return editor;
-        } else if (BeanUtils.isBooleanType(propertyType)) {
+        } else if (TypeUtils.isBooleanType(propertyType)) {
             if (isPropertySheet) {
                 return new CustomComboBoxCellEditor(parent, new String[] { Boolean.TRUE.toString(), Boolean.FALSE.toString()} , SWT.DROP_DOWN | SWT.READ_ONLY);
             } else {

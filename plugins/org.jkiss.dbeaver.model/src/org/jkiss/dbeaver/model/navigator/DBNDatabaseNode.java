@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
+import org.jkiss.utils.TypeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -918,7 +919,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             return null;
         }
         Type propType = getter.getGenericReturnType();
-        return BeanUtils.getCollectionType(propType);
+        return TypeUtils.getCollectionType(propType);
     }
 
     private Class<?> getChildrenOrFolderClass(DBXTreeItem childMeta) {

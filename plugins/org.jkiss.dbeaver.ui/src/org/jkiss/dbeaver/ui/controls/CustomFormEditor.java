@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
+import org.jkiss.utils.TypeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -304,10 +305,10 @@ public class CustomFormEditor {
                     SWT.BORDER |
                         (readOnly ? SWT.READ_ONLY : SWT.NONE) |
                         (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).isPassword() ? SWT.PASSWORD : SWT.NONE));
-                text.setLayoutData(new GridData((BeanUtils.isNumericType(propType) ? GridData.HORIZONTAL_ALIGN_BEGINNING : GridData.FILL_HORIZONTAL) | GridData.VERTICAL_ALIGN_BEGINNING));
+                text.setLayoutData(new GridData((TypeUtils.isNumericType(propType) ? GridData.HORIZONTAL_ALIGN_BEGINNING : GridData.FILL_HORIZONTAL) | GridData.VERTICAL_ALIGN_BEGINNING));
                 return text;
             }
-        } else if (BeanUtils.isBooleanType(propType)) {
+        } else if (TypeUtils.isBooleanType(propType)) {
             if (curButtonsContainer == null) {
                 UIUtils.createEmptyLabel(parent, 1, 1);
                 curButtonsContainer = new Composite(parent, SWT.NONE);
@@ -433,7 +434,7 @@ public class CustomFormEditor {
     private static boolean isTextPropertyType(Class<?> propertyType) {
         return propertyType == null || CharSequence.class.isAssignableFrom(propertyType) ||
             (propertyType.getComponentType() != null && CharSequence.class.isAssignableFrom(propertyType.getComponentType())) ||
-            BeanUtils.isNumericType(propertyType);
+            TypeUtils.isNumericType(propertyType);
     }
 
     public List<DBPPropertyDescriptor> filterProperties(DBPPropertyDescriptor[] props) {
