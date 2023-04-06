@@ -17,6 +17,11 @@
 
 package org.jkiss.utils;
 
+import org.jkiss.code.Decoder;
+import org.jkiss.utils.Decoder.Decoder1;
+import org.jkiss.utils.Decoder.Decoder2;
+import org.jkiss.utils.Decoder.Decoder3;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -25,12 +30,12 @@ import java.io.Writer;
 public final class Base64 {
 
     private static final char[] S_BASE64CHAR = {
-        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 
-        'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 
-        'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 
-        'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 
-        'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 
-        'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', 
+        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+        'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+        'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd',
+        'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+        'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
+        'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
         '8', '9', '+', '/'
     };
 
@@ -49,25 +54,26 @@ public final class Base64 {
         int outlen = 3;
         if (ibuf[3] == S_BASE64PAD)  outlen = 2;
         if (ibuf[2] == S_BASE64PAD)  outlen = 1;
-        int b0 = S_DECODETABLE[ibuf[0]];
-        int b1 = S_DECODETABLE[ibuf[1]];
-        int b2 = S_DECODETABLE[ibuf[2]];
-        int b3 = S_DECODETABLE[ibuf[3]];
+        int[] decodedBytes = new int[] {
+                S_DECODETABLE[ibuf[0]],
+                S_DECODETABLE[ibuf[1]],
+                S_DECODETABLE[ibuf[2]],
+                S_DECODETABLE[ibuf[3]]
+        };
+        Decoder decoder;
         switch (outlen) {
-          case 1:
-            obuf[wp] = (byte)(b0 << 2 & 0xfc | b1 >> 4 & 0x3);
-            return 1;
-          case 2:
-            obuf[wp++] = (byte)(b0 << 2 & 0xfc | b1 >> 4 & 0x3);
-            obuf[wp] = (byte)(b1 << 4 & 0xf0 | b2 >> 2 & 0xf);
-            return 2;
-          case 3:
-          default:
-            obuf[wp++] = (byte)(b0 << 2 & 0xfc | b1 >> 4 & 0x3);
-            obuf[wp++] = (byte)(b1 << 4 & 0xf0 | b2 >> 2 & 0xf);
-            obuf[wp] = (byte)(b2 << 6 & 0xc0 | b3 & 0x3f);
-            return 3;
+            case 1:
+                decoder = new Decoder1();
+                break;
+            case 2:
+                decoder = new Decoder2();
+                break;
+            case 3:
+            default:
+                decoder = new Decoder3();
+                break;
         }
+        return decoder.decode(decodedBytes, obuf, wp);
     }
 
     /**
@@ -178,7 +184,7 @@ public final class Base64 {
     /**
      * Returns base64 representation of specified byte array.
      */
-    public static String encode(byte[] data, int off, int len) 
+    public static String encode(byte[] data, int off, int len)
     {
         if (len <= 0)  return "";
         char[] out = new char[len/3*4+4];
@@ -293,7 +299,7 @@ public final class Base64 {
     /**
      * Outputs base64 representation of the specified input stream to a character stream.
      */
-    public static void encode(InputStream stream, long len, Writer writer) 
+    public static void encode(InputStream stream, long len, Writer writer)
     	throws IOException
     {
         if (len <= 0)  return;
