@@ -14,31 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.imageview;
+package org.jkiss.dbeaver.ui.editors;
 
-import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.swt.widgets.Composite;
-import org.jkiss.code.Nullable;
+import org.eclipse.ui.IEditorInput;
+import org.jkiss.code.NotNull;
 
-import java.nio.file.Path;
-
-public abstract class AbstractImageViewer extends Composite implements ImageViewer {
-
-    public AbstractImageViewer(Composite parent, int style) {
-        super(parent, style);
-    }
+/**
+ * An editor input can can be unloaded back to its lazy variant.
+ */
+public interface IUnloadableEditorInput extends IEditorInput {
 
     /**
-     * Fills provided toolbar with actions
+     * Creates a new editor input that represent this editor input
+     * but in a lazy variant so it can be loaded on demand later.
      *
-     * @param toolBar toolbar to fill
+     * @return a new editor input instance
      */
-    public void fillToolBar(IContributionManager toolBar) {
-
-    }
-
-    @Nullable
-    public Path getExternalFilePath() {
-        return null;
-    }
+    @NotNull
+    ILazyEditorInput unloadInput();
 }
