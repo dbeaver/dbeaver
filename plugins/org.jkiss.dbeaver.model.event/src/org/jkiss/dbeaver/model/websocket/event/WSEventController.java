@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.websocket.WSEventHandler;
+import org.jkiss.dbeaver.model.websocket.registry.WSEventHandlerDescriptor;
 import org.jkiss.dbeaver.model.websocket.registry.WSEventHandlersRegistry;
 
 import java.util.ArrayList;
@@ -37,9 +38,15 @@ public class WSEventController {
     protected final List<WSEvent> eventsPool = new ArrayList<>();
 
     public WSEventController() {
-        var eventHandlers = WSEventHandlersRegistry.getInstance().getEventHandlers();
 
-        eventHandlers.forEach(handler -> eventHandlersByType.computeIfAbsent(handler.getSupportedTopicId(), x -> new ArrayList<>()).add(handler));
+        var eventHandlerDescriptors = WSEventHandlersRegistry.getInstance().readDescriptors();
+
+        eventHandlerDescriptors.forEach(descriptor -> {
+            var handler = descriptor.getInstance();
+            descriptor.getSupportedTopics().forEach(
+                topic -> eventHandlersByType.computeIfAbsent(topic, x -> new ArrayList<>()).add(handler)
+            );
+        });
     }
 
     /**
