@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.antlr.model;
 
+import org.jkiss.code.NotNull;
+
 public final class TermSyntaxNode extends AbstractSyntaxNode {
     
     private String content;
@@ -24,10 +26,11 @@ public final class TermSyntaxNode extends AbstractSyntaxNode {
         super(null);
     }
     
-    public void setContent(String value) {
+    public void setContent(@NotNull String value) {
         this.content = value;
     }
     
+    @NotNull
     public String getContent() {
         return this.content;
     }

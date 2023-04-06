@@ -1,0 +1,166 @@
+package org.jkiss.dbeaver.antlr.model.internal;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RuleContext;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.tree.Trees;
+import org.jkiss.dbeaver.antlr.model.AbstractSyntaxNode;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+public class TreeRuleNode extends ParserRuleContext implements Element, CustomXPathModelElementBase {
+
+    public interface SubnodesList extends NodeList {
+        List<CustomXPathModelNodeBase> getCollection();
+        CustomXPathModelNodeBase item(int index);
+        CustomXPathModelNodeBase getFirst();
+        CustomXPathModelNodeBase getLast();
+    }
+    
+    private class SubnodesListImpl implements SubnodesList {
+        
+        public List<CustomXPathModelNodeBase> getCollection() {
+            return (List<CustomXPathModelNodeBase>)(Object)TreeRuleNode.this.children;
+        }
+        
+        @Override
+        public CustomXPathModelNodeBase item(int index) {
+            List<CustomXPathModelNodeBase> items = getCollection();
+            return index < 0 || index >= items.size() ? null : items.get(index);
+        }
+
+        @Override
+        public int getLength() {
+            return getCollection().size();
+        }
+
+        public CustomXPathModelNodeBase getFirst() {
+            List<CustomXPathModelNodeBase> items = getCollection();
+            return items.size() > 0 ? items.get(0) : null;
+        }
+
+        public CustomXPathModelNodeBase getLast() {
+            List<CustomXPathModelNodeBase> items = getCollection();
+            return items.size() > 0 ? items.get(items.size() - 1) : null;
+        }
+    }
+    
+    private String nodeName = null;
+    private int index = -1;
+    private SubnodesList subnodes = new SubnodesListImpl();
+    private AbstractSyntaxNode model;
+    private Map<String, Object> userData;
+    
+    public TreeRuleNode() {
+        super();
+    }
+
+    public TreeRuleNode(ParserRuleContext parent, int invokingStateNumber) {
+        super(parent, invokingStateNumber);
+    }    
+    
+    @Override
+    public int getIndex() {
+        return index;
+    }
+    
+    public void setModel(AbstractSyntaxNode model) {
+        if (this.model != null) {
+            throw new IllegalStateException();
+        } else {
+            this.model = model;
+        }
+    }
+    
+    public AbstractSyntaxNode getModel() {
+        return this.model;
+    }
+    
+    @Override
+    public void fixup(Parser parserCtx, int index) {
+        this.index = index;
+        if (this.getChildCount() > 0) {
+            nodeName = Trees.getNodeText(this, parserCtx);
+            List<CustomXPathModelNodeBase> subnodes = getSubnodes().getCollection();
+            for (int i = 0; i < subnodes.size(); i ++) {
+                subnodes.get(i).fixup(parserCtx, index);
+            }
+        } else {
+            throw new IllegalStateException(); // Should never happen?
+        }
+    }
+    
+    @Override
+    public RuleContext addChild(RuleContext ruleInvocation) {
+        if (!(ruleInvocation instanceof CustomXPathModelNodeBase)) {
+            throw new IllegalStateException();
+        } else {
+            return super.addChild(ruleInvocation);
+        }
+    }
+    
+    @Override
+    public TerminalNode addChild(Token matchedToken) {
+        return super.addChild(new TreeTermNode(matchedToken));
+    }
+    
+    @Override
+    public TerminalNode addChild(TerminalNode t) {
+        if (!(t instanceof CustomXPathModelNodeBase)) {
+            throw new IllegalStateException();
+        } else {
+            return super.addChild(t);
+        }
+    }
+    
+    @Override
+    public <T extends ParseTree> T addAnyChild(T t) {
+        if (!(t instanceof CustomXPathModelNodeBase)) {
+            throw new IllegalStateException();
+        } else {
+            return super.addAnyChild(t);
+        }
+    }
+    
+    @Override
+    public ErrorNode addErrorNode(Token badToken) {
+        return super.addAnyChild(new TreeTermErrorNode(badToken));
+    }
+    
+    @Override
+    public ErrorNode addErrorNode(ErrorNode errorNode) {
+        if (!(errorNode instanceof CustomXPathModelNodeBase)) {
+            throw new IllegalStateException();
+        } else {
+            return super.addErrorNode(errorNode);
+        }
+    }
+    
+    public SubnodesList getSubnodes() {
+        return this.subnodes;
+    }
+
+    @Override
+    public String getNodeName() {
+        return nodeName;
+    }
+
+    @Override
+    public short getNodeType() {
+        return Node.ELEMENT_NODE;
+    }
+    
+    @Override
+    public Map<String, Object> getUserDataMap(boolean createIfMissing) {
+        return userData != null ? userData : (userData = new HashMap<>());
+    }
+}

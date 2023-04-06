@@ -26,15 +26,17 @@ import org.jkiss.dbeaver.antlr.model.SyntaxTerm;
 @SyntaxNode(name = "queryExpression")
 public class SelectStatement extends AbstractSyntaxNode {
 
-    @SyntaxTerm(xpath = "./nonJoinQueryTerm/queryPrimary/nonJoinQueryPrimary/simpleTable/querySpecification/setQuantifier")
+    private static final String nonJoinSimpleQuerySpecPath = "./nonJoinQueryTerm/queryPrimary/nonJoinQueryPrimary/simpleTable/querySpecification";
+    
+    @SyntaxTerm(xpath = nonJoinSimpleQuerySpecPath + "/setQuantifier")
     public SelectQuantifier quantifier;
     
-    @SyntaxSubnode(type = SelectionItem.class, xpath = "./nonJoinQueryTerm/queryPrimary/nonJoinQueryPrimary/simpleTable/querySpecification/selectList/selectSublist")
+    @SyntaxSubnode(type = SelectionItem.class, xpath = nonJoinSimpleQuerySpecPath + "/selectList/selectSublist")
     public List<SelectionItem> columns;
     
-    @SyntaxSubnode(type = SelectionSource.Table.class, xpath = "./nonJoinQueryTerm/queryPrimary/nonJoinQueryPrimary/simpleTable/querySpecification/tableExpression/fromClause/tableReference/nonjoinedTableReference")
-    @SyntaxSubnode(type = SelectionSource.Table.class, xpath = "./nonJoinQueryTerm/queryPrimary/nonJoinQueryPrimary/simpleTable/querySpecification/tableExpression/fromClause/tableReference/joinedTable/nonjoinedTableReference")                                                                        
-    @SyntaxSubnode(type = SelectionSource.CrossJoin.class, xpath = "./nonJoinQueryTerm/queryPrimary/nonJoinQueryPrimary/simpleTable/querySpecification/tableExpression/fromClause/tableReference/joinedTable/crossJoinTerm")                                                                        
-    @SyntaxSubnode(type = SelectionSource.NaturalJoin.class, xpath = "./nonJoinQueryTerm/queryPrimary/nonJoinQueryPrimary/simpleTable/querySpecification/tableExpression/fromClause/tableReference/joinedTable/naturalJoinTerm")                                                                        
+    @SyntaxSubnode(type = SelectionSource.Table.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/fromClause/tableReference/nonjoinedTableReference")
+    @SyntaxSubnode(type = SelectionSource.Table.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/fromClause/tableReference/joinedTable/nonjoinedTableReference")
+    @SyntaxSubnode(type = SelectionSource.CrossJoin.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/fromClause/tableReference/joinedTable/crossJoinTerm")
+    @SyntaxSubnode(type = SelectionSource.NaturalJoin.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/fromClause/tableReference/joinedTable/naturalJoinTerm")
     public List<SelectionSource> sources;
 }

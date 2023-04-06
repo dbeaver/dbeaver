@@ -17,5 +17,5 @@
 package org.jkiss.dbeaver.antlr.sql.model;
 
 public class ValueExpression {
-    // TODO:
+    // TODO: create model and mapping for conditions
 }

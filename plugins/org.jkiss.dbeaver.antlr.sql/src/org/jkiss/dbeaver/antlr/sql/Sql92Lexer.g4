@@ -389,9 +389,9 @@ Sign: (PlusSign|MinusSign);
 fragment NonquoteCharacter: ~'~';
 QuoteSymbol: Quote Quote;
 Introducer: Underscore;
-NewLine: '\r'? '\n';
-Space: [ \r\n\t]+ -> skip ; // toss out whitespace
-Separator: ((Comment|Space|NewLine))+;
+fragment NewLine: ([\r][\n])|[\n]|[\r];
+Separator: ((Comment|NewLine|Space))+ -> skip;
+Space: [ \t]+;
 Comment: CommentIntroducer ((CommentCharacter)+)? NewLine;
 fragment CommentIntroducer: MinusSign MinusSign ((MinusSign)+)?;
 fragment CommentCharacter: (NonquoteCharacter|Quote);

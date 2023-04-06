@@ -1,0 +1,26 @@
+package org.jkiss.dbeaver.antlr.model.internal;
+
+import java.lang.reflect.Constructor;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+
+import org.jkiss.dbeaver.antlr.model.AbstractSyntaxNode;
+
+public class NodeTypeInfo {
+    public final String ruleName;
+    public final Class<? extends AbstractSyntaxNode> type;
+    public final Constructor<? extends AbstractSyntaxNode> ctor;
+    public final Map<String, NodeFieldInfo> fields;
+
+    public NodeTypeInfo(String ruleName, Class<? extends AbstractSyntaxNode> type, Constructor<? extends AbstractSyntaxNode> ctor, Map<String, NodeFieldInfo> fields) {
+        this.ruleName = ruleName;
+        this.type = type;
+        this.ctor = ctor;
+        this.fields = Collections.unmodifiableMap(fields);
+    }
+    
+    public Collection<NodeFieldInfo> getFields() {
+        return this.fields.values();
+    }     
+}

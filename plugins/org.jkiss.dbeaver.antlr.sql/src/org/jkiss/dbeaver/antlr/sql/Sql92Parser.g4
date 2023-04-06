@@ -1,3 +1,4 @@
+
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2023 DBeaver Corp and others
@@ -18,6 +19,8 @@ parser grammar Sql92Parser;
 
 options {
     tokenVocab=Sql92Lexer;
+    superClass=org.jkiss.dbeaver.antlr.model.internal.ParserOverrides;
+    contextSuperClass=org.jkiss.dbeaver.antlr.model.internal.TreeRuleNode;
 }
 
 @header {
@@ -48,7 +51,7 @@ schemaName: (catalogName Period)? unqualifiedSchemaName;
 unqualifiedSchemaName: identifier;
 catalogName: identifier;
 identifier: (Introducer characterSetSpecification)? actualIdentifier;
-actualIdentifier: (Identifier|DelimitedIdentifier);
+actualIdentifier: (Identifier|DelimitedIdentifier|NAME);
 
 // date-time literals
 dateString: Quote dateValue Quote;

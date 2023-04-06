@@ -16,11 +16,13 @@
  */
 grammar Sql92MySqlExtensionParser;
 
+import Sql92Parser;
+
 options {
     tokenVocab=Sql92MySqlExtensionLexer;
+    superClass=org.jkiss.dbeaver.antlr.model.internal.ParserOverrides;
+    contextSuperClass=org.jkiss.dbeaver.antlr.model.internal.TreeRuleNode;
 }
-
-import Sql92Parser;
 
 // See https://dev.mysql.com/doc/refman/8.0/en/extensions-to-ansi.html
 

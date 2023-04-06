@@ -19,6 +19,15 @@ package org.jkiss.dbeaver.antlr.model;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.*;
+import org.jkiss.dbeaver.antlr.model.internal.CustomXPathFunctionResolver;
+import org.jkiss.dbeaver.antlr.model.internal.CustomXPathModelNodeBase;
+import org.jkiss.dbeaver.antlr.model.internal.FieldTypeKind;
+import org.jkiss.dbeaver.antlr.model.internal.LiteralTypeInfo;
+import org.jkiss.dbeaver.antlr.model.internal.NodeFieldInfo;
+import org.jkiss.dbeaver.antlr.model.internal.NodeFieldInfo.SubnodeInfo;
+import org.jkiss.dbeaver.antlr.model.internal.NodeTypeInfo;
+import org.jkiss.dbeaver.antlr.model.internal.NodesList;
+import org.jkiss.dbeaver.antlr.model.internal.TreeRuleNode.SubnodesList;
 import org.w3c.dom.*;
 
 import java.io.StringWriter;
@@ -47,855 +56,7 @@ import javax.xml.xpath.XPathEvaluationResult.XPathResultType;
 
 
 public class SyntaxModel {
-    private enum FieldTypeKind {
-        String(true), 
-        Byte(true),
-        Short(true), 
-        Int(true),
-        Long(true),
-        Bool(true),
-        Float(true),
-        Double(true),
-        Enum(true),
-        Object(false),
-        Array(false),
-        List(false);
-        
-        public final boolean isTerm;
-        
-        FieldTypeKind(boolean isTerm) {
-            this.isTerm = isTerm;
-        }
-    }
-    
-    private class LiteralTypeInfo {
-        public final String ruleName;
-        public final Class<?> type;
-        public final XPathExpression stringExpr;
-        public final Map<Object, XPathExpression> exprByValue;
-        public final Map<String, Object> valuesByName;
-        public final boolean isCaseSensitive;
-        
-        public LiteralTypeInfo(String ruleName, Class<?> type, XPathExpression stringExpr, Map<Object, XPathExpression> exprByValue, Map<String, Object> valuesByName, boolean isCaseSensitive) {
-            this.ruleName = ruleName;
-            this.type = type;
-            this.stringExpr = stringExpr;
-            this.exprByValue = exprByValue;
-            this.valuesByName = valuesByName;
-            this.isCaseSensitive = isCaseSensitive;
-        }        
-    }
-    
-    
-    private class NodeFieldSubnodeInfo {
-        public final XPathExpression scopeExpr;
-        public final Class<? extends AbstractSyntaxNode> subnodeType;
-        public final SyntaxSubnodeLookupMode lookupMode;
-        
-        public NodeFieldSubnodeInfo(XPathExpression scopeExpr, Class<? extends AbstractSyntaxNode> subnodeType, SyntaxSubnodeLookupMode lookupMode) {
-            this.scopeExpr = scopeExpr;
-            this.subnodeType = subnodeType;
-            this.lookupMode = lookupMode;
-        }
-    }
-    
-    private class NodeFieldInfo {
-        private final FieldTypeKind kind;
-        private final Field info;
-        private final List<XPathExpression> termExprs;
-        private final List<NodeFieldSubnodeInfo> subnodesInfo;
-        
-        public NodeFieldInfo(FieldTypeKind kind, Field info, List<XPathExpression> termExprs, List<NodeFieldSubnodeInfo> subnodesInfo) {
-            this.kind = kind;
-            this.info = info;
-            this.termExprs = termExprs;
-            this.subnodesInfo = subnodesInfo;
-        }
-        
-        public FieldTypeKind getKind() {
-            return this.kind;
-        }
 
-        public String getName() {
-            return this.info.getName();
-        }
-
-        public void bindValue(NodeInfo nodeInfo, List<Node> subnodes) {
-            try {
-                this.bindValueImpl(nodeInfo, new XPathEvaluationResult<XPathNodes>() {
-                    @Override
-                    public XPathResultType type() {
-                        return XPathResultType.NODESET;
-                    }
-
-                    @Override
-                    public XPathNodes value() {
-                        return new XPathNodes() {
-                            @Override
-                            public int size() {
-                                return subnodes.size();
-                            }
-
-                            @Override
-                            public Iterator<Node> iterator() {
-                                return subnodes.iterator();
-                            }
-
-                            @Override
-                            public Node get(int index) throws XPathException {
-                                return subnodes.get(index);
-                            }
-                        };
-                    }
-                });
-            } catch (IllegalArgumentException | IllegalAccessException ex) {
-                throw new RuntimeException("Failed to bind " + this.info.getName(), ex);
-            }            
-        }
-
-        public void bindValue(NodeInfo nodeInfo, NodeInfo subnode) {
-            try {
-                this.bindValueImpl(nodeInfo, new XPathEvaluationResult<Node>() {
-                    @Override
-                    public XPathResultType type() {
-                        return XPathResultType.NODE;
-                    }
-
-                    @Override
-                    public Node value() {
-                        return subnode;
-                    }
-                });
-            } catch (IllegalArgumentException | IllegalAccessException ex) {
-                throw new RuntimeException("Failed to bind " + this.info.getName(), ex);
-            }            
-        }
-        
-        public void bindValue(NodeInfo nodeInfo, XPathEvaluationResult<?> xvalue) {
-            try {
-                this.bindValueImpl(nodeInfo, xvalue);
-            } catch (IllegalArgumentException | IllegalAccessException ex) {
-                throw new RuntimeException("Failed to bind " + this.info.getName(), ex);
-            }            
-        }
-
-        public Object getValue(AbstractSyntaxNode model) {
-            try {
-                return this.info.get(model);
-            } catch (IllegalArgumentException | IllegalAccessException ex) {
-                throw new RuntimeException("Failed to bind " + this.info.getName(), ex);
-            }
-        }
-        
-        private String getScalarString(XPathEvaluationResult<?> xvalue) {
-            try {
-                switch (xvalue.type()) {
-                    case NODE:
-                        @SuppressWarnings("unchecked") 
-                        NodeInfo nodeInfo = (NodeInfo) xvalue.value();
-                        return nodeInfo.getNodeValue();
-                    case NODESET:
-                        XPathNodes nodes = (XPathNodes) xvalue.value();
-                        int count = nodes.size();
-                        if (count == 0) {
-                            return null;
-                        } else if (count == 1) {
-                            return nodes.get(0).getNodeValue().toString();
-                        } else {
-                            // TODO capture ambiguous binding error
-                            return nodes.get(0).getNodeValue().toString();
-                        }
-                    default:
-                        if (xvalue.value() != null) {
-                            return xvalue.value().toString();
-                        } else {
-                            return null;
-                        }
-                }
-            } catch (XPathException ex) {
-                ex.printStackTrace(); // TODO capture error
-                return null;
-            }
-        }
-        
-        private void bindValueImpl(NodeInfo nodeInfo, XPathEvaluationResult<?> xvalue) throws IllegalArgumentException, IllegalAccessException {
-            Object value;
-            switch (this.kind) {
-                case Object:
-                case Array:
-                case List:
-    //                if (subnode.model != null) {
-    //                    value = subnode.model;
-    //                    break;
-    //                }
-                    switch (xvalue.type()) {
-                        case NODE:
-                        case NODESET:
-                            value = xvalue.value();
-                            break;
-                        default:
-                            throw new RuntimeException("Not supported");
-                    }
-                    break;
-                case String: value = getScalarString(xvalue); break;
-                case Byte: value = Byte.parseByte(getScalarString(xvalue)); break;
-                case Short: value = Short.parseShort(getScalarString(xvalue)); break;
-                case Int: value = Integer.parseInt(getScalarString(xvalue)); break;
-                case Long: value = Long.parseLong(getScalarString(xvalue)); break;
-                case Bool: value = Boolean.parseBoolean(getScalarString(xvalue)); break;
-                case Float: value = Float.parseFloat(getScalarString(xvalue)); break;
-                case Double: value = Double.parseDouble(getScalarString(xvalue)); break;
-                case Enum:
-                    switch (xvalue.type()) {
-                        case NODE: 
-                            value = mapLiteralValue((NodeInfo) xvalue.value(), this.info.getType());
-                            break;
-                        case NODESET:
-                            XPathNodes nodes = (XPathNodes) xvalue.value();
-                            if (nodes.size() == 1) {
-                                try {
-                                    value = mapLiteralValue((NodeInfo) nodes.get(0), this.info.getType());
-                                } catch (XPathException e) {
-                                    throw new RuntimeException(e); // TODO collect errors
-                                }
-                            } else {                                
-                                value = null;
-                            }
-                            break;
-                        default:
-                            throw new RuntimeException("Not supported");
-                    }
-                    break;
-                default: throw new RuntimeException("Unexpected syntax model field kind " + this.kind);
-            }
-            
-            switch (this.kind) {
-                case Object: {
-                    if (value instanceof NodeInfo) {
-                        @SuppressWarnings("unchecked")
-                        NodeInfo subnodeInfo = (NodeInfo) value;
-                        if (subnodeInfo.model != null) {
-                            this.info.set(nodeInfo.model, subnodeInfo.model);
-                        }
-                    } else {
-                        this.info.set(nodeInfo.model, value);
-                    }
-                    break;
-                }
-                case Array: { // TODO
-    //                int index;
-    //                Object newArr, oldArr = this.info.get(nodeInfo.model);
-    //                Class<?> itemType = this.info.getType().getComponentType();
-    //                if (value != null) {
-    //                    index = Array.getLength(oldArr);
-    //                    newArr = Array.newInstance(itemType, index + 1);
-    //                    System.arraycopy(oldArr, 0, newArr, 0, index);
-    //                } else {
-    //                    index = 0;
-    //                    newArr = Array.newInstance(itemType, 1);
-    //                }
-    //                Array.set(newArr, index, value);
-    //                this.info.set(nodeInfo.model, newArr);
-    //                break;
-                    throw new UnsupportedOperationException("TODO");
-                }
-                case List: {
-                    @SuppressWarnings("unchecked")
-                    List<Object> list = (List<Object>) this.info.get(nodeInfo.model);
-                    if (list == null) {
-                        this.info.set(nodeInfo.model, list = new ArrayList<>());
-                    } else {
-                        list.clear();
-                    }
-                    if (value instanceof XPathNodes) {
-                        XPathNodes nodes = (XPathNodes) value;
-                        if (list instanceof ArrayList<?>) {
-                            ((ArrayList<?>) list).ensureCapacity(nodes.size());
-                        }
-                        for (var xnode: nodes) {
-                            if (xnode instanceof NodeInfo) {
-                                @SuppressWarnings("unchecked")
-                                NodeInfo subnodeInfo = (NodeInfo) xnode;
-                                if (subnodeInfo.model != null) {
-                                    list.add(subnodeInfo.model);
-                                }
-                            }
-                        }
-                    } else if (value instanceof NodeInfo) {
-                        @SuppressWarnings("unchecked")
-                        NodeInfo subnodeInfo = (NodeInfo) value;
-                        if (subnodeInfo.model != null) {
-                            list.add(subnodeInfo.model);
-                        }
-                    } else {
-                        list.add(value);
-                    }
-                    break;
-                }
-                default:
-                    this.info.set(nodeInfo.model, value);
-                    break;
-            }
-        }
-    }
-    
-    private class NodeTypeInfo {
-        private final String ruleName;
-        private final Class<? extends AbstractSyntaxNode> type;
-        private final Constructor<? extends AbstractSyntaxNode> ctor;
-        private final Map<String, NodeFieldInfo> fields;
-
-        public NodeTypeInfo(String ruleName, Class<? extends AbstractSyntaxNode> type, Constructor<? extends AbstractSyntaxNode> ctor, Map<String, NodeFieldInfo> fields) {
-            this.ruleName = ruleName;
-            this.type = type;
-            this.ctor = ctor;
-            this.fields = Collections.unmodifiableMap(fields);
-        }
-        
-        public Collection<NodeFieldInfo> getFields() {
-            return this.fields.values();
-        }
-
-        public Class<? extends AbstractSyntaxNode> getType() {
-            return this.type;
-        }
-        
-        public AbstractSyntaxNode instantiateAndFill(NodeInfo nodeInfo) {
-            try {
-                if (nodeInfo.model == null) {
-                    nodeInfo.model = this.ctor.newInstance();
-                }
-            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                throw new RuntimeException("Failed to instantiate " + this.type.getName(), ex);
-            }
-            
-            Set<NodeInfo> subnodes = new HashSet<NodeInfo>(5);
-            for (var field : this.fields.values()) {
-                subnodes.clear();
-                for (var expr : field.termExprs) {
-                    try {
-                        XPathEvaluationResult<?> value = expr.evaluateExpression(nodeInfo);
-                        field.bindValue(nodeInfo, value);
-                    } catch (XPathExpressionException e) {
-                        // TODO collect error info
-                        e.printStackTrace();
-                    }
-                }
-                if (field.kind == FieldTypeKind.Array || field.kind == FieldTypeKind.List) {
-                    for (var subnodeInfo : field.subnodesInfo) {
-                        boolean tryDescedants = subnodeInfo.lookupMode == SyntaxSubnodeLookupMode.DEPTH_FIRST;
-                        try {
-                            if (subnodeInfo.scopeExpr != null) {
-                                XPathEvaluationResult<?> scopeOrSubnode = subnodeInfo.scopeExpr.evaluateExpression(nodeInfo);
-                                if (scopeOrSubnode.type() == XPathResultType.NODESET && scopeOrSubnode.value() instanceof XPathNodes) {
-                                    for (var scopeSubnode : (XPathNodes) scopeOrSubnode.value()) {
-                                        if (scopeSubnode instanceof NodeInfo) {
-                                            mapSubtrees((NodeInfo) scopeSubnode, subnodeInfo.subnodeType, true, tryDescedants, subnodes);
-                                        }
-                                    }
-                                } else if (scopeOrSubnode.type() == XPathResultType.NODE && scopeOrSubnode.value() instanceof NodeInfo) {
-                                    mapSubtrees((NodeInfo) scopeOrSubnode.value(), subnodeInfo.subnodeType, true, tryDescedants, subnodes);
-                                }
-                            } else {
-                                if (tryDescedants) {
-                                    mapSubtrees(nodeInfo, subnodeInfo.subnodeType, false, true, subnodes);
-                                } else {
-                                    for (var candidateSubnode : nodeInfo.getSubnodes()) {
-                                        mapSubtrees(candidateSubnode, subnodeInfo.subnodeType, true, false, subnodes);
-                                    }
-                                }
-                            }
-                        } catch (XPathExpressionException e) {
-                            // TODO collect error info
-                            e.printStackTrace();
-                        }
-                    }
-                    List<Node> orderedSubnodes = subnodes.stream()
-                        .sorted(Comparator.comparingInt(a -> a.model.getStartPosition()))
-                        .collect(Collectors.toList());
-                    field.bindValue(nodeInfo, orderedSubnodes);
-                } else {
-                    for (var subnodeInfo : field.subnodesInfo) {
-                        boolean tryDescedants = subnodeInfo.lookupMode == SyntaxSubnodeLookupMode.DEPTH_FIRST;
-                        try {
-                            NodeInfo subnode = null;
-                            if (subnodeInfo.scopeExpr != null) {
-                                XPathEvaluationResult<?> scopeOrSubnode = subnodeInfo.scopeExpr.evaluateExpression(nodeInfo);
-                                if (scopeOrSubnode.type() == XPathResultType.NODESET && scopeOrSubnode.value() instanceof XPathNodes) {
-                                    for (var scopeSubnode : (XPathNodes) scopeOrSubnode.value()) {
-                                        if (scopeSubnode instanceof NodeInfo) {
-                                            subnode = mapSubtree((NodeInfo) scopeSubnode, subnodeInfo.subnodeType, true, tryDescedants);
-                                            if (subnode != null) {
-                                                break;
-                                            }
-                                        }
-                                    }
-                                } else if (scopeOrSubnode.type() == XPathResultType.NODE && scopeOrSubnode.value() instanceof NodeInfo) {
-                                    subnode = mapSubtree((NodeInfo) scopeOrSubnode.value(), subnodeInfo.subnodeType, true, tryDescedants);
-                                }
-                            } else {
-                                if (tryDescedants) {
-                                    subnode = mapSubtree(nodeInfo, subnodeInfo.subnodeType, false, true);
-                                } else {
-                                    for (var candidateSubnode : nodeInfo.getSubnodes()) {
-                                        mapSubtrees(candidateSubnode, subnodeInfo.subnodeType, true, false, subnodes);
-                                    }
-                                }
-                            }
-                            if (subnode != null) {
-                                field.bindValue(nodeInfo, subnode);
-                                break;
-                            }
-                        } catch (XPathExpressionException e) {
-                            // TODO collect error info
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-            
-            if (nodeInfo.node instanceof SyntaxTree) {
-                SyntaxTree snode = (SyntaxTree) nodeInfo.node;
-                nodeInfo.model.setStartPosition(snode.getSourceInterval().a);
-                nodeInfo.model.setEndPosition(snode.getSourceInterval().b);
-            }
-            return nodeInfo.model;
-        }        
-    }
-    
-    private static class NodesList<T extends Node> extends ArrayList<T> implements NodeList {
-        public NodesList() {
-            super();
-        }
-        
-        public NodesList(int capacity) {
-            super(capacity);
-        }
-
-        @Override
-        public T item(int index) {
-            return index < 0 || index >= this.size() ? null : this.get(index);
-        }
-
-        @Override
-        public int getLength() {
-            return this.size();
-        }
-
-        public T getFirst() {
-            return this.size() > 0 ? this.get(0) : null;
-        }
-
-        public T getLast() {
-            return this.size() > 0 ? this.get(this.size() - 1) : null;
-        }
-    }
-    
-    private static class SubnodesList extends NodesList<NodeInfo> {
-        
-        public SubnodesList() {
-            super();
-        }
-        
-        public SubnodesList(int capacity) {
-            super(capacity);
-        }
-    }
-    
-    private class NodeInfo implements Element {
-        private final NodeInfo parent;
-        private final Tree node;
-        private final int index;
-        private SubnodesList subnodes;
-        private AbstractSyntaxNode model;
-        private Map<String, Object> userData;
-            
-        public NodeInfo(NodeInfo parent, Tree node, int index) {
-            this.parent = parent;
-            this.node = node;
-            this.index = index;
-            this.subnodes = null;
-            this.model = null;
-            this.userData = null;
-        }
-        
-        public SubnodesList getSubnodes() {
-            if (this.subnodes == null) {
-                int count = node.getChildCount();
-                var subnodes = new SubnodesList(count);
-                for (int i = 0; i < count; i++) {
-                    subnodes.add(new NodeInfo(this, node.getChild(i), i));
-                }
-                this.subnodes = subnodes;
-            }
-            return this.subnodes;
-        }
-
-        @Override
-        public String getNodeName() {
-            if (node.getChildCount() > 0) {
-                return Trees.getNodeText(node, parser);
-            } else {
-                return "#text";
-            }
-        }
-
-        @Override
-        public String getNodeValue() throws DOMException {
-            return getText(node);
-        }
-
-        @Override
-        public void setNodeValue(String nodeValue) throws DOMException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public short getNodeType() {
-            if (node.getChildCount() > 0) {
-                return Node.ELEMENT_NODE;
-            } else {
-                return Node.TEXT_NODE;
-            }
-        }
-
-        @Override
-        public Node getParentNode() {
-            return parent;
-        }
-        
-        @Override
-        public NodeList getChildNodes() {
-            return this.getSubnodes();
-        }
-
-        @Override
-        public Node getFirstChild() {
-            return this.getSubnodes().getFirst();
-        }
-
-        @Override
-        public Node getLastChild() {
-            return this.getSubnodes().getLast();
-        }
-
-        @Override
-        public Node getPreviousSibling() {
-            return this.parent == null ? null : this.parent.getSubnodes().item(this.index - 1);
-        }
-
-        @Override
-        public Node getNextSibling() {
-            return this.parent == null ? null : this.parent.getSubnodes().item(this.index + 1);
-        }
-
-        @Override
-        public NamedNodeMap getAttributes() {
-            return EmptyAttrsMap.INSTANCE;
-        }
-
-        @Override
-        public Document getOwnerDocument() {
-            return null;
-        }
-
-        @Override
-        public Node insertBefore(Node newChild, Node refChild) throws DOMException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Node replaceChild(Node newChild, Node oldChild) throws DOMException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Node removeChild(Node oldChild) throws DOMException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Node appendChild(Node newChild) throws DOMException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean hasChildNodes() {
-            return this.getSubnodes().size() > 0;
-        }
-
-        @Override
-        public Node cloneNode(boolean deep) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void normalize() {
-            // do nothing
-        }
-
-        @Override
-        public boolean isSupported(String feature, String version) {
-            return false;
-        }
-
-        @Override
-        public String getNamespaceURI() {
-            return null;
-        }
-
-        @Override
-        public String getPrefix() {
-            return null;
-        }
-
-        @Override
-        public void setPrefix(String prefix) throws DOMException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String getLocalName() {
-            return this.getNodeName();
-        }
-
-        @Override
-        public boolean hasAttributes() {
-            return false;
-        }
-
-        @Override
-        public String getBaseURI() {
-            return null;
-        }
-
-        @Override
-        public short compareDocumentPosition(Node other) throws DOMException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String getTextContent() throws DOMException {
-            return this.getNodeValue();
-        }
-
-        @Override
-        public void setTextContent(String textContent) throws DOMException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean isSameNode(Node other) {
-            return this.equals(other);
-        }
-
-        @Override
-        public String lookupPrefix(String namespaceURI) {
-            return null;
-        }
-
-        @Override
-        public boolean isDefaultNamespace(String namespaceURI) {
-            return false;
-        }
-
-        @Override
-        public String lookupNamespaceURI(String prefix) {
-            return null;
-        }
-
-        @Override
-        public boolean isEqualNode(Node arg) {
-            return this.equals(arg);
-        }
-
-        @Override
-        public Object getFeature(String feature, String version) {
-            return null;
-        }
-
-        @Override
-        public Object setUserData(String key, Object data, UserDataHandler handler) {
-            if (this.userData == null) {
-                this.userData = new HashMap<>();
-            }
-            return this.userData.replace(key, data);
-        }
-
-        @Override
-        public Object getUserData(String key) {
-            return this.userData == null ? null : this.userData.get(key);
-        }
-
-        @Override
-        public String getTagName() {
-            return this.getLocalName();
-        }
-
-        @Override
-        public String getAttribute(String name) {
-            return null;
-        }
-
-        @Override
-        public void setAttribute(String name, String value) throws DOMException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void removeAttribute(String name) throws DOMException {
-            throw new UnsupportedOperationException();    
-        }
-
-        @Override
-        public Attr getAttributeNode(String name) {
-            return null;
-        }
-
-        @Override
-        public Attr setAttributeNode(Attr newAttr) throws DOMException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Attr removeAttributeNode(Attr oldAttr) throws DOMException {
-            throw new UnsupportedOperationException();
-        }
-
-        public NodeInfo findFirstDescedantByName(String ruleName) {
-            var stack = new Stack<NodeInfo>();
-            this.getSubnodes().forEach(n -> stack.push((NodeInfo)n));
-            
-            while (!stack.isEmpty()) {
-                NodeInfo nodeInfo = stack.pop();
-            
-                if (nodeInfo.getLocalName().equals(ruleName)) {
-                    return nodeInfo;
-                } else {
-                    SubnodesList subnodes = nodeInfo.getSubnodes();
-                    for (int i = subnodes.size() - 1; i >= 0; i--) {
-                        stack.push((NodeInfo) subnodes.get(i));
-                    }
-                }
-            }
-            
-            return null;
-        }
-        
-        public SubnodesList findDescedantLayerByName(String ruleName) {
-            var result = new SubnodesList(5);
-            var stack = new Stack<NodeInfo>();
-            this.getSubnodes().forEach(n -> stack.push((NodeInfo)n));
-            
-            while (!stack.isEmpty()) {
-                NodeInfo nodeInfo = stack.pop();
-            
-                if (nodeInfo.getLocalName().equals(ruleName)) {
-                    result.add(nodeInfo);
-                } else {
-                    SubnodesList subnodes = nodeInfo.getSubnodes();
-                    for (int i = subnodes.size() - 1; i >= 0; i--) {
-                        stack.push((NodeInfo) subnodes.get(i));
-                    }
-                }
-            }
-            
-            return result;
-        }
-        
-        @Override
-        public NodeList getElementsByTagName(String name) {
-            Predicate<Node> condition = "*".equals(name) ? n -> true : n -> n.getLocalName().equals(name);
-            var result = new SubnodesList(5);
-            var stack = new Stack<NodeInfo>();
-            this.getSubnodes().forEach(n -> stack.push((NodeInfo)n));
-            
-            while (!stack.isEmpty()) {
-                NodeInfo nodeInfo = stack.pop();
-            
-                if (nodeInfo != null) {
-                    stack.push(nodeInfo);
-                    stack.push(null);
-                    SubnodesList subnodes = nodeInfo.getSubnodes();
-                    for (int i = subnodes.size() - 1; i >= 0; i--) {
-                        stack.push((NodeInfo) subnodes.get(i));
-                    }
-                } else {
-                    nodeInfo = stack.pop();
-                    if (condition.test(nodeInfo)) {
-                        result.add(nodeInfo);
-                    }
-                }
-            }
-            
-            return result;
-        }
-
-        @Override
-        public String getAttributeNS(String namespaceURI, String localName) throws DOMException {
-            return null;
-        }
-
-        @Override
-        public void setAttributeNS(String namespaceURI, String qualifiedName, String value) throws DOMException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void removeAttributeNS(String namespaceURI, String localName) throws DOMException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Attr getAttributeNodeNS(String namespaceURI, String localName) throws DOMException {
-            return null;
-        }
-
-        @Override
-        public Attr setAttributeNodeNS(Attr newAttr) throws DOMException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public NodeList getElementsByTagNameNS(String namespaceURI, String localName) throws DOMException {
-            if (namespaceURI == null || namespaceURI.length() == 0) {
-                return this.getElementsByTagName(localName);
-            } else {
-                return null;
-            }
-        }
-
-        @Override
-        public boolean hasAttribute(String name) {
-            return false;
-        }
-
-        @Override
-        public boolean hasAttributeNS(String namespaceURI, String localName) throws DOMException {
-            return false;
-        }
-
-        @Override
-        public TypeInfo getSchemaTypeInfo() {
-            return null;
-        }
-
-        @Override
-        public void setIdAttribute(String name, boolean isId) throws DOMException {
-            throw new UnsupportedOperationException();            
-        }
-
-        @Override
-        public void setIdAttributeNS(String namespaceURI, String localName, boolean isId) throws DOMException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void setIdAttributeNode(Attr idAttr, boolean isId) throws DOMException {
-            throw new UnsupportedOperationException();
-        }
-    }
-    
     private final Parser parser;
     private final Map<String, NodeTypeInfo> nodeTypeByRuleName;
     private final Map<String, LiteralTypeInfo> literalTypeByRuleName;
@@ -909,10 +70,113 @@ public class SyntaxModel {
 
         XPathFactory xf = XPathFactory.newInstance();
         this.xpath = xf.newXPath();
-        xpath.setXPathFunctionResolver(new CustomXPathFunctionResolver());
+        xpath.setXPathFunctionResolver(new CustomXPathFunctionResolver(xpath));
     }
+
+    private AbstractSyntaxNode instantiateAndFill(NodeTypeInfo typeInfo, CustomXPathModelNodeBase nodeInfo) {
+        try {
+            if (nodeInfo.getModel() == null) {
+                nodeInfo.setModel(typeInfo.ctor.newInstance());
+            }
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            throw new RuntimeException("Failed to instantiate " + typeInfo.type.getName(), ex);
+        }
+        
+        Set<CustomXPathModelNodeBase> subnodes = new HashSet<CustomXPathModelNodeBase>(5);
+        for (var field : typeInfo.fields.values()) {
+            subnodes.clear();
+            for (var expr : field.termExprs) {
+                try {
+                    XPathEvaluationResult<?> value = expr.evaluateExpression(nodeInfo);
+                    this.bindValue(nodeInfo, field, value);
+                } catch (XPathExpressionException e) {
+                    // TODO collect error info
+                    e.printStackTrace();
+                }
+            }
+            if (field.kind == FieldTypeKind.Array || field.kind == FieldTypeKind.List) {
+                for (var subnodeInfo : field.subnodesInfo) {
+                    boolean tryDescedants = subnodeInfo.lookupMode == SyntaxSubnodeLookupMode.DEPTH_FIRST;
+                    try {
+                        if (subnodeInfo.scopeExpr != null) {
+                            XPathEvaluationResult<?> scopeOrSubnode = subnodeInfo.scopeExpr.evaluateExpression(nodeInfo);
+                            if (scopeOrSubnode.type() == XPathResultType.NODESET && scopeOrSubnode.value() instanceof XPathNodes) {
+                                for (var scopeSubnode : (XPathNodes) scopeOrSubnode.value()) {
+                                    if (scopeSubnode instanceof CustomXPathModelNodeBase) {
+                                        mapSubtrees((CustomXPathModelNodeBase) scopeSubnode, subnodeInfo.subnodeType, true, tryDescedants, subnodes);
+                                    }
+                                }
+                            } else if (scopeOrSubnode.type() == XPathResultType.NODE && scopeOrSubnode.value() instanceof CustomXPathModelNodeBase) {
+                                mapSubtrees((CustomXPathModelNodeBase) scopeOrSubnode.value(), subnodeInfo.subnodeType, true, tryDescedants, subnodes);
+                            }
+                        } else {
+                            if (tryDescedants) {
+                                mapSubtrees(nodeInfo, subnodeInfo.subnodeType, false, true, subnodes);
+                            } else {
+                                for (var candidateSubnode : nodeInfo.getSubnodes().getCollection()) {
+                                    mapSubtrees(candidateSubnode, subnodeInfo.subnodeType, true, false, subnodes);
+                                }
+                            }
+                        }
+                    } catch (XPathExpressionException e) {
+                        // TODO collect error info
+                        e.printStackTrace();
+                    }
+                }
+                List<Node> orderedSubnodes = subnodes.stream()
+                    .sorted(Comparator.comparingInt(a -> a.getModel().getStartPosition()))
+                    .collect(Collectors.toList());
+                this.bindValue(nodeInfo, field, orderedSubnodes);
+            } else {
+                for (var subnodeInfo : field.subnodesInfo) {
+                    boolean tryDescedants = subnodeInfo.lookupMode == SyntaxSubnodeLookupMode.DEPTH_FIRST;
+                    try {
+                        AbstractSyntaxNode subnode = null;
+                        if (subnodeInfo.scopeExpr != null) {
+                            XPathEvaluationResult<?> scopeOrSubnode = subnodeInfo.scopeExpr.evaluateExpression(nodeInfo);
+                            if (scopeOrSubnode.type() == XPathResultType.NODESET && scopeOrSubnode.value() instanceof XPathNodes) {
+                                for (var scopeSubnode : (XPathNodes) scopeOrSubnode.value()) {
+                                    if (scopeSubnode instanceof CustomXPathModelNodeBase) {
+                                        subnode = mapSubtree((CustomXPathModelNodeBase) scopeSubnode, subnodeInfo.subnodeType, true, tryDescedants);
+                                        if (subnode != null) {
+                                            break;
+                                        }
+                                    }
+                                }
+                            } else if (scopeOrSubnode.type() == XPathResultType.NODE && scopeOrSubnode.value() instanceof CustomXPathModelNodeBase) {
+                                subnode = mapSubtree((CustomXPathModelNodeBase) scopeOrSubnode.value(), subnodeInfo.subnodeType, true, tryDescedants);
+                            }
+                        } else {
+                            if (tryDescedants) {
+                                subnode = mapSubtree(nodeInfo, subnodeInfo.subnodeType, false, true);
+                            } else {
+                                for (var candidateSubnode : nodeInfo.getSubnodes().getCollection()) {
+                                    mapSubtrees(candidateSubnode, subnodeInfo.subnodeType, true, false, subnodes);
+                                }
+                            }
+                        }
+                        if (subnode != null) {
+                            this.bindRawValue(nodeInfo, field, subnode);
+                            break;
+                        }
+                    } catch (XPathExpressionException e) {
+                        // TODO collect error info
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        
+        AbstractSyntaxNode model = nodeInfo.getModel(); 
+        if (nodeInfo instanceof SyntaxTree) {
+            SyntaxTree snode = (SyntaxTree) nodeInfo;
+            model.setStartPosition(snode.getSourceInterval().a);
+            model.setEndPosition(snode.getSourceInterval().b);
+        }
+        return model;
+    }   
     
-    private Object mapLiteralValue(NodeInfo nodeInfo, Class<?> type) {
+    private Object mapLiteralValue(CustomXPathModelNodeBase nodeInfo, Class<?> type) {
         SyntaxLiteral ruleAnnotation = type.getAnnotation(SyntaxLiteral.class);
         LiteralTypeInfo typeInfo = literalTypeByRuleName.get(ruleAnnotation.name());
         
@@ -942,66 +206,277 @@ public class SyntaxModel {
 
         return null;
     }
+
+    private void bindValue(CustomXPathModelNodeBase nodeInfo, NodeFieldInfo fieldInfo, List<Node> subnodes) {
+        try {
+            this.bindValueImpl(nodeInfo, fieldInfo, new XPathEvaluationResult<XPathNodes>() {
+                @Override
+                public XPathResultType type() { return XPathResultType.NODESET; }
+
+                @Override
+                public XPathNodes value() {
+                    return new XPathNodes() {
+                        @Override
+                        public int size() { return subnodes.size(); }
+                        @Override
+                        public Iterator<Node> iterator() { return subnodes.iterator(); }
+                        @Override
+                        public Node get(int index) throws XPathException { return subnodes.get(index); }
+                    };
+                }
+            });
+        } catch (IllegalArgumentException | IllegalAccessException ex) {
+            throw new RuntimeException("Failed to bind " + fieldInfo.info.getName(), ex); // TODO collect errors
+        }            
+    }
+
+    private void bindValue(CustomXPathModelNodeBase nodeInfo, NodeFieldInfo fieldInfo, CustomXPathModelNodeBase subnode) {
+        try {
+            this.bindValueImpl(nodeInfo, fieldInfo, new XPathEvaluationResult<Node>() {
+                @Override
+                public XPathResultType type() { return XPathResultType.NODE; }
+                @Override
+                public Node value() { return subnode; }
+            });
+        } catch (IllegalArgumentException | IllegalAccessException ex) {
+            throw new RuntimeException("Failed to bind " + fieldInfo.info.getName(), ex); // TODO collect errors
+        }            
+    }
     
-    private void mapSubtrees(NodeInfo nodeInfo, Class<? extends AbstractSyntaxNode> type,  boolean tryExact, boolean tryDescedants, Set<NodeInfo> subnodes) {
+    private void bindValue(CustomXPathModelNodeBase nodeInfo, NodeFieldInfo fieldInfo, XPathEvaluationResult<?> xvalue) {
+        try {
+            this.bindValueImpl(nodeInfo, fieldInfo, xvalue);
+        } catch (IllegalArgumentException | IllegalAccessException ex) {
+            throw new RuntimeException("Failed to bind " + fieldInfo.info.getName(), ex); // TODO collect errors
+        }            
+    }
+
+    private Object getValue(NodeFieldInfo fieldInfo, AbstractSyntaxNode model) {
+        try {
+            return fieldInfo.info.get(model);
+        } catch (IllegalArgumentException | IllegalAccessException ex) {
+            throw new RuntimeException("Failed to bind " + fieldInfo.info.getName(), ex); // TODO collect errors
+        }
+    }
+    
+    private String getScalarString(XPathEvaluationResult<?> xvalue) {
+        try {
+            switch (xvalue.type()) {
+                case NODE:
+                    @SuppressWarnings("unchecked") 
+                    CustomXPathModelNodeBase nodeInfo = (CustomXPathModelNodeBase) xvalue.value();
+                    return nodeInfo.getNodeValue();
+                case NODESET:
+                    XPathNodes nodes = (XPathNodes) xvalue.value();
+                    int count = nodes.size();
+                    if (count == 0) {
+                        return null;
+                    } else if (count == 1) {
+                        return nodes.get(0).getNodeValue().toString();
+                    } else {
+                        // TODO capture ambiguous binding error
+                        return nodes.get(0).getNodeValue().toString();
+                    }
+                default:
+                    if (xvalue.value() != null) {
+                        return xvalue.value().toString();
+                    } else {
+                        return null;
+                    }
+            }
+        } catch (XPathException ex) {
+            ex.printStackTrace(); // TODO capture error
+            return null;
+        }
+    }
+    
+    private void bindValueImpl(CustomXPathModelNodeBase nodeInfo, NodeFieldInfo fieldInfo, XPathEvaluationResult<?> xvalue) throws IllegalArgumentException, IllegalAccessException {
+        Object value;
+        switch (fieldInfo.kind) {
+            case Object:
+            case Array:
+            case List:
+//                if (subnode.model != null) {
+//                    value = subnode.model;
+//                    break;
+//                }
+                switch (xvalue.type()) {
+                    case NODE:
+                    case NODESET:
+                        value = xvalue.value();
+                        break;
+                    default:
+                        throw new RuntimeException("Not supported");
+                }
+                break;
+            case String: value = getScalarString(xvalue); break;
+            case Byte: value = Byte.parseByte(getScalarString(xvalue)); break;
+            case Short: value = Short.parseShort(getScalarString(xvalue)); break;
+            case Int: value = Integer.parseInt(getScalarString(xvalue)); break;
+            case Long: value = Long.parseLong(getScalarString(xvalue)); break;
+            case Bool: value = Boolean.parseBoolean(getScalarString(xvalue)); break;
+            case Float: value = Float.parseFloat(getScalarString(xvalue)); break;
+            case Double: value = Double.parseDouble(getScalarString(xvalue)); break;
+            case Enum:
+                switch (xvalue.type()) {
+                    case NODE: 
+                        value = mapLiteralValue((CustomXPathModelNodeBase) xvalue.value(), fieldInfo.info.getType());
+                        break;
+                    case NODESET:
+                        XPathNodes nodes = (XPathNodes) xvalue.value();
+                        if (nodes.size() == 1) {
+                            try {
+                                value = mapLiteralValue((CustomXPathModelNodeBase) nodes.get(0), fieldInfo.info.getType());
+                            } catch (XPathException e) {
+                                throw new RuntimeException(e); // TODO collect errors
+                            }
+                        } else {                                
+                            value = null;
+                        }
+                        break;
+                    default:
+                        throw new RuntimeException("Not supported");
+                }
+                break;
+            default: throw new RuntimeException("Unexpected syntax model field kind " + fieldInfo.kind);
+        }
+        
+        this.bindRawValueImpl(nodeInfo, fieldInfo, xvalue);
+    }
+    
+    private void bindRawValue(CustomXPathModelNodeBase nodeInfo, NodeFieldInfo fieldInfo, Object value) {
+        try {
+            this.bindRawValueImpl(nodeInfo, fieldInfo, value);
+        } catch (IllegalArgumentException | IllegalAccessException ex) {
+            throw new RuntimeException("Failed to bind raw " + fieldInfo.info.getName(), ex); // TODO collect errors
+        }            
+    }
+    
+    private void bindRawValueImpl(CustomXPathModelNodeBase nodeInfo, NodeFieldInfo fieldInfo, Object value) throws IllegalArgumentException, IllegalAccessException {       
+        switch (fieldInfo.kind) {
+            case Object: {
+                if (value instanceof CustomXPathModelNodeBase) {
+                    @SuppressWarnings("unchecked")
+                    CustomXPathModelNodeBase subnodeInfo = (CustomXPathModelNodeBase) value;
+                    if (subnodeInfo.getModel() != null) {
+                        fieldInfo.info.set(nodeInfo.getModel(), subnodeInfo.getModel());
+                    }
+                } else {
+                    fieldInfo.info.set(nodeInfo.getModel(), value);
+                }
+                break;
+            }
+            case Array: { // TODO
+//                int index;
+//                Object newArr, oldArr = fieldInfo.info.get(nodeInfo.model);
+//                Class<?> itemType = fieldInfo.info.getType().getComponentType();
+//                if (value != null) {
+//                    index = Array.getLength(oldArr);
+//                    newArr = Array.newInstance(itemType, index + 1);
+//                    System.arraycopy(oldArr, 0, newArr, 0, index);
+//                } else {
+//                    index = 0;
+//                    newArr = Array.newInstance(itemType, 1);
+//                }
+//                Array.set(newArr, index, value);
+//                fieldInfo.info.set(nodeInfo.model, newArr);
+//                break;
+                throw new UnsupportedOperationException("TODO");
+            }
+            case List: {
+                @SuppressWarnings("unchecked")
+                List<Object> list = (List<Object>) fieldInfo.info.get(nodeInfo.getModel());
+                if (list == null) {
+                    fieldInfo.info.set(nodeInfo.getModel(), list = new ArrayList<>());
+                } else {
+                    list.clear();
+                }
+                if (value instanceof XPathNodes) {
+                    XPathNodes nodes = (XPathNodes) value;
+                    if (list instanceof ArrayList<?>) {
+                        ((ArrayList<?>) list).ensureCapacity(nodes.size());
+                    }
+                    for (var xnode: nodes) {
+                        if (xnode instanceof CustomXPathModelNodeBase) {
+                            @SuppressWarnings("unchecked")
+                            CustomXPathModelNodeBase subnodeInfo = (CustomXPathModelNodeBase) xnode;
+                            if (subnodeInfo.getModel() != null) {
+                                list.add(subnodeInfo.getModel());
+                            }
+                        }
+                    }
+                } else if (value instanceof CustomXPathModelNodeBase) {
+                    @SuppressWarnings("unchecked")
+                    CustomXPathModelNodeBase subnodeInfo = (CustomXPathModelNodeBase) value;
+                    if (subnodeInfo.getModel() != null) {
+                        list.add(subnodeInfo.getModel());
+                    }
+                } else {
+                    list.add(value);
+                }
+                break;
+            }
+            default:
+                fieldInfo.info.set(nodeInfo.getModel(), value);
+                break;
+        }
+    }
+    
+    private void mapSubtrees(CustomXPathModelNodeBase nodeInfo, Class<? extends AbstractSyntaxNode> type,  boolean tryExact, boolean tryDescedants, Set<CustomXPathModelNodeBase> subnodes) {
         SyntaxNode ruleAnnotation = type.getAnnotation(SyntaxNode.class);
         NodeTypeInfo typeInfo = nodeTypeByRuleName.get(ruleAnnotation.name());
         
         if (typeInfo != null) {
             if (tryExact && nodeInfo.getLocalName().equals(ruleAnnotation.name())) {
                 if (subnodes.add(nodeInfo)) {
-                    typeInfo.instantiateAndFill(nodeInfo);
+                    this.instantiateAndFill(typeInfo, nodeInfo);
                 }
                 return;
             }
             
             if (tryDescedants) {
-                SubnodesList childNodes = nodeInfo.findDescedantLayerByName(typeInfo.ruleName);
-                for (NodeInfo childNode : childNodes) {
+                NodesList<CustomXPathModelNodeBase> childNodes = nodeInfo.findDescedantLayerByName(typeInfo.ruleName);
+                for (CustomXPathModelNodeBase childNode : childNodes) {
                     if (subnodes.add(childNode)) {
-                        typeInfo.instantiateAndFill(childNode);
+                        this.instantiateAndFill(typeInfo, childNode);
                     }
                 }
             }
         }
     }
     
-    private NodeInfo mapSubtree(NodeInfo nodeInfo, Class<? extends AbstractSyntaxNode> type,  boolean tryExact, boolean tryDescedants) {
+    private AbstractSyntaxNode mapSubtree(CustomXPathModelNodeBase nodeInfo, Class<? extends AbstractSyntaxNode> type,  boolean tryExact, boolean tryDescedants) {
         SyntaxNode ruleAnnotation = type.getAnnotation(SyntaxNode.class);
         NodeTypeInfo typeInfo = nodeTypeByRuleName.get(ruleAnnotation.name());
         
         if (typeInfo != null) {
             if (tryExact && nodeInfo.getLocalName().equals(ruleAnnotation.name())) {
-                typeInfo.instantiateAndFill(nodeInfo);
-                return nodeInfo;
+                return this.instantiateAndFill(typeInfo, nodeInfo);
             }
             
             if (tryDescedants) {
-                NodeInfo childNode = nodeInfo.findFirstDescedantByName(typeInfo.ruleName);
+                CustomXPathModelNodeBase childNode = nodeInfo.findFirstDescedantByName(typeInfo.ruleName);
                 if (childNode != null) {
-                    typeInfo.instantiateAndFill(childNode);
-                    return childNode;
+                    return this.instantiateAndFill(typeInfo, childNode);
                 }
             }
         }
         return null;
     }
     
-    public static class RecognitionResult<T> {
-        // TODO introduce mapping errors collection
-        public final T model;
-        
-        public RecognitionResult(T model) {
-            this.model = model;
-        }   
-        
-        public boolean isOk() {
-            return model != null;
+    private CustomXPathModelNodeBase prepareTree(Tree root) {
+        if (!(root instanceof CustomXPathModelNodeBase)) {
+            throw new UnsupportedOperationException();
         }
+        CustomXPathModelNodeBase rootNode = (CustomXPathModelNodeBase)root;
+        if (rootNode.getIndex() < 0) {
+            rootNode.fixup(parser, 0);
+        }
+        return rootNode;
     }
     
     public String toXml(Tree root) throws XMLStreamException, FactoryConfigurationError, TransformerException {
-        NodeInfo rootInfo = new NodeInfo(null, root, 0);
+        CustomXPathModelNodeBase rootInfo = prepareTree(root);
         TransformerFactory transFactory = TransformerFactory.newInstance();
         Transformer transformer = transFactory.newTransformer();
         StringWriter buffer = new StringWriter();
@@ -1011,15 +486,15 @@ public class SyntaxModel {
         return buffer.toString();
     }
     
-    public <T extends AbstractSyntaxNode> RecognitionResult<T> map(Tree root, Class<T> type) {
-        NodeInfo nodeInfo = new NodeInfo(null, root, 0);
-        NodeInfo modelNodeInfo = this.mapSubtree(nodeInfo, type, true, true);
-        if (modelNodeInfo != null) {
+    public <T extends AbstractSyntaxNode> SyntaxModelMappingResult<T> map(Tree root, Class<T> type) {
+        CustomXPathModelNodeBase rootInfo = prepareTree(root);
+        AbstractSyntaxNode modelNode = this.mapSubtree(rootInfo, type, true, true);
+        if (modelNode != null) {
             @SuppressWarnings("unchecked")
-            T result = (T) modelNodeInfo.model;
-            return new RecognitionResult<T>(result);
+            T result = (T) modelNode;
+            return new SyntaxModelMappingResult<T>(result);
         } else {
-            return new RecognitionResult<T>(null);
+            return new SyntaxModelMappingResult<T>(null);
         }
     }
 
@@ -1060,7 +535,7 @@ public class SyntaxModel {
         }
         if (typeInfo != null) {
             for (NodeFieldInfo field : typeInfo.getFields()) {
-                Object value = field.getValue(model);
+                Object value = this.getValue(field, model);
                 if (n > 0) {
                     sb.append(",");
                 }
@@ -1070,7 +545,7 @@ public class SyntaxModel {
                 if (value == null) {
                     sb.append("null");
                 } else {
-                    switch (field.getKind()) {
+                    switch (field.kind) {
                         case Enum:
                         case String:
                             sb.append('"').append(value.toString().replace("\"", "\\\"")).append('"');
@@ -1107,7 +582,7 @@ public class SyntaxModel {
                             sb.append("]");
                             break;
                         }
-                        default: throw new RuntimeException("Unexpected syntax model field kind " + field.getKind());
+                        default: throw new RuntimeException("Unexpected syntax model field kind " + field.kind);
                     }
                 }
                 n++;
@@ -1223,13 +698,13 @@ public class SyntaxModel {
             Map<String, NodeFieldInfo> modelFields = new HashMap<>(fields.size());
 
             for (var field : fields) {
-                FieldTypeKind kind = resolveModelFieldKind(field.info.getType());
+                FieldTypeKind kind = FieldTypeKind.resolveModelFieldKind(field.info.getType());
                 if (field.subnodeSpecs.length > 0 && kind.isTerm) {
                     throw new RuntimeException("Field of terminal value kind cannot be bound with complex subnode type");
                 }
                 
                 List<XPathExpression> termExprs = new ArrayList<>(field.termSpecs.length);
-                List<NodeFieldSubnodeInfo> subnodeExprs = new ArrayList<>(field.subnodeSpecs.length);
+                List<SubnodeInfo> subnodeExprs = new ArrayList<>(field.subnodeSpecs.length);
                 for (var termSpec : field.termSpecs) {
                     try {
                         termExprs.add(xpath.compile(termSpec.xpath()));
@@ -1245,7 +720,7 @@ public class SyntaxModel {
                         ? field.info.getType() : subnodeSpec.type();
                     try {
                         XPathExpression scopeExpr = subnodeSpec.xpath() != null && subnodeSpec.xpath().length() > 0 ? xpath.compile(subnodeSpec.xpath()) : null;  
-                        subnodeExprs.add(new NodeFieldSubnodeInfo(scopeExpr, fieldType, subnodeSpec.lookup()));
+                        subnodeExprs.add(new SubnodeInfo(scopeExpr, fieldType, subnodeSpec.lookup()));
                         queue.add(fieldType);
                     } catch (XPathExpressionException e) {
                         throw new RuntimeException(e);
@@ -1267,312 +742,4 @@ public class SyntaxModel {
             nodeTypeByRuleName.put(ruleName, new NodeTypeInfo(ruleName, type, ctor, modelFields));
         }
     }
-    
-    private static final Map<Class<?>, FieldTypeKind> builtinTypeKinds = Map.ofEntries(
-        java.util.Map.entry(String.class, FieldTypeKind.String), 
-        java.util.Map.entry(Byte.class, FieldTypeKind.Byte),
-        java.util.Map.entry(Short.class, FieldTypeKind.Short), 
-        java.util.Map.entry(Integer.class, FieldTypeKind.Int), 
-        java.util.Map.entry(Long.class, FieldTypeKind.Long),
-        java.util.Map.entry(Boolean.class, FieldTypeKind.Bool), 
-        java.util.Map.entry(Float.class, FieldTypeKind.Float),
-        java.util.Map.entry(Double.class, FieldTypeKind.Double), 
-
-        java.util.Map.entry(byte.class, FieldTypeKind.Byte),
-        java.util.Map.entry(short.class, FieldTypeKind.Short), 
-        java.util.Map.entry(int.class, FieldTypeKind.Int),
-        java.util.Map.entry(long.class, FieldTypeKind.Long), 
-        java.util.Map.entry(boolean.class, FieldTypeKind.Bool), 
-        java.util.Map.entry(float.class, FieldTypeKind.Float),
-        java.util.Map.entry(double.class, FieldTypeKind.Double) 
-    );
-
-    private static FieldTypeKind resolveModelFieldKind(Class<?> fieldType) {
-        FieldTypeKind kind = builtinTypeKinds.get(fieldType);
-        if (kind == null) {
-            if (fieldType.isEnum()) {
-                kind = FieldTypeKind.Enum;
-            } else if (fieldType.isArray()) {
-                kind = FieldTypeKind.Array;
-            } else if (fieldType.isAssignableFrom(ArrayList.class)) {
-                kind = FieldTypeKind.List; 
-            } else {
-                kind = FieldTypeKind.Object;
-            }
-        }
-        return kind;
-    }
-    
-    private static String getText(Tree node) {
-        String result;
-        if (node instanceof ParseTree) {
-            result = ((ParseTree) node).getText(); // consider extracting whitespaces but not comments
-        } else {
-            Tree first = node, last = node;
-            while (!(first instanceof TerminalNode) && first.getChildCount() > 0) {
-                first = first.getChild(0);
-            }
-            while (!(last instanceof TerminalNode) && last.getChildCount() > 0) {
-                last = last.getChild(last.getChildCount() - 1);
-            }
-            TerminalNode a = (TerminalNode) first, b = (TerminalNode) last;
-            Interval textRange = Interval.of(a.getSourceInterval().a, b.getSourceInterval().b);
-            result = b.getSymbol().getTokenSource().getInputStream().getText(textRange);
-        }
-        return result;
-    }
-
-    @FunctionalInterface
-    private interface MyXPathFunction {
-        Object evaluate(List<?> args) throws XPathExpressionException;
-    }
-
-    private static java.util.Map.Entry<String, XPathFunction> xfunction(String name, MyXPathFunction impl) {
-        return java.util.Map.entry(name, new XPathFunction() {
-            @Override
-            public Object evaluate(List<?> args) throws XPathFunctionException {
-                try {
-                    return impl.evaluate(args);
-                } catch (XPathExpressionException ex) {
-                    throw new XPathFunctionException(ex);
-                }
-            }
-        });
-    }
-    
-    private static void flattenExclusiveImpl(
-        Node root,
-        XPathExpression expr,
-        boolean justLeaves,
-        NodesList<Node> result
-    ) throws XPathExpressionException {
-        Stack<Node> stack = new Stack<>();
-        stack.add(root);
-        while (stack.size() > 0) {
-            Node node = stack.pop();
-            
-            XPathNodes subnodes = expr.evaluateExpression(node, XPathNodes.class);
-            if (justLeaves) {
-                if (subnodes.size() > 0) {
-                    reverseIterableOf(subnodes).forEach(stack::add);
-                } else {
-                    result.add(node);                    
-                }
-            } else {
-                result.ensureCapacity(result.size() + subnodes.size());
-                subnodes.forEach(result::add);
-                reverseIterableOf(subnodes).forEach(stack::add);
-            }
-        }
-    }
-    
-    private class CustomXPathFunctionResolver implements XPathFunctionResolver {
-
-        private final Map<String, XPathFunction> functionByName = Map.ofEntries(
-            xfunction("echo", args -> {
-                for (Object o : args) {
-                    if (o instanceof NodeList) {
-                        NodeList nodeList = (NodeList)o;
-                        if (nodeList.getLength() == 0) {
-                            System.out.println("[]");
-                        } else {
-                            System.out.println(
-                                streamOf(nodeList).map(n -> "  " + n.getLocalName() + ": \"" + n.getNodeValue() + "\"")
-                                    .collect(Collectors.joining(",\n", "[\n", "\n]"))
-                            );
-                        }
-                    } else if (o instanceof Node) {
-                        Node node = (Node) o;
-                        System.out.println(node.getLocalName() + ": \"" + node.getNodeValue() + "\"");
-                    } else {
-                        System.out.println(o);
-                    }
-                }
-                return args.size() > 0 ? args.get(0) : null;
-            }),
-            xfunction("rootOf", args -> {
-                if (args.size() > 0 && args.get(0) instanceof NodeList) {
-                    NodeList nodeList = (NodeList) args.get(0);
-                    if (nodeList.getLength() > 0) {
-                        Node node = nodeList.item(0);
-                        while (node.getParentNode() != null) {
-                            node = node.getParentNode();
-                        }
-                        return node;
-                    } else {
-                        return null;
-                    }
-                } else {
-                    return null;
-                }
-            }),
-            xfunction("flatten", args -> {
-                final String signatureDescr = "flatten(roots:NodeList, stepExpr:String, justLeaves:bool = false, incudeRoot:bool = ture)";
-                if (args.size() < 2) {
-                    throw new XPathFunctionException("At least two arguments required for " + signatureDescr);
-                } else if (args.size() > 4) {
-                    throw new XPathFunctionException("No more than four arguments required for " + signatureDescr);
-                } else {
-                    NodeList roots = (NodeList) args.get(0);
-                    XPathExpression stepExpr = prepareExpr(args.get(1).toString());
-                    boolean justLeaves = args.size() > 2 ? (Boolean) args.get(2) : false;
-                    boolean includeRoot = args.size() > 3 ? (Boolean) args.get(3) : true;
-                    
-                    NodesList<Node> result = new NodesList<>(); 
-                    if (includeRoot && !justLeaves) {
-                        result.ensureCapacity(roots.getLength());
-                    }
-
-                    for (Node root : iterableOf(roots)) {
-                        if (includeRoot && !justLeaves) {
-                            result.add(root);
-                        } else {
-                            flattenExclusiveImpl(root, stepExpr, justLeaves, result);
-                        }
-                    }
-                    
-                    return result;
-                }
-            }),
-            xfunction("joinStrings", args -> {
-                final String signatureDescr = "joinStrings(separator:String, nodes...:NodeList)";
-                if (args.size() < 2) {
-                    throw new XPathFunctionException("At least two arguments required for " + signatureDescr);
-                } else {
-                    StringBuilder sb = new StringBuilder();
-                    String separator = args.get(0).toString();
-                    int count = 0;
-                    for (int i = 1; i < args.size(); i++) {
-                        for (Node node : iterableOf((NodeList) args.get(i))) {
-                            if (count > 0) {
-                                sb.append(separator);
-                            }
-                            sb.append(node.getTextContent());
-                            count++;
-                        }
-                    }
-                    return sb.toString();
-                }
-            })
-        );
-        
-        private final Map<String, XPathExpression> exprs = new HashMap<>();
-        
-        public CustomXPathFunctionResolver() {
-        }
-        
-        private XPathExpression prepareExpr(String exprStr) throws XPathExpressionException {
-            XPathExpression expr = exprs.get(exprStr);
-            if (expr == null) {
-                expr = xpath.compile(exprStr); 
-                exprs.put(exprStr, expr);
-            }
-            return expr;
-        }
-        
-        @Override
-        public XPathFunction resolveFunction(QName functionName, int arity) {
-            return functionByName.get(functionName.getLocalPart());
-        }
-        
-    }
-    
-    private static Stream<Node> streamOf(final NodeList list) {
-        return StreamSupport.stream(iterableOf(list).spliterator(), false);
-    }
-    
-    private static Iterable<Node> iterableOf(final NodeList list) {
-        return new Iterable<Node>() {
-            @Override
-            public Iterator<Node> iterator() {
-                return new Iterator<>() {
-                    private int index = 0;
-                    
-                    @Override
-                    public boolean hasNext() {
-                        return index < list.getLength();
-                    }
-
-                    @Override
-                    public Node next() {
-                        return list.item(index++);
-                    }
-                };
-            }
-        };
-    }
-    
-    private static Iterable<Node> reverseIterableOf(final XPathNodes list) {
-        return new Iterable<Node>() {
-            @Override
-            public Iterator<Node> iterator() {
-                return new Iterator<>() {
-                    private int index = list.size();
-
-                    @Override
-                    public boolean hasNext() {
-                        return index > 0;
-                    }
-
-                    @Override
-                    public Node next() {
-                        try {
-                            return list.get(--index);
-                        } catch (XPathException e) {
-                            return null;
-                        }
-                    }
-                };
-            }
-        };
-    }
-    
-    private static class EmptyAttrsMap implements NamedNodeMap {
-        
-        public static EmptyAttrsMap INSTANCE = new EmptyAttrsMap();
-        
-        private EmptyAttrsMap() {
-        }
-        
-        @Override
-        public Node setNamedItemNS(Node arg) throws DOMException {
-            throw new UnsupportedOperationException();
-        }
-        
-        @Override
-        public Node setNamedItem(Node arg) throws DOMException {
-            throw new UnsupportedOperationException();
-        }
-        
-        @Override
-        public Node removeNamedItemNS(String namespaceURI, String localName) throws DOMException {
-            throw new UnsupportedOperationException();
-        }
-        
-        @Override
-        public Node removeNamedItem(String name) throws DOMException {
-            throw new UnsupportedOperationException();
-        }
-        
-        @Override
-        public Node item(int index) {
-            return null;
-        }
-        
-        @Override
-        public Node getNamedItemNS(String namespaceURI, String localName) throws DOMException {
-            return null;
-        }
-        
-        @Override
-        public Node getNamedItem(String name) {
-            return null;
-        }
-        
-        @Override
-        public int getLength() {
-            return 0;
-        }
-    }
-
 }

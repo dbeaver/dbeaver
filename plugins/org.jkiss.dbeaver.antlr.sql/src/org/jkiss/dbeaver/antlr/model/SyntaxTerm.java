@@ -21,9 +21,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.jkiss.code.NotNull;
+
 @Target({ java.lang.annotation.ElementType.FIELD, java.lang.annotation.ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(SyntaxTerms.class)
 public @interface SyntaxTerm {
+    @NotNull
     String xpath() default "";
 }

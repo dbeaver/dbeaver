@@ -31,7 +31,7 @@ public class SelectionItem extends AbstractSyntaxNode {
     public String tableName;
     @SyntaxTerm(xpath = ".//columnReference//columnName/identifier/actualIdentifier")
     public String columnName;
-    // TODO:
+    // TODO: create model for conditions
     public ValueExpression expression;
     
     @SyntaxTerm(xpath = "./derivedColumn/asClause/columnName/identifier/actualIdentifier")

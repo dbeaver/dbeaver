@@ -31,6 +31,7 @@ public abstract class AbstractSyntaxNode {
     
     public static final int UNDEFINED_POSITION = -1;
     
+    // TODO consider revising
     private final String name;
     private int startPos = UNDEFINED_POSITION;
     private int endPos = UNDEFINED_POSITION;

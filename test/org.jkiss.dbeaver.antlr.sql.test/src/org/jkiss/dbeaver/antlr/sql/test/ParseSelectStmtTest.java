@@ -58,7 +58,7 @@ public class ParseSelectStmtTest {
                 String line = scanner.nextLine();
                 String trimmed = line.trim();
                 if (trimmed.length() > 0 && !(trimmed.startsWith("#") || trimmed.startsWith("--"))) {
-                    sb.append(line).append(" ");
+                    sb.append(line).append("\n");
                 } else if (sb.toString().trim().length() > 0) {
                     result.add(sb.toString());
                     sb.setLength(0);
@@ -87,7 +87,11 @@ public class ParseSelectStmtTest {
             pp.setBuildParseTree(true);
             
             var tree = pp.queryExpression();
-            Assert.assertTrue(pp.getNumberOfSyntaxErrors() == 0);
+            var noErrors = pp.getNumberOfSyntaxErrors() == 0;
+            if (!noErrors) {
+                tokens.getTokens().forEach(t -> System.out.println(t.toString() + " - " + ll.getVocabulary().getSymbolicName(t.getType())));
+            }
+            Assert.assertTrue(noErrors);
             
             SyntaxModel model = new SyntaxModel(pp);
             model.introduce(SelectStatement.class);
@@ -98,82 +102,4 @@ public class ParseSelectStmtTest {
             System.out.println();
         }
     }
-
-    
-            /*
-                SELECT TOP 25
-                    Product.ProductID,
-                    Product.Name AS ProductName,
-                    Product.ProductNumber,
-                    CostMeasure.UnitMeasureCode,
-                    CostMeasure.Name AS CostMeasureName,
-                    ProductVendor.AverageLeadTime,
-                    ProductVendor.StandardPrice,
-                    ProductReview.ReviewerName,
-                    ProductReview.Rating,
-                    ProductCategory.Name AS CategoryName,
-                    ProductSubCategory.Name AS SubCategoryName
-                FROM Production.Product
-                INNER JOIN Production.ProductSubCategory
-                ON ProductSubCategory.ProductSubcategoryID = Product.ProductSubcategoryID
-                LEFT JOIN Production.ProductCategory
-                ON ProductCategory.ProductCategoryID = ProductSubCategory.ProductCategoryID
-                RIGHT JOIN Production.UnitMeasure SizeUnitMeasureCode
-                ON Product.SizeUnitMeasureCode = SizeUnitMeasureCode.UnitMeasureCode
-                FULL JOIN Production.UnitMeasure WeightUnitMeasureCode
-                ON Product.WeightUnitMeasureCode = WeightUnitMeasureCode.UnitMeasureCode
-                INNER OUTER JOIN Production.ProductModel
-                ON ProductModel.ProductModelID = Product.ProductModelID
-                NATURAL LEFT OUTER JOIN Production.ProductModelIllustration
-                ON ProductModel.ProductModelID = ProductModelIllustration.ProductModelID
-                NATURAL UNION JOIN Production.ProductModelProductDescriptionCulture
-                ON ProductModelProductDescriptionCulture.ProductModelID = ProductModel.ProductModelID
-                NATURAL FULL OUTER JOIN Production.ProductDescription
-                ON ProductDescription.ProductDescriptionID = ProductModelProductDescriptionCulture.ProductDescriptionID
-                CROSS JOIN Production.ProductReview
-                ON ProductReview.ProductID = Product.ProductID
-                NATURAL INNER JOIN Purchasing.ProductVendor
-                ON ProductVendor.ProductID = Product.ProductID
-                LEFT JOIN Production.UnitMeasure CostMeasure
-                USING (MeasureID, Unit)
-                ORDER BY Product.ProductID DESC;
-
-                SELECT TOP 25
-                    Product.ProductID,
-                    Product.Name AS ProductName,
-                    Product.ProductNumber,
-                    ProductCategory.Name AS ProductCategory,
-                    ProductSubCategory.Name AS ProductSubCategory,
-                    Product.ProductModelID
-                INTO Product
-                FROM Production.Product
-                INNER JOIN Production.ProductSubCategory
-                ON ProductSubCategory.ProductSubcategoryID = Product.ProductSubcategoryID
-                UNION JOIN Production.ProductCategory
-                ON ProductCategory.ProductCategoryID = ProductSubCategory.ProductCategoryID
-                ORDER BY Product.ModifiedDate DESC;
-
-
-            SELECT
-                    Product.ProductID,
-                    Product.ProductName,
-                    Product.ProductNumber,
-                    CostMeasure.UnitMeasureCode,
-                    CostMeasure.Name AS CostMeasureName,
-                    ProductVendor.AverageLeadTime,
-                    ProductVendor.StandardPrice,
-                    ProductReview.ReviewerName,
-                    ProductReview.Rating,
-                    Product.ProductCategory,
-                    Product.ProductSubCategory
-                FROM Product Product
-                INNER JOIN Production.ProductModel
-                ON ProductModel.ProductModelID = Product.ProductModelID
-                LEFT JOIN Production.ProductReview
-                ON ProductReview.ProductID = Product.ProductID
-                LEFT JOIN Purchasing.ProductVendor
-                ON ProductVendor.ProductID = Product.ProductID
-                LEFT JOIN Production.UnitMeasure CostMeasure
-                ON ProductVendor.UnitMeasureCode = CostMeasure.UnitMeasureCode;
-                */
 }
