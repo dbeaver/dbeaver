@@ -307,6 +307,11 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         return curStreamManager;
     }
 
+    @Nullable
+    public IStreamValueEditor<Control> getStreamEditor() {
+        return streamEditor;
+    }
+
     public void setCurrentStreamManager(@NotNull StreamValueManagerDescriptor newManager) {
         if (curStreamManager == newManager) {
             return;

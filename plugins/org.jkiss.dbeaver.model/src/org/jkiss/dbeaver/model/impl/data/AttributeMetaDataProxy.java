@@ -102,6 +102,10 @@ public class AttributeMetaDataProxy implements DBCAttributeMetaData, DBPImagePro
     @Nullable
     @Override
     public DBCEntityMetaData getEntityMetaData() {
+        DBSAttributeBase proxyAttribute = getProxyAttribute();
+        if (proxyAttribute instanceof DBCAttributeMetaData) {
+            return ((DBCAttributeMetaData) proxyAttribute).getEntityMetaData();
+        }
         return null;
     }
 
