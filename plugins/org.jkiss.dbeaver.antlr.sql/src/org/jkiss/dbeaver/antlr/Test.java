@@ -96,7 +96,7 @@ public class Test {
 //        var sb = new StringBuilder();
 //        collect(tree, pp, sb, "");
 //        System.out.println(sb.toString());
-//         Files.writeString(Path.of("c:\\github.com\\dbeaver\\sql-server-sakila-insert-data.log"), sb.toString());
+//        Files.writeString(Path.of("c:\\github.com\\dbeaver\\sql-server-sakila-insert-data.log"), sb.toString());
         
         Path dir = Path.of("C:\\Projects\\dbeaver\\dbeaver\\plugins\\org.jkiss.dbeaver.antlr.sql\\src\\org\\jkiss\\dbeaver\\antlr\\sql\\");
         var model = new SyntaxModel(pp);
@@ -118,7 +118,7 @@ public class Test {
         if (ctx.getChildCount() == 1 && ctx.getChild(0).getPayload() instanceof Token) {
             sb.append(indent).append("    \"").append(Trees.getNodeText(ctx.getChild(0), pp)).append("\"\n");
         } else {
-            for (Tree t: Trees.getChildren(ctx)) {
+            for (Tree t : Trees.getChildren(ctx)) {
                 collect(t, pp, sb, indent + "    ");
             }
         }

@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.antlr.model.internal;
 
-import java.util.ArrayList;
-
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.ArrayList;
 
 public class NodesList<T extends Node> extends ArrayList<T> implements NodeList {
     public NodesList() {

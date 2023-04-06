@@ -17,17 +17,10 @@
 package org.jkiss.dbeaver.antlr.model;
 
 import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.*;
-import org.jkiss.dbeaver.antlr.model.internal.CustomXPathFunctionResolver;
-import org.jkiss.dbeaver.antlr.model.internal.CustomXPathModelNodeBase;
-import org.jkiss.dbeaver.antlr.model.internal.FieldTypeKind;
-import org.jkiss.dbeaver.antlr.model.internal.LiteralTypeInfo;
-import org.jkiss.dbeaver.antlr.model.internal.NodeFieldInfo;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.antlr.model.internal.*;
 import org.jkiss.dbeaver.antlr.model.internal.NodeFieldInfo.SubnodeInfo;
-import org.jkiss.dbeaver.antlr.model.internal.NodeTypeInfo;
-import org.jkiss.dbeaver.antlr.model.internal.NodesList;
-import org.jkiss.dbeaver.antlr.model.internal.TreeRuleNode.SubnodesList;
 import org.w3c.dom.*;
 
 import java.io.StringWriter;
@@ -37,12 +30,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-import javax.xml.namespace.QName;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.OutputKeys;
@@ -63,7 +53,7 @@ public class SyntaxModel {
     
     private final XPath xpath;
     
-    public SyntaxModel(Parser parser) {
+    public SyntaxModel(@NotNull Parser parser) {
         this.parser = parser;
         this.nodeTypeByRuleName = new HashMap<>();
         this.literalTypeByRuleName = new HashMap<>();
@@ -73,7 +63,7 @@ public class SyntaxModel {
         xpath.setXPathFunctionResolver(new CustomXPathFunctionResolver(xpath));
     }
 
-    private AbstractSyntaxNode instantiateAndFill(NodeTypeInfo typeInfo, CustomXPathModelNodeBase nodeInfo) {
+    private AbstractSyntaxNode instantiateAndFill(@NotNull NodeTypeInfo typeInfo, @NotNull CustomXPathModelNodeBase nodeInfo) {
         try {
             if (nodeInfo.getModel() == null) {
                 nodeInfo.setModel(typeInfo.ctor.newInstance());
@@ -263,7 +253,6 @@ public class SyntaxModel {
         try {
             switch (xvalue.type()) {
                 case NODE:
-                    @SuppressWarnings("unchecked") 
                     CustomXPathModelNodeBase nodeInfo = (CustomXPathModelNodeBase) xvalue.value();
                     return nodeInfo.getNodeValue();
                 case NODESET:
@@ -341,7 +330,7 @@ public class SyntaxModel {
             default: throw new RuntimeException("Unexpected syntax model field kind " + fieldInfo.kind);
         }
         
-        this.bindRawValueImpl(nodeInfo, fieldInfo, xvalue);
+        this.bindRawValueImpl(nodeInfo, fieldInfo, value);
     }
     
     private void bindRawValue(CustomXPathModelNodeBase nodeInfo, NodeFieldInfo fieldInfo, Object value) {
@@ -356,7 +345,6 @@ public class SyntaxModel {
         switch (fieldInfo.kind) {
             case Object: {
                 if (value instanceof CustomXPathModelNodeBase) {
-                    @SuppressWarnings("unchecked")
                     CustomXPathModelNodeBase subnodeInfo = (CustomXPathModelNodeBase) value;
                     if (subnodeInfo.getModel() != null) {
                         fieldInfo.info.set(nodeInfo.getModel(), subnodeInfo.getModel());
@@ -398,7 +386,6 @@ public class SyntaxModel {
                     }
                     for (var xnode: nodes) {
                         if (xnode instanceof CustomXPathModelNodeBase) {
-                            @SuppressWarnings("unchecked")
                             CustomXPathModelNodeBase subnodeInfo = (CustomXPathModelNodeBase) xnode;
                             if (subnodeInfo.getModel() != null) {
                                 list.add(subnodeInfo.getModel());
@@ -406,7 +393,6 @@ public class SyntaxModel {
                         }
                     }
                 } else if (value instanceof CustomXPathModelNodeBase) {
-                    @SuppressWarnings("unchecked")
                     CustomXPathModelNodeBase subnodeInfo = (CustomXPathModelNodeBase) value;
                     if (subnodeInfo.getModel() != null) {
                         list.add(subnodeInfo.getModel());
@@ -654,13 +640,13 @@ public class SyntaxModel {
                                                : enumEntries.stream().collect(Collectors.toMap(e -> e.upperCasedName, e -> e.value));
             
             var exprByValue = enumEntries.stream()
-                    .filter(e -> e.literalCaseAnnotation != null && e.literalCaseAnnotation.xcondition().length() > 0)
-                    .collect(Collectors.toMap(
-                            e -> e.value, 
-                            captureExceptionInfo(XPathExpressionException.class, e -> xpath.compile(e.literalCaseAnnotation.xcondition())),
-                            (x, y) -> { throw new IllegalStateException("Duplicated enum values"); /* should never happen*/ },
-                            LinkedHashMap::new
-                    ));
+                .filter(e -> e.literalCaseAnnotation != null && e.literalCaseAnnotation.xcondition().length() > 0)
+                .collect(Collectors.toMap(
+                        e -> e.value, 
+                        captureExceptionInfo(XPathExpressionException.class, e -> xpath.compile(e.literalCaseAnnotation.xcondition())),
+                        (x, y) -> { throw new IllegalStateException("Duplicated enum values"); /* should never happen*/ },
+                        LinkedHashMap::new
+                ));
             var stringExpr = literalAnnotation.xstring().length() > 0 ? xpath.compile(literalAnnotation.xstring()) : null; // TODO collect errors
             literalTypeByRuleName.put(literalAnnotation.name(), new LiteralTypeInfo(literalAnnotation.name(), type, stringExpr, exprByValue, valuesByName, isCaseSensitive));
         } else if (!existing.type.equals(type)) {
@@ -670,7 +656,8 @@ public class SyntaxModel {
         }
     }
 
-    public <T extends AbstractSyntaxNode> void introduce(Class<T> modelType) {        
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	public <T extends AbstractSyntaxNode> void introduce(Class<T> modelType) {        
         List<String> errors = new LinkedList<>();
         
         Set<Class<? extends AbstractSyntaxNode>> processedTypes = new HashSet<>();

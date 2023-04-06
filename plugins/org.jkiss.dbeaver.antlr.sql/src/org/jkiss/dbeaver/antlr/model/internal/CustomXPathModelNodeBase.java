@@ -38,14 +38,18 @@ public interface CustomXPathModelNodeBase extends Tree, Node {
     
     SubnodesList getSubnodes();
     
-    default AbstractSyntaxNode getModel() { throw new UnsupportedOperationException(); }
+    default AbstractSyntaxNode getModel() {
+        throw new UnsupportedOperationException();
+    }
     
-    default void setModel(AbstractSyntaxNode model) { throw new UnsupportedOperationException(); }
+    default void setModel(AbstractSyntaxNode model) {
+        throw new UnsupportedOperationException();
+    }
 
     Map<String, Object> getUserDataMap(boolean createIfMissing);
     
     default CustomXPathModelNodeBase getParentXNode() {
-        return (CustomXPathModelNodeBase)this.getParent();
+        return (CustomXPathModelNodeBase) this.getParent();
     }
     
     
@@ -62,7 +66,7 @@ public interface CustomXPathModelNodeBase extends Tree, Node {
 
     @Override
     default Node getParentNode() {
-        return (Node)this.getParent();
+        return (Node) this.getParent();
     }
     
     @Override
@@ -228,7 +232,7 @@ public interface CustomXPathModelNodeBase extends Tree, Node {
     }
 
     default CustomXPathModelNodeBase findFirstDescedantByName(String ruleName) {
-        var stack = new Stack<CustomXPathModelNodeBase>();
+        Stack<CustomXPathModelNodeBase> stack = new Stack<>();
         stack.addAll(getSubnodes().getCollection());
         
         while (!stack.isEmpty()) {
@@ -239,17 +243,17 @@ public interface CustomXPathModelNodeBase extends Tree, Node {
             } else {
                 SubnodesList subnodes = nodeInfo.getSubnodes();
                 for (int i = subnodes.getLength() - 1; i >= 0; i--) {
-                    stack.push((CustomXPathModelNodeBase) subnodes.item(i));
+                    stack.push(subnodes.item(i));
                 }
             }
         }
         
         return null;
     }
-    
+
     default NodesList<CustomXPathModelNodeBase> findDescedantLayerByName(String ruleName) {
-        var result = new NodesList<CustomXPathModelNodeBase>(5);
-        var stack = new Stack<CustomXPathModelNodeBase>();
+        NodesList<CustomXPathModelNodeBase> result = new NodesList<>(5);
+        Stack<CustomXPathModelNodeBase> stack = new Stack<>();
         stack.addAll(getSubnodes().getCollection());
         
         while (!stack.isEmpty()) {

@@ -16,12 +16,12 @@
  */
 package org.jkiss.dbeaver.antlr.sql.model;
 
-import java.util.List;
-
 import org.jkiss.dbeaver.antlr.model.AbstractSyntaxNode;
 import org.jkiss.dbeaver.antlr.model.SyntaxNode;
 import org.jkiss.dbeaver.antlr.model.SyntaxSubnode;
 import org.jkiss.dbeaver.antlr.model.SyntaxTerm;
+
+import java.util.List;
 
 @SyntaxNode(name = "queryExpression")
 public class SelectStatement extends AbstractSyntaxNode {

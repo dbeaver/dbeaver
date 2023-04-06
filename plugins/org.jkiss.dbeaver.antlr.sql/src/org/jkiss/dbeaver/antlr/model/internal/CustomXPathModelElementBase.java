@@ -36,7 +36,7 @@ public interface CustomXPathModelElementBase extends CustomXPathModelNodeBase, E
 
     @Override
     default String getAttribute(String name) {
-        return null;
+        return "";
     }
 
     @Override
@@ -67,8 +67,8 @@ public interface CustomXPathModelElementBase extends CustomXPathModelNodeBase, E
     @Override
     default NodeList getElementsByTagName(String name) {
         Predicate<Node> condition = "*".equals(name) ? n -> true : n -> n.getLocalName().equals(name);
-        var result = new NodesList<CustomXPathModelNodeBase>(5);
-        var stack = new Stack<CustomXPathModelNodeBase>();
+        NodesList<CustomXPathModelNodeBase> result = new NodesList<>(5);
+        Stack<CustomXPathModelNodeBase> stack = new Stack<>();
         stack.addAll(getSubnodes().getCollection());
         
         while (!stack.isEmpty()) {
@@ -94,7 +94,7 @@ public interface CustomXPathModelElementBase extends CustomXPathModelNodeBase, E
 
     @Override
     default String getAttributeNS(String namespaceURI, String localName) throws DOMException {
-        return null;
+        return "";
     }
 
     @Override
@@ -122,7 +122,7 @@ public interface CustomXPathModelElementBase extends CustomXPathModelNodeBase, E
         if (namespaceURI == null || namespaceURI.length() == 0) {
             return this.getElementsByTagName(localName);
         } else {
-            return null;
+            return EmptyNodesList.INSTANCE;
         }
     }
 

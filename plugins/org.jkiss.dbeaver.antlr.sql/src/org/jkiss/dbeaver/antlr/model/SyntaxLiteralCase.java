@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.antlr.model;
 
+import org.jkiss.code.NotNull;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import org.jkiss.code.NotNull;
 
 @Target(java.lang.annotation.ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)

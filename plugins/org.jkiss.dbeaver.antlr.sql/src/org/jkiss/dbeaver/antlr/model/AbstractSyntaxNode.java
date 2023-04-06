@@ -26,7 +26,10 @@ public abstract class AbstractSyntaxNode {
     );
     
     private static String getNodeName(Class<? extends AbstractSyntaxNode> type) {
-        return syntaxNodeNameByType.computeIfAbsent(type, t -> Optional.ofNullable(t.getAnnotation(SyntaxNode.class).name()).orElse(t.getName()));
+        return syntaxNodeNameByType.computeIfAbsent(
+            type,
+            t -> Optional.ofNullable(t.getAnnotation(SyntaxNode.class).name()).orElse(t.getName())
+        );
     }
     
     public static final int UNDEFINED_POSITION = -1;

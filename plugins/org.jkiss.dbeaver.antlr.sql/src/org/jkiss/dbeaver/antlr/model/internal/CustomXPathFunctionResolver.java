@@ -57,7 +57,7 @@ public class CustomXPathFunctionResolver implements XPathFunctionResolver {
         xfunction("echo", args -> {
             for (Object o : args) {
                 if (o instanceof NodeList) {
-                    NodeList nodeList = (NodeList)o;
+                    NodeList nodeList = (NodeList) o;
                     if (nodeList.getLength() == 0) {
                         System.out.println("[]");
                     } else {

@@ -16,12 +16,13 @@
  */
 package org.jkiss.dbeaver.antlr.model.internal;
 
+import org.jkiss.dbeaver.antlr.model.AbstractSyntaxNode;
+
 import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-import org.jkiss.dbeaver.antlr.model.AbstractSyntaxNode;
 
 public class NodeTypeInfo {
     public final String ruleName;
@@ -29,7 +30,12 @@ public class NodeTypeInfo {
     public final Constructor<? extends AbstractSyntaxNode> ctor;
     public final Map<String, NodeFieldInfo> fields;
 
-    public NodeTypeInfo(String ruleName, Class<? extends AbstractSyntaxNode> type, Constructor<? extends AbstractSyntaxNode> ctor, Map<String, NodeFieldInfo> fields) {
+    public NodeTypeInfo(
+        String ruleName,
+        Class<? extends AbstractSyntaxNode> type,
+        Constructor<? extends AbstractSyntaxNode> ctor,
+        Map<String, NodeFieldInfo> fields
+    ) {
         this.ruleName = ruleName;
         this.type = type;
         this.ctor = ctor;

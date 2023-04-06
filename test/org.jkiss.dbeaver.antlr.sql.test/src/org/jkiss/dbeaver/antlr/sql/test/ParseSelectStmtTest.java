@@ -16,16 +16,6 @@
  */
 package org.jkiss.dbeaver.antlr.sql.test;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.BitSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Scanner;
-
 import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -42,6 +32,17 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.BitSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Scanner;
+
 
 @RunWith(MockitoJUnitRunner.class)
 public class ParseSelectStmtTest {
@@ -73,7 +74,7 @@ public class ParseSelectStmtTest {
     public void testModel() throws IOException {
         var statementsToParse = readStatements(ParseSelectStmtTest.class.getResourceAsStream(_selectStatementsSqlTextResourceName));
         
-        for (String stmtText: statementsToParse) {
+        for (String stmtText : statementsToParse) {
             System.out.println();
             System.out.println(stmtText);
             System.out.println();

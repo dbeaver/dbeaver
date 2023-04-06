@@ -31,7 +31,11 @@ public class NodeFieldInfo {
         public final Class<? extends AbstractSyntaxNode> subnodeType;
         public final SyntaxSubnodeLookupMode lookupMode;
         
-        public SubnodeInfo(XPathExpression scopeExpr, Class<? extends AbstractSyntaxNode> subnodeType, SyntaxSubnodeLookupMode lookupMode) {
+        public SubnodeInfo(
+            XPathExpression scopeExpr,
+            Class<? extends AbstractSyntaxNode> subnodeType,
+            SyntaxSubnodeLookupMode lookupMode
+        ) {
             this.scopeExpr = scopeExpr;
             this.subnodeType = subnodeType;
             this.lookupMode = lookupMode;

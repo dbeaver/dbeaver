@@ -16,21 +16,15 @@
  */
 package org.jkiss.dbeaver.antlr.model.internal;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import org.jkiss.dbeaver.antlr.model.internal.TreeRuleNode.SubnodesList;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
-import org.w3c.dom.UserDataHandler;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class TreeTermNode extends TerminalNodeImpl implements CustomXPathModelTextBase {
     

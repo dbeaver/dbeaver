@@ -27,7 +27,14 @@ public class LiteralTypeInfo {
     public final Map<String, Object> valuesByName;
     public final boolean isCaseSensitive;
     
-    public LiteralTypeInfo(String ruleName, Class<?> type, XPathExpression stringExpr, Map<Object, XPathExpression> exprByValue, Map<String, Object> valuesByName, boolean isCaseSensitive) {
+    public LiteralTypeInfo(
+        String ruleName,
+        Class<?> type,
+        XPathExpression stringExpr,
+        Map<Object, XPathExpression> exprByValue,
+        Map<String, Object> valuesByName,
+        boolean isCaseSensitive
+    ) {
         this.ruleName = ruleName;
         this.type = type;
         this.stringExpr = stringExpr;

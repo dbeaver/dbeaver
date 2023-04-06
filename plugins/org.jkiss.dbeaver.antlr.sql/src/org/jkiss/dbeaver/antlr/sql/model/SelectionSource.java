@@ -52,8 +52,6 @@ public abstract class SelectionSource extends AbstractSyntaxNode {
         FULL_OUTER,
         UNION,
 
-//      CROSS,
-
         NATURAL_INNER,
         NATURAL_LEFT,
         NATURAL_RIGHT,

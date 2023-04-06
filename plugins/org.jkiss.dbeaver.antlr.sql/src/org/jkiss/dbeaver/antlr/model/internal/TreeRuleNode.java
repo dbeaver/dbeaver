@@ -16,10 +16,6 @@
  */
 package org.jkiss.dbeaver.antlr.model.internal;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
@@ -33,12 +29,21 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+
 public class TreeRuleNode extends ParserRuleContext implements Element, CustomXPathModelElementBase {
 
     public interface SubnodesList extends NodeList {
+
         List<CustomXPathModelNodeBase> getCollection();
+
         CustomXPathModelNodeBase item(int index);
+
         CustomXPathModelNodeBase getFirst();
+
         CustomXPathModelNodeBase getLast();
     }
     
@@ -72,7 +77,7 @@ public class TreeRuleNode extends ParserRuleContext implements Element, CustomXP
     
     private String nodeName = null;
     private int index = -1;
-    private SubnodesList subnodes = new SubnodesListImpl();
+    private final SubnodesList subnodes = new SubnodesListImpl();
     private AbstractSyntaxNode model;
     private Map<String, Object> userData;
     
@@ -107,8 +112,8 @@ public class TreeRuleNode extends ParserRuleContext implements Element, CustomXP
         if (this.getChildCount() > 0) {
             nodeName = Trees.getNodeText(this, parserCtx);
             List<CustomXPathModelNodeBase> subnodes = getSubnodes().getCollection();
-            for (int i = 0; i < subnodes.size(); i ++) {
-                subnodes.get(i).fixup(parserCtx, index);
+            for (CustomXPathModelNodeBase subnode : subnodes) {
+                subnode.fixup(parserCtx, index);
             }
         } else {
             throw new IllegalStateException(); // Should never happen?

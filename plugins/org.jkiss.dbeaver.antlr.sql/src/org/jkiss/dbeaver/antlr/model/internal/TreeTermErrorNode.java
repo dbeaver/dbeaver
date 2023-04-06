@@ -16,15 +16,15 @@
  */
 package org.jkiss.dbeaver.antlr.model.internal;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNodeImpl;
 import org.jkiss.dbeaver.antlr.model.internal.TreeRuleNode.SubnodesList;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class TreeTermErrorNode extends ErrorNodeImpl implements CustomXPathModelTextBase {
     

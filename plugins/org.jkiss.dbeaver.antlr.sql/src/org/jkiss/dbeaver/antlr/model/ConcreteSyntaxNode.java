@@ -23,56 +23,58 @@ import java.util.List;
 public class ConcreteSyntaxNode extends AbstractSyntaxNode {
     private List<AbstractSyntaxNode> children = null;
     private List<AbstractSyntaxNode> readonlyChildren = null;
-    
+
     public ConcreteSyntaxNode() {
         super();
     }
-    
+
     public ConcreteSyntaxNode(String name) {
         super(name);
     }
 
     public List<AbstractSyntaxNode> getChildren() {
-        return children == null ? Collections.emptyList() : (
-            readonlyChildren != null ? readonlyChildren : (
-                readonlyChildren = Collections.unmodifiableList(children)
-            )
-        );
+        if (children == null) {
+            return Collections.emptyList();
+        } else {
+            if (readonlyChildren == null) {
+                readonlyChildren = Collections.unmodifiableList(children);
+            }
+            return readonlyChildren;
+        }
     }
-    
+
     public List<AbstractSyntaxNode> getChildren(String name) {
-        List<AbstractSyntaxNode> result; 
+        List<AbstractSyntaxNode> result;
         if (this.children == null) {
             result = Collections.emptyList();
         } else {
             result = new ArrayList<>(this.children.size());
-            for (AbstractSyntaxNode subnode: this.children) {
-                if ((name == null && subnode.getName() == null) ||
-                    (name != null && name.equals(subnode.getName()))) {
+            for (AbstractSyntaxNode subnode : this.children) {
+                if ((name == null && subnode.getName() == null) || (name != null && name.equals(subnode.getName()))) {
                     result.add(subnode);
                 }
             }
         }
         return result;
     }
-    
+
     public <T extends AbstractSyntaxNode> List<T> getChildren(Class<T> subnodeType) {
-        List<T> result; 
+        List<T> result;
         if (this.children == null) {
             result = Collections.emptyList();
         } else {
             result = new ArrayList<>(this.children.size());
             for (AbstractSyntaxNode subnode : this.children) {
                 if (subnodeType.isAssignableFrom(subnode.getClass())) {
-                	@SuppressWarnings("unchecked")
-					T concreteSubnode = (T) subnode;
+                    @SuppressWarnings("unchecked")
+                    T concreteSubnode = (T) subnode;
                     result.add(concreteSubnode);
                 }
             }
         }
         return result;
     }
-    
+
     void addChild(AbstractSyntaxNode node) {
         if (this.children == null) {
             this.children = new ArrayList<>();
