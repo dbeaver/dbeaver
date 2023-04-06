@@ -90,7 +90,7 @@ public class WSEventController {
                         handler.handleEvent(event);
                     } catch (Exception e) {
                         log.error(
-                            "Error on event handle " + handler.getSupportedTopicId(),
+                            "Error on event handle " + event.getTopicId(),
                             e
                         );
                     }

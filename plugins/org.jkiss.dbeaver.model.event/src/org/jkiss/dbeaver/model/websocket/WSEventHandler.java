@@ -23,11 +23,6 @@ import org.jkiss.dbeaver.model.websocket.event.WSEvent;
  * CB web event handlers
  */
 public interface WSEventHandler<EVENT extends WSEvent> {
-    /**
-     * Expected cb event type
-     */
-    @NotNull
-    String getSupportedTopicId();
 
     /**
      * Handle associated cb event

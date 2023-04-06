@@ -37,7 +37,7 @@ public class WSEventHandlerDescriptor extends AbstractDescriptor {
     protected WSEventHandlerDescriptor(IConfigurationElement contributorConfig) {
         super(contributorConfig);
         this.implType = new ObjectType(contributorConfig, "class");
-        for (IConfigurationElement dsElement : contributorConfig.getChildren("token")) {
+        for (IConfigurationElement dsElement : contributorConfig.getChildren("topic")) {
             String dsId = dsElement.getAttribute("id");
             if (dsId != null) {
                 supportedTopics.add(dsId);
