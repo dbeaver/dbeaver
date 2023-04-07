@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -50,6 +51,8 @@ import java.util.List;
 
 class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
+    private static final String DATABASE_PRODUCER_ID = "database_producer";
+    private static final String DATABASE_CONSUMER_ID = "database_consumer";
     private boolean activated;
     private TableViewer nodesTable;
     private TableViewer inputsTable;
@@ -304,6 +307,11 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             if (consumer.isAdvancedNode() && !DBWorkbench.hasFeature(DTConstants.PRODUCT_FEATURE_ADVANCED_DATA_TRANSFER)) {
                 continue;
             }
+            if (DATABASE_CONSUMER_ID.equals(consumer.getId())
+                && !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER))
+            {
+                continue;
+            }
             Collection<DataTransferProcessorDescriptor> processors = consumer.getAvailableProcessors(objects);
             if (CommonUtils.isEmpty(processors)) {
                 transferTargets.add(new TransferTarget(consumer, null));
@@ -323,6 +331,11 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         List<TransferTarget> transferTargets = new ArrayList<>();
         for (DataTransferNodeDescriptor producer : DataTransferRegistry.getInstance().getAvailableProducers(objects)) {
             if (producer.isAdvancedNode() && !DBWorkbench.hasFeature(DTConstants.PRODUCT_FEATURE_ADVANCED_DATA_TRANSFER)) {
+                continue;
+            }
+            if (DATABASE_PRODUCER_ID.equals(producer.getId())
+                && !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER))
+            {
                 continue;
             }
 

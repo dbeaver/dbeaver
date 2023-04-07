@@ -208,7 +208,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
     @Override
     public void doubleClick(DoubleClickEvent event)
     {
-        if (selectedDriver != null) {
+        if (selectedDriver != null && projectSelector.getSelectedProject() != null) {
             wizard.getContainer().showPage(wizard.getNextPage(this));
         }
     }
