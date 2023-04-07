@@ -18,6 +18,7 @@
         <module>org.jkiss.dbeaver.ext.clickhouse.test</module>
         <module>org.jkiss.dbeaver.ext.greenplum.test</module>
         <module>org.jkiss.dbeaver.ext.mysql.test</module>
+        <module>org.jkiss.dbeaver.ext.model.sql.lsm.test</module>
         <module>org.jkiss.dbeaver.ext.oracle.test</module>
         <module>org.jkiss.dbeaver.ext.postgresql.test</module>
         <module>org.jkiss.dbeaver.ext.test</module>
