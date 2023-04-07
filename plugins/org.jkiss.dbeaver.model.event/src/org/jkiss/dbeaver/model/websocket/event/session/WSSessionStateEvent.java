@@ -20,15 +20,20 @@ import org.jkiss.dbeaver.model.websocket.event.WSEvent;
 import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
 public class WSSessionStateEvent extends WSEvent {
-    private final String remainingTime;
+    private final long remainingTime;
     private final boolean isValid;
 
-    /**
-     * {@code remainingTime} will be converted to String because GraphQL does not have Long data type
-     */
-    public WSSessionStateEvent(long remainingTime) {
+    public WSSessionStateEvent(long remainingTime, boolean isValid) {
         super(WSEventType.SESSION_STATE);
-        this.remainingTime = String.valueOf(remainingTime);
-        isValid = remainingTime > 0;
+        this.remainingTime = remainingTime;
+        this.isValid = isValid;
+    }
+
+    public long getRemainingTime() {
+        return remainingTime;
+    }
+
+    public boolean isValid() {
+        return isValid;
     }
 }
