@@ -17,8 +17,17 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ControlEditor;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.part.EditorPart;
@@ -30,6 +39,7 @@ import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
+import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -90,15 +100,55 @@ public class ProgressEditorPart extends EditorPart {
     }
 
     private void createProgressPane(final Composite parent) {
-        progressCanvas = new Composite(parent, SWT.NONE);
-        progressCanvas.addPaintListener(e ->
-            e.gc.drawText("Opening editor '" + getEditorInput().getName() + "'...", 5, 5, true));
+        final DatabaseLazyEditorInput input = getEditorInput();
 
+        progressCanvas = new Composite(parent, SWT.NONE);
+
+        if (input.canLoadImmediately()) {
+            scheduleEditorLoad();
+        } else {
+            createInitializerPlaceholder();
+        }
+    }
+
+    private void scheduleEditorLoad() {
         InitNodeService loadingService = new InitNodeService();
         LoadingJob<IDatabaseEditorInput> loadJob = LoadingJob.createService(
             loadingService,
             new InitNodeVisualizer(loadingService));
         UIExecutionQueue.queueExec(loadJob::schedule);
+    }
+
+    private void createInitializerPlaceholder() {
+        final Button button = new Button(progressCanvas, SWT.PUSH);
+
+        final PaintListener paintListener = e -> {
+            final Rectangle buttonBounds = button.getBounds();
+            e.gc.setFont(button.getFont());
+            UIUtils.drawTextWithBackground(
+                e.gc,
+                EditorsMessages.progress_editor_uninitialized_text,
+                buttonBounds.x + buttonBounds.width / 2,
+                buttonBounds.y - 10
+            );
+        };
+
+        button.setText(EditorsMessages.progress_editor_uninitialized_button_text);
+        button.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            for (Control child : progressCanvas.getChildren()) {
+                child.dispose();
+            }
+            progressCanvas.removePaintListener(paintListener);
+            scheduleEditorLoad();
+        }));
+
+        final Point buttonSize = button.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        final ControlEditor progressOverlay = new ControlEditor(progressCanvas);
+        progressOverlay.minimumWidth = buttonSize.x;
+        progressOverlay.minimumHeight = buttonSize.y;
+        progressOverlay.setEditor(button);
+
+        progressCanvas.addPaintListener(paintListener);
     }
 
     private void initEntityEditor(IDatabaseEditorInput result) {
@@ -143,15 +193,17 @@ public class ProgressEditorPart extends EditorPart {
         }
     }
 
-    private class InitNodeVisualizer extends ProgressLoaderVisualizer<IDatabaseEditorInput> {
+    private class InitNodeVisualizer extends ProgressLoaderVisualizer<IDatabaseEditorInput> implements PaintListener {
         public InitNodeVisualizer(InitNodeService loadingService) {
-            super(loadingService, ProgressEditorPart.this.progressCanvas);
+            super(loadingService, progressCanvas);
+            progressCanvas.addPaintListener(this);
         }
 
         @Override
         public void completeLoading(IDatabaseEditorInput result) {
             super.completeLoading(result);
             super.visualizeLoading();
+            progressCanvas.removePaintListener(this);
             initEntityEditor(result);
             if (result == null) {
                 // Close editor
@@ -162,6 +214,11 @@ public class ProgressEditorPart extends EditorPart {
                 DBWorkbench.getPlatformUI().refreshPartState(ownerEditor);
             }
             ActionUtils.evaluatePropertyState("org.jkiss.dbeaver.ui.editors.entity.hasSource");
+        }
+
+        @Override
+        public void paintControl(PaintEvent e) {
+            e.gc.drawText(NLS.bind(EditorsMessages.progress_editor_initializing_text, getEditorInput().getName()), 5, 5, true);
         }
     }
 

@@ -36,6 +36,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -86,7 +87,8 @@ import java.util.*;
  * EntityEditor
  */
 public class EntityEditor extends MultiPageDatabaseEditor
-    implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IRevertableEditor, ITabbedFolderContainer, DBPDataSourceContainerProvider, IEntityEditorContext
+    implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IRevertableEditor, ILazyEditor,
+    ITabbedFolderContainer, DBPDataSourceContainerProvider, IEntityEditorContext
 {
     public static final String ID = "org.jkiss.dbeaver.ui.editors.entity.EntityEditor"; //$NON-NLS-1$
 
@@ -331,6 +333,19 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
+    @Override
+    public boolean unloadEditorInput() {
+        if (getEditorInput() instanceof IUnloadableEditorInput) {
+            final IEditorInput input = ((IUnloadableEditorInput) getEditorInput()).unloadInput();
+            deactivateEditor();
+            setInput(input);
+            recreateEditorControl();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private boolean saveCommandContext(final DBRProgressMonitor monitor, Map<String, Object> options) {
         monitor.beginTask("Save entity", 1);
         Throwable error = null;
@@ -540,28 +555,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         super.createPages();
 
         final IDatabaseEditorInput editorInput = getEditorInput();
-        if (editorInput instanceof DatabaseLazyEditorInput) {
-            try {
-                addPage(new ProgressEditorPart(this), editorInput);
-                setPageText(0, "Initializing ...");
-                Image tabImage = DBeaverIcons.getImage(UIIcon.REFRESH);
-                setPageImage(0, tabImage);
-                setActivePage(0);
-                ((CTabFolder)getContainer()).setTabHeight(tabImage.getBounds().height + 2);
-            } catch (PartInitException e) {
-                log.error(e);
-            }
-            return;
-        } else if (editorInput instanceof ErrorEditorInput) {
-            ErrorEditorInput errorInput = (ErrorEditorInput) editorInput;
-            try {
-                addPage(new ErrorEditorPartEx(errorInput.getError()), errorInput);
-                setPageImage(0, UIUtils.getShardImage(ISharedImages.IMG_OBJS_ERROR_TSK));
-                setPageText(0, "Error");
-                setActivePage(0);
-            } catch (PartInitException e) {
-                log.error(e);
-            }
+        if (createPageForInput(editorInput)) {
             return;
         }
 
@@ -649,6 +643,40 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
 
         UIUtils.setHelp(getContainer(), IHelpContextIds.CTX_ENTITY_EDITOR);
+    }
+
+    private boolean createPageForInput(@NotNull IEditorInput editorInput) {
+        if (editorInput instanceof DatabaseLazyEditorInput) {
+            final DatabaseLazyEditorInput input = (DatabaseLazyEditorInput) editorInput;
+
+            try {
+                addPage(new ProgressEditorPart(this), input);
+                setPageText(0, input.canLoadImmediately()
+                    ? UINavigatorMessages.editors_entity_title_initializing
+                    : UINavigatorMessages.editors_entity_title_uninitialized);
+                setPageImage(0, DBeaverIcons.getImage(UIIcon.REFRESH));
+                setActivePage(0);
+            } catch (PartInitException e) {
+                log.error(e);
+            }
+
+            return true;
+        } else if (editorInput instanceof ErrorEditorInput) {
+            final ErrorEditorInput input = (ErrorEditorInput) editorInput;
+
+            try {
+                addPage(new ErrorEditorPartEx(input.getError()), input);
+                setPageText(0, "Error");
+                setPageImage(0, UIUtils.getShardImage(ISharedImages.IMG_OBJS_ERROR_TSK));
+                setActivePage(0);
+            } catch (PartInitException e) {
+                log.error(e);
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     public IEditorPart getPageEditor(String pageId) {
@@ -1067,6 +1095,12 @@ public class EntityEditor extends MultiPageDatabaseEditor
         if (getContainer() == null || getContainer().isDisposed()) {
             // Disposed during editor opening
             return;
+        }
+        if (getContainer() instanceof CTabFolder) {
+            final Control control = ((CTabFolder) getContainer()).getTopRight();
+            if (control != null) {
+                control.dispose();
+            }
         }
         recreatePages();
         firePropertyChange(PROP_OBJECT_INIT);

@@ -70,18 +70,6 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
             // Binary string
             return (String)value;
         }
-        if (value instanceof Double) {
-            Double d = (Double) value;
-            if (d.isNaN() || d.isInfinite()) {
-                return d.toString();
-            }
-        }
-        if (value instanceof Float) {
-            Float f = (Float) value;
-            if (f.isNaN() || f.isInfinite()) {
-                return f.toString();
-            }
-        }
         if (value instanceof Number && (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT)) {
             if (useScientificNotation < 0) {
                 this.useScientificNotation =

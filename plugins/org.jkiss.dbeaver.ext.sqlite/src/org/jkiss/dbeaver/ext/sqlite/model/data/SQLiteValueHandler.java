@@ -35,7 +35,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Date;
+import java.util.Locale;
 
 
 /**
@@ -77,6 +79,23 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler implements DBDV
     @Nullable
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException {
+        if (object instanceof String && (type.getTypeID() == Types.REAL || type.getTypeID() == Types.DOUBLE)) {
+            switch (((String) object).toLowerCase(Locale.ROOT)) {
+                case "inf":
+                case "infinity":
+                case "+inf":
+                case "+infinity":
+                    return Double.POSITIVE_INFINITY;
+                case "-inf":
+                case "-infinity":
+                    return Double.NEGATIVE_INFINITY;
+                case "nan":
+                    return Double.NaN;
+                default:
+                    break;
+            }
+        }
+
         return object;
     }
 

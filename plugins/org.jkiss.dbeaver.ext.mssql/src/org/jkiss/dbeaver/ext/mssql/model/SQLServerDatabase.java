@@ -244,7 +244,7 @@ public class SQLServerDatabase
             } else {
                 statement = "SELECT ss.*, tt.type_table_object_id FROM " + SQLServerUtils.getSystemTableName(database, "types") +
                     " ss\nLEFT JOIN " + SQLServerUtils.getSystemTableName(database, "table_types") + " tt ON\n" +
-                    "ss.name = tt.name" +
+                    "ss.name = tt.name AND ss.user_type_id = tt.user_type_id" +
                     "\nWHERE ss.is_user_defined = 1";
             }
             return session.prepareStatement(statement);
