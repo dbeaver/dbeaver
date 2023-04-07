@@ -217,7 +217,7 @@ public class GridColumn implements IGridColumn {
             int textWidth;
             Object calcWidthMethod = labelProvider.getGridOption(IGridLabelProvider.OPTION_CALC_COLUMN_WIDTH_METHOD);
             String text = "X";
-            switch (ResultSetPreferences.GridColumnCalcWidthMethod.getByNum((Integer) calcWidthMethod)) {
+            switch ((ResultSetPreferences.GridColumnCalcWidthMethod) calcWidthMethod) {
                 case TITLE_AND_VALUES:
                     text = labelProvider.getText(this);
                     textWidth = grid.sizingGC.stringExtent(text).x;

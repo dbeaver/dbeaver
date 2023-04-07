@@ -147,7 +147,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     private boolean showAttributeIcons;
     private boolean showAttributeDescription;
     private boolean showDescription;
-    private int calcColumnWidthMethod;
+    private ResultSetPreferences.GridColumnCalcWidthMethod calcColumnWidthMethod;
 
     private boolean rightJustifyNumbers = true;
     private boolean rightJustifyDateTime = true;
@@ -849,7 +849,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 controller.getDataContainer().isFeatureSupported(DBSDataContainer.FEATURE_DATA_FILTER) &&
                 controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS);
         autoFetchSegments = controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT);
-        calcColumnWidthMethod = getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_METHOD);
+        calcColumnWidthMethod = CommonUtils.valueOf(ResultSetPreferences.GridColumnCalcWidthMethod.class,
+                getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_METHOD));
         showDescription = getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION);
         showCollectionsInline = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_COLLECTIONS_INLINE);
         showBooleanAsCheckbox = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX);

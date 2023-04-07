@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * PrefPageResultSetPresentation
@@ -111,7 +112,13 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         try {
         	autoSwitchMode.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE));
             showDescription.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION));
-            columnWidthCalcCombo.select(store.getInt(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_METHOD));
+            ResultSetPreferences.GridColumnCalcWidthMethod calcColumnWidthMethod =
+                CommonUtils.valueOf(ResultSetPreferences.GridColumnCalcWidthMethod.class,
+                store.getString(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_METHOD));
+            columnWidthCalcCombo.select(
+                calcColumnWidthMethod == ResultSetPreferences.GridColumnCalcWidthMethod.VALUES ? 1 :
+                calcColumnWidthMethod == ResultSetPreferences.GridColumnCalcWidthMethod.TITLE_DESCRIPTION_VALUES ?
+                    2 : 0);
             showConnectionName.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME));
             rightJustifyNumbers.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS));
             rightJustifyDateTime.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME));
@@ -128,7 +135,13 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         try {
             store.setValue(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE, autoSwitchMode.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION, showDescription.getSelection());
-            store.setValue(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_METHOD, columnWidthCalcCombo.getSelectionIndex());
+            ResultSetPreferences.GridColumnCalcWidthMethod calcColumnWidthMethod =
+                columnWidthCalcCombo.getSelectionIndex() == 1 ? ResultSetPreferences.GridColumnCalcWidthMethod.VALUES :
+                columnWidthCalcCombo.getSelectionIndex() == 2 ?
+                    ResultSetPreferences.GridColumnCalcWidthMethod.TITLE_DESCRIPTION_VALUES :
+                    ResultSetPreferences.GridColumnCalcWidthMethod.TITLE_AND_VALUES;
+            store.setValue(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_METHOD,
+                    calcColumnWidthMethod.name());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME, showConnectionName.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS, rightJustifyNumbers.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME, rightJustifyDateTime.getSelection());

@@ -105,19 +105,9 @@ public final class ResultSetPreferences {
     public static final String KEEP_STATEMENT_OPEN = "keep.statement.open"; //$NON-NLS-1$
 
     public enum GridColumnCalcWidthMethod {
-        TITLE_AND_VALUES(0),
-        VALUES(1),
-        TITLE_DESCRIPTION_VALUES(2) // if description is set to "visible"
-        ;
-
-        GridColumnCalcWidthMethod(int method) {
-        }
-
-        public static GridColumnCalcWidthMethod getByNum(Integer method) {
-            if (method == 1) return VALUES;
-            if (method == 2) return TITLE_DESCRIPTION_VALUES;
-            return TITLE_AND_VALUES;
-        }
+        TITLE_AND_VALUES,
+        VALUES,
+        TITLE_DESCRIPTION_VALUES // if description is set to "visible"
     }
 
 }

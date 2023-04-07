@@ -72,7 +72,7 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_METHOD,
-                ResultSetPreferences.GridColumnCalcWidthMethod.TITLE_AND_VALUES);
+                ResultSetPreferences.GridColumnCalcWidthMethod.TITLE_AND_VALUES.name());
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME, false);
         
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_FILTER_AUTO_COMPLETE_PROPOSIAL, true);
