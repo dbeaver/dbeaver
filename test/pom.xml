@@ -21,6 +21,7 @@
         <module>org.jkiss.dbeaver.ext.oracle.test</module>
         <module>org.jkiss.dbeaver.ext.postgresql.test</module>
         <module>org.jkiss.dbeaver.ext.test</module>
+        <module>org.jkiss.dbeaver.model.sql.lsm.test</module>
 
     </modules>
 
