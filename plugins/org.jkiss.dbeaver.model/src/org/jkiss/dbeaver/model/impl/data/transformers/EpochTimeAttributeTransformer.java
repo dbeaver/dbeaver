@@ -68,7 +68,7 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
     private static final DateTimeFormatter DOTNET_TICKS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.nnnnnnn", Locale.ENGLISH);
 
     private enum EpochUnit {
-        SECONDS {
+        seconds {
             @Override
             Instant toInstant(Number value) {
                 long longValue = value.longValue();
@@ -86,7 +86,7 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
             }
         },
 
-        MILLISECONDS {
+        milliseconds {
             @Override
             Instant toInstant(Number value) {
                 long longValue = value.longValue();
@@ -104,7 +104,7 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
             }
         },
 
-        MICROSECONDS {
+        microseconds {
             @Override
             Instant toInstant(Number value) {
                 long longValue = value.longValue();
@@ -122,7 +122,7 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
             }
         },
 
-         NANOSECONDS {
+        nanoseconds {
             @Override
             Instant toInstant(Number value) {
                 long longValue = value.longValue();
@@ -141,7 +141,7 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
         },
 
         // https://docs.microsoft.com/en-us/dotnet/api/system.datetime.ticks?view=net-6.0#remarks
-        DOTNET {
+        dotnet {
             @Override
             Instant toInstant(Number value) {
                 return ticksToInstant(value.longValue(), DOTNET_TICKS_OFFSET);
@@ -159,7 +159,7 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
         },
 
         // https://docs.microsoft.com/en-us/dotnet/api/system.datetime.fromfiletimeutc?view=net-6.0#system-datetime-fromfiletimeutc(system-int64)
-        W32FILETIME {
+        w32filetime {
             @Override
             Instant toInstant(Number value) {
                 return ticksToInstant(value.longValue(), W32_FILETIME_OFFSET);
@@ -177,7 +177,7 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
         },
 
         // https://docs.microsoft.com/en-us/dotnet/api/system.datetime.fromoadate?view=net-6.0#system-datetime-fromoadate(system-double)
-        OADATE {
+        oadate {
             @Override
             Instant toInstant(Number value) {
                 return daysToInstant(value.doubleValue(), OADATE_OFFSET);
@@ -195,7 +195,7 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
         },
 
         // https://www.sqlite.org/lang_datefunc.html
-        SQLITEJULIAN {
+        sqliteJulian {
             @Override
             Instant toInstant(Number value) {
                 return daysToInstant(value.doubleValue(), SQLITE_JULIAN_OFFSET);
@@ -244,7 +244,7 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
     @Override
     public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, Object> options) throws DBException {
         attribute.setPresentationAttribute(new TransformerPresentationAttribute(attribute, "EpochTime", -1, DBPDataKind.DATETIME));
-        EpochUnit unit = EpochUnit.MILLISECONDS;
+        EpochUnit unit = EpochUnit.milliseconds;
         try {
             unit = EpochUnit.valueOf(CommonUtils.toString(options.get(PROP_UNIT)));
         } catch (IllegalArgumentException e) {
