@@ -16,21 +16,6 @@
  */
 package org.jkiss.dbeaver.antlr.model;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.xml.xpath.XPathEvaluationResult;
-import javax.xml.xpath.XPathException;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathNodes;
-import javax.xml.xpath.XPathEvaluationResult.XPathResultType;
-
 import org.antlr.v4.runtime.tree.SyntaxTree;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.antlr.model.internal.FieldTypeKind;
@@ -40,6 +25,15 @@ import org.jkiss.dbeaver.antlr.model.internal.NodeTypeInfo;
 import org.jkiss.dbeaver.antlr.model.internal.NodesList;
 import org.jkiss.dbeaver.antlr.model.internal.XTreeNodeBase;
 import org.w3c.dom.Node;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.xml.xpath.XPathEvaluationResult;
+import javax.xml.xpath.XPathEvaluationResult.XPathResultType;
+import javax.xml.xpath.XPathException;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathNodes;
 
 public class SyntaxModelMappingSession {
     

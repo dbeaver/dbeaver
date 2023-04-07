@@ -47,7 +47,7 @@ public class ModelErrorsCollection {
     }
 
     public void printToStderr() {
-        for (ErrorInfo error: errors) {
+        for (ErrorInfo error : errors) {
             System.err.println(error.message);
         }
     }

@@ -62,10 +62,11 @@ public class SyntaxModel {
 
     private XTreeNodeBase prepareTree(Tree root) {
         if (!(root instanceof XTreeNodeBase)) {
-            throw new IllegalArgumentException("Failed to prepare syntax model due to unsupported syntax tree typeing. Consider using adapted grammar with correct superClass and contextSuperClass options.");
+            throw new IllegalArgumentException("Failed to prepare syntax model due to unsupported syntax tree typeing." +
+                "Consider using adapted grammar with correct superClass and contextSuperClass options.");
         }
         
-        XTreeNodeBase rootNode = (XTreeNodeBase)root;
+        XTreeNodeBase rootNode = (XTreeNodeBase) root;
         if (rootNode.getIndex() < 0) {
             rootNode.fixup(parser, 0);
         }
@@ -86,13 +87,11 @@ public class SyntaxModel {
     public <T extends AbstractSyntaxNode> SyntaxModelMappingResult<T> map(Tree root, Class<T> type) {
         XTreeNodeBase rootInfo = prepareTree(root);
         SyntaxModelMappingSession mappingSession = new SyntaxModelMappingSession(this);
-        return mappingSession.map((XTreeNodeBase)root, type);
+        return mappingSession.map((XTreeNodeBase) root, type);
     }
 
     private void appendIndent(StringBuilder sb, int indent) {
-        for (int i = 0; i < indent; i++) {
-            sb.append("\t");
-        }
+        sb.append("\t".repeat(Math.max(0, indent)));
     }
     
     public String stringify(AbstractSyntaxNode model) {
@@ -130,8 +129,11 @@ public class SyntaxModel {
         if (typeInfo != null) {
             for (NodeFieldInfo field : typeInfo.getFields()) {
                 Object value;
-                try { value = field.getValue(model); }
-                catch (IllegalArgumentException | IllegalAccessException ex) { value = ex; }
+                try {
+                    value = field.getValue(model);
+                } catch (IllegalArgumentException | IllegalAccessException ex) {
+                    value = ex;
+                }
                 if (n > 0) {
                     sb.append(",");
                 }
@@ -213,8 +215,9 @@ public class SyntaxModel {
     
     private <T, R> Function<T, R> captureExceptionInfo(ThrowableFunction<T, R> mapper, BiConsumer<T, Throwable> handler) {
         return o -> {
-            try { return mapper.apply(o); }
-            catch (Throwable ex) {
+            try {
+                return mapper.apply(o);
+            } catch (Throwable ex) {
                 handler.accept(o, ex);
                 return null;
             }
@@ -232,13 +235,13 @@ public class SyntaxModel {
         var existing = literalTypeByRuleName.get(literalAnnotation.name());
         if (existing == null) {
             // var values = type.getEnumConstants();
-            var enumEntries = Stream.of(type.getFields()).filter(f -> f.isEnumConstant()).map(captureExceptionInfo(
+            var enumEntries = Stream.of(type.getFields()).filter(Field::isEnumConstant).map(captureExceptionInfo(
                     f -> new Object() {
-                       public final Field field = f;
-                       public final Object value = f.get(null);
-                       public final String name = f.getName();
-                       public final String upperCasedName = f.getName().toUpperCase();
-                       public final SyntaxLiteralCase literalCaseAnnotation = f.getAnnotation(SyntaxLiteralCase.class);
+                        public final Field field = f;
+                        public final Object value = f.get(null);
+                        public final String name = f.getName();
+                        public final String upperCasedName = f.getName().toUpperCase();
+                        public final SyntaxLiteralCase literalCaseAnnotation = f.getAnnotation(SyntaxLiteralCase.class);
                     }, 
                     (f, ex) -> errors.add(ex, "Failed to introduce model enum case " + f.getName() + " of type " + type.getName())
             )).collect(Collectors.toList());
@@ -255,21 +258,28 @@ public class SyntaxModel {
                     e -> e.value, 
                     captureExceptionInfo(
                         e -> xpath.compile(e.literalCaseAnnotation.xcondition()), // TODO collect raw string too 
-                        (f, ex) -> errors.add(ex, "Failed to prepare condition xpath for enum case " + f.name + " of type " + type.getName())
+                        (f, ex) -> errors.add(ex, "Failed to prepare condition xpath for enum case "
+                            + f.name + " of type " + type.getName())
                     ),
-                    (x, y) -> { throw new IllegalStateException("Duplicated enum values"); /* should never happen*/ },
+                    (x, y) -> {
+                        throw new IllegalStateException("Duplicated enum values"); // should never happen
+                    },
                     LinkedHashMap::new
                 ));
             try {
-                var xstringExpr = literalAnnotation.xstring().length() > 0 ? xpath.compile(literalAnnotation.xstring()) : null; // TODO collect raw string too
-                LiteralTypeInfo literalTypeInfo = new LiteralTypeInfo(literalAnnotation.name(), type, xstringExpr, exprByValue, valuesByName, isCaseSensitive);
+                var xstringExpr = literalAnnotation.xstring().length() > 0
+                    ? xpath.compile(literalAnnotation.xstring())
+                    : null; // TODO collect raw string too
+                LiteralTypeInfo literalTypeInfo = new LiteralTypeInfo(
+                    literalAnnotation.name(), type, xstringExpr, exprByValue, valuesByName, isCaseSensitive);
                 literalTypeByRuleName.put(literalAnnotation.name(), literalTypeInfo);
                 literalTypeByClass.put(type, literalTypeInfo);
             } catch (XPathException ex) {
                 errors.add(ex, "Failed to prepare xstring xpath exprssion for literal of type " + type.getName());
             }
         } else if (!existing.type.equals(type)) {
-            errors.add("Ambiguous syntax literal: both " + type.getName() + " and " + existing.type.getName() + "  are marked with the same name " + literalAnnotation.name());
+            errors.add("Ambiguous syntax literal: both " + type.getName() + " and " + existing.type.getName() +
+                "  are marked with the same name " + literalAnnotation.name());
         } else {
             // already registered, so nothing to do 
         }
@@ -292,7 +302,8 @@ public class SyntaxModel {
             }
             SyntaxNode ruleAnnotation = type.getAnnotation(SyntaxNode.class);
             if (ruleAnnotation == null) {
-                String referrent = entry.a == null ? " " : (" referenced from field " + entry.a.getName() + " of type " + entry.a.getDeclaringClass().getName() + " ");
+                String referrent = entry.a == null ? " "
+                    : (" referenced from field " + entry.a.getName() + " of type " + entry.a.getDeclaringClass().getName() + " ");
                 errors.add("Type " + type.getName() + referrent + "is not marked as syntax node with SyntaxNode annotation");
                 continue;
             }
@@ -329,7 +340,7 @@ public class SyntaxModel {
                     if (subnodeSpec.type() == null || subnodeSpec.type().equals(AbstractSyntaxNode.class)) {
                         if (AbstractSyntaxNode.class.isAssignableFrom(field.info.getType())) {
                             @SuppressWarnings("unchecked")
-                            Class<? extends AbstractSyntaxNode> ft = (Class<? extends AbstractSyntaxNode>)field.info.getType();
+                            Class<? extends AbstractSyntaxNode> ft = (Class<? extends AbstractSyntaxNode>) field.info.getType();
                             fieldType = ft;
                         } else {
                             errors.add("Failed to resolve subnode type for field " + field.info.getName() + " of type " + type.getName());
@@ -340,11 +351,13 @@ public class SyntaxModel {
                     }
                     
                     try {
-                        XPathExpression scopeExpr = subnodeSpec.xpath() != null && subnodeSpec.xpath().length() > 0 ? xpath.compile(subnodeSpec.xpath()) : null; // TODO collect raw string too  
+                        XPathExpression scopeExpr = subnodeSpec.xpath() != null && subnodeSpec.xpath().length() > 0
+                            ? xpath.compile(subnodeSpec.xpath()) : null; // TODO collect raw string too
                         subnodeExprs.add(new SubnodeInfo(scopeExpr, fieldType, subnodeSpec.lookup()));
                         queue.add(new Pair<>(field.info, fieldType));
                     } catch (XPathExpressionException ex) {
-                        errors.add(ex, "Failed to prepare subnode xpath exprssion for field " + field.info.getName() + " of type " + type.getName());
+                        errors.add(ex, "Failed to prepare subnode xpath exprssion for field "
+                            + field.info.getName() + " of type " + type.getName());
                     }
                 }
                 
@@ -368,7 +381,7 @@ public class SyntaxModel {
         }
         
         
-        for (NodeFieldInfo fieldInfo: fieldsToFixup) {
+        for (NodeFieldInfo fieldInfo : fieldsToFixup) {
             fieldInfo.fixup(this);
         }
         
