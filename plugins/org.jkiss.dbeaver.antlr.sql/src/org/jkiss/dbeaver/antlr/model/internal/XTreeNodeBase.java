@@ -30,7 +30,7 @@ import org.w3c.dom.UserDataHandler;
 import java.util.Map;
 import java.util.Stack;
 
-public interface CustomXPathModelNodeBase extends Tree, Node {
+public interface XTreeNodeBase extends Tree, Node {
 
     int getIndex();
 
@@ -48,8 +48,8 @@ public interface CustomXPathModelNodeBase extends Tree, Node {
 
     Map<String, Object> getUserDataMap(boolean createIfMissing);
     
-    default CustomXPathModelNodeBase getParentXNode() {
-        return (CustomXPathModelNodeBase) this.getParent();
+    default XTreeNodeBase getParentXNode() {
+        return (XTreeNodeBase) this.getParent();
     }
     
     
@@ -231,12 +231,12 @@ public interface CustomXPathModelNodeBase extends Tree, Node {
         return userData == null ? null : userData.get(key);
     }
 
-    default CustomXPathModelNodeBase findFirstDescedantByName(String ruleName) {
-        Stack<CustomXPathModelNodeBase> stack = new Stack<>();
+    default XTreeNodeBase findFirstDescedantByName(String ruleName) {
+        Stack<XTreeNodeBase> stack = new Stack<>();
         stack.addAll(getSubnodes().getCollection());
         
         while (!stack.isEmpty()) {
-            CustomXPathModelNodeBase nodeInfo = stack.pop();
+            XTreeNodeBase nodeInfo = stack.pop();
         
             if (nodeInfo.getLocalName().equals(ruleName)) {
                 return nodeInfo;
@@ -251,13 +251,13 @@ public interface CustomXPathModelNodeBase extends Tree, Node {
         return null;
     }
 
-    default NodesList<CustomXPathModelNodeBase> findDescedantLayerByName(String ruleName) {
-        NodesList<CustomXPathModelNodeBase> result = new NodesList<>(5);
-        Stack<CustomXPathModelNodeBase> stack = new Stack<>();
+    default NodesList<XTreeNodeBase> findDescedantLayerByName(String ruleName) {
+        NodesList<XTreeNodeBase> result = new NodesList<>(5);
+        Stack<XTreeNodeBase> stack = new Stack<>();
         stack.addAll(getSubnodes().getCollection());
         
         while (!stack.isEmpty()) {
-            CustomXPathModelNodeBase nodeInfo = stack.pop();
+            XTreeNodeBase nodeInfo = stack.pop();
         
             if (nodeInfo.getLocalName().equals(ruleName)) {
                 result.add(nodeInfo);

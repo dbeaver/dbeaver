@@ -35,22 +35,22 @@ public class EmptyNodesList implements NodeList, SubnodesList {
     }
 
     @Override
-    public List<CustomXPathModelNodeBase> getCollection() {
+    public List<XTreeNodeBase> getCollection() {
         return Collections.emptyList();
     }
 
     @Override
-    public CustomXPathModelNodeBase item(int index) {
+    public XTreeNodeBase item(int index) {
         return null;
     }
 
     @Override
-    public CustomXPathModelNodeBase getFirst() {
+    public XTreeNodeBase getFirst() {
         return null;
     }
 
     @Override
-    public CustomXPathModelNodeBase getLast() {
+    public XTreeNodeBase getLast() {
         return null;
     }
     

@@ -47,8 +47,7 @@ public class Test {
     public static void main(String[] args) throws IOException, XMLStreamException, FactoryConfigurationError, TransformerException {
         // prepareGrammarKeywords();
         
-        var input = CharStreams.fromString("SELECT c.s.v.a,w.b AS x " +
-            // "FROM xxx yy, (SELECT * FROM ttab) AS sub " +
+        var input = CharStreams.fromString("SELECT distinct c.s.v.a,w.b AS x " +
             "FROM xxx yy, cc.ss.vv AS sub " +
             "cross JOIN aB c " +
             "NATURAL INNER JOIN cd.er ON cd.er.id = aBc.id " +
@@ -56,7 +55,7 @@ public class Test {
             "UNION JOIN jd " +
             "ORDER BY yyy,zzz");
         //var input = CharStreams.fromFileName("D:\\github.com\\dbeaver\\sql-server-sakila-insert-data.sql");
-        var ll = new Sql92Lexer(input); //new CaseChangingCharStream(input, true));
+        var ll = new Sql92Lexer(input);
         var tokens = new CommonTokenStream(ll);
         tokens.fill();
         tokens.getTokens().forEach(t -> System.out.println(t.toString() + " - " + ll.getVocabulary().getSymbolicName(t.getType())));
@@ -89,25 +88,32 @@ public class Test {
             public void reportAmbiguity(Parser arg0, DFA arg1, int arg2, int arg3, boolean arg4, BitSet arg5, ATNConfigSet arg6) {
             }
         });
-        //var stmt = pp.sqlScript();
+
         var tree = pp.queryExpression();
-        
-        System.out.println();
-//        var sb = new StringBuilder();
-//        collect(tree, pp, sb, "");
-//        System.out.println(sb.toString());
-//        Files.writeString(Path.of("c:\\github.com\\dbeaver\\sql-server-sakila-insert-data.log"), sb.toString());
-        
-        Path dir = Path.of("C:\\Projects\\dbeaver\\dbeaver\\plugins\\org.jkiss.dbeaver.antlr.sql\\src\\org\\jkiss\\dbeaver\\antlr\\sql\\");
+
+        { // print simple parse tree view
+            System.out.println();
+            var sb = new StringBuilder();
+            collect(tree, pp, sb, "");
+            System.out.println(sb.toString());
+        }
+
         var model = new SyntaxModel(pp);
         model.introduce(SelectStatement.class);
-        Files.writeString(dir.resolve("parsed.xml"), model.toXml(tree));
-
-        var stmt = model.map(tree, SelectStatement.class);
-        Files.writeString(dir.resolve("model.json"), model.stringify(stmt.model));
+        
+        
+        var result = model.map(tree, SelectStatement.class);
+        
+        { // print human-readable representation of the complete form of the parse tree and model 
+            Path dir = Path.of("C:\\Projects\\dbeaver\\dbeaver\\plugins\\org.jkiss.dbeaver.antlr.sql\\src\\org\\jkiss\\dbeaver\\antlr\\sql\\");
+            Files.writeString(dir.resolve("parsed.xml"), model.toXml(tree));
+            Files.writeString(dir.resolve("model.json"), model.stringify(result.getModel()));
+        }
     }
     
     private static void collect(Tree ctx, Parser pp, StringBuilder sb, String indent) {
+        // String xtra = ctx instanceof CustomXPathModelNodeBase ? ((CustomXPathModelNodeBase)ctx).getIndex() + "" : "" ;
+        
         sb.append(indent).append(Trees.getNodeText(ctx, pp));
         Object p = null;
         while (ctx.getChildCount() == 1 && !(ctx.getChild(0).getPayload() instanceof Token)) {

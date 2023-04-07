@@ -33,7 +33,7 @@ import javax.xml.xpath.XPathFunctionResolver;
 
 import static org.jkiss.dbeaver.antlr.model.internal.CustomXPathUtils.*;
 
-public class CustomXPathFunctionResolver implements XPathFunctionResolver {
+public class XFunctionResolver implements XPathFunctionResolver {
 
     @FunctionalInterface
     private interface MyXPathFunction {
@@ -144,7 +144,7 @@ public class CustomXPathFunctionResolver implements XPathFunctionResolver {
     private final XPath xpath;
     private final Map<String, XPathExpression> exprs = new HashMap<>();
     
-    public CustomXPathFunctionResolver(XPath xpath) {
+    public XFunctionResolver(XPath xpath) {
         this.xpath = xpath;
     }
     

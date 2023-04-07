@@ -9,6 +9,7 @@ Require-Bundle: org.jkiss.bundle.antlr4;bundle-version=1.0.0
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: org.jkiss.dbeaver.antlr,
  org.jkiss.dbeaver.antlr.model,
+ org.jkiss.dbeaver.antlr.model.internal,
  org.jkiss.dbeaver.antlr.sql,
  org.jkiss.dbeaver.antlr.sql.model
 Import-Package: org.jkiss.code

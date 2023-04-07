@@ -26,7 +26,7 @@ import org.w3c.dom.NodeList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TreeTermErrorNode extends ErrorNodeImpl implements CustomXPathModelTextBase {
+public class TreeTermErrorNode extends ErrorNodeImpl implements XTreeTextBase {
     
     private int index = -1;
     

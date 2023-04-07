@@ -26,7 +26,7 @@ import org.w3c.dom.NodeList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TreeTermNode extends TerminalNodeImpl implements CustomXPathModelTextBase {
+public class TreeTermNode extends TerminalNodeImpl implements XTreeTextBase {
     
     private int index = -1;
     

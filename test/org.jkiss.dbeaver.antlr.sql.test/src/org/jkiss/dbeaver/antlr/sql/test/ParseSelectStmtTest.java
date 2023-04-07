@@ -16,14 +16,8 @@
  */
 package org.jkiss.dbeaver.antlr.sql.test;
 
-import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
-import org.antlr.v4.runtime.atn.ATNConfigSet;
-import org.antlr.v4.runtime.dfa.DFA;
 import org.jkiss.dbeaver.antlr.model.SyntaxModel;
 import org.jkiss.dbeaver.antlr.sql.Sql92Lexer;
 import org.jkiss.dbeaver.antlr.sql.Sql92Parser;
@@ -35,10 +29,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.BitSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
@@ -58,8 +48,10 @@ public class ParseSelectStmtTest {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 String trimmed = line.trim();
-                if (trimmed.length() > 0 && !(trimmed.startsWith("#") || trimmed.startsWith("--"))) {
-                    sb.append(line).append("\n");
+                if (trimmed.length() > 0) {
+                    if (!(trimmed.startsWith("#") || trimmed.startsWith("--"))) {
+                        sb.append(line).append(" \n");
+                    }
                 } else if (sb.toString().trim().length() > 0) {
                     result.add(sb.toString());
                     sb.setLength(0);
@@ -75,10 +67,6 @@ public class ParseSelectStmtTest {
         var statementsToParse = readStatements(ParseSelectStmtTest.class.getResourceAsStream(_selectStatementsSqlTextResourceName));
         
         for (String stmtText : statementsToParse) {
-            System.out.println();
-            System.out.println(stmtText);
-            System.out.println();
-            
             var input = CharStreams.fromString(stmtText);
             var ll = new Sql92Lexer(input);
             var tokens = new CommonTokenStream(ll);
@@ -90,17 +78,31 @@ public class ParseSelectStmtTest {
             var tree = pp.queryExpression();
             var noErrors = pp.getNumberOfSyntaxErrors() == 0;
             if (!noErrors) {
-                tokens.getTokens().forEach(t -> System.out.println(t.toString() + " - " + ll.getVocabulary().getSymbolicName(t.getType())));
+                System.err.println();
+                System.err.println(stmtText);
+                System.err.println();
+                
+                tokens.getTokens().forEach(t -> System.err.println(t.toString() + " - " + ll.getVocabulary().getSymbolicName(t.getType())));
             }
             Assert.assertTrue(noErrors);
             
             SyntaxModel model = new SyntaxModel(pp);
-            model.introduce(SelectStatement.class);
+            var ierrs = model.introduce(SelectStatement.class);
+            if (!ierrs.isEmpty()) {
+                ierrs.printToStderr();
+            }
+            Assert.assertTrue(ierrs.isEmpty());
+            
             var result = model.map(tree, SelectStatement.class);
             
-            Assert.assertTrue(result.isOk());
-            System.out.println(model.stringify(result.model));
-            System.out.println();
+            if (!result.isNoErrors()) {
+                System.err.println();
+                System.err.println(model.stringify(result.getModel()));
+                System.err.println();
+                result.getErrors().printToStderr();
+                System.err.println();
+            }
+            Assert.assertTrue(result.isNoErrors());
         }
     }
 }

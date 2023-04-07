@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.antlr.model.internal;
 
 import org.jkiss.dbeaver.antlr.model.AbstractSyntaxNode;
+import org.jkiss.dbeaver.antlr.model.SyntaxModel;
 import org.jkiss.dbeaver.antlr.model.SyntaxSubnodeLookupMode;
 
 import java.lang.reflect.Field;
@@ -31,21 +32,35 @@ public class NodeFieldInfo {
         public final Class<? extends AbstractSyntaxNode> subnodeType;
         public final SyntaxSubnodeLookupMode lookupMode;
         
-        public SubnodeInfo(
-            XPathExpression scopeExpr,
-            Class<? extends AbstractSyntaxNode> subnodeType,
-            SyntaxSubnodeLookupMode lookupMode
-        ) {
+        private NodeTypeInfo nodeTypeInfo;
+        
+        public SubnodeInfo(XPathExpression scopeExpr, 
+                           Class<? extends AbstractSyntaxNode> subnodeType, 
+                           SyntaxSubnodeLookupMode lookupMode) {
             this.scopeExpr = scopeExpr;
             this.subnodeType = subnodeType;
             this.lookupMode = lookupMode;
         }
+
+        public void fixup(SyntaxModel syntaxModel) {
+            nodeTypeInfo = syntaxModel.findNodeTypeInfo(subnodeType);
+        }
+
+        public NodeTypeInfo getNodeTypeInfo() {
+            if (nodeTypeInfo == null) {
+                throw new IllegalStateException();
+            } else {
+                return nodeTypeInfo;
+            }
+        }
     }
     
     public final FieldTypeKind kind;
-    public final Field info;
+    private final Field info;
     public final List<XPathExpression> termExprs;
     public final List<SubnodeInfo> subnodesInfo;
+    
+    private LiteralTypeInfo literalTypeInfo;
     
     public NodeFieldInfo(FieldTypeKind kind, Field info, List<XPathExpression> termExprs, List<SubnodeInfo> subnodesInfo) {
         this.kind = kind;
@@ -54,7 +69,39 @@ public class NodeFieldInfo {
         this.subnodesInfo = Collections.unmodifiableList(subnodesInfo);
     }
     
-    public String getName() {
+    public String getFieldName() {
         return this.info.getName();
+    }
+    
+    public String getDeclaringClassName() {
+        return this.info.getDeclaringClass().getName();
+    }
+
+    public void fixup(SyntaxModel syntaxModel) {
+        if (kind == FieldTypeKind.Enum) {
+            literalTypeInfo = syntaxModel.findLiteralTypeInfo(info.getType());
+        } else {
+            literalTypeInfo = null;
+        }
+        
+        for (SubnodeInfo subnodeInfo: subnodesInfo) {
+            subnodeInfo.fixup(syntaxModel);
+        }   
+    }
+
+    public LiteralTypeInfo getLiteralTypeInfo() {
+        if (literalTypeInfo == null) {
+            throw new IllegalStateException();
+        } else {
+            return literalTypeInfo;
+        }
+    }
+
+    public Object getValue(AbstractSyntaxNode model) throws IllegalArgumentException, IllegalAccessException {
+        return this.info.get(model);
+    }
+
+    public void setValue(AbstractSyntaxNode model, Object value) throws IllegalArgumentException, IllegalAccessException {
+        this.info.set(model, value);
     }
 }

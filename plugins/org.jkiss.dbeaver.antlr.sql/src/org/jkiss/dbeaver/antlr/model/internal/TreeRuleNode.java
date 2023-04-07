@@ -34,28 +34,28 @@ import java.util.List;
 import java.util.Map;
 
 
-public class TreeRuleNode extends ParserRuleContext implements Element, CustomXPathModelElementBase {
+public class TreeRuleNode extends ParserRuleContext implements Element, XTreeElementBase {
 
     public interface SubnodesList extends NodeList {
 
-        List<CustomXPathModelNodeBase> getCollection();
+        List<XTreeNodeBase> getCollection();
 
-        CustomXPathModelNodeBase item(int index);
+        XTreeNodeBase item(int index);
 
-        CustomXPathModelNodeBase getFirst();
+        XTreeNodeBase getFirst();
 
-        CustomXPathModelNodeBase getLast();
+        XTreeNodeBase getLast();
     }
     
     private class SubnodesListImpl implements SubnodesList {
         
-        public List<CustomXPathModelNodeBase> getCollection() {
-            return (List<CustomXPathModelNodeBase>)(Object)TreeRuleNode.this.children;
+        public List<XTreeNodeBase> getCollection() {
+            return (List<XTreeNodeBase>)(Object)TreeRuleNode.this.children;
         }
         
         @Override
-        public CustomXPathModelNodeBase item(int index) {
-            List<CustomXPathModelNodeBase> items = getCollection();
+        public XTreeNodeBase item(int index) {
+            List<XTreeNodeBase> items = getCollection();
             return index < 0 || index >= items.size() ? null : items.get(index);
         }
 
@@ -64,20 +64,21 @@ public class TreeRuleNode extends ParserRuleContext implements Element, CustomXP
             return getCollection().size();
         }
 
-        public CustomXPathModelNodeBase getFirst() {
-            List<CustomXPathModelNodeBase> items = getCollection();
+        public XTreeNodeBase getFirst() {
+            List<XTreeNodeBase> items = getCollection();
             return items.size() > 0 ? items.get(0) : null;
         }
 
-        public CustomXPathModelNodeBase getLast() {
-            List<CustomXPathModelNodeBase> items = getCollection();
+        public XTreeNodeBase getLast() {
+            List<XTreeNodeBase> items = getCollection();
             return items.size() > 0 ? items.get(items.size() - 1) : null;
         }
     }
     
+    private final SubnodesList subnodes = new SubnodesListImpl();
+    
     private String nodeName = null;
     private int index = -1;
-    private final SubnodesList subnodes = new SubnodesListImpl();
     private AbstractSyntaxNode model;
     private Map<String, Object> userData;
     
@@ -111,9 +112,9 @@ public class TreeRuleNode extends ParserRuleContext implements Element, CustomXP
         this.index = index;
         if (this.getChildCount() > 0) {
             nodeName = Trees.getNodeText(this, parserCtx);
-            List<CustomXPathModelNodeBase> subnodes = getSubnodes().getCollection();
-            for (CustomXPathModelNodeBase subnode : subnodes) {
-                subnode.fixup(parserCtx, index);
+            List<XTreeNodeBase> subnodes = getSubnodes().getCollection();
+            for (int i = 0; i < subnodes.size(); i++) {
+                subnodes.get(i).fixup(parserCtx, i);
             }
         } else {
             throw new IllegalStateException(); // Should never happen?
@@ -122,7 +123,7 @@ public class TreeRuleNode extends ParserRuleContext implements Element, CustomXP
     
     @Override
     public RuleContext addChild(RuleContext ruleInvocation) {
-        if (!(ruleInvocation instanceof CustomXPathModelNodeBase)) {
+        if (!(ruleInvocation instanceof XTreeNodeBase)) {
             throw new IllegalStateException();
         } else {
             return super.addChild(ruleInvocation);
@@ -136,7 +137,7 @@ public class TreeRuleNode extends ParserRuleContext implements Element, CustomXP
     
     @Override
     public TerminalNode addChild(TerminalNode t) {
-        if (!(t instanceof CustomXPathModelNodeBase)) {
+        if (!(t instanceof XTreeNodeBase)) {
             throw new IllegalStateException();
         } else {
             return super.addChild(t);
@@ -145,7 +146,7 @@ public class TreeRuleNode extends ParserRuleContext implements Element, CustomXP
     
     @Override
     public <T extends ParseTree> T addAnyChild(T t) {
-        if (!(t instanceof CustomXPathModelNodeBase)) {
+        if (!(t instanceof XTreeNodeBase)) {
             throw new IllegalStateException();
         } else {
             return super.addAnyChild(t);
@@ -159,7 +160,7 @@ public class TreeRuleNode extends ParserRuleContext implements Element, CustomXP
     
     @Override
     public ErrorNode addErrorNode(ErrorNode errorNode) {
-        if (!(errorNode instanceof CustomXPathModelNodeBase)) {
+        if (!(errorNode instanceof XTreeNodeBase)) {
             throw new IllegalStateException();
         } else {
             return super.addErrorNode(errorNode);

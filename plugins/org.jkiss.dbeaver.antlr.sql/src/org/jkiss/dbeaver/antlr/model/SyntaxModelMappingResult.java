@@ -20,15 +20,25 @@ import org.jkiss.code.NotNull;
 
 public class SyntaxModelMappingResult<T> {
     
-    // TODO introduce mapping errors collection
+    private final ModelErrorsCollection errors;
+    private final T model;
     
-    public final T model;
-    
-    public SyntaxModelMappingResult(@NotNull T model) {
+    public SyntaxModelMappingResult(ModelErrorsCollection errors, @NotNull T model) {
+        this.errors = errors;
         this.model = model;
     }   
     
-    public boolean isOk() {
-        return model != null;
+    public boolean isNoErrors() {
+        return model != null && errors.isEmpty();
     }
+    
+    public T getModel() {
+        return model;
+    }
+    
+    public ModelErrorsCollection getErrors() {
+        return errors;
+    }
+    
+    
 }

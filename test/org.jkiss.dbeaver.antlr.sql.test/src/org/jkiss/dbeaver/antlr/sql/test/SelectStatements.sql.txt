@@ -100,7 +100,7 @@ SELECT ALL
     ProductCategory.Name AS ProductCategory,
     ProductSubCategory.Name AS ProductSubCategory,
     Product.ProductModelID
-INTO Product
+-- INTO Product
 FROM Production.Product
 INNER JOIN Production.ProductSubCategory
 ON ProductSubCategory.ProductSubcategoryID = Product.ProductSubcategoryID

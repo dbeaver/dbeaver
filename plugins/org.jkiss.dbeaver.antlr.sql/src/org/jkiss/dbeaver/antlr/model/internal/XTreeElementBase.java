@@ -27,7 +27,7 @@ import org.w3c.dom.TypeInfo;
 import java.util.Stack;
 import java.util.function.Predicate;
 
-public interface CustomXPathModelElementBase extends CustomXPathModelNodeBase, Element {
+public interface XTreeElementBase extends XTreeNodeBase, Element {
     
     @Override
     default String getTagName() {
@@ -67,12 +67,12 @@ public interface CustomXPathModelElementBase extends CustomXPathModelNodeBase, E
     @Override
     default NodeList getElementsByTagName(String name) {
         Predicate<Node> condition = "*".equals(name) ? n -> true : n -> n.getLocalName().equals(name);
-        NodesList<CustomXPathModelNodeBase> result = new NodesList<>(5);
-        Stack<CustomXPathModelNodeBase> stack = new Stack<>();
+        NodesList<XTreeNodeBase> result = new NodesList<>(5);
+        Stack<XTreeNodeBase> stack = new Stack<>();
         stack.addAll(getSubnodes().getCollection());
         
         while (!stack.isEmpty()) {
-            CustomXPathModelNodeBase nodeInfo = stack.pop();
+            XTreeNodeBase nodeInfo = stack.pop();
         
             if (nodeInfo != null) {
                 stack.push(nodeInfo);

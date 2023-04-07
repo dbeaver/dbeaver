@@ -20,7 +20,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Text;
 
-public interface CustomXPathModelTextBase extends TerminalNode, Text, CustomXPathModelNodeBase {
+public interface XTreeTextBase extends TerminalNode, Text, XTreeNodeBase {
 
     @Override
     default String getData() throws DOMException {
