@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.antlr.model;
 
 import org.antlr.v4.runtime.tree.SyntaxTree;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.antlr.model.internal.FieldTypeKind;
 import org.jkiss.dbeaver.antlr.model.internal.LiteralTypeInfo;
 import org.jkiss.dbeaver.antlr.model.internal.NodeFieldInfo;
@@ -62,7 +63,8 @@ public class SyntaxModelMappingSession {
                     XPathEvaluationResult<?> value = expr.evaluateExpression(nodeInfo);
                     this.bindValue(nodeInfo, field, value);
                 } catch (XPathExpressionException e) {
-                    errors.add(e, "Failed to evaluate syntax model term expression for field " + field.getFieldName() + " of type " + field.getDeclaringClassName());
+                    errors.add(e, "Failed to evaluate syntax model term expression for field "
+                        + field.getFieldName() + " of type " + field.getDeclaringClassName());
                 }
             }
             if (field.kind == FieldTypeKind.Array || field.kind == FieldTypeKind.List) {
@@ -74,11 +76,13 @@ public class SyntaxModelMappingSession {
                             if (scopeOrSubnode.type() == XPathResultType.NODESET && scopeOrSubnode.value() instanceof XPathNodes) {
                                 for (var scopeSubnode : (XPathNodes) scopeOrSubnode.value()) {
                                     if (scopeSubnode instanceof XTreeNodeBase) {
-                                        mapSubtrees((XTreeNodeBase) scopeSubnode, subnodeInfo.getNodeTypeInfo(), true, tryDescedants, subnodes);
+                                    	var subnodeTypeInfo = subnodeInfo.getNodeTypeInfo();
+                                        mapSubtrees((XTreeNodeBase) scopeSubnode, subnodeTypeInfo, true, tryDescedants, subnodes);
                                     }
                                 }
                             } else if (scopeOrSubnode.type() == XPathResultType.NODE && scopeOrSubnode.value() instanceof XTreeNodeBase) {
-                                mapSubtrees((XTreeNodeBase) scopeOrSubnode.value(), subnodeInfo.getNodeTypeInfo(), true, tryDescedants, subnodes);
+                            	var subnodeTypeInfo = subnodeInfo.getNodeTypeInfo();
+                                mapSubtrees((XTreeNodeBase) scopeOrSubnode.value(), subnodeTypeInfo, true, tryDescedants, subnodes);
                             }
                         } else {
                             if (tryDescedants) {
@@ -90,7 +94,9 @@ public class SyntaxModelMappingSession {
                             }
                         }
                     } catch (XPathExpressionException e) {
-                        errors.add(e, "Failed to evaluate syntax model subnode scope expression for subnode " + subnodeInfo.subnodeType.getName() + " of field " + field.getFieldName() + " of type " + field.getDeclaringClassName());
+                        errors.add(e, "Failed to evaluate syntax model subnode scope expression for subnode "
+                            + subnodeInfo.subnodeType.getName() + " of field "
+                            + field.getFieldName() + " of type " + field.getDeclaringClassName());
                     }
                 }
                 List<Node> orderedSubnodes = subnodes.stream()
@@ -107,14 +113,16 @@ public class SyntaxModelMappingSession {
                             if (scopeOrSubnode.type() == XPathResultType.NODESET && scopeOrSubnode.value() instanceof XPathNodes) {
                                 for (var scopeSubnode : (XPathNodes) scopeOrSubnode.value()) {
                                     if (scopeSubnode instanceof XTreeNodeBase) {
-                                        subnode = mapSubtree((XTreeNodeBase) scopeSubnode, subnodeInfo.getNodeTypeInfo(), true, tryDescedants);
+                                    	var subnodeTypeInfo = subnodeInfo.getNodeTypeInfo();
+                                        subnode = mapSubtree((XTreeNodeBase) scopeSubnode, subnodeTypeInfo, true, tryDescedants);
                                         if (subnode != null) {
                                             break;
                                         }
                                     }
                                 }
                             } else if (scopeOrSubnode.type() == XPathResultType.NODE && scopeOrSubnode.value() instanceof XTreeNodeBase) {
-                                subnode = mapSubtree((XTreeNodeBase) scopeOrSubnode.value(), subnodeInfo.getNodeTypeInfo(), true, tryDescedants);
+                            	var subnodeTypeInfo = subnodeInfo.getNodeTypeInfo();
+                                subnode = mapSubtree((XTreeNodeBase) scopeOrSubnode.value(), subnodeTypeInfo, true, tryDescedants);
                             }
                         } else {
                             if (tryDescedants) {
@@ -130,7 +138,9 @@ public class SyntaxModelMappingSession {
                             break;
                         }
                     } catch (XPathExpressionException e) {
-                        errors.add(e, "Failed to evaluate syntax model subnode scope expression for subnode " + subnodeInfo.subnodeType.getName() + " of field " + field.getFieldName() + " of type " + field.getDeclaringClassName());                    
+                        errors.add(e, "Failed to evaluate syntax model subnode scope expression for subnode "
+                    		+ subnodeInfo.subnodeType.getName() + " of field " + field.getFieldName()
+                    		+ " of type " + field.getDeclaringClassName());                    
                     }
                 }
             }
@@ -149,7 +159,8 @@ public class SyntaxModelMappingSession {
 
         if (typeInfo != null) {
             try {
-                String str = typeInfo.stringExpr == null ? nodeInfo.getTextContent() : typeInfo.stringExpr.evaluateExpression(nodeInfo, String.class);
+                String str = typeInfo.stringExpr == null ? nodeInfo.getTextContent()
+            		: typeInfo.stringExpr.evaluateExpression(nodeInfo, String.class);
                 if (str != null && str.length() > 0) {
                     // System.out.println(str + " | " + nodeInfo.getNodeValue());
                     Object value = typeInfo.valuesByName.get(typeInfo.isCaseSensitive ? str : str.toUpperCase());
@@ -166,7 +177,8 @@ public class SyntaxModelMappingSession {
                         return literalCase.getKey();
                     }
                 } catch (XPathExpressionException e) {
-                    errors.add(e, "Failed to evaluate syntax model literal case condition expression for case " + literalCase.getKey() + " of type " + typeInfo.type.getName());
+                    errors.add(e, "Failed to evaluate syntax model literal case condition expression for case " + literalCase.getKey()
+                    	+ " of type " + typeInfo.type.getName());
                 }
             }
         }
@@ -207,7 +219,8 @@ public class SyntaxModelMappingSession {
                     } else if (count == 1) {
                         return nodes.get(0).getNodeValue().toString();
                     } else {
-                        errors.add("Ambiguous resolution of syntax model value expression for field " + fieldInfo.getFieldName() + " of type " + fieldInfo.getDeclaringClassName());
+                        errors.add("Ambiguous resolution of syntax model value expression for field " + fieldInfo.getFieldName()
+                        	+ " of type " + fieldInfo.getDeclaringClassName());
                         return nodes.get(0).getNodeValue().toString();
                     }
                 default:
@@ -218,7 +231,8 @@ public class SyntaxModelMappingSession {
                     }
             }
         } catch (XPathException ex) {
-            errors.add(ex, "Failed to evaluate syntax model scalar value expression for field " + fieldInfo.getFieldName() + " of type " + fieldInfo.getDeclaringClassName());
+            errors.add(ex, "Failed to evaluate syntax model scalar value expression for field " + fieldInfo.getFieldName()
+                + " of type " + fieldInfo.getDeclaringClassName());
             return null;
         }
     }
@@ -260,7 +274,8 @@ public class SyntaxModelMappingSession {
                         if (nodes.size() == 1) {
                             try { value = mapLiteralValue((XTreeNodeBase) nodes.get(0), fieldInfo.getLiteralTypeInfo()); }
                             catch (XPathException e) { 
-                                errors.add(e, "Failed to bind raw value to field " + fieldInfo.getFieldName() +  " of type " + fieldInfo.getDeclaringClassName());
+                                errors.add(e, "Failed to bind raw value to field " + fieldInfo.getFieldName()
+                                	+  " of type " + fieldInfo.getDeclaringClassName());
                                 value = null;
                             }
                         } else { 
@@ -281,11 +296,16 @@ public class SyntaxModelMappingSession {
         try {
             this.bindRawValueImpl(nodeInfo, fieldInfo, value);
         } catch (IllegalArgumentException | IllegalAccessException ex) {
-            errors.add(ex, "Failed to bind raw value to field " + fieldInfo.getFieldName() +  " of type " + fieldInfo.getDeclaringClassName());
+            errors.add(ex, "Failed to bind raw value to field " + fieldInfo.getFieldName()
+                +  " of type " + fieldInfo.getDeclaringClassName());
         }
     }
     
-    private void bindRawValueImpl(XTreeNodeBase nodeInfo, NodeFieldInfo fieldInfo, Object value) throws IllegalArgumentException, IllegalAccessException {       
+    private void bindRawValueImpl(
+		@NotNull XTreeNodeBase nodeInfo,
+		@NotNull NodeFieldInfo fieldInfo,
+		@Nullable Object value
+	) throws IllegalArgumentException, IllegalAccessException {       
         switch (fieldInfo.kind) {
             case Object: {
                 if (value instanceof XTreeNodeBase) {
@@ -352,7 +372,13 @@ public class SyntaxModelMappingSession {
         }
     }
     
-    private void mapSubtrees(XTreeNodeBase nodeInfo, NodeTypeInfo typeInfo,  boolean tryExact, boolean tryDescedants, Set<XTreeNodeBase> subnodes) {
+    private void mapSubtrees(
+		@NotNull XTreeNodeBase nodeInfo,
+		@NotNull NodeTypeInfo typeInfo, 
+		boolean tryExact,
+		boolean tryDescedants,
+		@NotNull Set<XTreeNodeBase> subnodes
+	) {
 
         if (typeInfo != null) {
             if (tryExact && nodeInfo.getLocalName().equals(typeInfo.ruleName)) {

@@ -16,10 +16,6 @@
  */
 package org.jkiss.dbeaver.antlr;
 
-import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.transform.TransformerException;
-
 import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -40,6 +36,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.BitSet;
+import javax.xml.stream.FactoryConfigurationError;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.transform.TransformerException;
 
 
 public class Test {
@@ -78,14 +77,20 @@ public class Test {
                 System.err.println(sourceName + " line " + line + ":" + charPositionInLine + " " + msg);
                 //errorMsg = errorMsg + "\n" + sourceName + "line " + line + ":" + charPositionInLine + " " + msg;
             }
+
             @Override
             public void reportContextSensitivity(Parser arg0, DFA arg1, int arg2, int arg3, int arg4, ATNConfigSet arg5) {
+                // just illustration of listeners possibility
             }
+
             @Override
             public void reportAttemptingFullContext(Parser arg0, DFA arg1, int arg2, int arg3, BitSet arg4, ATNConfigSet arg5) {
+                // just illustration of listeners possibility
             }
+
             @Override
             public void reportAmbiguity(Parser arg0, DFA arg1, int arg2, int arg3, boolean arg4, BitSet arg5, ATNConfigSet arg6) {
+                // just illustration of listeners possibility
             }
         });
 

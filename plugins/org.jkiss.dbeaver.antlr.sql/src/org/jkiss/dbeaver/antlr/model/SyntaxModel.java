@@ -285,7 +285,7 @@ public class SyntaxModel {
         }
     }
 
-	public <T extends AbstractSyntaxNode> ModelErrorsCollection introduce(Class<T> modelType) {        
+	public <T extends AbstractSyntaxNode> ModelErrorsCollection introduce(Class<T> modelType) {
         ModelErrorsCollection errors = new ModelErrorsCollection();
         
         Set<Class<? extends AbstractSyntaxNode>> processedTypes = new HashSet<>();
