@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql.lsm.grammar.model;
+package org.jkiss.dbeaver.model.sql.lsm.model;
 
 public class ValueExpression {
     // TODO: create model and mapping for conditions

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql.lsm.grammar;
+package org.jkiss.dbeaver.model.sql.lsm.syntax;
 
 import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.CharStreams;
@@ -27,10 +27,10 @@ import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.Tree;
 import org.antlr.v4.runtime.tree.Trees;
-import org.jkiss.dbeaver.model.sql.lsm.grammar.Sql92Parser;
-import org.jkiss.dbeaver.model.sql.lsm.grammar.Sql92Lexer;
-import org.jkiss.dbeaver.model.sql.lsm.grammar.model.SelectStatement;
+import org.jkiss.dbeaver.model.sql.lsm.syntax.Sql92Parser;
+import org.jkiss.dbeaver.model.sql.lsm.syntax.Sql92Lexer;
 import org.jkiss.dbeaver.model.sql.lsm.mapping.SyntaxModel;
+import org.jkiss.dbeaver.model.sql.lsm.model.SelectStatement;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -119,7 +119,7 @@ public class Test {
         
         System.out.println();
         { // print human-readable representation of the complete form of the parse tree and model 
-            //Path dir = Path.of("C:\\Projects\\dbeaver\\dbeaver\\plugins\\org.jkiss.dbeaver.model.sql.lsm.grammar.grammar\\src\\org\\jkiss\\dbeaver\\antlr\\sql\\");
+            //Path dir = Path.of("C:\\Projects\\dbeaver\\dbeaver\\plugins\\org.jkiss.dbeaver.model.sql.lsm.syntax.grammar\\src\\org\\jkiss\\dbeaver\\antlr\\sql\\");
             //Files.writeString(dir.resolve("parsed.xml"), model.toXml(tree));
             //Files.writeString(dir.resolve("model.json"), model.stringify(result.getModel()));
         }
