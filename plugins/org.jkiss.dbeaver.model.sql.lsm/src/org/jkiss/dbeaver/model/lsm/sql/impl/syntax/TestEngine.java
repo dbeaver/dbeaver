@@ -14,31 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm;
+package org.jkiss.dbeaver.model.lsm.sql.impl.syntax;
 
-import org.antlr.v4.runtime.Lexer;
+import org.jkiss.dbeaver.model.lsm.LSMContext;
+import org.jkiss.dbeaver.model.lsm.LSMElement;
+import org.jkiss.dbeaver.model.lsm.LSMEngine;
 
-public class LSMContext {
+import java.io.StringReader;
 
-    private final String parserName;
-    private final Lexer lexer;
-    private final LSMParser parser;
 
-    public LSMContext(String parserName, Lexer lexer, LSMParser parser) {
-        this.parserName = parserName;
-        this.lexer = lexer;
-        this.parser = parser;
-    }
+public class TestEngine {
 
-    public String getParserName() {
-        return parserName;
-    }
+    public static void main(String[] args) throws Exception {
+        LSMContext context = new LSMContext(
+            "SQL Parser",
+            new Sql92Lexer(null),
+            new Sql92Parser(null)
+        );
 
-    public Lexer getLexer() {
-        return lexer;
-    }
-
-    public LSMParser getParser() {
-        return parser;
+        LSMEngine engine = new LSMEngine(context);
+        LSMElement result = engine.parseText(new StringReader("SELECT col_name FROM sch.table_name;"));
+        System.out.println(result);
     }
 }

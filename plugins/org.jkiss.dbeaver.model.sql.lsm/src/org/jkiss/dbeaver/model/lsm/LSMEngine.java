@@ -19,6 +19,11 @@ package org.jkiss.dbeaver.model.lsm;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
+import org.antlr.v4.runtime.tree.Tree;
+import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModel;
+import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModelMappingResult;
+import org.jkiss.dbeaver.model.lsm.sql.impl.SelectStatement;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Parser;
 
 import java.io.Reader;
 import java.util.BitSet;
@@ -50,7 +55,13 @@ public class LSMEngine {
             parser.setBuildParseTree(true);
             parser.addErrorListener(new ParserErrorListener());
 
-            return parser.parseElement();
+            var model = new SyntaxModel(parser);
+            model.introduce(SelectStatement.class);
+            // FIXME: we need some general parse result (LSMElement)
+            Tree parseResult = ((Sql92Parser) parser).queryExpression();
+            SyntaxModelMappingResult<SelectStatement> map = model.map(parseResult, SelectStatement.class);
+            return map.getModel();
+
         } catch (Exception e) {
             throw new LSMException("Parser error", e);
         }

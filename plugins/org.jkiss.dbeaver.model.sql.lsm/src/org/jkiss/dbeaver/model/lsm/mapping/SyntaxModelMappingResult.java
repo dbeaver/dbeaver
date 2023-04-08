@@ -14,31 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm;
+package org.jkiss.dbeaver.model.lsm.mapping;
 
-import org.antlr.v4.runtime.Lexer;
+import org.jkiss.code.NotNull;
 
-public class LSMContext {
-
-    private final String parserName;
-    private final Lexer lexer;
-    private final LSMParser parser;
-
-    public LSMContext(String parserName, Lexer lexer, LSMParser parser) {
-        this.parserName = parserName;
-        this.lexer = lexer;
-        this.parser = parser;
+public class SyntaxModelMappingResult<T> {
+    
+    private final ModelErrorsCollection errors;
+    private final T model;
+    
+    public SyntaxModelMappingResult(ModelErrorsCollection errors, @NotNull T model) {
+        this.errors = errors;
+        this.model = model;
+    }   
+    
+    public boolean isNoErrors() {
+        return model != null && errors.isEmpty();
     }
-
-    public String getParserName() {
-        return parserName;
+    
+    public T getModel() {
+        return model;
     }
-
-    public Lexer getLexer() {
-        return lexer;
+    
+    public ModelErrorsCollection getErrors() {
+        return errors;
     }
-
-    public LSMParser getParser() {
-        return parser;
-    }
+    
+    
 }

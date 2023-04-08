@@ -16,16 +16,12 @@
  */
 package org.jkiss.dbeaver.model.lsm;
 
-import org.antlr.v4.runtime.tree.RuleNode;
-
 public interface LSMElement {
 
-    String getElementName();
+    //String getElementName();
 
-    int getSourceStartPosition();
+    int getStartPosition();
 
-    int getSourceEndPosition();
-
-    RuleNode getRuleNode();
+    int getEndPosition();
 
 }

@@ -14,31 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm;
+package org.jkiss.dbeaver.model.lsm.mapping;
 
-import org.antlr.v4.runtime.Lexer;
+import org.jkiss.code.NotNull;
 
-public class LSMContext {
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    private final String parserName;
-    private final Lexer lexer;
-    private final LSMParser parser;
 
-    public LSMContext(String parserName, Lexer lexer, LSMParser parser) {
-        this.parserName = parserName;
-        this.lexer = lexer;
-        this.parser = parser;
-    }
-
-    public String getParserName() {
-        return parserName;
-    }
-
-    public Lexer getLexer() {
-        return lexer;
-    }
-
-    public LSMParser getParser() {
-        return parser;
-    }
+@Target({ java.lang.annotation.ElementType.FIELD, java.lang.annotation.ElementType.METHOD })
+@Retention(RetentionPolicy.RUNTIME)
+public @interface SyntaxTerms {
+    @NotNull
+    SyntaxTerm[] value();
 }

@@ -14,31 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm;
+package org.jkiss.dbeaver.model.lsm.mapping;
 
-import org.antlr.v4.runtime.Lexer;
+import org.jkiss.code.NotNull;
 
-public class LSMContext {
-
-    private final String parserName;
-    private final Lexer lexer;
-    private final LSMParser parser;
-
-    public LSMContext(String parserName, Lexer lexer, LSMParser parser) {
-        this.parserName = parserName;
-        this.lexer = lexer;
-        this.parser = parser;
+public final class TermSyntaxNode extends AbstractSyntaxNode {
+    
+    private String content;
+    
+    public TermSyntaxNode() {
+        super(null);
     }
-
-    public String getParserName() {
-        return parserName;
+    
+    public void setContent(@NotNull String value) {
+        this.content = value;
     }
-
-    public Lexer getLexer() {
-        return lexer;
+    
+    @NotNull
+    public String getContent() {
+        return this.content;
     }
-
-    public LSMParser getParser() {
-        return parser;
-    }
+    
+    
 }

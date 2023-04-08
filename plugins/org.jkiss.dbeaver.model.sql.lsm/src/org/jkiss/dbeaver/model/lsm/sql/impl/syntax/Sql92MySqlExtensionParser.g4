@@ -14,31 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm;
+grammar Sql92MySqlExtensionParser;
 
-import org.antlr.v4.runtime.Lexer;
+import Sql92Parser;
 
-public class LSMContext {
-
-    private final String parserName;
-    private final Lexer lexer;
-    private final LSMParser parser;
-
-    public LSMContext(String parserName, Lexer lexer, LSMParser parser) {
-        this.parserName = parserName;
-        this.lexer = lexer;
-        this.parser = parser;
-    }
-
-    public String getParserName() {
-        return parserName;
-    }
-
-    public Lexer getLexer() {
-        return lexer;
-    }
-
-    public LSMParser getParser() {
-        return parser;
-    }
+options {
+    tokenVocab=Sql92MySqlExtensionLexer;
+    superClass=org.jkiss.dbeaver.model.lsm.mapping.internal.ParserOverrides;
+    contextSuperClass=org.jkiss.dbeaver.model.lsm.mapping.internal.TreeRuleNode;
 }
+
+// See https://dev.mysql.com/doc/refman/8.0/en/extensions-to-ansi.html
+
+querySpecification: SELECT STRAIGHT_JOIN?
+    SQL_SMALL_RESULT? SQL_BIG_RESULT? SQL_BUFFER_RESULT?
+    SQL_NO_CACHE? SQL_CALC_FOUND_ROWS?
+    (setQuantifier)? selectList tableExpression;
