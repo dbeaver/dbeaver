@@ -9,7 +9,7 @@
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
-    <artifactId>org.jkiss.dbeaver.model.sql.lsm</artifactId>
+    <artifactId>org.jkiss.dbeaver.model.lsm</artifactId>
     <packaging>eclipse-plugin</packaging>
     
     <repositories>
