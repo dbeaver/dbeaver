@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.antlr.sql.test;
+package org.jkiss.dbeaver.model.lsm.test;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.jkiss.dbeaver.model.sql.lsm.mapping.SyntaxModel;
-import org.jkiss.dbeaver.model.sql.lsm.model.SelectStatement;
-import org.jkiss.dbeaver.model.sql.lsm.syntax.Sql92Parser;
-import org.jkiss.dbeaver.model.sql.lsm.syntax.Sql92Lexer;
+import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModel;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Lexer;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Parser;
+import org.jkiss.dbeaver.model.lsm.sql.impl.SelectStatement;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
