@@ -7,7 +7,7 @@ Bundle-SymbolicName: org.jkiss.dbeaver.model.sql.lsm;singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.bundle.antlr4
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Export-Package: org.jkiss.dbeaver.model.sql.lsm.mapping,
+Export-Package: org.jkiss.dbeaver.model.lsm.mapping,
  org.jkiss.dbeaver.model.lsm.mapping.internal,
  org.jkiss.dbeaver.model.lsm.sql
 Import-Package: org.jkiss.code
