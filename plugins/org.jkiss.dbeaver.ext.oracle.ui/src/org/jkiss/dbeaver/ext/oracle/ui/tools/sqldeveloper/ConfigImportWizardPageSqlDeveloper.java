@@ -391,12 +391,11 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
         String tnsNamesPath;
         // try tnsAdmin by default
         tnsNamesPath = System.getenv(OracleConstants.VAR_TNS_ADMIN);
-        // if found, return as is
         if (tnsNamesPath != null) {
+            // if found, return as is
             return tnsNamesPath;
-        }
-        // else check default oraHome
-        else {
+        } else {
+            // else check default oraHome
             tnsNamesPath = OCIUtils.getDefaultOraHomePath().getPath();
         }
         // if found append tns path and return, else return nothing
