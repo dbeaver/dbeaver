@@ -2168,7 +2168,7 @@ public class UIUtils {
     }
 
     public static Font getMonospaceFont() {
-        return JFaceResources.getFont(JFaceResources.TEXT_FONT);
+        return JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MONOSPACE);
     }
 
     public static <T extends Control> T getParentOfType(Control control, Class<T> parentType) {
@@ -2194,6 +2194,19 @@ public class UIUtils {
         if (gd instanceof GridData) {
             ((GridData) gd).exclude = !visible;
         }
+    }
+
+    public static void drawTextWithBackground(@NotNull GC gc, @NotNull String text, int x, int y) {
+        final Point size = gc.textExtent(text);
+        final int centerX = x - size.x / 2;
+        final int centerY = y - size.y;
+
+        gc.setForeground(UIStyles.getDefaultTextForeground());
+        gc.setBackground(UIStyles.getDefaultTextBackground());
+
+        gc.fillRectangle(centerX - 2, centerY - 2, size.x + 4, size.y + 4);
+        gc.drawText(text, centerX, centerY, true);
+        gc.drawRoundRectangle(centerX - 3, centerY - 3, size.x + 5, size.y + 5, 5, 5);
     }
 
     public static void installMacOSFocusLostSubstitution(@NotNull Widget widget, @NotNull Runnable onFocusLost) {

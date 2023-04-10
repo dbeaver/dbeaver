@@ -329,9 +329,13 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     }
 
     @Override
-    public void exportHeader(DBCSession session) {
+    public void exportHeader(DBCSession session) throws DBException {
 
         columns = getSite().getAttributes();
+        if (headerFormat.hasDescription()) {
+            DBSEntity srcEntity = DBUtils.getAdapter(DBSEntity.class, getSite().getSource());
+            DBExecUtils.bindAttributes(session, srcEntity, null, columns, null);
+        }
         decorator = GeneralUtils.adapt(getSite().getSource(), DBDAttributeDecorator.class);
     }
 

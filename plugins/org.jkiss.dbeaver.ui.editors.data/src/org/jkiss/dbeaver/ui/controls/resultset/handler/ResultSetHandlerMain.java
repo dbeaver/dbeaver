@@ -541,13 +541,13 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             case CMD_ZOOM_IN:
             case CMD_ZOOM_OUT: {
                 FontRegistry fontRegistry= rsv.getSite().getWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getFontRegistry();
-                Font font = fontRegistry.get(ThemeConstants.FONT_SQL_RESULT_SET);
+                Font font = fontRegistry.get(presentation.getFontId());
                 if (font != null) {
                     FontData[] fondData= font.getFontData();
                     if (fondData != null) {
                         int zoomFactor = actionId.equals(CMD_ZOOM_IN) ? 1 : -1;
                         FontDescriptor fd = createFontDescriptor(fondData, zoomFactor);
-                        fontRegistry.put(ThemeConstants.FONT_SQL_RESULT_SET, fd.getFontData());
+                        fontRegistry.put(presentation.getFontId(), fd.getFontData());
                     }
                 }
 

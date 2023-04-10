@@ -29,6 +29,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -189,4 +190,9 @@ public class BrowserImageViewer extends AbstractImageViewer {
         tempFile = null;
     }
 
+    @Nullable
+    @Override
+    public Path getExternalFilePath() {
+        return tempFile;
+    }
 }
