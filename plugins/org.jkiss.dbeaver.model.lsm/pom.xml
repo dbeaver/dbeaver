@@ -33,7 +33,7 @@
                     <goal>antlr4</goal>
                 </goals>
                 <configuration>
-                    <sourceDirectory>src/org/jkiss/dbeaver/model/lsm/sql/impl/syntax</sourceDirectory>
+                    <sourceDirectory>grammar</sourceDirectory>
                     <outputDirectory>src-gen/org/jkiss/dbeaver/model/lsm/sql/impl/syntax</outputDirectory>
                 </configuration>
             </execution>
