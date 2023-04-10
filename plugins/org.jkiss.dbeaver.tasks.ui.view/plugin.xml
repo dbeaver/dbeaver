@@ -187,8 +187,20 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.tasks">
-            <command commandId="org.jkiss.dbeaver.task.group" style="toggle" label="%command.org.jkiss.dbeaver.task.group.category.name" icon="icons/task_list.png"><parameter name="group" value="category"/></command>
-            <command commandId="org.jkiss.dbeaver.task.group" style="toggle" label="%command.org.jkiss.dbeaver.task.group.type.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.png"><parameter name="group" value="type"/></command>
+            <command commandId="org.jkiss.dbeaver.task.group" style="toggle" label="%command.org.jkiss.dbeaver.task.group.category.name"
+                     icon="icons/task_list.png">
+                <parameter name="group" value="category"/>
+                <visibleWhen checkEnabled="true">
+                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.task.group" style="toggle" label="%command.org.jkiss.dbeaver.task.group.type.name"
+                     icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.png">
+                <parameter name="group" value="type"/>
+                <visibleWhen checkEnabled="true">
+                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                </visibleWhen>
+            </command>
             <separator name="additions" visible="true"/>
             <command commandId="org.jkiss.dbeaver.task.run"/>
             <separator name="additions" visible="true"/>
