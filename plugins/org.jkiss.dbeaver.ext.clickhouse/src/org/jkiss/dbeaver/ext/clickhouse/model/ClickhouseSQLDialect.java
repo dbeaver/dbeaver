@@ -268,4 +268,9 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
     public char getStringEscapeCharacter() {
         return '\\';
     }
+
+    @Override
+    public boolean keepFunctionsInOriginalCase() {
+        return true;
+    }
 }

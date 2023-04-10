@@ -181,6 +181,10 @@ public abstract class AbstractSQLDialect implements SQLDialect {
                     // We can't mark keywords as functions or types because keywords are reserved and
                     // if some identifier conflicts with keyword it must be quoted.
                     allKeywords.put(keyword, type);
+                    if (type == DBPKeywordType.FUNCTION && keepFunctionsInOriginalCase()) {
+                        // keep functions in both cases for better search
+                        allKeywords.put(keyword.toUpperCase(Locale.ENGLISH), type);
+                    }
                 }
             }
         }
@@ -207,25 +211,32 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     @Nullable
     @Override
     public DBPKeywordType getKeywordType(@NotNull String word) {
-        for (Map.Entry<String, DBPKeywordType> entry : allKeywords.entrySet()) {
-            if (word.equalsIgnoreCase(entry.getKey())) {
-                return entry.getValue();
-            }
-        }
-        return null;
+        return allKeywords.get(word.toUpperCase(Locale.ENGLISH));
     }
 
     @NotNull
     @Override
     public List<String> getMatchedKeywords(@NotNull String word) {
-        word = word.toUpperCase(Locale.ENGLISH);
+        if (!keepFunctionsInOriginalCase()) {
+            word = word.toUpperCase(Locale.ENGLISH);
+        }
         List<String> result = new ArrayList<>();
-        for (String keyword : allKeywords.keySet()) {
-            if (keyword.toUpperCase(Locale.ENGLISH).startsWith(word)) {
+        for (String keyword : allKeywords.tailMap(word).keySet()) {
+            if (keyword.startsWith(word)) {
                 result.add(keyword);
+            } else {
+                break;
             }
         }
         return result;
+    }
+
+    /**
+     *
+     * Returns true if dialect supports functions only in the original (ex. mixed) case.
+     */
+    public boolean keepFunctionsInOriginalCase() {
+        return false;
     }
 
     @Override

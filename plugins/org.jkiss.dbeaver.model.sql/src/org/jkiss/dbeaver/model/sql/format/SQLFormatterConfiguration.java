@@ -29,7 +29,6 @@ import org.jkiss.utils.CommonUtils;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * SQLFormatterConfiguration
@@ -108,13 +107,7 @@ public class SQLFormatterConfiguration {
     }
 
     public boolean isFunction(@NotNull String name) {
-        Set<String> functions = syntaxManager.getDialect().getFunctions();
-        for (String function : functions) {
-            if (name.equalsIgnoreCase(function)) {
-                return true;
-            }
-        }
-        return false;
+        return syntaxManager.getDialect().getFunctions().contains(name.toUpperCase(Locale.ENGLISH));
     }
 
     public Object getProperty(String name) {
