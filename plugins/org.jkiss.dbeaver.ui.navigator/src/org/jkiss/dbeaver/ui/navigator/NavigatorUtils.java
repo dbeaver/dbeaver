@@ -33,6 +33,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.eclipse.ui.part.EditorInputTransfer;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.code.NotNull;
@@ -65,10 +66,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
-import org.jkiss.dbeaver.ui.editors.DatabaseEditorContext;
-import org.jkiss.dbeaver.ui.editors.DatabaseEditorContextBase;
-import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
+import org.jkiss.dbeaver.ui.editors.*;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorContent;
@@ -78,7 +77,6 @@ import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -366,22 +364,24 @@ public class NavigatorUtils {
 
     public static void addDragAndDropSupport(final Viewer viewer, boolean enableDrag, boolean enableDrop) {
         if (enableDrag) {
-            Transfer[] dragTransferTypes = new Transfer[] {
-                TextTransfer.getInstance(),
+            final List<Transfer> dragTransferTypes = new ArrayList<>(List.of(
                 TreeNodeTransfer.getInstance(),
                 DatabaseObjectTransfer.getInstance(),
+                EditorInputTransfer.getInstance(),
                 FileTransfer.getInstance()
-            };
+            ));
             
             if (RuntimeUtils.isGtk()) { 
                 // TextTransfer should be the last on GTK due to platform' DND implementation inconsistency
-                ArrayUtils.reverse(dragTransferTypes);
+                dragTransferTypes.add(TextTransfer.getInstance());
+            } else {
+                dragTransferTypes.add(0, TextTransfer.getInstance());
             }
             
             int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
 
             final DragSource source = new DragSource(viewer.getControl(), operations);
-            source.setTransfer(dragTransferTypes);
+            source.setTransfer(dragTransferTypes.toArray(Transfer[]::new));
             source.addDragListener(new DragSourceListener() {
                 private IStructuredSelection selection;
 
@@ -472,6 +472,15 @@ public class NavigatorUtils {
                         } else if (FileTransfer.getInstance().isSupportedType(event.dataType)) {
                             names.removeIf(s -> !Files.exists(Path.of(s)));
                             event.data = names.toArray(new String[0]);
+                            event.doit = !names.isEmpty();
+                        } else if (EditorInputTransfer.getInstance().isSupportedType(event.dataType)) {
+                            event.data = nodes.stream()
+                                .filter(node -> node instanceof DBNDatabaseNode)
+                                .map(node -> EditorInputTransfer.createEditorInputData(
+                                    EntityEditor.class.getName(),
+                                    new DatabaseNodeEditorInput((DBNDatabaseNode) node)
+                                ))
+                                .toArray(EditorInputTransfer.EditorInputData[]::new);
                         }
                     } else {
                         if (TreeNodeTransfer.getInstance().isSupportedType(event.dataType)) {
@@ -482,6 +491,8 @@ public class NavigatorUtils {
                             event.data = "";
                         } else if (FileTransfer.getInstance().isSupportedType(event.dataType)) {
                             event.data = new String[0];
+                        } else if (EditorInputTransfer.getInstance().isSupportedType(event.dataType)) {
+                            event.data = new EditorInputTransfer.EditorInputData[0];
                         }
                     }
                 }
