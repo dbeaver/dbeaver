@@ -88,6 +88,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     private IValueController valueController;
     private IEditorSite subSite;
     private EDITOR editor;
+    private Path tempFile;
 
     @Override
     public StyledText createControl(IValueController valueController) {
@@ -198,6 +199,13 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
             editor.dispose();
             editor = null;
         }
+        if (tempFile != null) {
+            try {
+                Files.deleteIfExists(tempFile);
+            } catch (IOException e) {
+                log.warn(e);
+            }
+        }
     }
 
     protected EDITOR getTextEditor() {
@@ -303,10 +311,13 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     @Override
     public Path getExternalFilePath(@NotNull StyledText control) {
         try {
-            Path file = Files.createTempFile(DBWorkbench.getPlatform()
-                .getTempFolder(new VoidProgressMonitor(), getFileFolderName()), "file", getFileExtension());
-            Files.writeString(file, control.getText());
-            return file;
+            if (tempFile != null) {
+                Files.deleteIfExists(tempFile);
+            }
+            this.tempFile = Files.createTempFile(DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), getFileFolderName()), "file", getFileExtension());
+            tempFile.toFile().deleteOnExit();
+            Files.writeString(tempFile, control.getText());
+            return tempFile;
         } catch (IOException e) {
             log.error(e);
             return null;
