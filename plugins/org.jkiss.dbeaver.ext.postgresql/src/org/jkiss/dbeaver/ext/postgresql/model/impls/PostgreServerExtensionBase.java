@@ -565,4 +565,9 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     public boolean supportsAlterTableColumnWithUSING() {
         return dataSource.isServerVersionAtLeast(8, 0);
     }
+
+    @Override
+    public boolean supportsAlterTableForViewRename() {
+        return false;
+    }
 }
