@@ -97,7 +97,10 @@ public class ItemListControl extends NodeListControl
             normalFont = theme.getFontRegistry().get(UIFonts.DBEAVER_FONTS_MAIN_FONT);
             boldFont = theme.getFontRegistry().getBold(UIFonts.DBEAVER_FONTS_MAIN_FONT);
             super.getItemsViewer().refresh();
-            super.getNavigatorViewer().refresh();
+            Viewer navigatorViewer = super.getNavigatorViewer();
+            if (navigatorViewer != null) {
+                navigatorViewer.refresh();
+            }
         };
         this.themeChangeListener.propertyChange(null);
 
@@ -245,6 +248,8 @@ public class ItemListControl extends NodeListControl
         UIUtils.dispose(searchHighlightColor);
         //UIUtils.dispose(disabledCellColor);
         //UIUtils.dispose(boldFont);
+
+        PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
         
         super.disposeControl();
     }

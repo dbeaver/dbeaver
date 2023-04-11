@@ -49,7 +49,7 @@ public class Test {
             + "ON ProductSubCategory.ProductSubcategoryID = Product.ProductSubcategoryID\r\n"
             + "UNION JOIN Production.ProductCategory\r\n"
             + "ON ProductCategory.ProductCategoryID = ProductSubCategory.ProductCategoryID\r\n"
-            + "ORDER BY Product.ModifiedDate DESC;"
+            + "ORDER BY Product.ModifiedDate DESC"
         );
         //var input = CharStreams.fromFileName("D:\\github.com\\dbeaver\\sql-server-sakila-insert-data.sql");
         var ll = new Sql92Lexer(input);
@@ -92,7 +92,7 @@ public class Test {
             }
         });
 
-        var tree = pp.queryExpression();
+        var tree = pp.sqlQuery();
 
         { // print simple parse tree view
             System.out.println();

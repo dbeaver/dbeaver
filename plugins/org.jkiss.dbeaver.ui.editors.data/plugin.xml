@@ -1043,7 +1043,11 @@
             <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.results.description</description>
         </themeElementCategory>
 
-        <fontDefinition id="org.jkiss.dbeaver.sql.resultset.font" categoryId="org.jkiss.dbeaver.ui.presentation.results" label="%fontDefinition.org.jkiss.dbeaver.sql.resultset.font.label">
+        <fontDefinition
+                id="org.jkiss.dbeaver.sql.resultset.font"
+                categoryId="org.jkiss.dbeaver.ui.fonts"
+                label="%fontDefinition.org.jkiss.dbeaver.sql.resultset.font.label"
+                defaultsTo="org.jkiss.dbeaver.dbeaver.ui.fonts.main">
             <description>%fontDefinition.org.jkiss.dbeaver.sql.resultset.font.description</description>
         </fontDefinition>
 
