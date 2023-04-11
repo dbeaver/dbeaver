@@ -58,7 +58,7 @@ public class LSMEngine {
             var model = new SyntaxModel(parser);
             model.introduce(SelectStatement.class);
             // FIXME: we need some general parse result (LSMElement)
-            Tree parseResult = ((Sql92Parser) parser).queryExpression();
+            Tree parseResult = ((Sql92Parser) parser).sqlQuery();
             SyntaxModelMappingResult<SelectStatement> map = model.map(parseResult, SelectStatement.class);
             return map.getModel();
 
