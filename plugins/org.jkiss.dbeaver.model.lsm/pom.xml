@@ -43,6 +43,20 @@
             </execution>
         </executions>
       </plugin>
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>3.2.0</version>
+        <configuration>
+            <filesets>
+                <fileset>
+                    <directory>src-gen</directory>
+                    <includes>
+                        <include>**/*</include>
+                    </includes>
+                </fileset>
+            </filesets>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
