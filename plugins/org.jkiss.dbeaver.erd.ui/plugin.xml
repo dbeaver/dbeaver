@@ -183,8 +183,9 @@
         </themeElementCategory>
         <fontDefinition
                 label="%fontDefinition.org.jkiss.dbeaver.erd.diagram.font.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
-                id="org.jkiss.dbeaver.erd.diagram.font">
+                categoryId="org.jkiss.dbeaver.ui.fonts"
+                id="org.jkiss.dbeaver.erd.diagram.font"
+                defaultsTo="org.jkiss.dbeaver.dbeaver.ui.fonts.main">
             <description>%fontDefinition.org.jkiss.dbeaver.erd.diagram.font.description</description>
         </fontDefinition>
         <colorDefinition
