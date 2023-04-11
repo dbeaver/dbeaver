@@ -476,17 +476,17 @@
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=create">
             <command commandId="org.jkiss.dbeaver.erd.diagram.create" label="%menu.create.new.diagram">
                 <visibleWhen checkEnabled="true">
-                    <and>
-                        <with variable="selection">
-                            <count value="1"/>
-                            <iterate operator="and">
-                                <adapt type="org.eclipse.core.resources.IFolder">
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.eclipse.core.resources.IFolder">
+                                <and>
                                     <test property="org.jkiss.dbeaver.core.resource.type" value="diagram folder"/>
-                                </adapt>
-                            </iterate>
-                        </with>
-                        <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
-                    </and>
+                                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                                </and>
+                            </adapt>
+                        </iterate>
+                    </with>
                 </visibleWhen>
             </command>
         </menuContribution>
@@ -507,15 +507,15 @@
         <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=tools">
             <command commandId="org.jkiss.dbeaver.erd.diagram.create" label="%menu.create.new.diagram">
                 <visibleWhen checkEnabled="true">
-                    <and>
-                        <with variable="selection">
-                            <count value="+"/>
-                            <iterate operator="and">
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <and>
                                 <adapt type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
-                            </iterate>
-                        </with>
-                        <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
-                    </and>
+                                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                            </and>
+                        </iterate>
+                    </with>
                 </visibleWhen>
             </command>
         </menuContribution>

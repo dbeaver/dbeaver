@@ -371,9 +371,10 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     }
 
     private void loadViewConfig() {
-        if (tasksTree != null) {
-            tasksTree.loadViewConfig();
+        if (tasksTree == null) {
+            return;
         }
+        tasksTree.loadViewConfig();
     }
 
     public void refresh() {

@@ -679,17 +679,17 @@
                 <dynamic id="org.jkiss.dbeaver.core.connection.settings" class="org.jkiss.dbeaver.ui.actions.datasource.ConnectionViewSettingsContributor">
                 </dynamic>
                 <visibleWhen>
-                    <and>
-                        <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
-                        <with variable="selection">
-                            <count value="1"/>
-                            <iterate operator="and">
-                                <adapt type="org.jkiss.dbeaver.model.navigator.DBNDataSource">
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNDataSource">
+                                <and>
+                                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
                                     <test property="org.jkiss.dbeaver.core.datasource.editable"/>
-                                </adapt>
-                            </iterate>
-                        </with>
-                    </and>
+                                </and>
+                            </adapt>
+                        </iterate>
+                    </with>
                 </visibleWhen>
             </menu>
             <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.navigate">
