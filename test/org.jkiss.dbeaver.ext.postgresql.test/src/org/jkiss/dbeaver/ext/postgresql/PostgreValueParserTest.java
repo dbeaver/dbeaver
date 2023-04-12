@@ -254,6 +254,7 @@ public class PostgreValueParserTest {
 //        Mockito.when(stringItemType.getFullTypeName()).thenReturn("test_stringItemType");
         Mockito.when(stringItemType.getDataKind()).thenReturn(DBPDataKind.STRING);
         Mockito.when(stringItemType.getTypeID()).thenReturn(Types.VARCHAR);
+        Mockito.when(stringItemType.getArrayDelimiter()).thenReturn(",");
 //        Mockito.when(stringItemType.getDataSource()).thenReturn(dataSource);
 
 //        Mockito.when(arrayStringItemType.getFullTypeName()).thenReturn("test_arrayStringItemType");
