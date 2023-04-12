@@ -20,7 +20,6 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.gef3.EditDomain;
-import org.eclipse.gef3.ui.views.palette.PalettePage;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -47,7 +46,7 @@ public class ERDHandlerFocus extends AbstractHandler {
                 part.getViewer().getControl().forceFocus();
                 break;
             case PALETTE_FOCUS:
-                Object adapter = part.getAdapter(PalettePage.class);
+                Object adapter = part.getAdapter(EditDomain.class);
                 if (adapter instanceof EditDomain && ((EditDomain) adapter).getPaletteViewer() != null) {
                     ((EditDomain) adapter).getPaletteViewer().getControl().setFocus();
                 }
