@@ -43,6 +43,7 @@ import org.eclipse.ui.internal.WorkbenchImages;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IMenuService;
+import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
@@ -1645,6 +1646,33 @@ public class ResultSetViewer extends Viewer
         //this.updateStatusMessage();
     }
 
+    private final UIJob statusBarLayoutJob = new UIJob("Pending resultset view status bar relayout") {
+        @Override
+        public IStatus runInUIThread(IProgressMonitor monitor) {
+            boolean changed = false;
+            for (ToolBarManager toolbarMan: toolbarList) {
+                ToolBar toolbar = toolbarMan.getControl();
+                boolean wasCollapsed = toolbar.getData() != null;
+                toolbar.setLayoutData(toolbar.getItemCount() > 0 ? null : new RowData(0, 0));
+                boolean nowCollapsed = toolbar.getData() != null;
+                changed |= (wasCollapsed == nowCollapsed);
+            }
+            if (changed) {
+                ResultSetViewer.this.getControl().layout(true, true);
+            }
+            return Status.OK_STATUS;
+        }
+    };
+    
+    private void collapseToolbarIfEmpty(ToolBar toolbar) {
+        toolbar.addControlListener(new ControlAdapter() {
+            @Override
+            public void controlResized(ControlEvent e) {
+                statusBarLayoutJob.schedule();
+            }
+        });
+    }
+
     private void createStatusBar()
     {
         final IMenuService menuService = getSite().getService(IMenuService.class);
@@ -1687,7 +1715,7 @@ public class ResultSetViewer extends Viewer
             menuService.populateContributionManager(editToolBarManager, TOOLBAR_EDIT_CONTRIBUTION_ID);
             ToolBar editorToolBar = editToolBarManager.createControl(statusBar);
             CSSUtils.setCSSClass(editorToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
-
+            collapseToolbarIfEmpty(editorToolBar);
             toolbarList.add(editToolBarManager);
         }
         {
@@ -1695,20 +1723,20 @@ public class ResultSetViewer extends Viewer
             menuService.populateContributionManager(navToolBarManager, TOOLBAR_NAVIGATION_CONTRIBUTION_ID);
             ToolBar navToolBar = navToolBarManager.createControl(statusBar);
             CSSUtils.setCSSClass(navToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
-
+            collapseToolbarIfEmpty(navToolBar);
             toolbarList.add(navToolBarManager);
         }
         {
             ToolBarManager configToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             ToolBar configToolBar = configToolBarManager.createControl(statusBar);
             CSSUtils.setCSSClass(configToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            collapseToolbarIfEmpty(configToolBar);
             toolbarList.add(configToolBarManager);
         }
 
         {
             ToolBarManager addToolbBarManagerar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             menuService.populateContributionManager(addToolbBarManagerar, TOOLBAR_EXPORT_CONTRIBUTION_ID);
-
             addToolbBarManagerar.add(new GroupMarker(TOOLBAR_GROUP_PRESENTATIONS));
             addToolbBarManagerar.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
 
@@ -1717,6 +1745,7 @@ public class ResultSetViewer extends Viewer
             }
             ToolBar addToolBar = addToolbBarManagerar.createControl(statusBar);
             CSSUtils.setCSSClass(addToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            collapseToolbarIfEmpty(addToolBar);
             toolbarList.add(addToolbBarManagerar);
         }
 
