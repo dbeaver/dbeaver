@@ -367,8 +367,8 @@ public class NavigatorUtils {
             final List<Transfer> dragTransferTypes = new ArrayList<>(List.of(
                 TreeNodeTransfer.getInstance(),
                 DatabaseObjectTransfer.getInstance(),
-                EditorInputTransfer.getInstance(),
-                FileTransfer.getInstance()
+                FileTransfer.getInstance(),
+                EditorInputTransfer.getInstance()
             ));
             
             if (RuntimeUtils.isGtk()) { 
