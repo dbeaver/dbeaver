@@ -32,7 +32,9 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 public class StatisticsTransmitter {
@@ -108,7 +110,10 @@ public class StatisticsTransmitter {
                 0,
                 5000,
                 Map.of(
-                    "Content-Type", "text/plain"));
+                    "Content-Type", "text/plain",
+                    "Locale", Locale.getDefault().toString(),
+                    "Country", Locale.getDefault().getISO3Country(),
+                    "Timezone", TimeZone.getDefault().getID()));
 
             ((HttpURLConnection)urlConnection).setFixedLengthStreamingMode(Files.size(logFile));
 
