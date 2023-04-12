@@ -60,14 +60,13 @@ public class ActionUtils
 {
     private static final Log log = Log.getLog(ActionUtils.class);
     
-    private static final Object propertyEvaluationRequestListenersSyncRoot = new Object();
     private static final Set<Consumer<String>> propertyEvaluationRequestListeners = Collections.synchronizedSet(new HashSet<>());
     
-    public static void addPropertyEvaluationRequestListener(Consumer<String> listener) {
+    public static void addPropertyEvaluationRequestListener(@NotNull Consumer<String> listener) {
         propertyEvaluationRequestListeners.add(listener);
     }
 
-    public static void removePropertyEvaluationRequestListener(Consumer<String> listener) {
+    public static void removePropertyEvaluationRequestListener(@NotNull Consumer<String> listener) {
         propertyEvaluationRequestListeners.remove(listener);
     }
 

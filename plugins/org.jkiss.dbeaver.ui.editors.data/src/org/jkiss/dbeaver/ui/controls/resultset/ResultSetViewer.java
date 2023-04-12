@@ -1654,8 +1654,8 @@ public class ResultSetViewer extends Viewer
         protected IStatus run(IProgressMonitor monitor) {
             UIUtils.asyncExec(() -> {
                 boolean changed = false;
-                for (ToolBarManager toolbarMan : toolbarList) {
-                    ToolBar toolbar = toolbarMan.getControl();
+                for (ToolBarManager toolbarManager : toolbarList) {
+                    ToolBar toolbar = toolbarManager.getControl();
                     boolean wasCollapsed = toolbar.getLayoutData() != null;
                     toolbar.setLayoutData(toolbar.getItemCount() > 0 ? null : new RowData(0, 0));
                     boolean nowCollapsed = toolbar.getLayoutData() != null;
