@@ -81,6 +81,7 @@ public class QMMConnectionInfo extends QMMObject {
     public QMMConnectionInfo(
         long openTime,
         long closeTime,
+        QMMProjectInfo projectInfo,
         String containerId,
         String containerName,
         String driverId,
@@ -90,7 +91,7 @@ public class QMMConnectionInfo extends QMMObject {
         boolean transactional)
     {
         super(QMMetaObjectType.CONNECTION_INFO, openTime, closeTime);
-        this.projectInfo = null;
+        this.projectInfo = projectInfo;
         this.containerId = containerId;
         this.containerName = containerName;
         this.driverId = driverId;
