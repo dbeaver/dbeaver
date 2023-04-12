@@ -44,9 +44,7 @@
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
             <menu label="%command.org.jkiss.dbeaver.connection.security.name">
                 <command commandId="org.jkiss.dbeaver.connection.changeCurrentPassword">
-                    <visibleWhen checkEnabled="true">
-                        <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
-                    </visibleWhen>
+                    <visibleWhen checkEnabled="true"/>
                 </command>
             </menu>
         </menuContribution>

@@ -308,8 +308,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
                 continue;
             }
             if (DATABASE_CONSUMER_ID.equals(consumer.getId())
-                && !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER))
-            {
+                && !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER)) {
                 continue;
             }
             Collection<DataTransferProcessorDescriptor> processors = consumer.getAvailableProcessors(objects);
@@ -334,8 +333,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
                 continue;
             }
             if (DATABASE_PRODUCER_ID.equals(producer.getId())
-                && !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER))
-            {
+                && !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER)) {
                 continue;
             }
 

@@ -55,7 +55,8 @@ public class TaskPropertyTester extends PropertyTester
                 DBTScheduler scheduler = TaskRegistry.getInstance().getActiveSchedulerInstance();
                 return (scheduler != null && scheduler.getScheduledTaskInfo(task) != null) == CommonUtils.getBoolean(expectedValue, true);
             case TASK_EDITABLE:
-                return task.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
+                return task.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT) &&
+                    task.getProject().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER);
         }
 
         return false;

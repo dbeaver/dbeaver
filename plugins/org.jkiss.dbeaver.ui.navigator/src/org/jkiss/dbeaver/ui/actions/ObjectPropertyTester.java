@@ -145,8 +145,8 @@ public class ObjectPropertyTester extends PropertyTester {
                 if (node instanceof DBSWrapper) {
                     DBSObject object = ((DBSWrapper) node).getObject();
                     if (object == null || DBUtils.isReadOnly(object) || !(node.getParentNode() instanceof DBNContainer) ||
-                        !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR))
-                    {
+                        !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR)
+                    ) {
                         return false;
                     }
                     DBEObjectMaker objectMaker = getObjectManager(object.getClass(), DBEObjectMaker.class);
