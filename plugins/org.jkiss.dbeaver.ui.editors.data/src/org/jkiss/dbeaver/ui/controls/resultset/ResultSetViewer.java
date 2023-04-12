@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -43,7 +44,6 @@ import org.eclipse.ui.internal.WorkbenchImages;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IMenuService;
-import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
@@ -116,6 +116,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -143,6 +144,8 @@ public class ResultSetViewer extends Viewer
     private static final String TOOLBAR_NAVIGATION_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status.navCmds";
     private static final String TOOLBAR_EXPORT_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status.exportCmd";
     private static final String TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status";
+    private static final String TOOLBAR_CONFIGURATION_VISIBLE_PROPERTY = "org.jkiss.dbeaver.ui.toolbar.configuration.visible";
+    
     private static final String CONFIRM_SERVER_SIDE_ORDERING_UNAVAILABLE = "org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable";
 
     private static final int THEME_UPDATE_DELAY_MS = 250;
@@ -1646,35 +1649,37 @@ public class ResultSetViewer extends Viewer
         //this.updateStatusMessage();
     }
 
-    private final UIJob statusBarLayoutJob = new UIJob("Pending resultset view status bar relayout") {
+    private final Job statusBarLayoutJob = new Job("Pending resultset view status bar relayout") {
         @Override
-        public IStatus runInUIThread(IProgressMonitor monitor) {
-            boolean changed = false;
-            for (ToolBarManager toolbarMan: toolbarList) {
-                ToolBar toolbar = toolbarMan.getControl();
-                boolean wasCollapsed = toolbar.getData() != null;
-                toolbar.setLayoutData(toolbar.getItemCount() > 0 ? null : new RowData(0, 0));
-                boolean nowCollapsed = toolbar.getData() != null;
-                changed |= (wasCollapsed == nowCollapsed);
-            }
-            if (changed) {
-                ResultSetViewer.this.getControl().layout(true, true);
-            }
+        protected IStatus run(IProgressMonitor monitor) {
+            UIUtils.asyncExec(() -> {
+                boolean changed = false;
+                for (ToolBarManager toolbarMan : toolbarList) {
+                    ToolBar toolbar = toolbarMan.getControl();
+                    boolean wasCollapsed = toolbar.getLayoutData() != null;
+                    toolbar.setLayoutData(toolbar.getItemCount() > 0 ? null : new RowData(0, 0));
+                    boolean nowCollapsed = toolbar.getLayoutData() != null;
+                    changed |= (wasCollapsed != nowCollapsed);
+                }
+                if (changed) {
+                    ResultSetViewer.this.getControl().layout(true, true);
+                }
+            });
             return Status.OK_STATUS;
         }
     };
     
-    private void collapseToolbarIfEmpty(ToolBar toolbar) {
-        toolbar.addControlListener(new ControlAdapter() {
-            @Override
-            public void controlResized(ControlEvent e) {
-                statusBarLayoutJob.schedule();
+    private final Consumer<String> propertyEvaluationRequestListener = propName -> {
+        if (TOOLBAR_CONFIGURATION_VISIBLE_PROPERTY.equals(propName)) { //$NON-NLS-1$
+            if (!getControl().isDisposed()) {
+                statusBarLayoutJob.schedule(30);
             }
-        });
-    }
-
-    private void createStatusBar()
-    {
+        }
+    };
+    
+    private void createStatusBar() {
+        ActionUtils.addPropertyEvaluationRequestListener(propertyEvaluationRequestListener);
+        
         final IMenuService menuService = getSite().getService(IMenuService.class);
         
         Composite statusComposite = UIUtils.createPlaceholder(viewerPanel, 3);
@@ -1715,7 +1720,6 @@ public class ResultSetViewer extends Viewer
             menuService.populateContributionManager(editToolBarManager, TOOLBAR_EDIT_CONTRIBUTION_ID);
             ToolBar editorToolBar = editToolBarManager.createControl(statusBar);
             CSSUtils.setCSSClass(editorToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
-            collapseToolbarIfEmpty(editorToolBar);
             toolbarList.add(editToolBarManager);
         }
         {
@@ -1723,14 +1727,12 @@ public class ResultSetViewer extends Viewer
             menuService.populateContributionManager(navToolBarManager, TOOLBAR_NAVIGATION_CONTRIBUTION_ID);
             ToolBar navToolBar = navToolBarManager.createControl(statusBar);
             CSSUtils.setCSSClass(navToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
-            collapseToolbarIfEmpty(navToolBar);
             toolbarList.add(navToolBarManager);
         }
         {
             ToolBarManager configToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             ToolBar configToolBar = configToolBarManager.createControl(statusBar);
             CSSUtils.setCSSClass(configToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
-            collapseToolbarIfEmpty(configToolBar);
             toolbarList.add(configToolBarManager);
         }
 
@@ -1745,7 +1747,6 @@ public class ResultSetViewer extends Viewer
             }
             ToolBar addToolBar = addToolbBarManagerar.createControl(statusBar);
             CSSUtils.setCSSClass(addToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
-            collapseToolbarIfEmpty(addToolBar);
             toolbarList.add(addToolbBarManagerar);
         }
 
@@ -1840,6 +1841,8 @@ public class ResultSetViewer extends Viewer
 //                ((RowData)statusLabel.getLayoutData()).width = statusBar.getSize().x - 500;
 //            });
         }
+        
+        statusBarLayoutJob.schedule(10);
     }
 
     @Nullable
@@ -1944,6 +1947,8 @@ public class ResultSetViewer extends Viewer
 
     private void dispose()
     {
+        ActionUtils.removePropertyEvaluationRequestListener(propertyEvaluationRequestListener);
+        
         if (!themeUpdateJob.isCanceled()) {
             themeUpdateJob.cancel();
         }

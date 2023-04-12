@@ -50,7 +50,8 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Map;
+import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * Action utils
@@ -58,6 +59,17 @@ import java.util.Map;
 public class ActionUtils
 {
     private static final Log log = Log.getLog(ActionUtils.class);
+    
+    private static final Object propertyEvaluationRequestListenersSyncRoot = new Object();
+    private static final Set<Consumer<String>> propertyEvaluationRequestListeners = Collections.synchronizedSet(new HashSet<>());
+    
+    public static void addPropertyEvaluationRequestListener(Consumer<String> listener) {
+        propertyEvaluationRequestListeners.add(listener);
+    }
+
+    public static void removePropertyEvaluationRequestListener(Consumer<String> listener) {
+        propertyEvaluationRequestListeners.remove(listener);
+    }
 
     public static CommandContributionItem makeCommandContribution(@NotNull IServiceLocator serviceLocator, @NotNull String commandId)
     {
@@ -417,6 +429,10 @@ public class ActionUtils
             } catch (Exception e) {
                 log.warn("Error evaluating property [" + propertyName + "]");
             }
+        }
+        
+        for (Consumer<String> listener: List.copyOf(propertyEvaluationRequestListeners)) {
+            listener.accept(propertyName);
         }
     }
 
