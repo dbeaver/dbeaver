@@ -38,7 +38,7 @@
                 </goals>
                 <configuration>
                     <sourceDirectory>grammar</sourceDirectory>
-                    <outputDirectory>src-gen/org/jkiss/dbeaver/model/lsm/sql/impl/syntax</outputDirectory>
+                    <outputDirectory>target/generated-sources/antlr4/org/jkiss/dbeaver/model/lsm/sql/impl/syntax</outputDirectory>
                 </configuration>
             </execution>
         </executions>
