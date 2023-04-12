@@ -264,7 +264,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 ) {
                     createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_RESOURCE_FOLDER));
                 }
-                if (resource instanceof IContainer && projectResourceEditable) {
+                if (resource instanceof IContainer && projectResourceEditable && !DBWorkbench.isDistributed()) {
                     createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_FILE_LINK));
                     createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_FOLDER_LINK));
                 }
