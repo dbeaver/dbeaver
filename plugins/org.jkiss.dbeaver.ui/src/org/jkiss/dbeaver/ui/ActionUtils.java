@@ -430,7 +430,7 @@ public class ActionUtils
             }
         }
         
-        for (Consumer<String> listener: List.copyOf(propertyEvaluationRequestListeners)) {
+        for (Consumer<String> listener : List.copyOf(propertyEvaluationRequestListeners)) {
             listener.accept(propertyName);
         }
     }
