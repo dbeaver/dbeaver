@@ -24,6 +24,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -113,7 +116,10 @@ public class StatisticsTransmitter {
                     "Content-Type", "text/plain",
                     "Locale", Locale.getDefault().toString(),
                     "Country", Locale.getDefault().getISO3Country(),
-                    "Timezone", TimeZone.getDefault().getID()));
+                    "Timezone", TimeZone.getDefault().getID(),
+                    "Application-Name", GeneralUtils.getProductName(),
+                    "Application-Version", GeneralUtils.getProductVersion().toString(),
+                    "OS", CommonUtils.notEmpty(System.getProperty(StandardConstants.ENV_OS_NAME))));
 
             ((HttpURLConnection)urlConnection).setFixedLengthStreamingMode(Files.size(logFile));
 
