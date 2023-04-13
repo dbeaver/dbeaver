@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.lsm.mapping.internal;
 
 import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.tree.SyntaxTree;
 import org.antlr.v4.runtime.tree.Tree;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.w3c.dom.*;
@@ -24,7 +25,7 @@ import org.w3c.dom.*;
 import java.util.Map;
 import java.util.Stack;
 
-public interface XTreeNodeBase extends Tree, Node {
+public interface XTreeNodeBase extends SyntaxTree, Node {
 
     int getIndex();
 

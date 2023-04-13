@@ -17,10 +17,18 @@
 package org.jkiss.dbeaver.model.lsm.mapping;
 
 import org.antlr.v4.runtime.misc.InterpreterDataReader;
+import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.SyntaxTree;
 import org.jkiss.dbeaver.model.lsm.LSMElement;
+import org.jkiss.dbeaver.model.lsm.mapping.internal.NodeFieldInfo;
 import org.jkiss.dbeaver.model.lsm.mapping.internal.TreeRuleNode;
+import org.jkiss.dbeaver.model.lsm.mapping.internal.XTreeNodeBase;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,16 +44,26 @@ public abstract class AbstractSyntaxNode implements LSMElement {
             t -> Optional.ofNullable(t.getAnnotation(SyntaxNode.class).name()).orElse(t.getName())
         );
     }
+
+    public static class BindingInfo {
+        public final NodeFieldInfo field;
+        public final Object value;
+        public final SyntaxTree astNode;
+        
+        public BindingInfo(NodeFieldInfo field, Object value, SyntaxTree astNode) {
+            this.field = field;
+            this.value = value;
+            this.astNode = astNode;
+        }
+    }
     
     public static final int UNDEFINED_POSITION = -1;
     
     // TODO consider revising
     private final String name;
-    private int startPos = UNDEFINED_POSITION;
-    private int endPos = UNDEFINED_POSITION;
     
-    private TreeRuleNode astNode; // TODO support this
-    // private List<Pair<XTreeNode, NodeFieldInfo>> fieldsMapping;
+    private XTreeNodeBase astNode = null;
+    private List<BindingInfo> subnodeBindings = null;
     
     protected AbstractSyntaxNode() {
         this.name = getNodeName(this.getClass());
@@ -60,18 +78,47 @@ public abstract class AbstractSyntaxNode implements LSMElement {
     }
 
     public int getStartPosition() {
-        return this.startPos;
+        return this.astNode != null ? this.astNode.getSourceInterval().a : UNDEFINED_POSITION;
     }
     
     public int getEndPosition() {
-        return this.endPos;
+        return this.astNode != null ? this.astNode.getSourceInterval().b : UNDEFINED_POSITION;
     }
     
-    void setStartPosition(int value) {
-        this.startPos = value;
+    void setAstNode(XTreeNodeBase astNode) {
+        this.astNode = astNode;
+        this.subnodeBindings = null;
     }
 
-    void setEndPosition(int value) {
-        this.endPos = value;
+    XTreeNodeBase getAstNode() {
+        return this.astNode;
+    }
+
+    void appendBinding(BindingInfo binding) {
+        if (subnodeBindings == null) {
+            this.subnodeBindings = new LinkedList<>();
+        }
+        this.subnodeBindings.add(binding);
+    }
+    
+    private static final Comparator<BindingInfo> BINDING_MY_POS_COMPARER = (a, b) -> {
+        Interval x = a.astNode.getSourceInterval();
+        Interval y = b.astNode.getSourceInterval();
+        int rc = Integer.compare(x.a, y.a);
+        if (rc == 0) {
+            rc = Integer.compare(x.b, y.b);
+        }
+        return rc;
+    };
+    
+    List<BindingInfo> getBindings() {
+        if (this.subnodeBindings == null) {
+            return Collections.emptyList();
+        } else if (this.subnodeBindings instanceof LinkedList) {
+            ArrayList<BindingInfo> bindings = new ArrayList<>(this.subnodeBindings);
+            bindings.sort(BINDING_MY_POS_COMPARER);
+            this.subnodeBindings = bindings;
+        }
+        return this.subnodeBindings;
     }
 }
