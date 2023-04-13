@@ -20,7 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.websocket.event.WSEvent;
 import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
-public class WSSocketConnectedEvent extends WSEvent {
+public class WSSocketConnectedEvent extends WSAbstractEvent {
 
     private final String applicationRunId;
 

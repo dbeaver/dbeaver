@@ -51,10 +51,11 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.storage.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
-import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
+import org.jkiss.dbeaver.ui.data.IStreamValueEditorPersistent;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
@@ -65,13 +66,17 @@ import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsActivator;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
 * AbstractTextPanelEditor
 */
-public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> implements IStreamValueEditor<StyledText>, IAdaptable {
+public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
+    implements IStreamValueEditorPersistent<StyledText>, IAdaptable {
 
     private static final String PREF_TEXT_EDITOR_WORD_WRAP = "content.text.editor.word-wrap";
     private static final String PREF_TEXT_EDITOR_AUTO_FORMAT = "content.text.editor.auto-format";
@@ -83,6 +88,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
     private IValueController valueController;
     private IEditorSite subSite;
     private EDITOR editor;
+    private Path tempFile;
 
     @Override
     public StyledText createControl(IValueController valueController) {
@@ -193,6 +199,13 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
             editor.dispose();
             editor = null;
         }
+        if (tempFile != null) {
+            try {
+                Files.deleteIfExists(tempFile);
+            } catch (IOException e) {
+                log.warn(e);
+            }
+        }
     }
 
     protected EDITOR getTextEditor() {
@@ -293,6 +306,27 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
             monitor.done();
         }
     }
+
+    @Nullable
+    @Override
+    public Path getExternalFilePath(@NotNull StyledText control) {
+        try {
+            if (tempFile != null) {
+                Files.deleteIfExists(tempFile);
+            }
+            this.tempFile = Files.createTempFile(DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), getFileFolderName()), "file", getFileExtension());
+            tempFile.toFile().deleteOnExit();
+            Files.writeString(tempFile, control.getText());
+            return tempFile;
+        } catch (IOException e) {
+            log.error(e);
+            return null;
+        }
+    }
+
+    protected abstract String getFileFolderName();
+
+    protected abstract String getFileExtension();
 
     @Override
     public void extractEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull StyledText control, @NotNull DBDContent value) throws DBException
