@@ -188,7 +188,9 @@ public class PrefPageToolbarCustomization extends AbstractPrefPage implements IW
         toolBarImage = findBundleImage(PlatformUI.PLUGIN_ID, "$nl$/icons/full/obj16/toolbar.png"); //$NON-NLS-1$
         
         toolBarNodes = ToolBarConfigurationRegistry.getInstance().getKnownToolBars().stream()
-            .sorted(Comparator.comparing(ToolBarConfigurationDescriptor::getName)).map(ToolBarNode::new).collect(Collectors.toList());
+            .sorted(Comparator.comparing(ToolBarConfigurationDescriptor::getName))
+            .map(ToolBarNode::new)
+            .collect(Collectors.toList());
     }
 
     @Nullable

@@ -1669,8 +1669,8 @@ public class ResultSetViewer extends Viewer
         }
     };
     
-    private final Consumer<String> propertyEvaluationRequestListener = propName -> {
-        if (TOOLBAR_CONFIGURATION_VISIBLE_PROPERTY.equals(propName)) { //$NON-NLS-1$
+    private final IPropertyChangeListener propertyEvaluationRequestListener = ev -> {
+        if (TOOLBAR_CONFIGURATION_VISIBLE_PROPERTY.equals(ev.getProperty())) { //$NON-NLS-1$
             if (!getControl().isDisposed()) {
                 statusBarLayoutJob.schedule(30);
             }

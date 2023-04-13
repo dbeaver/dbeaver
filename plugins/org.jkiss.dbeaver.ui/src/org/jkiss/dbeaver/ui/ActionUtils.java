@@ -32,6 +32,8 @@ import org.eclipse.jface.bindings.Binding;
 import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.commands.ToggleState;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.*;
@@ -60,13 +62,13 @@ public class ActionUtils
 {
     private static final Log log = Log.getLog(ActionUtils.class);
     
-    private static final Set<Consumer<String>> propertyEvaluationRequestListeners = Collections.synchronizedSet(new HashSet<>());
+    private static final Set<IPropertyChangeListener> propertyEvaluationRequestListeners = Collections.synchronizedSet(new HashSet<>());
     
-    public static void addPropertyEvaluationRequestListener(@NotNull Consumer<String> listener) {
+    public static void addPropertyEvaluationRequestListener(@NotNull IPropertyChangeListener listener) {
         propertyEvaluationRequestListeners.add(listener);
     }
 
-    public static void removePropertyEvaluationRequestListener(@NotNull Consumer<String> listener) {
+    public static void removePropertyEvaluationRequestListener(@NotNull IPropertyChangeListener listener) {
         propertyEvaluationRequestListeners.remove(listener);
     }
 
@@ -430,8 +432,9 @@ public class ActionUtils
             }
         }
         
-        for (Consumer<String> listener : List.copyOf(propertyEvaluationRequestListeners)) {
-            listener.accept(propertyName);
+        PropertyChangeEvent ev = new PropertyChangeEvent(null, propertyName, null, null); 
+        for (IPropertyChangeListener listener : List.copyOf(propertyEvaluationRequestListeners)) {
+            listener.propertyChange(ev);
         }
     }
 
