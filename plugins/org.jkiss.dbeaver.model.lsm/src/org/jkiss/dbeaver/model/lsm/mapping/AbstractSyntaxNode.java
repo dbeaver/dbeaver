@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.model.lsm.mapping;
 
+import org.antlr.v4.runtime.misc.InterpreterDataReader;
 import org.jkiss.dbeaver.model.lsm.LSMElement;
+import org.jkiss.dbeaver.model.lsm.mapping.internal.TreeRuleNode;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -40,6 +43,9 @@ public abstract class AbstractSyntaxNode implements LSMElement {
     private final String name;
     private int startPos = UNDEFINED_POSITION;
     private int endPos = UNDEFINED_POSITION;
+    
+    private TreeRuleNode astNode; // TODO support this
+    // private List<Pair<XTreeNode, NodeFieldInfo>> fieldsMapping;
     
     protected AbstractSyntaxNode() {
         this.name = getNodeName(this.getClass());

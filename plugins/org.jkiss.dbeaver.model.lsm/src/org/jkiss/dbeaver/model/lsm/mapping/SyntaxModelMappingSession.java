@@ -39,6 +39,32 @@ public class SyntaxModelMappingSession {
     public SyntaxModelMappingSession(SyntaxModel modelInfo) {
         this.modelInfo = modelInfo;
     }
+    
+    private static boolean isEmptyValue(XPathEvaluationResult<?> xvalue) {
+        Object value = xvalue.value();
+        if (value == null) {
+            return true;
+        }
+        switch (xvalue.type()) {
+            case BOOLEAN:
+            case NUMBER:
+            case STRING:
+                if (value instanceof String) {
+                    return ((String)value).length() < 1;
+                }
+                break;
+            case ANY:
+            case NODE:
+            case NODESET:
+                if (value instanceof XPathNodes) {
+                    XPathNodes nodes = (XPathNodes) value;
+                    return nodes.size() < 1;
+                }
+                break;
+            default: throw new UnsupportedOperationException("Unexpected xpath value type " + xvalue.type());
+        }
+        return false;
+    }
 
     private AbstractSyntaxNode instantiateAndFill(@NotNull NodeTypeInfo typeInfo, @NotNull XTreeNodeBase nodeInfo) {
         try {
@@ -56,7 +82,9 @@ public class SyntaxModelMappingSession {
             for (var expr : field.termExprs) {
                 try {
                     XPathEvaluationResult<?> value = expr.evaluateExpression(nodeInfo);
-                    this.bindValue(nodeInfo, field, value);
+                    if (!isEmptyValue(value)) {
+                        this.bindValue(nodeInfo, field, value);
+                    }
                 } catch (XPathExpressionException e) {
                     errors.add(e, "Failed to evaluate syntax model term expression for field "
                         + field.getFieldName() + " of type " + field.getDeclaringClassName());

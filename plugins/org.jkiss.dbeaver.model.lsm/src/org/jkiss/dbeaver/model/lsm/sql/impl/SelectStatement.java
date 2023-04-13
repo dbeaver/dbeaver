@@ -23,10 +23,10 @@ import org.jkiss.dbeaver.model.lsm.mapping.SyntaxTerm;
 
 import java.util.List;
 
-@SyntaxNode(name = "queryExpression")
+@SyntaxNode(name = "directSelectStatementMultipleRows")
 public class SelectStatement extends AbstractSyntaxNode {
 
-    private static final String nonJoinSimpleQuerySpecPath = "./nonJoinQueryTerm/queryPrimary/nonJoinQueryPrimary/simpleTable/querySpecification";
+    private static final String nonJoinSimpleQuerySpecPath = "./queryExpression/nonJoinQueryTerm/queryPrimary/nonJoinQueryPrimary/simpleTable/querySpecification";
     
     @SyntaxTerm(xpath = nonJoinSimpleQuerySpecPath + "/setQuantifier")
     public SelectQuantifier quantifier;
@@ -39,4 +39,7 @@ public class SelectStatement extends AbstractSyntaxNode {
     @SyntaxSubnode(type = SelectionSource.CrossJoin.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/fromClause/tableReference/joinedTable/crossJoinTerm")
     @SyntaxSubnode(type = SelectionSource.NaturalJoin.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/fromClause/tableReference/joinedTable/naturalJoinTerm")
     public List<SelectionSource> sources;
+
+    @SyntaxSubnode(type = OrderingSpec.class, xpath = "./orderByClause")
+    public OrderingSpec orderBy;
 }

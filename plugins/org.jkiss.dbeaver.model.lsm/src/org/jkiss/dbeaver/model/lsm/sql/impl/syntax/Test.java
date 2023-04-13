@@ -47,11 +47,12 @@ public class Test {
             + "FROM Production.Product\r\n"
             + "INNER JOIN Production.ProductSubCategory\r\n"
             + "ON ProductSubCategory.ProductSubcategoryID = Product.ProductSubcategoryID\r\n"
-            + "UNION JOIN Production.ProductCategory\r\n"
+            + "UNION JOIN Cat.Production.ProductCategory\r\n"
             + "ON ProductCategory.ProductCategoryID = ProductSubCategory.ProductCategoryID\r\n"
             + "ORDER BY Product.ModifiedDate DESC"
         );
         //var input = CharStreams.fromFileName("D:\\github.com\\dbeaver\\sql-server-sakila-insert-data.sql");
+        // input = CharStreams.fromString("SELECT column_name FROM sch.table_name");
         var ll = new Sql92Lexer(input);
         var tokens = new CommonTokenStream(ll);
         tokens.fill();
@@ -102,10 +103,15 @@ public class Test {
         }
 
         var model = new SyntaxModel(pp);
-        model.introduce(SelectStatement.class);
-        
+        var introErrs = model.introduce(SelectStatement.class);
+        if (!introErrs.isEmpty()) {
+            introErrs.printToStderr();
+        }
         
         var result = model.map(tree, SelectStatement.class);
+        if (!result.isNoErrors()) {
+            result.getErrors().printToStderr();
+        }
         
         System.out.println();
         { // print human-readable representation of the complete form of the parse tree and model 

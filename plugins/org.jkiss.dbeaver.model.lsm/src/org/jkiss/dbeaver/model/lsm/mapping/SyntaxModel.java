@@ -288,7 +288,7 @@ public class SyntaxModel {
 	public <T extends AbstractSyntaxNode> ModelErrorsCollection introduce(Class<T> modelType) {
         ModelErrorsCollection errors = new ModelErrorsCollection();
         
-        Set<Class<? extends AbstractSyntaxNode>> processedTypes = new HashSet<>();
+        Set<Class<?>> processedTypes = new HashSet<>();
         
         LinkedList<NodeFieldInfo> fieldsToFixup = new LinkedList<>();
         Queue<Pair<Field, Class<? extends AbstractSyntaxNode>>> queue = new LinkedList<>();
@@ -300,12 +300,19 @@ public class SyntaxModel {
             if (!processedTypes.add(type)) {
                 continue;
             }
+            
             SyntaxNode ruleAnnotation = type.getAnnotation(SyntaxNode.class);
             if (ruleAnnotation == null) {
                 String referrent = entry.a == null ? " "
                     : (" referenced from field " + entry.a.getName() + " of type " + entry.a.getDeclaringClass().getName() + " ");
                 errors.add("Type " + type.getName() + referrent + "is not marked as syntax node with SyntaxNode annotation");
                 continue;
+            }
+            if (!AbstractSyntaxNode.class.isAssignableFrom(type)) {
+                String referrent = entry.a == null ? " "
+                    : (" referenced from field " + entry.a.getName() + " of type " + entry.a.getDeclaringClass().getName() + " ");
+                errors.add("Type " + type.getName() + referrent + "is not a subclass of AbstractSyntaxNode"
+                    + "and cannot be supported as part of syntax model");
             }
             
             var fields = Stream.of(type.getFields()).map(f -> new Object() {
@@ -318,6 +325,7 @@ public class SyntaxModel {
             Map<String, NodeFieldInfo> modelFields = new HashMap<>(fields.size());
 
             for (var field : fields) {
+                Class<?> fieldType = field.info.getType();
                 FieldTypeKind kind = FieldTypeKind.resolveModelFieldKind(field.info.getType());
                 if (field.subnodeSpecs.length > 0 && kind.isTerm) {
                     errors.add("Field of terminal value kind cannot be bound with complex subnode type");
@@ -328,33 +336,37 @@ public class SyntaxModel {
                 for (var termSpec : field.termSpecs) {
                     try {
                         termExprs.add(xpath.compile(termSpec.xpath())); // TODO collect raw string too
-                        if (field.info.getType().isEnum()) {
-                            introduceEnum(field.info.getType(), errors);
+                        if (fieldType.isEnum()) {
+                            if (processedTypes.add(fieldType)) {
+                                introduceEnum(fieldType, errors);
+                            }
                         }
                     } catch (XPathExpressionException e) {
                         throw new RuntimeException(e);
                     }
                 }
                 for (var subnodeSpec : field.subnodeSpecs) {
-                    Class<? extends AbstractSyntaxNode> fieldType;
+                    Class<? extends AbstractSyntaxNode> subnodeType;
                     if (subnodeSpec.type() == null || subnodeSpec.type().equals(AbstractSyntaxNode.class)) {
-                        if (AbstractSyntaxNode.class.isAssignableFrom(field.info.getType())) {
+                        if (AbstractSyntaxNode.class.isAssignableFrom(fieldType)) {
                             @SuppressWarnings("unchecked")
-                            Class<? extends AbstractSyntaxNode> ft = (Class<? extends AbstractSyntaxNode>) field.info.getType();
-                            fieldType = ft;
+                            Class<? extends AbstractSyntaxNode> ft = (Class<? extends AbstractSyntaxNode>) fieldType;
+                            subnodeType = ft;
                         } else {
-                            errors.add("Failed to resolve subnode type for field " + field.info.getName() + " of type " + type.getName());
+                            errors.add("Failed to resolve subnode type for field " + field.info.getName() + " of type " + type.getName()
+                                + ": either " + fieldType.getName() + " should be a subclass of AbstractSyntaxNode"
+                                + "or explicit target type required for subnode annotation");
                             continue;
                         }
                     } else {
-                        fieldType = subnodeSpec.type();
+                        subnodeType = subnodeSpec.type();
                     }
                     
                     try {
                         XPathExpression scopeExpr = subnodeSpec.xpath() != null && subnodeSpec.xpath().length() > 0
                             ? xpath.compile(subnodeSpec.xpath()) : null; // TODO collect raw string too
-                        subnodeExprs.add(new SubnodeInfo(scopeExpr, fieldType, subnodeSpec.lookup()));
-                        queue.add(new Pair<>(field.info, fieldType));
+                        subnodeExprs.add(new SubnodeInfo(scopeExpr, subnodeType, subnodeSpec.lookup()));
+                        queue.add(new Pair<>(field.info, subnodeType));
                     } catch (XPathExpressionException ex) {
                         errors.add(ex, "Failed to prepare subnode xpath exprssion for field "
                             + field.info.getName() + " of type " + type.getName());
