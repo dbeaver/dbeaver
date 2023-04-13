@@ -1082,7 +1082,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @Override
     public boolean isSupportedByLocalSystem() {
-        if (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+        if (DBWorkbench.isDistributed()) {
             return supportsDistributedMode;
         }
         if (supportedSystems.isEmpty()) {
