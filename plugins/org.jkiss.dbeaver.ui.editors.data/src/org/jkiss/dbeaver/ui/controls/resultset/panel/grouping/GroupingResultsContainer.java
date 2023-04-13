@@ -16,14 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
-import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -41,7 +33,6 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLGroupingQueryGenerator;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
@@ -51,7 +42,6 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 public class GroupingResultsContainer implements IResultSetContainer {
 
@@ -225,7 +215,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         boolean isShowDuplicatesOnly = dataSource.getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY);
 
         var groupingQueryGenerator = new SQLGroupingQueryGenerator(dataSource, dbsDataContainer, dialect, syntaxManager, groupAttributes, groupFunctions, isShowDuplicatesOnly);
-        dataContainer.setGroupingQuery(groupingQueryGenerator.parseGroupingQuery(queryText));
+        dataContainer.setGroupingQuery(groupingQueryGenerator.generateGroupingQuery(queryText));
         dataContainer.setGroupingAttributes(groupAttributes.toArray(String[]::new));
         DBDDataFilter dataFilter;
         if (presentation.getController().getModel().isMetadataChanged()) {

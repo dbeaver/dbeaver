@@ -80,7 +80,7 @@ public class SQLGroupingQueryGenerator {
     }
 
 
-    public String parseGroupingQuery(String queryText) throws DBException {
+    public String generateGroupingQuery(String queryText) throws DBException {
 
         if (queryText == null || queryText.isEmpty()) {
             if (container != null) {
