@@ -47,7 +47,7 @@ public class WSEventHandlersRegistry {
     }
 
     @NotNull
-    private List<WSEventHandlerDescriptor> readDescriptors() {
+    public List<WSEventHandlerDescriptor> readDescriptors() {
         var result = new ArrayList<WSEventHandlerDescriptor>();
         var registry = Platform.getExtensionRegistry();
         for (IConfigurationElement ext : registry.getConfigurationElementsFor(EXTENSION_ID)) {
