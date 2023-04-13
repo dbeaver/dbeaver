@@ -352,7 +352,7 @@ cursorSpecification: queryExpression (orderByClause)? (updatabilityClause)?;
 orderByClause: ORDER BY sortSpecificationList;
 sortSpecificationList: sortSpecification ((Comma sortSpecification)+)?;
 sortSpecification: sortKey (collateClause)? (orderingSpecification)?;
-sortKey: (columnName|UnsignedInteger);
+sortKey: (columnReference|UnsignedInteger);
 orderingSpecification: (ASC|DESC);
 updatabilityClause: FOR (READ ONLY|UPDATE (OF columnNameList)?);
 dynamicDeclareCursor: DECLARE cursorName (INSENSITIVE)? (SCROLL)? CURSOR FOR statementName;
@@ -591,7 +591,9 @@ directSqlDataStatement: (deleteStatementSearched|directSelectStatementMultipleRo
 directSelectStatementMultipleRows: queryExpression (orderByClause)?;
 
 // root rule for script
-sqlScript: ((directSqlStatement|preparableStatement|module|statementOrDeclaration) ';'?)* EOF; // don't stop early. must match all input
+// TODO: work only with one statement for now
+sqlQueries: (sqlQuery ';'?)* EOF; // don't stop early. must match all input
+sqlQuery: directSqlStatement|preparableStatement|module|statementOrDeclaration;
 
 
 nonReserved: 

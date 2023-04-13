@@ -43,4 +43,14 @@ public class TextPanelEditor extends AbstractTextPanelEditor<TextEditorPart> {
             }
         };
     }
+
+    @Override
+    protected String getFileFolderName() {
+        return "dbeaver-txt";
+    }
+
+    @Override
+    protected String getFileExtension() {
+        return ".txt";
+    }
 }
