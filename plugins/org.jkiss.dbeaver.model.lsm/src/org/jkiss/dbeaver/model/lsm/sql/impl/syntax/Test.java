@@ -44,7 +44,7 @@ public class Test {
             + "    ProductCategory.Name AS ProductCategory,\r\n"
             + "    ProductSubCategory.Name AS ProductSubCategory,\r\n"
             + "    Product.ProductModelID\r\n"
-            + "FROM Production.Product\r\n"
+            + "FROM Production.Product AS Prod(ProductID, Name, ProductNumber)\r\n"
             + "INNER JOIN Production.ProductSubCategory\r\n"
             + "ON ProductSubCategory.ProductSubcategoryID = Product.ProductSubcategoryID\r\n"
             + "UNION JOIN Cat.Production.ProductCategory\r\n"

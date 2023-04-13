@@ -266,7 +266,7 @@ concatenation: characterFactor (ConcatenationOperator characterFactor)+;
 characterFactor: characterPrimary (collateClause)?;
 characterPrimary: (valueExpressionPrimary|stringValueFunction);
 
-// functions and operatore
+// functions and operators
 stringValueFunction: (characterValueFunction|bitValueFunction);
 characterValueFunction: (characterSubstringFunction|fold|formOfUseConversion|characterTranslation|trimFunction);
 characterSubstringFunction: SUBSTRING LeftParen characterValueExpression FROM startPosition (FOR stringLength)? RightParen;

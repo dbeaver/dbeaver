@@ -305,13 +305,13 @@ public class SyntaxModel {
             if (ruleAnnotation == null) {
                 String referrent = entry.a == null ? " "
                     : (" referenced from field " + entry.a.getName() + " of type " + entry.a.getDeclaringClass().getName() + " ");
-                errors.add("Type " + type.getName() + referrent + "is not marked as syntax node with SyntaxNode annotation");
+                errors.add("Type " + type.getName() + referrent + " is not marked as syntax node with SyntaxNode annotation");
                 continue;
             }
             if (!AbstractSyntaxNode.class.isAssignableFrom(type)) {
                 String referrent = entry.a == null ? " "
                     : (" referenced from field " + entry.a.getName() + " of type " + entry.a.getDeclaringClass().getName() + " ");
-                errors.add("Type " + type.getName() + referrent + "is not a subclass of AbstractSyntaxNode"
+                errors.add("Type " + type.getName() + referrent + " is not a subclass of AbstractSyntaxNode "
                     + "and cannot be supported as part of syntax model");
             }
             
@@ -355,7 +355,7 @@ public class SyntaxModel {
                         } else {
                             errors.add("Failed to resolve subnode type for field " + field.info.getName() + " of type " + type.getName()
                                 + ": either " + fieldType.getName() + " should be a subclass of AbstractSyntaxNode"
-                                + "or explicit target type required for subnode annotation");
+                                + " or explicit target type required for subnode annotation");
                             continue;
                         }
                     } else {
