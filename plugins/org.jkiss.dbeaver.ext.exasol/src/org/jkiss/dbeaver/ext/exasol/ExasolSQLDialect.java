@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 
 public class ExasolSQLDialect extends JDBCSQLDialect {
 
@@ -132,7 +131,7 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
         
-        Collections.addAll(tableQueryWords, "DESC");
+        addTableQueryKeywords("DESC");
 
         addFunctions(Arrays.asList(ADVANCED_FUNCTIONS));
         
