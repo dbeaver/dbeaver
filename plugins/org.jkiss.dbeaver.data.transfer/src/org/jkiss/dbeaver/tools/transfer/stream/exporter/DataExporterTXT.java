@@ -231,11 +231,9 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
             final CellValue[] header = new CellValue[columns.length];
 
             for (int index = 0; index < columns.length; index++) {
-                String cell;
+                String cell = getAttributeName(columns[index]);
                 if (maxColumnSize > 0) {
-                    cell = CommonUtils.truncateString(getAttributeName(columns[index]), maxColumnSize);
-                } else {
-                    cell = getAttributeName(columns[index]);
+                    cell = CommonUtils.truncateString(cell, maxColumnSize);
                 }
                 header[index] = new CellTextValue(cell);
             }
@@ -266,11 +264,9 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
                     values[index] = new CellContentValue(content);
                 }
             } else {
-                String cell;
+                String cell = getCellString(columns[index], row[index]);
                 if (maxColumnSize > 0) {
-                    cell = CommonUtils.truncateString(getCellString(columns[index], row[index]), maxColumnSize);
-                } else {
-                    cell = getCellString(columns[index], row[index]);
+                    cell = CommonUtils.truncateString(cell, maxColumnSize);
                 }
                 values[index] = new CellTextValue(cell);
             }
