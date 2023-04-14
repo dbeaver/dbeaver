@@ -34,6 +34,7 @@ public interface IResultSetDecorator {
     long FEATURE_EDIT               = 8;
     long FEATURE_PRESENTATIONS      = 16;
     long FEATURE_LINKS              = 32;
+    long FEATURE_COMPACT_FILTERS    = 64;
 
     long getDecoratorFeatures();
 
