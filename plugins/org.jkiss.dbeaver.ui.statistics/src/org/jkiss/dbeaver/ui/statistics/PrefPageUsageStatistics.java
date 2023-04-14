@@ -36,9 +36,12 @@ import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
  */
 public class PrefPageUsageStatistics extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.usageStatistics"; //$NON-NLS-1$
+    public static final String LINK_PRIVACY_INFO = "https://dbeaver.com/privacy/";
+    public static final String LINK_GIHUB_REPO = "https://github.com/dbeaver/dbeaver";
 
     private Button checkSendUsageStatistics;
-    private Button checkShowStatisticsDetails;
+    // Disabled for now. It is too annoying UIX
+    //private Button checkShowStatisticsDetails;
 
     @Override
     public void init(IWorkbench workbench) {
@@ -56,8 +59,20 @@ public class PrefPageUsageStatistics extends AbstractPrefPage implements IWorkbe
         createDataShareComposite(group);
 
         UIUtils.createEmptyLabel(group, 1, 1);
-        checkShowStatisticsDetails = UIUtils.createCheckbox(group, "Show statistics details before sending", false);
-        UIUtils.createLabel(group, "Show the exact information we are going to send.\n");
+        //checkShowStatisticsDetails = UIUtils.createCheckbox(group, "Show statistics details before sending", false);
+        UIUtils.createLabel(group, "We send statistics before application shutdown or during startup.\n" +
+                "Information we send is:\n" +
+            "  - Brief information about your OS and locale\n" +
+            "  - List of actions you perform in UI to better understand users workflow\n" +
+            "  - Type of databases you use to improve support of popular ones"
+            );
+        UIUtils.createEmptyLabel(group, 1, 1);
+        UIUtils.createLink(group,
+            "DBeaver is open source and you can always validate what exactly we send\n" +
+                "in our source code <a>" + LINK_GIHUB_REPO + "</a>\n",
+            SelectionListener.widgetSelectedAdapter(selectionEvent ->
+                ShellUtils.launchProgram(LINK_GIHUB_REPO)));
+
 
         performDefaults();
 
@@ -73,13 +88,13 @@ public class PrefPageUsageStatistics extends AbstractPrefPage implements IWorkbe
                 "such as database connection configurations, executed queries, database information, etc.\n" +
                 "The data sent complies with <a>DBeaver Corporation Privacy Policy</a>.",
             SelectionListener.widgetSelectedAdapter(selectionEvent ->
-                ShellUtils.launchProgram("https://dbeaver.com/privacy/")));
+                ShellUtils.launchProgram(LINK_PRIVACY_INFO)));
     }
 
     @Override
     protected void performDefaults() {
         checkSendUsageStatistics.setSelection(UIStatisticsActivator.isTrackingEnabled());
-        checkShowStatisticsDetails.setSelection(UIStatisticsActivator.isDetailsPreviewEnabled());
+        //checkShowStatisticsDetails.setSelection(UIStatisticsActivator.isDetailsPreviewEnabled());
 
         super.performDefaults();
     }
@@ -87,7 +102,7 @@ public class PrefPageUsageStatistics extends AbstractPrefPage implements IWorkbe
     @Override
     public boolean performOk() {
         UIStatisticsActivator.setTrackingEnabled(checkSendUsageStatistics.getSelection());
-        UIStatisticsActivator.setDetailsPreviewEnabled(checkShowStatisticsDetails.getSelection());
+        //UIStatisticsActivator.setDetailsPreviewEnabled(checkShowStatisticsDetails.getSelection());
 
         return super.performOk();
     }
