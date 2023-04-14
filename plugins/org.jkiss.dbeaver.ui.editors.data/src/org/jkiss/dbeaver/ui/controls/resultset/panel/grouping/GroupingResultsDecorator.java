@@ -46,7 +46,7 @@ import java.util.List;
  */
 public class GroupingResultsDecorator extends ResultSetDecoratorBase {
 
-    private GroupingResultsContainer container;
+    private final GroupingResultsContainer container;
 
     public GroupingResultsDecorator(GroupingResultsContainer container) {
         this.container = container;
@@ -54,7 +54,7 @@ public class GroupingResultsDecorator extends ResultSetDecoratorBase {
 
     @Override
     public long getDecoratorFeatures() {
-        return FEATURE_PRESENTATIONS;
+        return FEATURE_PRESENTATIONS | FEATURE_FILTERS;
     }
 
     @Override
