@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.e4.ui.model.application.ui.basic.MTrimBar;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -29,13 +28,11 @@ import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.*;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
-import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.internal.ide.IDEInternalPreferences;
 import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.eclipse.ui.internal.ide.application.IDEWorkbenchWindowAdvisor;
@@ -47,6 +44,7 @@ import org.eclipse.ui.part.ResourceTransfer;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DesktopUI;
 import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.WorkbenchHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
@@ -127,16 +125,6 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
     private IWorkbenchPage lastActivePage;
     private IAdaptable lastInput;
     private IPropertyChangeListener propertyChangeListener;
-    private final IPropertyChangeListener themeChangeListener = e -> {
-        final IWorkbenchWindow window = getWindowConfigurer().getWindow();
-        if (window instanceof WorkbenchWindow) {
-            final MTrimBar trim = ((WorkbenchWindow) window).getTopTrim();
-            final Object widget = trim.getWidget();
-            if (widget instanceof Control) {
-                UIUtils.asyncExec(() -> UIUtils.applyMainFont((Control) widget));
-            }
-        }
-    };
     private final IPropertyListener editorPropertyListener = (source, propId) -> {
         if (propId == IWorkbenchPartConstants.PROP_TITLE) {
             if (lastActiveEditor != null) {
@@ -155,7 +143,6 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
         DBPPlatformDesktop.getInstance().getWorkspace().addProjectListener(this);
 
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
-        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
     }
 
     private void refreshProjects() {
@@ -184,8 +171,6 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
             DBPWorkspaceEclipse workspace = DBPPlatformDesktop.getInstance().getWorkspace();
             workspace.removeProjectListener(this);
         }
-
-        PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
 
         super.dispose();
     }
@@ -230,7 +215,11 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
         //PlatformUI.getPreferenceStore().setValue(IWorkbenchPreferenceConstants.SHOW_MEMORY_MONITOR, true);
         hookTitleUpdateListeners(configurer);
 
+        // Initialize desktop UI
         DesktopUI.getInstance();
+
+        // Initialize drivers in the very beginning
+        DataSourceProviderRegistry.getInstance();
     }
 
     /**
@@ -385,8 +374,6 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
             // Open New Connection wizard
                 initWorkbenchWindows();
         }
-
-        themeChangeListener.propertyChange(null);
     }
 
     protected boolean isRunWorkbenchInitializers() {

@@ -41,6 +41,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
     private DecimalFormat numberFormat;
     private StringBuffer buffer;
     private FieldPosition position;
+    private boolean nativeSpecialValues;
 
     public NumberDataFormatter() {
     }
@@ -114,6 +115,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
         }
         buffer = new StringBuffer();
         position = new FieldPosition(0);
+        nativeSpecialValues = CommonUtils.toBoolean(properties.get(NumberFormatSample.PROP_NATIVE_SPECIAL_VALUES));
     }
 
     @Nullable
@@ -129,6 +131,9 @@ public class NumberDataFormatter implements DBDDataFormatter {
     {
         if (value == null) {
             return null;
+        }
+        if (nativeSpecialValues && (CommonUtils.isNaN(value) || CommonUtils.isInfinite(value))) {
+            return value.toString();
         }
         try {
             synchronized (this) {

@@ -211,10 +211,13 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
         if (this.maxColumnSize > 0) {
             this.maxColumnSize = Math.max(this.maxColumnSize, this.minColumnSize);
         }
-        
-        this.blobContentMaxLength = Math.min(this.maxColumnSize, Integer.MAX_VALUE) - BLOB_OVERFLOW_MARK.length();
-        if (this.blobContentMaxLength < 0) {
-            this.blobContentMaxLength = this.BLOB_CONTENT_MIN_LENGTH;
+        if (this.maxColumnSize == 0) {
+            this.blobContentMaxLength = Integer.MAX_VALUE - BLOB_OVERFLOW_MARK.length();
+        } else {
+            this.blobContentMaxLength = Math.min(this.maxColumnSize, Integer.MAX_VALUE) - BLOB_OVERFLOW_MARK.length();
+            if (this.blobContentMaxLength < 0) {
+                this.blobContentMaxLength = this.BLOB_CONTENT_MIN_LENGTH;
+            }
         }
     }
 
@@ -267,7 +270,6 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
     private String stringifyContent(Reader reader) throws IOException {
         try {
             blobContentBuffer.setLength(0);
-            blobContentBuffer.insert(batchSize, "");
             
             int rest = blobContentMaxLength;
             if (QUOTE_BLOBS) {
