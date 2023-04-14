@@ -51,4 +51,8 @@ public interface SQLEditorFeatures {
     DBRFeature SQL_EDITOR_COPY_AS_SOURCE_CODE = DBRFeature.createFeature(CATEGORY_SQL_EDITOR, "Copy SQL as source code");
 
     DBRFeature SQL_EDITOR_QUERY_PARAMS = DBRFeature.createFeature(CATEGORY_SQL_EDITOR, "Use SQL query parameters");
+
+    DBRFeature CATEGORY_SQL_TOOLS = DBRFeature.createCategory("SQL tools", "SQL tools features");
+
+    DBRFeature SQL_EDITOR_GENERATE_SQL_ON_OBJECT = DBRFeature.createFeature(CATEGORY_SQL_TOOLS, "Generate SQL on object");
 }

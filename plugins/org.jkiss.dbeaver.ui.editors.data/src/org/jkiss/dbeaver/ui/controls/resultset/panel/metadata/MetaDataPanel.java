@@ -18,7 +18,10 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.metadata;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.graphics.Color;
@@ -102,6 +105,9 @@ public class MetaDataPanel implements IResultSetPanel {
                 ((ISelectionProvider) presentation).removeSelectionChangedListener(listener));
         }
         ResultSetPanelRefresher.installOn(this, presentation);
+
+        DataEditorFeatures.RESULT_SET_PANEL_METADATA.use();
+
         return this.attributeList;
     }
 

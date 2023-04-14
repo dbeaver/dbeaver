@@ -32,4 +32,9 @@ public interface DataEditorFeatures {
     DBRFeature RESULT_SET_REFRESH = DBRFeature.createFeature(CATEGORY_RESULT_SET_VIEWER, "Refresh result set");
     DBRFeature RESULT_SET_SCROLL = DBRFeature.createFeature(CATEGORY_RESULT_SET_VIEWER, "Scroll result set");
 
+    DBRFeature RESULT_SET_PANEL_GROUPING = DBRFeature.createFeature(CATEGORY_RESULT_SET_VIEWER, "Use group by panel");
+    DBRFeature RESULT_SET_PANEL_CALC = DBRFeature.createFeature(CATEGORY_RESULT_SET_VIEWER, "Use calc panel");
+    DBRFeature RESULT_SET_PANEL_REFS = DBRFeature.createFeature(CATEGORY_RESULT_SET_VIEWER, "Use references panel");
+    DBRFeature RESULT_SET_PANEL_METADATA = DBRFeature.createFeature(CATEGORY_RESULT_SET_VIEWER, "Use metadata panel");
+
 }

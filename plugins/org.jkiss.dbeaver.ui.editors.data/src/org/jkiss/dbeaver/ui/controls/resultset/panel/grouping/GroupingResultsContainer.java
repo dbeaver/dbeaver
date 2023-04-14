@@ -43,14 +43,12 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.ui.DataEditorFeatures;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class GroupingResultsContainer implements IResultSetContainer {
 
@@ -329,6 +327,10 @@ public class GroupingResultsContainer implements IResultSetContainer {
                 dataFilter.setOrder(funcAliases[funcAliases.length - 1] + " " + defaultSorting);
             }
         }
+        DataEditorFeatures.RESULT_SET_PANEL_GROUPING.use(Map.of(
+            "custom", isCustomQuery,
+            "default", isDefaultGrouping,
+            "dups", isShowDuplicatesOnly));
         groupingViewer.setDataFilter(dataFilter, true);
         //groupingViewer.refresh();
     }
