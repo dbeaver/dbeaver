@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IContributor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -59,7 +60,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private DataSourceProviderRegistry registry;
     private DataSourceProviderDescriptor parentProvider;
     private final String id;
-    private final ObjectType implType;
+    private ObjectType implType;
     private final String name;
     private final String description;
     private final boolean temporary;
@@ -264,8 +265,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     }
 
     @NotNull
-    public DBPDataSourceProvider getInstance(DriverDescriptor driver)
-    {
+    public DBPDataSourceProvider getInstance(DriverDescriptor driver) {
         if (instance == null) {
             initProviderBundle(driver);
             try {
@@ -280,6 +280,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             }
         }
         return instance;
+    }
+
+    void replaceImplClass(IContributor contributor, String providerClass) {
+        this.replaceContributor(contributor);
+        this.implType = new ObjectType(providerClass);
     }
 
     @Override
