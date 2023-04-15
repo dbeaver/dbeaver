@@ -32,7 +32,7 @@ public abstract class SelectionSource extends AbstractSyntaxNode {
         public String tableName;
         @SyntaxTerm(xpath = "./correlationSpecification/correlationName//actualIdentifier")
         public String alias;
-        @SyntaxTerm(xpath = "./correlationSpecification/correlationName/columnNameList/columnName/identifier")
+        @SyntaxTerm(xpath = "./correlationSpecification/derivedColumnList/columnNameList/columnName//actualIdentifier")
         public List<String> columnNames;
     }
     
@@ -71,7 +71,7 @@ public abstract class SelectionSource extends AbstractSyntaxNode {
         public Table table;
 //        @SyntaxSubnode(xpath = "./joinSpecification/searchCondition")
 //        public ValueExpression condition;
-        @SyntaxTerm(xpath = "./joinSpecification/namedColumnsJoin//columnNameList/columnName/identifier")
-        public List<String> columns;
+        @SyntaxTerm(xpath = "./joinSpecification/namedColumnsJoin/joinColumnList/columnNameList/columnName/identifier")
+        public List<String> columnNames;
     }
 }

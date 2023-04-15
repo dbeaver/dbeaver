@@ -28,6 +28,8 @@ import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.BitSet;
 
 
@@ -44,11 +46,12 @@ public class Test {
             + "    ProductCategory.Name AS ProductCategory,\r\n"
             + "    ProductSubCategory.Name AS ProductSubCategory,\r\n"
             + "    Product.ProductModelID\r\n"
-            + "FROM Production.Product AS Prod(ProductID, Name, ProductNumber)\r\n"
+            + "FROM Production.Product AS Prod(ProductID, Name, ProductNumber) \r\n"
             + "INNER JOIN Production.ProductSubCategory\r\n"
             + "ON ProductSubCategory.ProductSubcategoryID = Product.ProductSubcategoryID\r\n"
             + "UNION JOIN Cat.Production.ProductCategory\r\n"
-            + "ON ProductCategory.ProductCategoryID = ProductSubCategory.ProductCategoryID\r\n"
+            + "USING(ProductCategoryID)\r\n"
+            + "GROUP BY ProductName\r\n"
             + "ORDER BY Product.ModifiedDate DESC"
         );
         //var input = CharStreams.fromFileName("D:\\github.com\\dbeaver\\sql-server-sakila-insert-data.sql");
@@ -104,7 +107,7 @@ public class Test {
 
         var model = new SyntaxModel(pp);
         var introErrs = model.introduce(SelectStatement.class);
-        if (!introErrs.isEmpty()) {
+        if (!introErrs.isEmpty()) { 
             introErrs.printToStderr();
         }
         
@@ -114,10 +117,12 @@ public class Test {
         }
         
         System.out.println();
-        { // print human-readable representation of the complete form of the parse tree and model 
-            //Path dir = Path.of("C:\\Projects\\dbeaver\\dbeaver\\plugins\\org.jkiss.dbeaver.model.sql.lsm.syntax.grammar\\src\\org\\jkiss\\dbeaver\\antlr\\sql\\");
-            //Files.writeString(dir.resolve("parsed.xml"), model.toXml(tree));
-            //Files.writeString(dir.resolve("model.json"), model.stringify(result.getModel()));
+        try { // print human-readable representation of the complete form of the parse tree and model 
+            Path dir = Path.of("d:\\Temp");
+            Files.writeString(dir.resolve("parsed.xml"), model.toXml(tree));
+            Files.writeString(dir.resolve("model.json"), model.stringify(result.getModel()));
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
     

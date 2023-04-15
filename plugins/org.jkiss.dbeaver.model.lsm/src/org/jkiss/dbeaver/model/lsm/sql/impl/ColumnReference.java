@@ -29,6 +29,8 @@ public class ColumnReference extends AbstractSyntaxNode {
     public String schemaName;
     @SyntaxTerm(xpath = ".//tableName/qualifiedName/qualifiedIdentifier/identifier")
     public String tableName;
-    @SyntaxTerm(xpath = ".//columnName/identifier/actualIdentifier")
+    @SyntaxTerm(xpath = ".//correlationName/identifier")
+    public String tableAlias;
+    @SyntaxTerm(xpath = ".//columnName/identifier")
     public String columnName;
 }

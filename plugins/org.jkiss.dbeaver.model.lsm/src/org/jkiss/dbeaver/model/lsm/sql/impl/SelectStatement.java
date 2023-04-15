@@ -42,4 +42,6 @@ public class SelectStatement extends AbstractSyntaxNode {
 
     @SyntaxSubnode(type = OrderingSpec.class, xpath = "./orderByClause")
     public OrderingSpec orderBy;
+    @SyntaxSubnode(type = GroupingSpec.class, xpath = "./groupByClause")
+    public GroupingSpec groupBy;
 }

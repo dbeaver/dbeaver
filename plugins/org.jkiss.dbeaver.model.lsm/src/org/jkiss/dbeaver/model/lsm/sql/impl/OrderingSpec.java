@@ -35,8 +35,8 @@ public class OrderingSpec extends AbstractSyntaxNode {
         public int columnNumber;
         @SyntaxTerm(xpath = "./orderingSpecification")
         public OrderKind ordering;
-        @SyntaxSubnode(xpath = "./collateClause")
-        public CollationSpec collation;
+        @SyntaxTerm(xpath = "./collateClause/collationName/qualifiedName/qualifiedIdentifier/identifier/actualIdentifier")
+        public String collation;
     }
     
     @SyntaxLiteral(name = "orderingSpecification")
