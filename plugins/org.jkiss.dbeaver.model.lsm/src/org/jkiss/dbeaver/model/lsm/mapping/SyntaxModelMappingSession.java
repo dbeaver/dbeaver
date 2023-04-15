@@ -91,7 +91,7 @@ public class SyntaxModelMappingSession {
             errors.add(ex, "Failed to instantiate syntax model node of type " + typeInfo.type.getName());
             return null;
         }
-        
+
         Set<XTreeNodeBase> subnodes = new HashSet<XTreeNodeBase>(5);
         for (var field : typeInfo.fields.values()) {
             subnodes.clear();
@@ -282,7 +282,6 @@ public class SyntaxModelMappingSession {
     
     private void bindValue(XTreeNodeBase nodeInfo, NodeFieldInfo fieldInfo, XPathEvaluationResult<?> xvalue) {
         Object value;
-        XTreeNodeBase valueNode;
         switch (fieldInfo.kind) {
             case Object:
             case Array:
@@ -294,6 +293,18 @@ public class SyntaxModelMappingSession {
                         break;
                     default:
                         throw new UnsupportedOperationException("Not supported");
+                }
+                break;
+            case LiteralList:
+                switch (xvalue.type()) {
+                    case STRING:
+                    case ANY:
+                    case NODE:
+                    case NODESET:
+                        value = xvalue.value();
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("Not supported value type for binding: " + xvalue.type());
                 }
                 break;
             case String: value = getScalarString(fieldInfo, xvalue); break;
@@ -401,6 +412,35 @@ public class SyntaxModelMappingSession {
                     if (subnodeInfo.getModel() != null) {
                         list.add(subnodeInfo.getModel());
                     }
+                } else {
+                    list.add(value);
+                }
+                break;
+            }
+            case LiteralList: {
+                @SuppressWarnings("unchecked")
+                List<Object> list = (List<Object>) fieldInfo.getValue(nodeInfo.getModel());
+                if (list == null) {
+                    fieldInfo.setValue(nodeInfo.getModel(), list = new ArrayList<>());
+                } else {
+                    list.clear();
+                }
+                if (value instanceof String) {
+                    list.add(value);
+                } else if (value instanceof XPathNodes) {
+                    XPathNodes nodes = (XPathNodes) value;
+                    if (list instanceof ArrayList<?>) {
+                        ((ArrayList<?>) list).ensureCapacity(nodes.size());
+                    }
+                    for (var xnode: nodes) {
+                        if (xnode instanceof XTreeNodeBase) {
+                            XTreeNodeBase subnodeInfo = (XTreeNodeBase) xnode;
+                            list.add(subnodeInfo.getNodeValue());
+                        }
+                    }
+                } else if (value instanceof XTreeNodeBase) {
+                    XTreeNodeBase subnodeInfo = (XTreeNodeBase) value;
+                    list.add(subnodeInfo.getNodeValue());
                 } else {
                     list.add(value);
                 }

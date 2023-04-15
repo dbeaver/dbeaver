@@ -71,7 +71,7 @@ public abstract class SelectionSource extends AbstractSyntaxNode {
         public Table table;
 //        @SyntaxSubnode(xpath = "./joinSpecification/searchCondition")
 //        public ValueExpression condition;
-        @SyntaxTerm(xpath = "./joinSpecification/namedColumnsJoin/joinColumnList/columnNameList/columnName/identifier")
+        @SyntaxTerm(xpath = "./joinSpecification/namedColumnsJoin/joinColumnList/columnNameList/columnName/identifier/actualIdentifier")
         public List<String> columnNames;
     }
 }

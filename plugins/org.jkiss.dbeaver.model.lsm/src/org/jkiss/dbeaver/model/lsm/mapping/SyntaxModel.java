@@ -172,6 +172,27 @@ public class SyntaxModel {
                         case Double:
                             sb.append(value);
                             break;
+                        case LiteralList: {
+                            indent++;
+                            sb.append("[");
+                            int m = 0;
+                            for (Object item : (Iterable<?>) value) {
+                                if (m > 0) {
+                                    sb.append(",");
+                                }
+                                sb.append("\n");
+                                this.appendIndent(sb, indent);
+                                sb.append("\"");
+                                sb.append(item.toString());
+                                sb.append("\"");
+                                m++;
+                            }
+                            indent--;
+                            sb.append("\n");
+                            this.appendIndent(sb, indent);
+                            sb.append("]");
+                            break;
+                        }
                         case Object:
                             sb.append("\n");
                             this.stringifyImpl((AbstractSyntaxNode) value, sb, indent);
@@ -323,12 +344,19 @@ public class SyntaxModel {
                 f -> !Modifier.isStatic(f.info.getModifiers())
             ).collect(Collectors.toList());
             Map<String, NodeFieldInfo> modelFields = new HashMap<>(fields.size());
-
+            
             for (var field : fields) {
                 Class<?> fieldType = field.info.getType();
-                FieldTypeKind kind = FieldTypeKind.resolveModelFieldKind(field.info.getType());
-                if (field.subnodeSpecs.length > 0 && kind.isTerm) {
+                boolean expectsSubnode = field.subnodeSpecs.length > 0;
+                boolean expectsLiteral = field.termSpecs.length > 0;
+                FieldTypeKind kind;
+                if (expectsSubnode && expectsLiteral) {
                     errors.add("Field of terminal value kind cannot be bound with complex subnode type");
+                }
+                if (expectsSubnode) {
+                    kind = FieldTypeKind.resolveModelSubnodeFieldKind(fieldType);
+                } else {
+                    kind = FieldTypeKind.resolveModelLiteralFieldKind(fieldType);
                 }
                 
                 List<XPathExpression> termExprs = new ArrayList<>(field.termSpecs.length);
@@ -342,7 +370,8 @@ public class SyntaxModel {
                             }
                         }
                     } catch (XPathExpressionException e) {
-                        throw new RuntimeException(e);
+                        errors.add(e, "Failed to prepare literal xpath exprssion for field "
+                            + field.info.getName() + " of type " + type.getName());
                     }
                 }
                 for (var subnodeSpec : field.subnodeSpecs) {
