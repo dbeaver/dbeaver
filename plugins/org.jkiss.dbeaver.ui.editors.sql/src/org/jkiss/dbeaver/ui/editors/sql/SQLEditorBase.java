@@ -1114,6 +1114,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     protected boolean isNavigationTarget(Annotation annotation) {
         if (annotation instanceof SpellingAnnotation) {
+            // Iterate over spelling problems only if we do not have problems
+            for (Iterator<Annotation> i = getAnnotationModel().getAnnotationIterator(); i.hasNext(); ) {
+                Annotation anno = i.next();
+                if (anno instanceof SQLProblemAnnotation) {
+                    return false;
+                }
+            }
             return true;
         }
         return super.isNavigationTarget(annotation);
