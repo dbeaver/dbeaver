@@ -31,7 +31,10 @@ import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.ui.editors.text.EditorsUI;
-import org.eclipse.ui.texteditor.spelling.*;
+import org.eclipse.ui.texteditor.spelling.ISpellingProblemCollector;
+import org.eclipse.ui.texteditor.spelling.SpellingAnnotation;
+import org.eclipse.ui.texteditor.spelling.SpellingProblem;
+import org.eclipse.ui.texteditor.spelling.SpellingService;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -61,7 +64,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     // Spelling
     private ISpellingProblemCollector spellingProblemCollector;
     private SpellingService spellingService;
-    private SpellingContext spellingContext;
+    private SQLSpellingContext spellingContext;
     private boolean initialized;
 
     public SQLReconcilingStrategy(SQLEditorBase editor) {
@@ -84,7 +87,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         spellingService = EditorsUI.getSpellingService();
         if (spellingService.getActiveSpellingEngineDescriptor(editor.getViewerConfiguration().getPreferenceStore()) != null) {
             this.spellingProblemCollector = createSpellingProblemCollector();
-            this.spellingContext = new SpellingContext();
+            this.spellingContext = new SQLSpellingContext(editor);
             this.spellingContext.setContentType(SQLEditorUtils.getSQLContentType());
         }
     }
