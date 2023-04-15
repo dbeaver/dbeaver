@@ -414,7 +414,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private class ResetFunctionsAction extends Action {
         public ResetFunctionsAction() {
-            super(ResultSetMessages.aggregate_columns_reset_text, DBeaverIcons.getImageDescriptor(UIIcon.ERASE));
+            super(ResultSetMessages.aggregate_columns_reset_text, DBeaverIcons.getImageDescriptor(UIIcon.CANCEL));
         }
 
         @Override
