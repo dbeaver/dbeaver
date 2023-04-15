@@ -349,7 +349,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private class AddFunctionAction extends Action {
         public AddFunctionAction() {
-            super(ResultSetMessages.aggregate_columns_add_function_text, DBeaverIcons.getImageDescriptor(UIIcon.OBJ_ADD));
+            super(ResultSetMessages.aggregate_columns_add_function_text, DBeaverIcons.getImageDescriptor(UIIcon.ADD));
         }
 
         @Override
@@ -361,7 +361,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
                 }
             }
             if (!missingFunctions.isEmpty()) {
-                Point location = aggregateTable.getDisplay().map(aggregateTable, null, new Point(10, 10));
+                Point location = aggregateTable.getDisplay().getCursorLocation();
                 MenuManager menuManager = new MenuManager();
 
                 for (final AggregateFunctionDescriptor func : missingFunctions) {
@@ -394,7 +394,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private class RemoveFunctionAction extends Action {
         public RemoveFunctionAction() {
-            super(ResultSetMessages.aggregate_columns_remove_function_text, DBeaverIcons.getImageDescriptor(UIIcon.OBJ_REMOVE));
+            super(ResultSetMessages.aggregate_columns_remove_function_text, DBeaverIcons.getImageDescriptor(UIIcon.DELETE));
         }
 
         @Override
@@ -414,7 +414,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private class ResetFunctionsAction extends Action {
         public ResetFunctionsAction() {
-            super(ResultSetMessages.aggregate_columns_reset_text, DBeaverIcons.getImageDescriptor(UIIcon.OBJ_REFRESH));
+            super(ResultSetMessages.aggregate_columns_reset_text, DBeaverIcons.getImageDescriptor(UIIcon.ERASE));
         }
 
         @Override
