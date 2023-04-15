@@ -344,19 +344,24 @@ uniqueColumnList: columnNameList;
 referentialConstraintDefinition: FOREIGN KEY LeftParen referencingColumns RightParen referencesSpecification;
 referencingColumns: referenceColumnList;
 
-// cursor and procedure
-moduleContents: (declareCursor|dynamicDeclareCursor|procedure);
-declareCursor: DECLARE cursorName (INSENSITIVE)? (SCROLL)? CURSOR FOR cursorSpecification;
-cursorName: identifier;
-cursorSpecification: queryExpression (orderByClause)? (updatabilityClause)?;
+// order by
 orderByClause: ORDER BY sortSpecificationList;
 sortSpecificationList: sortSpecification ((Comma sortSpecification)+)?;
 sortSpecification: sortKey (collateClause)? (orderingSpecification)?;
 sortKey: (columnReference|UnsignedInteger);
 orderingSpecification: (ASC|DESC);
+
+
+// cursor and procedure
+moduleContents: (declareCursor|dynamicDeclareCursor|procedure);
+declareCursor: DECLARE cursorName (INSENSITIVE)? (SCROLL)? CURSOR FOR cursorSpecification;
+cursorName: identifier;
+cursorSpecification: queryExpression (orderByClause)? (updatabilityClause)?;
 updatabilityClause: FOR (READ ONLY|UPDATE (OF columnNameList)?);
 dynamicDeclareCursor: DECLARE cursorName (INSENSITIVE)? (SCROLL)? CURSOR FOR statementName;
 statementName: identifier;
+
+// procedure
 procedure: PROCEDURE procedureName parameterDeclarationList Semicolon sqlProcedureStatement Semicolon;
 procedureName: identifier;
 parameterDeclarationList: LeftParen parameterDeclaration ((Comma parameterDeclaration)+)? RightParen;

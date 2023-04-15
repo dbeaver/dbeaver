@@ -337,8 +337,8 @@ ZONE: Z O N E ;
 // symbols
 EqualsOperator: '=';
 NotEqualsOperator: '<>';
-RightParen: '(';
-LeftParen: ')';
+RightParen: ')';
+LeftParen: '(';
 Quote: '\'';
 Comma: ',';
 Colon: ':';
