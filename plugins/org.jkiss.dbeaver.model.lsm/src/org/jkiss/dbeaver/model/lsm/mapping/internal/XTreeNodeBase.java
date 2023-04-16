@@ -28,6 +28,9 @@ import java.util.Stack;
 
 public interface XTreeNodeBase extends SyntaxTree, Node {
 
+    /*
+     * Interval in terms of real source text positions
+     */
     Interval getRealInterval();
     
     int getIndex();

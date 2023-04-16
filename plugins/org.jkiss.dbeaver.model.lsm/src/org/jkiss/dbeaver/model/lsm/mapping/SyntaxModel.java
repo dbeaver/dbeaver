@@ -110,10 +110,10 @@ public class SyntaxModel {
         {
             sb.append("\n");
             this.appendIndent(sb, indent);
-            sb.append("\"_startPos\": ").append(model.getStartPosition());
+            sb.append("\"_sourceInterval\": \"").append(model.getAstNode().getSourceInterval()).append("\"");
             sb.append(",").append("\n");
             this.appendIndent(sb, indent);
-            sb.append("\"_endPos\": ").append(model.getEndPosition());
+            sb.append("\"_realInterval\": \"").append(model.getAstNode().getRealInterval()).append("\"");
             sb.append(",").append("\n");
             this.appendIndent(sb, indent);
             sb.append("\"_type\": \"").append(model.getClass().getName()).append("\"");
@@ -124,28 +124,48 @@ public class SyntaxModel {
             this.appendIndent(sb, indent);
             sb.append("\"_bindings\": ");
             indent++;
-            sb.append("{");
+            sb.append("[");
             int m = 0;
             for (BindingInfo binding: model.getBindings()) {
                 if (m > 0) {
                     sb.append(",");
                 }
-                sb.append("\n");
+                sb.append("{\n");
+                indent++;
                 this.appendIndent(sb, indent);
-                sb.append("\"").append("text@").append(binding.astNode.getSourceInterval()).append("\"");
+                sb.append("\"").append("sourceInterval").append("\"");
                 sb.append(": ");
-                sb.append("\"").append(binding.astNode.getTextContent()).append("\"");
+                sb.append("\"").append(binding.astNode.getSourceInterval()).append("\"");
                 sb.append(",\n");
                 this.appendIndent(sb, indent);
-                sb.append("\"").append("node@").append(binding.astNode.getSourceInterval()).append("\"");
+                sb.append("\"").append("realInterval").append("\"");
+                sb.append(": ");
+                sb.append("\"").append(binding.astNode.getRealInterval()).append("\"");
+                sb.append(",\n");
+                this.appendIndent(sb, indent);
+                sb.append("\"").append("text").append("\"");
+                sb.append(": ");
+                sb.append("\"").append(binding.astNode.getTextContent().replace("\n", "\\n ").replace("\r", "\\r")).append("\"");
+                sb.append(",\n");
+                this.appendIndent(sb, indent);
+                sb.append("\"").append("model").append("\"");
+                sb.append(": ");
+                sb.append("\"").append(binding.field.getDeclaringClassName() + "." + binding.field.getFieldName()).append("\"");
+                sb.append(",\n");
+                this.appendIndent(sb, indent);
+                sb.append("\"").append("node").append("\"");
                 sb.append(": ");
                 sb.append("\"").append(binding.astNode.getFullPathName().substring(model.getAstNode().getFullPathName().length())).append("\"");
+                sb.append("\n");
+                indent--;
+                this.appendIndent(sb, indent);
+                sb.append("}");
                 m++;
             }
             indent--;
             sb.append("\n");
             this.appendIndent(sb, indent);
-            sb.append("}");
+            sb.append("]");
             if (typeInfo == null) {
                 sb.append(",").append("\n");
                 this.appendIndent(sb, indent);
@@ -221,7 +241,6 @@ public class SyntaxModel {
                             break;
                         }
                         case Object:
-                            sb.append("\n");
                             this.stringifyImpl((AbstractSyntaxNode) value, sb, indent);
                             break;
                         case Array:

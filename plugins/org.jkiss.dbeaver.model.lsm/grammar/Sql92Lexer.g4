@@ -390,7 +390,7 @@ fragment NonquoteCharacter: ~'~';
 QuoteSymbol: Quote Quote;
 Introducer: Underscore;
 fragment NewLine: ([\r][\n])|[\n]|[\r];
-Separator: ((Comment|NewLine|Space))+ -> skip;
+Separator: ((Comment|NewLine|Space))+ -> channel(HIDDEN);
 Space: [ \t]+;
 Comment: CommentIntroducer ((CommentCharacter)+)? NewLine;
 fragment CommentIntroducer: MinusSign MinusSign ((MinusSign)+)?;
