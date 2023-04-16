@@ -414,4 +414,9 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     public boolean supportsAlterTableColumnWithUSING() {
         return false;
     }
+
+    @Override
+    public boolean supportsAlterTableForViewRename() {
+        return true;
+    }
 }

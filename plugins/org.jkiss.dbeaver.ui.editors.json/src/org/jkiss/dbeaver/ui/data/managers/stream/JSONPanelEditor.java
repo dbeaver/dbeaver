@@ -45,4 +45,15 @@ public class JSONPanelEditor extends AbstractTextPanelEditor<JSONTextEditor> {
         };
     }
 
+    @Override
+    protected String getFileFolderName() {
+        return "dbeaver-json";
+    }
+
+    @Override
+    protected String getFileExtension() {
+        return ".json";
+    }
+
+
 }
