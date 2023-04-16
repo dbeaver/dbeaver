@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.NotNull;
 
-public class WSSocketConnectedEvent extends WSEvent {
+public class WSSocketConnectedEvent extends WSAbstractEvent {
 
     private final String applicationRunId;
 

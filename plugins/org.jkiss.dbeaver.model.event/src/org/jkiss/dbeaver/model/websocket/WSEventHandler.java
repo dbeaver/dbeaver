@@ -22,15 +22,10 @@ import org.jkiss.dbeaver.model.websocket.event.WSEvent;
 /**
  * CB web event handlers
  */
-public interface WSEventHandler {
-    /**
-     * Expected cb event type
-     */
-    @NotNull
-    String getSupportedTopicId();
+public interface WSEventHandler<EVENT extends WSEvent> {
 
     /**
      * Handle associated cb event
      */
-    void handleEvent(@NotNull WSEvent event);
+    void handleEvent(@NotNull EVENT event);
 }
