@@ -16,22 +16,14 @@
  */
 package org.jkiss.dbeaver.model.lsm.mapping;
 
-import org.antlr.v4.runtime.misc.InterpreterDataReader;
 import org.antlr.v4.runtime.misc.Interval;
-import org.antlr.v4.runtime.tree.SyntaxTree;
 import org.jkiss.dbeaver.model.lsm.LSMElement;
 import org.jkiss.dbeaver.model.lsm.mapping.internal.NodeFieldInfo;
-import org.jkiss.dbeaver.model.lsm.mapping.internal.TreeRuleNode;
 import org.jkiss.dbeaver.model.lsm.mapping.internal.XTreeNodeBase;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
+
 
 public abstract class AbstractSyntaxNode implements LSMElement {
     private static final Map<Class<? extends AbstractSyntaxNode>, String> syntaxNodeNameByType = new HashMap<>(
@@ -45,12 +37,12 @@ public abstract class AbstractSyntaxNode implements LSMElement {
         );
     }
 
-    public static class BindingInfo {
+    static class BindingInfo {
         public final NodeFieldInfo field;
         public final Object value;
-        public final SyntaxTree astNode;
+        public final XTreeNodeBase astNode;
         
-        public BindingInfo(NodeFieldInfo field, Object value, SyntaxTree astNode) {
+        public BindingInfo(NodeFieldInfo field, Object value, XTreeNodeBase astNode) {
             this.field = field;
             this.value = value;
             this.astNode = astNode;
@@ -121,4 +113,121 @@ public abstract class AbstractSyntaxNode implements LSMElement {
         }
         return this.subnodeBindings;
     }
+    
+    public static class SyntaxModelLookupResult {
+        public final AbstractSyntaxNode node;
+        final BindingInfo binding;
+        final XTreeNodeBase astNode;
+        
+        public SyntaxModelLookupResult(AbstractSyntaxNode node, BindingInfo binding) {
+            this.node = node;
+            this.binding = binding;
+            this.astNode = binding == null ? node.astNode : binding.astNode;
+        }
+        
+        public Interval getInterval() {
+            return astNode.getRealInterval();
+        }
+        
+        public String getEntityName() {
+            return node.getName();
+        }
+        
+        public String getEntityFieldName() {
+            return binding == null ? null : binding.field.getFieldName();
+        }
+        
+        public String getAstNodeFullName() {
+            return astNode.getFullPathName();
+        }
+        
+        @Override
+        public String toString() {
+            String element = binding == null ? this.getEntityName() : (this.getEntityFieldName() + " of " + this.getEntityName());
+            return "SyntaxModelLookupResult[" + element + " @" + this.getInterval() + "]"; 
+        }
+    }
+
+    public SyntaxModelLookupResult findBoundSyntaxAt(int position) {
+        Interval location = new Interval(position, position);
+        AbstractSyntaxNode node = this;
+        if (node.astNode.getRealInterval().properlyContains(location)) {
+            BindingInfo nodeBinding = findBindingOfLocation(node, location);
+            while (nodeBinding != null && nodeBinding.value instanceof AbstractSyntaxNode) {
+                node = (AbstractSyntaxNode) nodeBinding.value;
+                nodeBinding = findBindingOfLocation(node, location);
+            }
+            return new SyntaxModelLookupResult(node, nodeBinding);
+        } else {
+            return null;
+        }
+    }
+    
+    private static BindingInfo findBindingOfLocation(AbstractSyntaxNode node, Interval location) {
+        List<BindingInfo> bindings = node.getBindings();
+        int index = binarySearchByKey(bindings, b -> b.astNode.getRealInterval(), location, (x, y) ->  {
+            if (x.b < y.a) {
+                return -1;
+            } else if (x.a > y.b) {
+                return 1;
+            } else {
+                return 0;
+            }
+        });
+        if (index < 0) {
+            return null;
+        }
+        
+        int resultIndex = index;
+        BindingInfo result = bindings.get(index);
+        Interval interval = result.astNode.getRealInterval();
+        
+        while (index > 0) {
+            index--;
+            BindingInfo prev = bindings.get(index);
+            Interval prevInterval = prev.astNode.getRealInterval();
+            if (prevInterval.properlyContains(location) && prevInterval.length() < interval.length()) {
+                result = prev;
+                interval = prevInterval;
+            } else {
+                break;
+            }
+        }
+        if (resultIndex == index) {
+            int lastIndex = bindings.size() - 1;
+            while (index < lastIndex) {
+                index++;
+                BindingInfo next = bindings.get(index);
+                Interval nextInterval = next.astNode.getRealInterval();
+                if (nextInterval.properlyContains(location) && nextInterval.length() < interval.length()) {
+                    result = next;
+                    interval = nextInterval;
+                } else {
+                    break;
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    private static <T, K> int binarySearchByKey(List<T> list, Function<T, K> keyGetter, K key, Comparator<K> comparator) {
+        int low = 0;
+        int high = list.size()-1;
+
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            K midVal = keyGetter.apply(list.get(mid));
+            int cmp = comparator.compare(midVal, key);
+
+            if (cmp < 0)
+                low = mid + 1;
+            else if (cmp > 0)
+                high = mid - 1;
+            else
+                return mid; // key found
+        }
+        return -(low + 1);  // key not found
+    }
 }
+

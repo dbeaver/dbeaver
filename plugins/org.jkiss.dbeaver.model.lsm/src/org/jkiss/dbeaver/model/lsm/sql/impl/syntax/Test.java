@@ -39,21 +39,21 @@ public class Test {
         // prepareGrammarKeywords();
         
     	
-        var input = CharStreams.fromString("SELECT ALL\r\n"
-            + "    Product.ProductID,\r\n"
-            + "    Product.Name AS ProductName,\r\n"
-            + "    Product.ProductNumber,\r\n"
-            + "    ProductCategory.Name AS ProductCategory,\r\n"
-            + "    ProductSubCategory.Name AS ProductSubCategory,\r\n"
-            + "    Product.ProductModelID\r\n"
-            + "FROM Production.Product AS Prod(ProductID, Name, ProductNumber) \r\n"
-            + "INNER JOIN Production.ProductSubCategory\r\n"
-            + "ON ProductSubCategory.ProductSubcategoryID = Product.ProductSubcategoryID\r\n"
-            + "UNION JOIN Cat.Production.ProductCategory\r\n"
-            + "USING(ProductCategoryID)\r\n"
-            + "GROUP BY ProductName\r\n"
-            + "ORDER BY Product.ModifiedDate DESC"
-        );
+        String inputText = "SELECT ALL Product FROM a";
+//            + "    Product.ProductID AS id,\r\n"
+//            + "    Product.Name AS ProductName,\r\n"
+//            + "    Product.ProductNumber,\r\n"
+//            + "    ProductCategory.Name AS ProductCategory,\r\n"
+//            + "    ProductSubCategory.Name AS ProductSubCategory,\r\n"
+//            + "    Product.ProductModelID\r\n"
+//            + "FROM Production.Product AS Prod(ProductID, Name, ProductNumber) \r\n"
+//            + "INNER JOIN Production.ProductSubCategory\r\n"
+//            + "ON ProductSubCategory.ProductSubcategoryID = Product.ProductSubcategoryID\r\n"
+//            + "UNION JOIN Cat.Production.ProductCategory\r\n"
+//            + "USING(ProductCategoryID)\r\n"
+//            + "GROUP BY ProductName\r\n"
+//            + "ORDER BY Product.ModifiedDate DESC";
+        var input = CharStreams.fromString(inputText);
         //var input = CharStreams.fromFileName("D:\\github.com\\dbeaver\\sql-server-sakila-insert-data.sql");
         // input = CharStreams.fromString("SELECT column_name FROM sch.table_name");
         var ll = new Sql92Lexer(input);
@@ -117,12 +117,27 @@ public class Test {
         }
         
         System.out.println();
-        try { // print human-readable representation of the complete form of the parse tree and model 
-            Path dir = Path.of("d:\\Temp");
-            Files.writeString(dir.resolve("parsed.xml"), model.toXml(tree));
-            Files.writeString(dir.resolve("model.json"), model.stringify(result.getModel()));
-        } catch (IOException ex) {
-            ex.printStackTrace();
+//        try { // print human-readable representation of the complete form of the parse tree and model 
+//            Path dir = Path.of("C:\\Temp");
+//            Files.writeString(dir.resolve("parsed.xml"), model.toXml(tree));
+//            Files.writeString(dir.resolve("model.json"), model.stringify(result.getModel()));
+//        } catch (IOException ex) {
+//            ex.printStackTrace();
+//        }
+        
+        for (int i = 5; i < input.size(); i += 5) {
+            var resultModel = result.getModel();
+            if (resultModel != null) {
+                var lr = resultModel.findBoundSyntaxAt(i);
+                if (lr != null) {
+                    var lri = lr.getInterval();
+                    System.out.println(i + " found " + lr + " \t - \"" + inputText.substring(lri.a, lri.b + 1).replace("\r", "\\r").replace("\n", "\\n") + "\" \t - " + lr.getAstNodeFullName());
+                } else {
+                    System.out.println(i + " not found in 0.." + inputText.length());
+                }
+            } else {
+                System.out.println("\n\rNo model");
+            }
         }
     }
     

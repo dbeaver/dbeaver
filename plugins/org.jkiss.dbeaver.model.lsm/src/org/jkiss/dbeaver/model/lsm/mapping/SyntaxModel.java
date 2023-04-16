@@ -20,6 +20,7 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.Tree;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode.BindingInfo;
 import org.jkiss.dbeaver.model.lsm.mapping.internal.*;
 import org.jkiss.dbeaver.model.lsm.mapping.internal.NodeFieldInfo.SubnodeInfo;
 
@@ -119,6 +120,32 @@ public class SyntaxModel {
             sb.append(",").append("\n");
             this.appendIndent(sb, indent);
             sb.append("\"_ruleName\": \"").append(model.getName()).append("\"");
+            sb.append(",").append("\n");
+            this.appendIndent(sb, indent);
+            sb.append("\"_bindings\": ");
+            indent++;
+            sb.append("{");
+            int m = 0;
+            for (BindingInfo binding: model.getBindings()) {
+                if (m > 0) {
+                    sb.append(",");
+                }
+                sb.append("\n");
+                this.appendIndent(sb, indent);
+                sb.append("\"").append("text@").append(binding.astNode.getSourceInterval()).append("\"");
+                sb.append(": ");
+                sb.append("\"").append(binding.astNode.getTextContent()).append("\"");
+                sb.append(",\n");
+                this.appendIndent(sb, indent);
+                sb.append("\"").append("node@").append(binding.astNode.getSourceInterval()).append("\"");
+                sb.append(": ");
+                sb.append("\"").append(binding.astNode.getFullPathName().substring(model.getAstNode().getFullPathName().length())).append("\"");
+                m++;
+            }
+            indent--;
+            sb.append("\n");
+            this.appendIndent(sb, indent);
+            sb.append("}");
             if (typeInfo == null) {
                 sb.append(",").append("\n");
                 this.appendIndent(sb, indent);
@@ -255,10 +282,8 @@ public class SyntaxModel {
         
         var existing = literalTypeByRuleName.get(literalAnnotation.name());
         if (existing == null) {
-            // var values = type.getEnumConstants();
             var enumEntries = Stream.of(type.getFields()).filter(Field::isEnumConstant).map(captureExceptionInfo(
                     f -> new Object() {
-                        public final Field field = f;
                         public final Object value = f.get(null);
                         public final String name = f.getName();
                         public final String upperCasedName = f.getName().toUpperCase();

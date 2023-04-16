@@ -17,16 +17,19 @@
 package org.jkiss.dbeaver.model.lsm.mapping.internal;
 
 import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.SyntaxTree;
-import org.antlr.v4.runtime.tree.Tree;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.w3c.dom.*;
 
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Stack;
 
 public interface XTreeNodeBase extends SyntaxTree, Node {
 
+    Interval getRealInterval();
+    
     int getIndex();
 
     void fixup(Parser parser, int index);
@@ -266,5 +269,12 @@ public interface XTreeNodeBase extends SyntaxTree, Node {
         
         return result;
     }
-    
+
+    default String getFullPathName() {
+        LinkedList<String> names = new LinkedList<>();
+        for (XTreeNodeBase node = this; node != null; node = node.getParentXNode()) {
+            names.addFirst(node.getNodeName());
+        }
+        return String.join(".", names);
+    }   
 }
