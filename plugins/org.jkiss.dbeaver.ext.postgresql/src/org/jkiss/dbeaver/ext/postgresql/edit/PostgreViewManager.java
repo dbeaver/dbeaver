@@ -148,10 +148,17 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
     @Override
     protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
         PostgreViewBase view = (PostgreViewBase) command.getObject();
+        String tableType;
+        if (view.getDataSource().getServerType().supportsAlterTableForViewRename()) {
+            tableType = "TABLE"; //$NON-NLS-1$
+        } else {
+            tableType = view.getTableTypeName();
+        }
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename view",
-                "ALTER " + view.getTableTypeName() + " " + DBUtils.getQuotedIdentifier(view.getSchema()) + "." + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getOldName()) + //$NON-NLS-1$
+                "ALTER " + tableType + " " + DBUtils.getQuotedIdentifier(view.getSchema()) //$NON-NLS-1$
+                    + "." + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getOldName()) +
                     " RENAME TO " + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getNewName())) //$NON-NLS-1$
         );
     }

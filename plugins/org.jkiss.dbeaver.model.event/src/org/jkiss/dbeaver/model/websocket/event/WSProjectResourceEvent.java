@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.websocket.event;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-public class WSProjectResourceEvent extends WSEvent implements WSProjectEvent {
+public class WSProjectResourceEvent extends WSAbstractEvent implements WSProjectEvent {
     @NotNull
     protected final String projectId;
 

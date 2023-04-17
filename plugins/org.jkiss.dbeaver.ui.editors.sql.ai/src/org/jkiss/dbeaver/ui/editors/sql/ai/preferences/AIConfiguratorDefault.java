@@ -39,7 +39,7 @@ import java.util.Locale;
 
 public class AIConfiguratorDefault implements IObjectPropertyConfigurator<GPTCompletionEngine, AISettings> {
 
-    private static final String API_KEY_URL = "https://beta.openai.com/account/api-keys";
+    private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
 
     private Button enableAICheck;
 
