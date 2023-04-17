@@ -285,7 +285,8 @@ public class ResultSetViewer extends Viewer
         });
 
         if ((decoratorFeatures & IResultSetDecorator.FEATURE_FILTERS) != 0) {
-            this.filtersPanel = new ResultSetFilterPanel(this, this.mainPanel);
+            this.filtersPanel = new ResultSetFilterPanel(this, this.mainPanel,
+                (decoratorFeatures & IResultSetDecorator.FEATURE_COMPACT_FILTERS) != 0);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = ((GridLayout)mainPanel.getLayout()).numColumns;
             this.filtersPanel.setLayoutData(gd);
