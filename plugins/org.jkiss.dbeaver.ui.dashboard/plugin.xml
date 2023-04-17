@@ -86,7 +86,12 @@
         <menuContribution allPopups="false" locationURI="toolbar:dbeaver-tools?after=additions">
             <separator name="dashboard" visible="true"/>
             <command commandId="org.jkiss.dbeaver.ui.dashboard.open">
-                <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                <visibleWhen>
+                    <and>
+                        <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                        <reference definitionId="DBeaverPerspectiveActive"/>
+                    </and>
+                </visibleWhen>
             </command>
         </menuContribution>
 
@@ -100,7 +105,7 @@
 
         <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=tools">
             <command commandId="org.jkiss.dbeaver.ui.dashboard.open">
-                <visibleWhen checkEnabled="true"/>
+                <visibleWhen checkEnabled="true"><test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/></visibleWhen>
             </command>
         </menuContribution>
 

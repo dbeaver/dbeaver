@@ -76,7 +76,7 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
             log.debug(e);
         }
 
-        if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+        if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_SQL_GENERATOR)) {
             settings.saveSettings();
         }
 

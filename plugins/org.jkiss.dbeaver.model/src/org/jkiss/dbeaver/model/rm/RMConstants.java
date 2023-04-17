@@ -36,4 +36,5 @@ public interface RMConstants  {
     String PERMISSION_CONFIGURATION_MANAGER = "configuration-manager";
     String PERMISSION_DATABASE_DEVELOPER = "database-developer";
     String PERMISSION_METADATA_EDITOR = "metadata-editor";
+    String PERMISSION_SQL_GENERATOR = "sql-generator";
 }
