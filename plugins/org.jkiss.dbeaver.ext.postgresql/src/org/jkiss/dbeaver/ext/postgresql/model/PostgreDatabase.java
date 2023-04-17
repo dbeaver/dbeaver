@@ -554,8 +554,10 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     public Collection<PostgreDataType> getLocalDataTypes() {
-        if (!CommonUtils.isEmpty(dataTypeCache)) {
-            return dataTypeCache.values();
+        synchronized (dataTypeCache) {
+            if (!CommonUtils.isEmpty(dataTypeCache)) {
+                return new ArrayList<>(dataTypeCache.values());
+            }
         }
         final PostgreSchema schema = getCatalogSchema();
         if (schema != null) {
@@ -667,8 +669,14 @@ public class PostgreDatabase extends JDBCRemoteInstance
     }
 
     void cacheDataTypes(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException {
-        if (dataTypeCache.isEmpty() || forceRefresh) {
-            dataTypeCache.clear();
+        boolean hasDataTypes;
+        synchronized (dataTypeCache) {
+            hasDataTypes = !dataTypeCache.isEmpty();
+        }
+        if (!hasDataTypes || forceRefresh) {
+            synchronized (dataTypeCache) {
+                dataTypeCache.clear();
+            }
             // Cache data types
 
             PostgreDataSource postgreDataSource = getDataSource();
@@ -692,6 +700,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
                     }
                 }
 
+                List<PostgreDataType> loadedDataTypes = new ArrayList<>();
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         Set<PostgreSchema> schemaList = new HashSet<>();
@@ -701,7 +710,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
                                 PostgreSchema schema = dataType.getParentObject();
                                 schemaList.add(schema);
                                 schema.getDataTypeCache().cacheObject(dataType);
-                                dataTypeCache.put(dataType.getObjectId(), dataType);
+                                loadedDataTypes.add(dataType);
                             }
                         }
                         if (!schemaList.isEmpty()) {
@@ -713,6 +722,11 @@ public class PostgreDatabase extends JDBCRemoteInstance
                         if (catalogSchema != null) {
                             catalogSchema.getDataTypeCache().mapAliases(catalogSchema);
                         }
+                    }
+                }
+                synchronized (dataTypeCache) {
+                    for (PostgreDataType dataType : loadedDataTypes) {
+                        dataTypeCache.put(dataType.getObjectId(), dataType);
                     }
                 }
             } catch (SQLException e) {
@@ -899,14 +913,20 @@ public class PostgreDatabase extends JDBCRemoteInstance
         if (typeId <= 0) {
             return null;
         }
-        PostgreDataType dataType = dataTypeCache.get(typeId);
-        if (dataType != null) {
-            return dataType;
+
+        PostgreDataType dataType;
+        synchronized (dataTypeCache) {
+            dataType = dataTypeCache.get(typeId);
+            if (dataType != null) {
+                return dataType;
+            }
         }
         for (PostgreSchema schema : schemaCache.getCachedObjects()) {
             dataType = schema.getDataTypeCache().getDataType(typeId);
             if (dataType != null) {
-                dataTypeCache.put(typeId, dataType);
+                synchronized (dataTypeCache) {
+                    dataTypeCache.put(typeId, dataType);
+                }
                 return dataType;
             }
         }
@@ -914,7 +934,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
         try {
             dataType = PostgreDataTypeCache.resolveDataType(monitor, this, typeId);
             dataType.getParentObject().getDataTypeCache().cacheObject(dataType);
-            dataTypeCache.put(dataType.getObjectId(), dataType);
+            synchronized (dataTypeCache) {
+                dataTypeCache.put(dataType.getObjectId(), dataType);
+            }
             return dataType;
         } catch (Exception e) {
             log.debug("Can't resolve data type " + typeId, e);
@@ -969,7 +991,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
         try {
             PostgreDataType dataType = PostgreDataTypeCache.resolveDataType(monitor, this, typeName);
             dataType.getParentObject().getDataTypeCache().cacheObject(dataType);
-            dataTypeCache.put(dataType.getObjectId(), dataType);
+            synchronized (dataTypeCache) {
+                dataTypeCache.put(dataType.getObjectId(), dataType);
+            }
             return dataType;
         } catch (Exception e) {
             log.debug("Can't resolve data type '" + typeName + "' in database '" + getName() + "'");

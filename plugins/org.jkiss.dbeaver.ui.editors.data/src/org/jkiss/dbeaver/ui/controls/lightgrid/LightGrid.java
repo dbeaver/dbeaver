@@ -69,6 +69,7 @@ public abstract class LightGrid extends Canvas {
      */
     private static final int COLUMN_RESIZER_THRESHOLD = 4;
     private static final int DEFAULT_ROW_HEADER_WIDTH = 30;
+    private static final int MIN_ROW_HEADER_WIDTH = 40;
     private static final int MAX_ROW_HEADER_WIDTH = 400;
 
 
@@ -1995,6 +1996,9 @@ public abstract class LightGrid extends Canvas {
             int width = rowHeaderRenderer.computeHeaderWidth(row, row.getRowDepth());
             newRowHeaderWidth = Math.max(newRowHeaderWidth, width);
         }
+        if (newRowHeaderWidth < MIN_ROW_HEADER_WIDTH) {
+            newRowHeaderWidth = MIN_ROW_HEADER_WIDTH;
+        }
         if (newRowHeaderWidth > MAX_ROW_HEADER_WIDTH) {
             newRowHeaderWidth = MAX_ROW_HEADER_WIDTH;
         }
@@ -2525,7 +2529,7 @@ public abstract class LightGrid extends Canvas {
             y = startY;
             for (int i = 0; i < visibleRows; i++) {
                 y += itemHeight + 1;
-                gc.drawLine(startX, y, startX + width, y);
+                gc.drawLine(startX + 1, y, startX + width, y);
             }
 
             // Vertical lines
@@ -2543,7 +2547,7 @@ public abstract class LightGrid extends Canvas {
                 }
                 gc.drawLine(
                     x,
-                    startY,
+                    startY + 1,
                     x,
                     startY + height);
             }
@@ -4203,6 +4207,9 @@ public abstract class LightGrid extends Canvas {
                 }
             } else if (rowHeaderVisible && hoveringItem >= 0 && x <= rowHeaderWidth) {
                 newTip = getLabelProvider().getToolTipText(getRow(hoveringItem));
+            } else {
+                // Top-left cell?
+                newTip = getLabelProvider().getToolTipText(null);
             }
 
             //Avoid unnecessarily resetting tooltip - this will cause the tooltip to jump around
@@ -4828,20 +4835,29 @@ public abstract class LightGrid extends Canvas {
             x + width,
             y + height - 1);
 
+        paintTopLeftCellCustom(gc, y);
+
         if (getContentProvider().isGridReadOnly()) {
             Image roIcon = DBeaverIcons.getImage(UIIcon.BUTTON_READ_ONLY);
-            gc.drawImage(roIcon, x + 3, y + 3);
+            Rectangle iconBounds = roIcon.getBounds();
+            int xPos = x + width - GridColumnRenderer.ARROW_MARGIN - iconBounds.width;
+            if (sortOrder != SWT.NONE) {
+                xPos -= GridColumnRenderer.SORT_WIDTH + GridColumnRenderer.IMAGE_SPACING;
+            }
+            gc.drawImage(roIcon, xPos, y + (height - iconBounds.height) / 2);
         }
 
         if (sortOrder != SWT.NONE) {
-            int arrowWidth = GridColumnRenderer.SORT_WIDTH;
             Rectangle sortBounds = new Rectangle(
-                x + width - GridColumnRenderer.ARROW_MARGIN - arrowWidth,
-                y + GridColumnRenderer.TOP_MARGIN,
-                arrowWidth,
+                x + width - GridColumnRenderer.ARROW_MARGIN - GridColumnRenderer.SORT_WIDTH,
+                y + (height - GridColumnRenderer.SORT_HEIGHT) / 2,
+                GridColumnRenderer.SORT_WIDTH,
                 height);
             GridColumnRenderer.paintSort(gc, sortBounds, sortOrder, true);
         }
+    }
+
+    protected void paintTopLeftCellCustom(GC gc, int y) {
     }
 
     /////////////////////////////////////////////////////////////////////////////////
