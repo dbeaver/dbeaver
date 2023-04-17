@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm.sql;
+package org.jkiss.dbeaver.model.lsm.interfaces;
 
-import org.jkiss.dbeaver.model.lsm.LSMElement;
-import org.jkiss.dbeaver.model.lsm.interfaces.LSMNode;
+import java.util.concurrent.Future;
 
-public interface LSMAbstractStatement extends LSMElement, LSMNode {
-
+public interface LSMAnalysis<T extends LSMNode> {    
+    
+    Future<T> getModel();
 }

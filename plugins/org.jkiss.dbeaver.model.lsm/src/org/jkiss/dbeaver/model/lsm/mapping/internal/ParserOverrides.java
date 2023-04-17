@@ -27,6 +27,7 @@ public abstract class ParserOverrides extends LSMParser {
 
     public ParserOverrides(TokenStream input) {
         super(input);
+        this.setBuildParseTree(true);
     }
 
     @Override

@@ -14,11 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm.sql;
+package org.jkiss.dbeaver.model.lsm.impl;
 
-import org.jkiss.dbeaver.model.lsm.LSMElement;
-import org.jkiss.dbeaver.model.lsm.interfaces.LSMNode;
+import java.io.IOException;
+import java.io.Reader;
 
-public interface LSMAbstractStatement extends LSMElement, LSMNode {
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.jkiss.dbeaver.model.lsm.interfaces.LSMSource;
 
+public class LSMSourceImpl implements LSMSource {
+    
+    private final CharStream stream;
+    
+    public LSMSourceImpl(Reader reader) throws IOException {
+        this.stream = CharStreams.fromReader(reader);
+    }
+
+    @Override
+    public CharStream getStream() {
+        return this.stream;
+    }    
 }

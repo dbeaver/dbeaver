@@ -31,25 +31,52 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.misc.IntervalSet;
 import org.antlr.v4.runtime.tree.Tree;
 import org.antlr.v4.runtime.tree.Trees;
+import org.jkiss.dbeaver.model.lsm.interfaces.LSMAnalysis;
+import org.jkiss.dbeaver.model.lsm.interfaces.LSMAnalysisCase;
+import org.jkiss.dbeaver.model.lsm.interfaces.LSMDialect;
+import org.jkiss.dbeaver.model.lsm.interfaces.LSMSource;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModel;
-import org.jkiss.dbeaver.model.lsm.mapping.internal.ParsingErrorStrategy;
+import org.jkiss.dbeaver.model.lsm.sql.LSMSelectStatement;
+import org.jkiss.dbeaver.model.lsm.sql.dialect.Sql92Dialect;
 import org.jkiss.dbeaver.model.lsm.sql.impl.SelectStatement;
 
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.*;
 
 
 public class Test {
+    
+    public static void testInterfaces() {
+        try {
+            LSMSource source = LSMSource.fromReader(new StringReader("SELECT a, b, c FROM t1 x, t2 y"));
+            
+            LSMDialect dd = Sql92Dialect.getInstance();
+            
+            LSMAnalysisCase<LSMSelectStatement, ?> selectStmtAnalysisCase = dd.findAnalysisCase(LSMSelectStatement.class);
+            
+            LSMAnalysis<LSMSelectStatement> analysis = dd.prepareAnalysis(source, selectStmtAnalysisCase).get();
+            
+            LSMSelectStatement model = analysis.getModel().get();
+            
+            System.out.println(model);
+            
+            System.exit(0);
+        } catch (IOException | InterruptedException | ExecutionException ex) {
+            ex.printStackTrace();
+        }
+    }
 
     public static void main(String[] args) throws IOException, XMLStreamException, FactoryConfigurationError, TransformerException {
+        testInterfaces();
         // prepareGrammarKeywords();
         
-    	
         String inputText = "SELECT ALL Product.*, \r\n"
             + "    Product.ProductID AS id,\r\n"
             + "    Product.Name AS ProductName,\r\n"
@@ -65,16 +92,16 @@ public class Test {
             + "GROUP BY ProductName\r\n"
             + "ORDER BY Product.ModifiedDate DESC";
         var input = CharStreams.fromString(inputText);
+        //var input = CharStreams.fromFileName("D:\\projects\\TestSqlXmlWtf\\TestSqlXmlWtf\\sqlxml-s.xml");
         //var input = CharStreams.fromFileName("D:\\github.com\\dbeaver\\sql-server-sakila-insert-data.sql");
         // input = CharStreams.fromString("SELECT column_name FROM sch.table_name");
         var ll = new Sql92Lexer(input);
         var tokens = new CommonTokenStream(ll);
         tokens.fill();
-        tokens.getTokens().forEach(t -> System.out.println(t.toString() + " - " + ll.getVocabulary().getSymbolicName(t.getType())));
+        // tokens.getTokens().forEach(t -> System.out.println(t.toString() + " - " + ll.getVocabulary().getSymbolicName(t.getType())));
         System.out.println(tokens.getTokens().size());
         
         var pp = new Sql92Parser(tokens);
-        pp.setBuildParseTree(true);
         pp.addErrorListener(new ANTLRErrorListener() {
             @Override
             public void syntaxError(Recognizer<?, ?> recognizer, 
@@ -133,7 +160,7 @@ public class Test {
         
         System.out.println();
         try { // print human-readable representation of the complete form of the parse tree and model 
-            Path dir = Path.of("C:\\Temp");
+            Path dir = Path.of("d:\\Temp");
             Files.writeString(dir.resolve("parsed.xml"), model.toXml(tree));
             Files.writeString(dir.resolve("model.json"), model.stringify(result.getModel()));
         } catch (IOException ex) {
