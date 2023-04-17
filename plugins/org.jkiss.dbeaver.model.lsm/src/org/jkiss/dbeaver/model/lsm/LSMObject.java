@@ -16,9 +16,13 @@
  */
 package org.jkiss.dbeaver.model.lsm;
 
-import org.antlr.v4.runtime.tree.Tree;
-
-public interface LSMParser extends LSMObject<LSMParser> {
-    
-    Tree parse();
+public interface LSMObject<T> {
+    @SuppressWarnings("unchecked")
+    default <T2 extends T> T2 coerce(Class<T2> desired) {
+        if (desired.isAssignableFrom(this.getClass())) {
+            return (T2) this;
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
 }

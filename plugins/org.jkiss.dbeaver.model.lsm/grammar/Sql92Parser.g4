@@ -266,7 +266,7 @@ concatenation: characterFactor (ConcatenationOperator characterFactor)+;
 characterFactor: characterPrimary (collateClause)?;
 characterPrimary: (valueExpressionPrimary|stringValueFunction);
 
-// functions and operatore
+// functions and operators
 stringValueFunction: (characterValueFunction|bitValueFunction);
 characterValueFunction: (characterSubstringFunction|fold|formOfUseConversion|characterTranslation|trimFunction);
 characterSubstringFunction: SUBSTRING LeftParen characterValueExpression FROM startPosition (FOR stringLength)? RightParen;
@@ -344,19 +344,24 @@ uniqueColumnList: columnNameList;
 referentialConstraintDefinition: FOREIGN KEY LeftParen referencingColumns RightParen referencesSpecification;
 referencingColumns: referenceColumnList;
 
-// cursor and procedure
-moduleContents: (declareCursor|dynamicDeclareCursor|procedure);
-declareCursor: DECLARE cursorName (INSENSITIVE)? (SCROLL)? CURSOR FOR cursorSpecification;
-cursorName: identifier;
-cursorSpecification: queryExpression (orderByClause)? (updatabilityClause)?;
+// order by
 orderByClause: ORDER BY sortSpecificationList;
 sortSpecificationList: sortSpecification ((Comma sortSpecification)+)?;
 sortSpecification: sortKey (collateClause)? (orderingSpecification)?;
 sortKey: (columnReference|UnsignedInteger);
 orderingSpecification: (ASC|DESC);
+
+
+// cursor and procedure
+moduleContents: (declareCursor|dynamicDeclareCursor|procedure);
+declareCursor: DECLARE cursorName (INSENSITIVE)? (SCROLL)? CURSOR FOR cursorSpecification;
+cursorName: identifier;
+cursorSpecification: queryExpression (orderByClause)? (updatabilityClause)?;
 updatabilityClause: FOR (READ ONLY|UPDATE (OF columnNameList)?);
 dynamicDeclareCursor: DECLARE cursorName (INSENSITIVE)? (SCROLL)? CURSOR FOR statementName;
 statementName: identifier;
+
+// procedure
 procedure: PROCEDURE procedureName parameterDeclarationList Semicolon sqlProcedureStatement Semicolon;
 procedureName: identifier;
 parameterDeclarationList: LeftParen parameterDeclaration ((Comma parameterDeclaration)+)? RightParen;
@@ -596,29 +601,18 @@ sqlQueries: (sqlQuery ';'?)* EOF; // don't stop early. must match all input
 sqlQuery: directSqlStatement|preparableStatement|module|statementOrDeclaration;
 
 
-nonReserved: 
-    ABSOLUTE | ACTION | ADA | ADD | ALL | ALLOCATE | ALTER | AND | ANY | ARE | AS | ASC |
-    ASSERTION | AT | AUTHORIZATION | AVG | BETWEEN | BIT | BIT_LENGTH | BOTH | BY |
-    CASCADE | CASCADED | CASE | CAST | CATALOG | CATALOG_NAME | CHAR | CHARACTER | CHARACTER_LENGTH |
-    CHARACTER_SET_CATALOG | CHARACTER_SET_NAME | CHARACTER_SET_SCHEMA | CHAR_LENGTH | CHECK | CLASS_ORIGIN |
-    CLOSE | COALESCE | COBOL | COLLATE | COLLATION | COLLATION_CATALOG | COLLATION_NAME | COLLATION_SCHEMA | COLUMN |
-    COLUMN_NAME | COMMAND_FUNCTION | COMMIT | COMMITTED | CONDITION_NUMBER | CONNECT | CONNECTION | CONNECTION_NAME |
-    CONSTRAINT | CONSTRAINTS | CONSTRAINT_CATALOG | CONSTRAINT_NAME | CONSTRAINT_SCHEMA | CONVERT | CORRESPONDING |
-    COUNT | CREATE | CROSS | CURRENT | CURRENT_DATE | CURRENT_TIME | CURRENT_TIMESTAMP | CURRENT_USER | CURSOR |
-    CURSOR_NAME | DATA | DATE | DATETIME_INTERVAL_CODE | DATETIME_INTERVAL_PRECISION | DAY | DEALLOCATE | DEC | DECIMAL |
-    DECLARE | DEFAULT | DEFERRABLE | DEFERRED | DELETE | DESC | DESCRIBE | DESCRIPTOR | DIAGNOSTICS | DISCONNECT |
-    DISTINCT | DOMAIN | DOUBLE | DROP | DYNAMIC_FUNCTION | ELSE | END | ESCAPE | EXCEPT | EXCEPTION | EXECUTE | EXISTS |
-    EXTERNAL | EXTRACT | FALSE | FETCH | FIRST | FLOAT | FOR | FOREIGN | FORTRAN | FROM | FULL | GET | GLOBAL | GRANT | GROUP |
-    HAVING | HOUR | IDENTITY | IMMEDIATE | IN | INDICATOR | INITIALLY | INNER | INPUT | INSENSITIVE | INSERT | INT | INTEGER |
-    INTERSECT | INTERVAL | INTO | IS | ISOLATION | JOIN | KEY | LANGUAGE | LAST | LEADING | LEFT | LENGTH | LEVEL | LIKE |
-    LOCAL | LOWER | MATCH | MAX | MESSAGE_LENGTH | MESSAGE_OCTET_LENGTH | MESSAGE_TEXT | MIN | MINUTE | MODULE | MONTH |
-    MUMPS | MORE_KW | NAME | NAMES | NATIONAL | NATURAL | NCHAR | NEXT | NO | NOT | NULL | NULLABLE | NULLIF | NUMBER |
-    NUMERIC | OCTET_LENGTH | OF | ON | ONLY | OPEN | OPTION | OR | ORDER | OUTER | OUTPUT | OVERLAPS | PAD | PASCAL |
-    PARTIAL | POSITION | PLI | PRECISION | PREPARE | PRESERVE | PRIMARY | PRIOR | PRIVILEGES | PROCEDURE | PUBLIC | READ |
-    REAL | REFERENCES | RELATIVE | REPEATABLE | RESTRICT | RETURNED_LENGTH | RETURNED_OCTET_LENGTH | RETURNED_SQLSTATE |
-    REVOKE | RIGHT | ROLLBACK | ROWS | ROW_COUNT | SCALE | SCHEMA | SCHEMA_NAME | SCROLL | SECOND | SELECT | SERIALIZABLE |
-    SERVER_NAME | SESSION | SESSION_USER | SET | SIZE | SMALLINT | SOME | SPACE | SQL | SQLCODE | SQLSTATE | SUBCLASS_ORIGIN |
-    SUBSTRING | SUM | SYSTEM_USER | TABLE | TABLE_NAME | TEMPORARY | THEN | TIME | TIMESTAMP | TIMEZONE_HOUR | TIMEZONE_MINUTE |
-    TO | TRAILING | TRANSACTION | TRANSLATE | TRANSLATION | TRIM | TRUE | TYPE | UNCOMMITTED | UNION | UNIQUE | UNKNOWN | UNNAMED |
-    UPDATE | UPPER | USAGE | USER | USING | VALUE | VALUES | VARCHAR | VARYING | VIEW | WHEN | WHERE | WITH | WORK | WRITE |
-    YEAR | ZONE;
+nonReserved: ADA
+    |    C | CATALOG_NAME | CHARACTER_SET_CATALOG | CHARACTER_SET_NAME | CHARACTER_SET_SCHEMA
+    |    CLASS_ORIGIN | COBOL | COLLATION_CATALOG | COLLATION_NAME | COLLATION_SCHEMA
+    |    COLUMN_NAME | COMMAND_FUNCTION | COMMITTED | CONDITION_NUMBER | CONNECTION_NAME
+    |    CONSTRAINT_CATALOG | CONSTRAINT_NAME | CONSTRAINT_SCHEMA | CURSOR_NAME
+    |    DATA | DATETIME_INTERVAL_CODE | DATETIME_INTERVAL_PRECISION | DYNAMIC_FUNCTION
+    |    FORTRAN
+    |    LENGTH
+    |    MESSAGE_LENGTH | MESSAGE_OCTET_LENGTH | MESSAGE_TEXT | MORE | MUMPS
+    |    NAME | NULLABLE | NUMBER
+    |    PASCAL | PLI
+    |    REPEATABLE | RETURNED_LENGTH | RETURNED_OCTET_LENGTH | RETURNED_SQLSTATE | ROW_COUNT
+    |    SCALE | SCHEMA_NAME | SERIALIZABLE | SERVER_NAME | SUBCLASS_ORIGIN
+    |    TABLE_NAME | TYPE
+    |    UNCOMMITTED | UNNAMED;

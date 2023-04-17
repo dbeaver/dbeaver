@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.model.lsm;
 
-import org.antlr.v4.runtime.tree.Tree;
+import java.util.concurrent.Future;
 
-public interface LSMParser extends LSMObject<LSMParser> {
+public interface LSMAnalysis<T extends LSMElement> {    
     
-    Tree parse();
+    Future<T> getModel();
 }

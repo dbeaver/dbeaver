@@ -17,12 +17,17 @@
 package org.jkiss.dbeaver.model.lsm;
 
 import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.Lexer;
+import org.jkiss.dbeaver.model.lsm.impl.LSMSourceImpl;
 
-public abstract class LSMLexer extends Lexer {
+import java.io.IOException;
+import java.io.Reader;
 
-    public LSMLexer(CharStream input) {
-        super(input);
+
+public interface LSMSource extends LSMObject<LSMSource> {
+
+    CharStream getStream();
+
+    public static LSMSource fromReader(Reader reader) throws IOException {
+        return new LSMSourceImpl(reader);
     }
-
 }

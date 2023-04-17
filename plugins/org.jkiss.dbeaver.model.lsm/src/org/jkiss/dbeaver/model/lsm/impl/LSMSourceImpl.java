@@ -14,11 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm;
+package org.jkiss.dbeaver.model.lsm.impl;
 
-import org.antlr.v4.runtime.tree.Tree;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.jkiss.dbeaver.model.lsm.LSMSource;
 
-public interface LSMParser extends LSMObject<LSMParser> {
+import java.io.IOException;
+import java.io.Reader;
+
+
+public class LSMSourceImpl implements LSMSource {
     
-    Tree parse();
+    private final CharStream stream;
+    
+    public LSMSourceImpl(Reader reader) throws IOException {
+        this.stream = CharStreams.fromReader(reader);
+    }
+
+    @Override
+    public CharStream getStream() {
+        return this.stream;
+    }    
 }
