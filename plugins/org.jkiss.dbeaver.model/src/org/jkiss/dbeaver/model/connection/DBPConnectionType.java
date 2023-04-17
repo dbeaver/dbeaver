@@ -291,6 +291,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
                 confirmExecute == ct.confirmExecute &&
                 confirmDataChange == ct.confirmDataChange &&
                 autoCloseTransactions == ct.autoCloseTransactions &&
+                CommonUtils.equalObjects(closeIdleConnectionPeriod, ct.closeIdleConnectionPeriod) &&
                 predefined == ct.predefined &&
                 CommonUtils.equalObjects(connectionModifyRestrictions, ct.connectionModifyRestrictions);
         }
