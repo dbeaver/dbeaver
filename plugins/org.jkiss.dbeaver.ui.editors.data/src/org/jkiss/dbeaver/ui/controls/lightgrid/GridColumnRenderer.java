@@ -45,6 +45,7 @@ class GridColumnRenderer extends AbstractRenderer {
     public static final Image IMAGE_FILTER = DBeaverIcons.getImage(UIIcon.DROP_DOWN);
 
     public static final int SORT_WIDTH = IMAGE_DESC.getBounds().width;
+    public static final int SORT_HEIGHT = IMAGE_DESC.getBounds().height;
     public static final int FILTER_WIDTH = IMAGE_FILTER.getBounds().width;
 
     // The border was disabled because it looked goofy
