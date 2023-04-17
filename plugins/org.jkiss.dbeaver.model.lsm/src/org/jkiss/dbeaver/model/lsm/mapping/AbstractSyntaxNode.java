@@ -213,19 +213,20 @@ public abstract class AbstractSyntaxNode implements LSMElement {
     
     private static <T, K> int binarySearchByKey(List<T> list, Function<T, K> keyGetter, K key, Comparator<K> comparator) {
         int low = 0;
-        int high = list.size()-1;
+        int high = list.size() - 1;
 
         while (low <= high) {
             int mid = (low + high) >>> 1;
             K midVal = keyGetter.apply(list.get(mid));
             int cmp = comparator.compare(midVal, key);
 
-            if (cmp < 0)
+            if (cmp < 0) {
                 low = mid + 1;
-            else if (cmp > 0)
+            } else if (cmp > 0) {
                 high = mid - 1;
-            else
+            } else {
                 return mid; // key found
+            }
         }
         return -(low + 1);  // key not found
     }

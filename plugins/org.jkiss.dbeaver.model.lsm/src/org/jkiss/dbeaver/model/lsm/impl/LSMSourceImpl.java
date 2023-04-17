@@ -16,12 +16,13 @@
  */
 package org.jkiss.dbeaver.model.lsm.impl;
 
-import java.io.IOException;
-import java.io.Reader;
-
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.jkiss.dbeaver.model.lsm.interfaces.LSMSource;
+
+import java.io.IOException;
+import java.io.Reader;
+
 
 public class LSMSourceImpl implements LSMSource {
     

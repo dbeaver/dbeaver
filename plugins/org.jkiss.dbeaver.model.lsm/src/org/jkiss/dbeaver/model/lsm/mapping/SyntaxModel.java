@@ -126,7 +126,7 @@ public class SyntaxModel {
             indent++;
             sb.append("[");
             int m = 0;
-            for (BindingInfo binding: model.getBindings()) {
+            for (BindingInfo binding : model.getBindings()) {
                 if (m > 0) {
                     sb.append(",");
                 }

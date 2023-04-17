@@ -16,11 +16,6 @@
  */
 package org.jkiss.dbeaver.model.lsm.impl;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
-
 import org.jkiss.dbeaver.model.lsm.interfaces.LSMAnalysis;
 import org.jkiss.dbeaver.model.lsm.interfaces.LSMAnalysisCase;
 import org.jkiss.dbeaver.model.lsm.interfaces.LSMDialect;
@@ -28,6 +23,12 @@ import org.jkiss.dbeaver.model.lsm.interfaces.LSMNode;
 import org.jkiss.dbeaver.model.lsm.interfaces.LSMSource;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModel;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+
 
 public class LSMDialectImpl implements LSMDialect {
     
@@ -50,7 +51,7 @@ public class LSMDialectImpl implements LSMDialect {
     @Override
     public <T extends LSMNode> LSMAnalysisCase<T, ? extends AbstractSyntaxNode> findAnalysisCase(Class<T> expectedContractType) {
         @SuppressWarnings("unchecked")
-        LSMAnalysisCase<T, ? extends AbstractSyntaxNode> result = (LSMAnalysisCase<T, ? extends AbstractSyntaxNode>)casesByContractType.get(expectedContractType);
+        LSMAnalysisCase<T, ? extends AbstractSyntaxNode> result = (LSMAnalysisCase<T, ? extends AbstractSyntaxNode>) casesByContractType.get(expectedContractType);
         return result;
     }
 
