@@ -87,6 +87,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private static final int MAX_HISTORY_PANEL_HEIGHT = 200;
 
     private final ResultSetViewer viewer;
+    private final boolean compactMode;
 
     private final ActiveObjectPanel activeObjectPanel;
     private final FilterExpandPanel filterExpandPanel;
@@ -98,11 +99,11 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private final StyledText filtersText;
     private final ContentProposalAdapter filtersProposalAdapter;
 
-    private final ToolBar filterToolbar;
-    private final ToolItem filtersClearButton;
-    private final ToolItem filtersSaveButton;
-    private final ToolItem historyBackButton;
-    private final ToolItem historyForwardButton;
+    private ToolBar filterToolbar;
+    private ToolItem filtersClearButton;
+    private ToolItem filtersSaveButton;
+    private ToolItem historyBackButton;
+    private ToolItem historyForwardButton;
 
     private final Composite filterComposite;
 
@@ -116,12 +117,13 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private Menu historyMenu;
     private boolean filterExpanded = false;
 
-    ResultSetFilterPanel(ResultSetViewer rsv, Composite parent) {
+    ResultSetFilterPanel(ResultSetViewer rsv, Composite parent, boolean compactMode) {
         super(parent, SWT.NONE);
         this.viewer = rsv;
+        this.compactMode = compactMode;
         CSSUtils.setCSSClass(this, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
-        GridLayout gl = new GridLayout(4, false);
+        GridLayout gl = new GridLayout(compactMode ? 2 : 4, false);
         gl.marginHeight = 3;
         gl.marginWidth = 3;
         this.setLayout(gl);
@@ -140,7 +142,11 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             this.filterComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             CSSUtils.setCSSClass(this.filterComposite, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
-            this.activeObjectPanel = new ActiveObjectPanel(filterComposite);
+            if (!compactMode) {
+                this.activeObjectPanel = new ActiveObjectPanel(filterComposite);
+            } else {
+                this.activeObjectPanel = null;
+            }
             this.filterExpandPanel = new FilterExpandPanel(filterComposite);
 
             this.filtersTextViewer = new TextViewer(filterComposite, SWT.MULTI);
@@ -186,7 +192,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     String filterText = filtersText.getText();
                     executePanel.setEnabled(true);
                     executePanel.redraw();
-                    filtersClearButton.setEnabled(!CommonUtils.isEmpty(filterText));
+                    if (filtersClearButton != null) {
+                        filtersClearButton.setEnabled(!CommonUtils.isEmpty(filterText));
+                    }
                     filtersProposalAdapter.refresh();
                 }
             });
@@ -241,7 +249,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         // Handle all shortcuts by filters editor, not by host editor
         TextEditorUtils.enableHostEditorKeyBindingsSupport(viewer.getSite(), this.filtersText);
 
-        {
+        if (!compactMode) {
             filterToolbar = new ToolBar(this, SWT.HORIZONTAL | SWT.RIGHT);
             filterToolbar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
 
@@ -330,26 +338,35 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             String filterText = filtersText.getText();
             filtersText.setEnabled(supportsDataFilter);
             executePanel.setEnabled(supportsDataFilter);
-            filtersClearButton.setEnabled(viewer.getModel().getDataFilter().hasFilters() || viewer.getModel().getDataFilter().hasOrdering() || !CommonUtils.isEmpty(filterText));
+            if (filtersClearButton != null) {
+                filtersClearButton.setEnabled(
+                    viewer.getModel().getDataFilter().hasFilters() ||
+                    viewer.getModel().getDataFilter().hasOrdering() ||
+                    !CommonUtils.isEmpty(filterText));
+            }
             if (filtersSaveButton != null) {
                 filtersSaveButton.setEnabled(viewer.getDataContainer() instanceof DBSEntity);
             }
             // Update history buttons
-            if (historyPosition > 0) {
-                historyBackButton.setEnabled(true);
-                historyBackButton.setToolTipText(
+            if (historyBackButton != null) {
+                if (historyPosition > 0) {
+                    historyBackButton.setEnabled(true);
+                    historyBackButton.setToolTipText(
                         stateHistory.get(historyPosition - 1).describeState() +
-                                " (" + ActionUtils.findCommandDescription(IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY, viewer.getSite(), true) + ")");
-            } else {
-                historyBackButton.setEnabled(false);
+                            " (" + ActionUtils.findCommandDescription(IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY, viewer.getSite(), true) + ")");
+                } else {
+                    historyBackButton.setEnabled(false);
+                }
             }
-            if (historyPosition < stateHistory.size() - 1) {
-                historyForwardButton.setEnabled(true);
-                historyForwardButton.setToolTipText(
+            if (historyForwardButton != null) {
+                if (historyPosition < stateHistory.size() - 1) {
+                    historyForwardButton.setEnabled(true);
+                    historyForwardButton.setToolTipText(
                         stateHistory.get(historyPosition + 1).describeState() +
-                                " (" + ActionUtils.findCommandDescription(IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY, viewer.getSite(), true) + ")");
-            } else {
-                historyForwardButton.setEnabled(false);
+                            " (" + ActionUtils.findCommandDescription(IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY, viewer.getSite(), true) + ")");
+                } else {
+                    historyForwardButton.setEnabled(false);
+                }
             }
         }
         filterComposite.setBackground(filtersText.getBackground());
@@ -377,7 +394,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private void enablePanelControls(boolean enable) {
         setRedraw(false);
         try {
-            filterToolbar.setEnabled(enable);
+            if (filterToolbar != null) {
+                filterToolbar.setEnabled(enable);
+            }
             this.filterExpandPanel.setEnabled(enable);
             historyPanel.setEnabled(enable);
             filtersText.setEditable(viewer.supportsDataFilter());

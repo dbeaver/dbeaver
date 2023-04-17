@@ -140,6 +140,7 @@ public class UIIcon {
     public static final DBIcon ERASE = new DBIcon("erase", "erase.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ADD = new DBIcon("add", "add.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon DELETE = new DBIcon("delete", "delete.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon REMOVE = new DBIcon("remove", "remove.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon RENAME = new DBIcon("rename", "rename.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PALETTE = new DBIcon("palette", "misc/palette.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
