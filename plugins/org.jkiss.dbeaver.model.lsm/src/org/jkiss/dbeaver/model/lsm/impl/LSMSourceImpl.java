@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.lsm.impl;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
-import org.jkiss.dbeaver.model.lsm.interfaces.LSMSource;
+import org.jkiss.dbeaver.model.lsm.LSMSource;
 
 import java.io.IOException;
 import java.io.Reader;

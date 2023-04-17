@@ -70,11 +70,11 @@ public abstract class AbstractSyntaxNode implements LSMElement {
     }
 
     public int getStartPosition() {
-        return this.astNode != null ? this.astNode.getSourceInterval().a : UNDEFINED_POSITION;
+        return this.astNode != null ? this.astNode.getRealInterval().a : UNDEFINED_POSITION;
     }
     
     public int getEndPosition() {
-        return this.astNode != null ? this.astNode.getSourceInterval().b : UNDEFINED_POSITION;
+        return this.astNode != null ? this.astNode.getRealInterval().b : UNDEFINED_POSITION;
     }
     
     void setAstNode(XTreeNodeBase astNode) {

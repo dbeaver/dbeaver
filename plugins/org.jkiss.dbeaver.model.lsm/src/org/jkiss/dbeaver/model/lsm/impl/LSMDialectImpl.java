@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.model.lsm.impl;
 
-import org.jkiss.dbeaver.model.lsm.interfaces.LSMAnalysis;
-import org.jkiss.dbeaver.model.lsm.interfaces.LSMAnalysisCase;
-import org.jkiss.dbeaver.model.lsm.interfaces.LSMDialect;
-import org.jkiss.dbeaver.model.lsm.interfaces.LSMNode;
-import org.jkiss.dbeaver.model.lsm.interfaces.LSMSource;
+import org.jkiss.dbeaver.model.lsm.LSMAnalysis;
+import org.jkiss.dbeaver.model.lsm.LSMAnalysisCase;
+import org.jkiss.dbeaver.model.lsm.LSMDialect;
+import org.jkiss.dbeaver.model.lsm.LSMElement;
+import org.jkiss.dbeaver.model.lsm.LSMSource;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModel;
 
@@ -32,11 +32,11 @@ import java.util.concurrent.Future;
 
 public class LSMDialectImpl implements LSMDialect {
     
-    private final Map<Class<? extends LSMNode>, LSMAnalysisCase<? extends LSMNode, ? extends AbstractSyntaxNode>> casesByContractType;
+    private final Map<Class<? extends LSMElement>, LSMAnalysisCase<? extends LSMElement, ? extends AbstractSyntaxNode>> casesByContractType;
     private final SyntaxModel syntaxModel;
     
     public LSMDialectImpl(
-        Map<Class<? extends LSMNode>, LSMAnalysisCase<? extends LSMNode, ? extends AbstractSyntaxNode>> casesByModelType,
+        Map<Class<? extends LSMElement>, LSMAnalysisCase<? extends LSMElement, ? extends AbstractSyntaxNode>> casesByModelType,
         SyntaxModel syntaxModel
     ) {
         this.casesByContractType = casesByModelType;
@@ -44,19 +44,19 @@ public class LSMDialectImpl implements LSMDialect {
     }
 
     @Override
-    public Collection<LSMAnalysisCase<? extends LSMNode, ? extends AbstractSyntaxNode>> getSupportedCases() {
+    public Collection<LSMAnalysisCase<? extends LSMElement, ? extends AbstractSyntaxNode>> getSupportedCases() {
         return casesByContractType.values();
     }
 
     @Override
-    public <T extends LSMNode> LSMAnalysisCase<T, ? extends AbstractSyntaxNode> findAnalysisCase(Class<T> expectedContractType) {
+    public <T extends LSMElement> LSMAnalysisCase<T, ? extends AbstractSyntaxNode> findAnalysisCase(Class<T> expectedContractType) {
         @SuppressWarnings("unchecked")
         LSMAnalysisCase<T, ? extends AbstractSyntaxNode> result = (LSMAnalysisCase<T, ? extends AbstractSyntaxNode>) casesByContractType.get(expectedContractType);
         return result;
     }
 
     @Override
-    public <T extends LSMNode> Future<LSMAnalysis<T>> prepareAnalysis(LSMSource source, LSMAnalysisCase<T, ? extends AbstractSyntaxNode> analysisCase) {
+    public <T extends LSMElement> Future<LSMAnalysis<T>> prepareAnalysis(LSMSource source, LSMAnalysisCase<T, ? extends AbstractSyntaxNode> analysisCase) {
         LSMSourceImpl source2 = source.coerce(LSMSourceImpl.class);
         @SuppressWarnings("unchecked")
         LSMAnalysisCaseImpl<T, ? extends AbstractSyntaxNode> analysisCase2 = analysisCase.coerce(LSMAnalysisCaseImpl.class);

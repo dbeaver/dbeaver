@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm.interfaces;
+package org.jkiss.dbeaver.model.lsm;
 
 public interface LSMObject<T> {
     @SuppressWarnings("unchecked")

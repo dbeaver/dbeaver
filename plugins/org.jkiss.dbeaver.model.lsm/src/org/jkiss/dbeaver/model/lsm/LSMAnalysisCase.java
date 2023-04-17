@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm.interfaces;
+package org.jkiss.dbeaver.model.lsm;
 
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 
-public interface LSMAnalysisCase<T extends LSMNode, M extends AbstractSyntaxNode & LSMNode> extends LSMObject<LSMAnalysisCase<T, M>> {
+public interface LSMAnalysisCase<T extends LSMElement, M extends AbstractSyntaxNode & LSMElement> extends LSMObject<LSMAnalysisCase<T, M>> {
     
     Class<T> getModelContractType();
     

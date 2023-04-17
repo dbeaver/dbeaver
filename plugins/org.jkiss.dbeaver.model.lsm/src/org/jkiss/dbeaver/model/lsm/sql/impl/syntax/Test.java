@@ -17,66 +17,27 @@
 package org.jkiss.dbeaver.model.lsm.sql.impl.syntax;
 
 import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.atn.ATNConfig;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
-import org.antlr.v4.runtime.atn.ATNState;
-import org.antlr.v4.runtime.atn.AtomTransition;
-import org.antlr.v4.runtime.atn.ParserATNSimulator;
-import org.antlr.v4.runtime.atn.RangeTransition;
-import org.antlr.v4.runtime.atn.RuleStopState;
-import org.antlr.v4.runtime.atn.SetTransition;
-import org.antlr.v4.runtime.atn.Transition;
 import org.antlr.v4.runtime.dfa.DFA;
-import org.antlr.v4.runtime.misc.Interval;
-import org.antlr.v4.runtime.misc.IntervalSet;
 import org.antlr.v4.runtime.tree.Tree;
 import org.antlr.v4.runtime.tree.Trees;
-import org.jkiss.dbeaver.model.lsm.interfaces.LSMAnalysis;
-import org.jkiss.dbeaver.model.lsm.interfaces.LSMAnalysisCase;
-import org.jkiss.dbeaver.model.lsm.interfaces.LSMDialect;
-import org.jkiss.dbeaver.model.lsm.interfaces.LSMSource;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModel;
-import org.jkiss.dbeaver.model.lsm.sql.LSMSelectStatement;
-import org.jkiss.dbeaver.model.lsm.sql.dialect.Sql92Dialect;
 import org.jkiss.dbeaver.model.lsm.sql.impl.SelectStatement;
 
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
-import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.*;
 
 
 public class Test {
-    
-    public static void testInterfaces() {
-        try {
-            LSMSource source = LSMSource.fromReader(new StringReader("SELECT a, b, c FROM t1 x, t2 y"));
-            
-            LSMDialect dd = Sql92Dialect.getInstance();
-            
-            LSMAnalysisCase<LSMSelectStatement, ?> selectStmtAnalysisCase = dd.findAnalysisCase(LSMSelectStatement.class);
-            
-            LSMAnalysis<LSMSelectStatement> analysis = dd.prepareAnalysis(source, selectStmtAnalysisCase).get();
-            
-            LSMSelectStatement model = analysis.getModel().get();
-            
-            System.out.println(model);
-            
-            System.exit(0);
-        } catch (IOException | InterruptedException | ExecutionException ex) {
-            ex.printStackTrace();
-        }
-    }
+
 
     public static void main(String[] args) throws IOException, XMLStreamException, FactoryConfigurationError, TransformerException {
-        testInterfaces();
-        // prepareGrammarKeywords();
-        
+ 
         String inputText = "SELECT ALL Product.*, \r\n"
             + "    Product.ProductID AS id,\r\n"
             + "    Product.Name AS ProductName,\r\n"

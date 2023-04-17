@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.lsm.mapping.internal;
 
+import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
@@ -23,7 +24,7 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.jkiss.dbeaver.model.lsm.LSMParser;
 
-public abstract class ParserOverrides extends LSMParser {
+public abstract class ParserOverrides extends Parser {
 
     public ParserOverrides(TokenStream input) {
         super(input);

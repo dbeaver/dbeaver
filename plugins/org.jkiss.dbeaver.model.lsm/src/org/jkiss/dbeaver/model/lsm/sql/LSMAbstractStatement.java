@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.model.lsm.sql;
 
 import org.jkiss.dbeaver.model.lsm.LSMElement;
-import org.jkiss.dbeaver.model.lsm.interfaces.LSMNode;
 
-public interface LSMAbstractStatement extends LSMElement, LSMNode {
+public interface LSMAbstractStatement extends LSMElement {
 
 }

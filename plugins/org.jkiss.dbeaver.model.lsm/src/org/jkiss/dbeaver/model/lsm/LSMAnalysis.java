@@ -14,23 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm.interfaces;
+package org.jkiss.dbeaver.model.lsm;
 
-import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
-
-import java.util.Collection;
 import java.util.concurrent.Future;
 
-
-public interface LSMDialect {
+public interface LSMAnalysis<T extends LSMElement> {    
     
-    Collection<LSMAnalysisCase<? extends LSMNode, ? extends AbstractSyntaxNode>> getSupportedCases();
-
-    <T extends LSMNode> LSMAnalysisCase<T, ? extends AbstractSyntaxNode> findAnalysisCase(Class<T> expectedModelType);
-    
-    <T extends LSMNode> Future<LSMAnalysis<T>> prepareAnalysis(
-        LSMSource source,
-        LSMAnalysisCase<T, ? extends AbstractSyntaxNode> analysisCase
-    );
-    
+    Future<T> getModel();
 }

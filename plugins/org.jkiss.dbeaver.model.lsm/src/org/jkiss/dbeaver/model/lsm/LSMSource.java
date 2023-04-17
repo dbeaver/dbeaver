@@ -16,29 +16,18 @@
  */
 package org.jkiss.dbeaver.model.lsm;
 
-import org.antlr.v4.runtime.Lexer;
+import org.antlr.v4.runtime.CharStream;
+import org.jkiss.dbeaver.model.lsm.impl.LSMSourceImpl;
 
-public class LSMContext {
+import java.io.IOException;
+import java.io.Reader;
 
-    private final String parserName;
-    private final Lexer lexer;
-    private final LSMParser parser;
 
-    public LSMContext(String parserName, Lexer lexer, LSMParser parser) {
-        this.parserName = parserName;
-        this.lexer = lexer;
-        this.parser = parser;
-    }
+public interface LSMSource extends LSMObject<LSMSource> {
 
-    public String getParserName() {
-        return parserName;
-    }
+    CharStream getStream();
 
-    public Lexer getLexer() {
-        return lexer;
-    }
-
-    public LSMParser getParser() {
-        return parser;
+    public static LSMSource fromReader(Reader reader) throws IOException {
+        return new LSMSourceImpl(reader);
     }
 }

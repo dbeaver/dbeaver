@@ -16,24 +16,35 @@
  */
 package org.jkiss.dbeaver.model.lsm.sql.impl.syntax;
 
-import org.jkiss.dbeaver.model.lsm.LSMContext;
-import org.jkiss.dbeaver.model.lsm.LSMElement;
-import org.jkiss.dbeaver.model.lsm.LSMEngine;
+import org.jkiss.dbeaver.model.lsm.LSMAnalysis;
+import org.jkiss.dbeaver.model.lsm.LSMAnalysisCase;
+import org.jkiss.dbeaver.model.lsm.LSMDialect;
+import org.jkiss.dbeaver.model.lsm.LSMSource;
+import org.jkiss.dbeaver.model.lsm.sql.LSMSelectStatement;
+import org.jkiss.dbeaver.model.lsm.sql.dialect.Sql92Dialect;
 
+import java.io.IOException;
 import java.io.StringReader;
+import java.util.concurrent.ExecutionException;
 
 
 public class TestEngine {
 
     public static void main(String[] args) throws Exception {
-        LSMContext context = new LSMContext(
-            "SQL Parser",
-            new Sql92Lexer(null),
-            new Sql92Parser(null)
-        );
-
-        LSMEngine engine = new LSMEngine(context);
-        LSMElement result = engine.parseText(new StringReader("SELECT col_name FROM sch.table_name;"));
-        System.out.println(result);
+        try {
+            LSMSource source = LSMSource.fromReader(new StringReader("SELECT a, b, c FROM t1 x, t2 y"));
+            
+            LSMDialect dd = Sql92Dialect.getInstance();
+            
+            LSMAnalysisCase<LSMSelectStatement, ?> selectStmtAnalysisCase = dd.findAnalysisCase(LSMSelectStatement.class);
+            
+            LSMAnalysis<LSMSelectStatement> analysis = dd.prepareAnalysis(source, selectStmtAnalysisCase).get();
+            
+            LSMSelectStatement model = analysis.getModel().get();
+            
+            System.out.println(model);
+        } catch (IOException | InterruptedException | ExecutionException ex) {
+            ex.printStackTrace();
+        }
     }
 }

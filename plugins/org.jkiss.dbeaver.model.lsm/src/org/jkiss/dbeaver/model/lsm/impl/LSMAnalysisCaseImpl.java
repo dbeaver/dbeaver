@@ -16,13 +16,13 @@
  */
 package org.jkiss.dbeaver.model.lsm.impl;
 
-import org.jkiss.dbeaver.model.lsm.interfaces.LSMAnalysisCase;
-import org.jkiss.dbeaver.model.lsm.interfaces.LSMNode;
-import org.jkiss.dbeaver.model.lsm.interfaces.LSMParser;
-import org.jkiss.dbeaver.model.lsm.interfaces.LSMSource;
+import org.jkiss.dbeaver.model.lsm.LSMAnalysisCase;
+import org.jkiss.dbeaver.model.lsm.LSMElement;
+import org.jkiss.dbeaver.model.lsm.LSMParser;
+import org.jkiss.dbeaver.model.lsm.LSMSource;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 
-public abstract class LSMAnalysisCaseImpl<T extends LSMNode, M extends AbstractSyntaxNode & LSMNode> implements LSMAnalysisCase<T, M> {
+public abstract class LSMAnalysisCaseImpl<T extends LSMElement, M extends AbstractSyntaxNode & LSMElement> implements LSMAnalysisCase<T, M> {
 
     private final Class<T> modelContractType;
     private final Class<M> modelRootType;

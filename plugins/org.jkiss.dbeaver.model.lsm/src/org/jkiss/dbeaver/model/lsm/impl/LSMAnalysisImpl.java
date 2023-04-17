@@ -17,9 +17,9 @@
 package org.jkiss.dbeaver.model.lsm.impl;
 
 import org.antlr.v4.runtime.tree.Tree;
-import org.jkiss.dbeaver.model.lsm.interfaces.LSMAnalysis;
-import org.jkiss.dbeaver.model.lsm.interfaces.LSMNode;
-import org.jkiss.dbeaver.model.lsm.interfaces.LSMParser;
+import org.jkiss.dbeaver.model.lsm.LSMAnalysis;
+import org.jkiss.dbeaver.model.lsm.LSMElement;
+import org.jkiss.dbeaver.model.lsm.LSMParser;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModel;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModelMappingResult;
@@ -28,7 +28,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-class LSMAnalysisImpl<T extends LSMNode, M extends AbstractSyntaxNode & LSMNode> implements LSMAnalysis<T> {
+class LSMAnalysisImpl<T extends LSMElement, M extends AbstractSyntaxNode & LSMElement> implements LSMAnalysis<T> {
     
     private final LSMSourceImpl source;
     private final LSMAnalysisCaseImpl<T, M> analysisCase;
