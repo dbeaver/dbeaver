@@ -91,6 +91,19 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         if (identity != null) {
             sql.append(" ").append(identity.getDefinitionClause());
         }
+        if (column.getDepObjectId() != 0) {
+            // This column has dependency with object
+            try {
+                PostgreTableBase table = column.getSchema().getTable(monitor, column.getDepObjectId());
+                if (table instanceof PostgreSequence) {
+                    sql.append("(");
+                    ((PostgreSequence) table).getSequenceBody(monitor, sql, false);
+                    sql.append(")");
+                }
+            } catch (DBException e) {
+                log.debug("Can't find the depended object.");
+            }
+        }
     };
 
     protected final ColumnModifier<PostgreTableColumn> PostgreCollateModifier = (monitor, column, sql, command) -> {

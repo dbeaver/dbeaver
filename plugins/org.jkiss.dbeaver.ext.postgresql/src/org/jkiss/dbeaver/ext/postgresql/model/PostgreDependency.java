@@ -116,6 +116,8 @@ public class PostgreDependency implements PostgreObject, DBPOverloadedObject, DB
             return "Attribute";
         } else if (objectType.startsWith("T")) {
             return "Trigger";
+        } else if (objectType.startsWith("S")) {
+            return "Sequence";
         }
         return objectType;
     }
@@ -181,6 +183,12 @@ public class PostgreDependency implements PostgreObject, DBPOverloadedObject, DB
                 return ((PostgreTable)tableBase).getTrigger(monitor, name);
             }
             return null;
+        } else if (objectType.startsWith("S")) {
+            if (tableBase != null) {
+                return tableBase.getSchema().getSequence(monitor, name);
+            } else {
+                return schema.getSequence(monitor, name);
+            }
         }
         return null;
     }
@@ -210,6 +218,8 @@ public class PostgreDependency implements PostgreObject, DBPOverloadedObject, DB
             return DBIcon.TREE_COLUMN;
         } else if (objectType.startsWith("T")) {
             return DBIcon.TREE_TRIGGER;
+        } else if (objectType.startsWith("S")) {
+            return DBIcon.TREE_SEQUENCE;
         }
         return DBIcon.TREE_REFERENCE;
     }
