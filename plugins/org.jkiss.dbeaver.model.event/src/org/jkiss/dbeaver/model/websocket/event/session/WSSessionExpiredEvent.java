@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.model.websocket.event.session;
 
-import org.jkiss.dbeaver.model.websocket.event.WSEvent;
+import org.jkiss.dbeaver.model.websocket.event.WSAbstractEvent;
 import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
-public class WSSessionExpiredEvent extends WSEvent {
+public class WSSessionExpiredEvent extends WSAbstractEvent {
 
     public WSSessionExpiredEvent() {
         super(WSEventType.SESSION_EXPIRED);
