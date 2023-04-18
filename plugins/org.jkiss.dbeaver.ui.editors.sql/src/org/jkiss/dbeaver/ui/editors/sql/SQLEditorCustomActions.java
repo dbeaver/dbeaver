@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import com.ibm.icu.text.BreakIterator;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewerExtension5;
@@ -34,6 +33,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLDocumentCharacterIterator;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLWordBreakIterator;
 
+import java.text.BreakIterator;
 import java.text.CharacterIterator;
 
 public class SQLEditorCustomActions {
