@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 import com.ibm.icu.text.BreakIterator;
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewerExtension5;
@@ -29,8 +28,8 @@ import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
-import org.eclipse.ui.texteditor.IUpdate;
 import org.eclipse.ui.texteditor.TextNavigationAction;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLDocumentCharacterIterator;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLWordBreakIterator;
@@ -38,6 +37,8 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLWordBreakIterator;
 import java.text.CharacterIterator;
 
 public class SQLEditorCustomActions {
+
+    static protected final Log log = Log.getLog(SQLEditorCustomActions.class);
 
     public static void registerCustomActions(SQLEditorBase editor) {
         StyledText textWidget = editor.getViewer().getTextWidget();
@@ -92,11 +93,6 @@ public class SQLEditorCustomActions {
 
         protected SQLWordIterator wordIterator = new SQLWordIterator();
 
-        /**
-         * Creates a new next sub-word action.
-         *
-         * @param code Action code for the default operation. Must be an action code from @see org.eclipse.swt.custom.ST.
-         */
         protected NextSubWordAction(SQLEditorBase editor, String actionDefinitionId, int code) {
             super(editor, actionDefinitionId, code);
         }
@@ -126,8 +122,8 @@ public class SQLEditorCustomActions {
                     getTextWidget().showSelection();
                     fireSelectionChanged();
                 }
-            } catch (BadLocationException x) {
-                // ignore
+            } catch (BadLocationException e) {
+                log.debug(e);
             }
         }
 
@@ -168,116 +164,27 @@ public class SQLEditorCustomActions {
             return next;
         }
 
-        /**
-         * Sets the caret position to the sub-word boundary given with <code>position</code>.
-         *
-         * @param position Position where the action should move the caret
-         */
         protected abstract void setCaretPosition(int position);
     }
 
-    /**
-     * Text navigation action to navigate to the next sub-word.
-     *
-     * @since 3.0
-     */
     protected static class NavigateNextSubWordAction extends NextSubWordAction {
 
-        /**
-         * Creates a new navigate next sub-word action.
-         */
         public NavigateNextSubWordAction(SQLEditorBase editor) {
             super(editor, ITextEditorActionDefinitionIds.WORD_NEXT, ST.WORD_NEXT);
         }
 
-        /*
-         * @see org.eclipse.jdt.internal.ui.NextSubWordAction#setCaretPosition(int)
-         */
         @Override
         protected void setCaretPosition(final int position) {
             getTextWidget().setCaretOffset(modelOffset2WidgetOffset(position));
         }
     }
 
-    /**
-     * Text operation action to delete the next sub-word.
-     *
-     * @since 3.0
-     */
-    protected static class DeleteNextSubWordAction extends NextSubWordAction implements IUpdate {
-
-        /**
-         * Creates a new delete next sub-word action.
-         */
-        public DeleteNextSubWordAction(SQLEditorBase editor) {
-            super(editor, ITextEditorActionDefinitionIds.WORD_NEXT, ST.DELETE_WORD_NEXT);
-        }
-
-        /*
-         * @see org.eclipse.jdt.internal.ui.NextSubWordAction#setCaretPosition(int)
-         */
-        @Override
-        protected void setCaretPosition(final int position) {
-            if (!editor.validateEditorInputState())
-                return;
-
-            final ISourceViewer viewer = getSourceViewer();
-            StyledText text = viewer.getTextWidget();
-            Point widgetSelection = text.getSelection();
-            if (editor.isBlockSelectionModeEnabled() && widgetSelection.y != widgetSelection.x) {
-                final int caret = text.getCaretOffset();
-                final int offset = modelOffset2WidgetOffset(position);
-
-                if (caret == widgetSelection.x)
-                    text.setSelectionRange(widgetSelection.y, offset - widgetSelection.y);
-                else
-                    text.setSelectionRange(widgetSelection.x, offset - widgetSelection.x);
-                text.invokeAction(ST.DELETE_NEXT);
-            } else {
-                Point selection = viewer.getSelectedRange();
-                final int caret, length;
-                if (selection.y != 0) {
-                    caret = selection.x;
-                    length = selection.y;
-                } else {
-                    caret = widgetOffset2ModelOffset(text.getCaretOffset());
-                    length = position - caret;
-                }
-
-                try {
-                    viewer.getDocument().replace(caret, length, ""); //$NON-NLS-1$
-                } catch (BadLocationException exception) {
-                    // Should not happen
-                }
-            }
-        }
-
-        /*
-         * @see org.eclipse.ui.texteditor.IUpdate#update()
-         */
-        @Override
-        public void update() {
-            setEnabled(editor.isEditorInputModifiable());
-        }
-    }
-
-    /**
-     * Text operation action to select the next sub-word.
-     *
-     * @since 3.0
-     */
     protected static class SelectNextSubWordAction extends NextSubWordAction {
 
-        /**
-         * Creates a new select next sub-word action.
-         */
         public SelectNextSubWordAction(SQLEditorBase editor) {
             super(editor, ITextEditorActionDefinitionIds.SELECT_WORD_NEXT, ST.SELECT_WORD_NEXT);
         }
 
-        /*
-         * @see org.eclipse.jdt.internal.ui.NextSubWordAction#setCaretPosition(int)
-         */
         @Override
         protected void setCaretPosition(final int position) {
             final ISourceViewer viewer = getSourceViewer();
@@ -297,30 +204,16 @@ public class SQLEditorCustomActions {
         }
     }
 
-    /**
-     * Text navigation action to navigate to the previous sub-word.
-     *
-     * @since 3.0
-     */
     protected abstract static class PreviousSubWordAction extends BaseTextNavigateAction {
 
         protected SQLWordIterator wordIterator = new SQLWordIterator();
 
-        /**
-         * Creates a new previous sub-word action.
-         *
-         * @param code Action code for the default operation. Must be an action code from @see org.eclipse.swt.custom.ST.
-         */
         protected PreviousSubWordAction(SQLEditorBase editor, String actionDefinitionId, final int code) {
             super(editor, actionDefinitionId, code);
         }
 
-        /*
-         * @see org.eclipse.jface.action.IAction#run()
-         */
         @Override
         public void run() {
-            // Check whether we are in a java code partition and the preference is enabled
             final DBPPreferenceStore store = editor.getActivePreferenceStore();
             if (!store.getBoolean(SQLPreferenceConstants.SMART_WORD_ITERATOR)) {
                 super.run();
@@ -343,18 +236,12 @@ public class SQLEditorCustomActions {
                     getTextWidget().showSelection();
                     fireSelectionChanged();
                 }
-            } catch (BadLocationException x) {
-                // ignore - getLineOfOffset failed
+            } catch (BadLocationException e) {
+                log.debug(e);
             }
 
         }
 
-        /**
-         * Finds the previous position before the given position.
-         *
-         * @param position the current position
-         * @return the previous position
-         */
         protected int findPreviousPosition(int position) {
             ISourceViewer viewer = getSourceViewer();
             int widget = -1;
@@ -386,115 +273,27 @@ public class SQLEditorCustomActions {
             return previous;
         }
 
-        /**
-         * Sets the caret position to the sub-word boundary given with <code>position</code>.
-         *
-         * @param position Position where the action should move the caret
-         */
         protected abstract void setCaretPosition(int position);
     }
 
-    /**
-     * Text navigation action to navigate to the previous sub-word.
-     *
-     * @since 3.0
-     */
     protected static class NavigatePreviousSubWordAction extends PreviousSubWordAction {
 
-        /**
-         * Creates a new navigate previous sub-word action.
-         */
         public NavigatePreviousSubWordAction(SQLEditorBase editor) {
             super(editor, ITextEditorActionDefinitionIds.WORD_PREVIOUS, ST.WORD_PREVIOUS);
         }
 
-        /*
-         * @see org.eclipse.jdt.internal.ui.PreviousSubWordAction#setCaretPosition(int)
-         */
         @Override
         protected void setCaretPosition(final int position) {
             getTextWidget().setCaretOffset(modelOffset2WidgetOffset(position));
         }
     }
 
-    /**
-     * Text operation action to delete the previous sub-word.
-     *
-     * @since 3.0
-     */
-    protected static class DeletePreviousSubWordAction extends PreviousSubWordAction implements IUpdate {
-
-        /**
-         * Creates a new delete previous sub-word action.
-         */
-        public DeletePreviousSubWordAction(SQLEditorBase editor) {
-            super(editor, ITextEditorActionDefinitionIds.WORD_PREVIOUS, ST.DELETE_WORD_PREVIOUS);
-        }
-
-        /*
-         * @see org.eclipse.jdt.internal.ui.PreviousSubWordAction#setCaretPosition(int)
-         */
-        @Override
-        protected void setCaretPosition(int position) {
-            if (!editor.validateEditorInputState())
-                return;
-
-            final int length;
-            final ISourceViewer viewer = getSourceViewer();
-            StyledText text = viewer.getTextWidget();
-            Point widgetSelection = text.getSelection();
-            if (editor.isBlockSelectionModeEnabled() && widgetSelection.y != widgetSelection.x) {
-                final int caret = text.getCaretOffset();
-                final int offset = modelOffset2WidgetOffset(position);
-
-                if (caret == widgetSelection.x)
-                    text.setSelectionRange(widgetSelection.y, offset - widgetSelection.y);
-                else
-                    text.setSelectionRange(widgetSelection.x, offset - widgetSelection.x);
-                text.invokeAction(ST.DELETE_PREVIOUS);
-            } else {
-                Point selection = viewer.getSelectedRange();
-                if (selection.y != 0) {
-                    position = selection.x;
-                    length = selection.y;
-                } else {
-                    length = widgetOffset2ModelOffset(text.getCaretOffset()) - position;
-                }
-
-                try {
-                    viewer.getDocument().replace(position, length, ""); //$NON-NLS-1$
-                } catch (BadLocationException exception) {
-                    // Should not happen
-                }
-            }
-        }
-
-        /*
-         * @see org.eclipse.ui.texteditor.IUpdate#update()
-         */
-        @Override
-        public void update() {
-            setEnabled(editor.isEditorInputModifiable());
-        }
-    }
-
-    /**
-     * Text operation action to select the previous sub-word.
-     *
-     * @since 3.0
-     */
     protected static class SelectPreviousSubWordAction extends PreviousSubWordAction {
 
-        /**
-         * Creates a new select previous sub-word action.
-         */
         public SelectPreviousSubWordAction(SQLEditorBase editor) {
             super(editor, ITextEditorActionDefinitionIds.SELECT_WORD_PREVIOUS, ST.SELECT_WORD_PREVIOUS);
         }
 
-        /*
-         * @see org.eclipse.jdt.internal.ui.PreviousSubWordAction#setCaretPosition(int)
-         */
         @Override
         protected void setCaretPosition(final int position) {
             final ISourceViewer viewer = getSourceViewer();
@@ -536,7 +335,7 @@ public class SQLEditorCustomActions {
             int next = 0;
 
             while (true) {
-                --n;
+                n--;
                 if (n <= 0 || next == -1) {
                     return next;
                 }
@@ -593,10 +392,6 @@ public class SQLEditorCustomActions {
 
         private boolean isDelimiter(int offset, int exclusiveEnd) {
             if (exclusiveEnd != -1 && offset != -1) {
-                Assert.isTrue(offset >= 0);
-                Assert.isTrue(exclusiveEnd <= this.getText().getEndIndex());
-                Assert.isTrue(exclusiveEnd > offset);
-
                 for (CharSequence seq = this.sqlIterator.getTextValue(); offset < exclusiveEnd; ++offset) {
                     char ch = seq.charAt(offset);
                     if (ch != '\n' && ch != '\r') {

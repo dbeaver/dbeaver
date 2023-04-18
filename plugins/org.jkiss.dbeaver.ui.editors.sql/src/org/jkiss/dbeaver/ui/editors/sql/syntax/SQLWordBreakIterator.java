@@ -22,24 +22,14 @@ import java.text.BreakIterator;
 import java.text.CharacterIterator;
 
 public class SQLWordBreakIterator extends BreakIterator {
+
     protected static abstract class Run {
-        /**
-         * The length of this run.
-         */
         protected int length;
 
         public Run() {
             init();
         }
 
-        /**
-         * Returns <code>true</code> if this run consumes <code>ch</code>,
-         * <code>false</code> otherwise. If <code>true</code> is returned,
-         * the length of the receiver is adjusted accordingly.
-         *
-         * @param ch the character to test
-         * @return <code>true</code> if <code>ch</code> was consumed
-         */
         protected boolean consume(char ch) {
             if (isValid(ch)) {
                 length++;
@@ -48,61 +38,42 @@ public class SQLWordBreakIterator extends BreakIterator {
             return false;
         }
 
-        /**
-         * Whether this run accepts that character; does not update state. Called
-         * from the default implementation of <code>consume</code>.
-         *
-         * @param ch the character to test
-         * @return <code>true</code> if <code>ch</code> is accepted
-         */
         protected abstract boolean isValid(char ch);
 
-        /**
-         * Resets this run to the initial state.
-         */
         protected void init() {
             length = 0;
         }
     }
 
-    static final class Whitespace extends SQLWordBreakIterator.Run {
+    static final class Whitespace extends Run {
         @Override
         protected boolean isValid(char ch) {
             return Character.isWhitespace(ch) && ch != '\n' && ch != '\r';
         }
     }
 
-    static final class LineDelimiter extends SQLWordBreakIterator.Run {
-        /**
-         * State: INIT -> delimiter -> EXIT.
-         */
-        private char fState;
+    static final class LineDelimiter extends Run {
+        private char state;
         private static final char INIT = '\0';
         private static final char EXIT = '\1';
 
-        /*
-         * @see org.eclipse.jdt.internal.ui.text.SQLWordBreakIterator.Run#init()
-         */
         @Override
         protected void init() {
             super.init();
-            fState = INIT;
+            state = INIT;
         }
 
-        /*
-         * @see org.eclipse.jdt.internal.ui.text.SQLWordBreakIterator.Run#consume(char)
-         */
         @Override
         protected boolean consume(char ch) {
-            if (!isValid(ch) || fState == EXIT)
+            if (!isValid(ch) || state == EXIT)
                 return false;
 
-            if (fState == INIT) {
-                fState = ch;
+            if (state == INIT) {
+                state = ch;
                 length++;
                 return true;
-            } else if (fState != ch) {
-                fState = EXIT;
+            } else if (state != ch) {
+                state = EXIT;
                 length++;
                 return true;
             } else {
@@ -116,78 +87,56 @@ public class SQLWordBreakIterator extends BreakIterator {
         }
     }
 
-    static final class SQLIdentifier extends SQLWordBreakIterator.Run {
+    static final class SQLIdentifier extends Run {
         @Override
         protected boolean isValid(char ch) {
             return Character.isJavaIdentifierPart(ch);
         }
     }
 
-    static final class Other extends SQLWordBreakIterator.Run {
+    static final class Other extends Run {
         @Override
         protected boolean isValid(char ch) {
             return !Character.isWhitespace(ch) && !Character.isJavaIdentifierPart(ch);
         }
     }
 
-    private static final SQLWordBreakIterator.Run WHITESPACE = new SQLWordBreakIterator.Whitespace();
-    private static final SQLWordBreakIterator.Run DELIMITER = new SQLWordBreakIterator.LineDelimiter();
-    private static final SQLWordBreakIterator.Run IDENTIFIER = new SQLIdentifier(); // new Identifier();
-    private static final SQLWordBreakIterator.Run OTHER = new SQLWordBreakIterator.Other();
+    private static final Run WHITESPACE = new Whitespace();
+    private static final Run DELIMITER = new LineDelimiter();
+    private static final Run IDENTIFIER = new SQLIdentifier(); // new Identifier();
+    private static final Run OTHER = new Other();
 
-    /**
-     * The platform break iterator (word instance) used as a base.
-     */
-    protected final BreakIterator fIterator;
-    /**
-     * The text we operate on.
-     */
-    protected CharSequence fText;
-    /**
-     * our current position for the stateful methods.
-     */
-    private int fIndex;
+    protected final BreakIterator iterator;
+    protected CharSequence text;
+    private int index;
 
-
-    /**
-     * Creates a new break iterator.
-     */
     public SQLWordBreakIterator() {
-        fIterator = BreakIterator.getWordInstance();
-        fIndex = fIterator.current();
+        iterator = BreakIterator.getWordInstance();
+        index = iterator.current();
     }
 
     public CharSequence getTextValue() {
-        return fText;
+        return text;
     }
 
-    /*
-     * @see java.text.BreakIterator#current()
-     */
     @Override
     public int current() {
-        return fIndex;
+        return index;
     }
 
-    /*
-     * @see java.text.BreakIterator#first()
-     */
     @Override
     public int first() {
-        fIndex = fIterator.first();
-        return fIndex;
+        index = iterator.first();
+        return index;
     }
 
-    /*
-     * @see java.text.BreakIterator#following(int)
-     */
     @Override
     public int following(int offset) {
         // work around too eager IAEs in standard implementation
         if (offset == getText().getEndIndex())
             return DONE;
 
-        int next = fIterator.following(offset);
+        int next = iterator.following(offset);
         if (next == DONE)
             return DONE;
 
@@ -195,39 +144,27 @@ public class SQLWordBreakIterator extends BreakIterator {
         // Math.min(offset + run.length, next) does not work
         // since BreakIterator.getWordInstance considers _ as boundaries
         // seems to work fine, however
-        SQLWordBreakIterator.Run run = consumeRun(offset);
+        Run run = consumeRun(offset);
         return offset + run.length;
 
     }
 
-    /**
-     * Consumes a run of characters at the limits of which we introduce a break.
-     *
-     * @param offset the offset to start at
-     * @return the run that was consumed
-     */
-    private SQLWordBreakIterator.Run consumeRun(int offset) {
+    private Run consumeRun(int offset) {
         // assert offset < length
 
-        char ch = fText.charAt(offset);
-        int length = fText.length();
-        SQLWordBreakIterator.Run run = getRun(ch);
+        char ch = text.charAt(offset);
+        int length = text.length();
+        Run run = getRun(ch);
         while (run.consume(ch) && offset < length - 1) {
             offset++;
-            ch = fText.charAt(offset);
+            ch = text.charAt(offset);
         }
 
         return run;
     }
 
-    /**
-     * Returns a run based on a character.
-     *
-     * @param ch the character to test
-     * @return the correct character given <code>ch</code>
-     */
-    private SQLWordBreakIterator.Run getRun(char ch) {
-        SQLWordBreakIterator.Run run;
+    private Run getRun(char ch) {
+        Run run;
         if (WHITESPACE.isValid(ch))
             run = WHITESPACE;
         else if (DELIMITER.isValid(ch))
@@ -245,17 +182,11 @@ public class SQLWordBreakIterator extends BreakIterator {
         return run;
     }
 
-    /*
-     * @see java.text.BreakIterator#getText()
-     */
     @Override
     public CharacterIterator getText() {
-        return fIterator.getText();
+        return iterator.getText();
     }
 
-    /*
-     * @see java.text.BreakIterator#isBoundary(int)
-     */
     @Override
     public boolean isBoundary(int offset) {
         if (offset == getText().getBeginIndex())
@@ -264,35 +195,23 @@ public class SQLWordBreakIterator extends BreakIterator {
             return following(offset - 1) == offset;
     }
 
-    /*
-     * @see java.text.BreakIterator#last()
-     */
     @Override
     public int last() {
-        fIndex = fIterator.last();
-        return fIndex;
+        index = iterator.last();
+        return index;
     }
 
-    /*
-     * @see java.text.BreakIterator#next()
-     */
     @Override
     public int next() {
-        fIndex = following(fIndex);
-        return fIndex;
+        index = following(index);
+        return index;
     }
 
-    /*
-     * @see java.text.BreakIterator#next(int)
-     */
     @Override
     public int next(int n) {
-        return fIterator.next(n);
+        return iterator.next(n);
     }
 
-    /*
-     * @see java.text.BreakIterator#preceding(int)
-     */
     @Override
     public int preceding(int offset) {
         if (offset == getText().getBeginIndex())
@@ -303,7 +222,7 @@ public class SQLWordBreakIterator extends BreakIterator {
 
         int previous = offset - 1;
         do {
-            previous = fIterator.preceding(previous);
+            previous = iterator.preceding(previous);
         } while (!isBoundary(previous));
 
         int last = DONE;
@@ -315,42 +234,28 @@ public class SQLWordBreakIterator extends BreakIterator {
         return last;
     }
 
-    /*
-     * @see java.text.BreakIterator#previous()
-     */
     @Override
     public int previous() {
-        fIndex = preceding(fIndex);
-        return fIndex;
+        index = preceding(index);
+        return index;
     }
 
-    /*
-     * @see java.text.BreakIterator#setText(java.lang.String)
-     */
     @Override
     public void setText(String newText) {
         setText((CharSequence) newText);
     }
 
-    /**
-     * Creates a break iterator given a char sequence.
-     *
-     * @param newText the new text
-     */
     public void setText(CharSequence newText) {
-        fText = newText;
-        fIterator.setText(new SQLSequenceCharacterIterator(newText));
+        text = newText;
+        iterator.setText(new SQLSequenceCharacterIterator(newText));
         first();
     }
 
-    /*
-     * @see java.text.BreakIterator#setText(java.text.CharacterIterator)
-     */
     @Override
     public void setText(CharacterIterator newText) {
         if (newText instanceof CharSequence) {
-            fText = (CharSequence) newText;
-            fIterator.setText(newText);
+            text = (CharSequence) newText;
+            iterator.setText(newText);
             first();
         } else {
             throw new UnsupportedOperationException("CharacterIterator not supported"); //$NON-NLS-1$
