@@ -18,9 +18,7 @@ package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.NotNull;
 
-public interface WSProjectEvent {
-    @NotNull
-    String getId();
+public interface WSProjectEvent extends WSEvent {
 
     @NotNull
     String getProjectId();

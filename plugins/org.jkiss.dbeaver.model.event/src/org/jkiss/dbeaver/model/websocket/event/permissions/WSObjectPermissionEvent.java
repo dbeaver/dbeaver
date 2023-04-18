@@ -19,10 +19,10 @@ package org.jkiss.dbeaver.model.websocket.event.permissions;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.security.SMObjectType;
-import org.jkiss.dbeaver.model.websocket.event.WSEvent;
+import org.jkiss.dbeaver.model.websocket.event.WSAbstractEvent;
 import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
-public class WSObjectPermissionEvent extends WSEvent {
+public class WSObjectPermissionEvent extends WSAbstractEvent {
     private final SMObjectType smObjectType;
     private final String objectId;
     protected WSObjectPermissionEvent(

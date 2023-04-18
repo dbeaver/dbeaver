@@ -39,10 +39,10 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -53,6 +53,8 @@ import java.util.List;
  * a restore position.
  */
 public class CustomSashForm extends SashForm {
+
+    private static final Log log = Log.getLog(CustomSashForm.class);
 
     /**
      * Custom style bits. They set whether hide to one side of the other
@@ -101,10 +103,11 @@ public class CustomSashForm extends SashForm {
     // know not to recompute our position because a mouse up is about to happen
     // and we want the correct arrow handled correctly.
 
-    protected boolean sashBorders[];    // Whether corresponding control needs a sash border
+    private boolean[] sashBorders;    // Whether corresponding control needs a sash border
+    private boolean showBorders = false;
 
     protected boolean noHideUp, noHideDown;
-    protected List customSashFormListeners = null;
+    protected List<ICustomSashFormListener> customSashFormListeners = null;
 
     protected static final int
             UP_RESTORE_ARROW = 0,
@@ -127,20 +130,9 @@ public class CustomSashForm extends SashForm {
             ARROW_HEIGHT = 5,
             ARROW_MARGIN = 5;    // Margin on each side of arrow
 
-
     public CustomSashForm(Composite parent, int style) {
-        this(parent, style, SWT.NONE);
-    }
-
-    /**
-     * Constructor taking a custom style too.
-     * Or in the Custom style bits defined above (e.g. NO_HIDE_RIGHT,...)
-     */
-    public CustomSashForm(Composite parent, int style, int customStyle) {
         super(parent, style);
 
-        // FIXME: Do we need extra re-layout?
-        // Need listener to force a layout
         this.addListener(SWT.Resize, new Listener() {
             public void handleEvent(Event e) {
                 layout(true);
@@ -149,11 +141,6 @@ public class CustomSashForm extends SashForm {
         });
 
         sashBorders = new boolean[]{true, true};
-        noHideUp = ((customStyle & NO_HIDE_UP) != 0);
-        noHideDown = ((customStyle & NO_HIDE_DOWN) != 0);
-
-        if (noHideUp & noHideDown)
-            return;    // If you can't hide up or down, there there is no need for arrows.
 
         SASH_WIDTH = (3 + getOrientation() == SWT.VERTICAL ? ARROW_HEIGHT : ARROW_HEIGHT) + ARROW_MARGIN;
 
@@ -161,9 +148,6 @@ public class CustomSashForm extends SashForm {
         borderColor = new Color(parent.getDisplay(), 205, 205, 205);
 
         addDisposeListener(new DisposeListener() {
-            /**
-             * @see org.eclipse.swt.events.DisposeListener#widgetDisposed(DisposeEvent)
-             */
             public void widgetDisposed(DisposeEvent e) {
                 arrowColor.dispose();
                 borderColor.dispose();
@@ -173,32 +157,12 @@ public class CustomSashForm extends SashForm {
         });
     }
 
-    /**
-     * Returns the <code>noHideUp</code> setting for vertical CustomSashForm.
-     */
-    public boolean isNoHideUp() {
-        return noHideUp;
+    public boolean isShowBorders() {
+        return showBorders;
     }
 
-    /**
-     * Returns the <code>noHideDown</code> setting for vertical CustomSashForm.
-     */
-    public boolean isNoHideDown() {
-        return noHideDown;
-    }
-
-    /**
-     * Returns the <code>noHideLeft</code> setting for horizontal CustomSashForm.
-     */
-    public boolean isNoHideLeft() {
-        return noHideUp;
-    }
-
-    /**
-     * Returns the <code>noHideRight</code> setting for horizontal CustomSashForm.
-     */
-    public boolean isNoHideRight() {
-        return noHideDown;
+    public void setShowBorders(boolean showBorders) {
+        this.showBorders = showBorders;
     }
 
     /**
@@ -349,10 +313,12 @@ public class CustomSashForm extends SashForm {
                         drawArrow(gc, currentSashInfo.sashLocs[1], currentSashInfo.cursorOver == 1, isTwoArrows);    // Draw second arrow
                     }
 
-                    if (currentSashInfo.sashBorderLeft)
-                        drawSashBorder(gc, currentSashInfo.sash, true);
-                    if (currentSashInfo.sashBorderRight)
-                        drawSashBorder(gc, currentSashInfo.sash, false);
+                    if (showBorders) {
+                        if (currentSashInfo.sashBorderLeft)
+                            drawSashBorder(gc, currentSashInfo.sash, true);
+                        if (currentSashInfo.sashBorderRight)
+                            drawSashBorder(gc, currentSashInfo.sash, false);
+                    }
 
                     gc.setForeground(oldFg);
                     gc.setBackground(oldBg);
@@ -692,7 +658,7 @@ public class CustomSashForm extends SashForm {
         try {
             setWeights(weights);
         } catch (SWTError e) {
-
+            log.debug(e);
         }
         setWeights(weights);
         if (upperFocus)
@@ -813,14 +779,16 @@ public class CustomSashForm extends SashForm {
 
     protected void drawSashBorder(GC gc, Sash sash, boolean leftBorder) {
         gc.setForeground(borderColor);
+        gc.setLineStyle(SWT.LINE_DOT);
+        Point s = sash.getSize();
         if (getOrientation() == SWT.VERTICAL) {
-            Point s = sash.getSize();
+            int maxWidth = Math.min(100, s.x);
+            int leftPos = (s.x - maxWidth) / 2;
             if (leftBorder) // i.e. top for VERTICAL sash
-                gc.drawLine(0, 0, s.x - 1, 0);
+                gc.drawLine(leftPos, 0, leftPos + maxWidth, 0);
             else  // i.e. bottom for VERTICAL sash
-                gc.drawLine(0, s.y - 1, s.x - 1, s.y - 1);
+                gc.drawLine(leftPos, s.y - 1, leftPos + maxWidth, s.y - 1);
         } else {
-            Point s = sash.getSize();
             if (leftBorder)
                 gc.drawLine(0, 0, 0, s.y - 1);
             else
@@ -952,16 +920,6 @@ public class CustomSashForm extends SashForm {
             return -1;
     }
 
-
-    protected Sash getSash() {
-        Control[] kids = getChildren();
-        for (int i = 0; i < kids.length; i++) {
-            if (kids[i] instanceof Sash)
-                return (Sash) kids[i];
-        }
-        return null;
-    }
-
     public void setRestoreWeight(int weight) {
         if (weight >= 0 && currentSashInfo != null) {
             //recomputeSashInfo();
@@ -989,25 +947,13 @@ public class CustomSashForm extends SashForm {
         customSashFormListeners.add(listener);
     }
 
-    /**
-     * Removes the custom sashform listener.
-     *
-     * @since 1.2.0
-     */
-    public void removeCustomSashFormListener(ICustomSashFormListener listener) {
-        if (customSashFormListeners != null) {
-            customSashFormListeners.remove(listener);
-        }
-    }
-
     protected void fireDividerMoved() {
         if (customSashFormListeners != null && customSashFormListeners.size() > 0) {
             int[] weights = getWeights();
             if (weights != null && weights.length == 2) {
                 int firstControlWeight = weights[0];
                 int secondControlWeight = weights[1];
-                for (Iterator listenerItr = customSashFormListeners.iterator(); listenerItr.hasNext(); ) {
-                    ICustomSashFormListener listener = (ICustomSashFormListener) listenerItr.next();
+                for (ICustomSashFormListener listener : customSashFormListeners) {
                     listener.dividerMoved(firstControlWeight, secondControlWeight);
                 }
             }

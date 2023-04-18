@@ -19,52 +19,18 @@ package org.jkiss.dbeaver.model.websocket.event;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-/**
- * Base websocket event
- */
-public abstract class WSEvent {
-    @Nullable
-    private final String sessionId;
-    @Nullable
-    private final String userId;
+public interface WSEvent {
     @NotNull
-    private final String id;
-    @NotNull
-    private final String topicId;
-    private final long timestamp = System.currentTimeMillis();
-
-    protected WSEvent(@NotNull WSEventType eventType) {
-        this(eventType, null, null);
-    }
-
-    protected WSEvent(@NotNull WSEventType eventType, @Nullable String sessionId, @Nullable String userId) {
-        this.id = eventType.getEventId();
-        this.topicId = eventType.getTopic().getTopicId();
-        this.sessionId = sessionId;
-        this.userId = userId;
-    }
-
-    @NotNull
-    public String getId() {
-        return id;
-    }
+    String getId();
 
     @Nullable
-    public String getSessionId() {
-        return sessionId;
-    }
+    String getSessionId();
 
     @NotNull
-    public String getTopicId() {
-        return topicId;
-    }
+    String getTopicId();
 
     @Nullable
-    public String getUserId() {
-        return userId;
-    }
+    String getUserId();
 
-    public long getTimestamp() {
-        return timestamp;
-    }
+    long getTimestamp();
 }

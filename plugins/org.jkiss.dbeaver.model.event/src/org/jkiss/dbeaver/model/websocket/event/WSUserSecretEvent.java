@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.websocket.event;
 
-public class WSUserSecretEvent extends WSEvent {
+public class WSUserSecretEvent extends WSAbstractEvent {
 
     private final String dataSourceId;
 
