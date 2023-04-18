@@ -17,10 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.jface.action.*;
-import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.*;
 import org.eclipse.ui.editors.text.TextEditorActionContributor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.RetargetTextEditorAction;
@@ -162,6 +159,9 @@ public class SQLEditorContributor extends TextEditorActionContributor
                 navMenu.add(ActionUtils.makeCommandContribution(window, SQLEditorCommands.CMD_SQL_QUERY_NEXT));
                 navMenu.add(ActionUtils.makeCommandContribution(window, SQLEditorCommands.CMD_SQL_QUERY_PREV));
                 navMenu.add(ActionUtils.makeCommandContribution(window, SQLEditorCommands.CMD_SQL_GOTO_MATCHING_BRACKET));
+                navMenu.add(new Separator());
+                navMenu.add(ActionUtils.makeCommandContribution(window, IWorkbenchCommandConstants.NAVIGATE_NEXT));
+                navMenu.add(ActionUtils.makeCommandContribution(window, IWorkbenchCommandConstants.NAVIGATE_PREVIOUS));
             }
         }
     }
