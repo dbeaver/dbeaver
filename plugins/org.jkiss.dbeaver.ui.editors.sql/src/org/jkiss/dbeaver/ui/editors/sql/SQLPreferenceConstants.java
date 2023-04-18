@@ -96,7 +96,7 @@ public class SQLPreferenceConstants {
     public static final String SQLEDITOR_CLOSE_COMMENTS                = "SQLEditor.closeComments";
     public static final String SQLEDITOR_CLOSE_BLOCKS                  = "SQLEditor.closeBlocks";
 
-    public static final String SMART_WORD_ITERATOR                     = "SQLEditor.smartWrdIterator";
+    public static final String SMART_WORD_ITERATOR                     = "SQLEditor.smartWordIterator";
 
     // Matching brackets
     public final static String MATCHING_BRACKETS                        = "SQLEditor.matchingBrackets";
