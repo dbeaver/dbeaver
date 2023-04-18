@@ -48,6 +48,9 @@ public class ModelErrorsCollection {
     public void printToStderr() {
         for (ErrorInfo error : errors) {
             System.err.println(error.message);
+            if (error.exception != null) {
+                System.err.println("\t" + error.exception.toString().replace("\n", "\n\t"));
+            }
         }
     }
     

@@ -14,15 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm;
+package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.Lexer;
+import org.eclipse.ui.texteditor.spelling.SpellingContext;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
-public abstract class LSMLexer extends Lexer {
+public class SQLSpellingContext extends SpellingContext {
 
-    public LSMLexer(CharStream input) {
-        super(input);
+    private final SQLEditorBase editor;
+    public SQLSpellingContext(SQLEditorBase editor) {
+        this.editor = editor;
     }
 
+    public SQLEditorBase getEditor() {
+        return editor;
+    }
 }

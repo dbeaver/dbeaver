@@ -47,6 +47,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.dialogs.PropertyDialog;
 import org.eclipse.ui.texteditor.*;
+import org.eclipse.ui.texteditor.spelling.SpellingAnnotation;
 import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
@@ -480,6 +481,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         sourceViewer.addPainter(matchPainter);
 
         return sourceViewer;
+    }
+
+    protected SourceViewerDecorationSupport getSourceViewerDecorationSupport(ISourceViewer viewer) {
+        if (fSourceViewerDecorationSupport == null) {
+            fSourceViewerDecorationSupport= new SQLSourceViewerDecorationSupport(viewer, getOverviewRuler(), getAnnotationAccess(), getSharedColors());
+            configureSourceViewerDecorationSupport(fSourceViewerDecorationSupport);
+        }
+        return fSourceViewerDecorationSupport;
     }
 
     protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {
@@ -1101,6 +1110,20 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     int getLastQueryErrorPosition() {
         return lastQueryErrorPosition;
+    }
+
+    protected boolean isNavigationTarget(Annotation annotation) {
+        if (annotation instanceof SpellingAnnotation) {
+            // Iterate over spelling problems only if we do not have problems
+            for (Iterator<Annotation> i = getAnnotationModel().getAnnotationIterator(); i.hasNext(); ) {
+                Annotation anno = i.next();
+                if (anno instanceof SQLProblemAnnotation) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return super.isNavigationTarget(annotation);
     }
 
     ////////////////////////////////////////////////////////

@@ -20,6 +20,7 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -105,6 +106,11 @@ public class TreeRuleNode extends ParserRuleContext implements Element, XTreeEle
     
     public AbstractSyntaxNode getModel() {
         return this.model;
+    }
+    
+    @Override
+    public Interval getRealInterval() {
+        return new Interval(this.getStart().getStartIndex(), this.getStop().getStopIndex());
     }
     
     @Override

@@ -16,9 +16,15 @@
  */
 package org.jkiss.dbeaver.model.lsm;
 
-import org.antlr.v4.runtime.tree.Tree;
+import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 
-public interface LSMParser extends LSMObject<LSMParser> {
+public interface LSMAnalysisCase<T extends LSMElement, M extends AbstractSyntaxNode & LSMElement> extends LSMObject<LSMAnalysisCase<T, M>> {
     
-    Tree parse();
+    Class<T> getModelContractType();
+    
+    Class<M> getModelRootType();
+    
+    LSMParser createParser(LSMSource source);
+
+    
 }

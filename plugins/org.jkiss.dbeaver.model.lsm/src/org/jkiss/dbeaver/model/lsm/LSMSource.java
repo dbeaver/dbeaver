@@ -16,9 +16,18 @@
  */
 package org.jkiss.dbeaver.model.lsm;
 
-import org.antlr.v4.runtime.tree.Tree;
+import org.antlr.v4.runtime.CharStream;
+import org.jkiss.dbeaver.model.lsm.impl.LSMSourceImpl;
 
-public interface LSMParser extends LSMObject<LSMParser> {
-    
-    Tree parse();
+import java.io.IOException;
+import java.io.Reader;
+
+
+public interface LSMSource extends LSMObject<LSMSource> {
+
+    CharStream getStream();
+
+    public static LSMSource fromReader(Reader reader) throws IOException {
+        return new LSMSourceImpl(reader);
+    }
 }

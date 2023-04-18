@@ -16,21 +16,24 @@
  */
 package org.jkiss.dbeaver.model.lsm.sql.impl;
 
+import java.util.List;
+
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxNode;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxSubnode;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxTerm;
 
-@SyntaxNode(name = "selectSublist")
-public class SelectionItem extends AbstractSyntaxNode {
+@SyntaxNode(name = "groupByClause")
+public class GroupingSpec extends AbstractSyntaxNode{
     
-    @SyntaxSubnode(xpath = ".//columnReference")
-    public ColumnReference columnName;
-    // TODO: create model for conditions
-    public ValueExpression expression;
+    @SyntaxNode(name = "groupingColumnReference")
+    public static class GroupingColumnSpec extends AbstractSyntaxNode {
+        @SyntaxSubnode(xpath = "./columnReference")
+        public ColumnReference column;
+        @SyntaxTerm(xpath = "./collateClause/collationName/qualifiedName/qualifiedIdentifier/identifier/actualIdentifier")
+        public String collation;
+    }
     
-    @SyntaxTerm(xpath = "./derivedColumn/asClause/columnName/identifier/actualIdentifier")
-    public String alias;
-
+    @SyntaxSubnode(type = GroupingColumnSpec.class, xpath = "./groupingColumnReferenceList/groupingColumnReference")
+    public List<GroupingColumnSpec> columns;
 }
-
