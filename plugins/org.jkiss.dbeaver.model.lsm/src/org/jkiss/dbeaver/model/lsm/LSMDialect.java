@@ -16,29 +16,21 @@
  */
 package org.jkiss.dbeaver.model.lsm;
 
-import org.antlr.v4.runtime.Lexer;
+import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 
-public class LSMContext {
+import java.util.Collection;
+import java.util.concurrent.Future;
 
-    private final String parserName;
-    private final Lexer lexer;
-    private final LSMParser parser;
 
-    public LSMContext(String parserName, Lexer lexer, LSMParser parser) {
-        this.parserName = parserName;
-        this.lexer = lexer;
-        this.parser = parser;
-    }
+public interface LSMDialect {
+    
+    Collection<LSMAnalysisCase<? extends LSMElement, ? extends AbstractSyntaxNode>> getSupportedCases();
 
-    public String getParserName() {
-        return parserName;
-    }
-
-    public Lexer getLexer() {
-        return lexer;
-    }
-
-    public LSMParser getParser() {
-        return parser;
-    }
+    <T extends LSMElement> LSMAnalysisCase<T, ? extends AbstractSyntaxNode> findAnalysisCase(Class<T> expectedModelType);
+    
+    <T extends LSMElement> Future<LSMAnalysis<T>> prepareAnalysis(
+        LSMSource source,
+        LSMAnalysisCase<T, ? extends AbstractSyntaxNode> analysisCase
+    );
+    
 }

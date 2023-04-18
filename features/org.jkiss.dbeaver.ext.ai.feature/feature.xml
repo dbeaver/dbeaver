@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.ext.ai.feature"
       label="%featureName"
-      version="1.0.5.qualifier"
+      version="1.0.6.qualifier"
       provider-name="%providerName"
       plugin="org.jkiss.dbeaver.ui.editors.sql.ai">
 

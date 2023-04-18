@@ -2001,19 +2001,16 @@ public class DataSourceDescriptor
         try {
             for (DBSSecret secret : sBrowser.listSecrets(itemPath.toString())) {
                 String secretId = secret.getId();
+                String secretValue = secretController.getSecretValue(secretId);
                 switch (secret.getName()) {
                     case RegistryConstants.ATTR_USER:
-                        connectionInfo.setUserName(
-                            secretController.getSecretValue(secretId));
+                        connectionInfo.setUserName(secretValue);
                         break;
                     case RegistryConstants.ATTR_PASSWORD:
-                        connectionInfo.setUserPassword(
-                            secretController.getSecretValue(secretId));
+                        connectionInfo.setUserPassword(secretValue);
                         break;
                     default:
-                        connectionInfo.setAuthProperty(
-                            secretId,
-                            secretController.getSecretValue(secretId));
+                        connectionInfo.setAuthProperty(secretId, secretValue);
                         break;
                 }
             }
