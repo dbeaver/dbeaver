@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.lsm.mapping.internal;
 
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import org.jkiss.dbeaver.model.lsm.mapping.internal.TreeRuleNode.SubnodesList;
 import org.w3c.dom.NodeList;
@@ -42,6 +43,11 @@ public class TreeTermNode extends TerminalNodeImpl implements XTreeTextBase {
     @Override
     public void fixup(Parser parser, int index) {
         this.index = index;
+    }
+    
+    @Override
+    public Interval getRealInterval() {
+        return new Interval(this.getSymbol().getStartIndex(), this.getSymbol().getStopIndex());
     }
     
     @Override

@@ -87,9 +87,20 @@ public class GroupingDataContainer implements DBSDataContainer {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
         StringBuilder sqlQuery = new StringBuilder(this.query);
-        SQLUtils.appendQueryOrder(getDataSource(), sqlQuery, null, dataFilter);
+        DBPDataSource dataSource = getDataSource();
+        if (dataSource != null) {
+            SQLUtils.appendQueryOrder(dataSource, sqlQuery, null, dataFilter);
+        }
 
-        statistics.setQueryText(sqlQuery.toString());
+        String sql = sqlQuery.toString();
+        if (dataSource != null && dataFilter.hasConditions()) {
+            sqlQuery.setLength(0);
+            String gbAlias = "gbq_";
+            SQLUtils.appendQueryConditions(dataSource, sqlQuery, gbAlias, dataFilter);
+            sql = "SELECT * FROM (" + sql + ") " + gbAlias + " " + sqlQuery;
+        }
+
+        statistics.setQueryText(sql);
         statistics.addStatementsCount();
 
         monitor.subTask(ModelMessages.model_jdbc_fetch_table_data);
@@ -98,7 +109,7 @@ public class GroupingDataContainer implements DBSDataContainer {
             source,
             session,
             DBCStatementType.SCRIPT,
-            sqlQuery.toString(),
+            sql,
             firstRow,
             maxRows))
         {
