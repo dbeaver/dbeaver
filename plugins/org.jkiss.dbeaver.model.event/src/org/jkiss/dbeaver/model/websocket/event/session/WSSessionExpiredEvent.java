@@ -14,21 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event;
+package org.jkiss.dbeaver.model.websocket.event.session;
 
-import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.websocket.event.WSAbstractEvent;
+import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
-public class WSSocketConnectedEvent extends WSAbstractEvent {
+public class WSSessionExpiredEvent extends WSAbstractEvent {
 
-    private final String applicationRunId;
-
-    public WSSocketConnectedEvent(@NotNull String applicationRunId) {
-        super(WSEventType.SESSION_WEBSOCKET_CONNECTED);
-        this.applicationRunId = applicationRunId;
-    }
-
-    @NotNull
-    public String getApplicationRunId() {
-        return applicationRunId;
+    public WSSessionExpiredEvent() {
+        super(WSEventType.SESSION_EXPIRED);
     }
 }
