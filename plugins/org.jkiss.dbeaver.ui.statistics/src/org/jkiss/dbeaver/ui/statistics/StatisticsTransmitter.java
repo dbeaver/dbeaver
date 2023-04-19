@@ -44,7 +44,7 @@ public class StatisticsTransmitter {
 
     private static final Log log = Log.getLog(StatisticsTransmitter.class);
 
-    private static final String ENDPOINT = "http://stats.dbeaver.com:8000/send-statistics";
+    private static final String ENDPOINT = "https://stats.dbeaver.com/send-statistics";
 
     private final String workspaceId;
 
