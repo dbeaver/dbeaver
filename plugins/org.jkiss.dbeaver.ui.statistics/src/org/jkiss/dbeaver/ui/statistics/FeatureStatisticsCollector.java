@@ -211,6 +211,7 @@ public class FeatureStatisticsCollector implements DBRFeatureTracker {
     }
 
     private void sendCollectedStatistics(boolean detached) {
+        log.debug("send collected statistics");
         String workspaceId = BaseWorkspaceImpl.readWorkspaceId();
         new StatisticsTransmitter(workspaceId).send(detached);
     }

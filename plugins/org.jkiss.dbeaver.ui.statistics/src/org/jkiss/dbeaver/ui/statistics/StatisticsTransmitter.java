@@ -104,6 +104,7 @@ public class StatisticsTransmitter {
     }
 
     private void sendLogFile(Path logFile, String timestamp, String sessionId) {
+        log.debug("Sending statistics file '" + logFile.toAbsolutePath() + "'");
         try {
             URLConnection urlConnection = WebUtils.openURLConnection(
                 ENDPOINT + "?session=" + sessionId + "&time=" + timestamp,
@@ -126,6 +127,8 @@ public class StatisticsTransmitter {
             try (OutputStream outputStream = urlConnection.getOutputStream()) {
                 Files.copy(logFile, outputStream);
             }
+            ((HttpURLConnection) urlConnection).disconnect();
+
             Files.delete(logFile);
         } catch (Exception e) {
             log.debug("Error sending statistics file '" + logFile.toAbsolutePath() + "'.", e);
