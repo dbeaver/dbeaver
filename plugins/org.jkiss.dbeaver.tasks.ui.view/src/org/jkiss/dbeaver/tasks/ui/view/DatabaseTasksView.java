@@ -90,6 +90,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     public DatabaseTasksView() {
     }
 
+    @Nullable
     public DatabaseTasksTree getTasksTree() {
         return tasksTree;
     }
@@ -100,6 +101,10 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     @Override
     public void createPartControl(Composite parent) {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER)) {
+            log.debug("The user needs more permissions to see the Database Tasks View.");
+            return;
+        }
         SashForm sashForm = UIUtils.createPartDivider(this, parent, SWT.HORIZONTAL);
 
         createTaskTree(sashForm);
@@ -232,12 +237,16 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 {
                     ClipboardData clipboardData = new ClipboardData();
                     StringBuilder buf = new StringBuilder();
-                    for (TreeItem item : getTasksTree().getViewer().getTree().getSelection()) {
+                    DatabaseTasksTree tasksTree = getTasksTree();
+                    if (tasksTree == null) {
+                        return;
+                    }
+                    for (TreeItem item : tasksTree.getViewer().getTree().getSelection()) {
                         if (buf.length() > 0) buf.append(GeneralUtils.getDefaultLineSeparator());
                         buf.append(item.getText(0));
                     }
                     clipboardData.addTransfer(TextTransfer.getInstance(), buf.toString());
-                    clipboardData.pushToClipboard(getTasksTree().getViewer().getTree().getDisplay());
+                    clipboardData.pushToClipboard(tasksTree.getViewer().getTree().getDisplay());
                 }
             });
 
@@ -278,6 +287,9 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     @Override
     public void setFocus() {
+        if (tasksTree == null) {
+            return;
+        }
         tasksTree.getViewer().getControl().setFocus();
     }
 
@@ -362,13 +374,18 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     }
 
     private void loadViewConfig() {
+        if (tasksTree == null) {
+            return;
+        }
         tasksTree.loadViewConfig();
     }
 
     public void refresh() {
         updateViewTitle();
 
-        tasksTree.refresh();
+        if (tasksTree != null) {
+            tasksTree.refresh();
+        }
 
         loadTaskRuns();
     }
@@ -381,10 +398,16 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     }
 
     private void loadTasks() {
+        if (tasksTree == null) {
+            return;
+        }
         tasksTree.loadTasks();
     }
 
     private void loadTaskRuns() {
+        if (tasksTree == null) {
+            return;
+        }
         DBTTask selectedTask = tasksTree.getSelectedTask();
         if (selectedTask == null) {
             taskRunViewer.setInput(EMPTY_TASK_RUN_LIST);

@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 
-public class SQLPreferenceConstants
-{
-
-
+public class SQLPreferenceConstants {
 
     public enum EmptyScriptCloseBehavior {
         NOTHING(SQLEditorMessages.script_close_behavior_do_not_delete),
@@ -99,11 +96,13 @@ public class SQLPreferenceConstants
     public static final String SQLEDITOR_CLOSE_COMMENTS                = "SQLEditor.closeComments";
     public static final String SQLEDITOR_CLOSE_BLOCKS                  = "SQLEditor.closeBlocks";
 
+    public static final String SMART_WORD_ITERATOR                     = "SQLEditor.smartWordIterator";
+
     // Matching brackets
     public final static String MATCHING_BRACKETS                        = "SQLEditor.matchingBrackets";
     public final static String MATCHING_BRACKETS_HIGHLIGHT              = "SQLEditor.matchingBracketsHighlight";
     // Reuse "AbstractTextEditor.Color.Foreground" color
-    public final static String MATCHING_BRACKETS_COLOR                  = "AbstractTextEditor.Color.Foreground";//"org.jkiss.dbeaver.sql.editor.color.matchingBrackets.foreground";
+    public final static String MATCHING_BRACKETS_COLOR                  = "AbstractTextEditor.Color.Foreground";
 
     public final static String RESET_CURSOR_ON_EXECUTE                  = "SQLEditor.resetCursorOnExecute";
     public final static String MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE        = "SQLEditor.maxEditorOnScriptExecute";

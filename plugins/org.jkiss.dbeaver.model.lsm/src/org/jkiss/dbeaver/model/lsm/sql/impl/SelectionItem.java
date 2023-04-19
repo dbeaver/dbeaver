@@ -18,19 +18,14 @@ package org.jkiss.dbeaver.model.lsm.sql.impl;
 
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxNode;
+import org.jkiss.dbeaver.model.lsm.mapping.SyntaxSubnode;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxTerm;
 
 @SyntaxNode(name = "selectSublist")
 public class SelectionItem extends AbstractSyntaxNode {
     
-    @SyntaxTerm(xpath = ".//columnReference//catalogName/identifier")
-    public String catalogName;
-    @SyntaxTerm(xpath = ".//columnReference//schemaName/unqualifiedSchemaName/identifier")
-    public String schemaName;
-    @SyntaxTerm(xpath = ".//columnReference//tableName/qualifiedName/qualifiedIdentifier/identifier")
-    public String tableName;
-    @SyntaxTerm(xpath = ".//columnReference//columnName/identifier/actualIdentifier")
-    public String columnName;
+    @SyntaxSubnode(xpath = ".//columnReference")
+    public ColumnReference columnName;
     // TODO: create model for conditions
     public ValueExpression expression;
     
