@@ -30,22 +30,30 @@ import org.jkiss.dbeaver.ext.tidb.model.plan.TiDBPlanAnalyzer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Map;
 
 public class TiDBMySQLDataSource extends MySQLDataSource {
     private static final Log log = Log.getLog(MySQLDataSource.class);
+    private static final String CONN_ATTR_NAME = "connectionAttributes";
+    private static final String PROP_APPLICATION_NAME = "program_names";
 
     private String tidbVersion = "";
 
@@ -144,5 +152,21 @@ public class TiDBMySQLDataSource extends MySQLDataSource {
             return false;
         }
         return true;
+    }
+    
+    @Override
+    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, 
+            JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+        Map<String, String> props = super.getInternalConnectionProperties(monitor, driver, context, purpose, connectionInfo);
+        // build application name
+        String appName = DBUtils.getClientApplicationName(getContainer(), context, purpose);
+        appName = "dbeaver_tidb_plugin" + (CommonUtils.isEmpty(appName) ? "" : "(" + appName + ")");
+        
+        // build conAttr value
+        String connAttr = props.get(CONN_ATTR_NAME);
+        connAttr = PROP_APPLICATION_NAME + ":" + appName + (CommonUtils.isEmpty(connAttr) ? "" : "," + connAttr);
+        
+        props.put(CONN_ATTR_NAME, connAttr);
+        return props;
     }
 }
