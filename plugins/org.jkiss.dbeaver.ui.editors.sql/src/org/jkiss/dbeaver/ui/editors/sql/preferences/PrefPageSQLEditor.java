@@ -131,7 +131,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         }
 
         {
-            Composite layoutGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_result_view, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite layoutGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_result_view, 1, GridData.FILL_HORIZONTAL, 0);
             ((GridData)layoutGroup.getLayoutData()).horizontalSpan = 2;
 
             closeTabOnErrorCheck = UIUtils.createCheckbox(
@@ -139,11 +139,12 @@ public class PrefPageSQLEditor extends TargetPrefPage
                 SQLEditorMessages.pref_page_sql_editor_label_close_results_tab_on_error,
                 SQLEditorMessages.pref_page_sql_editor_label_close_results_tab_on_error_tip,
                 false,
-                2);
+                1);
             replaceCurrentTab = UIUtils.createCheckbox(layoutGroup, SQLEditorMessages.pref_page_sql_editor_label_replace_on_single_query_exec_view, SQLEditorMessages.pref_page_sql_editor_label_replace_on_single_query_exec_view_tip, true, 2);
 
-            resultsOrientationCombo = UIUtils.createLabelCombo(layoutGroup, SQLEditorMessages.pref_page_sql_editor_label_results_orientation, SQLEditorMessages.pref_page_sql_editor_label_results_orientation_tip, SWT.READ_ONLY | SWT.DROP_DOWN);
-            ((GridData)resultsOrientationCombo.getLayoutData()).grabExcessHorizontalSpace = false;
+            Composite orientationComposite = UIUtils.createComposite(layoutGroup, 2);
+            resultsOrientationCombo = UIUtils.createLabelCombo(orientationComposite, SQLEditorMessages.pref_page_sql_editor_label_results_orientation, SQLEditorMessages.pref_page_sql_editor_label_results_orientation_tip, SWT.READ_ONLY | SWT.DROP_DOWN);
+            resultsOrientationCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             for (SQLEditor.ResultSetOrientation orientation : SQLEditor.ResultSetOrientation.values()) {
                 if (orientation.isSupported()) {
                     resultsOrientationCombo.add(orientation.getLabel());
@@ -151,10 +152,12 @@ public class PrefPageSQLEditor extends TargetPrefPage
             }
 
             autoOpenOutputView = UIUtils.createCheckbox(layoutGroup, SQLEditorMessages.pref_page_sql_editor_label_auto_open_output_view, SQLEditorMessages.pref_page_sql_editor_label_auto_open_output_view_tip, false, 2);
-            sizeWarningThreshouldSpinner = UIUtils.createLabelSpinner(layoutGroup,
+
+            Composite rsSizeComposite = UIUtils.createComposite(layoutGroup, 2);
+            sizeWarningThreshouldSpinner = UIUtils.createLabelSpinner(rsSizeComposite,
                 SQLEditorMessages.pref_page_sql_editor_label_size_warning_threshold,
                 SQLEditorMessages.pref_page_sql_editor_label_size_warning_threshold_tip, 20, 2, 200);
-            sizeWarningThreshouldSpinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            sizeWarningThreshouldSpinner.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         }
 
         {

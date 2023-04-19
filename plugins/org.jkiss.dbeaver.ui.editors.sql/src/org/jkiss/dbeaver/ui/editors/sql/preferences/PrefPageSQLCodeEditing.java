@@ -37,6 +37,7 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
 
     // Folding
     private Button csFoldingEnabled;
+    private Button csSmartWordsIterator;
     // Highlighting
     private Button csMarkOccurrencesUnderCursor;
     private Button csMarkOccurrencesForSelection;
@@ -63,9 +64,10 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
         {
             Composite foldingGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_completion_group_misc, 2, GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
+            csFoldingEnabled = UIUtils.createCheckbox(foldingGroup, SQLEditorMessages.pref_page_sql_completion_label_folding_enabled, SQLEditorMessages.pref_page_sql_completion_label_folding_enabled_tip, false, 2);
+            csSmartWordsIterator = UIUtils.createCheckbox(foldingGroup, SQLEditorMessages.pref_page_sql_completion_label_smart_word_iterator, SQLEditorMessages.pref_page_sql_completion_label_smart_word_iterator_tip, false, 2);
             csMarkOccurrencesUnderCursor = UIUtils.createCheckbox(foldingGroup, SQLEditorMessages.pref_page_sql_completion_label_mark_occurrences, SQLEditorMessages.pref_page_sql_completion_label_mark_occurrences_tip, false, 2);
             csMarkOccurrencesForSelection = UIUtils.createCheckbox(foldingGroup, SQLEditorMessages.pref_page_sql_completion_label_mark_occurrences_for_selections, SQLEditorMessages.pref_page_sql_completion_label_mark_occurrences_for_selections_tip, false, 2);
-            csFoldingEnabled = UIUtils.createCheckbox(foldingGroup, SQLEditorMessages.pref_page_sql_completion_label_folding_enabled, SQLEditorMessages.pref_page_sql_completion_label_folding_enabled_tip, false, 2);
             csProblemMarkersEnabled = UIUtils.createCheckbox(foldingGroup, SQLEditorMessages.pref_page_sql_completion_label_problem_markers_enabled, SQLEditorMessages.pref_page_sql_completion_label_problem_markers_enabled_tip, false, 2);
         }
 
@@ -100,6 +102,7 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
     @Override
     protected void loadPreferences(DBPPreferenceStore store) {
         csFoldingEnabled.setSelection(store.getBoolean(SQLPreferenceConstants.FOLDING_ENABLED));
+        csSmartWordsIterator.setSelection(store.getBoolean(SQLPreferenceConstants.SMART_WORD_ITERATOR));
         csMarkOccurrencesUnderCursor.setSelection(store.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR));
         csMarkOccurrencesForSelection.setSelection(store.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
         csProblemMarkersEnabled.setSelection(store.getBoolean(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED));
@@ -115,6 +118,7 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
     @Override
     protected void savePreferences(DBPPreferenceStore store) {
         store.setValue(SQLPreferenceConstants.FOLDING_ENABLED, csFoldingEnabled.getSelection());
+        store.setValue(SQLPreferenceConstants.SMART_WORD_ITERATOR, csSmartWordsIterator.getSelection());
         store.setValue(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR, csMarkOccurrencesUnderCursor.getSelection());
         store.setValue(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION, csMarkOccurrencesForSelection.getSelection());
         store.setValue(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED, csProblemMarkersEnabled.getSelection());
@@ -130,6 +134,7 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
     @Override
     protected void clearPreferences(DBPPreferenceStore store) {
         store.setToDefault(SQLPreferenceConstants.FOLDING_ENABLED);
+        store.setToDefault(SQLPreferenceConstants.SMART_WORD_ITERATOR);
         store.setToDefault(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR);
         store.setToDefault(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
         store.setToDefault(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED);
@@ -146,6 +151,7 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
     protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer container) {
         final DBPPreferenceStore store = container.getPreferenceStore();
         return store.contains(SQLPreferenceConstants.FOLDING_ENABLED)
+            || store.contains(SQLPreferenceConstants.SMART_WORD_ITERATOR)
             || store.contains(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR)
             || store.contains(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION)
             || store.contains(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED)

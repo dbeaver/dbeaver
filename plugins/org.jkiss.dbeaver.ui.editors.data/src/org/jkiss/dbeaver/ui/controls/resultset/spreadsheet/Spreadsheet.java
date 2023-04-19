@@ -26,6 +26,8 @@ import org.eclipse.swt.events.MenuDetectEvent;
 import org.eclipse.swt.events.MenuDetectListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridLayout;
@@ -37,6 +39,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
@@ -378,6 +382,14 @@ public class Spreadsheet extends LightGrid implements Listener {
     @Override
     protected void toggleCellValue(IGridColumn column, IGridRow row) {
         presentation.toggleCellValue(column, row);
+    }
+
+    @Override
+    protected void paintTopLeftCellCustom(GC gc, int y) {
+        if (presentation.getController().isRecordMode() && getColumnCount() > 1) {
+            Image searchIcon = DBeaverIcons.getImage(UIIcon.SEARCH);
+            gc.drawImage(searchIcon, 3, y + 3);
+        }
     }
 
     private void hookContextMenu() {

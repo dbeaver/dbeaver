@@ -47,11 +47,7 @@ public class NodeFieldInfo {
         }
 
         public NodeTypeInfo getNodeTypeInfo() {
-            if (nodeTypeInfo == null) {
-                throw new IllegalStateException();
-            } else {
-                return nodeTypeInfo;
-            }
+            return nodeTypeInfo;
         }
     }
     
