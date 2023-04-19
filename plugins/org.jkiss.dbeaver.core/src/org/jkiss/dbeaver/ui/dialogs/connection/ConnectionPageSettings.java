@@ -41,10 +41,10 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
+import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
@@ -69,8 +69,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     private final ConnectionWizard wizard;
     @NotNull
     private final DataSourceViewDescriptor viewDescriptor;
+    private final DataSourceViewDescriptor substitutedViewDescriptor;
+    private final DBPDriverSubstitutionDescriptor driverSubstitution;
     @Nullable
     private IDataSourceConnectionEditor connectionEditor;
+    private IDataSourceConnectionEditor originalConnectionEditor;
     @Nullable
     private DataSourceDescriptor dataSource;
     private final Set<DataSourceDescriptor> activated = new HashSet<>();
@@ -82,28 +85,50 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
      */
     ConnectionPageSettings(
         @NotNull ConnectionWizard wizard,
-        @NotNull DataSourceViewDescriptor viewDescriptor) {
+        @NotNull DataSourceViewDescriptor viewDescriptor,
+        @Nullable DataSourceDescriptor dataSource,
+        @Nullable DBPDriverSubstitutionDescriptor driverSubstitution
+    ) {
         super(PAGE_NAME + "." + viewDescriptor.getId());
+
         this.wizard = wizard;
         this.viewDescriptor = viewDescriptor;
+        this.dataSource = dataSource;
+        this.driverSubstitution = driverSubstitution;
+
+        if (driverSubstitution != null) {
+            final var dsp = DataSourceProviderRegistry.getInstance().getDataSourceProvider(driverSubstitution.getProviderId());
+            this.substitutedViewDescriptor = DataSourceViewRegistry.getInstance().findView(dsp, IActionConstants.EDIT_CONNECTION_POINT);
+        } else {
+            this.substitutedViewDescriptor = null;
+        }
 
         setTitle(wizard.isNew() ? viewDescriptor.getLabel() : CoreMessages.dialog_setting_connection_wizard_title);
         setDescription(CoreMessages.dialog_connection_description);
     }
 
-    /**
-     * Constructor for ConnectionPageSettings
-     */
-    ConnectionPageSettings(
-        @NotNull ConnectionWizard wizard,
-        @NotNull DataSourceViewDescriptor viewDescriptor,
-        @Nullable DataSourceDescriptor dataSource) {
-        this(wizard, viewDescriptor);
-        this.dataSource = dataSource;
+    @NotNull
+    private IDataSourceConnectionEditor getConnectionEditor() {
+        if (connectionEditor == null) {
+            if (substitutedViewDescriptor == null) {
+                connectionEditor = getOriginalConnectionEditor();
+            } else {
+                connectionEditor = substitutedViewDescriptor.createView(IDataSourceConnectionEditor.class);
+                connectionEditor.setSite(this);
+            }
+        }
+
+        return connectionEditor;
     }
 
-    IDataSourceConnectionEditor getConnectionEditor() {
-        return connectionEditor;
+    @NotNull
+    private IDataSourceConnectionEditor getOriginalConnectionEditor() {
+        if (originalConnectionEditor == null) {
+            originalConnectionEditor = viewDescriptor.createView(IDataSourceConnectionEditor.class);
+            originalConnectionEditor.setSite(this);
+        }
+
+        return originalConnectionEditor;
     }
 
     @Override
@@ -204,10 +229,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
 
         try {
-            if (this.connectionEditor == null) {
-                this.connectionEditor = viewDescriptor.createView(IDataSourceConnectionEditor.class);
-                this.connectionEditor.setSite(this);
-            }
+            // init main page
+            getConnectionEditor();
+
             // init sub pages (if any)
             IDialogPage[] allSubPages = getDialogPages(false, true);
 
@@ -377,18 +401,18 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         if (!forceCreate) {
             return new IDialogPage[0];
         }
-        if (this.connectionEditor == null) {
-            this.connectionEditor = viewDescriptor.createView(IDataSourceConnectionEditor.class);
-            this.connectionEditor.setSite(this);
-        }
 
-        if (connectionEditor instanceof IDialogPageProvider) {
+        final IDataSourceConnectionEditor originalConnectionEditor = getOriginalConnectionEditor();
 
-            subPages = ((IDialogPageProvider) connectionEditor).getDialogPages(extrasOnly, true);
+        if (originalConnectionEditor instanceof IDialogPageProvider) {
+            subPages = ((IDialogPageProvider) originalConnectionEditor).getDialogPages(extrasOnly, true);
 
             if (!getDriver().isEmbedded() && !CommonUtils.toBoolean(getDriver().getDriverParameter(DBConstants.DRIVER_PARAM_DISABLE_NETWORK_PARAMETERS))) {
                 // Add network tabs (for non-embedded drivers)
                 for (NetworkHandlerDescriptor descriptor : NetworkHandlerRegistry.getInstance().getDescriptors(getActiveDataSource())) {
+                    if (driverSubstitution != null && !driverSubstitution.getInstance().isNetworkHandlerSupported(descriptor)) {
+                        continue;
+                    }
                     subPages = ArrayUtils.add(IDialogPage.class, subPages, new ConnectionPageNetworkHandler(this, descriptor));
                 }
             }

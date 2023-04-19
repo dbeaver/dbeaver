@@ -26,9 +26,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.access.DBAAuthSubjectCredentials;
-import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCFactory;
@@ -133,10 +131,34 @@ public abstract class JDBCDataSource extends AbstractDataSource
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose)
         throws DBCException
     {
-        DBPDriver driver = getContainer().getDriver();
+        final var driverSubstitutionDescriptor = container.getDriverSubstitution();
+        final var driverSubstitution = driverSubstitutionDescriptor != null ? driverSubstitutionDescriptor.getInstance() : null;
+        final DBPDriver driver;
+
+        if (driverSubstitutionDescriptor != null) {
+            final String id = driverSubstitutionDescriptor.getProviderId() + ':' + driverSubstitutionDescriptor.getDriverId();
+            driver = DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver(id);
+        } else {
+            driver = container.getDriver();
+        }
 
         DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration(container.getActualConnectionConfiguration());
-        Properties connectProps = getAllConnectionProperties(monitor, context, purpose, connectionInfo);
+
+        final Properties originalProperties = getAllConnectionProperties(monitor, context, purpose, connectionInfo);
+        final String originalUrl = getConnectionURL(connectionInfo);
+
+        final Properties connectProps;
+        final String url;
+
+        if (driverSubstitution != null) {
+            final var substitutedProperties = driverSubstitution.getConnectionProperties(monitor, container, connectionInfo);
+            final var substitutedUrl = driverSubstitution.getConnectionURL(container, connectionInfo);
+            connectProps = Objects.requireNonNullElse(substitutedProperties, originalProperties);
+            url = Objects.requireNonNullElse(substitutedUrl, originalUrl);
+        } else {
+            connectProps = originalProperties;
+            url = originalUrl;
+        }
 
         final JDBCConnectionConfigurer connectionConfigurer = GeneralUtils.adapt(this, JDBCConnectionConfigurer.class);
 
@@ -148,22 +170,21 @@ public abstract class JDBCDataSource extends AbstractDataSource
             if (connectionConfigurer != null) {
                 connectionConfigurer.beforeConnection(monitor, connectionInfo, connectProps);
             }
-            final String url = getConnectionURL(connectionInfo);
             boolean isInvalidURL = false;
 
             monitor.subTask("Connecting " + purpose);
             Connection[] connection = new Connection[1];
             Exception[] error = new Exception[1];
-            int openTimeout = getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT);
+            int openTimeout = container.getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT);
 
             // Init authentication first (it may affect driver properties or driver configuration or even driver libraries)
             Object authResult;
             try {
-                DBAAuthCredentials credentials = authModel.loadCredentials(getContainer(), connectionInfo);
+                DBAAuthCredentials credentials = authModel.loadCredentials(container, connectionInfo);
 
                 if (REFRESH_CREDENTIALS_ON_CONNECT) {
                     // Refresh credentials
-                    authModel.refreshCredentials(monitor, getContainer(), connectionInfo, credentials);
+                    authModel.refreshCredentials(monitor, container, connectionInfo, credentials);
                 }
                 authResult = authModel.initAuthentication(monitor, this, credentials, connectionInfo, connectProps);
             } catch (DBException e) {
@@ -694,7 +715,12 @@ public abstract class JDBCDataSource extends AbstractDataSource
     protected Driver getDriverInstance(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return container.getDriver().getDriverInstance(monitor);
+        final DBPDriverSubstitutionDescriptor driverSubstitution = container.getDriverSubstitution();
+        if (driverSubstitution != null) {
+            return driverSubstitution.getInstance().getSubstitutingDriverInstance(monitor);
+        } else {
+            return container.getDriver().getDriverInstance(monitor);
+        }
     }
 
     /**
