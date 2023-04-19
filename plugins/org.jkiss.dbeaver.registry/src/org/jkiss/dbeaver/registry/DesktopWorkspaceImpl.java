@@ -57,6 +57,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
 
         loadExtensions(Platform.getExtensionRegistry());
         loadExternalFileProperties();
+        loadWorkspaceExtraProperties();
     }
 
     private void loadExtensions(IExtensionRegistry registry) {
@@ -380,6 +381,9 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         synchronized (externalFileProperties) {
             externalFileSaver.schedule(100);
         }
+    }
+
+    public void loadWorkspaceExtraProperties() {
     }
 
     private class WorkspaceFilesMetadataJob extends AbstractJob {

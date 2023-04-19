@@ -123,6 +123,11 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
     }
 
     @Override
+    public void beforeDispose() {
+        // Do nothing
+    }
+
+    @Override
     public void dispose() {
         synchronized (projects) {
             // Dispose all DS registries
