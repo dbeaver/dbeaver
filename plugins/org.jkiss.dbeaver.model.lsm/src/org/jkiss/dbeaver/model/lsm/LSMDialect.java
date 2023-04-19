@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.lsm;
 
+import org.bouncycastle.pqc.crypto.lms.LMSException;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 
 import java.util.Collection;
@@ -26,7 +27,7 @@ public interface LSMDialect {
     
     Collection<LSMAnalysisCase<? extends LSMElement, ? extends AbstractSyntaxNode>> getSupportedCases();
 
-    <T extends LSMElement> LSMAnalysisCase<T, ? extends AbstractSyntaxNode> findAnalysisCase(Class<T> expectedModelType);
+    <T extends LSMElement> LSMAnalysisCase<T, ? extends AbstractSyntaxNode> findAnalysisCase(Class<T> expectedModelType) throws LMSException;
     
     <T extends LSMElement> Future<LSMAnalysis<T>> prepareAnalysis(
         LSMSource source,

@@ -16,11 +16,7 @@
  */
 package org.jkiss.dbeaver.model.lsm.sql.impl.syntax;
 
-import org.jkiss.dbeaver.model.lsm.LSMAnalysis;
-import org.jkiss.dbeaver.model.lsm.LSMAnalysisCase;
-import org.jkiss.dbeaver.model.lsm.LSMDialect;
-import org.jkiss.dbeaver.model.lsm.LSMSource;
-import org.jkiss.dbeaver.model.lsm.sql.LSMSelectStatement;
+import org.jkiss.dbeaver.model.lsm.*;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.Sql92Dialect;
 
 import java.io.IOException;
@@ -36,11 +32,11 @@ public class TestEngine {
             
             LSMDialect dd = Sql92Dialect.getInstance();
             
-            LSMAnalysisCase<LSMSelectStatement, ?> selectStmtAnalysisCase = dd.findAnalysisCase(LSMSelectStatement.class);
+            LSMAnalysisCase<LSMElement, ?> selectStmtAnalysisCase = dd.findAnalysisCase(LSMElement.class);
             
-            LSMAnalysis<LSMSelectStatement> analysis = dd.prepareAnalysis(source, selectStmtAnalysisCase).get();
+            LSMAnalysis<LSMElement> analysis = dd.prepareAnalysis(source, selectStmtAnalysisCase).get();
             
-            LSMSelectStatement model = analysis.getModel().get();
+            LSMElement model = analysis.getModel().get();
             
             System.out.println(model);
         } catch (IOException | InterruptedException | ExecutionException ex) {

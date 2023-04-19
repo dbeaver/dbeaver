@@ -30,10 +30,10 @@ import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.BitSet;
 
 
-public class Test {
+public class SyntaxParserTest {
 
 
     public static void main(String[] args) throws IOException, XMLStreamException, FactoryConfigurationError, TransformerException {

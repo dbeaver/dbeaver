@@ -16,11 +16,8 @@
  */
 package org.jkiss.dbeaver.model.lsm.impl;
 
-import org.jkiss.dbeaver.model.lsm.LSMAnalysis;
-import org.jkiss.dbeaver.model.lsm.LSMAnalysisCase;
-import org.jkiss.dbeaver.model.lsm.LSMDialect;
-import org.jkiss.dbeaver.model.lsm.LSMElement;
-import org.jkiss.dbeaver.model.lsm.LSMSource;
+import org.bouncycastle.pqc.crypto.lms.LMSException;
+import org.jkiss.dbeaver.model.lsm.*;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModel;
 
@@ -49,9 +46,17 @@ public class LSMDialectImpl implements LSMDialect {
     }
 
     @Override
-    public <T extends LSMElement> LSMAnalysisCase<T, ? extends AbstractSyntaxNode> findAnalysisCase(Class<T> expectedContractType) {
+    public <T extends LSMElement> LSMAnalysisCase<T, ? extends AbstractSyntaxNode> findAnalysisCase(Class<T> expectedContractType) throws LMSException {
         @SuppressWarnings("unchecked")
         LSMAnalysisCase<T, ? extends AbstractSyntaxNode> result = (LSMAnalysisCase<T, ? extends AbstractSyntaxNode>) casesByContractType.get(expectedContractType);
+        if (result == null) {
+            for (Map.Entry<Class<? extends LSMElement>, LSMAnalysisCase<? extends LSMElement, ? extends AbstractSyntaxNode>> entry : casesByContractType.entrySet()) {
+                if (expectedContractType.isAssignableFrom(entry.getKey())) {
+                    return (LSMAnalysisCase<T, ? extends AbstractSyntaxNode>) entry.getValue();
+                }
+            }
+            throw new LMSException("Can evaluate parser resul to " + expectedContractType.getName());
+        }
         return result;
     }
 
