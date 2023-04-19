@@ -26,7 +26,7 @@ public interface LSMDialect {
     
     Collection<LSMAnalysisCase<? extends LSMElement, ? extends AbstractSyntaxNode>> getSupportedCases();
 
-    <T extends LSMElement> LSMAnalysisCase<T, ? extends AbstractSyntaxNode> findAnalysisCase(Class<T> expectedModelType);
+    <T extends LSMElement> LSMAnalysisCase<T, ? extends AbstractSyntaxNode> findAnalysisCase(Class<T> expectedModelType) throws LSMException;
     
     <T extends LSMElement> Future<LSMAnalysis<T>> prepareAnalysis(
         LSMSource source,

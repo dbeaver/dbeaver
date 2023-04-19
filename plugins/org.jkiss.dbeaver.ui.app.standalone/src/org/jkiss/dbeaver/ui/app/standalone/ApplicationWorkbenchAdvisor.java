@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
@@ -388,7 +389,12 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     }
 
     private boolean cancelRunningTasks() {
-        final DBTTaskManager manager = DBWorkbench.getPlatform().getWorkspace().getActiveProject().getTaskManager();
+        DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        if (activeProject == null) {
+            // Probably some TE user without permissions and projects
+            return true;
+        }
+        final DBTTaskManager manager = activeProject.getTaskManager();
 
         if (manager.hasRunningTasks()) {
             final boolean cancel = DBWorkbench.getPlatformUI().confirmAction(
