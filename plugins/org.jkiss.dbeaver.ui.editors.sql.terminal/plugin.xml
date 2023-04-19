@@ -57,7 +57,7 @@
     </extension>
 
     <extension point="org.eclipse.core.runtime.preferences">
-        <initializer class="org.jkiss.dbeaver.ui.editors.sql.terminal.SQLTerminalPreferencesInitializer"/>
+        <initializer class="org.jkiss.dbeaver.ui.editors.sql.terminal.internal.SQLTerminalPreferencesInitializer"/>
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">

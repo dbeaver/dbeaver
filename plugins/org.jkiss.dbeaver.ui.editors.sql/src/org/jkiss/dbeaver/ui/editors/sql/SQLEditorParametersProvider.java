@@ -90,6 +90,9 @@ public class SQLEditorParametersProvider implements SQLParametersProvider {
                     }
                 }
             }
+
+            SQLEditorFeatures.SQL_EDITOR_QUERY_PARAMS.use();
+
             return true;
         } else if (paramsResult == IDialogConstants.IGNORE_ID) {
             scriptContext.setIgnoreParameters(true);

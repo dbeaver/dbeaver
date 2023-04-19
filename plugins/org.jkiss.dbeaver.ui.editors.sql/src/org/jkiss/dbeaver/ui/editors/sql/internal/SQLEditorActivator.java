@@ -20,6 +20,8 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorFeatures;
 import org.osgi.framework.BundleContext;
 
 public class SQLEditorActivator extends AbstractUIPlugin {
@@ -39,6 +41,8 @@ public class SQLEditorActivator extends AbstractUIPlugin {
         super.start(context);
         plugin = this;
         preferences = new BundlePreferenceStore(getBundle());
+
+        DBRFeatureRegistry.getInstance().registerFeatures(SQLEditorFeatures.class);
     }
 
     @Override

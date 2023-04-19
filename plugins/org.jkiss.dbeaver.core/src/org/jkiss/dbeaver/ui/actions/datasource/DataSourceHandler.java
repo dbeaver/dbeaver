@@ -34,6 +34,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
@@ -58,6 +59,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 
 public class DataSourceHandler {
     private static final Log log = Log.getLog(DataSourceHandler.class);
@@ -74,7 +76,8 @@ public class DataSourceHandler {
     public static void connectToDataSource(
         @Nullable DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer dataSourceContainer,
-        @Nullable final DBRProgressListener onFinish) {
+        @Nullable final DBRProgressListener onFinish
+    ) {
         if (dataSourceContainer instanceof DataSourceDescriptor && !dataSourceContainer.isConnected()) {
             final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor) dataSourceContainer;
             Job[] connectJobs = Job.getJobManager().find(dataSourceDescriptor);
@@ -90,6 +93,9 @@ public class DataSourceHandler {
                 return;
             }
 
+            CoreFeatures.CONNECTION_OPEN.use(Map.of(
+                "driver", dataSourceContainer.getDriver().getPreconfiguredId()
+            ));
             final ConnectJob connectJob = new ConnectJob(dataSourceDescriptor);
             final JobChangeAdapter jobChangeAdapter = new JobChangeAdapter() {
                 @Override
@@ -132,12 +138,7 @@ public class DataSourceHandler {
                 // Schedule in UI because connect may be initiated during application startup
                 // and UI is still not initiated. In this case no progress dialog will appear
                 // to be sure run in UI async
-                UIUtils.asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        connectJob.schedule();
-                    }
-                });
+                UIUtils.asyncExec(connectJob::schedule);
             }
         }
     }
@@ -162,6 +163,11 @@ public class DataSourceHandler {
                 // Already connecting/disconnecting - just return
                 return;
             }
+
+            CoreFeatures.CONNECTION_CLOSE.use(Map.of(
+                "driver", dataSourceContainer.getDriver().getPreconfiguredId()
+            ));
+
             final DisconnectJob disconnectJob = new DisconnectJob(dataSourceDescriptor);
             disconnectJob.addJobChangeListener(new JobChangeAdapter() {
                 @Override
