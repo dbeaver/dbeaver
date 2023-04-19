@@ -48,7 +48,7 @@ public class GenerateUUIDHandler extends NavigatorHandlerObjectBase {
         if (activePart == null) {
             return null;
         }
-        String uuid = generateUUID();
+        
 
         IResultSetController rsc = activePart.getAdapter(IResultSetController.class);
         if (rsc != null && UIUtils.hasFocus(rsc.getControl())) {
@@ -64,7 +64,7 @@ public class GenerateUUIDHandler extends NavigatorHandlerObjectBase {
                             IValueController.EditType.NONE,
                             null);
                         //DBDValueHandler valueHandler = valueController.getValueHandler();
-                        valueController.updateValue(uuid, false);
+                        valueController.updateValue(generateUUID(), false);
                     }
                 }
                 rsc.redrawData(false, false);
@@ -76,6 +76,7 @@ public class GenerateUUIDHandler extends NavigatorHandlerObjectBase {
                 ISelection selection = textViewer.getSelectionProvider().getSelection();
                 if (selection instanceof TextSelection) {
                     try {
+                    	String uuid = generateUUID();
                         int offset = ((TextSelection) selection).getOffset();
                         int length = ((TextSelection) selection).getLength();
                         textViewer.getDocument().replace(
@@ -91,7 +92,7 @@ public class GenerateUUIDHandler extends NavigatorHandlerObjectBase {
                 try {
                     TextTransfer textTransfer = TextTransfer.getInstance();
                     clipboard.setContents(
-                        new Object[]{uuid},
+                        new Object[]{generateUUID()},
                         new Transfer[]{textTransfer});
                     DBeaverNotifications.showNotification(
                         "uuid-generator",
