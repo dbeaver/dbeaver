@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.lsm.impl;
 
-import org.bouncycastle.pqc.crypto.lms.LMSException;
 import org.jkiss.dbeaver.model.lsm.*;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModel;
@@ -46,7 +45,7 @@ public class LSMDialectImpl implements LSMDialect {
     }
 
     @Override
-    public <T extends LSMElement> LSMAnalysisCase<T, ? extends AbstractSyntaxNode> findAnalysisCase(Class<T> expectedContractType) throws LMSException {
+    public <T extends LSMElement> LSMAnalysisCase<T, ? extends AbstractSyntaxNode> findAnalysisCase(Class<T> expectedContractType) throws LSMException {
         @SuppressWarnings("unchecked")
         LSMAnalysisCase<T, ? extends AbstractSyntaxNode> result = (LSMAnalysisCase<T, ? extends AbstractSyntaxNode>) casesByContractType.get(expectedContractType);
         if (result == null) {
@@ -55,7 +54,7 @@ public class LSMDialectImpl implements LSMDialect {
                     return (LSMAnalysisCase<T, ? extends AbstractSyntaxNode>) entry.getValue();
                 }
             }
-            throw new LMSException("Can evaluate parser resul to " + expectedContractType.getName());
+            throw new LSMException("Can evaluate parser resul to " + expectedContractType.getName());
         }
         return result;
     }
