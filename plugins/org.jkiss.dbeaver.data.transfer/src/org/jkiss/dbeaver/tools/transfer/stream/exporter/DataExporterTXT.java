@@ -211,10 +211,13 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
         if (this.maxColumnSize > 0) {
             this.maxColumnSize = Math.max(this.maxColumnSize, this.minColumnSize);
         }
-        
-        this.blobContentMaxLength = Math.min(this.maxColumnSize, Integer.MAX_VALUE) - BLOB_OVERFLOW_MARK.length();
-        if (this.blobContentMaxLength < 0) {
-            this.blobContentMaxLength = this.BLOB_CONTENT_MIN_LENGTH;
+        if (this.maxColumnSize == 0) {
+            this.blobContentMaxLength = Integer.MAX_VALUE - BLOB_OVERFLOW_MARK.length();
+        } else {
+            this.blobContentMaxLength = Math.min(this.maxColumnSize, Integer.MAX_VALUE) - BLOB_OVERFLOW_MARK.length();
+            if (this.blobContentMaxLength < 0) {
+                this.blobContentMaxLength = this.BLOB_CONTENT_MIN_LENGTH;
+            }
         }
     }
 
@@ -228,7 +231,11 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
             final CellValue[] header = new CellValue[columns.length];
 
             for (int index = 0; index < columns.length; index++) {
-                header[index] = new CellTextValue(getAttributeName(columns[index]));
+                String cell = getAttributeName(columns[index]);
+                if (maxColumnSize > 0) {
+                    cell = CommonUtils.truncateString(cell, maxColumnSize);
+                }
+                header[index] = new CellTextValue(cell);
             }
 
             appendRow(header, session.getProgressMonitor());
@@ -257,7 +264,11 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
                     values[index] = new CellContentValue(content);
                 }
             } else {
-                values[index] = new CellTextValue(getCellString(columns[index], row[index]));
+                String cell = getCellString(columns[index], row[index]);
+                if (maxColumnSize > 0) {
+                    cell = CommonUtils.truncateString(cell, maxColumnSize);
+                }
+                values[index] = new CellTextValue(cell);
             }
         }
 
@@ -267,7 +278,6 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
     private String stringifyContent(Reader reader) throws IOException {
         try {
             blobContentBuffer.setLength(0);
-            blobContentBuffer.insert(batchSize, "");
             
             int rest = blobContentMaxLength;
             if (QUOTE_BLOBS) {

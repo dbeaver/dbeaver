@@ -29,6 +29,7 @@ public enum FieldTypeKind {
     Float(true),
     Double(true),
     Enum(true),
+    LiteralList(true),
     Object(false),
     Array(false),
     List(false);
@@ -57,19 +58,29 @@ public enum FieldTypeKind {
         java.util.Map.entry(float.class, FieldTypeKind.Float),
         java.util.Map.entry(double.class, FieldTypeKind.Double) 
     );
-
-    public static FieldTypeKind resolveModelFieldKind(Class<?> fieldType) {
+    
+    public static FieldTypeKind resolveModelLiteralFieldKind(Class<?> fieldType) {
         FieldTypeKind kind = builtinTypeKinds.get(fieldType);
         if (kind == null) {
             if (fieldType.isEnum()) {
                 kind = FieldTypeKind.Enum;
-            } else if (fieldType.isArray()) {
-                kind = FieldTypeKind.Array;
             } else if (fieldType.isAssignableFrom(ArrayList.class)) {
-                kind = FieldTypeKind.List; 
+                kind = LiteralList;
             } else {
-                kind = FieldTypeKind.Object;
+                kind = FieldTypeKind.String;
             }
+        }
+        return kind;
+    }
+
+    public static FieldTypeKind resolveModelSubnodeFieldKind(Class<?> fieldType) {
+        FieldTypeKind kind;
+        if (fieldType.isArray()) {
+            kind = FieldTypeKind.Array;
+        } else if (fieldType.isAssignableFrom(ArrayList.class)) {
+            kind = FieldTypeKind.List; 
+        } else {
+            kind = FieldTypeKind.Object;
         }
         return kind;
     }

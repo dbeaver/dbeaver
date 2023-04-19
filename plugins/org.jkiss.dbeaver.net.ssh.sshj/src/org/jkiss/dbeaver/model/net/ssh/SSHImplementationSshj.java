@@ -267,8 +267,10 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
         if (ArrayUtils.isEmpty(clients)) {
             throw new DBException("No active session available");
         }
+        SFTPClient sftpClient = clients[clients.length - 1].newSFTPClient();
+        sftpClient.getFileTransfer().setPreserveAttributes(false);
+        return sftpClient;
 
-        return clients[clients.length - 1].newSFTPClient();
     }
 
     private int setPortForwarding(@NotNull SSHClient client, String host, int port) throws IOException {

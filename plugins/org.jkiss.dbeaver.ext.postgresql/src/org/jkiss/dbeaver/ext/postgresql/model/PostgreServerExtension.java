@@ -210,4 +210,11 @@ public interface PostgreServerExtension {
      * like {@code ALTER TABLE tableName ALTER COLUMN columnName USING columnName::dataTypeName} or not
      */
     boolean supportsAlterTableColumnWithUSING();
+
+    /**
+     * Determines whether the database supports syntax
+     * like {@code ALTER TABLE schema.view RENAME TO schema.view_new}
+     * or use standard {@code ALTER VIEW schema.view RENAME TO schema.view_new}.
+     */
+    boolean supportsAlterTableForViewRename();
 }

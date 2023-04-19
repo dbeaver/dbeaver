@@ -26,6 +26,10 @@
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-maven-plugin</artifactId>
         <version>4.12.0</version>
+        <configuration>
+            <visitor>false</visitor>
+            <listener>false</listener>
+        </configuration>
         <executions>
             <execution>
                 <phase>generate-sources</phase>
@@ -33,8 +37,8 @@
                     <goal>antlr4</goal>
                 </goals>
                 <configuration>
-                    <sourceDirectory>src/org/jkiss/dbeaver/model/lsm/sql/impl/syntax</sourceDirectory>
-                    <outputDirectory>src-gen/org/jkiss/dbeaver/model/lsm/sql/impl/syntax</outputDirectory>
+                    <sourceDirectory>grammar</sourceDirectory>
+                    <outputDirectory>target/generated-sources/antlr4/org/jkiss/dbeaver/model/lsm/sql/impl/syntax</outputDirectory>
                 </configuration>
             </execution>
         </executions>

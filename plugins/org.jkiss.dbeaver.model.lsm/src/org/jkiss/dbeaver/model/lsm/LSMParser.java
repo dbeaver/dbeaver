@@ -16,13 +16,9 @@
  */
 package org.jkiss.dbeaver.model.lsm;
 
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.tree.Tree;
 
-public abstract class LSMParser extends Parser {
-
-    public LSMParser(TokenStream input) {
-        super(input);
-    }
-
+public interface LSMParser extends LSMObject<LSMParser> {
+    
+    Tree parse();
 }

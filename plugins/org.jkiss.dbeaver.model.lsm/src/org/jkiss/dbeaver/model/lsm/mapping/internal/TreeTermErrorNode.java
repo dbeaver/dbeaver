@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.lsm.mapping.internal;
 
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ErrorNodeImpl;
 import org.w3c.dom.NodeList;
 
@@ -38,6 +39,11 @@ public class TreeTermErrorNode extends ErrorNodeImpl implements XTreeTextBase {
         return index;
     }
 
+    @Override
+    public Interval getRealInterval() {
+        return new Interval(this.getSymbol().getStartIndex(), this.getSymbol().getStopIndex());
+    }
+    
     @Override
     public void fixup(Parser parser, int index) {
         this.index = index;
