@@ -276,12 +276,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     @Nullable
     public IAnnotationModel getAnnotationModel() {
-        return getSourceViewer().getAnnotationModel();
+        final ISourceViewer viewer = getSourceViewer();
+        return viewer != null ? viewer.getAnnotationModel() : null;
     }
 
     @Nullable
     public ProjectionAnnotationModel getProjectionAnnotationModel() {
-        return ((ProjectionViewer) getSourceViewer()).getProjectionAnnotationModel();
+        final ProjectionViewer viewer = (ProjectionViewer) getSourceViewer();
+        return viewer != null ? viewer.getProjectionAnnotationModel() : null;
     }
 
     public SQLEditorSourceViewerConfiguration getViewerConfiguration() {
