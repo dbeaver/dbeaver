@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPApplicationConfigurator;
+import org.jkiss.dbeaver.model.app.DBPGlobalEventManager;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
@@ -288,4 +289,8 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
         return DataSourceProviderRegistry.getInstance();
     }
 
+    @Override
+    public DBPGlobalEventManager getGlobalEventManager() {
+        return GlobalEventManagerImpl.getInstance();
+    }
 }

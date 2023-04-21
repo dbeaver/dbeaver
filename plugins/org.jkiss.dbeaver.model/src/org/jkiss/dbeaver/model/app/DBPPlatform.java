@@ -17,9 +17,7 @@
 
 package org.jkiss.dbeaver.model.app;
 
-import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
@@ -122,6 +120,8 @@ public interface DBPPlatform {
     @Deprecated
     @NotNull
     Path getApplicationConfiguration();
+
+    DBPGlobalEventManager getGlobalEventManager();
 
     boolean isShuttingDown();
 

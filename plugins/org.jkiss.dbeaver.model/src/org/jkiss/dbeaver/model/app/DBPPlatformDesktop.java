@@ -35,8 +35,6 @@ public interface DBPPlatformDesktop extends DBPPlatform {
     @NotNull
     DBPExternalFileManager getExternalFileManager();
 
-    DBPGlobalEventManager getGlobalEventManager();
-
     @NotNull
     DBPDataFormatterRegistry getDataFormatterRegistry();
 
