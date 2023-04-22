@@ -25,6 +25,7 @@
    <plugin id="org.jkiss.dbeaver.ext.cubrid" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.db2.zos" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.db2.i" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.databend" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.derby" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.dameng" version="0.0.0"  />
    <plugin id="org.jkiss.dbeaver.ext.duckdb" version="0.0.0" />
