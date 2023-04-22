@@ -25,6 +25,7 @@
    <plugin id="org.jkiss.dbeaver.ext.oceanbase.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.tidb.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.postgresql.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.databend.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.generic.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.vertica.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.athena.ui" version="0.0.0" />
