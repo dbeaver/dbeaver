@@ -42,75 +42,65 @@ import java.util.UUID;
 
 public class GenerateUUIDHandler extends NavigatorHandlerObjectBase {
 
-    @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-        if (activePart == null) {
-            return null;
-        }
-        String uuid = generateUUID();
+	@Override
+	public Object execute(ExecutionEvent event) throws ExecutionException {
+		IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
+		if (activePart == null) {
+			return null;
+		}
 
-        IResultSetController rsc = activePart.getAdapter(IResultSetController.class);
-        if (rsc != null && UIUtils.hasFocus(rsc.getControl())) {
-            IResultSetSelection selection = rsc.getSelection();
-            if (selection != null && !selection.isEmpty()) {
-                for (Object cell : selection.toArray()) {
-                    DBDAttributeBinding attr = selection.getElementAttribute(cell);
-                    ResultSetRow row = selection.getElementRow(cell);
-                    if (row != null && attr != null) {
-                        ResultSetValueController valueController = new ResultSetValueController(
-                            rsc,
-                            new ResultSetCellLocation(attr, row),
-                            IValueController.EditType.NONE,
-                            null);
-                        //DBDValueHandler valueHandler = valueController.getValueHandler();
-                        valueController.updateValue(uuid, false);
-                    }
-                }
-                rsc.redrawData(false, false);
-                rsc.updateEditControls();
-            }
-        } else {
-            ITextViewer textViewer = activePart.getAdapter(ITextViewer.class);
-            if (textViewer != null) {
-                ISelection selection = textViewer.getSelectionProvider().getSelection();
-                if (selection instanceof TextSelection) {
-                    try {
-                        int offset = ((TextSelection) selection).getOffset();
-                        int length = ((TextSelection) selection).getLength();
-                        textViewer.getDocument().replace(
-                            offset,
-                            length, uuid);
-                        textViewer.getSelectionProvider().setSelection(new TextSelection(offset + uuid.length(), 0));
-                    } catch (BadLocationException e) {
-                        DBWorkbench.getPlatformUI().showError("Insert UUID", "Error inserting UUID in text editor", e);
-                    }
-                }
-            } else {
-                Clipboard clipboard = new Clipboard(Display.getCurrent());
-                try {
-                    TextTransfer textTransfer = TextTransfer.getInstance();
-                    clipboard.setContents(
-                        new Object[]{uuid},
-                        new Transfer[]{textTransfer});
-                    DBeaverNotifications.showNotification(
-                        "uuid-generator",
-                        CoreMessages.notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy,
-                        CoreMessages.notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy_text,
-                        DBPMessageType.INFORMATION,
-                        null
-                    );
-                } finally {
-                    clipboard.dispose();
-                }
-            }
-        }
+		IResultSetController rsc = activePart.getAdapter(IResultSetController.class);
+		if (rsc != null && UIUtils.hasFocus(rsc.getControl())) {
+			IResultSetSelection selection = rsc.getSelection();
+			if (selection != null && !selection.isEmpty()) {
+				for (Object cell : selection.toArray()) {
+					DBDAttributeBinding attr = selection.getElementAttribute(cell);
+					ResultSetRow row = selection.getElementRow(cell);
+					if (row != null && attr != null) {
+						ResultSetValueController valueController = new ResultSetValueController(rsc,
+								new ResultSetCellLocation(attr, row), IValueController.EditType.NONE, null);
+						// DBDValueHandler valueHandler = valueController.getValueHandler();
+						valueController.updateValue(generateUUID(), false);
+					}
+				}
+				rsc.redrawData(false, false);
+				rsc.updateEditControls();
+			}
+		} else {
+			ITextViewer textViewer = activePart.getAdapter(ITextViewer.class);
+			if (textViewer != null) {
+				ISelection selection = textViewer.getSelectionProvider().getSelection();
+				if (selection instanceof TextSelection) {
+					try {
+						String uuid = generateUUID();
+						int offset = ((TextSelection) selection).getOffset();
+						int length = ((TextSelection) selection).getLength();
+						textViewer.getDocument().replace(offset, length, uuid);
+						textViewer.getSelectionProvider().setSelection(new TextSelection(offset + uuid.length(), 0));
+					} catch (BadLocationException e) {
+						DBWorkbench.getPlatformUI().showError("Insert UUID", "Error inserting UUID in text editor", e);
+					}
+				}
+			} else {
+				Clipboard clipboard = new Clipboard(Display.getCurrent());
+				try {
+					TextTransfer textTransfer = TextTransfer.getInstance();
+					clipboard.setContents(new Object[] { generateUUID() }, new Transfer[] { textTransfer });
+					DBeaverNotifications.showNotification("uuid-generator",
+							CoreMessages.notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy,
+							CoreMessages.notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy_text,
+							DBPMessageType.INFORMATION, null);
+				} finally {
+					clipboard.dispose();
+				}
+			}
+		}
 
-        return null;
-    }
+		return null;
+	}
 
-    private static String generateUUID() {
-        return UUID.randomUUID().toString();
-    }
+	private static String generateUUID() {
+		return UUID.randomUUID().toString();
+	}
 
 }
