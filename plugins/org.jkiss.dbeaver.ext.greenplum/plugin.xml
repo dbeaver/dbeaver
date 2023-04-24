@@ -75,11 +75,11 @@
 
                 <provider-properties drivers="*">
                     <propertyGroup label="Database list">
-                        <property id="@dbeaver-show-non-default-db@" label="Show all databases" type="boolean" description="Show all databases on server. Otherwise show current database only."/>
-                        <property id="@dbeaver-show-unavailable-db@" label="Show unavailable databases" type="boolean" description="Show databases not unavailable for connection."/>
+                        <property id="@dbeaver-show-non-default-db@" label="Show all databases" type="boolean" description="Show all databases on server. Otherwise show current database only." supportedConfigurationTypes="MANUAL"/>
+                        <property id="@dbeaver-show-unavailable-db@" label="Show unavailable databases" type="boolean" description="Show databases not unavailable for connection." supportedConfigurationTypes="MANUAL"/>
                     </propertyGroup>
                     <propertyGroup label="Misc">
-                        <property id="@dbeaver-chosen-role@" label="User role" type="string" description="User role for connection"/>
+                        <property id="@dbeaver-chosen-role@" label="User role" type="string" description="User role for connection" supportedConfigurationTypes="MANUAL"/>
                     </propertyGroup>
                 </provider-properties>
             </drivers>

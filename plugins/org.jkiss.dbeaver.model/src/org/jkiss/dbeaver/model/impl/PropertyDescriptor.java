@@ -108,6 +108,17 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     }
 
     public static List<DBPPropertyDescriptor> extractProperties(IConfigurationElement config) {
+        String category = getPropertyCategory(config);
+        List<DBPPropertyDescriptor> properties = new ArrayList<>();
+        IConfigurationElement[] propElements = config.getChildren(PropertyDescriptor.TAG_PROPERTY);
+        for (IConfigurationElement prop : propElements) {
+            properties.add(new PropertyDescriptor(category, prop));
+        }
+        return properties;
+    }
+
+    @NotNull
+    protected static String getPropertyCategory(IConfigurationElement config) {
         String category = NAME_UNDEFINED;
         if (TAG_PROPERTY_GROUP.equals(config.getName())) {
             category = config.getAttribute(ATTR_LABEL);
@@ -115,12 +126,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
                 category = NAME_UNDEFINED;
             }
         }
-        List<DBPPropertyDescriptor> properties = new ArrayList<>();
-        IConfigurationElement[] propElements = config.getChildren(PropertyDescriptor.TAG_PROPERTY);
-        for (IConfigurationElement prop : propElements) {
-            properties.add(new PropertyDescriptor(category, prop));
-        }
-        return properties;
+        return category;
     }
 
     public PropertyDescriptor(
