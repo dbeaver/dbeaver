@@ -13,6 +13,11 @@
     <version>23.0.3-SNAPSHOT</version>
     <packaging>eclipse-feature</packaging>
 
+    <properties>
+        <sourceBranch>-</sourceBranch>
+        <sourceCommit>-</sourceCommit>
+    </properties>
+
     <build>
         <plugins>
             <!-- Generate and copy .eclipseproduct -->
