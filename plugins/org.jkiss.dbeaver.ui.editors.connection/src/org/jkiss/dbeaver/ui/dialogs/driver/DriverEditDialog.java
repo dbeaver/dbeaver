@@ -759,7 +759,9 @@ public class DriverEditDialog extends HelpEnabledDialog {
         DriverLibraryAbstract selectedLib = getSelectedLibrary();
         detailsButton.setEnabled(selectedLib != null);
         deleteButton.setEnabled(selectedLib != null);
-        editButton.setEnabled(selectedLib instanceof DriverLibraryMavenArtifact);
+        if (editButton != null) {
+            editButton.setEnabled(selectedLib instanceof DriverLibraryMavenArtifact);
+        }
 
 /*
         upButton.setEnabled(libList.indexOf(selectedLib) > 0);
