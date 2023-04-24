@@ -121,8 +121,6 @@ public interface DBPPlatform {
     @NotNull
     Path getApplicationConfiguration();
 
-    DBPGlobalEventManager getGlobalEventManager();
-
     boolean isShuttingDown();
 
 }
