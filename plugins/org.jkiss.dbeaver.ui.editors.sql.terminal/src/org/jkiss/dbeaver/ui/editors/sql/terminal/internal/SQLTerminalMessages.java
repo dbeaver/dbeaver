@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.terminal;
+package org.jkiss.dbeaver.ui.editors.sql.terminal.internal;
 
 import org.eclipse.osgi.util.NLS;
 
 public class SQLTerminalMessages extends NLS {
-    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.sql.terminal.SQLTerminalMessages"; //$NON-NLS-1$
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.sql.terminal.internal.SQLTerminalMessages"; //$NON-NLS-1$
 
     public static String sql_terminal_item_text;
     public static String pref_page_sql_temrinal_show_output_console_view_label;

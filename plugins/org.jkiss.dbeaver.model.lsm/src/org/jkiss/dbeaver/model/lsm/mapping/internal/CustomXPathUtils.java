@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.lsm.mapping.internal;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.RuleNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.Tree;
 import org.w3c.dom.Node;
@@ -113,10 +114,16 @@ public class CustomXPathUtils {
     
     public static String getText(Tree node) {
         String result;
-        if (node instanceof ParseTree) {
+        if (node instanceof TreeRuleNode) {
+            TreeRuleNode ruleNode = ((TreeRuleNode) node);
+            Interval textRange = ruleNode.getRealInterval();
+            result = ruleNode.getStart().getInputStream().getText(textRange);
+        } else if (node instanceof XTreeTextBase && node instanceof TerminalNode) {
+            Interval textRange = ((XTreeTextBase)node).getRealInterval();
+            result = ((TerminalNode)node).getSymbol().getInputStream().getText(textRange);
+        } else if (node instanceof ParseTree) {
             result = ((ParseTree) node).getText(); // consider extracting whitespaces but not comments
         } else {
-            // TODO there are things like firstTerm and lastTerm in the ANTLR tree class impl already, consider them
             Tree first = node, last = node;
             while (!(first instanceof TerminalNode) && first.getChildCount() > 0) {
                 first = first.getChild(0);
@@ -125,7 +132,7 @@ public class CustomXPathUtils {
                 last = last.getChild(last.getChildCount() - 1);
             }
             TerminalNode a = (TerminalNode) first, b = (TerminalNode) last;
-            Interval textRange = Interval.of(a.getSourceInterval().a, b.getSourceInterval().b);
+            Interval textRange = Interval.of(a.getSymbol().getStartIndex(), b.getSymbol().getStopIndex());
             result = b.getSymbol().getTokenSource().getInputStream().getText(textRange);
         }
         return result;

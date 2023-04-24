@@ -22,6 +22,7 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -196,8 +197,7 @@ public class NewConnectionWizard extends ConnectionWizard
      * using wizard as execution context.
      */
     @Override
-    public boolean performFinish()
-    {
+    public boolean performFinish() {
         DriverDescriptor driver = (DriverDescriptor) getSelectedDriver();
         ConnectionPageSettings pageSettings = getPageSettings();
         DataSourceDescriptor dataSourceTpl = pageSettings == null ? getActiveDataSource() : pageSettings.getActiveDataSource();
@@ -213,6 +213,7 @@ public class NewConnectionWizard extends ConnectionWizard
             DBWorkbench.getPlatformUI().showError("Create failed", "Error adding new connections", e);
             return false;
         }
+        CoreFeatures.CONNECTION_CREATE.use(Map.of("driver", dataSourceNew.getDriver().getPreconfiguredId()));
         return true;
     }
 

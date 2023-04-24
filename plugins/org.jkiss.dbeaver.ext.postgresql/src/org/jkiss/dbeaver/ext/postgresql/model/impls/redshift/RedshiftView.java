@@ -80,8 +80,7 @@ public class RedshiftView extends PostgreView
     }
 
     private boolean isViewVwithNoSchemaBinding(DBRProgressMonitor monitor) throws DBException {
-        getObjectDefinitionText(monitor, Collections.emptyMap());
-        String viewDefinition = getSource();
+        String viewDefinition = getObjectDefinitionText(monitor, Collections.emptyMap());
         return viewDefinition.toLowerCase().contains("with no schema binding");
     }
 

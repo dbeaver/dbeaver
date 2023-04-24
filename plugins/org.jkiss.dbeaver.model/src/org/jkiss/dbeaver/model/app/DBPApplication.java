@@ -88,4 +88,17 @@ public interface DBPApplication {
     @Nullable
     Path getDefaultWorkingFolder();
 
+    /**
+     * Unique application instance identifier.
+     * Generated on every application launch.
+     */
+    @NotNull
+    String getApplicationRunId();
+
+    /**
+     * Application start time
+     */
+    long getApplicationStartTime();
+
+
 }

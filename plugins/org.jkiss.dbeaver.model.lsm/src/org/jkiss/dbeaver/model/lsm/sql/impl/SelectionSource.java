@@ -18,6 +18,9 @@ package org.jkiss.dbeaver.model.lsm.sql.impl;
 
 import org.jkiss.dbeaver.model.lsm.mapping.*;
 
+import java.util.List;
+
+
 public abstract class SelectionSource extends AbstractSyntaxNode {
     @SyntaxNode(name = "nonjoinedTableReference")
     public static class Table extends SelectionSource {
@@ -28,7 +31,9 @@ public abstract class SelectionSource extends AbstractSyntaxNode {
         @SyntaxTerm(xpath = "./tableName/qualifiedName/qualifiedIdentifier/identifier")
         public String tableName;
         @SyntaxTerm(xpath = "./correlationSpecification/correlationName//actualIdentifier")
-        public String alias;        
+        public String alias;
+        @SyntaxTerm(xpath = "./correlationSpecification/derivedColumnList/columnNameList/columnName//actualIdentifier")
+        public List<String> columnNames;
     }
     
     @SyntaxNode(name = "crossJoinTerm")
@@ -66,5 +71,7 @@ public abstract class SelectionSource extends AbstractSyntaxNode {
         public Table table;
 //        @SyntaxSubnode(xpath = "./joinSpecification/searchCondition")
 //        public ValueExpression condition;
+        @SyntaxTerm(xpath = "./joinSpecification/namedColumnsJoin/joinColumnList/columnNameList/columnName/identifier/actualIdentifier")
+        public List<String> columnNames;
     }
 }
