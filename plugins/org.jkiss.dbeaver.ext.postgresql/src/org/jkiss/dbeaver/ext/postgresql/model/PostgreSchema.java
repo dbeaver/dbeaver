@@ -1111,7 +1111,7 @@ public class PostgreSchema implements
                 try (JDBCPreparedStatement dbXminCheck = session.prepareStatement(
                         "SELECT xmin FROM pg_catalog." + serverType.getProceduresSystemTable() + " limit 1")) {
                     try (JDBCResultSet dbResult = dbXminCheck.executeQuery()) {
-                        while (dbResult.next()) {
+                        if (dbResult.next()) {
                             xminSupported = true;
                         }
                     }
