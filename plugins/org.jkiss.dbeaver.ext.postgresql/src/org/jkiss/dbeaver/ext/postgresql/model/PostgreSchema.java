@@ -1099,28 +1099,30 @@ public class PostgreSchema implements
             super();
         }
 
-        private Boolean xmin_supported;
+        private Boolean xminSupported;
 
         @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @Nullable PostgreProcedure object, @Nullable String objectName) throws SQLException {
             PostgreServerExtension serverType = owner.getDataSource().getServerType();
             String oidColumn = serverType.getProceduresOidColumn(); // Hack for Redshift SP support
-            if (xmin_supported == null) { // Check if xmin supported
-                xmin_supported = false;
+            if (xminSupported == null) { // Check if xmin supported
+                xminSupported = false;
                 try (JDBCPreparedStatement dbXminCheck = session.prepareStatement(
                         "SELECT xmin FROM pg_catalog." + serverType.getProceduresSystemTable() + " limit 1")) {
                     try (JDBCResultSet dbResult = dbXminCheck.executeQuery()) {
                         while (dbResult.next()) {
-                            xmin_supported = true;
+                            xminSupported = true;
                         }
                     }
+                } catch(Exception e) {
+                    // do nothing
                 }
             }
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT p." + oidColumn + " as poid,p.*," +
                     (session.getDataSource().isServerVersionAtLeast(8, 4) ? "pg_catalog.pg_get_expr(p.proargdefaults, 0)" : "NULL") +
-                    " as arg_defaults,d.description, " + (xmin_supported ? "p.xmin" : "0") + " as pxmin\n" +
+                    " as arg_defaults,d.description, " + (xminSupported ? "p.xmin" : "0") + " as pxmin\n" +
                     "FROM pg_catalog." + serverType.getProceduresSystemTable() + " p\n" +
                     "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=p." + oidColumn + "\n" +
                     "WHERE p.pronamespace=?" +
