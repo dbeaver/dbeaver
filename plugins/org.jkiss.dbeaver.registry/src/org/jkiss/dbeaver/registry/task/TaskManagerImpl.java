@@ -314,8 +314,7 @@ public class TaskManagerImpl implements DBTTaskManager {
         }
         String configFile = null;
         try {
-            configFile =
-                DBWorkbench.getPlatform().getTaskController().loadTaskConfigurationFile(getProject().getId(), TaskConstants.CONFIG_FILE);
+            configFile = loadConfigFile();
         } catch (DBException e) {
             log.error("Error loading task configuration file.", e);
         }
@@ -395,6 +394,12 @@ public class TaskManagerImpl implements DBTTaskManager {
             }
 
         }
+    }
+
+    protected String loadConfigFile() throws DBException {
+        return DBWorkbench.getPlatform()
+            .getTaskController()
+            .loadTaskConfigurationFile(getProject().getId(), TaskConstants.CONFIG_FILE);
     }
 
     private TaskFolderImpl searchTaskFolderByName(String taskFolderName) {
