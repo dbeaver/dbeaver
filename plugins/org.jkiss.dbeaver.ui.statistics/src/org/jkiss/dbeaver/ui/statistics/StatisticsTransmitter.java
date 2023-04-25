@@ -26,12 +26,16 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -104,7 +108,7 @@ public class StatisticsTransmitter {
     }
 
     private void sendLogFile(Path logFile, String timestamp, String sessionId) {
-        log.debug("Sending statistics file '" + logFile.toAbsolutePath() + "'");
+        //log.debug("Sending statistics file '" + logFile.toAbsolutePath() + "'");
         try {
             URLConnection urlConnection = WebUtils.openURLConnection(
                 ENDPOINT + "?session=" + sessionId + "&time=" + timestamp,
@@ -126,6 +130,15 @@ public class StatisticsTransmitter {
 
             try (OutputStream outputStream = urlConnection.getOutputStream()) {
                 Files.copy(logFile, outputStream);
+            }
+            try (InputStream inputStream = urlConnection.getInputStream()) {
+                if (inputStream != null) {
+                    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                    IOUtils.copyStream(inputStream, buffer);
+                    log.debug("Statistics sent (" + buffer.toString(StandardCharsets.UTF_8) + ")");
+                }
+            } catch (IOException e) {
+                log.debug("Error reading statistics server response");
             }
             ((HttpURLConnection) urlConnection).disconnect();
 
