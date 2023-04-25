@@ -1115,7 +1115,7 @@ public class PostgreSchema implements
                             xminSupported = true;
                         }
                     }
-                } catch(Exception e) {
+                } catch (Exception ignored) {
                     // do nothing
                 }
             }
