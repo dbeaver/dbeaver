@@ -65,13 +65,6 @@ public class DatabaseEditorListener implements INavigatorListener
         DBWorkbench.getPlatform().getNavigatorModel().removeListener(this);
     }
 
-    @Nullable
-    public DBNNode getTreeNode()
-    {
-        IEditorInput input = databaseEditor.getEditorInput();
-        return input instanceof IDatabaseEditorInput ? ((IDatabaseEditorInput) input).getNavigatorNode() : null;
-    }
-
     @Override
     public void nodeChanged(final DBNEvent event)
     {
@@ -83,7 +76,7 @@ public class DatabaseEditorListener implements INavigatorListener
                 if (event.getNodeChange() == DBNEvent.NodeChange.REFRESH ||
                     event.getNodeChange() == DBNEvent.NodeChange.LOAD)
                 {
-                    if (getTreeNode() == event.getNode()) {
+                    if (isSameNode(event.getNode())) {
                         databaseEditor.refreshPart(
                             event,
                             event.getNodeChange() == DBNEvent.NodeChange.REFRESH &&
@@ -116,10 +109,50 @@ public class DatabaseEditorListener implements INavigatorListener
         }
     }
 
-    protected boolean isValuableNode(DBNNode node)
-    {
-        DBNNode editorNode = getTreeNode();
-        return node == editorNode || (editorNode != null && editorNode.isChildOf(node));
+    private boolean isSameNode(@NotNull DBNNode other) {
+        final DBNNode editorNode = getEditorNode();
+
+        if (editorNode != null) {
+            return editorNode == other;
+        } else {
+            final String path = getEditorNodePath();
+            return path != null && path.equals(other.getNodeItemPath());
+        }
+    }
+
+    private boolean isValuableNode(@NotNull DBNNode node) {
+        final DBNNode editorNode = getEditorNode();
+
+        if (editorNode != null) {
+            return editorNode == node || editorNode.isChildOf(node);
+        } else {
+            final String path = getEditorNodePath();
+            return path != null && path.startsWith(node.getNodeItemPath());
+        }
+    }
+
+    @Nullable
+    private DBNNode getEditorNode() {
+        final IEditorInput input = databaseEditor.getEditorInput();
+
+        if (input instanceof INavigatorEditorInput) {
+            return ((INavigatorEditorInput) input).getNavigatorNode();
+        } else {
+            return null;
+        }
+    }
+
+    @Nullable
+    private String getEditorNodePath() {
+        final IEditorInput input = databaseEditor.getEditorInput();
+
+        if (input instanceof DatabaseLazyEditorInput) {
+            return ((DatabaseLazyEditorInput) input).getNodePath();
+        } else if (input instanceof IDatabaseEditorInput) {
+            return ((DBNNode) ((IDatabaseEditorInput) input).getNavigatorNode()).getNodeItemPath();
+        } else {
+            return null;
+        }
     }
 
     private enum CloseStrategy {
