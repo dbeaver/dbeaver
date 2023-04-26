@@ -336,6 +336,9 @@ public class AdvancedList extends Canvas {
             case SWT.CR:
                 notifyDefaultSelection();
                 break;
+            case SWT.F2:
+                notifyDefaultSelection();
+                break;
         }
         showItem(selectedItem);
     }

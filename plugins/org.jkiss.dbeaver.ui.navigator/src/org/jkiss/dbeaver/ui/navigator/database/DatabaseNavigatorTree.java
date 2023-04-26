@@ -708,7 +708,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             @Override
             public void keyPressed(KeyEvent e)
             {
-                if (e.keyCode == SWT.CR) {
+                if (e.keyCode == SWT.CR || e.keyCode == SWT.F2) {
                     Text text = (Text) treeEditor.getEditor();
                     final String newName = text.getText();
                     disposeOldEditor();
