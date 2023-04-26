@@ -51,6 +51,7 @@ public class ProgressEditorPart extends EditorPart {
     private final IDatabaseEditor ownerEditor;
     private Composite parentControl;
     private Composite progressCanvas;
+    private volatile LoadingJob<IDatabaseEditorInput> pendingJob;
 
     public ProgressEditorPart(IDatabaseEditor ownerEditor) {
         this.ownerEditor = ownerEditor;
@@ -111,12 +112,16 @@ public class ProgressEditorPart extends EditorPart {
         }
     }
 
-    private void scheduleEditorLoad() {
+    public synchronized boolean scheduleEditorLoad() {
+        if (pendingJob != null) {
+            return false;
+        }
         InitNodeService loadingService = new InitNodeService();
-        LoadingJob<IDatabaseEditorInput> loadJob = LoadingJob.createService(
+        pendingJob = LoadingJob.createService(
             loadingService,
             new InitNodeVisualizer(loadingService));
-        UIExecutionQueue.queueExec(loadJob::schedule);
+        UIExecutionQueue.queueExec(pendingJob::schedule);
+        return true;
     }
 
     private void createInitializerPlaceholder() {
@@ -184,6 +189,8 @@ public class ProgressEditorPart extends EditorPart {
                 return getEditorInput().initializeRealInput(monitor);
             } catch (Throwable ex) {
                 throw new InvocationTargetException(ex);
+            } finally {
+                pendingJob = null;
             }
         }
 

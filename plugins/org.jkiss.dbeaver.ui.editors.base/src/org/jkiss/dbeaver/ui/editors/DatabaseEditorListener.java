@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.ui.editors;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.INavigatorListener;
@@ -69,9 +71,9 @@ public class DatabaseEditorListener implements INavigatorListener
     public void nodeChanged(final DBNEvent event)
     {
         if (isValuableNode(event.getNode())) {
-            CloseStrategy closeStrategy = CloseStrategy.DO_NOTHING;
+            Strategy strategy = Strategy.DO_NOTHING;
             if (event.getAction() == DBNEvent.Action.REMOVE) {
-                closeStrategy = CloseStrategy.CLOSE;
+                strategy = Strategy.CLOSE;
             } else if (event.getAction() == DBNEvent.Action.UPDATE) {
                 if (event.getNodeChange() == DBNEvent.NodeChange.REFRESH ||
                     event.getNodeChange() == DBNEvent.NodeChange.LOAD)
@@ -81,18 +83,26 @@ public class DatabaseEditorListener implements INavigatorListener
                             event,
                             event.getNodeChange() == DBNEvent.NodeChange.REFRESH &&
                             event.getSource() == DBNEvent.FORCE_REFRESH);
+                    } else if (event.getNodeChange() == DBNEvent.NodeChange.LOAD && event.getNode() instanceof DBNDataSource) {
+                        strategy = Strategy.LOAD;
                     }
                 } else if (event.getNodeChange() == DBNEvent.NodeChange.UNLOAD) {
-                    closeStrategy = CloseStrategy.KEEP;
+                    strategy = Strategy.UNLOAD;
                 }
             }
-            if (closeStrategy != CloseStrategy.DO_NOTHING) {
+            if (strategy != Strategy.DO_NOTHING) {
                 if (DBWorkbench.getPlatform().isShuttingDown()) {
                     // Do not update editors during shutdown, just remove listeners
                     dispose();
                     return;
                 }
-                if (closeStrategy == CloseStrategy.KEEP &&
+                if (strategy == Strategy.LOAD) {
+                    if (databaseEditor instanceof ILazyEditor) {
+                        ((ILazyEditor) databaseEditor).loadEditorInput();
+                    }
+                    return;
+                }
+                if (strategy == Strategy.UNLOAD &&
                     DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DatabaseEditorPreferences.PROP_KEEP_EDITORS_ON_DISCONNECT) &&
                     databaseEditor instanceof ILazyEditor && ((ILazyEditor) databaseEditor).unloadEditorInput()
                 ) {
@@ -155,9 +165,10 @@ public class DatabaseEditorListener implements INavigatorListener
         }
     }
 
-    private enum CloseStrategy {
+    private enum Strategy {
         DO_NOTHING,
         CLOSE,
-        KEEP
+        UNLOAD,
+        LOAD
     }
 }
