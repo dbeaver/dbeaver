@@ -48,6 +48,8 @@ public class FeatureStatisticsCollector implements DBRFeatureTracker {
     private static final long TRACK_PERIOD = 5000;
     public static final String ACTIVITY_LOGS_DIR = ".activity-logs";
 
+    private static final boolean SEND_STATS_ON_SHUTDOWN = true;
+
     private final List<TrackingMessage> messages = new ArrayList<>();
 
     private AbstractJob trackMonitor;
@@ -205,7 +207,7 @@ public class FeatureStatisticsCollector implements DBRFeatureTracker {
             }
             trackStream = null;
         }
-        if (UIStatisticsActivator.isTrackingEnabled()) {
+        if (SEND_STATS_ON_SHUTDOWN && UIStatisticsActivator.isTrackingEnabled()) {
             sendCollectedStatistics(false);
         }
     }
