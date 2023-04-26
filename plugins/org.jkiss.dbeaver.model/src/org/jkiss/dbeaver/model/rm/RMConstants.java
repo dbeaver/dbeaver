@@ -19,12 +19,14 @@ package org.jkiss.dbeaver.model.rm;
 /**
  * RM constants
  */
-public interface RMConstants  {
+public interface RMConstants {
     String PERMISSION_PROJECT_DATASOURCES_EDIT = "project-datasource-edit";
     String PERMISSION_PROJECT_DATASOURCES_VIEW = "project-datasource-view";
 
     String PERMISSION_PROJECT_RESOURCE_VIEW = "project-resource-view";
     String PERMISSION_PROJECT_RESOURCE_EDIT = "project-resource-edit";
+    String PERMISSION_TASK_MANAGER = "task-manager";
+
 
     String PERMISSION_PROJECT_ADMIN = "project-admin";
 
