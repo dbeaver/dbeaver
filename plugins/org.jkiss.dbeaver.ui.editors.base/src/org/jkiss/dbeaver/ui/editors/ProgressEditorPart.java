@@ -34,10 +34,7 @@ import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.LoadingJob;
-import org.jkiss.dbeaver.ui.UIExecutionQueue;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 
@@ -126,24 +123,12 @@ public class ProgressEditorPart extends EditorPart {
 
     private void createInitializerPlaceholder() {
         final Button button = new Button(progressCanvas, SWT.PUSH);
-
-        final PaintListener paintListener = e -> {
-            final Rectangle buttonBounds = button.getBounds();
-            e.gc.setFont(button.getFont());
-            UIUtils.drawTextWithBackground(
-                e.gc,
-                EditorsMessages.progress_editor_uninitialized_text,
-                buttonBounds.x + buttonBounds.width / 2,
-                buttonBounds.y - 10
-            );
-        };
-
-        button.setText(EditorsMessages.progress_editor_uninitialized_button_text);
+        button.setText(EditorsMessages.progress_editor_uninitialized_text);
+        button.setImage(DBeaverIcons.getImage(UIIcon.SQL_CONNECT));
         button.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
             for (Control child : progressCanvas.getChildren()) {
                 child.dispose();
             }
-            progressCanvas.removePaintListener(paintListener);
             scheduleEditorLoad();
         }));
 
@@ -152,8 +137,6 @@ public class ProgressEditorPart extends EditorPart {
         progressOverlay.minimumWidth = buttonSize.x;
         progressOverlay.minimumHeight = buttonSize.y;
         progressOverlay.setEditor(button);
-
-        progressCanvas.addPaintListener(paintListener);
     }
 
     private void initEntityEditor(IDatabaseEditorInput result) {
