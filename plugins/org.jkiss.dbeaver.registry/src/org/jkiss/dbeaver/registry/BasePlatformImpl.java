@@ -287,5 +287,4 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     public DBPDataSourceProviderRegistry getDataSourceProviderRegistry() {
         return DataSourceProviderRegistry.getInstance();
     }
-
 }

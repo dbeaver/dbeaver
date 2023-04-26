@@ -44,4 +44,14 @@ public class XMLPanelEditor extends AbstractTextPanelEditor<XMLEditor> {
             }
         };
     }
+
+    @Override
+    protected String getFileFolderName() {
+        return "dbeaver-xml";
+    }
+
+    @Override
+    protected String getFileExtension() {
+        return ".xml";
+    }
 }

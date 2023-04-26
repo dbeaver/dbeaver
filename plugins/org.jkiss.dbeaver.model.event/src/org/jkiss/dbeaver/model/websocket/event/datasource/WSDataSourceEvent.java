@@ -18,13 +18,13 @@ package org.jkiss.dbeaver.model.websocket.event.datasource;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.websocket.event.WSAbstractProjectEvent;
+import org.jkiss.dbeaver.model.websocket.event.WSProjectResourceEvent;
 import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
 import java.util.List;
 
-public class WSDataSourceEvent extends WSAbstractProjectEvent {
-    @Nullable
+public class WSDataSourceEvent extends WSProjectResourceEvent {
+    @NotNull
     private final List<String> dataSourceIds;
     @NotNull
     private final WSDataSourceProperty property;
@@ -34,7 +34,7 @@ public class WSDataSourceEvent extends WSAbstractProjectEvent {
         @Nullable String sessionId,
         @Nullable String userId,
         @NotNull String projectId,
-        @Nullable List<String> dataSourceIds,
+        @NotNull List<String> dataSourceIds,
         @NotNull WSDataSourceProperty property
     ) {
         super(eventType, sessionId, userId, projectId);
@@ -46,7 +46,7 @@ public class WSDataSourceEvent extends WSAbstractProjectEvent {
         @Nullable String sessionId,
         @Nullable String userId,
         @NotNull String projectId,
-        @Nullable List<String> datasourceIds,
+        @NotNull List<String> datasourceIds,
         @NotNull WSDataSourceProperty property
     ) {
         return new WSDataSourceEvent(
@@ -62,7 +62,7 @@ public class WSDataSourceEvent extends WSAbstractProjectEvent {
         @Nullable String sessionId,
         @Nullable String userId,
         @NotNull String projectId,
-        @Nullable List<String> datasourceIds,
+        @NotNull List<String> datasourceIds,
         @NotNull WSDataSourceProperty property
     ) {
         return new WSDataSourceEvent(
@@ -78,7 +78,7 @@ public class WSDataSourceEvent extends WSAbstractProjectEvent {
         @Nullable String sessionId,
         @Nullable String userId,
         @NotNull String projectId,
-        @Nullable List<String> datasourceIds,
+        @NotNull List<String> datasourceIds,
         @NotNull WSDataSourceProperty property
     ) {
         return new WSDataSourceEvent(
@@ -90,7 +90,7 @@ public class WSDataSourceEvent extends WSAbstractProjectEvent {
             property);
     }
 
-    @Nullable
+    @NotNull
     public List<String> getDataSourceIds() {
         return dataSourceIds;
     }

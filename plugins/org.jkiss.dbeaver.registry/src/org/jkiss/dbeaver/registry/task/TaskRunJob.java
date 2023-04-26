@@ -61,7 +61,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     private long elapsedTime;
     private Throwable taskError;
 
-    protected TaskRunJob(TaskImpl task, Locale locale, DBTTaskExecutionListener executionListener) {
+    public TaskRunJob(TaskImpl task, Locale locale, DBTTaskExecutionListener executionListener) {
         super("Task [" + task.getType().getName() + "] runner - " + task.getName());
         setUser(true);
         setSystem(false);

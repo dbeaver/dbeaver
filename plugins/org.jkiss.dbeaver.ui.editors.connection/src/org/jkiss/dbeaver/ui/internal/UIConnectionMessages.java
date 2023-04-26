@@ -181,6 +181,7 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_edit_driven_edit_maven_field_text_message;
     public static String dialog_edit_driver_edit_maven_group_id_label;
     public static String dialog_edit_driver_edit_maven_artifact_id_label;
+    public static String dialog_edit_driver_edit_maven_classifier_label;
     public static String dialog_edit_driver_edit_maven_fallback_version_label;
     public static String dialog_edit_driver_edit_maven_version_label;
     public static String dialog_edit_driver_text_driver_library;
@@ -270,9 +271,6 @@ public class UIConnectionMessages extends NLS {
 
     public static String dialog_connection_driver_project;
 
-    public static String dialog_user_password_change_label;
-    public static String dialog_user_password_change_question_label;
-    public static String dialog_user_password_change_question_message;
     public static String dialog_edit_driver_edit_maven_raw;
     public static String dialog_edit_driver_edit_maven_settings;
     public static String dialog_edit_driver_edit_maven_manual;

@@ -34,12 +34,15 @@
 						<id>default-cli</id>
 						<configuration>
 							<artifacts>
-								<artifact><id>com.github.jsqlparser:jsqlparser:4.5</id></artifact>
+								<artifact><id>com.github.jsqlparser:jsqlparser:4.6</id></artifact>
 <!--								<artifact><id>com.manticore-projects.jsqlformatter:jsqlformatter:0.1.7</id></artifact>-->
 
 								<artifact><id>org.apache.commons:commons-jexl3:3.1</id></artifact>
 								<artifact><id>commons-cli:commons-cli:1.3.1</id></artifact>
 								<artifact><id>com.ibm.icu:com.ibm.icu.base:58.2.0</id></artifact>
+
+								<!-- ANTLR -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.antlr4:LATEST</id></artifact>
 
 								<!-- GEF3 -->
 								<artifact><id>org.eclipse.draw2dl.plugins:org.eclipse.draw2dl:3.12.100-SNAPSHOT</id></artifact>
@@ -55,6 +58,7 @@
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jfreechart:LATEST</id></artifact>
 
 								<!-- SSH and BouncyCastle -->
+								<artifact><id>com.jcraft:jsch:0.2.7</id></artifact>
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:LATEST</id></artifact>
 								<!-- Ant minimized -->
 								<artifact><id>org.jkiss.bundle:org.apache.ant:1.10.0</id></artifact>
@@ -66,7 +70,8 @@
 								<!-- DBCP -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.dbcp:LATEST</id></artifact>
 
-								<!-- Web sockets -->
+								<!-- Jetty -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jetty.server:LATEST</id></artifact>
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jetty.websocket:LATEST</id></artifact>
 								<!-- GPT -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gpt3:LATEST</id></artifact>

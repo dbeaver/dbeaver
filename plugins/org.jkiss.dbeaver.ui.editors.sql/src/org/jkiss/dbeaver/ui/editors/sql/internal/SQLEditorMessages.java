@@ -91,6 +91,7 @@ public class SQLEditorMessages extends NLS {
     public static String action_result_tabs_pin_tab;
     public static String action_result_tabs_unpin_tab;
     public static String action_result_tabs_unpin_all_tabs;
+    public static String action_result_tabs_detach_tab;
     public static String action_result_tabs_set_name;
     public static String action_result_tabs_set_name_title;
     public static String action_result_tabs_assign_variable;
@@ -230,6 +231,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_group_misc;
     public static String pref_page_sql_completion_label_folding_enabled;
     public static String pref_page_sql_completion_label_folding_enabled_tip;
+    public static String pref_page_sql_completion_label_smart_word_iterator;
+    public static String pref_page_sql_completion_label_smart_word_iterator_tip;
     public static String pref_page_sql_completion_label_problem_markers_enabled;
     public static String pref_page_sql_completion_label_problem_markers_enabled_tip;
     public static String pref_page_sql_completion_label_mark_occurrences;
@@ -254,6 +257,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_checkbox_create_script_folders;
     public static String pref_page_sql_editor_checkbox_reset_cursor;
     public static String pref_page_sql_editor_checkbox_max_editor_on_script_exec;
+    public static String pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results;
+    public static String pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results_tip;
     public static String pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters;
     public static String pref_page_sql_editor_text_anonymous_parameter_mark;
     public static String pref_page_sql_editor_text_named_parameter_prefix;

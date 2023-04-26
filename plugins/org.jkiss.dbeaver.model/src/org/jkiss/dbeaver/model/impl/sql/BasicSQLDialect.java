@@ -26,10 +26,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Basic SQL Dialect
@@ -343,9 +340,9 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
             Collections.addAll(all, SQLConstants.SQL2003_RESERVED_KEYWORDS);
             //Collections.addAll(reservedWords, SQLConstants.SQL2003_NON_RESERVED_KEYWORDS);
             Collections.addAll(all, SQLConstants.SQL_EX_KEYWORDS);
-            Collections.addAll(functions, SQLConstants.SQL2003_FUNCTIONS);
-            Collections.addAll(tableQueryWords, SQLConstants.TABLE_KEYWORDS);
-            Collections.addAll(columnQueryWords, SQLConstants.COLUMN_KEYWORDS);
+            addFunctions(List.of(SQLConstants.SQL2003_FUNCTIONS));
+            addTableQueryKeywords(SQLConstants.TABLE_KEYWORDS);
+            addColumnQueryKeywords(SQLConstants.COLUMN_KEYWORDS);
         }
 
         for (String executeKeyword : ArrayUtils.safeArray(getExecuteKeywords())) {
@@ -356,10 +353,10 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
             addSQLKeyword(ddlKeyword);
             setKeywordIndent(ddlKeyword, 1);
         }
-        for (String kw : tableQueryWords) {
+        for (String kw : getTableQueryWords()) {
             setKeywordIndent(kw, 1);
         }
-        for (String kw : columnQueryWords) {
+        for (String kw : getColumnQueryWords()) {
             setKeywordIndent(kw, 1);
         }
         for (String[] beKeywords : ArrayUtils.safeArray(getBlockBoundStrings())) {
@@ -369,11 +366,8 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
 
         if (isStandardSQL()) {
             // Add default types
-            Collections.addAll(types, SQLConstants.DEFAULT_TYPES);
-
+            addDataTypes(List.of(SQLConstants.DEFAULT_TYPES));
             addKeywords(all, DBPKeywordType.KEYWORD);
-            addKeywords(types, DBPKeywordType.TYPE);
-            addKeywords(functions, DBPKeywordType.FUNCTION);
         }
     }
 

@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -215,6 +216,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
             setInfo(status);
         });
+
+        UIUtils.installAndUpdateMainFont(itemsViewer.getControl());
     }
 
     /**

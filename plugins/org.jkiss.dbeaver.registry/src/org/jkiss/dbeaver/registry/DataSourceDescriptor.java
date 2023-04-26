@@ -867,8 +867,6 @@ public class DataSourceDescriptor
         if (!isSharedCredentials()) {
             var secret = saveToSecret();
             secretController.setSecretValue(getSecretKeyId(), secret);
-            this.secretsContainsDatabaseCreds =
-                isSavePassword() && this.connectionInfo.getAuthModel().isDatabaseCredentialsPresent(getProject(), this.connectionInfo);
         }
         secretsResolved = true;
     }
@@ -879,8 +877,6 @@ public class DataSourceDescriptor
             if (!isSharedCredentials()) {
                 String secretValue = secretController.getSecretValue(getSecretKeyId());
                 loadFromSecret(secretValue);
-                this.secretsContainsDatabaseCreds =
-                    isSavePassword() && this.connectionInfo.getAuthModel().isDatabaseCredentialsPresent(getProject(), this.connectionInfo);
                 if (secretValue == null && !DBWorkbench.isDistributed()) {
                     // Backward compatibility
                     loadFromLegacySecret(secretController);
@@ -951,7 +947,7 @@ public class DataSourceDescriptor
                 authProvided = authProvider.provideAuthParameters(monitor, this, resolvedConnectionInfo);
             } else {
                 // 3. USe legacy password provider
-                if (!isCredentialsSaved() && !getDriver().isAnonymousAccess()) {
+                if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
                     // Ask for password
                     authProvided = askForPassword(this, null, DBWTunnel.AuthCredentials.CREDENTIALS);
                 }
@@ -1080,7 +1076,7 @@ public class DataSourceDescriptor
             return true;
         } catch (Throwable e) {
             lastConnectionError = e.getMessage();
-            log.debug("Connection failed (" + getId() + ")", e);
+            //log.debug("Connection failed (" + getId() + ")", e);
             if (dataSource != null) {
                 try {
                     dataSource.shutdown(monitor);
@@ -1900,6 +1896,10 @@ public class DataSourceDescriptor
             if (!CommonUtils.isEmpty(connectionInfo.getAuthProperties())) {
                 props.put(RegistryConstants.TAG_PROPERTIES, connectionInfo.getAuthProperties());
             }
+            if (props.isEmpty()) {
+                props.put(RegistryConstants.ATTR_EMPTY_DATABASE_CREDENTIALS, true);
+            }
+            this.secretsContainsDatabaseCreds = true;
         }
         if (CommonUtils.isEmpty(connectionInfo.getConfigProfileName())) {
             // Handlers. If config profile is set then props are saved there
@@ -1950,11 +1950,21 @@ public class DataSourceDescriptor
         // Primary props
         var dbUserName = JSONUtils.getString(props, RegistryConstants.ATTR_USER);
         var dbPassword = JSONUtils.getString(props, RegistryConstants.ATTR_PASSWORD);
-        var dbAuthProperties = JSONUtils.deserializeStringMap(props, RegistryConstants.TAG_PROPERTIES);
+        var dbAuthProperties = JSONUtils.deserializeStringMapOrNull(props, RegistryConstants.TAG_PROPERTIES);
         connectionInfo.setUserName(dbUserName);
         connectionInfo.setUserPassword(dbPassword);
         // Additional auth props
         connectionInfo.setAuthProperties(dbAuthProperties);
+
+        boolean emptyDatabaseCredsSaved = CommonUtils.toBoolean(props.getOrDefault(RegistryConstants.ATTR_EMPTY_DATABASE_CREDENTIALS, false));
+        this.secretsContainsDatabaseCreds = props.containsKey(RegistryConstants.ATTR_USER)
+            || props.containsKey(RegistryConstants.ATTR_PASSWORD)
+            || props.containsKey(RegistryConstants.TAG_PROPERTIES)
+            || emptyDatabaseCredsSaved;
+
+        if (this.secretsContainsDatabaseCreds) {
+            this.savePassword = props.containsKey(RegistryConstants.ATTR_PASSWORD);
+        }
 
         // Handlers
         List<Map<String, Object>> handlerList = JSONUtils.getObjectList(props, RegistryConstants.TAG_HANDLERS);
@@ -1991,19 +2001,16 @@ public class DataSourceDescriptor
         try {
             for (DBSSecret secret : sBrowser.listSecrets(itemPath.toString())) {
                 String secretId = secret.getId();
+                String secretValue = secretController.getSecretValue(secretId);
                 switch (secret.getName()) {
                     case RegistryConstants.ATTR_USER:
-                        connectionInfo.setUserName(
-                            secretController.getSecretValue(secretId));
+                        connectionInfo.setUserName(secretValue);
                         break;
                     case RegistryConstants.ATTR_PASSWORD:
-                        connectionInfo.setUserPassword(
-                            secretController.getSecretValue(secretId));
+                        connectionInfo.setUserPassword(secretValue);
                         break;
                     default:
-                        connectionInfo.setAuthProperty(
-                            secretId,
-                            secretController.getSecretValue(secretId));
+                        connectionInfo.setAuthProperty(secretId, secretValue);
                         break;
                 }
             }

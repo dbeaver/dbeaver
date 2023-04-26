@@ -33,7 +33,7 @@ public class ConfigurationFileSelector extends TextWithOpenFile {
     }
 
     @Override
-    protected boolean isPlainTextEditor() {
+    protected boolean isShowFileContentEditor() {
         return DBWorkbench.isDistributed();
     }
 

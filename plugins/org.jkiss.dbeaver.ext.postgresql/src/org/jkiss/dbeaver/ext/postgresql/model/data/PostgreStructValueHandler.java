@@ -94,7 +94,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         }
         try {
             if (object == null) {
-                return null;
+                return new JDBCCompositeStatic(session, structType, null);
             } else if (object instanceof JDBCCompositeStatic) {
                 return copy ? ((JDBCCompositeStatic) object).cloneValue(session.getProgressMonitor()) : object;
             } else {
@@ -114,7 +114,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
     @NotNull
     @Override
     public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
-        if (value instanceof JDBCComposite) {
+        if (!DBUtils.isNullValue(value) && value instanceof JDBCComposite) {
             final JDBCComposite composite = (JDBCComposite) value;
             final StringJoiner output = new StringJoiner(",", "(", ")");
 

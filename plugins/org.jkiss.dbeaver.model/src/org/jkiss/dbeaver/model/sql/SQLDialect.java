@@ -37,7 +37,6 @@ import org.jkiss.utils.Pair;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * SQL dialect
@@ -120,11 +119,11 @@ public interface SQLDialect {
      *         SQL92 keywords
      */
     @NotNull
-    Set<String> getReservedWords();
+    Collection<String> getReservedWords();
     @NotNull
-    Set<String> getFunctions();
+    Collection<String> getFunctions();
     @NotNull
-    Set<String> getDataTypes(@Nullable DBPDataSource dataSource);
+    Collection<String> getDataTypes(@Nullable DBPDataSource dataSource);
     @Nullable
     DBPKeywordType getKeywordType(@NotNull String word);
     @NotNull

@@ -222,17 +222,11 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                     DBWorkbench.getPlatformUI().showError("No string editor", "Can't load string content managers", e);
                 }
             } else {
-                if (content instanceof DBDContentCached) {
-                    try {
-                        detectStreamManager(new VoidProgressMonitor(), (DBDContent) content);
-                    } catch (DBException e) {
-                        log.error(e);
-                        valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
-                        return editPlaceholder;
-                    }
-                } else {
-                    //UIUtils.createLabel(editPlaceholder, UIIcon.REFRESH);
-                    runSreamManagerDetector((DBDContent) content, editPlaceholder);
+                try {
+                    detectStreamManager(new VoidProgressMonitor(), (DBDContent) content);
+                } catch (DBException e) {
+                    log.error(e);
+                    valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
                     return editPlaceholder;
                 }
             }
@@ -311,6 +305,11 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
     @Nullable
     public StreamValueManagerDescriptor getCurrentStreamManager() {
         return curStreamManager;
+    }
+
+    @Nullable
+    public IStreamValueEditor<Control> getStreamEditor() {
+        return streamEditor;
     }
 
     public void setCurrentStreamManager(@NotNull StreamValueManagerDescriptor newManager) {
@@ -571,7 +570,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                 monitor.subTask("Prime LOB value");
                 UIUtils.syncExec(() -> {
                     try {
-                        if (!control.isDisposed()) {
+                        if (streamEditor != null && !control.isDisposed()) {
                             streamEditor.primeEditorValue(monitor, control, content);
                         }
                     } catch (Exception e) {

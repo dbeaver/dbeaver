@@ -149,6 +149,19 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                         }
                         break;
                     }
+                    case "datasourceReplace": {
+                        String providerId = ext.getAttribute("provider");
+                        String providerClass = ext.getAttribute("class");
+                        if (providerId != null && providerClass != null) {
+                            DataSourceProviderDescriptor provider = getDataSourceProvider(providerId);
+                            if (provider == null) {
+                                log.error("Cannot replace provider '" + providerId + "' - bad provider ID");
+                            } else {
+                                provider.replaceImplClass(ext.getContributor(), providerClass);
+                            }
+                        }
+                        break;
+                    }
                     case RegistryConstants.TAG_EDITOR_CONTRIBUTION: {
                         // Load tree contributions
                         EditorContributionDescriptor descriptor = new EditorContributionDescriptor(ext);

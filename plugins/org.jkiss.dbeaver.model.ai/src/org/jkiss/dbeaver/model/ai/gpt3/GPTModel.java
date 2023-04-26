@@ -22,16 +22,17 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public enum GPTModel {
-    CODE_CUSHMAN("code-cushman-001"),
-    CODE_DAVINCI("code-davinci-002"),
-    TEXT_ADA("text-ada-001"),
-    TEXT_CURIE("text-curie-001"),
-    TEXT_BABBAGE("text-babbage-001"),
-    TEXT_DAVINCI01("text-davinci-003"),
-    TEXT_DAVINCI02("text-davinci-002"),
-    TEXT_DAVINCI03("text-davinci-001");
+    GPT_TURBO("gpt-3.5-turbo", 2048, true),
+    TEXT_ADA("text-ada-001", 2048, false),
+    TEXT_CURIE("text-curie-001", 2048, false),
+    TEXT_BABBAGE("text-babbage-001", 2048, false),
+    TEXT_DAVINCI01("text-davinci-003", 4096, false),
+    TEXT_DAVINCI02("text-davinci-002", 4096, false),
+    TEXT_DAVINCI03("text-davinci-001", 2048, false);
 
     private final String name;
+    private final int maxTokens;
+    private final boolean isChatAPI;
 
     /**
      * Gets GPT model by name
@@ -39,11 +40,21 @@ public enum GPTModel {
     @NotNull
     public static GPTModel getByName(@NotNull String name) {
         Optional<GPTModel> model = Arrays.stream(values()).filter(it -> it.name.equals(name)).findFirst();
-        return model.orElse(CODE_DAVINCI);
+        return model.orElse(GPT_TURBO);
     }
 
-    GPTModel(String name) {
+    GPTModel(String name, int maxTokens, boolean isChatAPI) {
         this.name = name;
+        this.maxTokens = maxTokens;
+        this.isChatAPI = isChatAPI;
+    }
+
+    public int getMaxTokens() {
+        return maxTokens;
+    }
+
+    public boolean isChatAPI() {
+        return isChatAPI;
     }
 
     public String getName() {

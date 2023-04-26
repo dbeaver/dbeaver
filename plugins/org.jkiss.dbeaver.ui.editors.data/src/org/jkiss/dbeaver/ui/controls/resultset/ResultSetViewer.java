@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.*;
@@ -44,7 +45,6 @@ import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.themes.ITheme;
-import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -141,6 +141,8 @@ public class ResultSetViewer extends Viewer
     private static final String TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status";
     private static final String CONFIRM_SERVER_SIDE_ORDERING_UNAVAILABLE = "org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable";
 
+    private static final int THEME_UPDATE_DELAY_MS = 250;
+
     public static final String EMPTY_TRANSFORMER_NAME = "Default";
     public static final String CONTROL_ID = ResultSetViewer.class.getSimpleName();
     public static final String DEFAULT_QUERY_TEXT = "SQL";
@@ -195,7 +197,6 @@ public class ResultSetViewer extends Viewer
 
     @NotNull
     private final DBPPreferenceListener dataPropertyListener;
-    private long lastPropertyUpdateTime;
 
     // Current row/col number
     @Nullable
@@ -226,6 +227,7 @@ public class ResultSetViewer extends Viewer
 
     // Theme listener
     private IPropertyChangeListener themeChangeListener;
+    private final AbstractJob themeUpdateJob;
     private long lastThemeUpdateTime;
 
     private volatile boolean nextSegmentReadingBlocked;
@@ -283,7 +285,8 @@ public class ResultSetViewer extends Viewer
         });
 
         if ((decoratorFeatures & IResultSetDecorator.FEATURE_FILTERS) != 0) {
-            this.filtersPanel = new ResultSetFilterPanel(this, this.mainPanel);
+            this.filtersPanel = new ResultSetFilterPanel(this, this.mainPanel,
+                (decoratorFeatures & IResultSetDecorator.FEATURE_COMPACT_FILTERS) != 0);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = ((GridLayout)mainPanel.getLayout()).numColumns;
             this.filtersPanel.setLayoutData(gd);
@@ -416,19 +419,21 @@ public class ResultSetViewer extends Viewer
             project.getDataSourceRegistry().addDataSourceListener(this);
         }
 
-        // Listen property change
-        themeChangeListener = event -> {
-            if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME) ||
-                event.getProperty().startsWith(ThemeConstants.RESULTS_PROP_PREFIX))
-            {
-                if (lastThemeUpdateTime > 0 && System.currentTimeMillis() - lastThemeUpdateTime < 500) {
-                    // Do not update too often (theme change may trigger this hundreds of times)
-                    return;
+        themeUpdateJob = new AbstractJob("Update theme") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                if (!getControl().isDisposed()) {
+                    UIUtils.syncExec(ResultSetViewer.this::applyCurrentPresentationThemeSettings);
+                    lastThemeUpdateTime = System.currentTimeMillis();
                 }
-                lastThemeUpdateTime = System.currentTimeMillis();
-                UIUtils.asyncExec(this::applyCurrentPresentationThemeSettings);
+                return Status.OK_STATUS;
             }
         };
+        themeUpdateJob.setSystem(true);
+        themeUpdateJob.setUser(false);
+        scheduleThemeUpdate();
+
+        themeChangeListener = e -> scheduleThemeUpdate();
         PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
 
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(dataPropertyListener);
@@ -436,31 +441,43 @@ public class ResultSetViewer extends Viewer
     }
 
     private void applyCurrentPresentationThemeSettings() {
+        if (panelFolder != null) {
+            panelFolder.setFont(JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MAIN_FONT));
+        }
+
+        if (statusBar != null) {
+            UIUtils.applyMainFont(statusBar);
+            updateToolbar();
+        }
+
+        UIUtils.applyMainFont(presentationSwitchFolder);
+        UIUtils.applyMainFont(panelSwitchFolder);
+
         if (activePresentation instanceof AbstractPresentation) {
             ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
             ((AbstractPresentation) activePresentation).applyThemeSettings(currentTheme);
         }
     }
 
+    private void scheduleThemeUpdate() {
+        final long currentTime = System.currentTimeMillis();
+        final long elapsedTime = currentTime - lastThemeUpdateTime;
+
+        if (!themeUpdateJob.isCanceled()) {
+            themeUpdateJob.cancel();
+        }
+
+        if (lastThemeUpdateTime > 0 && elapsedTime < THEME_UPDATE_DELAY_MS) {
+            themeUpdateJob.schedule(THEME_UPDATE_DELAY_MS - elapsedTime);
+        } else {
+            themeUpdateJob.schedule();
+        }
+    }
+
     private void handleDataPropertyChange(@Nullable DBPDataSourceContainer dataSource, @NotNull String property, @Nullable Object oldValue, @Nullable Object newValue) {
-        if (lastPropertyUpdateTime > 0 && System.currentTimeMillis() - lastPropertyUpdateTime < 200) {
-            // Do not update too often (theme change may trigger this hundreds of times)
-            return;
+        if (ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES.equals(property)) {
+            scheduleThemeUpdate();
         }
-        lastPropertyUpdateTime = System.currentTimeMillis();
-        if (ResultSetPreferences.RESULT_SET_PRESENTATION.equals(property)) {
-            // No need to refresh data
-            return;
-        }
-        UIUtils.asyncExec(() -> {
-            if (ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES.equals(property)) {
-                if (activePresentation instanceof AbstractPresentation) {
-                    ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-                    ((AbstractPresentation) activePresentation).applyThemeSettings(currentTheme);
-                }
-            }
-            redrawData(false, false);
-        });
     }
 
     @Override
@@ -972,11 +989,7 @@ public class ResultSetViewer extends Viewer
                         @Override
                         public void widgetSelected(SelectionEvent e) {
                             boolean isPanelVisible = isPanelsVisible() && isPanelVisible(panel.getId());
-                            if (isPanelVisible) {
-                                closePanel(panel.getId());
-                            } else {
-                                activatePanel(panel.getId(), true, true);
-                            }
+                            ResultSetHandlerTogglePanel.showResultsPanel(ResultSetViewer.this, panel.getId(), isPanelVisible);
                             panelButton.setChecked(!isPanelVisible);
                             panelsButton.setChecked(isPanelsVisible());
                             if (panelSwitchFolder != null) {
@@ -1930,6 +1943,9 @@ public class ResultSetViewer extends Viewer
 
     private void dispose()
     {
+        if (!themeUpdateJob.isCanceled()) {
+            themeUpdateJob.cancel();
+        }
         if (themeChangeListener != null) {
             PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
             themeChangeListener = null;
@@ -3853,6 +3869,8 @@ public class ResultSetViewer extends Viewer
             return false;
         }
 
+        DataEditorFeatures.RESULT_SET_REFRESH.use();
+
         DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null) {
             int segmentSize = getSegmentMaxRows();
@@ -3916,6 +3934,9 @@ public class ResultSetViewer extends Viewer
         if (nextSegmentReadingBlocked) {
             return;
         }
+
+        DataEditorFeatures.RESULT_SET_SCROLL.use();
+
         nextSegmentReadingBlocked = true;
         UIUtils.asyncExec(() -> {
             if (isRefreshInProgress() || !checkForChanges()) {
@@ -4693,7 +4714,6 @@ public class ResultSetViewer extends Viewer
     }
 
     private void fireResultSetLoad() {
-        applyCurrentPresentationThemeSettings();
         for (IResultSetListener listener : getListenersCopy()) {
             listener.handleResultSetLoad();
         }
@@ -4721,7 +4741,7 @@ public class ResultSetViewer extends Viewer
         private final Map<String, List<String>> filterHistory = new HashMap<>();
         @NotNull
         @Override
-        public List<String> getQueryFilterHistory(@NotNull String query) {
+        public List<String> getQueryFilterHistory(@Nullable DBCExecutionContext context, @NotNull String query) {
             final List<String> filters = filterHistory.get(query);
             if (filters != null) {
                 return filters;
@@ -4730,13 +4750,13 @@ public class ResultSetViewer extends Viewer
         }
 
         @Override
-        public void saveQueryFilterValue(@NotNull String query, @NotNull String filterValue) {
+        public void saveQueryFilterValue(@Nullable DBCExecutionContext context, @NotNull String query, @NotNull String filterValue) {
             List<String> filters = filterHistory.computeIfAbsent(query, k -> new ArrayList<>());
             filters.add(filterValue);
         }
 
         @Override
-        public void deleteQueryFilterValue(@NotNull String query, String filterValue) {
+        public void deleteQueryFilterValue(@Nullable DBCExecutionContext context, @NotNull String query, String filterValue) {
             List<String> filters = filterHistory.get(query);
             if (filters != null) {
                 filters.add(filterValue);

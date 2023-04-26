@@ -20,6 +20,8 @@ import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.gef3.ui.actions.DeleteAction;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
+import org.jkiss.dbeaver.model.rm.RMConstants;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 /**
  * DatabaseEditorPropertyTester
@@ -46,7 +48,8 @@ public class ERDEditorPropertyTester extends PropertyTester
             case PROP_CAN_REDO:
                 return erdEditor.getCommandStack().canRedo();
             case PROP_EDITABLE:
-                return !erdEditor.isReadOnly();
+                return !erdEditor.isReadOnly()
+                    && DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER);
             case PROP_CAN_DELETE:
                 DeleteAction deleteAction = new DeleteAction((IWorkbenchPart) erdEditor);
                 deleteAction.update();

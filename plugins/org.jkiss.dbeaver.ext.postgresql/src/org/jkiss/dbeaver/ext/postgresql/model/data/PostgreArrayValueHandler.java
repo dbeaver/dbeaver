@@ -135,7 +135,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         if (!DBUtils.isNullValue(value) && value instanceof DBDCollection) {
             final DBDCollection collection = (DBDCollection) value;
-            final StringJoiner output = new StringJoiner(",", "{", "}");
+            final StringJoiner output = new StringJoiner(PostgreUtils.getArrayDelimiter(collection.getComponentType()), "{", "}");
 
             for (int i = 0; i < collection.getItemCount(); i++) {
                 final Object item = collection.getItem(i);
@@ -165,7 +165,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
         @Nullable Object value,
         @NotNull DBDDisplayFormat format
     ) {
-        if (value == null) {
+        if (DBUtils.isNullValue(value)) {
             return SQLConstants.NULL_VALUE;
         }
 
@@ -199,7 +199,6 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                 case '{':
                 case '}':
                 case '"':
-                case ',':
                 case ' ':
                 case '\\':
                     return true;
@@ -208,6 +207,6 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
             }
         }
 
-        return false;
+        return value.equals(PostgreUtils.getArrayDelimiter(type));
     }
 }

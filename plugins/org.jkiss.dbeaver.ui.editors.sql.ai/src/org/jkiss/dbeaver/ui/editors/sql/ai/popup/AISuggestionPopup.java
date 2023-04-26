@@ -51,7 +51,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
-import org.jkiss.dbeaver.ui.editors.sql.ai.gpt3.GPTPreferencePage;
+import org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -156,7 +156,7 @@ public class AISuggestionPopup extends AbstractPopupPanel {
                     selectionEvent -> showScopeConfiguration()));
             UIUtils.createToolItem(tb, "Settings", UIIcon.CONFIGURATION,
                 SelectionListener.widgetSelectedAdapter(
-                    selectionEvent -> UIUtils.showPreferencesFor(getShell(), null, GPTPreferencePage.PAGE_ID)));
+                    selectionEvent -> UIUtils.showPreferencesFor(getShell(), null, AIPreferencePage.PAGE_ID)));
             tb.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         }
 

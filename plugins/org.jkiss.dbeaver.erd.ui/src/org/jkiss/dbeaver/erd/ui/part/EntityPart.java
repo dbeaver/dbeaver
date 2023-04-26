@@ -25,6 +25,8 @@ import org.eclipse.draw2dl.geometry.Point;
 import org.eclipse.draw2dl.geometry.Rectangle;
 import org.eclipse.gef3.*;
 import org.eclipse.gef3.tools.DirectEditManager;
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
@@ -33,6 +35,7 @@ import org.jkiss.dbeaver.erd.ui.figures.AttributeItemFigure;
 import org.jkiss.dbeaver.erd.ui.figures.EditableLabel;
 import org.jkiss.dbeaver.erd.ui.figures.EntityFigure;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.policy.EntityConnectionEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.EntityContainerEditPolicy;
@@ -55,6 +58,7 @@ import java.util.Map;
  */
 public class EntityPart extends NodePart {
     protected DirectEditManager manager;
+    private AccessibleGraphicalEditPart accPart;
 
     public EntityPart() {
     }
@@ -340,5 +344,24 @@ public class EntityPart extends NodePart {
     @Override
     public ConnectionAnchor getTargetConnectionAnchor(Request request) {
         return new ChopboxAnchor(getFigure());
+    }
+
+    @Override
+    protected AccessibleEditPart getAccessibleEditPart() {
+        if (this.accPart == null) {
+            this.accPart = new AccessibleGraphicalEditPart() {
+                public void getName(AccessibleEvent e) {
+                    e.result = NLS.bind(ERDUIMessages.erd_accessibility_entity_part, new Object[]{
+                        EntityPart.this.getName(),
+                        EntityPart.this.getEntity().getAttributes().size(),
+                        sourceConnections == null ? 0 : sourceConnections.size(),
+                        targetConnections == null ? 0 : targetConnections.size(),
+
+                    });
+                }
+            };
+        }
+
+        return this.accPart;
     }
 }

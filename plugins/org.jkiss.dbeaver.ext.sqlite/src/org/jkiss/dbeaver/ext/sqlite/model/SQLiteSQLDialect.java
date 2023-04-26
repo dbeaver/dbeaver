@@ -18,15 +18,31 @@ package org.jkiss.dbeaver.ext.sqlite.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.Set;
 
 public class SQLiteSQLDialect extends GenericSQLDialect {
 
     public SQLiteSQLDialect() {
         super("SQLite", "sqlite");
+        addKeywords(Set.of("STRICT"), DBPKeywordType.OTHER);
+    }
+
+    @NotNull
+    @Override
+    public String escapeScriptValue(DBSTypedObject attribute, @NotNull Object value, @NotNull String strValue) {
+        if (CommonUtils.isNaN(value) || CommonUtils.isInfinite(value)) {
+            // SQLite doesn't have special literals for IEEE special values
+            return "'" + value + "'";
+        }
+        return super.escapeScriptValue(attribute, value, strValue);
     }
 
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {

@@ -2,12 +2,11 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Generic Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.generic;singleton:=true
-Bundle-Version: 2.3.186.qualifier
-Bundle-Release-Date: 20230220
+Bundle-Version: 2.3.191.qualifier
+Bundle-Release-Date: 20230508
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model;visibility:=reexport,
- org.jkiss.dbeaver.model.sql;visibility:=reexport,
- com.google.guava;resolution:=optional
+ org.jkiss.dbeaver.model.sql;visibility:=reexport
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: JKISS

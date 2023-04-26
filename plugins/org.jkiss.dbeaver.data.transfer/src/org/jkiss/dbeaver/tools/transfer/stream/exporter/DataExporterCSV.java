@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.IAppendableDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferUtils;
@@ -204,7 +205,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
                     }
                 }
                 finally {
-                    content.release();
+                    DTUtils.closeContents(resultSet, content);
                 }
             } else {
                 String stringValue = super.getValueDisplayString(column, row[i]);

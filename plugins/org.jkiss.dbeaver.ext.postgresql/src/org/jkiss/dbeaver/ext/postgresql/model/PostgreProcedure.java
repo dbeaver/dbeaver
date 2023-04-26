@@ -264,11 +264,13 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 varArrayType = container.getDatabase().getDataType(monitor, varTypeId);
             }
         }
-        if (dataSource.isServerVersionAtLeast(9, 2)) {
+        if (dataSource.isServerVersionAtLeast(9, 2) && !dataSource.isServerVersionAtLeast(12, 0)) {
             this.procTransform = JDBCUtils.safeGetString(dbResult, "protransform");
         }
-        this.isAggregate = JDBCUtils.safeGetBoolean(dbResult, "proisagg");
-        if (dataSource.isServerVersionAtLeast(8, 4)) {
+        if (!dataSource.isServerVersionAtLeast(11, 0)) {
+            this.isAggregate = JDBCUtils.safeGetBoolean(dbResult, "proisagg");
+        }
+        if (dataSource.isServerVersionAtLeast(8, 4) && !dataSource.isServerVersionAtLeast(11, 0)) {
             this.isWindow = JDBCUtils.safeGetBoolean(dbResult, "proiswindow");
         }
         this.isSecurityDefiner = JDBCUtils.safeGetBoolean(dbResult, "prosecdef");
