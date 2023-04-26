@@ -131,33 +131,39 @@ public abstract class JDBCDataSource extends AbstractDataSource
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose)
         throws DBCException
     {
-        final var driverSubstitutionDescriptor = container.getDriverSubstitution();
-        final var driverSubstitution = driverSubstitutionDescriptor != null ? driverSubstitutionDescriptor.getInstance() : null;
-        final DBPDriver driver;
-
-        if (driverSubstitutionDescriptor != null) {
-            final String id = driverSubstitutionDescriptor.getProviderId() + ':' + driverSubstitutionDescriptor.getDriverId();
-            driver = DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver(id);
-        } else {
-            driver = container.getDriver();
-        }
-
+        DBPDriver driver = container.getDriver();
         DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration(container.getActualConnectionConfiguration());
+        Properties connectProps = getAllConnectionProperties(monitor, context, purpose, connectionInfo);
+        String url = getConnectionURL(connectionInfo);
 
-        final Properties originalProperties = getAllConnectionProperties(monitor, context, purpose, connectionInfo);
-        final String originalUrl = getConnectionURL(connectionInfo);
-
-        final Properties connectProps;
-        final String url;
-
+        final DBPDriverSubstitutionDescriptor driverSubstitution = container.getDriverSubstitution();
         if (driverSubstitution != null) {
-            final var substitutedProperties = driverSubstitution.getConnectionProperties(monitor, container, connectionInfo);
-            final var substitutedUrl = driverSubstitution.getConnectionURL(container, connectionInfo);
-            connectProps = Objects.requireNonNullElse(substitutedProperties, originalProperties);
-            url = Objects.requireNonNullElse(substitutedUrl, originalUrl);
-        } else {
-            connectProps = originalProperties;
-            url = originalUrl;
+            final DBPDataSourceProviderDescriptor dataSourceProvider = DBWorkbench.getPlatform().getDataSourceProviderRegistry()
+                .getDataSourceProvider(driverSubstitution.getProviderId());
+
+            if (dataSourceProvider != null) {
+                final DBPDriver substitutedDriver = dataSourceProvider.getDriver(driverSubstitution.getDriverId());
+
+                if (substitutedDriver != null) {
+                    final DBPDriverSubstitution substitution = driverSubstitution.getInstance();
+                    final Properties substitutedProperties = substitution.getConnectionProperties(monitor, container, connectionInfo);
+                    final String substitutedUrl = substitution.getConnectionURL(container, connectionInfo);
+
+                    if (substitutedProperties != null) {
+                        connectProps = substitutedProperties;
+                    }
+
+                    if (substitutedUrl != null) {
+                        url = substitutedUrl;
+                    }
+                } else {
+                    log.warn("Couldn't find driver '" + driverSubstitution.getDriverId()
+                        + "' for driver substitution '" + driverSubstitution.getId() + "', using original driver");
+                }
+            } else {
+                log.warn("Couldn't find data source provider '" + driverSubstitution.getProviderId()
+                    + "' for driver substitution '" + driverSubstitution.getId() + "', using original driver");
+            }
         }
 
         final JDBCConnectionConfigurer connectionConfigurer = GeneralUtils.adapt(this, JDBCConnectionConfigurer.class);
@@ -221,6 +227,8 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 }
             }
             final Driver driverInstanceFinal = driverInstance;
+            final String urlFinal = url;
+            final Properties connectPropsFinal = connectProps;
 
             DBRRunnableWithProgress connectTask = monitor1 -> {
                 try {
@@ -228,9 +236,9 @@ public abstract class JDBCDataSource extends AbstractDataSource
                     // Otherwise just open connection directly
                     PrivilegedExceptionAction<Connection> pa = () -> {
                         if (driverInstanceFinal == null) {
-                            return DriverManager.getConnection(url, connectProps);
+                            return DriverManager.getConnection(urlFinal, connectPropsFinal);
                         } else {
-                            return driverInstanceFinal.connect(url, connectProps);
+                            return driverInstanceFinal.connect(urlFinal, connectPropsFinal);
                         }
                     };
                     Connection jdbcConnection = null;
@@ -251,7 +259,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 } finally {
                     if (connectionConfigurer != null) {
                         try {
-                            connectionConfigurer.afterConnection(monitor, connectionInfo, connectProps, connection[0], error[0]);
+                            connectionConfigurer.afterConnection(monitor, connectionInfo, connectPropsFinal, connection[0], error[0]);
                         } catch (Exception e) {
                             log.debug(e);
                         }

@@ -97,8 +97,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         this.driverSubstitution = driverSubstitution;
 
         if (driverSubstitution != null) {
-            final var dsp = DataSourceProviderRegistry.getInstance().getDataSourceProvider(driverSubstitution.getProviderId());
-            this.substitutedViewDescriptor = DataSourceViewRegistry.getInstance().findView(dsp, IActionConstants.EDIT_CONNECTION_POINT);
+            this.substitutedViewDescriptor = DataSourceViewRegistry.getInstance().findView(
+                DataSourceProviderRegistry.getInstance().getDataSourceProvider(driverSubstitution.getProviderId()),
+                IActionConstants.EDIT_CONNECTION_POINT
+            );
         } else {
             this.substitutedViewDescriptor = null;
         }

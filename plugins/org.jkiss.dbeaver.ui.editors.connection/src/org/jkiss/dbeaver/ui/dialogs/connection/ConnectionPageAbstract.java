@@ -129,9 +129,10 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         }
 
         if (driverSubstitutionCombo != null) {
-            final var driverSubstitution = dataSource.getDriverSubstitution();
+            final DBPDriverSubstitutionDescriptor driverSubstitution = dataSource.getDriverSubstitution();
             if (driverSubstitution != null) {
-                final var substitutions = DataSourceProviderRegistry.getInstance().getAllDriverSubstitutions();
+                final DBPDriverSubstitutionDescriptor[] substitutions
+                    = DataSourceProviderRegistry.getInstance().getAllDriverSubstitutions();
                 driverSubstitutionCombo.select(ArrayUtils.indexOf(substitutions, driverSubstitution) + 1);
             } else {
                 driverSubstitutionCombo.select(0);
@@ -155,7 +156,8 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         if (driverSubstitutionCombo != null) {
             final int substitutionIndex = driverSubstitutionCombo.getSelectionIndex();
             if (substitutionIndex > 0) {
-                final var substitutions = DataSourceProviderRegistry.getInstance().getAllDriverSubstitutions();
+                final DBPDriverSubstitutionDescriptor[] substitutions
+                    = DataSourceProviderRegistry.getInstance().getAllDriverSubstitutions();
                 dataSource.setDriverSubstitution(substitutions[substitutionIndex - 1]);
             } else {
                 dataSource.setDriverSubstitution(null);
@@ -392,9 +394,9 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 SWT.DROP_DOWN | SWT.READ_ONLY
             );
             driverSubstitutionCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-                final var index = driverSubstitutionCombo.getSelectionIndex();
-                final var driverSubstitution = index > 0 ? driverSubstitutions[index - 1] : null;
-                final var wizard = (IConnectionWizard) site.getWizard();
+                final int index = driverSubstitutionCombo.getSelectionIndex();
+                final DBPDriverSubstitutionDescriptor driverSubstitution = index > 0 ? driverSubstitutions[index - 1] : null;
+                final IConnectionWizard wizard = (IConnectionWizard) site.getWizard();
                 wizard.firePropertyChangeEvent(PROP_DRIVER_SUBSTITUTION, null, driverSubstitution);
             }));
             driverSubstitutionCombo.add("JDBC");
