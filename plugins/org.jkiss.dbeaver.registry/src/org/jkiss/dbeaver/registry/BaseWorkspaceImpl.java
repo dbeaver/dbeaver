@@ -123,7 +123,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
     }
 
     @Override
-    public void beforeDispose() {
+    public void saveWorkspacePropertyValue(@NotNull String propertyId, @NotNull Object value) {
         // Do nothing
     }
 

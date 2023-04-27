@@ -65,7 +65,7 @@ public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm
     @NotNull
     SMSessionContext getAuthContext();
 
-    void beforeDispose();
+    void saveWorkspacePropertyValue(@NotNull String propertyId, @NotNull Object value);
 
     void dispose();
 
