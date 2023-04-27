@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.registry.storage;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.InternalDatabaseConfig;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
