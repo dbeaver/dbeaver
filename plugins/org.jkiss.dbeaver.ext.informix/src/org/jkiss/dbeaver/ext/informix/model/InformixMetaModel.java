@@ -164,4 +164,10 @@ public class InformixMetaModel extends GenericMetaModel
     public boolean hasFunctionSupport() {
         return false;
     }
+
+    @Override
+    public boolean isTrimObjectNames() {
+        // Some old drivers can return object names with spaces around. And we can't create names with spaces. So let's trim them.
+        return true;
+    }
 }
