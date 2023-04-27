@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
-import java.io.File;
 import java.io.PrintStream;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -38,7 +37,6 @@ public class DBeaverActivator extends AbstractUIPlugin {
 
     // The shared instance
     private static DBeaverActivator instance;
-    private static File configDir;
     private ResourceBundle pluginResourceBundle, coreResourceBundle;
     private PrintStream debugWriter;
     private DBPPreferenceStore preferences;
@@ -76,6 +74,8 @@ public class DBeaverActivator extends AbstractUIPlugin {
         throws Exception {
         this.shutdownUI();
         this.shutdownCore();
+
+        DBRFeatureRegistry.getInstance().endTracking();
 
         if (debugWriter != null) {
             debugWriter.close();

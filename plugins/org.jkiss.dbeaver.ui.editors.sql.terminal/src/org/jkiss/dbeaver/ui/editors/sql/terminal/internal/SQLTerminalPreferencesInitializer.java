@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.terminal;
+package org.jkiss.dbeaver.ui.editors.sql.terminal.internal;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.editors.sql.terminal.SQLTerminalPreferencesConstants;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 public class SQLTerminalPreferencesInitializer extends AbstractPreferenceInitializer {

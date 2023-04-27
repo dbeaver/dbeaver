@@ -334,6 +334,16 @@ public class EntityEditor extends MultiPageDatabaseEditor
     }
 
     @Override
+    public boolean loadEditorInput() {
+        final IDatabaseEditorInput input = getEditorInput();
+        if (input instanceof DatabaseLazyEditorInput && !((DatabaseLazyEditorInput) input).canLoadImmediately()) {
+            return ((ProgressEditorPart) getActiveEditor()).scheduleEditorLoad();
+        } else {
+            return false;
+        }
+    }
+
+    @Override
     public boolean unloadEditorInput() {
         if (getEditorInput() instanceof IUnloadableEditorInput) {
             final IEditorInput input = ((IUnloadableEditorInput) getEditorInput()).unloadInput();
@@ -615,6 +625,14 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
         // Add contributed pages
         addContributions(EntityEditorDescriptor.POSITION_END);
+
+        if (databaseObject != null) {
+            EntityEditorFeatures.ENTITY_EDITOR_OPEN.use(Map.of(
+                "className", databaseObject.getClass().getSimpleName(),
+                "driver", databaseObject.getDataSource() == null ? "" :
+                    databaseObject.getDataSource().getContainer().getDriver().getPreconfiguredId()
+            ));
+        }
 
         String defPageId = editorInput.getDefaultPageId();
         String defFolderId = editorInput.getDefaultFolderId();

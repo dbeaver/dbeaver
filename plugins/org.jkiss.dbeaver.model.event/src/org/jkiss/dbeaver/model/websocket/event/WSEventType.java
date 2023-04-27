@@ -21,6 +21,9 @@ import org.jkiss.dbeaver.model.websocket.event.datasource.WSDataSourceEvent;
 import org.jkiss.dbeaver.model.websocket.event.datasource.WSDatasourceFolderEvent;
 import org.jkiss.dbeaver.model.websocket.event.permissions.WSObjectPermissionEvent;
 import org.jkiss.dbeaver.model.websocket.event.resource.WSResourceUpdatedEvent;
+import org.jkiss.dbeaver.model.websocket.event.session.WSSessionExpiredEvent;
+import org.jkiss.dbeaver.model.websocket.event.session.WSSessionStateEvent;
+import org.jkiss.dbeaver.model.websocket.event.session.WSSocketConnectedEvent;
 
 public enum WSEventType {
     SERVER_CONFIG_CHANGED(
@@ -36,6 +39,8 @@ public enum WSEventType {
     ),
 
     SESSION_WEBSOCKET_CONNECTED("cb_session_websocket_connected", WSEventTopic.SESSION, WSSocketConnectedEvent.class),
+    SESSION_STATE("cb_session_state", WSEventTopic.SESSION, WSSessionStateEvent.class),
+    SESSION_EXPIRED("cb_session_expired", WSEventTopic.SESSION, WSSessionExpiredEvent.class),
 
     DATASOURCE_CREATED("cb_datasource_created", WSEventTopic.DATASOURCE, WSDataSourceEvent.class),
     DATASOURCE_UPDATED("cb_datasource_updated", WSEventTopic.DATASOURCE, WSDataSourceEvent.class),

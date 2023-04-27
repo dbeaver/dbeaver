@@ -23,6 +23,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -157,6 +158,8 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
             dialog.getShell().forceActive();
             return true;
         }
+
+        CoreFeatures.CONNECTION_EDIT.use(Map.of("driver", dataSource.getDriver().getPreconfiguredId()));
 
         EditConnectionWizard wizard = new EditConnectionWizard((DataSourceDescriptor) dataSource);
         dialog = new EditConnectionDialog(window, wizard);

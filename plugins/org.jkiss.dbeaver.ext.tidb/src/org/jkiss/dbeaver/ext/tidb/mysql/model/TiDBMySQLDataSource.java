@@ -53,7 +53,7 @@ import java.util.Map;
 public class TiDBMySQLDataSource extends MySQLDataSource {
     private static final Log log = Log.getLog(MySQLDataSource.class);
     private static final String CONN_ATTR_NAME = "connectionAttributes";
-    private static final String PROP_APPLICATION_NAME = "program_names";
+    private static final String PROP_APPLICATION_NAME = "program_name";
 
     private String tidbVersion = "";
 

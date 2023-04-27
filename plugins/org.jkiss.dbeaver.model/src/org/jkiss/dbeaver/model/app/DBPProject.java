@@ -63,6 +63,10 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     @NotNull
     String getDisplayName();
 
+    /**
+     * Proiject UUID was deprecated. Use getId instead.
+     */
+    @Deprecated
     @NotNull
     UUID getProjectID();
 

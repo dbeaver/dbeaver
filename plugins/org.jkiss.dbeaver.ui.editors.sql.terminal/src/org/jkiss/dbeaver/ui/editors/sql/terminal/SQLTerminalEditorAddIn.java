@@ -24,7 +24,6 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabFolder2Adapter;
 import org.eclipse.swt.custom.CTabFolderEvent;
 import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Widget;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -41,9 +40,11 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorListener;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorListenerDefault;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddIn;
+import org.jkiss.dbeaver.ui.editors.sql.terminal.internal.SQLTerminalMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintWriter;
+import java.util.Map;
 
 
 public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
@@ -126,7 +127,7 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
                     if (item instanceof CTabItem) {
                         CTabItem cTab = (CTabItem) item;
                         if (cTab.getData() instanceof SQLTerminalView) {
-                            setConcoleViewEnabled(false);
+                            setConsoleViewEnabled(false);
                         }
                     }
                 }
@@ -136,7 +137,7 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
                 if (item instanceof CTabItem) {
                     CTabItem cTab = (CTabItem) item;
                     if (cTab.getData() instanceof SQLTerminalView) {
-                        setConcoleViewEnabled(false);
+                        setConsoleViewEnabled(false);
                     }
                 }
                 if (tabsContainer.getItemCount() == 0 && !editor.hasMaximizedControl()) {
@@ -177,9 +178,9 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
             if (viewContext != null) {
                 viewContext.dispose();
             }
-            setConcoleViewEnabled(false);
+            setConsoleViewEnabled(false);
         } else {
-            setConcoleViewEnabled(true);
+            setConsoleViewEnabled(true);
             if (editor.hasMaximizedControl()) {
                 editor.toggleResultPanel(true, false);
             }
@@ -228,20 +229,25 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
         return editor.getActivePreferenceStore().getBoolean(SQLTerminalPreferencesConstants.SHOW_TERMINAL_VIEW_BY_DEFAULT);
     }
     
-    private void setConcoleViewEnabled(@Nullable Boolean enabled) {
+    private void setConsoleViewEnabled(@Nullable Boolean enabled) {
         if (enabled == null) {
             editor.setPartProperty(TERMINAL_VIEW_ENABLED_PROPERTY, TERMINAL_VIEW_ENABLED_VALUE_DEFAULT);
         } else {
             String value = enabled ? TERMINAL_VIEW_ENABLED_VALUE_TRUE : TERMINAL_VIEW_ENABLED_VALUE_FALSE;
-            editor.setPartProperty(TERMINAL_VIEW_ENABLED_PROPERTY, value);
-            editor.setResultSetAutoFocusEnabled(!enabled);
-            IFile activeFile = EditorUtils.getFileFromInput(editor.getEditorInput());
-            if (activeFile != null) {
-                try {
-                    activeFile.setPersistentProperty(FILE_TERMINAL_VIEW_ENABLED_PROP_NAME, value);
-                } catch (CoreException e) {
-                    log.debug(e.getMessage(), e);
+            String oldValue = editor.getPartProperty(TERMINAL_VIEW_ENABLED_PROPERTY);
+            if (!CommonUtils.equalObjects(oldValue, enabled.toString())) {
+                editor.setPartProperty(TERMINAL_VIEW_ENABLED_PROPERTY, value);
+                editor.setResultSetAutoFocusEnabled(!enabled);
+                IFile activeFile = EditorUtils.getFileFromInput(editor.getEditorInput());
+                if (activeFile != null) {
+                    try {
+                        activeFile.setPersistentProperty(FILE_TERMINAL_VIEW_ENABLED_PROP_NAME, value);
+                    } catch (CoreException e) {
+                        log.debug(e.getMessage(), e);
+                    }
                 }
+
+                SQLTerminalFeatures.SQL_TERMINAL_OPEN.use(Map.of("show", enabled));
             }
         }
     }
