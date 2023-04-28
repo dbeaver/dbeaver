@@ -69,7 +69,9 @@ public class JDBCBasicDataTypeCache<OWNER extends DBSObject, OBJECT extends JDBC
         }
         int valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
         // Check for bad value type for strings: #494 && 19219
-        if ((valueType == Types.BINARY || valueType == Types.JAVA_OBJECT) && SQLConstants.DATA_TYPE_VARCHAR.equalsIgnoreCase(name)) {
+        if ((valueType == Types.BINARY  && name.toUpperCase(Locale.ENGLISH).contains("VARCHAR")) ||
+            valueType == Types.JAVA_OBJECT && SQLConstants.DATA_TYPE_VARCHAR.equalsIgnoreCase(name)
+        ) {
             log.warn("Inconsistent string data type name/id: " + name + "(" + valueType + "). Setting to " + Types.VARCHAR);
             valueType = Types.VARCHAR;
         }
