@@ -42,10 +42,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * OracleTable
@@ -95,6 +92,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         private int avgRowLen;
         private int avgSpaceFreelistBlocks;
         private int numFreelistBlocks;
+        private Date lastStatisticsUpdate;
 
         @Property(category = DBConstants.CAT_STATISTICS, order = 31)
         public int getPctFree() { return pctFree; }
@@ -132,6 +130,10 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         public int getAvgSpaceFreelistBlocks() { return avgSpaceFreelistBlocks; }
         @Property(category = DBConstants.CAT_STATISTICS, order = 48)
         public int getNumFreelistBlocks() { return numFreelistBlocks; }
+        @Property(category = DBConstants.CAT_STATISTICS, order = 29)
+        public Date getLastStatisticsUpdate() {
+            return lastStatisticsUpdate;
+        }
     }
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
@@ -411,7 +413,10 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "TABLES") + " WHERE OWNER=? AND TABLE_NAME=?")) {
+                "SELECT a.*, h.STATS_UPDATE_TIME FROM " +
+                    OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "TABLES") +
+                    " a, ALL_TAB_STATS_HISTORY h WHERE h.OWNER(+) = a.OWNER AND h.TABLE_NAME(+) = a.TABLE_NAME" +
+                    " AND a.OWNER=? AND a.TABLE_NAME=?")) {
                 dbStat.setString(1, getContainer().getName());
                 dbStat.setString(2, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -436,6 +441,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
                         additionalInfo.avgRowLen = JDBCUtils.safeGetInt(dbResult, "AVG_ROW_LEN");
                         additionalInfo.avgSpaceFreelistBlocks = JDBCUtils.safeGetInt(dbResult, "AVG_SPACE_FREELIST_BLOCKS");
                         additionalInfo.numFreelistBlocks = JDBCUtils.safeGetInt(dbResult, "NUM_FREELIST_BLOCKS");
+                        additionalInfo.lastStatisticsUpdate = JDBCUtils.safeGetTimestamp(dbResult, "STATS_UPDATE_TIME");
                     } else {
                         log.warn("Cannot find table '" + getFullyQualifiedName(DBPEvaluationContext.UI) + "' metadata");
                     }

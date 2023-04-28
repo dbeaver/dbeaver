@@ -181,7 +181,10 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         options.put(OPTION_NON_STRUCT_CREATE_ACTION, true);
-        super.addObjectCreateActions(monitor, executionContext, actions, command, options);
+        PostgreTableBase table = command.getObject().getParentObject();
+        String sql = "ALTER " + table.getTableTypeName() + " " + DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) + " ADD " +
+            getNestedDeclaration(monitor, table, command, options);
+        actions.add(new SQLDatabasePersistAction("Create new table column", sql));
         if (!CommonUtils.isEmpty(command.getObject().getDescription())) {
             addColumnCommentAction(actions, command.getObject());
         }
@@ -192,6 +195,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     {
         final PostgreAttribute column = command.getObject();
         boolean isAtomic = column.getDataSource().getServerType().isAlterTableAtomic();
+        PostgreTableBase table = (PostgreTableBase) column.getTable();
         // PostgreSQL can't perform all changes by one query
 //        ALTER [ COLUMN ] column [ SET DATA ] TYPE data_type [ COLLATE collation ] [ USING expression ]
 //        ALTER [ COLUMN ] column SET DEFAULT expression
@@ -201,7 +205,8 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 //        ALTER [ COLUMN ] column SET ( attribute_option = value [, ... ] )
 //        ALTER [ COLUMN ] column RESET ( attribute_option [, ... ] )
 //        ALTER [ COLUMN ] column SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
-        String prefix = "ALTER TABLE " + DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL) + " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";
+        String prefix = "ALTER " + table.getTableTypeName() + " " + DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) +
+            " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";
         String typeClause = column.getFullTypeName();
         if (column.getDataSource().getServerType().supportsAlterTableColumnWithUSING() && column.getDataType() != null) {
             typeClause += " USING " + DBUtils.getQuotedIdentifier(column) + "::" + column.getDataType().getName();
@@ -245,11 +250,13 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
         final PostgreAttribute column = command.getObject();
+        PostgreTableBase table = (PostgreTableBase) column.getTable();
 
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename column",
-                "ALTER TABLE " + DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL) + " RENAME COLUMN " +
+                "ALTER " + table.getTableTypeName() + " " + DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) +
+                    " RENAME COLUMN " +
                     DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) + " TO " +
                     DBUtils.getQuotedIdentifier(column.getDataSource(), command.getNewName())));
     }
@@ -257,5 +264,20 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     @Override
     public boolean supportsObjectDefinitionOption(String option) {
         return DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option);
+    }
+
+    @Override
+    protected void addObjectDeleteActions(
+        DBRProgressMonitor monitor,
+        DBCExecutionContext executionContext,
+        List<DBEPersistAction> actions,
+        ObjectDeleteCommand command,
+        Map<String, Object> options
+    ) {
+        PostgreTableColumn column = command.getObject();
+        PostgreTableBase table = column.getParentObject();
+        String ddl = "ALTER " + table.getTableTypeName() + " " + DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) +
+            " DROP COLUMN " + DBUtils.getQuotedIdentifier(column);
+        actions.add(new SQLDatabasePersistAction("Drop table column", ddl));
     }
 }
