@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.wmi.service.WMIService;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class WMIDataSourceProvider implements DBPDataSourceProvider {
@@ -80,22 +79,19 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
         return new WMIDataSource(container);
     }
 
-    private void loadNativeLib(DBPDriver driver) throws DBException
-    {
+    private void loadNativeLib(DBPDriver driver) throws DBException {
         for (DBPDriverLibrary libFile : driver.getDriverLibraries()) {
             if (libFile.matchesCurrentPlatform() && libFile.getType() == DBPDriverLibrary.FileType.lib) {
                 Path localFile = libFile.getLocalFile();
-                if (localFile != null) {
-                    try {
-                        if (Files.exists(localFile)) {
-                            WMIService.linkNative(localFile.toAbsolutePath().toString());
-                        } else {
-                            // Load dll from any accessible location
-                            WMIService.linkNative(localFile.getFileName().toString());
-                        }
-                    } catch (UnsatisfiedLinkError e) {
-                        throw new DBException("Can't load native library '" + localFile.toAbsolutePath() + "'", e);
+                try {
+                    if (localFile != null) {
+                        WMIService.linkNative(localFile.toAbsolutePath().toString());
+                    } else {
+                        // Load dll from any accessible location
+                        WMIService.linkNative();
                     }
+                } catch (UnsatisfiedLinkError e) {
+                    throw new DBException("Can't load native library '" + localFile.toAbsolutePath() + "'", e);
                 }
             }
         }
