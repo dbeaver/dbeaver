@@ -1218,7 +1218,11 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 } else {
                     monitor.subTask("Load all queries"); //$NON-NLS-1$
                 }
-                var qmSessionId = QMUtils.getQmSessionId(DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession());
+                String qmSessionId = null;
+                while (qmSessionId == null) {
+                    qmSessionId = QMUtils.getQmSessionId(DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession());
+                }
+
                 var cursorFilter = new QMCursorFilter(
                     qmSessionId,
                     criteria,

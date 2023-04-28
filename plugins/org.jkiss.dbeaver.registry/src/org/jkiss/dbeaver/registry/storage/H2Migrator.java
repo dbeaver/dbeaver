@@ -122,38 +122,43 @@ public class H2Migrator {
     }
 
     private void migrateDatabase(@NotNull WorkspacePaths workspacePaths) throws DBException, SQLException, IOException {
-        log.info("H2 database v1 -> v2 migration started");
+        try {
+            monitor.beginTask("H2 database v1 -> v2 migration started", 3);
 
-        final var v1Driver = getDriver(V1_DRIVER_NAME);
-        final var v2Driver = getDriver(V2_DRIVER_NAME);
+            final var v1Driver = getDriver(V1_DRIVER_NAME);
+            final var v2Driver = getDriver(V2_DRIVER_NAME);
 
-        final var exportFilePath = workspacePaths.exportFilePath.toString();
+            final var exportFilePath = workspacePaths.exportFilePath.toString();
 
-        log.info("Exporting v1 database");
-        if (dbProperties.getProperty(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD) == null) {
-            executeScript(v1Driver, resolvedDbUrl, EXPORT_SCRIPT, exportFilePath);
-        } else {
-            executeScript(v1Driver, resolvedDbUrl, EXPORT_SCRIPT_USING_PASSWORD, exportFilePath);
+            monitor.subTask("Exporting v1 database");
+            if (dbProperties.getProperty(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD) == null) {
+                executeScript(v1Driver, resolvedDbUrl, EXPORT_SCRIPT, exportFilePath);
+            } else {
+                executeScript(v1Driver, resolvedDbUrl, EXPORT_SCRIPT_USING_PASSWORD, exportFilePath);
+            }
+            monitor.worked(1);
+            monitor.subTask("Creating v1 database backup '" + workspacePaths.v1DataBackupPath + "'");
+            Files.move(workspacePaths.v1Paths.dbDataFile, workspacePaths.v1DataBackupPath, StandardCopyOption.REPLACE_EXISTING);
+            if (workspacePaths.v1Paths.dbTraceFile.toFile().exists()) {
+                Files.move(workspacePaths.v1Paths.dbTraceFile, workspacePaths.v1TraceBackupPath, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            updateConfig(workspacePaths);
+            monitor.worked(1);
+            monitor.subTask("Importing data to new v2 database");
+            var updatedResolvedDbUrl = GeneralUtils.replaceVariables(databaseConfiguration.getUrl(), variablesResolver);
+            if (dbProperties.getProperty(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD) == null) {
+                executeScript(v2Driver, updatedResolvedDbUrl, IMPORT_SCRIPT, exportFilePath);
+            } else {
+                executeScript(v2Driver, updatedResolvedDbUrl, IMPORT_SCRIPT_USING_PASSWORD, exportFilePath);
+            }
+
+            removeExportFile(workspacePaths);
+            log.debug("Export file removed '" + workspacePaths.exportFilePath + "'");
+            monitor.worked(1);
+        } finally {
+            monitor.done();
         }
-
-        log.info("Creating v1 database backup '" + workspacePaths.v1DataBackupPath + "'");
-        Files.move(workspacePaths.v1Paths.dbDataFile, workspacePaths.v1DataBackupPath, StandardCopyOption.REPLACE_EXISTING);
-        if (workspacePaths.v1Paths.dbTraceFile.toFile().exists()) {
-            Files.move(workspacePaths.v1Paths.dbTraceFile, workspacePaths.v1TraceBackupPath, StandardCopyOption.REPLACE_EXISTING);
-        }
-
-        updateConfig(workspacePaths);
-
-        log.info("Importing data to new v2 database");
-        var updatedResolvedDbUrl = GeneralUtils.replaceVariables(databaseConfiguration.getUrl(), variablesResolver);
-        if (dbProperties.getProperty(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD) == null) {
-            executeScript(v2Driver, updatedResolvedDbUrl, IMPORT_SCRIPT, exportFilePath);
-        } else {
-            executeScript(v2Driver, updatedResolvedDbUrl, IMPORT_SCRIPT_USING_PASSWORD, exportFilePath);
-        }
-
-        removeExportFile(workspacePaths);
-        log.debug("Export file removed '" + workspacePaths.exportFilePath + "'");
     }
 
     @NotNull
