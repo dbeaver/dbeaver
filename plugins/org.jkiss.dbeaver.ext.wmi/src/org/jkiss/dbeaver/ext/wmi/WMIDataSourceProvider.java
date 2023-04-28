@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.wmi.service.WMIService;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class WMIDataSourceProvider implements DBPDataSourceProvider {
@@ -86,7 +87,12 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
                 Path localFile = libFile.getLocalFile();
                 if (localFile != null) {
                     try {
-                        WMIService.linkNative(localFile.toAbsolutePath().toString());
+                        if (Files.exists(localFile)) {
+                            WMIService.linkNative(localFile.toAbsolutePath().toString());
+                        } else {
+                            // Load dll from any accessible location
+                            WMIService.linkNative(localFile.getFileName().toString());
+                        }
                     } catch (UnsatisfiedLinkError e) {
                         throw new DBException("Can't load native library '" + localFile.toAbsolutePath() + "'", e);
                     }
