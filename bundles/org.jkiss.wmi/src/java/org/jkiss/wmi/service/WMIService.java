@@ -36,7 +36,7 @@ public class WMIService {
     }
 
     public static void linkNative() {
-        System.load("jkiss_wmi");
+        System.loadLibrary("jkiss_wmi");
     }
 
     private long serviceHandle = 0l;

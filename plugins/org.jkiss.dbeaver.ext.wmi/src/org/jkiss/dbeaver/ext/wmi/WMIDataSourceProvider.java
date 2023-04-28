@@ -91,7 +91,7 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
                         WMIService.linkNative();
                     }
                 } catch (UnsatisfiedLinkError e) {
-                    throw new DBException("Can't load native library '" + localFile.toAbsolutePath() + "'", e);
+                    throw new DBException("Can't load native library '" + libFile.getDisplayName() + "'", e);
                 }
             }
         }
