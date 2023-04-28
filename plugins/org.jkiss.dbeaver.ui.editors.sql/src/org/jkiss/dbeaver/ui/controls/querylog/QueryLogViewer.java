@@ -77,6 +77,7 @@ import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogFilter;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
@@ -1219,10 +1220,18 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                     monitor.subTask("Load all queries"); //$NON-NLS-1$
                 }
                 String qmSessionId = null;
-                while (qmSessionId == null) {
+                var startTime = System.currentTimeMillis();
+                do {
                     qmSessionId = QMUtils.getQmSessionId(DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession());
-                }
+                    if (qmSessionId != null) {
+                        break;
+                    }
+                    RuntimeUtils.pause(200);
+                } while (System.currentTimeMillis() - startTime < 5 * 60 * 1000);
 
+                if (qmSessionId == null) {
+                    return events;
+                }
                 var cursorFilter = new QMCursorFilter(
                     qmSessionId,
                     criteria,
