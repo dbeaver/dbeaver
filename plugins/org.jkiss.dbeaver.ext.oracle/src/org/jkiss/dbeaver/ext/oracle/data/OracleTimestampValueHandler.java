@@ -57,8 +57,12 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
 
     //private static Method TIMESTAMP_READ_METHOD = null, TIMESTAMPTZ_READ_METHOD = null, TIMESTAMPLTZ_READ_METHOD = null;
 
-    public OracleTimestampValueHandler(DBDFormatSettings formatSettings) {
+    @NotNull
+    private DBPDataSource dataSource;
+
+    OracleTimestampValueHandler(DBDFormatSettings formatSettings, @NotNull DBPDataSource dataSource) {
         super(formatSettings);
+        this.dataSource = dataSource;
     }
 
     @Override
@@ -195,17 +199,10 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
     }
 
     @NotNull
-    protected String getFormatterId(DBSTypedObject column)
-    {
-        boolean showDateAsDate = false;
-        if (column instanceof DBSObject) {
-            DBPDataSource dataSource = ((DBSObject) column).getDataSource();
-            if (dataSource != null) {
-                showDateAsDate = CommonUtils.getBoolean(
-                    dataSource.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_SHOW_DATE_AS_DATE),
-                    false);
-            }
-        }
+    protected String getFormatterId(DBSTypedObject column) {
+        boolean showDateAsDate = CommonUtils.getBoolean(
+                dataSource.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_SHOW_DATE_AS_DATE),
+                false);
         if (showDateAsDate && OracleConstants.TYPE_NAME_DATE.equals(column.getTypeName())) {
             return DBDDataFormatter.TYPE_NAME_DATE;
         }

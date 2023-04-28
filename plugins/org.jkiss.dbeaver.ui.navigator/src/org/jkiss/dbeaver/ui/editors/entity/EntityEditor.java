@@ -334,6 +334,16 @@ public class EntityEditor extends MultiPageDatabaseEditor
     }
 
     @Override
+    public boolean loadEditorInput() {
+        final IDatabaseEditorInput input = getEditorInput();
+        if (input instanceof DatabaseLazyEditorInput && !((DatabaseLazyEditorInput) input).canLoadImmediately()) {
+            return ((ProgressEditorPart) getActiveEditor()).scheduleEditorLoad();
+        } else {
+            return false;
+        }
+    }
+
+    @Override
     public boolean unloadEditorInput() {
         if (getEditorInput() instanceof IUnloadableEditorInput) {
             final IEditorInput input = ((IUnloadableEditorInput) getEditorInput()).unloadInput();
