@@ -268,31 +268,11 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        AdditionalInfo info = getAdditionalInfo(monitor);
         StringBuilder sql = new StringBuilder()
             .append("-- DROP SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n")
             .append("CREATE SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL));
 
-        if (info.getIncrementBy() > 0) {
-            sql.append("\n\tINCREMENT BY ").append(info.getIncrementBy());
-        }
-        if (info.getMinValue() > 0) {
-            sql.append("\n\tMINVALUE ").append(info.getMinValue());
-        } else {
-            sql.append("\n\tNO MINVALUE");
-        }
-        if (info.getMaxValue() > 0) {
-            sql.append("\n\tMAXVALUE ").append(info.getMaxValue());
-        } else {
-            sql.append("\n\tNO MAXVALUE");
-        }
-        if (info.getStartValue() > 0) {
-            sql.append("\n\tSTART ").append(info.getStartValue());
-        }
-        if (info.getCacheValue() > 0) {
-            sql.append("\n\tCACHE ").append(info.getCacheValue());
-            sql.append("\n\t").append(info.isCycled ? "" : "NO ").append("CYCLE");
-        }
+        getSequenceBody(monitor, sql, true);
         sql.append(';');
 
 		if (!CommonUtils.isEmpty(getDescription())) {
@@ -308,6 +288,55 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         }
 
         return sql.toString();
+    }
+
+    /**
+     * Adds sequence body parts - only parameters - into the StringBuilder
+     *
+     * @param monitor to read additional info about sequence
+     * @param sql StringBuilder to append query parts
+     * @param hasIndentation add or not add tabulation and new line in the result
+     * @throws DBCException can happen during the additional info reading
+     */
+    public void getSequenceBody(@NotNull DBRProgressMonitor monitor, @NotNull StringBuilder sql, boolean hasIndentation)
+        throws DBCException {
+        AdditionalInfo info = getAdditionalInfo(monitor);
+        if (info.getIncrementBy() > 0) {
+            addIndentation(sql, hasIndentation);
+            sql.append("INCREMENT BY ").append(info.getIncrementBy());
+        }
+        if (info.getMinValue() > 0) {
+            addIndentation(sql, hasIndentation);
+            sql.append("MINVALUE ").append(info.getMinValue());
+        } else {
+            addIndentation(sql, hasIndentation);
+            sql.append("NO MINVALUE");
+        }
+        if (info.getMaxValue() > 0) {
+            addIndentation(sql, hasIndentation);
+            sql.append("MAXVALUE ").append(info.getMaxValue());
+        } else {
+            addIndentation(sql, hasIndentation);
+            sql.append("NO MAXVALUE");
+        }
+        if (info.getStartValue() > 0) {
+            addIndentation(sql, hasIndentation);
+            sql.append("START ").append(info.getStartValue());
+        }
+        if (info.getCacheValue() > 0) {
+            addIndentation(sql, hasIndentation);
+            sql.append("CACHE ").append(info.getCacheValue());
+        }
+        addIndentation(sql, hasIndentation);
+        sql.append(info.isCycled() ? "" : "NO ").append("CYCLE");
+    }
+
+    private void addIndentation(@NotNull StringBuilder sql, boolean hasIndentation) {
+        if (hasIndentation) {
+            sql.append("\n\t");
+        } else {
+            sql.append(" ");
+        }
     }
 
     public String generateChangeOwnerQuery(String owner) {

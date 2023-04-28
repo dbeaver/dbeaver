@@ -52,7 +52,7 @@
 	<tip>Any keyboard shortcut can be created for most of DBeaver commands. <a href="prefs://org.eclipse.ui.preferencePages.Keys">Existing shortcuts can also be changed</a>.</tip>
 	<tip>You can <a href="prefs://org.jkiss.dbeaver.preferences.main.sql.format">configure</a> SQL formatter globally or for a particular database.</tip>
 	<tip>To filter table rows by column value in <a href="https://github.com/dbeaver/dbeaver/wiki/Data-Editor">Data Editor</a>, use the following shortcut: <b>Ctrl+F11</b>. You can also open filter menu by pressing <b>F11</b>.</tip>
-	<tip>To open foreign keys menu in <a href="https://github.com/dbeaver/dbeaver/wiki/Data-Editor">Data Editor</a>, use the following shortcut: <b>Ctrl+1</b>.</tip>
+	<tip>To open foreign keys menu in <a href="https://github.com/dbeaver/dbeaver/wiki/Data-Editor">Data Editor</a>, use the following shortcut: <b>Ctrl+Shift+1</b>.</tip>
 	<tip>If your project requires advanced analytical tools or NoSQL database support, you can try <a href="https://dbeaver.com/">DBeaver Enterprise Edition</a>.</tip>
 	<tip>You can schedule your tasks to execute with specified recurrence, without needing to open DBeaver.
 		<br/>Note: <a href="https://github.com/dbeaver/dbeaver/wiki/Task-Scheduler">this feature</a> is available in <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition">Enterprise</a> and <a href="https://github.com/dbeaver/dbeaver/wiki/Ultimate-Edition">Ultimate</a> editions only.

@@ -571,7 +571,7 @@
                         promoted="1"
                         categories="sql,embedded">
                     <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:RELEASE" bundle="!drivers.duckdb"/>
-                    <file type="license" path="https://raw.githubusercontent.com/duckdb/duckdb/master/LICENSE"/>
+                    <file type="license" path="https://raw.githubusercontent.com/duckdb/duckdb/master/LICENSE" bundle="!drivers.duckdb"/>
                     <file type="jar" path="drivers/duckdb" bundle="drivers.duckdb"/>
                 </driver>
 
@@ -1391,7 +1391,7 @@
                         webURL="https://jdbc.postgresql.org/"
                         description="PostgreSQL JDBC driver. Can be used for old PostgreSQL versions or some PostgreSQL based databases (before 8.x).">
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.0]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.2]" bundle="!drivers.postgresql"/>
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
 

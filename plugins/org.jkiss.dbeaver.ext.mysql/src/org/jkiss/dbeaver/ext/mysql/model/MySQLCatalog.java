@@ -1006,7 +1006,7 @@ public class MySQLCatalog implements
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM information_schema.EVENTS WHERE EVENT_SCHEMA=?");
-            dbStat.setString(1, DBUtils.getQuotedIdentifier(owner));
+            dbStat.setString(1, owner.getName());
             return dbStat;
         }
 

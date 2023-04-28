@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorFeatures;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.BaseSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLConverterRegistry;
@@ -87,6 +88,8 @@ public class CopySourceCodeHandler extends AbstractHandler implements IElementUp
         }
 
         UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), dialog.getConvertedText());
+
+        SQLEditorFeatures.SQL_EDITOR_COPY_AS_SOURCE_CODE.use();
 
         return null;
     }
