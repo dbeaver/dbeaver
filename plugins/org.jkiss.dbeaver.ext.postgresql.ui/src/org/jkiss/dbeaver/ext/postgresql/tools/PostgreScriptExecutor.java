@@ -14,27 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.oracle.ui.tools;
+package org.jkiss.dbeaver.ext.postgresql.tools;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.tasks.ui.nativetool.NativeToolWizardDialog;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorExecutor;
 
-public class OracleScriptExecutor implements SQLEditorExecutor<OracleDataSource> {
+public class PostgreScriptExecutor implements SQLEditorExecutor<PostgreDatabase> {
     @Override
     public void execute(
-        @NotNull OracleDataSource dataSource,
+        @NotNull PostgreDatabase container,
         @NotNull SQLEditor editor
     ) throws DBException {
-        OracleScriptExecuteWizard oracleScriptExecuteWizard = new OracleScriptExecuteWizard(dataSource,
+        PostgreScriptExecuteWizard scriptExecuteWizard = new PostgreScriptExecuteWizard(container,
             editor.getGlobalScriptContext().getSourceFile());
         NativeToolWizardDialog dialog = new NativeToolWizardDialog(
             UIUtils.getActiveWorkbenchWindow(),
-            oracleScriptExecuteWizard
+            scriptExecuteWizard
         );
         dialog.open();
     }

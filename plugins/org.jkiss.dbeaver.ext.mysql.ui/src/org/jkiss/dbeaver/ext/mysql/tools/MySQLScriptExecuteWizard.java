@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeScriptExecuteWizard;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.Map;
 
@@ -38,6 +39,11 @@ class MySQLScriptExecuteWizard extends AbstractNativeScriptExecuteWizard<MySQLSc
     MySQLScriptExecuteWizard(MySQLCatalog catalog, boolean isImport) {
         super(Collections.singleton(catalog), isImport ? MySQLUIMessages.tools_script_execute_wizard_db_import : MySQLUIMessages.tools_script_execute_wizard_execute_script);
         this.getSettings().setImport(isImport);
+    }
+
+    MySQLScriptExecuteWizard(MySQLCatalog catalog, boolean isImport, File file) {
+        this(catalog, isImport);
+        getSettings().setInputFile(file != null && file.exists() ? file.getAbsolutePath() : null);;
     }
 
     MySQLScriptExecuteWizard(DBTTask task, boolean isImport) {

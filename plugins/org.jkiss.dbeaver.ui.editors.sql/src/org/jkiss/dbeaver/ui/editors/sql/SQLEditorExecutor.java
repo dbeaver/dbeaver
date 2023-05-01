@@ -18,8 +18,20 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
-public interface SQLEditorExecutor {
-    void execute(@NotNull DBPDataSource dataSource, @NotNull SQLEditor editor) throws DBException;
+/**
+ * Allows opening native execution wizards
+ *
+ * @param <CONTAINER> container to read settings from
+ */
+public interface SQLEditorExecutor<CONTAINER extends DBSObject> {
+    /**
+     * Opens the wizard for the database
+     *
+     * @param container container to read settings from
+     * @param editor SQL editor
+     * @throws DBException if failed to open the wizard
+     */
+    void execute(@NotNull CONTAINER container, @NotNull SQLEditor editor) throws DBException;
 }

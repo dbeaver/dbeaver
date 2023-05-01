@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeScriptExecuteWizard;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.Map;
 
@@ -43,6 +44,11 @@ class PostgreScriptExecuteWizard extends AbstractNativeScriptExecuteWizard<Postg
     PostgreScriptExecuteWizard(PostgreDatabase catalog) {
         super(Collections.singleton(catalog), PostgreMessages.wizard_script_title_execute_script);
         getSettings().setDatabase(catalog);
+    }
+
+    PostgreScriptExecuteWizard(PostgreDatabase catalog, File file) {
+        this(catalog);
+        getSettings().setInputFile(file != null && file.exists() ? file.getAbsolutePath() : null);;
     }
 
     @Override

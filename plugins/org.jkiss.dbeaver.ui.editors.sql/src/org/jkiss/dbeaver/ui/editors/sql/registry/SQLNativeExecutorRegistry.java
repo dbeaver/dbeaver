@@ -35,6 +35,9 @@ public class SQLNativeExecutorRegistry {
     private static SQLNativeExecutorRegistry instance;
     private final List<SQLNativeExecutorDescriptor> executors = new ArrayList<>();
 
+    /**
+     * Get registry instance
+     */
     public synchronized static SQLNativeExecutorRegistry getInstance() {
         if (instance == null) {
             instance = new SQLNativeExecutorRegistry();
@@ -43,8 +46,7 @@ public class SQLNativeExecutorRegistry {
         return instance;
     }
 
-    private void loadExtensions(IExtensionRegistry registry)
-    {
+    private void loadExtensions(IExtensionRegistry registry) {
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
         for (IConfigurationElement viewElement : extElements) {
             if (viewElement.getName().equals(TAG_EXECUTOR)) {
@@ -53,9 +55,10 @@ public class SQLNativeExecutorRegistry {
         }
     }
 
-
-    public void dispose()
-    {
+    /**
+     * disposes the class
+     */
+    public void dispose() {
         executors.clear();
     }
 
@@ -63,6 +66,9 @@ public class SQLNativeExecutorRegistry {
         return new ArrayList<>(executors);
     }
 
+    /**
+     * Returns the first possible supported executor for datasource
+     */
     @Nullable
     public SQLNativeExecutorDescriptor getExecutorDescriptor(@NotNull DBPDataSource dataSource) {
         Optional<SQLNativeExecutorDescriptor> executor = executors.stream()

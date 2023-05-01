@@ -17,11 +17,13 @@
 package org.jkiss.dbeaver.ui.editors.sql.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorExecutor;
 
 public class SQLNativeExecutorDescriptor extends AbstractContextDescriptor {
@@ -42,8 +44,11 @@ public class SQLNativeExecutorDescriptor extends AbstractContextDescriptor {
         return EXTENSION_ID;
     }
 
+    /**
+     * Returns native executor implementation
+     */
     @Nullable
-    public SQLEditorExecutor getNativeExecutor()  {
+    public SQLEditorExecutor<? extends DBSObject> getNativeExecutor()  {
         try {
             return implClass.createInstance(SQLEditorExecutor.class);
         } catch (DBException e) {
@@ -52,7 +57,10 @@ public class SQLNativeExecutorDescriptor extends AbstractContextDescriptor {
         return null;
     }
 
-    public boolean isSupported(DBPDataSource datasource) {
+    /**
+     * Is it possible to use the executor with following datasource
+     */
+    public boolean isSupported(@NotNull DBPDataSource datasource) {
         return supportedDataSource.getObjectClass().isAssignableFrom(datasource.getClass());
     }
 
