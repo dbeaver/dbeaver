@@ -26,6 +26,8 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLNativeExecutorDescriptor;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLNativeExecutorRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
@@ -37,6 +39,7 @@ public class SQLEditorPropertyTester extends PropertyTester
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.ui.editors.sql";
     public static final String PROP_CAN_EXECUTE = "canExecute";
+    public static final String PROP_CAN_EXECUTE_NATIVELY = "canExecuteNative";
     public static final String PROP_CAN_EXPLAIN = "canExplain";
     public static final String PROP_CAN_NAVIGATE = "canNavigate";
     public static final String PROP_CAN_EXPORT = "canExport";
@@ -65,6 +68,18 @@ public class SQLEditorPropertyTester extends PropertyTester
             case PROP_CAN_EXECUTE:
                 // Do not check hasActiveQuery - sometimes jface don't update action enablement after cursor change/typing
                 return true;/* && (!"statement".equals(expectedValue) || editor.hasActiveQuery())*/
+            case PROP_CAN_EXECUTE_NATIVELY:
+                if (editor.getDataSource() == null) {
+                    return false;
+                }
+                SQLNativeExecutorDescriptor executorDescriptor = SQLNativeExecutorRegistry.getInstance()
+                    .getExecutorDescriptor(editor.getDataSource());
+                if (executorDescriptor != null) {
+                    SQLEditorExecutor nativeExecutor = executorDescriptor.getNativeExecutor();
+                    return nativeExecutor != null;
+                } else {
+                    return false;
+                }
             case PROP_CAN_EXPLAIN:
                 return hasConnection && GeneralUtils.adapt(editor.getDataSource(), DBCQueryPlanner.class) != null;
             case PROP_CAN_NAVIGATE: {

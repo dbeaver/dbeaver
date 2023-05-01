@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.ui.tools;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.tasks.OracleScriptExecuteSettings;
 import org.jkiss.dbeaver.ext.oracle.tasks.OracleTasks;
@@ -35,6 +36,7 @@ import java.util.Map;
 
 class OracleScriptExecuteWizard extends AbstractNativeScriptExecuteWizard<OracleScriptExecuteSettings, DBSObject, OracleDataSource> {
 
+    private String filepath = null;
     private OracleScriptExecuteWizardPageSettings mainPage;
 
     OracleScriptExecuteWizard(DBTTask task) {
@@ -45,11 +47,15 @@ class OracleScriptExecuteWizard extends AbstractNativeScriptExecuteWizard<Oracle
         super(Collections.singleton(oracleSchema), OracleUIMessages.tools_script_execute_wizard_page_name);
     }
 
+    OracleScriptExecuteWizard(OracleDataSource oracleSchema, String filepath) {
+        super(Collections.singleton(oracleSchema), OracleUIMessages.tools_script_execute_wizard_page_name);
+        this.filepath = filepath;
+    }
     @Override
-    public void init(IWorkbench workbench, IStructuredSelection selection) {
+    public void init(@NotNull IWorkbench workbench, @NotNull IStructuredSelection selection) {
         super.init(workbench, selection);
 
-        this.mainPage = new OracleScriptExecuteWizardPageSettings(this);
+        this.mainPage = new OracleScriptExecuteWizardPageSettings(this, filepath);
     }
 
     @Override

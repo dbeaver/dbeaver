@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.ext.oracle.ui.tools;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.tasks.OracleScriptExecuteSettings;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -31,12 +33,22 @@ import java.util.List;
 
 
 class OracleScriptExecuteWizardPageSettings extends AbstractNativeToolWizardPage<OracleScriptExecuteWizard> {
-    private TextWithOpenFile inputFileText;
+    private TextWithOpenFile inputFileText = null;
+    String filepath = null;
 
+    @Deprecated
     OracleScriptExecuteWizardPageSettings(OracleScriptExecuteWizard wizard) {
+        this(wizard, null);
+    }
+
+    public OracleScriptExecuteWizardPageSettings(
+        @NotNull OracleScriptExecuteWizard wizard,
+        @Nullable String filepath
+    ) {
         super(wizard, OracleUIMessages.tools_script_execute_wizard_page_settings_page_name);
         setTitle(OracleUIMessages.tools_script_execute_wizard_page_settings_page_name);
         setDescription(OracleUIMessages.tools_script_execute_wizard_page_settings_page_description);
+        this.filepath = filepath;
     }
 
     @Override
@@ -56,7 +68,9 @@ class OracleScriptExecuteWizardPageSettings extends AbstractNativeToolWizardPage
         outputGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         inputFileText = new TextWithOpenFile(outputGroup, OracleUIMessages.tools_script_execute_wizard_page_settings_label_input_file, new String[] { "*.sql", "*.txt", "*" } );
         inputFileText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
+        if (filepath != null) {
+            this.wizard.getSettings().setInputFile(filepath);
+        }
         setControl(composite);
 
         //updateState();

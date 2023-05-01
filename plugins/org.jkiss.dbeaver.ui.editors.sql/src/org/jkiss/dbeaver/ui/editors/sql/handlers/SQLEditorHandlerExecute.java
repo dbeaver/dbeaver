@@ -20,12 +20,15 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerAllRows;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerExpression;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLNativeExecutorDescriptor;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLNativeExecutorRegistry;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 
@@ -51,6 +54,15 @@ public class SQLEditorHandlerExecute extends AbstractHandler
                 break;
             case SQLEditorCommands.CMD_EXECUTE_SCRIPT:
                 editor.processSQL(false, true);
+                break;
+            case SQLEditorCommands.CMD_EXECUTE_SCRIPT_NATIVE:
+                SQLNativeExecutorDescriptor executorDescriptor = SQLNativeExecutorRegistry.getInstance()
+                    .getExecutorDescriptor(editor.getDataSource());
+                try {
+                    executorDescriptor.getNativeExecutor().execute(editor.getDataSource(), editor);
+                } catch (DBException e) {
+                    log.error(e);
+                }
                 break;
             case SQLEditorCommands.CMD_EXECUTE_SCRIPT_FROM_POSITION:
                 editor.processSQL(false, true, true);
