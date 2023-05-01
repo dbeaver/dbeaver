@@ -720,8 +720,6 @@ public class SQLQueryJob extends DataSourceJob
                     log.error("Error generating execution result stats", e);
                 }
             }
-        } else {
-            resultsConsumer.releaseDataReceiver(resultSetNumber);
         }
     }
 
@@ -920,9 +918,12 @@ public class SQLQueryJob extends DataSourceJob
     }
 */
 
-    public void extractData(@NotNull DBCSession session, @NotNull SQLScriptElement query, int resultNumber, boolean fireEvents)
-        throws DBCException
-    {
+    public void extractData(
+        @NotNull DBCSession session,
+        @NotNull SQLScriptElement query,
+        int resultNumber,
+        boolean fireEvents
+    ) throws DBCException {
         // Reset query to original. Otherwise multiple filters will corrupt it
         query.reset();
 
