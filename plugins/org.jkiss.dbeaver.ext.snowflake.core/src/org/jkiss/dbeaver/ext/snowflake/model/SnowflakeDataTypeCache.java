@@ -101,9 +101,9 @@ public class SnowflakeDataTypeCache extends GenericDataTypeCache {
                 SnowflakeConstants.TYPE_DECIMAL,
                 false,
                 false,
-                38,
+                SnowflakeConstants.NUMERIC_MAX_PRECISION,
                 0,
-                37));
+                SnowflakeConstants.NUMERIC_MAX_PRECISION - 1));
         }
     }
 }
