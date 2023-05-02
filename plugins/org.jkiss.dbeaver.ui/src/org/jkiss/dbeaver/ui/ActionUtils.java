@@ -432,7 +432,7 @@ public class ActionUtils
             }
         }
         
-        PropertyChangeEvent ev = new PropertyChangeEvent(null, propertyName, null, null); 
+        PropertyChangeEvent ev = new PropertyChangeEvent(service, propertyName, null, null); 
         for (IPropertyChangeListener listener : List.copyOf(propertyEvaluationRequestListeners)) {
             listener.propertyChange(ev);
         }
