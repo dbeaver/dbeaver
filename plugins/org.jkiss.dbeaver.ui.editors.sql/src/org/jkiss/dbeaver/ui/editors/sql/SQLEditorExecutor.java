@@ -19,13 +19,16 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.tasks.ui.nativetool.NativeToolWizardDialog;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Allows opening native execution wizards
  *
  * @param <CONTAINER> container to read settings from
  */
-public interface SQLEditorExecutor<CONTAINER extends DBSObject> {
+public abstract class SQLEditorExecutor<CONTAINER extends DBSObject> {
     /**
      * Opens the wizard for the database
      *
@@ -33,5 +36,14 @@ public interface SQLEditorExecutor<CONTAINER extends DBSObject> {
      * @param editor SQL editor
      * @throws DBException if failed to open the wizard
      */
-    void execute(@NotNull CONTAINER container, @NotNull SQLEditor editor) throws DBException;
+    public void execute(@NotNull CONTAINER container, @NotNull SQLEditor editor) throws DBException {
+        NativeToolWizardDialog dialog = new NativeToolWizardDialog(
+            UIUtils.getActiveWorkbenchWindow(),
+            createTaskConfigurationWizard(container, editor));
+        dialog.open();
+    }
+
+    @NotNull
+    protected abstract TaskConfigurationWizard<?> createTaskConfigurationWizard(@NotNull CONTAINER container,
+        @NotNull SQLEditor editor);
 }

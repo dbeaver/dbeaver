@@ -98,7 +98,7 @@
         </editorContribution>
     </extension>
     <extension point="org.jkiss.dbeaver.sql.executors">
-        <executor class="org.jkiss.dbeaver.ext.mysql.tools.MySQLScriptExecutor" datasource="org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource"/>
+        <executor class="org.jkiss.dbeaver.ext.mysql.tools.MySQLScriptExecutor" datasource="mysql"/>
     </extension>
     <extension point="org.jkiss.dbeaver.dataSourceView">
         <view

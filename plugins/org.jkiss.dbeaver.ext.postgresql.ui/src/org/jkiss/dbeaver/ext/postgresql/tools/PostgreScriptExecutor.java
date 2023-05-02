@@ -17,25 +17,19 @@
 package org.jkiss.dbeaver.ext.postgresql.tools;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.tasks.ui.nativetool.NativeToolWizardDialog;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorExecutor;
 
-public class PostgreScriptExecutor implements SQLEditorExecutor<PostgreDatabase> {
-    @Override
-    public void execute(
-        @NotNull PostgreDatabase container,
+public class PostgreScriptExecutor extends SQLEditorExecutor<PostgreDatabase> {
+
+    @NotNull
+    protected TaskConfigurationWizard<?> createTaskConfigurationWizard(
+        @NotNull PostgreDatabase postgreDatabase,
         @NotNull SQLEditor editor
-    ) throws DBException {
-        PostgreScriptExecuteWizard scriptExecuteWizard = new PostgreScriptExecuteWizard(container,
+    ) {
+        return new PostgreScriptExecuteWizard(postgreDatabase,
             editor.getGlobalScriptContext().getSourceFile());
-        NativeToolWizardDialog dialog = new NativeToolWizardDialog(
-            UIUtils.getActiveWorkbenchWindow(),
-            scriptExecuteWizard
-        );
-        dialog.open();
     }
 }

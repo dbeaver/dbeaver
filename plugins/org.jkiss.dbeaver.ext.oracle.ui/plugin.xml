@@ -335,7 +335,7 @@
         </tools>
     </extension>
     <extension point="org.jkiss.dbeaver.sql.executors">
-        <executor class="org.jkiss.dbeaver.ext.oracle.ui.tools.OracleScriptExecutor" datasource="org.jkiss.dbeaver.ext.oracle.model.OracleDataSource"/>
+        <executor class="org.jkiss.dbeaver.ext.oracle.ui.tools.OracleScriptExecutor" datasource="oracle"/>
     </extension>
     <extension point="org.jkiss.dbeaver.task.ui">
         <configurator type="oracleScriptExecute" class="org.jkiss.dbeaver.ext.oracle.ui.tools.OracleTaskConfigurator"/>

@@ -17,24 +17,18 @@
 package org.jkiss.dbeaver.ext.mysql.tools;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
-import org.jkiss.dbeaver.tasks.ui.nativetool.NativeToolWizardDialog;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorExecutor;
 
-public class MySQLScriptExecutor implements SQLEditorExecutor<MySQLCatalog> {
-    @Override
-    public void execute(
+public class MySQLScriptExecutor extends SQLEditorExecutor<MySQLCatalog> {
+
+    @NotNull
+    protected TaskConfigurationWizard<?> createTaskConfigurationWizard(
         @NotNull MySQLCatalog mySQLCatalog,
         @NotNull SQLEditor editor
-    ) throws DBException {
-        NativeToolWizardDialog dialog = new NativeToolWizardDialog(
-            UIUtils.getActiveWorkbenchWindow(),
-            new MySQLScriptExecuteWizard(mySQLCatalog, false, editor.getGlobalScriptContext().getSourceFile()
-            ));
-        dialog.open();
-
+    ) {
+        return new MySQLScriptExecuteWizard(mySQLCatalog, false, editor.getGlobalScriptContext().getSourceFile());
     }
 }

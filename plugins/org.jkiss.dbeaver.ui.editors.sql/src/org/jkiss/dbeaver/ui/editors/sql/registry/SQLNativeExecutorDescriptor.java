@@ -21,7 +21,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorExecutor;
@@ -31,12 +30,12 @@ public class SQLNativeExecutorDescriptor extends AbstractContextDescriptor {
     private static final Log log = Log.getLog(SQLNativeExecutorDescriptor.class);
 
     private final ObjectType implClass;
-    private final ObjectType supportedDataSource;
+    private final String dataSourceId;
 
     public SQLNativeExecutorDescriptor(IConfigurationElement config) {
         super(config);
         this.implClass = new ObjectType(config.getAttribute("class"));
-        this.supportedDataSource = new ObjectType(config.getAttribute("datasource"));
+        this.dataSourceId = config.getAttribute("datasource");
     }
 
     /**
@@ -52,11 +51,8 @@ public class SQLNativeExecutorDescriptor extends AbstractContextDescriptor {
         return null;
     }
 
-    /**
-     * Is it possible to use the executor with following datasource
-     */
-    public boolean isSupported(@NotNull DBPDataSource datasource) {
-        return supportedDataSource.getObjectClass().isAssignableFrom(datasource.getClass());
+    @NotNull
+    public String getDataSourceId() {
+        return dataSourceId;
     }
-
 }

@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,10 +77,15 @@ public class SQLNativeExecutorRegistry {
      */
     @Nullable
     public SQLNativeExecutorDescriptor getExecutorDescriptor(@NotNull DBPDataSource dataSource) {
-        return executors.stream()
-            .filter(it -> it.isSupported(dataSource))
-            .findFirst()
-            .orElse(null);
+        DBPDataSourceProviderDescriptor provider = dataSource.getContainer().getDriver().getProviderDescriptor();
+        for (DBPDataSourceProviderDescriptor pd = provider; pd != null; pd = pd.getParentProvider()) {
+            for (SQLNativeExecutorDescriptor executor : executors) {
+                if (executor.getDataSourceId().equals(pd.getId())) {
+                    return executor;
+                }
+            }
+        }
+        return null;
     }
 
 }
