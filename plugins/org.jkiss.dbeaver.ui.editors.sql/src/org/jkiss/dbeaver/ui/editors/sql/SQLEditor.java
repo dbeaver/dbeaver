@@ -97,7 +97,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI.UserChoiceResponse;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
@@ -895,6 +894,7 @@ public class SQLEditor extends SQLEditorBase implements
                 this,
                 parent,
                 resultSetOrientation.getSashOrientation() | SWT.SMOOTH);
+        resultsSash.setShowBorders(true);
         CSSUtils.setCSSClass(resultsSash, DBStyles.COLORED_BY_CONNECTION_TYPE);
         resultsSash.setSashWidth(8);
 
@@ -995,8 +995,6 @@ public class SQLEditor extends SQLEditorBase implements
                 });
             }
         }
-
-        SQLEditorFeatures.SQL_EDITOR_OPEN.use();
 
         // Start output reader
         new ServerOutputReader().schedule();
@@ -2131,6 +2129,13 @@ public class SQLEditor extends SQLEditorBase implements
         }
         baseEditorImage = getTitleImage();
         editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
+
+        {
+            DBPDataSourceContainer dataSource = EditorUtils.getInputDataSource(editorInput);
+            SQLEditorFeatures.SQL_EDITOR_OPEN.use(Map.of(
+                "driver", dataSource == null ? "" : dataSource.getDriver().getPreconfiguredId()
+            ));
+        }
     }
 
     protected boolean isDetectTitleImageFromInput() {

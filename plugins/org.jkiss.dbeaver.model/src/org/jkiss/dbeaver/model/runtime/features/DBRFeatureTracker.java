@@ -14,31 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm;
 
-import org.antlr.v4.runtime.Lexer;
+package org.jkiss.dbeaver.model.runtime.features;
 
-public class LSMContext {
+import java.util.Map;
 
-    private final String parserName;
-    private final Lexer lexer;
-    private final LSMParser parser;
+/**
+ * DBeaver feature description
+ */
+public interface DBRFeatureTracker {
 
-    public LSMContext(String parserName, Lexer lexer, LSMParser parser) {
-        this.parserName = parserName;
-        this.lexer = lexer;
-        this.parser = parser;
-    }
+    void trackFeature(DBRFeature feature, Map<String, Object> parameters);
 
-    public String getParserName() {
-        return parserName;
-    }
+    void startTracking();
 
-    public Lexer getLexer() {
-        return lexer;
-    }
+    void dispose();
 
-    public LSMParser getParser() {
-        return parser;
-    }
 }

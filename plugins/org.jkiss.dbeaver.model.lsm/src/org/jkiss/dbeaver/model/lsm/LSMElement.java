@@ -18,10 +18,4 @@ package org.jkiss.dbeaver.model.lsm;
 
 public interface LSMElement {
 
-    //String getElementName();
-
-    int getStartPosition();
-
-    int getEndPosition();
-
 }

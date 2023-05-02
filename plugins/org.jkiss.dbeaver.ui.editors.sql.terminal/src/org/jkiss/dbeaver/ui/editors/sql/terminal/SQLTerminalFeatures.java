@@ -14,15 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm;
+package org.jkiss.dbeaver.ui.editors.sql.terminal;
 
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.Lexer;
+import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorFeatures;
 
-public abstract class LSMLexer extends Lexer {
+/**
+ * SQL terminal features
+ */
+public interface SQLTerminalFeatures {
 
-    public LSMLexer(CharStream input) {
-        super(input);
-    }
+    DBRFeature SQL_TERMINAL_OPEN = DBRFeature.createFeature(SQLEditorFeatures.CATEGORY_SQL_EDITOR, "Open SQL terminal");
 
 }

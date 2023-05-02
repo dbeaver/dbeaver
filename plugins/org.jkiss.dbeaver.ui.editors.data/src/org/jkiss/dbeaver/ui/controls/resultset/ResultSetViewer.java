@@ -292,7 +292,8 @@ public class ResultSetViewer extends Viewer
         });
 
         if ((decoratorFeatures & IResultSetDecorator.FEATURE_FILTERS) != 0) {
-            this.filtersPanel = new ResultSetFilterPanel(this, this.mainPanel);
+            this.filtersPanel = new ResultSetFilterPanel(this, this.mainPanel,
+                (decoratorFeatures & IResultSetDecorator.FEATURE_COMPACT_FILTERS) != 0);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = ((GridLayout)mainPanel.getLayout()).numColumns;
             this.filtersPanel.setLayoutData(gd);
@@ -995,11 +996,7 @@ public class ResultSetViewer extends Viewer
                         @Override
                         public void widgetSelected(SelectionEvent e) {
                             boolean isPanelVisible = isPanelsVisible() && isPanelVisible(panel.getId());
-                            if (isPanelVisible) {
-                                closePanel(panel.getId());
-                            } else {
-                                activatePanel(panel.getId(), true, true);
-                            }
+                            ResultSetHandlerTogglePanel.showResultsPanel(ResultSetViewer.this, panel.getId(), isPanelVisible);
                             panelButton.setChecked(!isPanelVisible);
                             panelsButton.setChecked(isPanelsVisible());
                             if (panelSwitchFolder != null) {
@@ -3875,6 +3872,8 @@ public class ResultSetViewer extends Viewer
             return false;
         }
 
+        DataEditorFeatures.RESULT_SET_REFRESH.use();
+
         DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null) {
             int segmentSize = getSegmentMaxRows();
@@ -3938,6 +3937,9 @@ public class ResultSetViewer extends Viewer
         if (nextSegmentReadingBlocked) {
             return;
         }
+
+        DataEditorFeatures.RESULT_SET_SCROLL.use();
+
         nextSegmentReadingBlocked = true;
         UIUtils.asyncExec(() -> {
             if (isRefreshInProgress() || !checkForChanges()) {

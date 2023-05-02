@@ -53,7 +53,6 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
-import org.eclipse.ui.services.IDisposable;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.code.NotNull;
@@ -1060,11 +1059,8 @@ public class UIUtils {
     }
 
     @NotNull
-    public static CustomSashForm createPartDivider(final IWorkbenchPart workbenchPart, Composite parent, int style)
-    {
-        final CustomSashForm sash = new CustomSashForm(parent, style);
-
-        return sash;
+    public static CustomSashForm createPartDivider(final IWorkbenchPart workbenchPart, Composite parent, int style) {
+        return new CustomSashForm(parent, style);
     }
 
     @NotNull
@@ -2243,6 +2239,44 @@ public class UIUtils {
             return;
         }
         applyMainFont(control, JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MAIN_FONT));
+    }
+
+    @Nullable
+    public static Text recreateTextControl(@Nullable Text original, int style) {
+        if (original == null || original.getStyle() == style) {
+            return original;
+        }
+
+        final Composite parent = original.getParent();
+        final Control[] tabList = parent.getTabList();
+
+        final Text text = new Text(parent, style);
+        text.setText(original.getText());
+        text.setLayoutData(original.getLayoutData());
+        text.moveAbove(original);
+
+        copyListeners(original, text, SWT.DefaultSelection);
+        copyListeners(original, text, SWT.Modify);
+        copyListeners(original, text, SWT.Verify);
+
+        original.dispose();
+
+        for (int i = 0; i < tabList.length; i++) {
+            if (tabList[i] == original) {
+                tabList[i] = text;
+            }
+        }
+
+        parent.setTabList(tabList);
+        parent.layout(true, true);
+
+        return text;
+    }
+
+    private static void copyListeners(@NotNull Widget source, @NotNull Widget target, int eventType) {
+        for (Listener listener : source.getListeners(eventType)) {
+            target.addListener(eventType, listener);
+        }
     }
 
     private static void applyMainFont(@NotNull Control control, @NotNull Font font) {

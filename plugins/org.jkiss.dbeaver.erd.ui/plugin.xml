@@ -452,7 +452,10 @@
         <handler commandId="org.jkiss.dbeaver.erd.diagram.create" class="org.jkiss.dbeaver.erd.ui.navigator.CreateDiagramHandler">
             <enabledWhen>
                 <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
+                    <and>
+                        <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
+                        <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                    </and>
                 </with>
             </enabledWhen>
         </handler>
@@ -477,7 +480,10 @@
                         <count value="1"/>
                         <iterate operator="and">
                             <adapt type="org.eclipse.core.resources.IFolder">
-                                <test property="org.jkiss.dbeaver.core.resource.type" value="diagram folder"/>
+                                <and>
+                                    <test property="org.jkiss.dbeaver.core.resource.type" value="diagram folder"/>
+                                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                                </and>
                             </adapt>
                         </iterate>
                     </with>
@@ -504,7 +510,10 @@
                     <with variable="selection">
                         <count value="+"/>
                         <iterate operator="and">
-                            <adapt type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
+                            <and>
+                                <adapt type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
+                                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                            </and>
                         </iterate>
                     </with>
                 </visibleWhen>

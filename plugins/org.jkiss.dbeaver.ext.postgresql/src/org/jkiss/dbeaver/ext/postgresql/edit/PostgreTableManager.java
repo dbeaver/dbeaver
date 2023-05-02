@@ -154,7 +154,8 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
 
     private void generateAlterActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command) throws DBException {
         final PostgreTable table = (PostgreTable) command.getObject();
-        final String alterPrefix = "ALTER TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ";//$NON-NLS-1$ //$NON-NLS-2$
+        final String alterPrefix = "ALTER " + table.getTableTypeName() + " " + //$NON-NLS-1$
+            command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ";
 
         if (command.hasProperty("partitionKey")) {//$NON-NLS-1$
             actionList.add(new SQLDatabasePersistAction(alterPrefix + "PARTITION BY " + table.getPartitionKey()));//$NON-NLS-1$
@@ -180,11 +181,14 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     @Override
     protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
+        PostgreTableBase table = command.getObject();
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename table",
-                "ALTER TABLE " + DBUtils.getQuotedIdentifier(command.getObject().getSchema()) + "." + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getOldName()) + //$NON-NLS-1$
-                    " RENAME TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())) //$NON-NLS-1$
+                "ALTER " + table.getTableTypeName() + " " + //$NON-NLS-1$
+                    DBUtils.getQuotedIdentifier(table.getSchema()) + "." +
+                    DBUtils.getQuotedIdentifier(table.getDataSource(), command.getOldName()) +
+                    " RENAME TO " + DBUtils.getQuotedIdentifier(table.getDataSource(), command.getNewName())) //$NON-NLS-1$
         );
     }
 
