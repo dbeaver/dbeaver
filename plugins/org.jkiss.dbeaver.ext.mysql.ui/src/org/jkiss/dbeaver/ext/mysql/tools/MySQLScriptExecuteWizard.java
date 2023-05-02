@@ -19,6 +19,8 @@
 package org.jkiss.dbeaver.ext.mysql.tools;
 
 import org.eclipse.jface.wizard.IWizardPage;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteSettings;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLTasks;
@@ -41,9 +43,9 @@ class MySQLScriptExecuteWizard extends AbstractNativeScriptExecuteWizard<MySQLSc
         this.getSettings().setImport(isImport);
     }
 
-    MySQLScriptExecuteWizard(MySQLCatalog catalog, boolean isImport, File file) {
+    MySQLScriptExecuteWizard(@NotNull MySQLCatalog catalog, boolean isImport, @Nullable File file) {
         this(catalog, isImport);
-        getSettings().setInputFile(file != null && file.exists() ? file.getAbsolutePath() : null);;
+        getSettings().setInputFile(file != null && file.exists() ? file.getAbsolutePath() : null);
     }
 
     MySQLScriptExecuteWizard(DBTTask task, boolean isImport) {

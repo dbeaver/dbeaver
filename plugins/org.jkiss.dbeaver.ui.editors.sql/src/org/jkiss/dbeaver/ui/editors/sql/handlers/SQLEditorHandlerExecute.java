@@ -20,14 +20,14 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerAllRows;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerExpression;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorExecutor;
@@ -41,7 +41,7 @@ public class SQLEditorHandlerExecute extends AbstractHandler
     private static final Log log = Log.getLog(SQLEditorHandlerExecute.class);
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
+    public Object execute(@NotNull ExecutionEvent event) throws ExecutionException
     {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
         if (editor == null) {
@@ -63,28 +63,22 @@ public class SQLEditorHandlerExecute extends AbstractHandler
                 SQLNativeExecutorDescriptor executorDescriptor = SQLNativeExecutorRegistry.getInstance()
                     .getExecutorDescriptor(editor.getDataSource());
                 if (executorDescriptor == null) {
-                    throw new ExecutionException("Valid native executor not found");
+                    throw new ExecutionException("Valid native executor is not found");
                 }
                 try {
                     if (editor.getExecutionContext() instanceof DBCExecutionContextDefaults) {
                         DBCExecutionContextDefaults<?, ?> executionContext
                             = (DBCExecutionContextDefaults<?, ?>) editor.getExecutionContext();
-                        if (executionContext.getDefaultCatalog() != null) {
-                            SQLEditorExecutor<DBSCatalog> nativeExecutor
-                                = (SQLEditorExecutor<DBSCatalog>) executorDescriptor.getNativeExecutor();
-                            if (nativeExecutor == null) {
-                                throw new ExecutionException("Valid native executor not found");
-                            }
-
-                            nativeExecutor.execute(executionContext.getDefaultCatalog(), editor);
-                        } else {
-                            SQLEditorExecutor<DBPDataSource> nativeExecutor =
-                                (SQLEditorExecutor<DBPDataSource>) executorDescriptor.getNativeExecutor();
-                            if (nativeExecutor == null) {
-                                throw new ExecutionException("Valid native executor not found");
-                            }
-                            nativeExecutor.execute(editor.getDataSource(), editor);
+                        SQLEditorExecutor<DBSObject> nativeExecutor
+                            = (SQLEditorExecutor<DBSObject>) executorDescriptor.getNativeExecutor();
+                        if (nativeExecutor == null) {
+                            throw new ExecutionException("Valid native is executor not found");
                         }
+                        DBSObject object = executionContext.getDefaultCatalog();
+                        if (object == null) {
+                            object = editor.getDataSource();
+                        }
+                        nativeExecutor.execute(object, editor);
                     }
 
                 } catch (DBException e) {

@@ -25,20 +25,24 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class SQLNativeExecutorRegistry {
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.sql.executors"; //NON-NLS-1 //$NON-NLS-1$
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.sql.executors"; //NON-NLS-1
 
-    static final String TAG_EXECUTOR = "executor"; //$NON-NLS-1$
+    private static final String TAG_EXECUTOR = "executor"; //$NON-NLS-1$
 
     private static SQLNativeExecutorRegistry instance;
     private final List<SQLNativeExecutorDescriptor> executors = new ArrayList<>();
 
+    private SQLNativeExecutorRegistry() {
+        // prevents instantiation
+    }
+
     /**
      * Get registry instance
      */
-    public synchronized static SQLNativeExecutorRegistry getInstance() {
+    @NotNull
+    public static synchronized SQLNativeExecutorRegistry getInstance() {
         if (instance == null) {
             instance = new SQLNativeExecutorRegistry();
             instance.loadExtensions(Platform.getExtensionRegistry());
@@ -46,7 +50,7 @@ public class SQLNativeExecutorRegistry {
         return instance;
     }
 
-    private void loadExtensions(IExtensionRegistry registry) {
+    private void loadExtensions(@NotNull IExtensionRegistry registry) {
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
         for (IConfigurationElement viewElement : extElements) {
             if (viewElement.getName().equals(TAG_EXECUTOR)) {
@@ -62,6 +66,7 @@ public class SQLNativeExecutorRegistry {
         executors.clear();
     }
 
+    @NotNull
     public List<SQLNativeExecutorDescriptor> getExecutors() {
         return new ArrayList<>(executors);
     }
@@ -71,12 +76,10 @@ public class SQLNativeExecutorRegistry {
      */
     @Nullable
     public SQLNativeExecutorDescriptor getExecutorDescriptor(@NotNull DBPDataSource dataSource) {
-        Optional<SQLNativeExecutorDescriptor> executor = executors.stream()
+        return executors.stream()
             .filter(it -> it.isSupported(dataSource))
-            .findFirst();
-        return executor.isEmpty() ? null : executor.get();
+            .findFirst()
+            .orElse(null);
     }
 
-    private SQLNativeExecutorRegistry() {
-    }
 }

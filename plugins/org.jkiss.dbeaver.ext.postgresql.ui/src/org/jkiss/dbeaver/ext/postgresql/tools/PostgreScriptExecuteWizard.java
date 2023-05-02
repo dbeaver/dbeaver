@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.postgresql.tools;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreSQLTasks;
@@ -46,9 +48,9 @@ class PostgreScriptExecuteWizard extends AbstractNativeScriptExecuteWizard<Postg
         getSettings().setDatabase(catalog);
     }
 
-    PostgreScriptExecuteWizard(PostgreDatabase catalog, File file) {
+    PostgreScriptExecuteWizard(@NotNull PostgreDatabase catalog, @Nullable File file) {
         this(catalog);
-        getSettings().setInputFile(file != null && file.exists() ? file.getAbsolutePath() : null);;
+        getSettings().setInputFile(file != null && file.exists() ? file.getAbsolutePath() : null);
     }
 
     @Override

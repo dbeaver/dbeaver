@@ -25,7 +25,6 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLNativeExecutorDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLNativeExecutorRegistry;
@@ -75,12 +74,7 @@ public class SQLEditorPropertyTester extends PropertyTester
                 }
                 SQLNativeExecutorDescriptor executorDescriptor = SQLNativeExecutorRegistry.getInstance()
                     .getExecutorDescriptor(editor.getDataSource());
-                if (executorDescriptor != null) {
-                    SQLEditorExecutor<? extends DBSObject> nativeExecutor = executorDescriptor.getNativeExecutor();
-                    return nativeExecutor != null;
-                } else {
-                    return false;
-                }
+                return executorDescriptor != null && executorDescriptor.getNativeExecutor() != null;
             case PROP_CAN_EXPLAIN:
                 return hasConnection && GeneralUtils.adapt(editor.getDataSource(), DBCQueryPlanner.class) != null;
             case PROP_CAN_NAVIGATE: {

@@ -32,7 +32,8 @@ public class MySQLScriptExecutor implements SQLEditorExecutor<MySQLCatalog> {
     ) throws DBException {
         NativeToolWizardDialog dialog = new NativeToolWizardDialog(
             UIUtils.getActiveWorkbenchWindow(),
-            new MySQLScriptExecuteWizard(mySQLCatalog, false));
+            new MySQLScriptExecuteWizard(mySQLCatalog, false, editor.getGlobalScriptContext().getSourceFile()
+            ));
         dialog.open();
 
     }

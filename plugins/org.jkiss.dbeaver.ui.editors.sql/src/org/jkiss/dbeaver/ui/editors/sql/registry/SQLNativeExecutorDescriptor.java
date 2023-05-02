@@ -30,7 +30,6 @@ public class SQLNativeExecutorDescriptor extends AbstractContextDescriptor {
 
     private static final Log log = Log.getLog(SQLNativeExecutorDescriptor.class);
 
-    public static String EXTENSION_ID = "org.jkiss.dbeaver.sql.executors";
     private final ObjectType implClass;
     private final ObjectType supportedDataSource;
 
@@ -38,10 +37,6 @@ public class SQLNativeExecutorDescriptor extends AbstractContextDescriptor {
         super(config);
         this.implClass = new ObjectType(config.getAttribute("class"));
         this.supportedDataSource = new ObjectType(config.getAttribute("datasource"));
-    }
-
-    public static String getExtensionId() {
-        return EXTENSION_ID;
     }
 
     /**
