@@ -35,6 +35,12 @@ public class ToolbarSeparatorContribution extends WorkbenchWindowControlContribu
         }
     }
     
+    public static class Vertical extends ToolbarSeparatorContribution {
+        public Vertical() {
+            super(true);
+        }
+    }
+    
     private boolean vertical;
 
     public ToolbarSeparatorContribution(boolean vertical)

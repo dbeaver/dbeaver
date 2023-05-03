@@ -365,7 +365,7 @@ public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConver
             }
         }
 
-        if (dataTypes.isEmpty()) {
+        if (dataTypes.isEmpty() && needsDefaultDataTypes()) {
             // Add default types
             Collections.addAll(dataTypes, SQLConstants.DEFAULT_TYPES);
         }
