@@ -28,6 +28,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStringValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.BeanUtils;
 
+import java.sql.Timestamp;
+import java.time.ZoneOffset;
+
 
 public class SQLServerDateTimeOffsetHandler extends JDBCDateTimeValueHandler {
     private static final Log log = Log.getLog(JDBCStringValueHandler.class);
@@ -37,8 +40,7 @@ public class SQLServerDateTimeOffsetHandler extends JDBCDateTimeValueHandler {
     }
 
     /**
-     * {@link https://learn.microsoft.com/en-us/sql/connect/jdbc/reference/datetimeoffset-members?view=sql-server
-     * -ver16}
+     * {@link <a href="https://learn.microsoft.com/en-us/sql/connect/jdbc/reference/datetimeoffset-members?view=sql-server-ver16">...</a>}
      * custom SQL Server type
      */
     @Override
@@ -55,9 +57,16 @@ public class SQLServerDateTimeOffsetHandler extends JDBCDateTimeValueHandler {
             && !formatSettings.isUseNativeDateTimeFormat()
         ) {
             try {
-                return BeanUtils.invokeObjectMethod(object, "getTimestamp");
+                Timestamp timestamp = (Timestamp) BeanUtils.invokeObjectMethod(object, "getTimestamp");
+                int offset = (int) BeanUtils.invokeObjectMethod(object, "getMinutesOffset");
+                int offsetSeconds = offset * 60;
+                if (timestamp == null) {
+                    log.debug("Extracted timestamp is null");
+                    return null;
+                }
+                return timestamp.toInstant().atOffset(ZoneOffset.ofTotalSeconds(offsetSeconds)).toLocalDateTime();
             } catch (Throwable e) {
-                log.warn("error extracting datetimeoffset timestamp", e);
+                log.debug("error extracting datetimeoffset timestamp", e);
             }
         }
         return super.getValueFromObject(session, type, object, copy, validateValue);
