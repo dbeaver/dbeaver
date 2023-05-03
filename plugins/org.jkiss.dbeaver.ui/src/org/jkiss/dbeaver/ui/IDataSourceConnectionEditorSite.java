@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui;
 
+import org.eclipse.jface.wizard.IWizard;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -49,6 +50,8 @@ public interface IDataSourceConnectionEditorSite
     void testConnection();
 
     DBPProject getProject();
+
+    IWizard getWizard();
 
     /**
      * Fires property change event in all connection pages

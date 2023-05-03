@@ -46,6 +46,7 @@ import org.osgi.framework.Bundle;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
@@ -187,7 +188,9 @@ public class PrefPageToolbarCustomization extends AbstractPrefPage implements IW
         toolBarImage = findBundleImage(PlatformUI.PLUGIN_ID, "$nl$/icons/full/obj16/toolbar.png"); //$NON-NLS-1$
         
         toolBarNodes = ToolBarConfigurationRegistry.getInstance().getKnownToolBars().stream()
-            .map(ToolBarNode::new).collect(Collectors.toList());
+            .sorted(Comparator.comparing(ToolBarConfigurationDescriptor::getName))
+            .map(ToolBarNode::new)
+            .collect(Collectors.toList());
     }
 
     @Nullable
@@ -356,7 +359,7 @@ public class PrefPageToolbarCustomization extends AbstractPrefPage implements IW
             try {
                 ((IPersistentPreferenceStore) prefs).save();
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error("Error saving toolbar configuration", e);
             }
         }
         ToolBarConfigurationPropertyTester.fireVisibilityPropertyChange();

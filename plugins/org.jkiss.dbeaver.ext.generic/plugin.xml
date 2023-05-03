@@ -571,7 +571,7 @@
                         promoted="1"
                         categories="sql,embedded">
                     <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:RELEASE" bundle="!drivers.duckdb"/>
-                    <file type="license" path="https://raw.githubusercontent.com/duckdb/duckdb/master/LICENSE"/>
+                    <file type="license" path="https://raw.githubusercontent.com/duckdb/duckdb/master/LICENSE" bundle="!drivers.duckdb"/>
                     <file type="jar" path="drivers/duckdb" bundle="drivers.duckdb"/>
                 </driver>
 
@@ -1391,7 +1391,7 @@
                         webURL="https://jdbc.postgresql.org/"
                         description="PostgreSQL JDBC driver. Can be used for old PostgreSQL versions or some PostgreSQL based databases (before 8.x).">
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.0]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.2]" bundle="!drivers.postgresql"/>
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
 
@@ -1648,7 +1648,7 @@
                         description="Salesforce CDP JDBC driver"
                         webURL="https://github.com/forcedotcom/Salesforce-CDP-jdbc"
                         categories="sql">
-                    <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/release_2021.12A/Salesforce-CDP-jdbc-1.11.0.jar" bundle="!drivers.salesforce"/>
+                    <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/release_2023.2b/Salesforce-CDP-jdbc-1.19.0.jar" bundle="!drivers.salesforce"/>
                     <file type="jar" path="drivers/salesforce" bundle="drivers.salesforce"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.salesforce"/>
                     <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.salesforce"/>

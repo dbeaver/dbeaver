@@ -82,7 +82,9 @@ public class TaskRegistry implements DBTTaskRegistry
                 }
             }
         }
-
+        if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            return;
+        }
         DBPPlatformDesktop.getInstance().getGlobalEventManager().addEventListener((eventId, properties) -> {
             if (eventId.equals(EVENT_TASK_EXECUTE)) {
                 String projectName = CommonUtils.toString(properties.get(EVENT_PARAM_PROJECT));

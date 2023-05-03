@@ -14,21 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event;
 
-import org.jkiss.code.NotNull;
+package org.jkiss.dbeaver.model.runtime.features;
 
-public class WSSocketConnectedEvent extends WSAbstractEvent {
+import java.util.Map;
 
-    private final String applicationRunId;
+/**
+ * DBeaver feature description
+ */
+public interface DBRFeatureTracker {
 
-    public WSSocketConnectedEvent(@NotNull String applicationRunId) {
-        super(WSEventType.SESSION_WEBSOCKET_CONNECTED);
-        this.applicationRunId = applicationRunId;
-    }
+    void trackFeature(DBRFeature feature, Map<String, Object> parameters);
 
-    @NotNull
-    public String getApplicationRunId() {
-        return applicationRunId;
-    }
+    void startTracking();
+
+    void dispose();
+
 }

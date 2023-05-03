@@ -37,10 +37,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.LoadingJob;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
@@ -108,6 +105,9 @@ public class MetaDataPanel implements IResultSetPanel {
                 ((ISelectionProvider) presentation).removeSelectionChangedListener(listener));
         }
         ResultSetPanelRefresher.installOn(this, presentation);
+
+        DataEditorFeatures.RESULT_SET_PANEL_METADATA.use();
+
         return this.attributeList;
     }
 

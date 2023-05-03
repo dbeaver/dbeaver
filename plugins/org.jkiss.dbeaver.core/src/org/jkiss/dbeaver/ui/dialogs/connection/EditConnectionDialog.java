@@ -23,8 +23,12 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
@@ -33,6 +37,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * NewConnectionDialog.
@@ -149,6 +154,15 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
     }
 
     public static boolean openEditConnectionDialog(IWorkbenchWindow window, DBPDataSourceContainer dataSource, String defaultPageName) {
+        return openEditConnectionDialog(window, dataSource, defaultPageName, null);
+    }
+
+    public static boolean openEditConnectionDialog(
+        @NotNull IWorkbenchWindow window,
+        @NotNull DBPDataSourceContainer dataSource,
+        @Nullable String defaultPageName,
+        @Nullable Consumer<EditConnectionWizard> wizardConfigurer
+    ) {
         EditConnectionDialog dialog = openDialogs.get(dataSource);
         if (dialog != null) {
             if (defaultPageName != null) {
@@ -158,7 +172,14 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
             return true;
         }
 
+        CoreFeatures.CONNECTION_EDIT.use(Map.of("driver", dataSource.getDriver().getPreconfiguredId()));
+
         EditConnectionWizard wizard = new EditConnectionWizard((DataSourceDescriptor) dataSource);
+
+        if (wizardConfigurer != null) {
+            wizardConfigurer.accept(wizard);
+        }
+
         dialog = new EditConnectionDialog(window, wizard);
         dialog.defaultPageName = defaultPageName;
         openDialogs.put(dataSource, dialog);

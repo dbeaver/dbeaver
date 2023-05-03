@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -115,6 +116,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -138,7 +140,12 @@ public class ResultSetViewer extends Viewer
 
     private static final String SETTINGS_SECTION_PRESENTATIONS = "presentations";
 
+    private static final String TOOLBAR_EDIT_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status.editCmds";
+    private static final String TOOLBAR_NAVIGATION_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status.navCmds";
+    private static final String TOOLBAR_EXPORT_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status.exportCmd";
     private static final String TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status";
+    private static final String TOOLBAR_CONFIGURATION_VISIBLE_PROPERTY = "org.jkiss.dbeaver.ui.toolbar.configuration.visible";
+    
     private static final String CONFIRM_SERVER_SIDE_ORDERING_UNAVAILABLE = "org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable";
 
     private static final int THEME_UPDATE_DELAY_MS = 250;
@@ -989,11 +996,7 @@ public class ResultSetViewer extends Viewer
                         @Override
                         public void widgetSelected(SelectionEvent e) {
                             boolean isPanelVisible = isPanelsVisible() && isPanelVisible(panel.getId());
-                            if (isPanelVisible) {
-                                closePanel(panel.getId());
-                            } else {
-                                activatePanel(panel.getId(), true, true);
-                            }
+                            ResultSetHandlerTogglePanel.showResultsPanel(ResultSetViewer.this, panel.getId(), isPanelVisible);
                             panelButton.setChecked(!isPanelVisible);
                             panelsButton.setChecked(isPanelsVisible());
                             if (panelSwitchFolder != null) {
@@ -1643,8 +1646,39 @@ public class ResultSetViewer extends Viewer
         //this.updateStatusMessage();
     }
 
-    private void createStatusBar()
-    {
+    private final Job statusBarLayoutJob = new Job("Pending resultset view status bar relayout") {
+        @Override
+        protected IStatus run(IProgressMonitor monitor) {
+            UIUtils.asyncExec(() -> {
+                boolean changed = false;
+                for (ToolBarManager toolbarManager : toolbarList) {
+                    ToolBar toolbar = toolbarManager.getControl();
+                    boolean wasCollapsed = toolbar.getLayoutData() != null;
+                    toolbar.setLayoutData(toolbar.getItemCount() > 0 ? null : new RowData(0, 0));
+                    boolean nowCollapsed = toolbar.getLayoutData() != null;
+                    changed |= (wasCollapsed != nowCollapsed);
+                }
+                if (changed) {
+                    ResultSetViewer.this.getControl().layout(true, true);
+                }
+            });
+            return Status.OK_STATUS;
+        }
+    };
+    
+    private final IPropertyChangeListener propertyEvaluationRequestListener = ev -> {
+        if (TOOLBAR_CONFIGURATION_VISIBLE_PROPERTY.equals(ev.getProperty())) { //$NON-NLS-1$
+            if (!getControl().isDisposed()) {
+                statusBarLayoutJob.schedule(30);
+            }
+        }
+    };
+    
+    private void createStatusBar() {
+        ActionUtils.addPropertyEvaluationRequestListener(propertyEvaluationRequestListener);
+        
+        final IMenuService menuService = getSite().getService(IMenuService.class);
+        
         Composite statusComposite = UIUtils.createPlaceholder(viewerPanel, 3);
         statusComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -1680,49 +1714,20 @@ public class ResultSetViewer extends Viewer
         }
         {
             ToolBarManager editToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-
-            // handle own commands
-            editToolBarManager.add(new ToolbarSeparatorContribution(true));
-            CommandContributionItem saveItem = ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_APPLY_CHANGES, CommandContributionItem.STYLE_PULLDOWN, ResultSetMessages.controls_resultset_edit_save, null, null, true, null);
-            saveItem.setId("org.jkiss.dbeaver.resultset.save.pulldown");
-            editToolBarManager.add(saveItem);
-            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_REJECT_CHANGES, ResultSetMessages.controls_resultset_edit_cancel, null, null, true));
-            //editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_GENERATE_SCRIPT, ResultSetMessages.controls_resultset_edit_script, null, null, true));
-            editToolBarManager.add(new Separator());
-            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_EDIT));
-            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_ADD));
-            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_COPY));
-            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_DELETE));
-
+            menuService.populateContributionManager(editToolBarManager, TOOLBAR_EDIT_CONTRIBUTION_ID);
             ToolBar editorToolBar = editToolBarManager.createControl(statusBar);
             CSSUtils.setCSSClass(editorToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
-
             toolbarList.add(editToolBarManager);
         }
         {
             ToolBarManager navToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            navToolBarManager.add(new ToolbarSeparatorContribution(true));
-            navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_FIRST));
-            navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_PREVIOUS));
-            navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_NEXT));
-            navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_LAST));
-            // Keep fetch page/all in context menu only
-/*
-            navToolBarManager.add(new Separator());
-            navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_PAGE));
-*/
-            navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_ALL));
-
-            navToolBarManager.add(new Separator(TOOLBAR_GROUP_NAVIGATION));
+            menuService.populateContributionManager(navToolBarManager, TOOLBAR_NAVIGATION_CONTRIBUTION_ID);
             ToolBar navToolBar = navToolBarManager.createControl(statusBar);
             CSSUtils.setCSSClass(navToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
-
             toolbarList.add(navToolBarManager);
         }
         {
             ToolBarManager configToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            configToolBarManager.add(new ToolbarSeparatorContribution(true));
-
             ToolBar configToolBar = configToolBarManager.createControl(statusBar);
             CSSUtils.setCSSClass(configToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
             toolbarList.add(configToolBarManager);
@@ -1730,20 +1735,10 @@ public class ResultSetViewer extends Viewer
 
         {
             ToolBarManager addToolbBarManagerar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            //addToolbBarManagerar.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT));
-            CommandContributionItem saveItem = ActionUtils.makeCommandContribution(
-                site,
-                ResultSetHandlerMain.CMD_EXPORT,
-                CommandContributionItem.STYLE_PULLDOWN,
-                null, null, null, true,
-                Map.of(ResultSetHandlerMain.PARAM_EXPORT_WITH_PARAM, Boolean.TRUE.toString()));
-            saveItem.setId("org.jkiss.dbeaver.resultset.export.pulldown");
-            addToolbBarManagerar.add(saveItem);
-
+            menuService.populateContributionManager(addToolbBarManagerar, TOOLBAR_EXPORT_CONTRIBUTION_ID);
             addToolbBarManagerar.add(new GroupMarker(TOOLBAR_GROUP_PRESENTATIONS));
             addToolbBarManagerar.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
 
-            final IMenuService menuService = getSite().getService(IMenuService.class);
             if (menuService != null) {
                 menuService.populateContributionManager(addToolbBarManagerar, TOOLBAR_CONTRIBUTION_ID);
             }
@@ -1843,6 +1838,8 @@ public class ResultSetViewer extends Viewer
 //                ((RowData)statusLabel.getLayoutData()).width = statusBar.getSize().x - 500;
 //            });
         }
+        
+        statusBarLayoutJob.schedule(10);
     }
 
     @Nullable
@@ -1947,6 +1944,8 @@ public class ResultSetViewer extends Viewer
 
     private void dispose()
     {
+        ActionUtils.removePropertyEvaluationRequestListener(propertyEvaluationRequestListener);
+        
         if (!themeUpdateJob.isCanceled()) {
             themeUpdateJob.cancel();
         }
@@ -3873,6 +3872,8 @@ public class ResultSetViewer extends Viewer
             return false;
         }
 
+        DataEditorFeatures.RESULT_SET_REFRESH.use();
+
         DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null) {
             int segmentSize = getSegmentMaxRows();
@@ -3936,6 +3937,9 @@ public class ResultSetViewer extends Viewer
         if (nextSegmentReadingBlocked) {
             return;
         }
+
+        DataEditorFeatures.RESULT_SET_SCROLL.use();
+
         nextSegmentReadingBlocked = true;
         UIUtils.asyncExec(() -> {
             if (isRefreshInProgress() || !checkForChanges()) {

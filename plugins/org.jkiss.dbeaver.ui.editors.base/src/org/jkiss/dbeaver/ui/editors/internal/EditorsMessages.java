@@ -102,7 +102,6 @@ public class EditorsMessages extends NLS {
 
     public static String progress_editor_initializing_text;
     public static String progress_editor_uninitialized_text;
-    public static String progress_editor_uninitialized_button_text;
 
 	static {
 		// initialize resource bundle

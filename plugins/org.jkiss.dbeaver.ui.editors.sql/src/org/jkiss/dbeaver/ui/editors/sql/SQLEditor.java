@@ -97,7 +97,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI.UserChoiceResponse;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
@@ -996,8 +995,6 @@ public class SQLEditor extends SQLEditorBase implements
                 });
             }
         }
-
-        SQLEditorFeatures.SQL_EDITOR_OPEN.use();
 
         // Start output reader
         new ServerOutputReader().schedule();
@@ -2132,6 +2129,13 @@ public class SQLEditor extends SQLEditorBase implements
         }
         baseEditorImage = getTitleImage();
         editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
+
+        {
+            DBPDataSourceContainer dataSource = EditorUtils.getInputDataSource(editorInput);
+            SQLEditorFeatures.SQL_EDITOR_OPEN.use(Map.of(
+                "driver", dataSource == null ? "" : dataSource.getDriver().getPreconfiguredId()
+            ));
+        }
     }
 
     protected boolean isDetectTitleImageFromInput() {
@@ -3603,14 +3607,6 @@ public class SQLEditor extends SQLEditorBase implements
             }
             ResultSetViewer rsv = resultsProvider.getResultSetController();
             return rsv == null ? null : rsv.getDataReceiver();
-        }
-
-        @Override
-        public void releaseDataReceiver(int resultSetNumber) {
-            if (resultContainers.size() > resultSetNumber) {
-                final CTabItem tab = resultContainers.get(resultSetNumber).resultsTab;
-                UIUtils.syncExec(tab::dispose);
-            }
         }
 
         @Override

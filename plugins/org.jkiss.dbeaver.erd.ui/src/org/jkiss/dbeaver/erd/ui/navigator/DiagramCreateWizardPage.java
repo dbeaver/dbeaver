@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -73,6 +74,10 @@ class DiagramCreateWizardPage extends WizardPage {
     @Override
     public boolean isPageComplete()
     {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER)) {
+            setErrorMessage("The user needs more permissions to create a new diagram.");
+            return false;
+        }
         boolean hasName = !CommonUtils.isEmpty(diagram.getName());
         if (!hasName) {
             setErrorMessage("Set diagram name");

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.runtime.sql;
+package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -36,10 +36,4 @@ public interface SQLResultsConsumer
     @Nullable
     DBDDataReceiver getDataReceiver(SQLQuery statement, int resultSetNumber);
 
-    /**
-     * Releases data receiver.
-     *
-     * @param resultSetNumber number of the result set which data receiver to release
-     */
-    void releaseDataReceiver(int resultSetNumber);
 }
