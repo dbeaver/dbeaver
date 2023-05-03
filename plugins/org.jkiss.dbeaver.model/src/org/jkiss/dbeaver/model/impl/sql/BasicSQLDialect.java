@@ -366,9 +366,15 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
 
         if (isStandardSQL()) {
             // Add default types
-            addDataTypes(List.of(SQLConstants.DEFAULT_TYPES));
+            if (needsDefaultDataTypes()) {
+                addDataTypes(List.of(SQLConstants.DEFAULT_TYPES));
+            }
             addKeywords(all, DBPKeywordType.KEYWORD);
         }
+    }
+
+    public boolean needsDefaultDataTypes() {
+        return true;
     }
 
 }
