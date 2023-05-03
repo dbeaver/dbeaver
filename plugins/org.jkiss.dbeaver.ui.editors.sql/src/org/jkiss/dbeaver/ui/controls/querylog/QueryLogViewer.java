@@ -99,6 +99,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private static final String QUERY_LOG_CONTROL_ID = "org.jkiss.dbeaver.ui.qm.log"; //$NON-NLS-1$
     private static final String VIEWER_ID = "DBeaver.QM.LogViewer"; //$NON-NLS-1$
     private static final int MIN_ENTRIES_PER_PAGE = 1;
+    private static final int QM_SESSION_ID_WAITING_TIME = 5 * 60 * 1000; // five minutes
 
     public static final String COLOR_UNCOMMITTED = "org.jkiss.dbeaver.txn.color.committed.background";  //= new RGB(0xBD, 0xFE, 0xBF); //$NON-NLS-1$
     public static final String COLOR_REVERTED = "org.jkiss.dbeaver.txn.color.reverted.background";  // = new RGB(0xFF, 0x63, 0x47); //$NON-NLS-1$
@@ -1227,7 +1228,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                         break;
                     }
                     RuntimeUtils.pause(200);
-                } while (System.currentTimeMillis() - startTime < 5 * 60 * 1000);
+                } while (System.currentTimeMillis() - startTime < QM_SESSION_ID_WAITING_TIME);
 
                 if (qmSessionId == null) {
                     return events;
