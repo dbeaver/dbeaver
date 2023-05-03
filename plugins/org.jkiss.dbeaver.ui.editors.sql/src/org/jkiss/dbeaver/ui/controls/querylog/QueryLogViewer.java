@@ -77,7 +77,6 @@ import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogFilter;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
@@ -99,7 +98,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private static final String QUERY_LOG_CONTROL_ID = "org.jkiss.dbeaver.ui.qm.log"; //$NON-NLS-1$
     private static final String VIEWER_ID = "DBeaver.QM.LogViewer"; //$NON-NLS-1$
     private static final int MIN_ENTRIES_PER_PAGE = 1;
-    private static final int QM_SESSION_ID_WAITING_TIME = 5 * 60 * 1000; // five minutes
 
     public static final String COLOR_UNCOMMITTED = "org.jkiss.dbeaver.txn.color.committed.background";  //= new RGB(0xBD, 0xFE, 0xBF); //$NON-NLS-1$
     public static final String COLOR_REVERTED = "org.jkiss.dbeaver.txn.color.reverted.background";  // = new RGB(0xFF, 0x63, 0x47); //$NON-NLS-1$
@@ -1220,19 +1218,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 } else {
                     monitor.subTask("Load all queries"); //$NON-NLS-1$
                 }
-                String qmSessionId = null;
-                var startTime = System.currentTimeMillis();
-                do {
-                    qmSessionId = QMUtils.getQmSessionId(DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession());
-                    if (qmSessionId != null) {
-                        break;
-                    }
-                    RuntimeUtils.pause(200);
-                } while (System.currentTimeMillis() - startTime < QM_SESSION_ID_WAITING_TIME);
 
-                if (qmSessionId == null) {
-                    return events;
-                }
+                var qmSessionId = QMUtils.getQmSessionId(DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession());
                 var cursorFilter = new QMCursorFilter(
                     qmSessionId,
                     criteria,

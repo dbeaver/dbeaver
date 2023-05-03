@@ -62,23 +62,19 @@ public class H2Migrator {
     private final String resolvedDbUrl;
     @NotNull
     private final Properties dbProperties;
-    @NotNull
-    private final SystemVariablesResolver variablesResolver;
 
     public H2Migrator(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DataSourceProviderRegistry dataSourceProviderRegistry,
         @NotNull InternalDatabaseConfig databaseConfiguration,
         @NotNull String resolvedDbUrl,
-        @NotNull Properties dbProperties,
-        @NotNull SystemVariablesResolver variablesResolver
+        @NotNull Properties dbProperties
     ) {
         this.monitor = monitor;
         this.dataSourceProviderRegistry = dataSourceProviderRegistry;
         this.databaseConfiguration = databaseConfiguration;
         this.resolvedDbUrl = resolvedDbUrl;
         this.dbProperties = dbProperties;
-        this.variablesResolver = variablesResolver;
     }
 
     /**
@@ -146,7 +142,7 @@ public class H2Migrator {
             updateConfig(workspacePaths);
             monitor.worked(1);
             monitor.subTask("Importing data to new v2 database");
-            var updatedResolvedDbUrl = GeneralUtils.replaceVariables(databaseConfiguration.getUrl(), variablesResolver);
+            var updatedResolvedDbUrl = GeneralUtils.replaceVariables(databaseConfiguration.getUrl(), SystemVariablesResolver.INSTANCE);
             if (dbProperties.getProperty(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD) == null) {
                 executeScript(v2Driver, updatedResolvedDbUrl, IMPORT_SCRIPT, exportFilePath);
             } else {

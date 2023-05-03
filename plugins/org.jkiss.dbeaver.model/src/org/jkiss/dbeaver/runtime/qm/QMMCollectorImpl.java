@@ -62,8 +62,6 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     private List<QMMetaEvent> pastEvents = new ArrayList<>();
     private boolean running = true;
     private long eventDispatchPeriod = 250;
-    // QM session id for not multiuser app
-    private String qmSingleUserSessionId;
 
     public QMMCollectorImpl() {
         var application = DBWorkbench.getPlatform().getApplication();
@@ -144,30 +142,22 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         if (eventPool.isEmpty()) {
             return Collections.emptyList();
         }
+        // qm session id might be null if database migration is in progress for single user product
         if (!DBWorkbench.getPlatform().getApplication().isMultiuser()) {
             for (QMMetaEvent event : eventPool) {
                 if (event.getSessionId() != null) {
                     continue;
                 }
-                var sessionId = getSingleUserQmSessionId();
+                var sessionId = QMUtils.getQmSessionId(DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession());
                 if (sessionId == null) {
                     return Collections.emptyList();
                 }
-                event.setSessionId(getSingleUserQmSessionId());
+                event.setSessionId(sessionId);
             }
         }
         List<QMMetaEvent> events = eventPool;
         eventPool = new ArrayList<>();
         return events;
-    }
-
-    // TODO: find another way to get qm session id
-    @Nullable
-    private String getSingleUserQmSessionId() {
-        if (qmSingleUserSessionId == null) {
-            qmSingleUserSessionId = QMUtils.getQmSessionId(DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession());
-        }
-        return qmSingleUserSessionId;
     }
 
     public QMMConnectionInfo getConnectionInfo(DBCExecutionContext context) {
