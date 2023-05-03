@@ -372,8 +372,8 @@
 
                     <provider-properties>
                         <propertyGroup label="Misc">
-                            <property id="@dbeaver-sid-service@" label="Service type" type="string" description="Database type" defaultValue="SID" validValues="SID,SERVICE" supportedConfigurationTypes="MANUAL"/>
-                            <property id="oracle.logon-as" label="Role" type="string" description="Connect as role" defaultValue="Normal" validValues="Normal,SYSDBA,SYSOPER" supportedConfigurationTypes="MANUAL"/>
+                            <property id="@dbeaver-sid-service@" label="Service type" type="string" description="Database type" defaultValue="SID" validValues="SID,SERVICE"/>
+                            <property id="oracle.logon-as" label="Role" type="string" description="Connect as role" defaultValue="Normal" validValues="Normal,SYSDBA,SYSOPER"/>
                         </propertyGroup>
                     </provider-properties>
 

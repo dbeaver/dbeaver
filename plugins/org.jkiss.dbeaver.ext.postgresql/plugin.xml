@@ -556,9 +556,9 @@
 
                 <provider-properties drivers="*">
                     <propertyGroup label="Database list">
-                        <property id="@dbeaver-show-non-default-db@" label="Show all databases" type="boolean" description="Show all databases on server. Otherwise show current database only." supportedConfigurationTypes="MANUAL"/>
-                        <property id="@dbeaver-show-template-db@" label="Show template databases" type="boolean" description="Show template databases." supportedConfigurationTypes="MANUAL"/>
-                        <property id="@dbeaver-show-unavailable-db@" label="Show unavailable databases" type="boolean" description="Show databases not unavailable for connection." supportedConfigurationTypes="MANUAL"/>
+                        <property id="@dbeaver-show-non-default-db@" label="Show all databases" type="boolean" description="Show all databases on server. Otherwise show current database only."/>
+                        <property id="@dbeaver-show-template-db@" label="Show template databases" type="boolean" description="Show template databases."/>
+                        <property id="@dbeaver-show-unavailable-db@" label="Show unavailable databases" type="boolean" description="Show databases not unavailable for connection."/>
                     </propertyGroup>
                     <propertyGroup label="Misc">
                         <property id="@dbeaver-chosen-role@" label="User role" type="string" description="User role for connection" supportedConfigurationTypes="MANUAL,URL"/>

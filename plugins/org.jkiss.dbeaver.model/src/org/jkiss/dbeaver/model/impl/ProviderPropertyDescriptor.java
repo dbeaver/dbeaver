@@ -31,14 +31,15 @@ public class ProviderPropertyDescriptor extends PropertyDescriptor {
 
     private static final Log log = Log.getLog(ProviderPropertyDescriptor.class);
     private static final String ATTR_SUPPORTED_CONFIGURATION_TYPES = "supportedConfigurationTypes";
-
-    private Set<DBPDriverConfigurationType> configurationTypes = Set.of();
+    private final Set<DBPDriverConfigurationType> configurationTypes;
 
     public ProviderPropertyDescriptor(String category, IConfigurationElement config) {
         super(category, config);
-        String[] supportedConfigurationTypes = CommonUtils.split(
-            config.getAttribute(ATTR_SUPPORTED_CONFIGURATION_TYPES), ",");
-        if (supportedConfigurationTypes.length > 0) {
+        var configurationTypes = config.getAttribute(ATTR_SUPPORTED_CONFIGURATION_TYPES);
+        if (CommonUtils.isEmpty(configurationTypes)) {
+            this.configurationTypes = Set.of(DBPDriverConfigurationType.MANUAL); // by default
+        } else {
+            String[] supportedConfigurationTypes = CommonUtils.split(configurationTypes, ",");
             this.configurationTypes = Stream.of(supportedConfigurationTypes)
                 .map(DBPDriverConfigurationType::valueOf)
                 .collect(Collectors.toSet());
