@@ -71,6 +71,15 @@ public class SQLConstants {
     public static final String KEYWORD_CASE = "CASE";
 
     public static final String DATA_TYPE_VARCHAR = "varchar";
+    public static final String DATA_TYPE_BIGINT = "BIGINT";
+    public static final String DATA_TYPE_BINARY = "BINARY";
+    public static final String DATA_TYPE_BOOLEAN = "BOOLEAN";
+    public static final String DATA_TYPE_DOUBLE = "DOUBLE";
+    public static final String DATA_TYPE_FLOAT = "FLOAT";
+    public static final String DATA_TYPE_INT = "INT";
+    public static final String DATA_TYPE_SMALLINT = "SMALLINT";
+    public static final String DATA_TYPE_STRING = "STRING";
+    public static final String DATA_TYPE_TINYINT = "TINYINT";
 
     public static final String[] TABLE_KEYWORDS = {
         KEYWORD_FROM,
@@ -119,7 +128,7 @@ public class SQLConstants {
         "BEGIN",
         "BETWEEN",
         //"BIGINT",
-        "BINARY",
+        DATA_TYPE_BINARY,
         "BOTH",
         "BY",
         "CALL",
@@ -616,20 +625,20 @@ public class SQLConstants {
         "MODIFY",
     };
     public static final String[] DEFAULT_TYPES = {
-        "BOOLEAN",
+        DATA_TYPE_BOOLEAN,
         "CHAR",
         "VARCHAR",
-        "BINARY",
+        DATA_TYPE_BINARY,
         "VARBINARY",
-        "INT",
+        DATA_TYPE_INT,
         "INTEGER",
-        "SMALLINT",
-        "BIGINT",
+        DATA_TYPE_SMALLINT,
+        DATA_TYPE_BIGINT,
         "NUMBER",
         "NUMERIC",
         "DECIMAL",
-        "FLOAT",
-        "DOUBLE",
+        DATA_TYPE_FLOAT,
+        DATA_TYPE_DOUBLE,
         "DATE",
         "TIME",
         "TIMESTAMP",

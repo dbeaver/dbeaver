@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -558,7 +559,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
             }
         } else if (valueType == Types.BIT) {
             // Workaround for MySQL (and maybe others) when TINYINT(1) == BOOLEAN
-            if ("TINYINT".equalsIgnoreCase(typeName)) {
+            if (SQLConstants.DATA_TYPE_TINYINT.equalsIgnoreCase(typeName)) {
                 return Types.TINYINT;
             }
         }
