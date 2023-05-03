@@ -317,7 +317,7 @@ public class SQLScriptParserTest {
                 "        i := i + 1;\n" +
                 "        DBMS_OUTPUT.PUT_LINE ('This is: '||i);\n" +
                 "    END IF;\n" +
-                "END;\n",
+                "END;",
 
                 "CREATE TRIGGER TRI_CODE_SYSTEM\n" +
                 "BEFORE INSERT ON CODE_SYSTEM\n" +
