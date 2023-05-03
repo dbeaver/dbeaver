@@ -34,10 +34,7 @@ import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.LoadingJob;
-import org.jkiss.dbeaver.ui.UIExecutionQueue;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 
@@ -51,6 +48,7 @@ public class ProgressEditorPart extends EditorPart {
     private final IDatabaseEditor ownerEditor;
     private Composite parentControl;
     private Composite progressCanvas;
+    private volatile LoadingJob<IDatabaseEditorInput> pendingJob;
 
     public ProgressEditorPart(IDatabaseEditor ownerEditor) {
         this.ownerEditor = ownerEditor;
@@ -111,34 +109,26 @@ public class ProgressEditorPart extends EditorPart {
         }
     }
 
-    private void scheduleEditorLoad() {
+    public synchronized boolean scheduleEditorLoad() {
+        if (pendingJob != null) {
+            return false;
+        }
         InitNodeService loadingService = new InitNodeService();
-        LoadingJob<IDatabaseEditorInput> loadJob = LoadingJob.createService(
+        pendingJob = LoadingJob.createService(
             loadingService,
             new InitNodeVisualizer(loadingService));
-        UIExecutionQueue.queueExec(loadJob::schedule);
+        UIExecutionQueue.queueExec(pendingJob::schedule);
+        return true;
     }
 
     private void createInitializerPlaceholder() {
         final Button button = new Button(progressCanvas, SWT.PUSH);
-
-        final PaintListener paintListener = e -> {
-            final Rectangle buttonBounds = button.getBounds();
-            e.gc.setFont(button.getFont());
-            UIUtils.drawTextWithBackground(
-                e.gc,
-                EditorsMessages.progress_editor_uninitialized_text,
-                buttonBounds.x + buttonBounds.width / 2,
-                buttonBounds.y - 10
-            );
-        };
-
-        button.setText(EditorsMessages.progress_editor_uninitialized_button_text);
+        button.setText(EditorsMessages.progress_editor_uninitialized_text);
+        button.setImage(DBeaverIcons.getImage(UIIcon.SQL_CONNECT));
         button.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
             for (Control child : progressCanvas.getChildren()) {
                 child.dispose();
             }
-            progressCanvas.removePaintListener(paintListener);
             scheduleEditorLoad();
         }));
 
@@ -147,8 +137,6 @@ public class ProgressEditorPart extends EditorPart {
         progressOverlay.minimumWidth = buttonSize.x;
         progressOverlay.minimumHeight = buttonSize.y;
         progressOverlay.setEditor(button);
-
-        progressCanvas.addPaintListener(paintListener);
     }
 
     private void initEntityEditor(IDatabaseEditorInput result) {
@@ -184,6 +172,8 @@ public class ProgressEditorPart extends EditorPart {
                 return getEditorInput().initializeRealInput(monitor);
             } catch (Throwable ex) {
                 throw new InvocationTargetException(ex);
+            } finally {
+                pendingJob = null;
             }
         }
 

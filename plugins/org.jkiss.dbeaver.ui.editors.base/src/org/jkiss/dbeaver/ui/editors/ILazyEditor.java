@@ -24,6 +24,13 @@ import org.eclipse.ui.IEditorPart;
 public interface ILazyEditor extends IEditorPart {
 
     /**
+     * Attempts to load an editor input.
+     *
+     * @return {@code true} if the editor input was loaded successfully, or {@code false} if it can't be done
+     */
+    boolean loadEditorInput();
+
+    /**
      * Attempts to unload an editor input.
      *
      * @return {@code true} if the editor input was unloaded successfully, or {@code false} if it can't be done

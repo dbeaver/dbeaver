@@ -340,8 +340,8 @@ class GridCellRenderer extends AbstractRenderer {
                         return;
                     }
 
-                    start = index + expected.length();
-                    index += expected.length() - 1;
+                    index += expected.length();
+                    start = index;
                 }
             }
         }
