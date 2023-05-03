@@ -26,9 +26,8 @@ public class OracleScriptExecutor extends SQLEditorExecutor<OracleDataSource> {
     @NotNull
     protected TaskConfigurationWizard<?> createTaskConfigurationWizard(
         @NotNull OracleDataSource oracleDataSource,
-            @NotNull SQLEditor editor
-        ) {
-        return new OracleScriptExecuteWizard(oracleDataSource,
-            editor.getGlobalScriptContext().getSourceFile());
+         @NotNull SQLEditor editor
+    ) {
+        return new OracleScriptExecuteWizard(oracleDataSource, editor.getGlobalScriptContext().getSourceFile());
     }
 }

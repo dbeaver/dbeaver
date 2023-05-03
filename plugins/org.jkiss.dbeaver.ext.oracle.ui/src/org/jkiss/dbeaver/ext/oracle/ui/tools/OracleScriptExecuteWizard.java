@@ -49,8 +49,7 @@ class OracleScriptExecuteWizard extends AbstractNativeScriptExecuteWizard<Oracle
     }
 
     OracleScriptExecuteWizard(@NotNull OracleDataSource oracleSchema, @Nullable File sourceFile) {
-        super(Collections.singleton(oracleSchema), OracleUIMessages.tools_script_execute_wizard_page_name);
-        getSettings().setInputFile(sourceFile != null && sourceFile.exists() ? sourceFile.getAbsolutePath() : null);
+        super(Collections.singleton(oracleSchema), OracleUIMessages.tools_script_execute_wizard_page_name, sourceFile);
     }
 
     @Override

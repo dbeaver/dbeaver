@@ -873,16 +873,14 @@
                 </command>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNative">
                     <visibleWhen>
-                        <and>
-                            <with variable="activeEditor">
+                        <with variable="activeEditor">
+                            <and>
                                 <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
-                            </with>
-                            <with variable="activeEditor">
                                 <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
                                     <test property="org.jkiss.dbeaver.ui.editors.sql.canExecuteNative" value="script"/>
                                 </adapt>
-                            </with>
-                        </and>
+                            </and>
+                        </with>
                     </visibleWhen>
                 </command>
 

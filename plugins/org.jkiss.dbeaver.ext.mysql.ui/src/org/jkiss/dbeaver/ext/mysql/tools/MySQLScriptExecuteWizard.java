@@ -44,8 +44,13 @@ class MySQLScriptExecuteWizard extends AbstractNativeScriptExecuteWizard<MySQLSc
     }
 
     MySQLScriptExecuteWizard(@NotNull MySQLCatalog catalog, boolean isImport, @Nullable File file) {
-        this(catalog, isImport);
-        getSettings().setInputFile(file != null && file.exists() ? file.getAbsolutePath() : null);
+        super(
+            Collections.singleton(catalog),
+            isImport
+            ? MySQLUIMessages.tools_script_execute_wizard_db_import
+            : MySQLUIMessages.tools_script_execute_wizard_execute_script,
+            file);
+        this.getSettings().setImport(isImport);
     }
 
     MySQLScriptExecuteWizard(DBTTask task, boolean isImport) {

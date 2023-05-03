@@ -72,7 +72,7 @@ public class SQLEditorHandlerExecute extends AbstractHandler
                         SQLEditorExecutor<DBSObject> nativeExecutor
                             = (SQLEditorExecutor<DBSObject>) executorDescriptor.getNativeExecutor();
                         if (nativeExecutor == null) {
-                            throw new ExecutionException("Valid native is executor not found");
+                            throw new ExecutionException("Valid native executor is not found");
                         }
                         DBSObject object = executionContext.getDefaultCatalog();
                         if (object == null) {
