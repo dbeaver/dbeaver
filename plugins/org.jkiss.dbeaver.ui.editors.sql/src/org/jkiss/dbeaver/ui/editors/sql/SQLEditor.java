@@ -3610,14 +3610,6 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public void releaseDataReceiver(int resultSetNumber) {
-            if (resultContainers.size() > resultSetNumber) {
-                final CTabItem tab = resultContainers.get(resultSetNumber).resultsTab;
-                UIUtils.syncExec(tab::dispose);
-            }
-        }
-
-        @Override
         public boolean isSmartAutoCommit() {
             return SQLEditor.this.isSmartAutoCommit();
         }
