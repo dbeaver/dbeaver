@@ -21,9 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
@@ -259,4 +257,9 @@ public interface DBPDataSourceContainer extends
      */
     @Nullable
     String getRequiredExternalAuth();
+
+    @Nullable
+    DBPDriverSubstitutionDescriptor getDriverSubstitution();
+
+    void setDriverSubstitution(@Nullable DBPDriverSubstitutionDescriptor driverSubstitution);
 }

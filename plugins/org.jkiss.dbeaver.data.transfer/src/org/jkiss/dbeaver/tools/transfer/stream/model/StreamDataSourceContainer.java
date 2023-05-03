@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -442,5 +443,16 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @Override
     public String getRequiredExternalAuth() {
         return null;
+    }
+
+    @Nullable
+    @Override
+    public DBPDriverSubstitutionDescriptor getDriverSubstitution() {
+        return null;
+    }
+
+    @Override
+    public void setDriverSubstitution(@Nullable DBPDriverSubstitutionDescriptor driverSubstitution) {
+        // do nothing
     }
 }
