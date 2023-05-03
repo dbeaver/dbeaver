@@ -59,7 +59,7 @@ public class SQLEditorHandlerExecute extends AbstractHandler
             case SQLEditorCommands.CMD_EXECUTE_SCRIPT:
                 editor.processSQL(false, true);
                 break;
-            case SQLEditorCommands.CMD_EXECUTE_SCRIPT_NATIVE:
+            case SQLEditorCommands.CMD_EXECUTE_SCRIPT_NATIVE: {
                 SQLNativeExecutorDescriptor executorDescriptor = SQLNativeExecutorRegistry.getInstance()
                     .getExecutorDescriptor(editor.getDataSource());
                 if (executorDescriptor == null) {
@@ -85,6 +85,7 @@ public class SQLEditorHandlerExecute extends AbstractHandler
                     log.error(e);
                 }
                 break;
+            }
             case SQLEditorCommands.CMD_EXECUTE_SCRIPT_FROM_POSITION:
                 editor.processSQL(false, true, true);
                 break;

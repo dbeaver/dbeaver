@@ -44,6 +44,7 @@ public abstract class SQLEditorExecutor<CONTAINER extends DBSObject> {
     }
 
     @NotNull
-    protected abstract TaskConfigurationWizard<?> createTaskConfigurationWizard(@NotNull CONTAINER container,
+    protected abstract TaskConfigurationWizard<?> createTaskConfigurationWizard(
+        @NotNull CONTAINER container,
         @NotNull SQLEditor editor);
 }

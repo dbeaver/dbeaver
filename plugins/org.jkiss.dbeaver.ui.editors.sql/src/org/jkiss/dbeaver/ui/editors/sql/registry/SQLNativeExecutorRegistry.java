@@ -60,13 +60,6 @@ public class SQLNativeExecutorRegistry {
         }
     }
 
-    /**
-     * disposes the class
-     */
-    public void dispose() {
-        executors.clear();
-    }
-
     @NotNull
     public List<SQLNativeExecutorDescriptor> getExecutors() {
         return new ArrayList<>(executors);

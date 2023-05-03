@@ -42,13 +42,8 @@ public class SQLNativeExecutorDescriptor extends AbstractContextDescriptor {
      * Returns native executor implementation
      */
     @Nullable
-    public SQLEditorExecutor<? extends DBSObject> getNativeExecutor()  {
-        try {
-            return implClass.createInstance(SQLEditorExecutor.class);
-        } catch (DBException e) {
-            log.error("Error creating SQLEditorExecutor instance", e);
-        }
-        return null;
+    public SQLEditorExecutor<? extends DBSObject> getNativeExecutor() throws DBException {
+        return implClass.createInstance(SQLEditorExecutor.class);
     }
 
     @NotNull
