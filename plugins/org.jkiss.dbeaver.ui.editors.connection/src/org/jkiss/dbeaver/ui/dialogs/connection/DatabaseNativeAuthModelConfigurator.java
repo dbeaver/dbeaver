@@ -191,7 +191,6 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     }
 
     private void showPasswordText(UIServiceSecurity serviceSecurity) {
-        Composite passContainer = passwordText.getParent();
         boolean passHidden = (passwordText.getStyle() & SWT.PASSWORD) == SWT.PASSWORD;
         if (passHidden) {
             if (!serviceSecurity.validatePassword(
@@ -204,18 +203,10 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
             }
         }
 
-        Object layoutData = passwordText.getLayoutData();
-        String curValue = passwordText.getText();
-        passwordText.dispose();
-
-        if (passHidden) {
-            passwordText = new Text(passContainer, SWT.BORDER);
-        } else {
-            passwordText = new Text(passContainer, SWT.PASSWORD | SWT.BORDER);
-        }
-        passwordText.setLayoutData(layoutData);
-        passwordText.setText(curValue);
-        passContainer.layout(true, true);
+        passwordText = UIUtils.recreateTextControl(
+            passwordText,
+            passHidden ? SWT.BORDER : SWT.BORDER | SWT.PASSWORD
+        );
     }
 
 }

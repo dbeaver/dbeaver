@@ -719,4 +719,9 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
     public String getClobDataType() {
         return OracleConstants.TYPE_CLOB;
     }
+
+    @Override
+    public boolean needsDefaultDataTypes() {
+        return false;
+    }
 }
