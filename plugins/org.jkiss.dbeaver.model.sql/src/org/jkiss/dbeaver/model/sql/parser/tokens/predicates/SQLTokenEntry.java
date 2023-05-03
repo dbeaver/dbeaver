@@ -59,11 +59,11 @@ public class SQLTokenEntry extends TokenPredicateNode implements TokenEntry {
     public boolean matches(@NotNull TokenEntry other) {
         boolean stringMatches = this.getString() == null || other.getString() == null || this.string.equalsIgnoreCase(other.getString());
         boolean typeMatches = this.getTokenType() == null || other.getTokenType() == null || this.type.equals(other.getTokenType());
+        boolean result = stringMatches && typeMatches;
         if (this.isInverted) {
-            stringMatches = !stringMatches;
-            typeMatches = !typeMatches;
+            result = !result;
         }
-        return stringMatches && typeMatches;
+        return result; 
     }
 
     public boolean equals(@NotNull TokenEntry other) {
