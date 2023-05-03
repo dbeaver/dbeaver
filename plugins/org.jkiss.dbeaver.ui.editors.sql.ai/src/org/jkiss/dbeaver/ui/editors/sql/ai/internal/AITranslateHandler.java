@@ -56,11 +56,14 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class AITranslateHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
+        AIFeatures.SQL_AI_POPUP.use();
+
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_DISABLED)) {
             return null;
         }
@@ -220,6 +223,12 @@ public class AITranslateHandler extends AbstractHandler {
             }
         }
 
+        AIFeatures.SQL_AI_GENERATE_PROPOSALS.use(Map.of(
+            "driver", lDataSource.getDataSourceContainer().getDriver().getPreconfiguredId(),
+            "engine", engine.getEngineName(),
+            "scope", request.getScope().name()
+
+        ));
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY)) {
             editor.processSQL(false, false);
         }

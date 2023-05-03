@@ -32,6 +32,8 @@ import org.eclipse.jface.bindings.Binding;
 import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.commands.ToggleState;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.*;
@@ -50,7 +52,8 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Map;
+import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * Action utils
@@ -58,6 +61,16 @@ import java.util.Map;
 public class ActionUtils
 {
     private static final Log log = Log.getLog(ActionUtils.class);
+    
+    private static final Set<IPropertyChangeListener> propertyEvaluationRequestListeners = Collections.synchronizedSet(new HashSet<>());
+    
+    public static void addPropertyEvaluationRequestListener(@NotNull IPropertyChangeListener listener) {
+        propertyEvaluationRequestListeners.add(listener);
+    }
+
+    public static void removePropertyEvaluationRequestListener(@NotNull IPropertyChangeListener listener) {
+        propertyEvaluationRequestListeners.remove(listener);
+    }
 
     public static CommandContributionItem makeCommandContribution(@NotNull IServiceLocator serviceLocator, @NotNull String commandId)
     {
@@ -417,6 +430,11 @@ public class ActionUtils
             } catch (Exception e) {
                 log.warn("Error evaluating property [" + propertyName + "]");
             }
+        }
+        
+        PropertyChangeEvent ev = new PropertyChangeEvent(service, propertyName, null, null); 
+        for (IPropertyChangeListener listener : List.copyOf(propertyEvaluationRequestListeners)) {
+            listener.propertyChange(ev);
         }
     }
 

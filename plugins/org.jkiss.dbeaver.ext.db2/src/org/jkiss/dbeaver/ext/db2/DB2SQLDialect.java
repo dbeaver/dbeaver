@@ -168,4 +168,9 @@ public class DB2SQLDialect extends JDBCSQLDialect implements TPRuleProvider {
     public boolean supportsAliasInConditions() {
         return false;
     }
+
+    @Override
+    public boolean needsDefaultDataTypes() {
+        return false;
+    }
 }

@@ -14,24 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.winstore;
+package org.jkiss.dbeaver.ui.editors.sql.ai.internal;
 
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.runtime.IPluginService;
+import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 
-public class WinStoreService implements IPluginService {
+/**
+ * Data editor features
+ */
+public interface AIFeatures {
 
-    private static final Log log = Log.getLog(WinStoreService.class);
+    DBRFeature CATEGORY_SQL_AI = DBRFeature.createCategory("SQL AI", "SQL AI features");
 
-    @Override
-    public void activateService() {
-        // Modify JNI binaries path
-        System.setProperty(DBConstants.IS_WINDOWS_STORE_APP, "true");
-    }
+    DBRFeature SQL_AI_POPUP = DBRFeature.createFeature(CATEGORY_SQL_AI, "Show AI popup");
+    DBRFeature SQL_AI_GENERATE_PROPOSALS = DBRFeature.createFeature(CATEGORY_SQL_AI, "Generate AI proposal");
 
-    @Override
-    public void deactivateService() {
-
-    }
 }

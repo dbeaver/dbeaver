@@ -9,15 +9,19 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>23.0.3</dbeaver-version>
+        <dbeaver-version>23.0.4</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
         <tycho-version>3.0.1</tycho-version>
+        <eclipse-version>2023-03</eclipse-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 
-        <local-p2-repo.url>https://dbeaver.io/eclipse-repo</local-p2-repo.url>
-        <eclipse-p2-repo.url>https://download.eclipse.org/releases/2023-03/</eclipse-p2-repo.url>
-        <orbit-repo.url>https://download.eclipse.org/tools/orbit/downloads/drops/R20221123021534/repository/</orbit-repo.url>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+
+        <local-p2-repo.url>https://p2.dev.dbeaver.com/eclipse-repo/</local-p2-repo.url>
+        <eclipse-p2-repo.url>https://download.eclipse.org/releases/${eclipse-version}/</eclipse-p2-repo.url>
+        <!--orbit-repo.url>https://download.eclipse.org/tools/orbit/downloads/drops/R20221123021534/repository/</orbit-repo.url-->
 
         <key.storage.path>/etc/</key.storage.path>
         <tsa/>
@@ -40,11 +44,11 @@
             <url>${eclipse-p2-repo.url}</url>
             <layout>p2</layout>
         </repository>
-        <repository>
+        <!--repository>
             <id>orbit-repo</id>
             <url>${orbit-repo.url}</url>
             <layout>p2</layout>
-        </repository>
+        </repository-->
     </repositories>
 
     <build>
