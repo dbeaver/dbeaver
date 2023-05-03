@@ -67,14 +67,13 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
                 }
                 /*
                   We want to handle time as a String for MariaDB due to it silently cutting the values
-                  after 24H, we only want this by default for Maria because MySQL5 will
+                  after 24H. We only want this by default for Maria because MySQL5 will
                   fail regardless of used method for value bigger than 24h. And MySQL8 will
-                  try to getTime() if it fails we will get value via getString()
+                  try to getTime(). If it fails, we will get value via getString()
                  */
-                if (MySQLUtils.isMariaDB(session.getDataSource().getContainer().getDriver())) {
-                    if (type.getTypeID() == Types.TIME) {
-                        return dbResults.getString(index + 1);
-                    }
+                if (MySQLUtils.isMariaDB(session.getDataSource().getContainer().getDriver())
+                    && type.getTypeID() == Types.TIME) {
+                    return dbResults.getString(index + 1);
                 }
             } catch (SQLException e) {
                 log.debug("Exception caught when fetching date/time value", e);
