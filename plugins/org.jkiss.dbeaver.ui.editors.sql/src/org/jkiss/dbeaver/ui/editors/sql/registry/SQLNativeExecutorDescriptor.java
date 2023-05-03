@@ -31,6 +31,7 @@ public class SQLNativeExecutorDescriptor extends AbstractContextDescriptor {
 
     private final ObjectType implClass;
     private final String dataSourceId;
+    private SQLEditorExecutor<? extends DBSObject> instance = null;
 
     public SQLNativeExecutorDescriptor(IConfigurationElement config) {
         super(config);
@@ -43,7 +44,10 @@ public class SQLNativeExecutorDescriptor extends AbstractContextDescriptor {
      */
     @Nullable
     public SQLEditorExecutor<? extends DBSObject> getNativeExecutor() throws DBException {
-        return implClass.createInstance(SQLEditorExecutor.class);
+        if (instance == null) {
+            instance = implClass.createInstance(SQLEditorExecutor.class);
+        }
+        return instance;
     }
 
     @NotNull
