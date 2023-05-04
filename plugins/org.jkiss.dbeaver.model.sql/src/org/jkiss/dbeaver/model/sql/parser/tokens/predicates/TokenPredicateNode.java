@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.parser.tokens.predicates;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.parser.TokenEntry;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -44,7 +45,8 @@ public abstract class TokenPredicateNode {
      */
     @NotNull
     public List<List<TokenEntry>> expand() {
-        return TokenPredicateExpander.expand(this);
+        List<List<TokenEntry>> result = TokenPredicateExpander.expand(this);
+        return result.isEmpty() ? List.of(Collections.emptyList()) : result;
     }
 
     @Override
