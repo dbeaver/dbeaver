@@ -28,11 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.sql.SQLControlCommand;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
-import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -102,6 +98,49 @@ public class SQLScriptParserGenericsTest {
             Assert.assertEquals("begin transaction", element.getText());
         }
     }
+
+    @Test
+    public void parseQueryWithCommentsBeforeBlockDeclaration() throws DBException {
+        SQLDialect hanaDialect = setDialect("sap_hana");
+        Assert.assertTrue(hanaDialect.isStripCommentsBeforeBlocks());
+        {
+            String query = "/* Issue */\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
+            SQLParserContext context = createParserContext(hanaDialect, query);
+            SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
+            Assert.assertEquals("DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
+        }
+        {
+            String query = "/* Issue */" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
+            SQLParserContext context = createParserContext(hanaDialect, query);
+            SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
+            Assert.assertEquals("DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
+        }
+        {
+            String query = "/* Issue */\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
+            SQLParserContext context = createParserContext(setDialect("oracle"), query);
+            SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
+            Assert.assertEquals("/* Issue */\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;", element.getText());
+        }
+        {
+            String query = "/* Issue */\n\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
+            SQLParserContext context = createParserContext(hanaDialect, query);
+            SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
+            Assert.assertEquals("DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
+        }
+        {
+            String query = "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
+            SQLParserContext context = createParserContext(hanaDialect, query);
+            SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
+            Assert.assertEquals("DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
+        }
+        {
+            String query = "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
+            SQLParserContext context = createParserContext(hanaDialect, query);
+            SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
+            Assert.assertEquals("DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
+        }
+    }
+
 
     @Test
     public void parseSnowflakeCreateProcedureWithIfStatements() throws DBException {

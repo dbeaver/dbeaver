@@ -420,6 +420,12 @@ public interface SQLDialect {
     String getDualTableName();
 
     /**
+     * Returns true if the comments need to be removed from the statement if
+     * they are right before the block declaration
+     */
+    boolean isStripCommentsBeforeBlocks();
+
+    /**
      * Returns true if query is definitely transactional. Otherwise returns false, however it still may be transactional.
      * You need to check query results to ensure that it is not transactional.
      */

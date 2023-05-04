@@ -956,6 +956,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
+    public boolean isStripCommentsBeforeBlocks() {
+        return false;
+    }
+
+    @Override
     public boolean hasCaseSensitiveFiltration() {
         return false;
     }
