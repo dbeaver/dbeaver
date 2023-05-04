@@ -14,18 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.clickhouse;
+package org.jkiss.dbeaver.ui.dialogs;
 
-import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.wizard.IWizard;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
-public class ClickhouseDataSourceProvider extends GenericDataSourceProvider {
+public interface IConnectionWizard extends IWizard {
+    boolean isNew();
 
-    public ClickhouseDataSourceProvider() {
-    }
+    void addPropertyChangeListener(@NotNull IPropertyChangeListener listener);
 
-    @Override
-    public long getFeatures() {
-        return FEATURE_CATALOGS | FEATURE_SCHEMAS;
-    }
-
+    void firePropertyChangeEvent(@NotNull String property, @Nullable Object oldValue, @Nullable Object newValue);
 }
