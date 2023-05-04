@@ -80,8 +80,4 @@ public class SQLiteSQLDialect extends GenericSQLDialect {
         return true;
     }
 
-    @Override
-    public boolean needsDefaultDataTypes() {
-        return false;
-    }
 }
