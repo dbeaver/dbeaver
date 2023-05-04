@@ -559,15 +559,14 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
                     parentPartition = new MySQLPartition(table, null, partitionName, dbResult);
                     partitionMap.put(partitionName, parentPartition);
                 }
-                new MySQLPartition(table, parentPartition, subPartitionName, dbResult);
-                return null;
+                return new MySQLPartition(table, parentPartition, subPartitionName, dbResult);
             }
         }
 
         @Override
         protected void invalidateObjects(DBRProgressMonitor monitor, MySQLTable owner, Iterator<MySQLPartition> objectIter)
         {
-            partitionMap = null;
+            partitionMap.clear();
         }
     }
 
