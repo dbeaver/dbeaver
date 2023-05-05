@@ -22,7 +22,7 @@ import java.util.List;
 
 
 public abstract class SelectionSource extends AbstractSyntaxNode {
-    @SyntaxNode(name = "nonjoinedTableReference")
+    @SyntaxNode(name = "explicitTableReference")
     public static class Table extends SelectionSource {
         @SyntaxTerm(xpath = "./tableName//qualifiedName/schemaName/catalogName/identifier")
         public String catalogName;
@@ -37,8 +37,8 @@ public abstract class SelectionSource extends AbstractSyntaxNode {
     }
     
     @SyntaxNode(name = "crossJoinTerm")
-    public static class CrossJoin extends SelectionSource {
-        @SyntaxSubnode(xpath = "./tableReference/nonjoinedTableReference")
+    public static class CrossJoinTable extends SelectionSource {
+        @SyntaxSubnode(xpath = "./tableReference/nonjoinedTableReference/explicitTableReference")
         public Table table;
     }
 
@@ -67,11 +67,19 @@ public abstract class SelectionSource extends AbstractSyntaxNode {
     public static class NaturalJoin extends SelectionSource {
         @SyntaxTerm(xpath = "./joinType")
         public JoinKind kind;
-        @SyntaxSubnode(xpath = "./tableReference/nonjoinedTableReference")
+        @SyntaxSubnode(xpath = "./tableReference/nonjoinedTableReference/explicitTableReference")
         public Table table;
 //        @SyntaxSubnode(xpath = "./joinSpecification/searchCondition")
 //        public ValueExpression condition;
         @SyntaxTerm(xpath = "./joinSpecification/namedColumnsJoin/joinColumnList/columnNameList/columnName/identifier/actualIdentifier")
         public List<String> columnNames;
+    }
+    
+    @SyntaxNode(name = "subqueryTableReference")
+    public static class Subquery extends SelectionSource {
+        @SyntaxSubnode(type = SelectionQuery.class, xpath = "./derivedTable/tableSubquery/subquery/queryExpression")
+        public SelectionQuery selectionQuery;
+        @SyntaxTerm(xpath = "./correlationSpecification/correlationName//actualIdentifier")
+        public String alias;
     }
 }

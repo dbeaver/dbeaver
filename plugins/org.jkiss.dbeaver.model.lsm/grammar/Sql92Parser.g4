@@ -213,7 +213,9 @@ queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
 
 // from
 fromClause: FROM tableReference ((Comma tableReference)+)?;
-nonjoinedTableReference: (tableName (correlationSpecification)?)|(derivedTable correlationSpecification);
+nonjoinedTableReference: explicitTableReference | subqueryTableReference;
+explicitTableReference: tableName (correlationSpecification)?;
+subqueryTableReference: derivedTable correlationSpecification;
 tableReference: nonjoinedTableReference|joinedTable;
 joinedTable: (nonjoinedTableReference|(LeftParen joinedTable RightParen)) (naturalJoinTerm|crossJoinTerm)+;
 correlationSpecification: (AS)? correlationName (LeftParen derivedColumnList RightParen)?;
@@ -602,14 +604,14 @@ sqlQuery: directSqlStatement|preparableStatement|module|statementOrDeclaration;
 
 
 nonReserved: ADA
-    |    C | CATALOG_NAME | CHARACTER_SET_CATALOG | CHARACTER_SET_NAME | CHARACTER_SET_SCHEMA
+    |    C_ | CATALOG_NAME | CHARACTER_SET_CATALOG | CHARACTER_SET_NAME | CHARACTER_SET_SCHEMA
     |    CLASS_ORIGIN | COBOL | COLLATION_CATALOG | COLLATION_NAME | COLLATION_SCHEMA
     |    COLUMN_NAME | COMMAND_FUNCTION | COMMITTED | CONDITION_NUMBER | CONNECTION_NAME
     |    CONSTRAINT_CATALOG | CONSTRAINT_NAME | CONSTRAINT_SCHEMA | CURSOR_NAME
     |    DATA | DATETIME_INTERVAL_CODE | DATETIME_INTERVAL_PRECISION | DYNAMIC_FUNCTION
     |    FORTRAN
     |    LENGTH
-    |    MESSAGE_LENGTH | MESSAGE_OCTET_LENGTH | MESSAGE_TEXT | MORE | MUMPS
+    |    MESSAGE_LENGTH | MESSAGE_OCTET_LENGTH | MESSAGE_TEXT | MORE_KW | MUMPS
     |    NAME | NULLABLE | NUMBER
     |    PASCAL | PLI
     |    REPEATABLE | RETURNED_LENGTH | RETURNED_OCTET_LENGTH | RETURNED_SQLSTATE | ROW_COUNT

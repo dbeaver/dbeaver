@@ -28,22 +28,10 @@ import java.util.List;
 @SyntaxNode(name = "directSelectStatementMultipleRows")
 public class SelectStatement extends AbstractSyntaxNode implements LSMSelectStatement, LSMElement {
 
-    private static final String nonJoinSimpleQuerySpecPath = "./queryExpression/nonJoinQueryTerm/queryPrimary/nonJoinQueryPrimary/simpleTable/querySpecification";
+    @SyntaxSubnode(type = SelectionQuery.class, xpath = "./queryExpression")
+    public SelectionQuery selectionQuery;
     
-    @SyntaxTerm(xpath = nonJoinSimpleQuerySpecPath + "/setQuantifier")
-    public SelectQuantifier quantifier;
-    
-    @SyntaxSubnode(type = SelectionItem.class, xpath = nonJoinSimpleQuerySpecPath + "/selectList/selectSublist")
-    public List<SelectionItem> columns;
-    
-    @SyntaxSubnode(type = SelectionSource.Table.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/fromClause/tableReference/nonjoinedTableReference")
-    @SyntaxSubnode(type = SelectionSource.Table.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/fromClause/tableReference/joinedTable/nonjoinedTableReference")
-    @SyntaxSubnode(type = SelectionSource.CrossJoin.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/fromClause/tableReference/joinedTable/crossJoinTerm")
-    @SyntaxSubnode(type = SelectionSource.NaturalJoin.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/fromClause/tableReference/joinedTable/naturalJoinTerm")
-    public List<SelectionSource> sources;
-
     @SyntaxSubnode(type = OrderingSpec.class, xpath = "./orderByClause")
     public OrderingSpec orderBy;
-    @SyntaxSubnode(type = GroupingSpec.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/groupByClause")
-    public GroupingSpec groupBy;
+    
 }
