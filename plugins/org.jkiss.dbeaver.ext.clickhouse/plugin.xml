@@ -55,12 +55,12 @@
                     defaultPort="8123"
                     icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon.png"
                     iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon_big.png"
-                    description="Yandex ClickHouse driver (server version 21.3+)"
+                    description="Official ClickHouse driver (server version 21.3+)"
                     supportedConfigurationTypes="MANUAL,URL"
-                    webURL="https://github.com/yandex/clickhouse-jdbc"
+                    webURL="https://github.com/ClickHouse/clickhouse-java"
                     categories="sql,analytic,columns"
                     singleConnection="true">
-                    <file type="jar" path="maven:/com.clickhouse:clickhouse-jdbc:RELEASE[0.4.2]" load-optional-dependencies="true" bundle="!drivers.clickhouse_com" />
+                    <file type="jar" path="maven:/com.clickhouse:clickhouse-jdbc:RELEASE[0.4.6]" load-optional-dependencies="true" bundle="!drivers.clickhouse_com" />
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.clickhouse"/>
                     <file type="jar" path="drivers/clickhouse_com" bundle="drivers.clickhouse_com"/>
                     <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.clickhouse"/>
