@@ -46,7 +46,7 @@ public class SQLGeneratorSelect extends SQLGeneratorTable {
                     continue;
                 }
                 if (hasAttr) sql.append(", ");
-                sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
+                sql.append(getEntitySeparator()).append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
                 hasAttr = true;
             }
             if (hasAttr) {
@@ -56,7 +56,7 @@ public class SQLGeneratorSelect extends SQLGeneratorTable {
         if (!hasAttr) {
             sql.append("* ");
         }
-        sql.append("FROM ").append(getEntityName(object));
+        sql.append("FROM ").append(getEntitySeparator()).append(getEntityName(object));
         sql.append(";\n");
     }
 }

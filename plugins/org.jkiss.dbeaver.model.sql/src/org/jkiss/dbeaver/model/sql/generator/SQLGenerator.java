@@ -36,6 +36,7 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
     protected List<OBJECT> objects;
     private boolean fullyQualifiedNames = true;
     private boolean compactSQL = false;
+    private boolean formatSQL = false;
     private boolean showComments = true;
     private boolean showPermissions = false;
     private boolean showFullDdl = false;
@@ -69,6 +70,14 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
 
     public void setCompactSQL(boolean compactSQL) {
         this.compactSQL = compactSQL;
+    }
+    
+    public boolean isFormatSQL() {
+        return formatSQL;
+    }
+
+    public void setFormatSQL(boolean formatSQL) {
+        this.formatSQL = formatSQL;
     }
 
     public boolean isShowComments() {
@@ -173,6 +182,14 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
 
     protected String getLineSeparator() {
         return compactSQL ? " " : "\n";
+    }
+    
+    protected String getEntitySeparator() {
+        return compactSQL ? " " : formatSQL ? " \n    " : " ";
+    }
+    
+    protected String getEntitySeparatorAdd() {
+        return compactSQL ? "" : formatSQL ? "    " : "";
     }
 
     protected String getEntityName(DBSEntity entity) {

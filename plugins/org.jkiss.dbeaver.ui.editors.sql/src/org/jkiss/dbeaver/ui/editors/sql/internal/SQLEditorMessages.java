@@ -317,6 +317,8 @@ public class SQLEditorMessages extends NLS {
     public static String sql_generator_dialog_button_show_full_DDL;
     public static String sql_generator_dialog_button_separate_fk_constraints_definition;
     public static String sql_generator_dialog_button_show_partitions_DDL;
+    public static String sql_generator_dialog_button_format_sql;
+
 
     public static String sql_generator_dialog_button_show_cast_params;
     public static String sql_generator_dialog_button_show_cast_params_tip;

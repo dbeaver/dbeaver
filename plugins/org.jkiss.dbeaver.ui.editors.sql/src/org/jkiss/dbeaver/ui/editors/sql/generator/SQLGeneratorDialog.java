@@ -74,6 +74,8 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                 getDialogBoundsSettings().getBoolean(PROP_EXCLUDE_AUTO_GENERATED_COLUMNS));
         sqlGenerator.setUseSeparateForeignKeys(getDialogBoundsSettings().get(PROP_USE_SEPARATE_FK_STATEMENTS) == null ||
                 getDialogBoundsSettings().getBoolean(PROP_USE_SEPARATE_FK_STATEMENTS));
+        sqlGenerator.setFormatSQL(getDialogBoundsSettings().get(PROP_USE_COMPACT_SQL) != null &&
+                getDialogBoundsSettings().getBoolean(PROP_USE_COMPACT_SQL));
 
         boolean supportPermissions = false;
         boolean supportComments = false;
@@ -174,6 +176,15 @@ class SQLGeneratorDialog extends ViewSQLDialog {
             public void widgetSelected(SelectionEvent e) {
                 sqlGenerator.setCompactSQL(useCompactSQL.getSelection());
                 getDialogBoundsSettings().put(PROP_USE_COMPACT_SQL, useCompactSQL.getSelection());
+                startGenerateJob();
+            }
+        });
+        Button useFormatSQL = UIUtils.createCheckbox(settings, "SQL Format", sqlGenerator.isFormatSQL());
+        useFormatSQL.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                sqlGenerator.setFormatSQL(useFormatSQL.getSelection());
+                getDialogBoundsSettings().put(PROP_USE_FORMAT_SQL, useFormatSQL.getSelection());
                 startGenerateJob();
             }
         });

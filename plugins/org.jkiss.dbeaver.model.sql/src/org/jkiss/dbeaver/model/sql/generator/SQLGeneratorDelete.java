@@ -32,19 +32,15 @@ public class SQLGeneratorDelete extends SQLGeneratorTable {
     @Override
     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
         String entityName = getEntityName(object);
-        if (object instanceof ChangeTableDataStatement) {
-            sql.append(((ChangeTableDataStatement) object).generateTableDeleteFrom(entityName));
-        } else {
-            sql.append("DELETE FROM ").append(entityName);
-        }
-        sql.append(getLineSeparator()).append("WHERE ");
+        sql.append("DELETE FROM ").append(getEntitySeparator()).append(entityName);
+        sql.append(getLineSeparator()).append("WHERE ").append(getEntitySeparator());
         Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor, object);
         if (CommonUtils.isEmpty(keyAttributes)) {
             keyAttributes = getAllAttributes(monitor, object);
         }
         boolean hasAttr = false;
         for (DBSEntityAttribute attr : keyAttributes) {
-            if (hasAttr) sql.append(" AND ");
+            if (hasAttr) sql.append(getEntitySeparator()).append(" AND ");
             sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
             appendDefaultValue(sql, attr);
             hasAttr = true;

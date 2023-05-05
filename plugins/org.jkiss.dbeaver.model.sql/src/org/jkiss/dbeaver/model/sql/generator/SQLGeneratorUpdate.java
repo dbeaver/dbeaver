@@ -37,13 +37,13 @@ public class SQLGeneratorUpdate extends SQLGeneratorTable {
         String separator = getLineSeparator();
         if (object instanceof ChangeTableDataStatement) {
             ChangeTableDataStatement tableDataStatement = (ChangeTableDataStatement) object;
-            sql.append(tableDataStatement.generateTableUpdateBegin(entityName));
+            sql.append("UPDATE").append(getEntitySeparator()).append(entityName);
             String updateSet = tableDataStatement.generateTableUpdateSet();
             if (CommonUtils.isNotEmpty(updateSet)) {
                 sql.append(separator).append(updateSet);
             }
         } else {
-            sql.append("UPDATE ").append(entityName);
+            sql.append("UPDATE ").append(getEntitySeparator()).append(entityName);
             sql.append(separator).append("SET ");
         }
         boolean hasAttr = false;
@@ -52,7 +52,7 @@ public class SQLGeneratorUpdate extends SQLGeneratorTable {
                 continue;
             }
             if (hasAttr) sql.append(", ");
-            sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
+            sql.append(getEntitySeparator()).append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
             appendDefaultValue(sql, attr);
             hasAttr = true;
         }
@@ -60,8 +60,8 @@ public class SQLGeneratorUpdate extends SQLGeneratorTable {
             sql.append(getLineSeparator()).append("WHERE ");
             hasAttr = false;
             for (DBSEntityAttribute attr : keyAttributes) {
-                if (hasAttr) sql.append(" AND ");
-                sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
+                if (hasAttr) sql.append(getEntitySeparator()).append(" AND ");
+                sql.append(getEntitySeparator()).append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
                 appendDefaultValue(sql, attr);
                 hasAttr = true;
             }
