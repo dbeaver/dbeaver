@@ -145,7 +145,8 @@ public class CustomSashForm extends SashForm {
 
         SASH_WIDTH = ARROW_HEIGHT + ARROW_MARGIN;
 
-        arrowColor = DEFAULT_BORDER_COLOR;//JFaceResources.getColorRegistry().get(IWorkbenchThemeConstants.ACTIVE_TAB_BG_END);
+        arrowColor = DEFAULT_BORDER_COLOR;
+        //JFaceResources.getColorRegistry().get(IWorkbenchThemeConstants.ACTIVE_TAB_BG_END);
     }
 
     public boolean isShowBorders() {
@@ -267,15 +268,16 @@ public class CustomSashForm extends SashForm {
         Control[] children = getChildren();
         Sash newSash = null;
         for (Control child : children) {
-            if (child instanceof Sash)
-                if (newSash == null)
+            if (child instanceof Sash) {
+                if (newSash == null) {
                     newSash = (Sash) child;
-                else {
+                } else {
                     // We have more than one sash, so need to disable current sash, if we have one.
                     if (currentSashInfo != null)
                         currentSashInfo.enabled = false;
                     return;    // Don't go on.
                 }
+            }
         }
 
         if (newSash == null)
@@ -291,8 +293,8 @@ public class CustomSashForm extends SashForm {
                 // Need to find the index of the sash we're interested in.
 
                 GC gc = e.gc;
-                Color oldFg = gc.getForeground();
-                Color oldBg = gc.getBackground();
+                final Color oldFg = gc.getForeground();
+                final Color oldBg = gc.getBackground();
 
                 boolean isTwoArrows = currentSashInfo.sashLocs.length > 1;
                 drawArrow(gc, currentSashInfo.sashLocs[0], currentSashInfo.cursorOver == 0, isTwoArrows);    // Draw first arrow
@@ -359,6 +361,8 @@ public class CustomSashForm extends SashForm {
                                 case UP_HIDE_ARROW:
                                 case DOWN_HIDE_ARROW:
                                     currentSashInfo.sash.setToolTipText(UIMessages.tooltip_hide);
+                                    break;
+                                default:
                                     break;
                             }
                         }
@@ -577,7 +581,8 @@ public class CustomSashForm extends SashForm {
         }
         getNewSashArray(currentSashInfo, addArrows, drawArrows);
 
-        //currentSashInfo.sash.redraw();    // Need to schedule a redraw because it has already drawn the old ones during the set bounds in super layout.
+        // Need to schedule a redraw (?) because it has already drawn the old ones during the set bounds in super layout.
+        //currentSashInfo.sash.redraw();
     }
 
     protected void upRestoreClicked(SashInfo sashinfo) {
@@ -777,8 +782,10 @@ public class CustomSashForm extends SashForm {
                 gc.drawLine(sashLoc[X_INDEX], sashLoc[Y_INDEX], sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX]);
 
                 //gc.setForeground(normalShadow);
-                //gc.drawLine(sashLoc[X_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX], sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX]);
-                //gc.drawLine(sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX], sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX]);
+                //gc.drawLine(sashLoc[X_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX],
+                //  sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX]);
+                //gc.drawLine(sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX],
+                //  sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX]);
             } else {
                 // Draw pushed selection box.
                 indent = 1;
@@ -789,8 +796,10 @@ public class CustomSashForm extends SashForm {
                 gc.drawLine(sashLoc[X_INDEX], sashLoc[Y_INDEX], sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX]);
 
                 //gc.setForeground(highlightShadow);
-                //gc.drawLine(sashLoc[X_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX], sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX]);
-                //gc.drawLine(sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX], sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX]);
+                //gc.drawLine(sashLoc[X_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX],
+                //  sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX]);
+                //gc.drawLine(sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX],
+                //  sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX], sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX]);
             }
         }
 
