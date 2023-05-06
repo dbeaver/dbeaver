@@ -313,11 +313,14 @@ public class CustomSashForm extends SashForm {
 
             newSash.addControlListener(new ControlListener() {
                 public void controlMoved(ControlEvent e) {
-                    //System.out.println("controlMoved");
                     recomputeSashInfo();
+                    if (currentSashInfo != null) {
+                        currentSashInfo.sash.redraw();
+                    }
                 }
                 public void controlResized(ControlEvent e) {
                     recomputeSashInfo();
+                    currentSashInfo.sash.redraw();
                 }
 
 
@@ -390,7 +393,6 @@ public class CustomSashForm extends SashForm {
             // Want to handle mouse down as a selection.
             newSash.addMouseListener(new MouseAdapter() {
                 public void mouseDown(MouseEvent e) {
-                    //System.out.println("mouseDown");
                     inMouseClick = true;
                     // If we're within a button, then redraw to wipe out stipple and get button push effect.
                     int x = e.x;
@@ -402,14 +404,13 @@ public class CustomSashForm extends SashForm {
                         int locIndex = vertical ? X_INDEX : Y_INDEX;
                         int sizeIndex = vertical ? WIDTH_INDEX : HEIGHT_INDEX;
                         if (locs[locIndex] <= loc && loc <= locs[locIndex] + locs[sizeIndex]) {
-                            //currentSashInfo.sash.redraw();
+                            currentSashInfo.sash.redraw();
                             break;
                         }
                     }
                 }
 
                 public void mouseUp(MouseEvent e) {
-                    //System.out.println("mouseUp");
                     // See if within one of the arrows.
                     inMouseClick = false;    // No longer in down click
                     int x = e.x;
@@ -444,8 +445,8 @@ public class CustomSashForm extends SashForm {
                     currentSashInfo.sash.redraw();    // Make sure stipple goes away from the mouse up if not over an arrow button.
                     fireDividerMoved();
                 }
-
             });
+
             recomputeSashInfo();    // Get initial setting
         }
     }
