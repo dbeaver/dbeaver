@@ -49,7 +49,7 @@ public class SerializerRegistry {
             // Load main nodes
             if ("serializer".equals(ext.getName())) {
                 SerializerDescriptor sd = new SerializerDescriptor(ext);
-                if (isDistributedApp && sd.isDistributed()) {
+                if (!isDistributedApp || sd.isDistributed()) {
                     serializers.put(sd.getId(), sd);
                 }
             }
