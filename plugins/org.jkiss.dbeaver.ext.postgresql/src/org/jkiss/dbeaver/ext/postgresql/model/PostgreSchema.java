@@ -437,6 +437,13 @@ public class PostgreSchema implements
     @Override
     public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException {
+        extensionCache.clearCache();
+        tableCache.clearCache();
+        constraintCache.clearCache();
+        proceduresCache.clearCache();
+        indexCache.clearCache();
+        hasStatistics = false;
+
         PostgreSchema schema = database.schemaCache.refreshObject(monitor, database, this);
         database.cacheDataTypes(monitor, true);
         return schema;
