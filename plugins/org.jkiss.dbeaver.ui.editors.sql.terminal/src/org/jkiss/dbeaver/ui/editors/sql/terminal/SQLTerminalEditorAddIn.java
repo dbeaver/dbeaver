@@ -216,7 +216,7 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
     
     private boolean getInitialConsoleViewEnabled() {
         IFile activeFile = EditorUtils.getFileFromInput(editor.getEditorInput());
-        if (activeFile != null) {
+        if (activeFile != null && activeFile.exists()) {
             try {
                 String fileValue = activeFile.getPersistentProperty(FILE_TERMINAL_VIEW_ENABLED_PROP_NAME);
                 if (fileValue != null) {

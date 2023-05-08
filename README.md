@@ -43,23 +43,9 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 * <a href="https://github.com/dbeaver/dbeaver/wiki">WIKI</a>
 * <a href="https://github.com/dbeaver/dbeaver/issues">Issue tracker</a>
 
-## Building
+## Build from sources
 
-#### Prerequisites:
-
- 1. Java (JDK) 17 or later (<a href="https://adoptium.net/" target="_blank">OpenJDK 17</a> is our default Java at the moment).
- 2. <a href="https://maven.apache.org/" target="_blank">Apache Maven 3.8.6+</a>
- 3. Internet access
- 4. Git client
-
-#### Build
-
-```sh
-git clone https://github.com/dbeaver/dbeaver.git dbeaver
-cd dbeaver
-mvn package
-```
-Binaries are in `product/community/target/products`
+<a href="https://github.com/dbeaver/dbeaver/wiki/Build-from-sources">See this article.</a>
 
 ## Notes
 
