@@ -44,12 +44,14 @@ public class SerializerRegistry {
     private SerializerRegistry(IExtensionRegistry registry) {
         // Load datasource providers from external plugins
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(SerializerDescriptor.EXTENSION_ID);
-        boolean isDistributedApp = DBWorkbench.isDistributed();
+        boolean isDistributedMultiuserApp = DBWorkbench.isDistributed() && DBWorkbench.getPlatform()
+            .getApplication()
+            .isMultiuser();
         for (IConfigurationElement ext : extElements) {
             // Load main nodes
             if ("serializer".equals(ext.getName())) {
                 SerializerDescriptor sd = new SerializerDescriptor(ext);
-                if (!isDistributedApp || sd.isDistributed()) {
+                if (!isDistributedMultiuserApp || sd.isDistributed()) {
                     serializers.put(sd.getId(), sd);
                 }
             }
