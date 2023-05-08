@@ -146,6 +146,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private StatOutputStream statStream;
     
     public StreamTransferConsumer() {
+        System.out.println();
     }
 
     protected long getBytesWritten() {
