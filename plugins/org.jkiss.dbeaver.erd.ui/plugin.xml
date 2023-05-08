@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -183,8 +183,9 @@
         </themeElementCategory>
         <fontDefinition
                 label="%fontDefinition.org.jkiss.dbeaver.erd.diagram.font.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
-                id="org.jkiss.dbeaver.erd.diagram.font">
+                categoryId="org.jkiss.dbeaver.ui.fonts"
+                id="org.jkiss.dbeaver.erd.diagram.font"
+                defaultsTo="org.jkiss.dbeaver.dbeaver.ui.fonts.main">
             <description>%fontDefinition.org.jkiss.dbeaver.erd.diagram.font.description</description>
         </fontDefinition>
         <colorDefinition
@@ -411,6 +412,11 @@
         <command id="org.jkiss.dbeaver.erd.diagram.create" name="%command.org.jkiss.dbeaver.erd.diagram.create.name" description="%command.org.jkiss.dbeaver.erd.diagram.create.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.erd.diagram.saveAs" name="%command.org.jkiss.dbeaver.erd.diagram.saveAs.name" description="%command.org.jkiss.dbeaver.erd.diagram.saveAs.description" categoryId="org.eclipse.gef3.category.view"/>
         <command id="org.jkiss.dbeaver.erd.toggleHand" name="%command.org.jkiss.dbeaver.erd.toggleHand.name" description="%command.org.jkiss.dbeaver.erd.toggleHand.description" categoryId="org.eclipse.gef3.category.view"/>
+
+        <command id="org.jkiss.dbeaver.erd.focus.diagram" name="%command.org.jkiss.dbeaver.erd.focus.diagram.name" description="%command.org.jkiss.dbeaver.erd.focus.diagram.description" categoryId="org.eclipse.gef3.category.view"/>
+        <command id="org.jkiss.dbeaver.erd.focus.palette" name="%command.org.jkiss.dbeaver.erd.focus.palette.name" description="%command.org.jkiss.dbeaver.erd.focus.palette.description" categoryId="org.eclipse.gef3.category.view"/>
+        <command id="org.jkiss.dbeaver.erd.focus.outline" name="%command.org.jkiss.dbeaver.erd.focus.outline.name" description="%command.org.jkiss.dbeaver.erd.focus.outline.description" categoryId="org.eclipse.gef3.category.view"/>
+        <command id="org.jkiss.dbeaver.erd.focus.parameter" name="%command.org.jkiss.dbeaver.erd.focus.parameters.name" description="%command.org.jkiss.dbeaver.erd.focus.parameters.description" categoryId="org.eclipse.gef3.category.view"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -421,7 +427,12 @@
     </extension>
 
     <extension point="org.eclipse.ui.bindings">
+        <key commandId="org.jkiss.dbeaver.erd.focus.diagram" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+1"/>
+        <key commandId="org.jkiss.dbeaver.erd.focus.palette" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+2"/>
+        <key commandId="org.jkiss.dbeaver.erd.focus.outline" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+3"/>
+        <key commandId="org.jkiss.dbeaver.erd.focus.parameter" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+4"/>
         <key commandId="org.jkiss.dbeaver.erd.toggleHand" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="TAB"/>
+        <key commandId="org.jkiss.dbeaver.erd.diagram.view" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ENTER"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -441,10 +452,17 @@
         <handler commandId="org.jkiss.dbeaver.erd.diagram.create" class="org.jkiss.dbeaver.erd.ui.navigator.CreateDiagramHandler">
             <enabledWhen>
                 <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
+                    <and>
+                        <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
+                        <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                    </and>
                 </with>
             </enabledWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.erd.focus.diagram" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerFocus"/>
+        <handler commandId="org.jkiss.dbeaver.erd.focus.palette" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerFocus"/>
+        <handler commandId="org.jkiss.dbeaver.erd.focus.outline" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerFocus"/>
+        <handler commandId="org.jkiss.dbeaver.erd.focus.parameter" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerFocus"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -462,7 +480,10 @@
                         <count value="1"/>
                         <iterate operator="and">
                             <adapt type="org.eclipse.core.resources.IFolder">
-                                <test property="org.jkiss.dbeaver.core.resource.type" value="diagram folder"/>
+                                <and>
+                                    <test property="org.jkiss.dbeaver.core.resource.type" value="diagram folder"/>
+                                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                                </and>
                             </adapt>
                         </iterate>
                     </with>
@@ -489,7 +510,10 @@
                     <with variable="selection">
                         <count value="+"/>
                         <iterate operator="and">
-                            <adapt type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
+                            <and>
+                                <adapt type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
+                                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                            </and>
                         </iterate>
                     </with>
                 </visibleWhen>

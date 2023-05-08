@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -94,7 +93,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
     public boolean isReadOnly()
     {
         DBPProject project = this.getDiagramProject();
-        return project == null || !project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
+        return project != null && !project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
     }
 
     @Override

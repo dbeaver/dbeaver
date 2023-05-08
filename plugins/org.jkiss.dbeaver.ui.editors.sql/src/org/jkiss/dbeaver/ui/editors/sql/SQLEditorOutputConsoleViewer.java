@@ -29,6 +29,7 @@ import org.eclipse.ui.console.TextConsoleViewer;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
@@ -119,7 +120,7 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
 
     public void refreshStyles() {
         ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-        Font outputFont = currentTheme.getFontRegistry().get(SQLConstants.CONFIG_FONT_OUTPUT);
+        Font outputFont = currentTheme.getFontRegistry().get(UIFonts.DBEAVER_FONTS_MONOSPACE);
         if (outputFont != null) {
             getTextWidget().setFont(outputFont);
         }

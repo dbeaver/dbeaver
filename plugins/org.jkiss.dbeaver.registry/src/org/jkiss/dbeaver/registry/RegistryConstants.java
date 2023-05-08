@@ -45,6 +45,7 @@ public class RegistryConstants {
     public static final String TAG_DATASOURCE = "datasource"; //$NON-NLS-1$
     public static final String TAG_DATASOURCE_PATCH = "datasourcePatch"; //$NON-NLS-1$
     public static final String TAG_DATASOURCE_ORIGIN = "datasourceOrigin"; //$NON-NLS-1$
+    public static final String TAG_DRIVER_SUBSTITUTION = "driverSubstitution"; //$NON-NLS-1$
     public static final String TAG_OS = "os"; //NON-NLS-1
 
     public static final String ATTR_ID = "id"; //$NON-NLS-1$
@@ -190,6 +191,7 @@ public class RegistryConstants {
     public static final String ATTR_DATABASE = "database"; //$NON-NLS-1$
     public static final String ATTR_USER = "user"; //$NON-NLS-1$
     public static final String ATTR_PASSWORD = "password"; //$NON-NLS-1$
+    public static final String ATTR_EMPTY_DATABASE_CREDENTIALS = "empty-credentials"; //$NON-NLS-1$
     public static final String ATTR_NATIVE_AUTH = "native-auth"; //$NON-NLS-1$
     public static final String ATTR_HOME = "home"; //$NON-NLS-1$
     public static final String ATTR_SHOW_PANEL = "show-panel"; //$NON-NLS-1$

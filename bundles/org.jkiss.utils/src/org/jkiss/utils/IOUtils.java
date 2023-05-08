@@ -378,6 +378,11 @@ public final class IOUtils {
     @Nullable
     public static String getFileExtension(Path file) {
         String fileName = file.getFileName().toString();
+        return getFileExtension(fileName);
+    }
+
+    @Nullable
+    public static String getFileExtension(String fileName) {
         int divPos = fileName.lastIndexOf('.');
         if (divPos != -1) {
             return fileName.substring(divPos + 1);

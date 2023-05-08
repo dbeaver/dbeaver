@@ -51,21 +51,19 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
     private static final Log log = Log.getLog(JDBCComposite.class);
 
     @Nullable
-    private Struct rawStruct;
+    private final Struct rawStruct;
 
     protected DBSDataType type;
     protected DBSEntityAttribute[] attributes;
     protected Object[] values;
     protected boolean modified;
 
-    protected JDBCComposite() {
-    }
-
-    public JDBCComposite(Struct rawStruct) {
+    public JDBCComposite(@Nullable Struct rawStruct) {
         this.rawStruct = rawStruct;
     }
 
     protected JDBCComposite(@NotNull DBRProgressMonitor monitor, @NotNull JDBCComposite struct) throws DBCException {
+        this(struct.rawStruct);
         this.type = struct.type;
         this.attributes = Arrays.copyOf(struct.attributes, struct.attributes.length);
         this.values = new Object[struct.values.length];
@@ -79,17 +77,15 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
     }
 
     @Override
-    public boolean isNull()
-    {
-        if (ArrayUtils.isEmpty(values)) {
-            return true;
-        }
-        for (Object value : values) {
-            if (!DBUtils.isNullValue(value)) {
-                return false;
+    public boolean isNull() {
+        if (!ArrayUtils.isEmpty(values)) {
+            for (Object value : values) {
+                if (!DBUtils.isNullValue(value)) {
+                    return false;
+                }
             }
         }
-        return true;
+        return rawStruct == null;
     }
 
     @Override

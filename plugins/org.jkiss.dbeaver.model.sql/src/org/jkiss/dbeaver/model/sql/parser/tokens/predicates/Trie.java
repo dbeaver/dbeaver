@@ -141,7 +141,7 @@ public class Trie<T, V> {
 
         @Nullable
         private ListNode<TrieNode<T, V>> accumulateNonComparableSubnodes(@NotNull T term, @NotNull ListNode<TrieNode<T, V>> results) {
-            TrieLookupComparator comparer = Trie.this.lookupPartialComparer;
+            TrieLookupComparator<T> comparer = Trie.this.lookupPartialComparer;
             ListNode<TrieNode<T, V>> accumulatedResults = results;
             for (int i = 0; i < this.childKeys.size(); i++) {
                 if (comparer.match(this.childKeys.get(i), term)) {
@@ -153,7 +153,7 @@ public class Trie<T, V> {
 
         @NotNull
         private ListNode<TrieNode<T, V>> accumulatePartiallyComparableSubnodes(@NotNull T term, @NotNull ListNode<TrieNode<T, V>> results) {
-            TrieLookupComparator comparer = Trie.this.lookupPartialComparer;
+            TrieLookupComparator<T> comparer = Trie.this.lookupPartialComparer;
             ListNode<TrieNode<T, V>> accumulatedResults = results;
             int index = Collections.binarySearch(this.childKeys, term, comparer);
             if (index >= 0) {

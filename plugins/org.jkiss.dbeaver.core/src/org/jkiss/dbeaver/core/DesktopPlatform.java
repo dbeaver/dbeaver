@@ -171,6 +171,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
             DBeaverActivator.getInstance().getStateLocation().toFile().toPath().resolve("security"));
 
         // Create workspace
+        getApplication().beforeWorkspaceInitialization();
         this.workspace = (DesktopWorkspaceImpl) getApplication().createWorkspace(this, ResourcesPlugin.getWorkspace());
         // Init workspace in UI because it may need some UI interactions to initialize
         this.workspace.initializeProjects();
@@ -236,6 +237,12 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         DesktopPlatform.disposed = true;
         System.gc();
         log.debug("Platform shutdown completed (" + (System.currentTimeMillis() - startTime) + "ms)");
+        // Just in case do System.eis after pause
+        new Thread(() -> {
+            RuntimeUtils.pause(10000);
+            System.out.println("App shutdown was halted. Force system shutdown!");
+            System.exit(-2);
+        }).start();
     }
 
     @Override

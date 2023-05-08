@@ -88,7 +88,7 @@ public final class DBRFeature {
     }
 
     public String getId() {
-        return id;
+        return id == null ? name : id;
     }
 
     void setId(String id) {

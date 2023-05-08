@@ -137,9 +137,7 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                         }
                     }
                 );
-                editProfileButton.setEnabled(
-                    DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PUBLIC)
-                );
+                editProfileButton.setEnabled(true);
 
                 reloadFormatProfiles();
 

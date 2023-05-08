@@ -429,6 +429,22 @@ public class DesktopUI implements DBPPlatformUI {
     }
 
     @Override
+    public String promptProperty(String prompt, String defValue) {
+        return new UITask<String>() {
+            @Override
+            public String runTask() {
+                final Shell shell = UIUtils.getActiveWorkbenchShell();
+                final EnterNameDialog dialog = new EnterNameDialog(shell, prompt, defValue);
+                if (dialog.open() == IDialogConstants.OK_ID) {
+                    return dialog.getResult();
+                } else {
+                    return null;
+                }
+            }
+        }.execute();
+    }
+
+    @Override
     public DBNNode selectObject(@NotNull Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes) {
         DBNNode[] result = new DBNNode[1];
         UIUtils.syncExec(() -> {
@@ -555,14 +571,22 @@ public class DesktopUI implements DBPPlatformUI {
                     }
                 };
 
-                for (Shell shell : display.getShells()) {
-                    shell.setEnabled(false);
+                IWorkbench workbench = PlatformUI.isWorkbenchRunning() ? PlatformUI.getWorkbench() : null;
+                boolean workbenchInitializing = workbench == null || workbench.isStarting() || workbench.isClosing();
+
+                Shell[] shells = display.getShells();
+                if (!workbenchInitializing) {
+                    for (Shell shell : shells) {
+                        shell.setEnabled(false);
+                    }
                 }
                 try {
                     BusyIndicator.showWhile(display, modalShortWait);
                 } finally {
-                    for (Shell shell : display.getShells()) {
-                        shell.setEnabled(true);
+                    if (!workbenchInitializing) {
+                        for (Shell shell : display.getShells()) {
+                            shell.setEnabled(true);
+                        }
                     }
                 }
                 

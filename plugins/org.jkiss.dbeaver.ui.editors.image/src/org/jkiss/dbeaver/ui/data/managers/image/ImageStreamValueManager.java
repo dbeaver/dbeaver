@@ -97,7 +97,7 @@ public class ImageStreamValueManager implements IStreamValueManager {
                 }
                 catch (Exception e) {
                     // this is not an image
-                    log.debug("Can't detect image type: " + e.getMessage());
+                    //log.debug("Can't detect image type: " + e.getMessage());
                 }
             }
         }

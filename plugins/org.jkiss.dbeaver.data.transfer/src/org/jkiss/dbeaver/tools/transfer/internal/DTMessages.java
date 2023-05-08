@@ -69,6 +69,7 @@ public class DTMessages extends NLS {
 	public static String data_transfer_wizard_output_event_processor_error_incomplete_configuration;
 	public static String data_transfer_wizard_output_name;
 	public static String data_transfer_wizard_output_title;
+	public static String data_transfer_wizard_output_export_to_external_storage_link;
 	public static String data_transfer_wizard_settings_binaries_item_inline;
 	public static String data_transfer_wizard_settings_binaries_item_save_to_file;
 	public static String data_transfer_wizard_settings_binaries_item_set_to_null;

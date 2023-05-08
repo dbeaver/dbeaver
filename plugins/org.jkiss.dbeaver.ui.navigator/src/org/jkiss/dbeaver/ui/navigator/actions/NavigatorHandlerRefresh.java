@@ -143,7 +143,9 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                             if (((IRefreshablePart) editorPart).refreshPart(source, true) == IRefreshablePart.RefreshResult.CANCELED) {
                                 return RefreshStatus.completed();
                             }
-                            iter.remove();
+                            if (nextNode == editorNode) {
+                                iter.remove();
+                            }
                         }
                     }
                 }
@@ -199,6 +201,10 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                         DBNNode refreshed = node.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
                         if (refreshed != null) {
                             refreshedSet.add(refreshed);
+                            Throwable lastLoadError = refreshed.getLastLoadError();
+                            if (lastLoadError != null) {
+                                throw lastLoadError;
+                            }
                         }
                     }
                     catch (Throwable ex) {

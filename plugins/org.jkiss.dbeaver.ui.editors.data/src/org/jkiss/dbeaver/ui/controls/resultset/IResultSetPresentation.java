@@ -135,6 +135,15 @@ public interface IResultSetPresentation {
 
     void printResultSet();
 
+    /**
+     * Retrieves font identifier to increase or decrease its size as the user zooms in/out on the presentation.
+     *
+     * @return identifier of the font
+     * @see org.eclipse.jface.resource.FontRegistry
+     */
+    @NotNull
+    String getFontId();
+
     void dispose();
 
 }

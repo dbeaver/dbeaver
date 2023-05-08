@@ -61,7 +61,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
-import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -504,6 +503,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             }
             case CMD_FILTER_CLEAR_SETTING: {
                 rsv.clearDataFilter(true);
+                break;
             }
             case CMD_REFERENCES_MENU: {
                 boolean shiftPressed = event.getTrigger() instanceof Event && ((((Event) event.getTrigger()).stateMask & SWT.SHIFT) == SWT.SHIFT);
@@ -541,13 +541,13 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             case CMD_ZOOM_IN:
             case CMD_ZOOM_OUT: {
                 FontRegistry fontRegistry= rsv.getSite().getWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getFontRegistry();
-                Font font = fontRegistry.get(ThemeConstants.FONT_SQL_RESULT_SET);
+                Font font = fontRegistry.get(presentation.getFontId());
                 if (font != null) {
                     FontData[] fondData= font.getFontData();
                     if (fondData != null) {
                         int zoomFactor = actionId.equals(CMD_ZOOM_IN) ? 1 : -1;
                         FontDescriptor fd = createFontDescriptor(fondData, zoomFactor);
-                        fontRegistry.put(ThemeConstants.FONT_SQL_RESULT_SET, fd.getFontData());
+                        fontRegistry.put(presentation.getFontId(), fd.getFontData());
                     }
                 }
 

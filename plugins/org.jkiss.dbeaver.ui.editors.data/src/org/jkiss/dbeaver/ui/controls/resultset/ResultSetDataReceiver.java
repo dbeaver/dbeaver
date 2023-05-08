@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -29,7 +30,6 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.code.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -187,7 +187,7 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
         hasMoreData = maxRows > 0 && tmpRows.size() >= maxRows;
         monitor.done();
 
-        UIUtils.asyncExec(() -> {
+        UIUtils.syncExec(() -> {
             // Push data into viewer
             if (!nextSegmentRead) {
                 boolean metadataChanged = resultSetViewer.getModel().isMetadataChanged();

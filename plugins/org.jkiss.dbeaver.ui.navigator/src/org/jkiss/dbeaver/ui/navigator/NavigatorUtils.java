@@ -675,6 +675,9 @@ public class NavigatorUtils {
             if (extFile.exists()) {
                 monitor.subTask("Copy file " + extFile.getName());
                 try {
+                    if (!toFolder.exists()) {
+                        toFolder.create(true, true, monitor.getNestedMonitor());
+                    }
                     IFile targetFile = toFolder.getFile(extFile.getName());
                     if (targetFile.exists()) {
                         if (!UIUtils.confirmAction("File exists", "File '" + targetFile.getName() + "' exists. Do you want to overwrite it?")) {

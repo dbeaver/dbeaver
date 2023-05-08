@@ -151,7 +151,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
     protected final void deactivateEditor()
     {
         // Deactivate the nested services from the last active service locator.
-        if (activePageIndex >= 0) {
+        if (activePageIndex >= 0 && getEditorCount() > activePageIndex) {
             final IWorkbenchPart part = getEditor(activePageIndex);
             if (part instanceof IActiveWorkbenchPart) {
                 ((IActiveWorkbenchPart) part).deactivatePart();
@@ -187,6 +187,10 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
             }
         }
         return null;
+    }
+
+    protected int getEditorCount() {
+        return ((CTabFolder) getContainer()).getItemCount();
     }
 
     protected Control createTopRightControl(Composite composite) {

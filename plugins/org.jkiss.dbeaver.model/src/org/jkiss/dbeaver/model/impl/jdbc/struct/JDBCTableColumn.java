@@ -181,7 +181,9 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         boolean formatValues,
         boolean caseInsensitiveSearch) throws DBException
     {
+        final SQLDialect dialect = getDataSource().getSQLDialect();
         final String identifier = DBUtils.getQuotedIdentifier(this, DBPAttributeReferencePurpose.DATA_SELECTION);
+        final String castedIdentifier = dialect.getCastedAttributeName(this, identifier);
         DBDValueHandler valueHandler = DBUtils.findValueHandler(session, this);
         StringBuilder query = new StringBuilder();
         query.append("SELECT ");
@@ -201,17 +203,16 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         if (valuePattern instanceof String) {
             query.append("\nWHERE ");
             if (getDataKind() == DBPDataKind.STRING) {
-                final SQLDialect dialect = getDataSource().getSQLDialect();
                 final SQLExpressionFormatter caseInsensitiveFormatter = caseInsensitiveSearch
                     ? dialect.getCaseInsensitiveExpressionFormatter(DBCLogicalOperator.LIKE)
                     : null;
                 if (caseInsensitiveSearch && caseInsensitiveFormatter != null) {
-                    query.append(caseInsensitiveFormatter.format(identifier, "?"));
+                    query.append(caseInsensitiveFormatter.format(castedIdentifier, "?"));
                 } else {
-                    query.append(identifier).append(" LIKE ?");
+                    query.append(castedIdentifier).append(" LIKE ?");
                 }
             } else {
-                query.append(identifier).append(" = ?");
+                query.append(castedIdentifier).append(" = ?");
             }
         }
         if (calcCount) {

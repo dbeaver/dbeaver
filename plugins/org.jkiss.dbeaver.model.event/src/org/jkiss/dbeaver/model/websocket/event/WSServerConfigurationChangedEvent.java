@@ -18,12 +18,12 @@ package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.Nullable;
 
-public class WSServerConfigurationChangedEvent extends WSEvent {
+public class WSServerConfigurationChangedEvent extends WSAbstractEvent {
     public WSServerConfigurationChangedEvent() {
         super(WSEventType.SERVER_CONFIG_CHANGED);
     }
 
-    public WSServerConfigurationChangedEvent(@Nullable String sessionId) {
-        super(WSEventType.SERVER_CONFIG_CHANGED, sessionId);
+    public WSServerConfigurationChangedEvent(@Nullable String sessionId, @Nullable String userId) {
+        super(WSEventType.SERVER_CONFIG_CHANGED, sessionId, userId);
     }
 }

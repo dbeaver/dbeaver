@@ -91,6 +91,7 @@ public class SQLEditorMessages extends NLS {
     public static String action_result_tabs_pin_tab;
     public static String action_result_tabs_unpin_tab;
     public static String action_result_tabs_unpin_all_tabs;
+    public static String action_result_tabs_detach_tab;
     public static String action_result_tabs_set_name;
     public static String action_result_tabs_set_name_title;
     public static String action_result_tabs_assign_variable;
@@ -230,6 +231,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_group_misc;
     public static String pref_page_sql_completion_label_folding_enabled;
     public static String pref_page_sql_completion_label_folding_enabled_tip;
+    public static String pref_page_sql_completion_label_smart_word_iterator;
+    public static String pref_page_sql_completion_label_smart_word_iterator_tip;
     public static String pref_page_sql_completion_label_problem_markers_enabled;
     public static String pref_page_sql_completion_label_problem_markers_enabled_tip;
     public static String pref_page_sql_completion_label_mark_occurrences;
@@ -314,6 +317,9 @@ public class SQLEditorMessages extends NLS {
     public static String sql_generator_dialog_button_show_full_DDL;
     public static String sql_generator_dialog_button_separate_fk_constraints_definition;
     public static String sql_generator_dialog_button_show_partitions_DDL;
+
+    public static String sql_generator_dialog_button_show_cast_params;
+    public static String sql_generator_dialog_button_show_cast_params_tip;
     public static String action_result_tabs_delete_variables_question;
     public static String script_selector_create_script;
     public static String script_selector_project_scripts;

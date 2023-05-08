@@ -19,17 +19,15 @@ package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.qm.filters.QMCursorFilter;
 
 /**
  * Query manager history
  */
 public interface QMEventBrowser {
 
-    QMEventCursor getQueryHistoryCursor(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull QMEventCriteria criteria, QMEventFilter filter)
+    @NotNull
+    QMEventCursor getQueryHistoryCursor(@NotNull QMCursorFilter cursorFilter)
         throws DBException;
 
 }

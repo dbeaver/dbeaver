@@ -58,9 +58,17 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
     }
 
     public DBDAttributeConstraint(@NotNull String attributeName, int originalVisualPosition) {
+        this(attributeName, attributeName, originalVisualPosition);
+    }
+
+    public DBDAttributeConstraint(
+        @NotNull String attributeName,
+        @NotNull String attributeLabel,
+        int originalVisualPosition
+    ) {
         this.attribute = null;
         this.attributeName = attributeName;
-        this.attributeLabel = attributeName;
+        this.attributeLabel = attributeLabel;
         this.originalVisualPosition = originalVisualPosition;
     }
 

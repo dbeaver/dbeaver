@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetEditor;
@@ -39,6 +40,7 @@ public class ResultSetPropertyTester extends PropertyTester
     public static final String PROP_HAS_DATA = "hasData";
     public static final String PROP_HAS_MORE_DATA = "hasMoreData";
     public static final String PROP_HAS_FILTERS = "hasfilters";
+    public static final String PROP_CAN_SAVE_FILTERS = "canSaveFilters";
     public static final String PROP_CAN_COPY = "canCopy";
     public static final String PROP_CAN_PASTE = "canPaste";
     public static final String PROP_CAN_CUT = "canCut";
@@ -81,9 +83,12 @@ public class ResultSetPropertyTester extends PropertyTester
                 return rsv.isHasMoreData();
             case PROP_HAS_FILTERS:
                 return rsv.getModel().getDataFilter().hasFilters();
+            case PROP_CAN_SAVE_FILTERS:
+                return rsv.getDataContainer() instanceof DBSEntity;
             case PROP_CAN_COPY:
                 return !actionsDisabled && rsv.getModel().hasData();
             case PROP_CAN_PASTE:
+                return !actionsDisabled && rsv.supportsEdit();
             case PROP_CAN_CUT: {
                 if (actionsDisabled || !rsv.supportsEdit()) {
                     return false;

@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@
                 <property id="minFractionDigits" label="%DateFormatter.number.general.minFractDigits.label" type="integer" description="%DateFormatter.number.general.minFractDigits.description"/>
                 <property id="useTypeScale" label="%DateFormatter.number.general.useTypeScale.label" type="boolean" description="%DateFormatter.number.general.useTypeScale.description"/>
                 <property id="roundingMode" label="%DateFormatter.number.general.roundingMode.label" type="string" description="%DateFormatter.number.general.roundingMode.description" validValues="UP,DOWN,CEILING,FLOOR,HALF_UP,HALF_DOWN,HALF_EVEN,UNNECESSARY"/>
+                <property id="nativeSpecialValues" label="%DateFormatter.number.general.nativeSpecialValues.label" type="boolean" description="%DateFormatter.number.general.nativeSpecialValues.description"/>
             </propertyGroup>
         </formatter>
         <formatter id="timestamp" label="%DateFormatter.timestamp.label" class="org.jkiss.dbeaver.model.impl.data.formatters.DateTimeDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.formatters.TimestampFormatSample">
@@ -181,7 +182,7 @@
                 custom="true">
             <type kind="NUMERIC"/>
             <propertyGroup label="Properties">
-                <property id="unit" label="Unit" type="string" description="%EpochTimeTransformer.property.unit.description" defaultValue="milliseconds" required="true" validValues="seconds,milliseconds,nanoseconds,dotnet,w32filetime,oadate,sqliteJulian"/>
+                <property id="unit" label="Unit" type="string" description="%EpochTimeTransformer.property.unit.description" defaultValue="milliseconds" required="true" validValues="seconds,milliseconds,microseconds,nanoseconds,dotnet,w32filetime,oadate,sqliteJulian"/>
                 <property id="zoneId" label="Timezone ID" type="string" description="%EpochTimeTransformer.property.timezoneID.description"/>
             </propertyGroup>
         </transformer>

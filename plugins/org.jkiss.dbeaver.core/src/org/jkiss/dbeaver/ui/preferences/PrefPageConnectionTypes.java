@@ -36,8 +36,10 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -48,7 +50,6 @@ import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionPermissionsDialog;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
-import java.util.List;
 import java.util.*;
 
 /**
@@ -383,7 +384,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         typeId.setEnabled(false);
 
         DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
-        List<DBPConnectionType> toRemove = new ArrayList<>();
+        Set<DBPConnectionType> toRemove = new HashSet<>();
         for (DBPConnectionType type : registry.getConnectionTypes()) {
             if (!changedInfo.values().contains(type)) {
                 // Remove
@@ -433,18 +434,28 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             }
         }
 
+        Set<DBPDataSourceRegistry> affectedDataSourceRegs = new HashSet<>();
         if (!changedSet.isEmpty()) {
             registry.saveConnectionTypes();
             // Flush projects configs (as they cache connection type information)
             for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
                 DBPDataSourceRegistry projectRegistry = project.getDataSourceRegistry();
                 for (DBPDataSourceContainer ds : projectRegistry.getDataSources()) {
-                    if (changedSet.contains(ds.getConnectionConfiguration().getConnectionType())) {
+                    DBPConnectionConfiguration cnnCfg = ds.getConnectionConfiguration();
+                    DBPConnectionType cnnType = cnnCfg.getConnectionType();
+                    if (changedSet.contains(cnnType)) {
+                        if (toRemove.contains(cnnType)) {
+                            cnnCfg.setConnectionType(DBPConnectionType.DEFAULT_TYPE);
+                        }
                         projectRegistry.flushConfig();
+                        affectedDataSourceRegs.add(projectRegistry);
                         break;
                     }
                 }
             }
+        }
+        for (DBPDataSourceRegistry dsReg : affectedDataSourceRegs) {
+            dsReg.notifyDataSourceListeners(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, null, dsReg));
         }
         return super.performOk();
     }

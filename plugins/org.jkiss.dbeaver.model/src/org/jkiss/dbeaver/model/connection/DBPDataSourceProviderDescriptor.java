@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.connection;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeDescriptor;
@@ -48,9 +49,15 @@ public interface DBPDataSourceProviderDescriptor extends DBPNamedObject {
 
     boolean isTemporary();
 
+    @Nullable
+    DBPDriver getDriver(@NotNull String id);
+
     List<? extends DBPDriver> getDrivers();
 
     DBPDataSourceProviderDescriptor getParentProvider();
+
+    @NotNull
+    List<DBPDataSourceProviderDescriptor> getChildrenProviders();
 
     // Returns true if this provider or one of parent providers has specified ID
     boolean matchesId(String id);

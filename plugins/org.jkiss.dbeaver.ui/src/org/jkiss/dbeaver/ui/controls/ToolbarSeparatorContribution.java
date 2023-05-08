@@ -28,6 +28,19 @@ import org.jkiss.dbeaver.ui.UIIcon;
  * ToolbarSeparatorContribution
  */
 public class ToolbarSeparatorContribution extends WorkbenchWindowControlContribution {
+    
+    public static class Horizontal extends ToolbarSeparatorContribution {
+        public Horizontal() {
+            super(false);
+        }
+    }
+    
+    public static class Vertical extends ToolbarSeparatorContribution {
+        public Vertical() {
+            super(true);
+        }
+    }
+    
     private boolean vertical;
 
     public ToolbarSeparatorContribution(boolean vertical)

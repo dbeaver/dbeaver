@@ -41,10 +41,10 @@ class ClickhouseDataTypeCache extends GenericDataTypeCache {
             genericDataTypes.add(new GenericDataType(owner, Types.NUMERIC, "Int256", "Int256", false, false, 0, 0, 0));
         }
         if (DBUtils.findObject(genericDataTypes, "UInt128") == null) {
-            genericDataTypes.add(new GenericDataType(owner, Types.NUMERIC, "Int128", "Int128", false, false, 0, 0, 0));
+            genericDataTypes.add(new GenericDataType(owner, Types.NUMERIC, "UInt128", "UInt128", false, false, 0, 0, 0));
         }
         if (DBUtils.findObject(genericDataTypes, "UInt256") == null) {
-            genericDataTypes.add(new GenericDataType(owner, Types.NUMERIC, "Int256", "Int256", false, false, 0, 0, 0));
+            genericDataTypes.add(new GenericDataType(owner, Types.NUMERIC, "UInt256", "UInt256", false, false, 0, 0, 0));
         }
         if (DBUtils.findObject(genericDataTypes, "Decimal") == null) {
             genericDataTypes.add(new GenericDataType(owner, Types.DECIMAL, "Decimal", "Decimal", false, false, 0, 0, 0));

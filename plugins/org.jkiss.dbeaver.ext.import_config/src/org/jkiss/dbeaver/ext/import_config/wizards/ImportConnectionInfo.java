@@ -40,6 +40,20 @@ public class ImportConnectionInfo {
     private Map<String, String> properties = new HashMap<>();
     private Map<String, String> providerProperties = new HashMap<>();
     private boolean checked = false;
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("alias:").append(alias);
+        if (url != null) {
+            sb.append(" url:").append(url);
+        } else {
+            sb.append(" host:").append(host);
+            sb.append(" port:").append(port);
+            sb.append(" database:").append(database);
+        }
+        return sb.toString();
+    }
 
     public ImportConnectionInfo(ImportDriverInfo driverInfo, String id, String alias, String url, String host, String port, String database, String user, String password)
     {

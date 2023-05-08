@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -194,7 +195,7 @@ public class HexEditControl extends Composite {
         this.colorCaretLine = currentTheme.getColorRegistry().get("org.jkiss.dbeaver.hex.editor.color.caret");
         this.colorText = currentTheme.getColorRegistry().get("org.jkiss.dbeaver.hex.editor.color.text");
         this.colorHighlightText = UIUtils.getSharedColor(UIUtils.blend(this.colorText.getRGB(), this.colorCaretLine.getRGB(), 50));
-        this.fontDefault = currentTheme.getFontRegistry().get("org.jkiss.dbeaver.hex.editor.font.output");
+        this.fontDefault = currentTheme.getFontRegistry().get(UIFonts.DBEAVER_FONTS_MONOSPACE);
     }
 
     /**

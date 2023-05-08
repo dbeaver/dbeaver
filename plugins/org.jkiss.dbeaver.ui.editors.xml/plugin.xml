@@ -27,16 +27,6 @@
             <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.xml.description</description>
         </themeElementCategory>
 
-        <fontDefinition
-                id="org.jkiss.dbeaver.ui.editors.xml.font.output"
-                categoryId="org.jkiss.dbeaver.ui.presentation.xml"
-                label="%fontDefinition.org.jkiss.dbeaver.ui.editors.xml.font.label"
-                value="Courier New-regular-10">
-            <description>%fontDefinition.org.jkiss.dbeaver.xml.editor.font.description</description>
-            <fontValue os="linux" value="Monospace-regular-10"/>
-            <fontValue os="macosx" value="Courier-regular-11"/>
-        </fontDefinition>
-
         <colorDefinition
                 label="%colorDefinition.org.jkiss.dbeaver.xml.editor.color.tag.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.xml"

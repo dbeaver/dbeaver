@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.net.ssh;
 
+import com.jcraft.jsch.Identity;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.connection.channel.direct.Parameters;
@@ -122,8 +123,8 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
                         break;
                     case AGENT: {
                         final List<AuthMethod> methods = new ArrayList<>();
-                        for (SSHAgentIdentity identity : getAgentData()) {
-                            methods.add(new DBeaverAuthAgent(this, identity));
+                        for (Object identity : agentIdentityRepository.getIdentities()) {
+                            methods.add(new DBeaverAuthAgent((Identity) identity));
                         }
                         client.auth(host.getUsername(), methods);
                         break;
@@ -266,8 +267,10 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
         if (ArrayUtils.isEmpty(clients)) {
             throw new DBException("No active session available");
         }
+        SFTPClient sftpClient = clients[clients.length - 1].newSFTPClient();
+        sftpClient.getFileTransfer().setPreserveAttributes(false);
+        return sftpClient;
 
-        return clients[clients.length - 1].newSFTPClient();
     }
 
     private int setPortForwarding(@NotNull SSHClient client, String host, int port) throws IOException {

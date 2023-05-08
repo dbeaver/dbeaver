@@ -44,11 +44,11 @@ public class QMEventCriteria {
     @Nullable
     private Long lastEventId;
     @NotNull
-    private Set<String> users = Collections.emptySet();
-    @NotNull
     private Set<String> driverIds = Collections.emptySet();
     @NotNull
     private Set<QMEventStatus> eventStatuses = Collections.emptySet();
+    @NotNull
+    private Set<String> projectNames = Collections.emptySet();
     @NotNull
     private QMSortField sortField = QMSortField.DATE;
     @Nullable
@@ -56,6 +56,7 @@ public class QMEventCriteria {
     private boolean desc = true;
     private int fetchingSize = 200;
 
+    @Nullable
     public String getContainerId() {
         return containerId;
     }
@@ -64,6 +65,7 @@ public class QMEventCriteria {
         this.containerId = containerId;
     }
 
+    @Nullable
     public String getSessionId() {
         return sessionId;
     }
@@ -106,6 +108,7 @@ public class QMEventCriteria {
         return queryTypes.length > 0 && ArrayUtils.contains(queryTypes, type);
     }
 
+    @Nullable
     public String getSearchString() {
         return searchString;
     }
@@ -130,18 +133,8 @@ public class QMEventCriteria {
         this.skipEmptyQueries = skipEmptyQueries;
     }
 
-    public void setUsers(@NotNull Set<String> users) {
-        this.users = users;
-    }
 
-    public Set<String> getUsers() {
-        return users;
-    }
-
-    public boolean hasUsers() {
-        return !users.isEmpty();
-    }
-
+    @NotNull
     public Set<String> getDriverIds() {
         return driverIds;
     }
@@ -204,5 +197,18 @@ public class QMEventCriteria {
 
     public boolean hasLastEventId() {
         return lastEventId != null;
+    }
+
+    @NotNull
+    public Set<String> getProjectNames() {
+        return projectNames;
+    }
+
+    public void setProjectNames(@NotNull Set<String> projectNames) {
+        this.projectNames = projectNames;
+    }
+
+    public boolean hasProjectNames() {
+        return !projectNames.isEmpty();
     }
 }

@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicatesCondi
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -67,7 +68,6 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
 
     private static final String[][] ORACLE_BEGIN_END_BLOCK = new String[][]{
         {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
-        {"IF", SQLConstants.BLOCK_END},
         {"LOOP", SQLConstants.BLOCK_END + " LOOP"},
         {SQLConstants.KEYWORD_CASE, SQLConstants.BLOCK_END + " " + SQLConstants.KEYWORD_CASE},
     };
@@ -469,8 +469,20 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
 
     @Override
     protected String getStoredProcedureCallInitialClause(DBSProcedure proc) {
-        String schemaName = proc.getParentObject().getName();
-        return "CALL " + schemaName + "." + proc.getName();
+        if (proc.getProcedureType() == DBSProcedureType.FUNCTION) {
+            return SQLConstants.KEYWORD_SELECT + " " + proc.getFullyQualifiedName(DBPEvaluationContext.DML);
+        } else {
+            return "CALL " + proc.getFullyQualifiedName(DBPEvaluationContext.DML);
+        }
+    }
+
+    @NotNull
+    @Override
+    protected String getProcedureCallEndClause(DBSProcedure procedure) {
+        if (procedure.getProcedureType() == DBSProcedureType.FUNCTION) {
+            return "FROM DUAL";
+        }
+        return super.getProcedureCallEndClause(procedure);
     }
 
     @Override
@@ -648,6 +660,11 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
                                 tt.sequence("procedure", SQLTokenType.T_OTHER),
                                 tt.sequence(SQLTokenType.T_OTHER, SQLTokenType.T_TYPE)
                         ), ";")
+                ),
+                new TokenPredicatesCondition(
+                    SQLParserActionKind.BEGIN_BLOCK,
+                    tt.sequence(),
+                    tt.sequence(tt.not("END"), "IF", tt.not("EXISTS"))
                 )
         );
 
@@ -705,5 +722,10 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
     @Override
     public String getClobDataType() {
         return OracleConstants.TYPE_CLOB;
+    }
+
+    @Override
+    public boolean needsDefaultDataTypes() {
+        return false;
     }
 }

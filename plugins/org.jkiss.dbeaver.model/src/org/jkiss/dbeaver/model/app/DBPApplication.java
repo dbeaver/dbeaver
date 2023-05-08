@@ -30,6 +30,8 @@ import java.nio.file.Path;
  */
 public interface DBPApplication {
 
+    default void beforeWorkspaceInitialization() {}
+
     @NotNull
     DBPWorkspace createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace);
 
@@ -85,4 +87,18 @@ public interface DBPApplication {
      */
     @Nullable
     Path getDefaultWorkingFolder();
+
+    /**
+     * Unique application instance identifier.
+     * Generated on every application launch.
+     */
+    @NotNull
+    String getApplicationRunId();
+
+    /**
+     * Application start time
+     */
+    long getApplicationStartTime();
+
+
 }

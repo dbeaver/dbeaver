@@ -32,7 +32,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -125,33 +126,43 @@ public class MySQLDialect extends JDBCSQLDialect {
         "ST_POINTFROMTEXT",
         "ST_POLYFROMTEXT"
     };
+    
+    private static final Pattern ONE_OR_MORE_DIGITS_PATTERN = Pattern.compile("[0-9]+");
 
-    private static String[] EXEC_KEYWORDS =  { "CALL" };
+    private static final String[] EXEC_KEYWORDS =  { "CALL" };
     private int lowerCaseTableNames;
 
     public MySQLDialect() {
         super("MySQL", "mysql");
     }
+    
+    public MySQLDialect(String name, String id) {
+        super(name, id);
+    }
 
-    public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+    public void initBaseDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
         this.lowerCaseTableNames = ((MySQLDataSource)dataSource).getLowerCaseTableNames();
         this.setSupportsUnquotedMixedCase(lowerCaseTableNames != 2);
 
-        //addSQLKeyword("STATISTICS");
-        Collections.addAll(tableQueryWords, SQLConstants.KEYWORD_EXPLAIN, "DESCRIBE", "DESC");
-        addFunctions(Arrays.asList("SLEEP"));
+        addTableQueryKeywords(SQLConstants.KEYWORD_EXPLAIN, "DESCRIBE", "DESC");
+        addFunctions(List.of("SLEEP"));
 
-        for (String kw : ADVANCED_KEYWORDS) {
-            addSQLKeyword(kw);
-        }
+        addSQLKeywords(Arrays.asList(ADVANCED_KEYWORDS));
         removeSQLKeyword("SOURCE");
 
         // CHAR is data type, not function
         removeSQLKeyword("CHAR");
 
-        addDataTypes(Arrays.asList("GEOMETRY", "POINT", "CHAR"));
+        addDataTypes(List.of("CHAR"));
         addFunctions(Arrays.asList(MYSQL_EXTRA_FUNCTIONS));
+    }
+    
+    @Override
+    public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+    	initBaseDriverSettings(session, dataSource, metaData);
+
+        addDataTypes(Arrays.asList("GEOMETRY", "POINT"));
         addFunctions(Arrays.asList(MYSQL_GEOMETRY_FUNCTIONS));
     }
 
@@ -196,7 +207,8 @@ public class MySQLDialect extends JDBCSQLDialect {
 
     @Override
     public boolean mustBeQuoted(String str, boolean forceCaseSensitive) {
-        if (Pattern.matches("[0-9]+", str)) { // we should quote numeric names
+        Matcher matcher = ONE_OR_MORE_DIGITS_PATTERN.matcher(str);
+        if (matcher.lookingAt()) { // we should quote numeric names and names starts with number
             return true;
         }
         return super.mustBeQuoted(str, forceCaseSensitive);

@@ -748,12 +748,12 @@ public class GenericMetaModel {
 
     public JDBCStatement prepareForeignKeysLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent) throws SQLException {
         return session.getMetaData().getImportedKeys(
-                owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-                owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : owner.getSchema().getName(),
-                forParent == null ?
-                        owner.getDataSource().getAllObjectsPattern() :
-                        forParent.getName())
-                .getSourceStatement();
+            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
+            owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : owner.getSchema().getName(),
+            forParent == null ?
+                owner.getDataSource().getAllObjectsPattern() :
+                forParent.getName())
+            .getSourceStatement();
     }
 
     public boolean isFKConstraintWordDuplicated() {

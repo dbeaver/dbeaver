@@ -89,11 +89,6 @@ public class DashboardRegistry {
         }
 
         // Load dashboards from config
-        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PUBLIC)) {
-            log.warn("The user has no permission to load dashboard configuration");
-            return;
-        }
-
         try {
             loadConfigFromFile();
         } catch (Exception e) {
@@ -162,7 +157,8 @@ public class DashboardRegistry {
     }
 
     /**
-     * Find dashboard matchign source. Source can be {@link DBPDataSourceContainer}, {@link DBPDataSourceProviderDescriptor} or {@link DBPDriver}
+     * Find dashboard matching source.
+     * Source can be {@link DBPDataSourceContainer}, {@link DBPDataSourceProviderDescriptor} or {@link DBPDriver}
      */
     public List<DashboardDescriptor> getDashboards(DBPNamedObject source, boolean defaultOnly) {
         if (source instanceof DBPDataSourceContainer) {

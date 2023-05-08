@@ -3,7 +3,7 @@
 
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
     <!-- UI extensions -->
     <extension-point id="org.jkiss.dbeaver.workbenchHandler" name="%extension-point.org.jkiss.dbeaver.workbenchHandler.name" schema="schema/org.jkiss.dbeaver.workbenchHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.clearHistoryHandler" name="%extension-point.org.jkiss.dbeaver.clearHistoryHandler.name" schema="schema/org.jkiss.dbeaver.clearHistoryHandler.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.toolBarConfiguration" name="%extension-point.org.jkiss.dbeaver.toolbarConfiguration.name" schema="schema/org.jkiss.dbeaver.toolBarConfiguration.exsd" />
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
@@ -48,8 +49,14 @@
             namespace="org.jkiss.dbeaver.runtime.process"
             properties="running"
             type="org.eclipse.ui.IWorkbenchPart"/>
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.actions.ToolBarConfigurationPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.ToolBarConfigurationPropertyTester"
+            namespace="org.jkiss.dbeaver.ui.toolbar.configuration"
+            properties="visible"
+            type="java.lang.Object"/>
     </extension>
-
+    
     <extension point="org.eclipse.ui.views">
         <view
                 id="org.jkiss.dbeaver.core.queryManager"
@@ -482,10 +489,13 @@
         <!-- Tools menu -->
         <handler commandId="org.jkiss.dbeaver.ui.tools.menu" class="org.jkiss.dbeaver.ui.actions.datasource.ToolsContextMenuHandler">
             <activeWhen>
-                <or>
-                    <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
-                    <reference definitionId="org.jkiss.dbeaver.core.ui.datasource.part"/>
-                </or>
+                <and>
+                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                    <or>
+                        <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
+                        <reference definitionId="org.jkiss.dbeaver.core.ui.datasource.part"/>
+                    </or>
+                </and>
             </activeWhen>
         </handler>
 
@@ -673,7 +683,10 @@
                         <count value="1"/>
                         <iterate operator="and">
                             <adapt type="org.jkiss.dbeaver.model.navigator.DBNDataSource">
-                                <test property="org.jkiss.dbeaver.core.datasource.editable"/>
+                                <and>
+                                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                                    <test property="org.jkiss.dbeaver.core.datasource.editable"/>
+                                </and>
                             </adapt>
                         </iterate>
                     </with>
@@ -810,6 +823,8 @@
             <dynamic id="org.jkiss.dbeaver.core.menu.newConnection.select" class="org.jkiss.dbeaver.ui.actions.datasource.NewConnectionDriverSelectorContributor"/>
             <separator name="footer" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.new.connection.from.url" label="%command.org.jkiss.dbeaver.core.new.connection.from.url.name_short"/>
+            <separator name="custom" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.new.connection"/>
         </menuContribution>
 
         <!-- QM menu & toolbar -->
@@ -1112,7 +1127,7 @@
         <wizard
              category="org.jkiss.dbeaver.core.export.resources"
              class="org.jkiss.dbeaver.tools.scripts.ScriptsExportWizard"
-             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png"
+             icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png"
              id="org.jkiss.dbeaver.core.wizard.export.scripts"
              name="%wizard.org.jkiss.dbeaver.core.wizard.export.scripts.name">
            <description>
@@ -1136,7 +1151,7 @@
         <wizard
             category="org.jkiss.dbeaver.core.import.resources"
             class="org.jkiss.dbeaver.tools.scripts.ScriptsImportWizard"
-            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png"
             id="org.jkiss.dbeaver.core.wizard.import.scripts"
             name="%wizard.org.jkiss.dbeaver.core.wizard.import.scripts.name">
             <description>
@@ -1278,6 +1293,14 @@
                 message="%confirm.driver_download.message"
                 toggleMessage="%confirm.general.toggleMessage"
                 group="%confirmation.group.general.actions"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.preferencePages">
+        <page
+            category="org.jkiss.dbeaver.preferences.main"
+            id="org.jkiss.dbeaver.preferences.main.toolbar.customization"
+            class="org.jkiss.dbeaver.ui.preferences.PrefPageToolbarCustomization"
+            name="%org.jkiss.dbeaver.preferences.main.toolbar.customization.name"/>
     </extension>
 
 </plugin>

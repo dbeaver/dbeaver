@@ -56,7 +56,7 @@ public class DataSourceToolbarUtils
     }
 
     public static void refreshSelectorToolbar(IWorkbenchWindow window) {
-        if (window instanceof WorkbenchWindow) {
+        if (window instanceof WorkbenchWindow && window.getActivePage() != null) {
             MTrimBar topTrim = ((WorkbenchWindow) window).getTopTrim();
             boolean showConnectionSelector = false;
             IEditorPart activeEditor = window.getActivePage().getActiveEditor();

@@ -198,6 +198,7 @@ public class DashboardEditDialog extends BaseDialog {
                 }
             }
             queryText.setText(sql.toString().trim());
+            queryText.addModifyListener(e -> updateButtons());
         }
 
         {

@@ -59,7 +59,6 @@ import org.jkiss.dbeaver.model.sql.registry.SQLPragmaHandlerDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.ui.ISmartTransactionManager;
 import org.jkiss.dbeaver.ui.UITask;
@@ -68,6 +67,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -674,7 +674,8 @@ public class SQLQueryJob extends DataSourceJob
                         hasResultSet = dbcStatement.nextResults();
                     } catch (DBCException e) {
                         if (session.getDataSource().getInfo().isMultipleResultsFetchBroken()) {
-                            log.error(e);
+                            statistics.addWarning(e);
+                            statistics.setError(e);
                             // #2792: Check this twice. Some drivers (e.g. Sybase jConnect)
                             // throw error on n'th result fetch - but it still can keep fetching next results
                             hasResultSet = dbcStatement.nextResults();
@@ -693,6 +694,9 @@ public class SQLQueryJob extends DataSourceJob
                 curResult.addWarnings(dbcStatement.getStatementWarnings());
             } catch (Throwable e) {
                 log.warn("Can't read execution warnings", e);
+            }
+            if (!CommonUtils.isEmpty(statistics.getWarnings())) {
+                curResult.addWarnings(statistics.getWarnings().toArray(new Throwable[0]));
             }
             //monitor.subTask("Close query");
             if (!keepStatementOpen()) {
@@ -906,7 +910,7 @@ public class SQLQueryJob extends DataSourceJob
     }
 */
 
-    public void extractData(@NotNull DBCSession session, @NotNull SQLScriptElement query, int resultNumber)
+    public void extractData(@NotNull DBCSession session, @NotNull SQLScriptElement query, int resultNumber, boolean fireEvents)
         throws DBCException
     {
         // Reset query to original. Otherwise multiple filters will corrupt it
@@ -917,7 +921,7 @@ public class SQLQueryJob extends DataSourceJob
         //session.getProgressMonitor().beginTask(CommonUtils.truncateString(query.getText(), 512), 1);
         session.getProgressMonitor().subTask(CommonUtils.truncateString(query.getText(), 512));
 
-        boolean result = executeSingleQuery(session, query, true);
+        boolean result = executeSingleQuery(session, query, fireEvents);
         if (!result && lastError != null) {
             if (lastError instanceof DBCException) {
                 throw (DBCException) lastError;

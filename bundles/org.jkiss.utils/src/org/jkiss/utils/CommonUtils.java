@@ -1032,7 +1032,34 @@ public class CommonUtils {
     }
 
     @SafeVarargs
-    public static <T> T[] array(T ... elems) {
+    public static <T> T[] array(T... elems) {
         return elems;
+    }
+
+    /**
+     * Removes (single or multiple) starting '/' from {@code resourcePath} and replaces all '\' with '/'
+     */
+    @NotNull
+    public static String normalizeResourcePath(@NotNull String resourcePath) {
+        while (resourcePath.startsWith("/")) {
+            resourcePath = resourcePath.substring(1);
+        }
+        resourcePath = resourcePath.replace('\\', '/');
+        return resourcePath;
+    }
+
+    /**
+     * Replaces the last {@code toReplace} entry in {@code string} with {@code replacement}
+     */
+    @NotNull
+    public static String replaceLast(@NotNull String string, @NotNull String toReplace, @NotNull String replacement) {
+        int pos = string.lastIndexOf(toReplace);
+        if (pos > -1) {
+            return string.substring(0, pos)
+                + replacement
+                + string.substring(pos + toReplace.length());
+        } else {
+            return string;
+        }
     }
 }

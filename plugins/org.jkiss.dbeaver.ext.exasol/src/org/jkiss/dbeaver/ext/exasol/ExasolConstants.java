@@ -39,7 +39,6 @@ public class ExasolConstants {
     public static final String DRV_CLIENT_NAME = "clientname";
     public static final String DRV_CLIENT_VERSION = "clientversion";
     public static final String DRV_QUERYTIMEOUT = "querytimeout";
-    public static final String DRV_CONNECT_TIMEOUT = "connecttimeout";
     public static final String DRV_BACKUP_HOST_LIST = DBConstants.INTERNAL_PROP_PREFIX + "backupHostList";
     public static final String DRV_USE_BACKUP_HOST_LIST = DBConstants.INTERNAL_PROP_PREFIX + "useBackupHostList";
     public static final String DRV_USE_LEGACY_ENCRYPTION = "exasol.useLegacyEncryption";

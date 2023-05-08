@@ -140,6 +140,7 @@ public class UIIcon {
     public static final DBIcon ERASE = new DBIcon("erase", "erase.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ADD = new DBIcon("add", "add.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon DELETE = new DBIcon("delete", "delete.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon REMOVE = new DBIcon("remove", "remove.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon RENAME = new DBIcon("rename", "rename.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PALETTE = new DBIcon("palette", "misc/palette.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -166,7 +167,6 @@ public class UIIcon {
 
     public static final DBIcon PROJECTS = new DBIcon("projects", "projects.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon DATABASES = new DBIcon("databases", "databases.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon SCRIPTS = new DBIcon("scripts", "scripts.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PAGE_STACK = new DBIcon("page_stack", "page_stack.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon BOOKMARK_FOLDER = new DBIcon("bookmark_folder", "bookmark_folder.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon BOOKMARK = new DBIcon("bookmark", "bookmark.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -188,7 +188,6 @@ public class UIIcon {
     public static final DBIcon SQL_CONNECT = new DBIcon("sql_connect", "sql/connect.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_DISCONNECT = new DBIcon("sql_disconnect", "sql/disconnect.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_READONLY = new DBIcon("readonly", "sql/readonly.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon SQL_SCRIPT = new DBIcon("sql_script", "sql/sql_script.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_CONSOLE = new DBIcon("sql_console", "sql/sql_console.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_EXECUTE = new DBIcon("sql_exec", "sql/sql_exec.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_SCRIPT_EXECUTE = new DBIcon("sql_script_exec", "sql/sql_script_exec.png"); //$NON-NLS-1$ //$NON-NLS-2$

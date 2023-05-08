@@ -119,11 +119,6 @@ public class SQLRuleManager {
         }
 
         if (!minimalRules) {
-            // Parameter rule
-            for (String npPrefix : syntaxManager.getNamedParameterPrefixes()) {
-                rules.add(new ScriptParameterRule(syntaxManager, parameterToken, npPrefix));
-            }
-            
             final SQLControlToken controlToken = new SQLControlToken();
 
             try {
@@ -138,9 +133,18 @@ public class SQLRuleManager {
             }
         }
         
-        if (!minimalRules && syntaxManager.isVariablesEnabled()) {
-            // Variable rule
-            rules.add(new ScriptVariableRule(parameterToken));
+        if (!minimalRules) {
+            // Keep variable rule before parameter rule (see #18354)
+            
+            if (syntaxManager.isVariablesEnabled()) {
+                // Variable rule
+                rules.add(new ScriptVariableRule(parameterToken));
+            }
+
+            // Parameter rule
+            for (String npPrefix : syntaxManager.getNamedParameterPrefixes()) {
+                rules.add(new ScriptParameterRule(syntaxManager, parameterToken, npPrefix));
+            }
         }
 
         // Decides whether the pattern can be accepted by hitting EOF instead of the end sequence.

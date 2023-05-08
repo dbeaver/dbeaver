@@ -83,11 +83,11 @@
         <content-type
                 file-extensions="bm"
                 id="org.jkiss.dbeaver.bookmark"
-                name="%content-type.org.jkiss.dbeaver.bookmark.name"
+                name="Database Bookmarks"
                 priority="normal"
                 describer="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarkContentTypeDescriber"/>
 
-        <content-type file-extensions="lnk" id="org.jkiss.dbeaver.shortcut" name="%content-type.org.jkiss.dbeaver.shortcut.name" priority="normal">
+        <content-type file-extensions="lnk" id="org.jkiss.dbeaver.shortcut" name="Windows shortcuts" priority="normal">
             <describer class="org.eclipse.core.runtime.content.BinarySignatureDescriber">
                 <!-- http://msdn.microsoft.com/en-us/library/dd871305%28PROT.10%29.aspx -->
                 <parameter name="signature" value="4C,00,00,00,01,14,02,00,00,00,00,00,C0,00,00,00,00,00,00,46"/>

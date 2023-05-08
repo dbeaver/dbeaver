@@ -80,7 +80,8 @@ public class GeneralUtils {
     
     public static final String PROP_TRUST_STORE = "javax.net.ssl.trustStore"; //$NON-NLS-1$
     public static final String PROP_TRUST_STORE_TYPE = "javax.net.ssl.trustStoreType"; //$NON-NLS-1$
-    
+    public static final String VALUE_TRUST_STORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
+
     static {
         // Compose byte to hex map
         for (int i = 0; i < 256; ++i) {
@@ -482,9 +483,14 @@ public class GeneralUtils {
         }
         return null;
     }
-
+    
     @NotNull
     public static String replaceVariables(@NotNull String string, IVariableResolver resolver) {
+        return replaceVariables(string, resolver, false);
+    }
+
+    @NotNull
+    public static String replaceVariables(@NotNull String string, IVariableResolver resolver, boolean isUpperCaseVarName) {
         if (CommonUtils.isEmpty(string)) {
             return string;
         }
@@ -495,7 +501,8 @@ public class GeneralUtils {
             int pos = 0;
             while (matcher.find(pos)) {
                 pos = matcher.end();
-                String varName = matcher.group(2);
+                String matchedName = matcher.group(2);
+                String varName = isUpperCaseVarName ? matchedName.toUpperCase(Locale.ENGLISH) : matchedName;
                 String varValue = null;
                 if (resolvedVars != null) {
                     varValue = resolvedVars.get(varName); 
@@ -604,6 +611,9 @@ public class GeneralUtils {
     }
 
     public static IStatus makeExceptionStatus(int severity, String message, Throwable ex) {
+        if (CommonUtils.equalObjects(message, ex.getMessage())) {
+            return makeExceptionStatus(severity, ex);
+        }
         return new MultiStatus(
             ModelPreferences.PLUGIN_ID,
             0,

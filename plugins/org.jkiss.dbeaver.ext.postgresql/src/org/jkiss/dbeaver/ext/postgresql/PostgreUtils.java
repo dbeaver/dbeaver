@@ -827,4 +827,18 @@ public class PostgreUtils {
         return "SELECT " + columnName + " FROM pg_catalog." + tableName + " WHERE 1<>1 LIMIT 1";
     }
 
+    /**
+     * Retrieves delimiter used for separating array elements of the given type.
+     *
+     * @param type type to get array delimiter for
+     * @return a type-specific array delimiter, or {@code ","} if the given type is not a postgres data type.
+     */
+    @NotNull
+    public static String getArrayDelimiter(@NotNull DBSTypedObject type) {
+        if (type instanceof PostgreDataType) {
+            return ((PostgreDataType) type).getArrayDelimiter();
+        } else {
+            return ",";
+        }
+    }
 }

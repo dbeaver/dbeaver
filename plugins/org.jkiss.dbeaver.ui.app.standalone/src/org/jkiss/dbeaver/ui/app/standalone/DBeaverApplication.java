@@ -48,7 +48,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.registry.DesktopApplicationImpl;
 import org.jkiss.dbeaver.registry.SWTBrowserRegistry;
-import org.jkiss.dbeaver.registry.TimezoneRegistry;
+import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
@@ -64,7 +64,10 @@ import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Version;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.file.Files;
@@ -98,8 +101,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     private static final String PROP_EXIT_DATA = IApplicationContext.EXIT_DATA_PROPERTY; //$NON-NLS-1$
     private static final String PROP_EXIT_CODE = "eclipse.exitcode"; //$NON-NLS-1$
-
-    private static final String VALUE_TRUST_STRORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
 
     public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
     
@@ -259,6 +260,12 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         log.debug("Instance path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         log.debug("Memory available " + (runtime.totalMemory() / (1024 * 1024)) + "Mb/" + (runtime.maxMemory() / (1024 * 1024)) + "Mb");
 
+        if (RuntimeUtils.isWindows()) {
+            // Set JNA library path (#19735)
+            String installPath = SystemVariablesResolver.getInstallPath();
+            System.setProperty("jna.boot.library.path", installPath);
+        }
+
         // Write version info
         writeWorkspaceInfo();
 
@@ -283,7 +290,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE))
             && ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
         ) {
-            System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, VALUE_TRUST_STRORE_TYPE_WINDOWS);
+            System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STORE_TYPE_WINDOWS);
         }
 
         // Prefs default
@@ -334,7 +341,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             display = null;
         }
     }
-
 
     private void markLocationReadOnly(Location instanceLoc) {
         try {
@@ -479,13 +485,20 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 // with no message.
                 shell.setText(ChooseWorkspaceDialog.getWindowTitle());
                 shell.setImages(Window.getDefaultImages());
+
+                Log.Listener splashListener = (message, t) -> {
+                    DBeaverSplashHandler.showMessage(CommonUtils.toString(message));
+                };
+                Log.addListener(splashListener);
+                shell.addDisposeListener(e -> {
+                    Log.removeListener(splashListener);
+                });
             }
         } catch (Throwable e) {
             e.printStackTrace(System.err);
             System.err.println("Error updating splash shell");
         }
 
-        Log.addListener((message, t) -> DBeaverSplashHandler.showMessage(CommonUtils.toString(message)));
     }
 
     protected IInstanceController createInstanceController() {

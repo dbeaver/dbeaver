@@ -34,6 +34,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.edit.DBECommand;
@@ -278,7 +279,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                         ActionUtils.runCommand(IWorkbenchCommandConstants.FILE_SAVE, part.getSite());
                     }
                 });
-                scriptButton = UIUtils.createPushButton(buttonsGroup, "View script", DBeaverIcons.getImage(UIIcon.SQL_SCRIPT), new SelectionAdapter() {
+                scriptButton = UIUtils.createPushButton(buttonsGroup, "View script", DBeaverIcons.getImage(DBIcon.TREE_SCRIPT), new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         showAlterScript();
@@ -317,6 +318,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             }
         }
 
+        UIUtils.installAndUpdateMainFont(propertiesGroup);
         refreshPropertyValues(allProps, firstInit);
     }
 
@@ -369,6 +371,9 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                     }
                 },
                 ownerControl.createDefaultLoadVisualizer(editorValues -> {
+                    if (ownerControl.isDisposed()) {
+                        return;
+                    }
                     formEditor.loadEditorValues(editorValues);
                     if (blockEnableState != null) {
                         blockEnableState.restore();

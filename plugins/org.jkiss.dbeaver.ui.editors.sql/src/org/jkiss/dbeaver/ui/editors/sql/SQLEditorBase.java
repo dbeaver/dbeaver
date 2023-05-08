@@ -47,6 +47,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.dialogs.PropertyDialog;
 import org.eclipse.ui.texteditor.*;
+import org.eclipse.ui.texteditor.spelling.SpellingAnnotation;
 import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
@@ -275,12 +276,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     @Nullable
     public IAnnotationModel getAnnotationModel() {
-        return getSourceViewer().getAnnotationModel();
+        final ISourceViewer viewer = getSourceViewer();
+        return viewer != null ? viewer.getAnnotationModel() : null;
     }
 
     @Nullable
     public ProjectionAnnotationModel getProjectionAnnotationModel() {
-        return ((ProjectionViewer) getSourceViewer()).getProjectionAnnotationModel();
+        final ProjectionViewer viewer = (ProjectionViewer) getSourceViewer();
+        return viewer != null ? viewer.getProjectionAnnotationModel() : null;
     }
 
     public SQLEditorSourceViewerConfiguration getViewerConfiguration() {
@@ -482,6 +485,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         return sourceViewer;
     }
 
+    protected SourceViewerDecorationSupport getSourceViewerDecorationSupport(ISourceViewer viewer) {
+        if (fSourceViewerDecorationSupport == null) {
+            fSourceViewerDecorationSupport= new SQLSourceViewerDecorationSupport(viewer, getOverviewRuler(), getAnnotationAccess(), getSharedColors());
+            configureSourceViewerDecorationSupport(fSourceViewerDecorationSupport);
+        }
+        return fSourceViewerDecorationSupport;
+    }
+
     protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {
         char[] matchChars = SQLConstants.BRACKETS; //which brackets to match
         try {
@@ -626,13 +637,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         setAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL, action);
 
         setAction(ITextEditorActionConstants.CONTEXT_PREFERENCES, new ShowPreferencesAction());
-/*
-        // Add the task action to the Edit pulldown menu (bookmark action is  'free')
-        ResourceAction ra = new AddTaskAction(bundle, "AddTask.", this);
-        ra.setHelpContextId(ITextEditorHelpContextIds.ADD_TASK_ACTION);
-        ra.setActionDefinitionId(ITextEditorActionDefinitionIds.ADD_TASK);
-        setAction(IDEActionFactory.ADD_TASK.getId(), ra);
-*/
+
+        SQLEditorCustomActions.registerCustomActions(this);
     }
 
     // Exclude input additions. Get rid of tons of crap from debug/team extensions
@@ -1101,6 +1107,20 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     int getLastQueryErrorPosition() {
         return lastQueryErrorPosition;
+    }
+
+    protected boolean isNavigationTarget(Annotation annotation) {
+        if (annotation instanceof SpellingAnnotation) {
+            // Iterate over spelling problems only if we do not have problems
+            for (Iterator<Annotation> i = getAnnotationModel().getAnnotationIterator(); i.hasNext(); ) {
+                Annotation anno = i.next();
+                if (anno instanceof SQLProblemAnnotation) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return super.isNavigationTarget(annotation);
     }
 
     ////////////////////////////////////////////////////////
