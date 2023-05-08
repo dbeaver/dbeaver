@@ -28,11 +28,11 @@ import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerAllRows;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerExpression;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorDescriptor;
+import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorExecutor;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLNativeExecutorDescriptor;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLNativeExecutorRegistry;
+import org.jkiss.dbeaver.ui.actions.exec.SQLScriptExecutor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 
@@ -60,8 +60,11 @@ public class SQLEditorHandlerExecute extends AbstractHandler
                 editor.processSQL(false, true);
                 break;
             case SQLEditorCommands.CMD_EXECUTE_SCRIPT_NATIVE: {
+                if (editor.getDataSourceContainer() == null) {
+                    break;
+                }
                 SQLNativeExecutorDescriptor executorDescriptor = SQLNativeExecutorRegistry.getInstance()
-                    .getExecutorDescriptor(editor.getDataSource());
+                    .getExecutorDescriptor(editor.getDataSourceContainer());
                 if (executorDescriptor == null) {
                     throw new ExecutionException("Valid native executor is not found");
                 }
@@ -69,8 +72,8 @@ public class SQLEditorHandlerExecute extends AbstractHandler
                     if (editor.getExecutionContext() instanceof DBCExecutionContextDefaults) {
                         DBCExecutionContextDefaults<?, ?> executionContext
                             = (DBCExecutionContextDefaults<?, ?>) editor.getExecutionContext();
-                        SQLEditorExecutor<DBSObject> nativeExecutor
-                            = (SQLEditorExecutor<DBSObject>) executorDescriptor.getNativeExecutor();
+                        SQLScriptExecutor<DBSObject> nativeExecutor
+                            = (SQLScriptExecutor<DBSObject>) executorDescriptor.getNativeExecutor();
                         if (nativeExecutor == null) {
                             throw new ExecutionException("Valid native executor is not found");
                         }
@@ -78,9 +81,14 @@ public class SQLEditorHandlerExecute extends AbstractHandler
                         if (object == null) {
                             object = editor.getDataSource();
                         }
-                        nativeExecutor.execute(object, editor);
+                        if (editor.getGlobalScriptContext().getSourceFile() != null) {
+                            nativeExecutor.execute(object, editor.getGlobalScriptContext().getSourceFile());
+                        } else {
+                            nativeExecutor.execute(object, null);
+                        }
+                    } else {
+                        throw new DBException("Disconnected from database");
                     }
-
                 } catch (DBException e) {
                     log.error(e);
                 }

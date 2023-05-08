@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.registry;
+package org.jkiss.dbeaver.ui.actions.exec;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorExecutor;
 
 public class SQLNativeExecutorDescriptor extends AbstractContextDescriptor {
 
@@ -31,7 +30,7 @@ public class SQLNativeExecutorDescriptor extends AbstractContextDescriptor {
 
     private final ObjectType implClass;
     private final String dataSourceId;
-    private SQLEditorExecutor<? extends DBSObject> instance = null;
+    private SQLScriptExecutor<? extends DBSObject> instance = null;
 
     public SQLNativeExecutorDescriptor(IConfigurationElement config) {
         super(config);
@@ -43,9 +42,9 @@ public class SQLNativeExecutorDescriptor extends AbstractContextDescriptor {
      * Returns native executor implementation
      */
     @Nullable
-    public SQLEditorExecutor<? extends DBSObject> getNativeExecutor() throws DBException {
+    public SQLScriptExecutor<? extends DBSObject> getNativeExecutor() throws DBException {
         if (instance == null) {
-            instance = implClass.createInstance(SQLEditorExecutor.class);
+            instance = implClass.createInstance(SQLScriptExecutor.class);
         }
         return instance;
     }

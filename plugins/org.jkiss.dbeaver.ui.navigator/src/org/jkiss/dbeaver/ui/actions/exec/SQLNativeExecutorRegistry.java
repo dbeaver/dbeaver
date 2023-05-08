@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.registry;
+package org.jkiss.dbeaver.ui.actions.exec;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 
 import java.util.ArrayList;
@@ -69,8 +69,8 @@ public class SQLNativeExecutorRegistry {
      * Returns the first possible supported executor for datasource
      */
     @Nullable
-    public SQLNativeExecutorDescriptor getExecutorDescriptor(@NotNull DBPDataSource dataSource) {
-        DBPDataSourceProviderDescriptor provider = dataSource.getContainer().getDriver().getProviderDescriptor();
+    public SQLNativeExecutorDescriptor getExecutorDescriptor(@NotNull DBPDataSourceContainer container) {
+        DBPDataSourceProviderDescriptor provider = container.getDriver().getProviderDescriptor();
         for (DBPDataSourceProviderDescriptor pd = provider; pd != null; pd = pd.getParentProvider()) {
             for (SQLNativeExecutorDescriptor executor : executors) {
                 if (executor.getDataSourceId().equals(pd.getId())) {

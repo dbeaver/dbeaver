@@ -28,8 +28,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLNativeExecutorDescriptor;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLNativeExecutorRegistry;
+import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorDescriptor;
+import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
@@ -72,10 +72,11 @@ public class SQLEditorPropertyTester extends PropertyTester
                 return true;/* && (!"statement".equals(expectedValue) || editor.hasActiveQuery())*/
             case PROP_CAN_EXECUTE_NATIVELY: {
                 try {
-                    if (editor.getDataSource() == null) {
+                    if (editor.getDataSourceContainer() == null) {
                         return false;
                     }
-                    SQLNativeExecutorDescriptor executorDescriptor = SQLNativeExecutorRegistry.getInstance().getExecutorDescriptor(editor.getDataSource());
+                    SQLNativeExecutorDescriptor executorDescriptor =
+                        SQLNativeExecutorRegistry.getInstance().getExecutorDescriptor(editor.getDataSourceContainer());
                     return executorDescriptor != null && executorDescriptor.getNativeExecutor() != null;
                 } catch (DBException exception) {
                     log.error("Error checking native execution", exception);

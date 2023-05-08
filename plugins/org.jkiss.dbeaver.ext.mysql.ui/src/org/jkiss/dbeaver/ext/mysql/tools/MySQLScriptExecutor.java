@@ -17,18 +17,20 @@
 package org.jkiss.dbeaver.ext.mysql.tools;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorExecutor;
+import org.jkiss.dbeaver.tasks.ui.nativetool.NativeSQLScriptExecutor;
 
-public class MySQLScriptExecutor extends SQLEditorExecutor<MySQLCatalog> {
+import java.io.File;
+
+public class MySQLScriptExecutor extends NativeSQLScriptExecutor<MySQLCatalog> {
 
     @NotNull
     protected TaskConfigurationWizard<?> createTaskConfigurationWizard(
         @NotNull MySQLCatalog mySQLCatalog,
-        @NotNull SQLEditor editor
+        @Nullable File file
     ) {
-        return new MySQLScriptExecuteWizard(mySQLCatalog, false, editor.getGlobalScriptContext().getSourceFile());
+        return new MySQLScriptExecuteWizard(mySQLCatalog, false, file);
     }
 }

@@ -17,17 +17,19 @@
 package org.jkiss.dbeaver.ext.oracle.ui.tools;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorExecutor;
+import org.jkiss.dbeaver.tasks.ui.nativetool.NativeSQLScriptExecutor;
 
-public class OracleScriptExecutor extends SQLEditorExecutor<OracleDataSource> {
+import java.io.File;
+
+public class OracleScriptExecutor extends NativeSQLScriptExecutor<OracleDataSource> {
     @NotNull
     protected TaskConfigurationWizard<?> createTaskConfigurationWizard(
         @NotNull OracleDataSource oracleDataSource,
-         @NotNull SQLEditor editor
+        @Nullable File file
     ) {
-        return new OracleScriptExecuteWizard(oracleDataSource, editor.getGlobalScriptContext().getSourceFile());
+        return new OracleScriptExecuteWizard(oracleDataSource, file);
     }
 }

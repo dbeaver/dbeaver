@@ -48,8 +48,9 @@ class PostgreScriptExecuteWizard extends AbstractNativeScriptExecuteWizard<Postg
         getSettings().setDatabase(catalog);
     }
 
-    PostgreScriptExecuteWizard(@NotNull PostgreDatabase catalog, @Nullable File file) {
+    PostgreScriptExecuteWizard(@Nullable PostgreDatabase catalog, @Nullable File file) {
         super(Collections.singleton(catalog), PostgreMessages.wizard_script_title_execute_script, file);
+
         getSettings().setDatabase(catalog);
     }
 

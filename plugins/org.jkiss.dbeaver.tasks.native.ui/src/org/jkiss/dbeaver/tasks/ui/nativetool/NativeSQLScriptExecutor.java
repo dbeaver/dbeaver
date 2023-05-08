@@ -14,37 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql;
+package org.jkiss.dbeaver.tasks.ui.nativetool;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tasks.ui.nativetool.NativeToolWizardDialog;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.exec.SQLScriptExecutor;
 
-/**
- * Allows opening native execution wizards
- *
- * @param <CONTAINER> container to read settings from
- */
-public abstract class SQLEditorExecutor<CONTAINER extends DBSObject> {
-    /**
-     * Opens the wizard for the database
-     *
-     * @param container container to read settings from
-     * @param editor SQL editor
-     * @throws DBException if failed to open the wizard
-     */
-    public void execute(@NotNull CONTAINER container, @NotNull SQLEditor editor) throws DBException {
+import java.io.File;
+
+public abstract class NativeSQLScriptExecutor<CONTAINER extends DBSObject> implements SQLScriptExecutor<CONTAINER> {
+
+    public void execute(@NotNull CONTAINER container, @Nullable File file) throws DBException {
         NativeToolWizardDialog dialog = new NativeToolWizardDialog(
             UIUtils.getActiveWorkbenchWindow(),
-            createTaskConfigurationWizard(container, editor));
+            createTaskConfigurationWizard(container, file));
         dialog.open();
     }
 
     @NotNull
     protected abstract TaskConfigurationWizard<?> createTaskConfigurationWizard(
         @NotNull CONTAINER container,
-        @NotNull SQLEditor editor);
+        @Nullable File editor);
 }

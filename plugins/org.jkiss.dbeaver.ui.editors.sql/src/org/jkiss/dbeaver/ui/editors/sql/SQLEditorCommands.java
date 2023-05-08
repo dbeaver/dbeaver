@@ -24,12 +24,11 @@ public interface SQLEditorCommands
     String CMD_EXECUTE_STATEMENT = "org.jkiss.dbeaver.ui.editors.sql.run.statement"; //$NON-NLS-1$
     String CMD_EXECUTE_STATEMENT_NEW = "org.jkiss.dbeaver.ui.editors.sql.run.statementNew"; //$NON-NLS-1$
     String CMD_EXECUTE_SCRIPT = "org.jkiss.dbeaver.ui.editors.sql.run.script"; //$NON-NLS-1$
-    String CMD_EXECUTE_SCRIPT_NATIVE = "org.jkiss.dbeaver.ui.editors.sql.run.scriptNative"; //$NON-NLS-1$
+    String CMD_EXECUTE_SCRIPT_NATIVE = "org.jkiss.dbeaver.core.sql.script.run.scriptNative"; //$NON-NLS-1$
     String CMD_EXECUTE_SCRIPT_FROM_POSITION = "org.jkiss.dbeaver.ui.editors.sql.run.scriptFromPosition"; //$NON-NLS-1$
     String CMD_EXECUTE_SCRIPT_NEW = "org.jkiss.dbeaver.ui.editors.sql.run.scriptNew"; //$NON-NLS-1$
 
     String CMD_EXECUTE_ROW_COUNT = "org.jkiss.dbeaver.ui.editors.sql.run.count"; //$NON-NLS-1$
-    String CMD_EXECUTE_NATIVELY = "org.jkiss.dbeaver.ui.editors.sql.run.count"; //$NON-NLS-1$
 
     String CMD_EXECUTE_EXPRESSION = "org.jkiss.dbeaver.ui.editors.sql.run.expression"; //$NON-NLS-1$
     String CMD_EXECUTE_ALL_ROWS = "org.jkiss.dbeaver.ui.editors.sql.run.all.rows"; //$NON-NLS-1$

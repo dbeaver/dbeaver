@@ -14,23 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.tools;
+package org.jkiss.dbeaver.ui.actions.exec;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
-import org.jkiss.dbeaver.tasks.ui.nativetool.NativeSQLScriptExecutor;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.io.File;
 
-public class PostgreScriptExecutor extends NativeSQLScriptExecutor<PostgreDatabase> {
+/**
+ * Allows opening native execution wizards
+ *
+ * @param <CONTAINER> container to read settings from
+ */
+public interface SQLScriptExecutor<CONTAINER extends DBSObject> {
+    /**
+     * Opens the wizard for the database
+     *
+     * @param container container to read settings from
+     * @param file SQL file
+     * @throws DBException if failed to open the wizard
+     */
+    void execute(@NotNull CONTAINER container, @Nullable File file) throws DBException;
 
-    @NotNull
-    protected TaskConfigurationWizard<?> createTaskConfigurationWizard(
-        @NotNull PostgreDatabase postgreDatabase,
-        @Nullable File file
-    ) {
-        return new PostgreScriptExecuteWizard(postgreDatabase, file);
-    }
 }
