@@ -244,6 +244,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.customEndpointInformation = false;
         this.instantiable = true;
         this.promoted = 0;
+        this.supportsDistributedMode = true;
 
         this.origName = null;
         this.origDescription = null;
@@ -964,7 +965,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return filtered;
     }
 
-    DBPDriverLibrary getDriverLibrary(String path) {
+    public DBPDriverLibrary getDriverLibrary(String path) {
         for (DBPDriverLibrary lib : libraries) {
             if (lib.getPath().equals(path)) {
                 return lib;
@@ -1082,7 +1083,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @Override
     public boolean isSupportedByLocalSystem() {
-        if (DBWorkbench.isDistributed()) {
+        if (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
             return supportsDistributedMode;
         }
         if (supportedSystems.isEmpty()) {
@@ -1577,6 +1578,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     public Set<DBPDriverConfigurationType> getSupportedConfigurationTypes() {
         return configurationTypes;
+    }
+
+    public boolean isSupportsDistributedMode() {
+        return supportsDistributedMode;
+    }
+
+    public void setSupportsDistributedMode(boolean supportsDistributedMode) {
+        this.supportsDistributedMode = supportsDistributedMode;
     }
 
     public DBPNativeClientLocation getDefaultClientLocation() {

@@ -126,6 +126,9 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
             if (!driver.isInstantiable()) {
                 xml.addAttribute(RegistryConstants.ATTR_INSTANTIABLE, driver.isInstantiable());
             }
+            if (!driver.isSupportsDistributedMode()) {
+                xml.addAttribute(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE, driver.isSupportsDistributedMode());
+            }
 
             // Libraries
             for (DBPDriverLibrary lib : driver.getDriverLibraries()) {
@@ -138,6 +141,9 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                     xml.addAttribute(RegistryConstants.ATTR_CUSTOM, lib.isCustom());
                     if (lib.isDisabled()) {
                         xml.addAttribute(RegistryConstants.ATTR_DISABLED, true);
+                    }
+                    if (lib.isDeleteAfterRestart()) {
+                        xml.addAttribute(RegistryConstants.ATTR_DELETE_AFTER_RESTART, true);
                     }
                     if (!CommonUtils.isEmpty(lib.getPreferredVersion())) {
                         xml.addAttribute(RegistryConstants.ATTR_VERSION, lib.getPreferredVersion());
@@ -295,6 +301,10 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         curDriver.setUseURL((
                             CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_USE_URL_TEMPLATE), true)));
                     }
+                    if (atts.getValue(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE) != null) {
+                        curDriver.setSupportsDistributedMode((
+                            CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE), true)));
+                    }
                     curDriver.setModified(true);
                     String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
                     if (CommonUtils.getBoolean(disabledAttr)) {
@@ -352,6 +362,8 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                             isLibraryUpgraded = true;
                         }
                     }
+                    String deleteAfterRestartAttr = atts.getValue(RegistryConstants.ATTR_DELETE_AFTER_RESTART);
+                    lib.setDeleteAfterRestart(CommonUtils.getBoolean(deleteAfterRestartAttr));
                     if (lib instanceof DriverLibraryMavenArtifact) {
                         ((DriverLibraryMavenArtifact) lib).setIgnoreDependencies(CommonUtils.toBoolean(atts.getValue("ignore-dependencies")));
                         ((DriverLibraryMavenArtifact) lib).setLoadOptionalDependencies(CommonUtils.toBoolean(atts.getValue("load-optional-dependencies")));
