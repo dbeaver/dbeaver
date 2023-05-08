@@ -1578,7 +1578,6 @@ public class SQLEditor extends SQLEditorBase implements
                         return item;
                     }
                 }
-                return item;
             }
         }
         return null;
