@@ -29,8 +29,8 @@ class DefaultTokenPredicateFactory extends TokenPredicateFactory {
 
     @Override
     @NotNull
-    protected TokenPredicateNode classifyToken(@NotNull String tokenString) {
+    protected SQLTokenEntry classifyToken(@NotNull String tokenString) {
         // Knows nothing about particular dialect or used in dialect-agnostic context
-        return new SQLTokenEntry(tokenString, SQLTokenType.T_UNKNOWN);
+        return new SQLTokenEntry(tokenString, SQLTokenType.T_UNKNOWN, false);
     }
 }

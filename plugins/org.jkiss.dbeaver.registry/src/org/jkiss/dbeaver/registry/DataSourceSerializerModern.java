@@ -65,6 +65,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
     private static final String ATTR_ORIGINAL_PROVIDER = "original-provider"; //$NON-NLS-1$
     private static final String ATTR_ORIGINAL_DRIVER = "original-driver"; //$NON-NLS-1$
+    private static final String ATTR_DRIVER_SUBSTITUTION = "driver-substitution"; //$NON-NLS-1$
 
     public static final String TAG_ORIGIN = "origin"; //$NON-NLS-1$
     private static final String ATTR_ORIGIN_TYPE = "$type"; //$NON-NLS-1$
@@ -563,6 +564,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 dataSource.setSharedCredentials(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SHARED_CREDENTIALS));
                 dataSource.setSavePassword(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SAVE_PASSWORD));
                 dataSource.setTemplate(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_TEMPLATE));
+                dataSource.setDriverSubstitution(DataSourceProviderRegistry.getInstance()
+                    .getDriverSubstitution(CommonUtils.notEmpty(JSONUtils.getString(conObject, ATTR_DRIVER_SUBSTITUTION))));
 
                 DataSourceNavigatorSettings navSettings = dataSource.getNavigatorSettings();
                 navSettings.setShowSystemObjects(JSONUtils.getBoolean(conObject,
@@ -890,6 +893,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (dataSource.getDriver() != dataSource.getOriginalDriver()) {
             JSONUtils.field(json, ATTR_ORIGINAL_PROVIDER, dataSource.getOriginalDriver().getProviderDescriptor().getId());
             JSONUtils.field(json, ATTR_ORIGINAL_DRIVER, dataSource.getOriginalDriver().getId());
+        }
+        if (dataSource.getDriverSubstitution() != null) {
+            JSONUtils.field(json, ATTR_DRIVER_SUBSTITUTION, dataSource.getDriverSubstitution().getId());
         }
         DBPDataSourceOrigin origin = dataSource.getOriginSource();
         if (origin != DataSourceOriginLocal.INSTANCE) {

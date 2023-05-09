@@ -45,6 +45,7 @@ public class RegistryConstants {
     public static final String TAG_DATASOURCE = "datasource"; //$NON-NLS-1$
     public static final String TAG_DATASOURCE_PATCH = "datasourcePatch"; //$NON-NLS-1$
     public static final String TAG_DATASOURCE_ORIGIN = "datasourceOrigin"; //$NON-NLS-1$
+    public static final String TAG_DRIVER_SUBSTITUTION = "driverSubstitution"; //$NON-NLS-1$
     public static final String TAG_OS = "os"; //NON-NLS-1
 
     public static final String ATTR_ID = "id"; //$NON-NLS-1$

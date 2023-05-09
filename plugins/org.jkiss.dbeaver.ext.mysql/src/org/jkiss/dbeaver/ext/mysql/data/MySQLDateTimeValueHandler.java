@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -64,7 +65,14 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
                     }
                     return year;
                 }
-                if (type.getTypeID() == Types.TIME) {
+                /*
+                  We want to handle time as a String for MariaDB due to it silently cutting the values
+                  after 24H. We only want this by default for Maria because MySQL5 will
+                  fail regardless of used method for value bigger than 24h. And MySQL8 will
+                  try to getTime(). If it fails, we will get value via getString()
+                 */
+                if (MySQLUtils.isMariaDB(session.getDataSource().getContainer().getDriver())
+                    && type.getTypeID() == Types.TIME) {
                     return dbResults.getString(index + 1);
                 }
             } catch (SQLException e) {
