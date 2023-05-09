@@ -350,8 +350,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
      * @param id identifier of the driver to retrieve
      * @return driver or {@code null} if no driver was found
      */
-    public DriverDescriptor getDriver(String id)
-    {
+    @Nullable
+    @Override
+    public DriverDescriptor getDriver(@NotNull String id) {
         for (DriverDescriptor driver : drivers) {
             if (driver.getId().equals(id)) {
                 while (driver.getReplacedBy() != null) {

@@ -66,6 +66,11 @@ public class ClickhouseMetaModel extends GenericMetaModel implements DBCQueryTra
     }
 
     @Override
+    public GenericCatalog createCatalogImpl(@NotNull GenericDataSource dataSource, @NotNull String catalogName) {
+        return new ClickhouseCatalog(dataSource, catalogName);
+    }
+
+    @Override
     public boolean isSystemSchema(GenericSchema schema) {
         return schema.getName().equalsIgnoreCase("INFORMATION_SCHEMA") || schema.getName().equals("system");
     }
@@ -115,7 +120,12 @@ public class ClickhouseMetaModel extends GenericMetaModel implements DBCQueryTra
     @Override
     public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
         GenericSchema schema =  sourceObject.getSchema();
-        if (schema != null && schema.getName().equals("system")) {
+        GenericCatalog catalog =  sourceObject.getCatalog();
+
+        if (
+            (schema != null && schema.getName().equals("system"))
+            || (catalog != null && catalog.getName().equals("system"))
+        ) {
             return super.getTableDDL(monitor, sourceObject, options);
         }
         GenericDataSource dataSource = sourceObject.getDataSource();

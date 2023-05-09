@@ -68,7 +68,6 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
 
     private static final String[][] ORACLE_BEGIN_END_BLOCK = new String[][]{
         {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
-        {"IF", SQLConstants.BLOCK_END},
         {"LOOP", SQLConstants.BLOCK_END + " LOOP"},
         {SQLConstants.KEYWORD_CASE, SQLConstants.BLOCK_END + " " + SQLConstants.KEYWORD_CASE},
     };
@@ -661,6 +660,11 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
                                 tt.sequence("procedure", SQLTokenType.T_OTHER),
                                 tt.sequence(SQLTokenType.T_OTHER, SQLTokenType.T_TYPE)
                         ), ";")
+                ),
+                new TokenPredicatesCondition(
+                    SQLParserActionKind.BEGIN_BLOCK,
+                    tt.sequence(),
+                    tt.sequence(tt.not("END"), "IF", tt.not("EXISTS"))
                 )
         );
 
@@ -718,5 +722,10 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
     @Override
     public String getClobDataType() {
         return OracleConstants.TYPE_CLOB;
+    }
+
+    @Override
+    public boolean needsDefaultDataTypes() {
+        return false;
     }
 }

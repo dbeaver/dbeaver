@@ -14,18 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.clickhouse;
+package org.jkiss.dbeaver.model.connection;
 
-import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 
-public class ClickhouseDataSourceProvider extends GenericDataSourceProvider {
+public interface DBPDriverSubstitutionDescriptor extends DBPNamedObject {
+    @NotNull
+    String getId();
 
-    public ClickhouseDataSourceProvider() {
-    }
+    @NotNull
+    String getProviderId();
 
-    @Override
-    public long getFeatures() {
-        return FEATURE_CATALOGS | FEATURE_SCHEMAS;
-    }
+    @NotNull
+    String getDriverId();
 
+    @NotNull
+    DBPDriverSubstitution getInstance();
 }

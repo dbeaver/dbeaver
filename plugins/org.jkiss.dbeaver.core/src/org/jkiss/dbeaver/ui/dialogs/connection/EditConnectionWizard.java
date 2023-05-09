@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -30,9 +31,12 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -59,15 +63,16 @@ import java.util.Locale;
 
 public class EditConnectionWizard extends ConnectionWizard {
     @NotNull
-    private DataSourceDescriptor originalDataSource;
+    private final DataSourceDescriptor originalDataSource;
     @NotNull
-    private DataSourceDescriptor dataSource;
+    private final DataSourceDescriptor dataSource;
     @Nullable
     private ConnectionPageSettings pageSettings;
     private ConnectionPageGeneral pageGeneral;
     //private ConnectionPageNetwork pageNetwork;
     private ConnectionPageInitialization pageInit;
     private ConnectionPageShellCommands pageEvents;
+    private DBPDriverSubstitutionDescriptor driverSubstitution;
 
     /**
      * Constructor for SampleNewWizard.
@@ -80,6 +85,20 @@ public class EditConnectionWizard extends ConnectionWizard {
         }
 
         setWindowTitle(CoreMessages.dialog_connection_wizard_title);
+        setDriverSubstitution(dataSource.getDriverSubstitution());
+
+        addPropertyChangeListener(event -> {
+            if (ConnectionPageAbstract.PROP_DRIVER_SUBSTITUTION.equals(event.getProperty())) {
+                ((Dialog) getContainer()).close();
+
+                UIUtils.asyncExec(() -> EditConnectionDialog.openEditConnectionDialog(
+                    UIUtils.getActiveWorkbenchWindow(),
+                    getOriginalDataSource(),
+                    null,
+                    wizard -> wizard.setDriverSubstitution((DBPDriverSubstitutionDescriptor) event.getNewValue())
+                ));
+            }
+        });
     }
 
     @NotNull
@@ -129,7 +148,7 @@ public class EditConnectionWizard extends ConnectionWizard {
             dataSource.getDriver().getProviderDescriptor(),
             IActionConstants.EDIT_CONNECTION_POINT);
         if (view != null) {
-            pageSettings = new ConnectionPageSettings(this, view, dataSource);
+            pageSettings = new ConnectionPageSettings(this, view, dataSource, driverSubstitution);
             addPage(pageSettings);
         }
 
@@ -242,6 +261,11 @@ public class EditConnectionWizard extends ConnectionWizard {
         // Save
         saveSettings(originalDataSource);
         return originalDataSource.persistConfiguration();
+    }
+
+    public void setDriverSubstitution(@Nullable DBPDriverSubstitutionDescriptor driverSubstitution) {
+        this.driverSubstitution = driverSubstitution;
+        this.dataSource.setDriverSubstitution(driverSubstitution);
     }
 
     private boolean isOnlyUserCredentialChanged(DataSourceDescriptor dsCopy, DataSourceDescriptor dsChanged) {
