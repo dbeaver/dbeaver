@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.dbeaver.Log;
@@ -49,7 +50,7 @@ public class UIStyles {
 
     public static Color getDefaultWidgetBackground() {
         ITheme theme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-        Color color = theme.getColorRegistry().get("org.eclipse.ui.workbench.INACTIVE_TAB_BG_START");
+        Color color = theme.getColorRegistry().get(IWorkbenchThemeConstants.INACTIVE_TAB_BG_START);
         if (color == null) {
             color = Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
         }
