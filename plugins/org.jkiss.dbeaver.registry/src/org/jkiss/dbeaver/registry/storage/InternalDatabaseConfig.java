@@ -16,12 +16,15 @@
  */
 package org.jkiss.dbeaver.registry.storage;
 
+import org.jkiss.code.NotNull;
+
 public interface InternalDatabaseConfig {
 
     String getDriver();
 
     void setDriver(String driver);
 
+    @NotNull
     String getUrl();
 
     void setUrl(String url);
