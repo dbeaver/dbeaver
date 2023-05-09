@@ -134,9 +134,7 @@ public class NewConnectionWizard extends ConnectionWizard
             availableProvides.add(provider);
             DataSourceViewDescriptor view = DataSourceViewRegistry.getInstance().findView(provider, IActionConstants.NEW_CONNECTION_POINT);
             if (view != null) {
-                ConnectionPageSettings pageSettings = new ConnectionPageSettings(
-                    NewConnectionWizard.this,
-                    view);
+                ConnectionPageSettings pageSettings = new ConnectionPageSettings(NewConnectionWizard.this, view, null, null);
                 settingsPages.put(provider, pageSettings);
                 addPage(pageSettings);
             }

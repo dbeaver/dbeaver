@@ -128,8 +128,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         gl.marginWidth = 3;
         this.setLayout(gl);
 
-        this.hoverBgColor = getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);
-        this.shadowColor = getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
+        boolean isDark = UIStyles.isDarkTheme();
+        this.hoverBgColor = getDisplay().getSystemColor(isDark ? SWT.COLOR_WIDGET_NORMAL_SHADOW : SWT.COLOR_WIDGET_LIGHT_SHADOW);
+        this.shadowColor = getDisplay().getSystemColor(isDark ? SWT.COLOR_WIDGET_LIGHT_SHADOW : SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
         {
             this.filterComposite = new Composite(this, SWT.BORDER);

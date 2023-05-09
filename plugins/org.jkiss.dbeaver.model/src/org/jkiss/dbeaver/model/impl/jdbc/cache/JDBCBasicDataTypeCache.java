@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
@@ -67,8 +68,11 @@ public class JDBCBasicDataTypeCache<OWNER extends DBSObject, OBJECT extends JDBC
             return null;
         }
         int valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
-        // Check for bad value type for strings: #494
-        if (valueType == Types.BINARY && (name.contains("varchar") || name.contains("VARCHAR"))) {
+        // Check for bad value type for strings: #494 && 19219
+        if ((valueType == Types.BINARY  && name.toUpperCase(Locale.ENGLISH).contains("VARCHAR")) ||
+            (valueType == Types.JAVA_OBJECT && SQLConstants.DATA_TYPE_VARCHAR.equalsIgnoreCase(name))
+
+        ) {
             log.warn("Inconsistent string data type name/id: " + name + "(" + valueType + "). Setting to " + Types.VARCHAR);
             valueType = Types.VARCHAR;
         }

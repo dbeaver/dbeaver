@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceOriginProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -44,6 +46,12 @@ public interface DBPDataSourceProviderRegistry {
     void saveConnectionTypes();
 
     DBPDriver findDriver(String driverIdOrName);
+
+    @Nullable
+    DBPDriverSubstitutionDescriptor getDriverSubstitution(@NotNull String id);
+
+    @NotNull
+    DBPDriverSubstitutionDescriptor[] getAllDriverSubstitutions();
 
     DBPEditorContribution[] getContributedEditors(String category, DBPDataSourceContainer dataSource);
 
