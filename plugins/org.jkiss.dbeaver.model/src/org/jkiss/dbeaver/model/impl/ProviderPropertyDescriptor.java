@@ -56,11 +56,7 @@ public class ProviderPropertyDescriptor extends PropertyDescriptor {
         return properties;
     }
 
-
     public Set<DBPDriverConfigurationType> getConfigurationTypes() {
         return configurationTypes;
     }
-
-
-
 }
