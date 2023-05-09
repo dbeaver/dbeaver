@@ -41,6 +41,8 @@ import java.util.stream.Collectors;
  * TaskImpl
  */
 public class TaskImpl implements DBTTask, DBPNamedObject2 {
+    public static String META_FILE_NAME = "meta.json";
+
     private static final Log log = Log.getLog(TaskImpl.class);
     private static final int MAX_RUNS_IN_STATS = 100;
     private static final TaskRunImpl VOID_RUN = new TaskRunImpl();

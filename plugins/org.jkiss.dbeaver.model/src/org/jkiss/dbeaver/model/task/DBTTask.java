@@ -30,8 +30,6 @@ import java.util.Map;
  * Task configuration
  */
 public interface DBTTask extends DBPNamedObject, DBPObjectWithDescription {
-    String META_FILE_NAME = "meta.json";
-
     @NotNull
     String getId();
 
