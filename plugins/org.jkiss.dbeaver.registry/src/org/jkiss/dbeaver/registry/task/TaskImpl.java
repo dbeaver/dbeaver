@@ -59,13 +59,23 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     private DBTTaskType type;
     private Map<String, Object> properties;
     private TaskRunImpl lastRun;
-    @Nullable private TaskFolderImpl taskFolder;
+    @Nullable
+    private TaskFolderImpl taskFolder;
 
     private static class RunStatistics {
         private final List<TaskRunImpl> runs = new ArrayList<>();
     }
 
-    public TaskImpl(@NotNull DBPProject project, @NotNull DBTTaskType type, @NotNull String id, @NotNull String label, @Nullable String description, @NotNull Date createTime, @Nullable Date updateTime, @Nullable TaskFolderImpl taskFolder) {
+    public TaskImpl(
+        @NotNull DBPProject project,
+        @NotNull DBTTaskType type,
+        @NotNull String id,
+        @NotNull String label,
+        @Nullable String description,
+        @NotNull Date createTime,
+        @Nullable Date updateTime,
+        @Nullable TaskFolderImpl taskFolder
+    ) {
         this.project = project;
         this.id = id;
         this.label = label;
@@ -168,8 +178,11 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     @NotNull
     @Override
     public Path getRunLog(DBTTaskRun run) {
-        return getTaskStatsFolder(false).resolve(
-            TaskRunImpl.RUN_LOG_PREFIX + run.getId() + "." + TaskRunImpl.RUN_LOG_EXT);
+        return getTaskStatsFolder(false).resolve(buildRunLogFileName(run.getId()));
+    }
+
+    protected String buildRunLogFileName(String runId) {
+        return TaskRunImpl.RUN_LOG_PREFIX + runId + "." + TaskRunImpl.RUN_LOG_EXT;
     }
 
     @Override
@@ -244,7 +257,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
         return getTaskStatsFolder(false);
     }
 
-    Path getTaskStatsFolder(boolean create) {
+    protected Path getTaskStatsFolder(boolean create) {
         Path taskStatsFolder = project.getTaskManager().getStatisticsFolder().resolve(id);
         if (create && !Files.exists(taskStatsFolder)) {
             try {
