@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataTypeCache;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 
 import java.sql.Types;
 import java.util.List;
@@ -33,24 +34,24 @@ public class SnowflakeDataTypeCache extends GenericDataTypeCache {
 
     @Override
     protected void addCustomObjects(List<GenericDataType> genericDataTypes) {
-        if (DBUtils.findObject(genericDataTypes, SnowflakeConstants.TYPE_BIGINT) == null) {
+        if (DBUtils.findObject(genericDataTypes, SQLConstants.DATA_TYPE_BIGINT) == null) {
             genericDataTypes.add(new GenericDataType(
                 owner,
                 Types.BIGINT,
-                SnowflakeConstants.TYPE_BIGINT,
-                SnowflakeConstants.TYPE_BIGINT,
+                SQLConstants.DATA_TYPE_BIGINT,
+                SQLConstants.DATA_TYPE_BIGINT,
                 false,
                 false,
                 0,
                 0,
                 0));
         }
-        if (DBUtils.findObject(genericDataTypes, SnowflakeConstants.TYPE_INT) == null) {
+        if (DBUtils.findObject(genericDataTypes, SQLConstants.DATA_TYPE_INT) == null) {
             genericDataTypes.add(new GenericDataType(
                 owner,
                 Types.INTEGER,
-                SnowflakeConstants.TYPE_INT,
-                SnowflakeConstants.TYPE_INT,
+                SQLConstants.DATA_TYPE_INT,
+                SQLConstants.DATA_TYPE_INT,
                 false,
                 false,
                 0,
@@ -81,12 +82,12 @@ public class SnowflakeDataTypeCache extends GenericDataTypeCache {
                 0,
                 0));
         }
-        if (DBUtils.findObject(genericDataTypes, SnowflakeConstants.TYPE_FLOAT) == null) {
+        if (DBUtils.findObject(genericDataTypes, SQLConstants.DATA_TYPE_FLOAT) == null) {
             genericDataTypes.add(new GenericDataType(
                 owner,
                 Types.FLOAT,
-                SnowflakeConstants.TYPE_FLOAT,
-                SnowflakeConstants.TYPE_FLOAT,
+                SQLConstants.DATA_TYPE_FLOAT,
+                SQLConstants.DATA_TYPE_FLOAT,
                 false,
                 false,
                 0,
