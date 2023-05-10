@@ -53,8 +53,11 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.lang.reflect.Array;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 
 /**
  * postgresql utils
@@ -858,5 +861,49 @@ public class PostgreUtils {
         } else {
             return ",";
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nullable
+    public static <T> T[] safeGetArray(
+        @NotNull ResultSet dbResult,
+        @NotNull String columnName,
+        @NotNull Function<String, T> converter,
+        @NotNull IntFunction<T[]> generator
+    ) {
+        try {
+            final java.sql.Array value = dbResult.getArray(columnName);
+            return value != null ? (T[]) value.getArray() : null;
+        } catch (Exception ignored) {
+        }
+
+        try {
+            final String value = dbResult.getString(columnName);
+            return value != null ? PostgreValueParser.parsePrimitiveArray(value, converter, generator) : null;
+        } catch (Exception ignored) {
+        }
+
+        // Fallback just in case, also prints debug message
+        return JDBCUtils.safeGetArray(dbResult, columnName);
+    }
+
+    @Nullable
+    public static String[] safeGetStringArray(@NotNull ResultSet dbResult, @NotNull String columnName) {
+        return safeGetArray(dbResult, columnName, Function.identity(), String[]::new);
+    }
+
+    @Nullable
+    public static Short[] safeGetShortArray(@NotNull ResultSet dbResult, @NotNull String columnName) {
+        return safeGetArray(dbResult, columnName, Short::valueOf, Short[]::new);
+    }
+
+    @Nullable
+    public static Long[] safeGetLongArray(@NotNull ResultSet dbResult, @NotNull String columnName) {
+        return safeGetArray(dbResult, columnName, Long::valueOf, Long[]::new);
+    }
+
+    @Nullable
+    public static Boolean[] safeGetBooleanArray(@NotNull ResultSet dbResult, @NotNull String columnName) {
+        return safeGetArray(dbResult, columnName, Boolean::valueOf, Boolean[]::new);
     }
 }

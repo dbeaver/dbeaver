@@ -229,6 +229,19 @@ public class PostgreValueParserTest {
 
     }
 
+    @Test
+    public void testParsePrimitiveArray() {
+        Assert.assertArrayEquals(
+            new String[]{},
+            PostgreValueParser.parsePrimitiveArray("{}", Function.identity(), String[]::new));
+        Assert.assertArrayEquals(
+            new String[]{"ab", "cd", null, "NULL", " spa ce "},
+            PostgreValueParser.parsePrimitiveArray("{ab,cd,NULL,\"NULL\",\" spa ce \"}", Function.identity(), String[]::new));
+        Assert.assertArrayEquals(
+            new Integer[]{1, null, 3},
+            PostgreValueParser.parsePrimitiveArray("{1,NULL,3}", Integer::valueOf, Integer[]::new));
+    }
+
     private void setupGeneralWhenMocks() throws Exception {
 //        Mockito.when(dataSource.getSQLDialect()).thenReturn(sqlDialect);
         Mockito.when(session.getProgressMonitor()).thenReturn(new VoidProgressMonitor());

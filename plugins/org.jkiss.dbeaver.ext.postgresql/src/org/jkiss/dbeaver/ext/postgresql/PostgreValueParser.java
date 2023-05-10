@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCComposite;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeStatic;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
@@ -47,6 +49,8 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 
 public class PostgreValueParser {
 
@@ -401,5 +405,82 @@ public class PostgreValueParser {
             }
         }
         return arrayList;
+    }
+
+    @NotNull
+    public static <T> T[] parsePrimitiveArray(
+        @NotNull String value,
+        @NotNull Function<String, T> converter,
+        @NotNull IntFunction<T[]> generator
+    ) {
+        return parsePrimitiveArray(value, converter, generator, ',');
+    }
+
+    /**
+     * A simple implementation of a parser for primitive arrays.
+     *
+     * @param value     an input array, e.g. <code>{abc,def,NULL}</code>
+     * @param converter a function that takes string representation of an element and returns {@code T}
+     * @param generator a function that takes a length and creates array of {@code T}
+     * @param delimiter a delimiter that separates elements
+     * @return array elements
+     */
+    @NotNull
+    public static <T> T[] parsePrimitiveArray(
+        @NotNull String value,
+        @NotNull Function<String, T> converter,
+        @NotNull IntFunction<T[]> generator,
+        char delimiter
+    ) {
+        final int length = value.length();
+
+        if (length < 2 || value.charAt(0) != '{' || value.charAt(length - 1) != '}') {
+            throw new IllegalArgumentException("Not a valid array: " + value);
+        }
+
+        final List<T> result = new ArrayList<>();
+        final StringBuilder buffer = new StringBuilder();
+        int offset = 1;
+        boolean isQuoted = false;
+        boolean wasQuoted = false;
+
+        while (offset < length) {
+            final char ch = value.charAt(offset++);
+
+            if (ch == '"') {
+                // String opening quotes
+                wasQuoted = isQuoted;
+                isQuoted = !isQuoted;
+            } else if (!isQuoted && ch == '\\') {
+                // Backslash escape
+                buffer.append(value.charAt(offset++));
+            } else if (!isQuoted && (ch == delimiter || ch == '}')) {
+                // Either a delimiter, string closing quote, or array closing parenthesis
+                final String element = buffer.toString();
+
+                if (!wasQuoted && element.equalsIgnoreCase(SQLConstants.NULL_VALUE)) {
+                    result.add(null);
+                } else if (wasQuoted || !element.isEmpty()) {
+                    result.add(converter.apply(element));
+                }
+
+                if (ch == '}') {
+                    break;
+                }
+
+                buffer.setLength(0);
+                isQuoted = false;
+                wasQuoted = false;
+            } else {
+                // A regular character
+                buffer.append(ch);
+            }
+        }
+
+        if (offset != length) {
+            throw new IllegalArgumentException("Trailing data after array: " + value);
+        }
+
+        return result.toArray(generator);
     }
 }
