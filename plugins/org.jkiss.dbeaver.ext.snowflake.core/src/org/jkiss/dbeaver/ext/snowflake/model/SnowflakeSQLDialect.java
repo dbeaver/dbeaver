@@ -130,13 +130,13 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
                         (scale != null && scale > 0 ? "," + scale : "") +  ")";
                 }
                 break;
-            case SnowflakeConstants.TYPE_DOUBLE:
+            case SQLConstants.DATA_TYPE_DOUBLE:
             case SnowflakeConstants.TYPE_DOUBLE_PRECISION:
             case SnowflakeConstants.TYPE_REAL:
-            case SnowflakeConstants.TYPE_FLOAT:
-            case SnowflakeConstants.TYPE_INT:
+            case SQLConstants.DATA_TYPE_FLOAT:
+            case SQLConstants.DATA_TYPE_INT:
             case SnowflakeConstants.TYPE_INTEGER:
-            case SnowflakeConstants.TYPE_BIGINT:
+            case SQLConstants.DATA_TYPE_BIGINT:
                 // These types do not have parameters
                 return null;
         }
