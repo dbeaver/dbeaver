@@ -105,8 +105,11 @@ public class SQLServerDateTimeOffsetHandler extends JDBCDateTimeValueHandler {
         int index,
         @Nullable Object value
     ) throws DBCException {
-
-        String s = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(((OffsetDateTime) value));
-        super.bindValueObject(session, statement, type, index, s);
+        if (value instanceof OffsetDateTime) {
+            String s = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(((OffsetDateTime) value));
+            super.bindValueObject(session, statement, type, index, s);
+            return;
+        }
+        super.bindValueObject(session, statement, type, index, value);
     }
 }
