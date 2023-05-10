@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mssql.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -29,7 +30,10 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.BeanUtils;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 
 
 public class SQLServerDateTimeOffsetHandler extends JDBCDateTimeValueHandler {
@@ -64,12 +68,33 @@ public class SQLServerDateTimeOffsetHandler extends JDBCDateTimeValueHandler {
                     log.debug("Extracted timestamp is null");
                     return null;
                 }
-                return timestamp.toInstant().atOffset(ZoneOffset.ofTotalSeconds(offsetSeconds)).toLocalDateTime();
+                return timestamp.toInstant().atOffset(ZoneOffset.ofTotalSeconds(offsetSeconds));
             } catch (Throwable e) {
                 log.debug("error extracting datetimeoffset timestamp", e);
             }
         }
+        if (object instanceof String) {
+            DBDDataFormatter formatter = getFormatter(type);
+            try {
+                return formatter.parseValue(((String) object), OffsetDateTime.class);
+            } catch (ParseException e) {
+                log.debug("Error parsing offset datetime value", e);
+                return null;
+            }
+        }
         return super.getValueFromObject(session, type, object, copy, validateValue);
+    }
+
+    @NotNull
+    @Override
+    protected String getFormatterId(DBSTypedObject column) {
+        return DBDDataFormatter.TYPE_NAME_TIMESTAMP_TZ;
+    }
+
+    @NotNull
+    @Override
+    protected DBDDataFormatter getFormatter(DBSTypedObject column) {
+        return super.getFormatter(column);
     }
 
     @Override
@@ -80,6 +105,8 @@ public class SQLServerDateTimeOffsetHandler extends JDBCDateTimeValueHandler {
         int index,
         @Nullable Object value
     ) throws DBCException {
-        super.bindValueObject(session, statement, type, index, value);
+
+        String s = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(((OffsetDateTime) value));
+        super.bindValueObject(session, statement, type, index, s);
     }
 }
