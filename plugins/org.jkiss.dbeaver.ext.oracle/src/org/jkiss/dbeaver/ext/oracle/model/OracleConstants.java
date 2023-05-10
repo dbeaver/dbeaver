@@ -119,7 +119,6 @@ public class OracleConstants {
     public static final String TYPE_OCTET = "OCTET";
     public static final String TYPE_INTERVAL_YEAR_MONTH = "INTERVAL YEAR TO MONTH";
     public static final String TYPE_INTERVAL_DAY_SECOND = "INTERVAL DAY TO SECOND";
-    public static final String TYPE_NAME_BOOLEAN = "BOOLEAN";
     public static final String TYPE_NAME_BLOB = "BLOB";
     public static final String TYPE_NAME_NUMERIC = "NUMERIC";
 
