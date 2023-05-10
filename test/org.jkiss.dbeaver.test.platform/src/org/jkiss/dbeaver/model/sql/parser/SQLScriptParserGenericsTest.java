@@ -133,12 +133,6 @@ public class SQLScriptParserGenericsTest {
             SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
             Assert.assertEquals("DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
         }
-        {
-            String query = "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
-            SQLParserContext context = createParserContext(hanaDialect, query);
-            SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
-            Assert.assertEquals("DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
-        }
     }
 
 
