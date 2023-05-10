@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * SerializerDescriptor
@@ -33,17 +34,17 @@ public class SerializerDescriptor extends AbstractDescriptor
 
     private String id;
     private ObjectType serializerType;
+    private boolean distributed;
 
-    SerializerDescriptor(IConfigurationElement config)
-    {
+    SerializerDescriptor(IConfigurationElement config) {
         super(config);
 
         this.id = config.getAttribute("id");
         this.serializerType = new ObjectType(config.getAttribute("class"));
+        this.distributed = CommonUtils.getBoolean(config.getAttribute("distributed"), true);
     }
 
-    public String getId()
-    {
+    public String getId() {
         return id;
     }
 
@@ -51,4 +52,7 @@ public class SerializerDescriptor extends AbstractDescriptor
         return serializerType.createInstance(DBPObjectSerializer.class);
     }
 
+    public boolean isDistributed() {
+        return distributed;
+    }
 }

@@ -22,35 +22,38 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class SerializerRegistry
-{
+public class SerializerRegistry {
     private static final Log log = Log.getLog(SerializerRegistry.class);
 
     private static SerializerRegistry instance = null;
 
     private final Map<String, SerializerDescriptor> serializers = new HashMap<>();
 
-    public synchronized static SerializerRegistry getInstance()
-    {
+    public synchronized static SerializerRegistry getInstance() {
         if (instance == null) {
             instance = new SerializerRegistry(Platform.getExtensionRegistry());
         }
         return instance;
     }
 
-    private SerializerRegistry(IExtensionRegistry registry)
-    {
+    private SerializerRegistry(IExtensionRegistry registry) {
         // Load datasource providers from external plugins
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(SerializerDescriptor.EXTENSION_ID);
+        boolean isDistributedMultiuserApp = DBWorkbench.isDistributed() && DBWorkbench.getPlatform()
+            .getApplication()
+            .isMultiuser();
         for (IConfigurationElement ext : extElements) {
             // Load main nodes
             if ("serializer".equals(ext.getName())) {
                 SerializerDescriptor sd = new SerializerDescriptor(ext);
-                serializers.put(sd.getId(), sd);
+                if (!isDistributedMultiuserApp || sd.isDistributed()) {
+                    serializers.put(sd.getId(), sd);
+                }
             }
         }
     }

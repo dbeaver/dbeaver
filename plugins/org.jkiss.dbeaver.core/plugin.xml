@@ -519,10 +519,10 @@
 
                 <separator name="driverGroup" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.new.connection">
-                    <visibleWhen checkEnabled="true"/>
+                    <visibleWhen checkEnabled="true"><test property="org.jkiss.dbeaver.core.global.canCreateConnection"/></visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.core.new.connection.from.url">
-                    <visibleWhen checkEnabled="true"/>
+                    <visibleWhen checkEnabled="true"><test property="org.jkiss.dbeaver.core.global.canCreateConnection"/></visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.core.driver.manager">
                     <visibleWhen checkEnabled="true"/>
@@ -571,7 +571,12 @@
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?before=additions">
             <toolbar id="dbeaver-general" label="%toolbar.dbeaver-general.label">
                 <command commandId="org.jkiss.dbeaver.core.new.connection" id="org.jkiss.dbeaver.core.menu.newConnection" style="pulldown">
-                    <visibleWhen checkEnabled="true"><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
+                    <visibleWhen checkEnabled="true">
+                        <and>
+                            <test property="org.jkiss.dbeaver.core.global.canCreateConnection"/>
+                            <reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/>
+                        </and>
+                    </visibleWhen>
                 </command>
                 <separator name="connection-tools" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.connect">
