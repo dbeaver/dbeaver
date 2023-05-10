@@ -221,9 +221,18 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
             result.setSRID(srid);
 
             return new DBGeometry(result);
-        } catch (Throwable ignored) {
-            // May happen when geometry value was stored inside composite
-            return makeGeometryFromWKB(geometry);
+        } catch (Throwable e) {
+            try {
+                // May happen when geometry value was stored inside composite
+                return makeGeometryFromWKB(geometry);
+            } catch (Throwable ignored) {
+                // Throw the original exception instead
+            }
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException) e;
+            } else {
+                throw new DBCException(e.getMessage(), e);
+            }
         }
     }
 
