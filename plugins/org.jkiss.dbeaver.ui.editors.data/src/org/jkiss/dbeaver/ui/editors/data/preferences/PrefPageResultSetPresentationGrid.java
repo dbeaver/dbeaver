@@ -136,10 +136,13 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage {
                 DataEditorsMessages.pref_page_database_resultsets_label_max_def_column_width_tip);
             maxDefColumnWidth.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
 
-            new PreferenceLinkArea(appearanceGroup, SWT.NONE,
+            PreferenceLinkArea linkArea = new PreferenceLinkArea(appearanceGroup, SWT.NONE,
                 EditorUtils.COLORS_AND_FONTS_PAGE_ID,
                 DataEditorsMessages.pref_page_database_resultsets_link_colors_and_fonts,
-                (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
+                (IWorkbenchPreferenceContainer) getContainer(), null);//$NON-NLS-1$
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
+            linkArea.getControl().setLayoutData(gd);
 
             final Group behaviorGroup = UIUtils.createControlGroup(uiGroup,
                 DataEditorsMessages.pref_page_database_resultsets_group_behavior, 2,
@@ -161,7 +164,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage {
                 "org.jkiss.dbeaver.preferences.editors",
                 "<a>" + DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_config_link
                     + "  - ''{0}''</a>", (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             editorsLink.getControl().setLayoutData(gd);
 

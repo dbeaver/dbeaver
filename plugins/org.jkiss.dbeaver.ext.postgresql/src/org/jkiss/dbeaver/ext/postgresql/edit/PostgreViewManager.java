@@ -112,7 +112,7 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
 
     protected void createOrReplaceViewQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, PostgreViewBase view, Map<String, Object> options) throws DBException {
         // Source may be empty if it wasn't yet read. Then it definitely wasn't changed
-        String sql = view.getSource().trim();
+        String sql = view.getObjectDefinitionText(monitor, Map.of());
         if (!sql.toLowerCase(Locale.ENGLISH).contains("create")) {
             StringBuilder sqlBuf = new StringBuilder();
             sqlBuf.append("CREATE ");
@@ -148,10 +148,17 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
     @Override
     protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
         PostgreViewBase view = (PostgreViewBase) command.getObject();
+        String tableType;
+        if (view.getDataSource().getServerType().supportsAlterTableForViewRename()) {
+            tableType = "TABLE"; //$NON-NLS-1$
+        } else {
+            tableType = view.getTableTypeName();
+        }
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename view",
-                "ALTER " + view.getTableTypeName() + " " + DBUtils.getQuotedIdentifier(view.getSchema()) + "." + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getOldName()) + //$NON-NLS-1$
+                "ALTER " + tableType + " " + DBUtils.getQuotedIdentifier(view.getSchema()) //$NON-NLS-1$
+                    + "." + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getOldName()) +
                     " RENAME TO " + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getNewName())) //$NON-NLS-1$
         );
     }

@@ -35,6 +35,8 @@ public interface TokenEntry {
      */
     @Nullable
     Enum getTokenType();
+    
+    boolean isInverted();
 
     /**
      * Checks if two entries could possibly describe the same concrete token

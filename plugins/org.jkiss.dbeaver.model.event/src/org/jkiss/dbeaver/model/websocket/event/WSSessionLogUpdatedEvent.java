@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.websocket.event;
 
-public class WSSessionLogUpdatedEvent extends WSEvent {
+public class WSSessionLogUpdatedEvent extends WSAbstractEvent {
     public WSSessionLogUpdatedEvent() {
         super(WSEventType.SESSION_LOG_UPDATED);
     }

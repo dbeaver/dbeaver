@@ -112,6 +112,8 @@ public class DataSourceDescriptor
     private DBPDriver driver;
     @NotNull
     private DBPDriver originalDriver;
+    @Nullable
+    private DBPDriverSubstitutionDescriptor driverSubstitution;
     @NotNull
     private DBPConnectionConfiguration connectionInfo;
     // Copy of connection info with resolved params (cache)
@@ -244,6 +246,7 @@ public class DataSourceDescriptor
         this.forceUseSingleConnection = source.forceUseSingleConnection;
         this.driver = source.driver;
         this.originalDriver = source.originalDriver;
+        this.driverSubstitution = source.driverSubstitution;
         this.clientHome = source.clientHome;
 
         this.connectionModifyRestrictions = source.connectionModifyRestrictions == null ? null : new ArrayList<>(source.connectionModifyRestrictions);
@@ -308,6 +311,17 @@ public class DataSourceDescriptor
     @Override
     public DBPDriver getDriver() {
         return driver;
+    }
+
+    @Nullable
+    @Override
+    public DBPDriverSubstitutionDescriptor getDriverSubstitution() {
+        return driverSubstitution;
+    }
+
+    @Override
+    public void setDriverSubstitution(@Nullable DBPDriverSubstitutionDescriptor driverSubstitution) {
+        this.driverSubstitution = driverSubstitution;
     }
 
     @NotNull
@@ -1076,7 +1090,7 @@ public class DataSourceDescriptor
             return true;
         } catch (Throwable e) {
             lastConnectionError = e.getMessage();
-            log.debug("Connection failed (" + getId() + ")", e);
+            //log.debug("Connection failed (" + getId() + ")", e);
             if (dataSource != null) {
                 try {
                     dataSource.shutdown(monitor);
@@ -1680,6 +1694,8 @@ public class DataSourceDescriptor
                 CommonUtils.equalObjects(this.forceUseSingleConnection, source.forceUseSingleConnection) &&
                 CommonUtils.equalObjects(this.navigatorSettings, source.navigatorSettings) &&
                 CommonUtils.equalObjects(this.driver, source.driver) &&
+                CommonUtils.equalObjects(this.originalDriver, source.originalDriver) &&
+                CommonUtils.equalObjects(this.driverSubstitution, source.driverSubstitution) &&
                 CommonUtils.equalObjects(this.connectionInfo, source.connectionInfo) &&
                 CommonUtils.equalObjects(this.filterMap, source.filterMap) &&
                 CommonUtils.equalObjects(this.formatterProfile, source.formatterProfile) &&
@@ -1962,6 +1978,10 @@ public class DataSourceDescriptor
             || props.containsKey(RegistryConstants.TAG_PROPERTIES)
             || emptyDatabaseCredsSaved;
 
+        if (this.secretsContainsDatabaseCreds) {
+            this.savePassword = props.containsKey(RegistryConstants.ATTR_PASSWORD);
+        }
+
         // Handlers
         List<Map<String, Object>> handlerList = JSONUtils.getObjectList(props, RegistryConstants.TAG_HANDLERS);
         if (!CommonUtils.isEmpty(handlerList)) {
@@ -1997,19 +2017,16 @@ public class DataSourceDescriptor
         try {
             for (DBSSecret secret : sBrowser.listSecrets(itemPath.toString())) {
                 String secretId = secret.getId();
+                String secretValue = secretController.getSecretValue(secretId);
                 switch (secret.getName()) {
                     case RegistryConstants.ATTR_USER:
-                        connectionInfo.setUserName(
-                            secretController.getSecretValue(secretId));
+                        connectionInfo.setUserName(secretValue);
                         break;
                     case RegistryConstants.ATTR_PASSWORD:
-                        connectionInfo.setUserPassword(
-                            secretController.getSecretValue(secretId));
+                        connectionInfo.setUserPassword(secretValue);
                         break;
                     default:
-                        connectionInfo.setAuthProperty(
-                            secretId,
-                            secretController.getSecretValue(secretId));
+                        connectionInfo.setAuthProperty(secretId, secretValue);
                         break;
                 }
             }

@@ -183,6 +183,12 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
         // do nothing
     }
 
+    @NotNull
+    @Override
+    public String getFontId() {
+        return ThemeConstants.FONT_SQL_RESULT_SET;
+    }
+
     protected void registerContextMenu() {
         // Register context menu
         MenuManager menuMgr = new MenuManager(null, RESULT_SET_PRESENTATION_CONTEXT_MENU);

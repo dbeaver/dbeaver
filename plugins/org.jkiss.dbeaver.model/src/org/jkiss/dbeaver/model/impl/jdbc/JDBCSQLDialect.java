@@ -54,8 +54,8 @@ public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConver
         "nclob"
     };
 
-    private String name;
-    private String id;
+    private final String name;
+    private final String id;
     private String[][] identifierQuoteString = new String[][]{{SQLConstants.DEFAULT_IDENTIFIER_QUOTE, SQLConstants.DEFAULT_IDENTIFIER_QUOTE}};
     private SQLStateType sqlStateType;
     private String searchStringEscape;
@@ -344,30 +344,32 @@ public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConver
 
     @NotNull
     @Override
-    public TreeSet<String> getDataTypes(@Nullable DBPDataSource dataSource) {
+    public Collection<String> getDataTypes(@Nullable DBPDataSource dataSource) {
         if (!typesLoaded && dataSource instanceof JDBCDataSource) {
-            types.clear();
             loadDataTypesFromDatabase((JDBCDataSource) dataSource);
             typesLoaded = true;
         }
-        return types;
+        return super.getDataTypes(dataSource);
     }
 
     protected void loadDataTypesFromDatabase(JDBCDataSource dataSource) {
+        clearDataTypes();
+
         Collection<? extends DBSDataType> supportedDataTypes = dataSource.getLocalDataTypes();
+        List<String> dataTypes = new ArrayList<>();
         if (supportedDataTypes != null) {
             for (DBSDataType dataType : supportedDataTypes) {
                 if (!dataType.getDataKind().isComplex()) {
-                    types.add(dataType.getName().toUpperCase(Locale.ENGLISH));
+                    dataTypes.add(dataType.getName().toUpperCase(Locale.ENGLISH));
                 }
             }
         }
 
-        if (types.isEmpty()) {
+        if (dataTypes.isEmpty() && needsDefaultDataTypes()) {
             // Add default types
-            Collections.addAll(types, SQLConstants.DEFAULT_TYPES);
+            Collections.addAll(dataTypes, SQLConstants.DEFAULT_TYPES);
         }
-        addKeywords(types, DBPKeywordType.TYPE);
+        addDataTypes(dataTypes);
     }
 
     private void loadDriverKeywords(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
@@ -387,11 +389,7 @@ public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConver
             Set<String> allFunctions = new HashSet<>();
             loadFunctions(session, metaData, allFunctions);
             // Remove functions which clashes with keywords
-            for (Iterator<String> fIter = allFunctions.iterator(); fIter.hasNext(); ) {
-                if (getKeywordType(fIter.next()) == DBPKeywordType.KEYWORD) {
-                    fIter.remove();
-                }
-            }
+            allFunctions.removeIf(s -> getKeywordType(s) == DBPKeywordType.KEYWORD);
             addFunctions(allFunctions);
         } catch (Throwable e) {
             log.debug("Error reading SQL functions: " + e.getMessage());
@@ -399,18 +397,10 @@ public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConver
     }
 
     protected void loadFunctions(JDBCSession session, JDBCDatabaseMetaData metaData, Set<String> allFunctions) throws DBException, SQLException {
-        for (String func : makeStringList(metaData.getNumericFunctions())) {
-            allFunctions.add(func.toUpperCase());
-        }
-        for (String func : makeStringList(metaData.getStringFunctions())) {
-            allFunctions.add(func.toUpperCase());
-        }
-        for (String func : makeStringList(metaData.getSystemFunctions())) {
-            allFunctions.add(func.toUpperCase());
-        }
-        for (String func : makeStringList(metaData.getTimeDateFunctions())) {
-            allFunctions.add(func.toUpperCase());
-        }
+        allFunctions.addAll(makeStringList(metaData.getNumericFunctions()));
+        allFunctions.addAll(makeStringList(metaData.getStringFunctions()));
+        allFunctions.addAll(makeStringList(metaData.getSystemFunctions()));
+        allFunctions.addAll(makeStringList(metaData.getTimeDateFunctions()));
     }
 
     private static List<String> makeStringList(String source) {

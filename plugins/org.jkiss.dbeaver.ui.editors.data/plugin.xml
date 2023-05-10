@@ -966,7 +966,6 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.navigateLink" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+SPACE"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.filterMenu" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F11"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.filterMenu.distinct" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+F11"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.referencesMenu" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+1"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.referencesMenu" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+1"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.toggleOrder" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+2"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.first" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+ARROW_LEFT"/>
@@ -1043,7 +1042,11 @@
             <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.results.description</description>
         </themeElementCategory>
 
-        <fontDefinition id="org.jkiss.dbeaver.sql.resultset.font" categoryId="org.jkiss.dbeaver.ui.presentation.results" label="%fontDefinition.org.jkiss.dbeaver.sql.resultset.font.label">
+        <fontDefinition
+                id="org.jkiss.dbeaver.sql.resultset.font"
+                categoryId="org.jkiss.dbeaver.ui.fonts"
+                label="%fontDefinition.org.jkiss.dbeaver.sql.resultset.font.label"
+                defaultsTo="org.jkiss.dbeaver.dbeaver.ui.fonts.main">
             <description>%fontDefinition.org.jkiss.dbeaver.sql.resultset.font.description</description>
         </fontDefinition>
 
@@ -1257,6 +1260,138 @@
                 title="%confirm.close_resultset_edit.title"
                 message="%confirm.close_resultset_edit.message"
                 group="%confirm.resultSet.group.name"/>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.toolBarConfiguration">
+        <toolBar key="resultsetViewer.bottom" name="%org.jkiss.dbeaver.toolBarConfiguration.resultsetViewer.bottom">
+            <item commandId="org.jkiss.dbeaver.core.resultset.applyChanges" defaultVisibility="true"/>
+            <item commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" defaultVisibility="true"/>
+            <item commandId="org.jkiss.dbeaver.core.resultset.row.edit" defaultVisibility="true"/>
+            <item commandId="org.jkiss.dbeaver.core.resultset.row.add" defaultVisibility="true"/>
+            <item commandId="org.jkiss.dbeaver.core.resultset.row.copy" defaultVisibility="true"/>
+            <item commandId="org.jkiss.dbeaver.core.resultset.row.delete" defaultVisibility="true"/>
+            <item commandId="org.jkiss.dbeaver.core.resultset.row.first" defaultVisibility="true"/>
+            <item commandId="org.jkiss.dbeaver.core.resultset.row.previous" defaultVisibility="true"/>
+            <item commandId="org.jkiss.dbeaver.core.resultset.row.next" defaultVisibility="true"/>
+            <item commandId="org.jkiss.dbeaver.core.resultset.row.last" defaultVisibility="true"/>
+            <item commandId="org.jkiss.dbeaver.core.resultset.fetch.page" defaultVisibility="false"/>
+            <item commandId="org.jkiss.dbeaver.core.resultset.fetch.all" defaultVisibility="true"/>
+            <item commandId="org.jkiss.dbeaver.core.resultset.export" defaultVisibility="true"/>
+        </toolBar>
+    </extension>
+    
+    <extension point="org.eclipse.ui.menus">
+    
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.controls.resultset.status.editCmds" >
+            <dynamic class="org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution$Vertical" id="resultsetViewer.bottom.editCmds.separator">
+                <visibleWhen checkEnabled="false">
+                    <or>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.applyChanges"/>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.rejectChanges"/>
+                    </or>
+                </visibleWhen>
+            </dynamic>
+            <command commandId="org.jkiss.dbeaver.core.resultset.applyChanges" id="org.jkiss.dbeaver.resultset.save.pulldown" mode="FORCE_TEXT" style="pulldown" label="%command.org.jkiss.dbeaver.core.resultset.applyChanges.toolbarLabel">
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.applyChanges"/>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" mode="FORCE_TEXT" label="%command.org.jkiss.dbeaver.core.resultset.rejectChanges.toolbarLabel" >
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.rejectChanges"/>
+                </visibleWhen>
+            </command>
+            <dynamic class="org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution$Vertical" id="resultsetViewer.bottom.rowCmds.separator">
+                <visibleWhen checkEnabled="false">
+                    <or>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.edit"/>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.add"/>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.copy"/>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.delete"/>
+                    </or>
+                </visibleWhen>
+            </dynamic>
+            <command commandId="org.jkiss.dbeaver.core.resultset.row.edit">
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.edit"/>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.row.add">
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.add"/>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.row.copy">
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.copy"/>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.row.delete">
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.delete"/>
+                </visibleWhen>
+            </command>
+        </menuContribution>
+        
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.controls.resultset.status.navCmds" >
+            <dynamic class="org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution$Vertical" id="resultsetViewer.bottom.navCmds.separator">
+                <visibleWhen checkEnabled="false">
+                    <or>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.first"/>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.previous"/>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.next"/>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.last"/>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.fetch.page"/>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.fetch.all"/>
+                    </or>
+                </visibleWhen>
+            </dynamic>
+            <command commandId="org.jkiss.dbeaver.core.resultset.row.first">
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.first"/>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.row.previous">
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.previous"/>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.row.next">
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.next"/>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.row.last">
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.last"/>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.fetch.page">
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.fetch.page"/>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.resultset.fetch.all">
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.fetch.all"/>
+                </visibleWhen>
+            </command>
+        </menuContribution>
+        
+        <menuContribution  allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.controls.resultset.status.exportCmd">
+            <dynamic class="org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution$Vertical" id="resultsetViewer.bottom.exportCmds.separator">
+                <visibleWhen checkEnabled="false">
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.export"/>
+                </visibleWhen>
+            </dynamic>
+            <command commandId="org.jkiss.dbeaver.core.resultset.export" style="pulldown" mode="FORCE_TEXT" id="org.jkiss.dbeaver.resultset.export.pulldown">
+                <parameter name="exportWithParameter" value="true" />
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.export"/>
+                </visibleWhen>
+            </command>
+        </menuContribution>
+        
     </extension>
 
 </plugin>

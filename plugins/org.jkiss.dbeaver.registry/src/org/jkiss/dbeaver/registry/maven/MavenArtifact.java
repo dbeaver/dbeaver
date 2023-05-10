@@ -34,7 +34,10 @@ import org.xml.sax.Attributes;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,6 +61,8 @@ public class MavenArtifact implements IMavenIdentifier
     @NotNull
     private final String artifactId;
     @Nullable
+    private final String classifier;
+    @Nullable
     private final String fallbackVersion;
 
     private final List<String> versions = new ArrayList<>();
@@ -68,11 +73,17 @@ public class MavenArtifact implements IMavenIdentifier
 
     private transient boolean metadataLoaded = false;
 
-    public MavenArtifact(@NotNull MavenRepository repository, @NotNull String groupId, @NotNull String artifactId, @Nullable String fallbackVersion)
+    public MavenArtifact(
+        @NotNull MavenRepository repository,
+        @NotNull String groupId,
+        @NotNull String artifactId,
+        @Nullable String classifier,
+        @Nullable String fallbackVersion)
     {
         this.repository = repository;
         this.groupId = CommonUtils.trim(groupId);
         this.artifactId = CommonUtils.trim(artifactId);
+        this.classifier = CommonUtils.trim(classifier);
         this.fallbackVersion = CommonUtils.trim(fallbackVersion);
     }
 
@@ -104,12 +115,8 @@ public class MavenArtifact implements IMavenIdentifier
     }
 
     private void removeIgnoredVersions() {
-        for (Iterator<String> iter = versions.iterator(); iter.hasNext(); ) {
-            String version = iter.next();
-            if (MavenRegistry.getInstance().isVersionIgnored(groupId + ":" + artifactId + ":" + version)) {
-                iter.remove();
-            }
-        }
+        versions.removeIf(version ->
+            MavenRegistry.getInstance().isVersionIgnored(groupId + ":" + artifactId + ":" + version));
     }
 
     private void parseDirectory(InputStream dirStream) throws IOException, XMLException {
@@ -184,6 +191,12 @@ public class MavenArtifact implements IMavenIdentifier
     }
 
     @Nullable
+    @Override
+    public String getClassifier() {
+        return classifier;
+    }
+
+    @Nullable
     public String getFallbackVersion() {
         return fallbackVersion;
     }
@@ -252,7 +265,7 @@ public class MavenArtifact implements IMavenIdentifier
         return repository.getUrl() + dir + "/";
     }
 
-    public String getFileURL(String version, String fileType) {
+    String getFileURL(String version, String fileType) {
         return getBaseArtifactURL() + version + "/" + getVersionFileName(version, fileType);
     }
 
@@ -260,8 +273,8 @@ public class MavenArtifact implements IMavenIdentifier
     String getVersionFileName(@NotNull String version, @NotNull String fileType) {
         StringBuilder sb = new StringBuilder();
         sb.append(artifactId).append("-").append(version);
-        if (FILE_JAR.equals(fileType) && !CommonUtils.isEmpty(fallbackVersion)) {
-            sb.append('-').append(fallbackVersion);
+        if (FILE_JAR.equals(fileType) && !CommonUtils.isEmpty(classifier)) {
+            sb.append('-').append(classifier);
         }
         sb.append(".").append(fileType);
         return sb.toString();
@@ -271,11 +284,6 @@ public class MavenArtifact implements IMavenIdentifier
     public String toString() {
         return getId();
     }
-
-//    @Nullable
-//    public MavenArtifactVersion getActiveVersion() {
-//        return getVersion(activeVersion);
-//    }
 
     @Nullable
     public MavenArtifactVersion getVersion(String versionStr) {
@@ -334,11 +342,7 @@ public class MavenArtifact implements IMavenIdentifier
                         try {
                             Pattern versionPattern = Pattern.compile(regex);
                             List<String> versions = new ArrayList<>(allVersions);
-                            for (Iterator<String> iter = versions.iterator(); iter.hasNext(); ) {
-                                if (!versionPattern.matcher(iter.next()).matches()) {
-                                    iter.remove();
-                                }
-                            }
+                            versions.removeIf(s -> !versionPattern.matcher(s).matches());
                             versionInfo = VersionUtils.findLatestVersion(versions);
                         } catch (Exception e) {
                             throw new IOException("Bad version pattern: " + regex);

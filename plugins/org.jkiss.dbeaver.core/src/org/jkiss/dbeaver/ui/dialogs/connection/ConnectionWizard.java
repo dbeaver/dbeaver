@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -29,6 +30,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
+import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -43,7 +45,9 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.ConnectionTestJob;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizard;
+import org.jkiss.dbeaver.ui.dialogs.IConnectionWizard;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 
@@ -57,7 +61,7 @@ import java.util.Map;
  * Abstract connection wizard
  */
 
-public abstract class ConnectionWizard extends ActiveWizard implements INewWizard {
+public abstract class ConnectionWizard extends ActiveWizard implements IConnectionWizard, INewWizard {
 
     static final String PROP_CONNECTION_TYPE = "connection-type";
 
@@ -153,6 +157,8 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
             SeparateConnectionBehavior.NEVER.name()
         );
 
+        CoreFeatures.CONNECTION_TEST.use(Map.of("driver", dataSource.getDriver().getPreconfiguredId()));
+
         try {
 
             final ConnectionTestJob op = new ConnectionTestJob(testDataSource, session -> {
@@ -213,6 +219,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
         }
     }
 
+    @Override
     public boolean isNew() {
         return false;
     }
@@ -230,11 +237,13 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
         }
     }
 
-    public void addPropertyChangeListener(IPropertyChangeListener listener) {
+    @Override
+    public void addPropertyChangeListener(@NotNull IPropertyChangeListener listener) {
         propertyListeners.add(listener);
     }
 
-    public void firePropertyChangeEvent(String property, Object oldValue, Object newValue) {
+    @Override
+    public void firePropertyChangeEvent(@NotNull String property, @Nullable Object oldValue, @Nullable Object newValue) {
         for (IPropertyChangeListener listener : propertyListeners) {
             listener.propertyChange(new PropertyChangeEvent(this, property, oldValue, newValue));
         }

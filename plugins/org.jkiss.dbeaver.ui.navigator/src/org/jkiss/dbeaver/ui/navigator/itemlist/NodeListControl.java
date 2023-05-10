@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -398,7 +399,8 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
                 return false;
             }
             DBEObjectEditor objectEditor = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(curClass, DBEObjectEditor.class);
-            return objectEditor != null && editableValue instanceof DBPObject && objectEditor.canEditObject((DBPObject) editableValue);
+            return objectEditor != null && editableValue instanceof DBPObject && objectEditor.canEditObject((DBPObject) editableValue)
+                && DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR);
         }
 
         @Override

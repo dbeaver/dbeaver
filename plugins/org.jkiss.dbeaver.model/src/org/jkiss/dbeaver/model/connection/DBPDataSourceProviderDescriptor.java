@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.connection;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeDescriptor;
@@ -47,6 +48,9 @@ public interface DBPDataSourceProviderDescriptor extends DBPNamedObject {
     SQLDialectMetadata getScriptDialect();
 
     boolean isTemporary();
+
+    @Nullable
+    DBPDriver getDriver(@NotNull String id);
 
     List<? extends DBPDriver> getDrivers();
 

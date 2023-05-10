@@ -22,10 +22,14 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskFolder;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.TaskFeatures;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
+
+import java.util.Map;
 
 public class TaskHandlerCreate extends AbstractHandler {
 
@@ -47,7 +51,10 @@ public class TaskHandlerCreate extends AbstractHandler {
             }
         }
         if (dialog.open() == IDialogConstants.OK_ID) {
-
+            DBTTask task = dialog.getTask();
+            if (task != null) {
+                TaskFeatures.TASKS_CREATE.use(Map.of("type", task.getType().getId()));
+            }
             try {
 /*
                 DBTTaskConfigurator configurator = dialog.getSelectedCategory().createConfigurator();

@@ -100,6 +100,9 @@ public class EditorsMessages extends NLS {
 	public static String selector_select_all_text;
 	public static String selector_clear_all_text;
 
+    public static String progress_editor_initializing_text;
+    public static String progress_editor_uninitialized_text;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, EditorsMessages.class);

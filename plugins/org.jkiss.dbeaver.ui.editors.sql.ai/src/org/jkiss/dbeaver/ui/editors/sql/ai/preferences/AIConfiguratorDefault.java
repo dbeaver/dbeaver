@@ -39,7 +39,7 @@ import java.util.Locale;
 
 public class AIConfiguratorDefault implements IObjectPropertyConfigurator<GPTCompletionEngine, AISettings> {
 
-    private static final String API_KEY_URL = "https://beta.openai.com/account/api-keys";
+    private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
 
     private Button enableAICheck;
 
@@ -129,7 +129,8 @@ public class AIConfiguratorDefault implements IObjectPropertyConfigurator<GPTCom
             for (GPTModel model : GPTModel.values()) {
                 modelCombo.add(model.getName());
             }
-            UIUtils.createInfoLabel(modelGroup, "code-davinci model suits the best for SQL code completion", GridData.FILL_HORIZONTAL, 2);
+            UIUtils.createInfoLabel(modelGroup, "gpt-3.5-turbo model suits the best for SQL code completion",
+                GridData.FILL_HORIZONTAL, 2);
             {
                 Group modelAdvancedGroup = UIUtils.createControlGroup(placeholder,
                     AIUIMessages.gpt_preference_page_group_model_advanced,

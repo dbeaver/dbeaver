@@ -97,7 +97,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI.UserChoiceResponse;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
@@ -895,6 +894,7 @@ public class SQLEditor extends SQLEditorBase implements
                 this,
                 parent,
                 resultSetOrientation.getSashOrientation() | SWT.SMOOTH);
+        resultsSash.setShowBorders(true);
         CSSUtils.setCSSClass(resultsSash, DBStyles.COLORED_BY_CONNECTION_TYPE);
         resultsSash.setSashWidth(8);
 
@@ -995,8 +995,6 @@ public class SQLEditor extends SQLEditorBase implements
                 });
             }
         }
-
-        SQLEditorFeatures.SQL_EDITOR_OPEN.use();
 
         // Start output reader
         new ServerOutputReader().schedule();
@@ -1263,7 +1261,7 @@ public class SQLEditor extends SQLEditorBase implements
                                 public void run() {
                                     final List<CTabItem> tabs = new ArrayList<>();
                                     for (CTabItem tab : resultTabs.getItems()) {
-                                        if (tab.getShowClose() && tab != activeTab) {
+                                        if (tab.getShowClose() && tab != activeTab && !isPinned(tab)) {
                                             tabs.add(tab);
                                         }
                                     }
@@ -1280,7 +1278,10 @@ public class SQLEditor extends SQLEditorBase implements
                                     public void run() {
                                         final List<CTabItem> tabs = new ArrayList<>();
                                         for (int i = 0, last = resultTabs.indexOf(activeTab); i < last; i++) {
-                                            tabs.add(resultTabs.getItem(i));
+                                            CTabItem tab = resultTabs.getItem(i);
+                                            if (!isPinned(tab)) {
+                                                tabs.add(tab);
+                                            }
                                         }
                                         for (CTabItem tab : tabs) {
                                             tab.dispose();
@@ -1295,7 +1296,10 @@ public class SQLEditor extends SQLEditorBase implements
                                     public void run() {
                                         final List<CTabItem> tabs = new ArrayList<>();
                                         for (int i = resultTabs.indexOf(activeTab) + 1; i < resultTabs.getItemCount(); i++) {
-                                            tabs.add(resultTabs.getItem(i));
+                                            CTabItem tab = resultTabs.getItem(i);
+                                            if (!isPinned(tab)) {
+                                                tabs.add(tab);
+                                            }
                                         }
                                         for (CTabItem tab : tabs) {
                                             tab.dispose();
@@ -1395,6 +1399,13 @@ public class SQLEditor extends SQLEditorBase implements
     private void setActiveResultsContainer(QueryResultsContainer data) {
         curResultsContainer = data;
         curQueryProcessor = curResultsContainer.queryProcessor;
+    }
+
+    private boolean isPinned(CTabItem tabItem) {
+        if (tabItem.getData() instanceof QueryResultsContainer) {
+            return ((QueryResultsContainer) tabItem.getData()).isPinned();
+        }
+        return false;
     }
 
     /////////////////////////////////////////////////////////////
@@ -2131,6 +2142,13 @@ public class SQLEditor extends SQLEditorBase implements
         }
         baseEditorImage = getTitleImage();
         editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
+
+        {
+            DBPDataSourceContainer dataSource = EditorUtils.getInputDataSource(editorInput);
+            SQLEditorFeatures.SQL_EDITOR_OPEN.use(Map.of(
+                "driver", dataSource == null ? "" : dataSource.getDriver().getPreconfiguredId()
+            ));
+        }
     }
 
     protected boolean isDetectTitleImageFromInput() {
@@ -2678,7 +2696,7 @@ public class SQLEditor extends SQLEditorBase implements
     private int closeExtraResultTabs(@Nullable QueryProcessor queryProcessor, boolean confirmClose, boolean keepFirstTab) {
         List<CTabItem> tabsToClose = new ArrayList<>();
         for (CTabItem item : resultTabs.getItems()) {
-            if (item.getData() instanceof QueryResultsContainer && item.getShowClose()) {
+            if (item.getData() instanceof QueryResultsContainer && item.getShowClose() && !isPinned(item)) {
                 QueryResultsContainer resultsProvider = (QueryResultsContainer)item.getData();
                 if (queryProcessor != null && queryProcessor != resultsProvider.queryProcessor) {
                     continue;
@@ -3602,14 +3620,6 @@ public class SQLEditor extends SQLEditorBase implements
             }
             ResultSetViewer rsv = resultsProvider.getResultSetController();
             return rsv == null ? null : rsv.getDataReceiver();
-        }
-
-        @Override
-        public void releaseDataReceiver(int resultSetNumber) {
-            if (resultContainers.size() > resultSetNumber) {
-                final CTabItem tab = resultContainers.get(resultSetNumber).resultsTab;
-                UIUtils.syncExec(tab::dispose);
-            }
         }
 
         @Override

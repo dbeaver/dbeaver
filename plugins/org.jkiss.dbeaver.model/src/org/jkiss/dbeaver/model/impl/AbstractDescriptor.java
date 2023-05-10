@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl;
 
 import org.apache.commons.jexl3.*;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IContributor;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -265,6 +266,11 @@ public abstract class AbstractDescriptor {
             originBundle = Platform.getBundle(pluginId);
         }
         return originBundle;
+    }
+
+    protected void replaceContributor(IContributor contributor) {
+        this.pluginId = contributor.getName();
+        this.originBundle = null;
     }
 
     @NotNull

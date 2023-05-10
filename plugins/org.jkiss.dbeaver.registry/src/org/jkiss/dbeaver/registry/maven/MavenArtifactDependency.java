@@ -36,13 +36,20 @@ public class MavenArtifactDependency extends MavenArtifactReference {
         IMPORT
     }
 
-    private Scope scope;
-    private boolean optional;
+    private final Scope scope;
+    private final boolean optional;
     private List<MavenArtifactReference> exclusions;
     private boolean broken;
 
-    public MavenArtifactDependency(@NotNull String groupId, @NotNull String artifactId, @Nullable String classifier, @NotNull String version, Scope scope, boolean optional) {
-        super(groupId, artifactId, classifier, version);
+    public MavenArtifactDependency(
+        @NotNull String groupId,
+        @NotNull String artifactId,
+        @Nullable String classifier,
+        @NotNull String version,
+        Scope scope,
+        boolean optional
+    ) {
+        super(groupId, artifactId, classifier, null, version);
         this.scope = scope;
         this.optional = optional;
     }

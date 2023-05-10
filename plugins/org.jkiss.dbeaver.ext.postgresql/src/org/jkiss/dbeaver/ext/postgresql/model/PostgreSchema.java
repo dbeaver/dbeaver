@@ -437,6 +437,13 @@ public class PostgreSchema implements
     @Override
     public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException {
+        extensionCache.clearCache();
+        tableCache.clearCache();
+        constraintCache.clearCache();
+        proceduresCache.clearCache();
+        indexCache.clearCache();
+        hasStatistics = false;
+
         PostgreSchema schema = database.schemaCache.refreshObject(monitor, database, this);
         database.cacheDataTypes(monitor, true);
         return schema;
@@ -739,13 +746,22 @@ public class PostgreSchema implements
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreTableContainer container, @Nullable PostgreTableBase object, @Nullable String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder();
+            PostgreDataSource dataSource = getDataSource();
+            boolean supportsSequences = dataSource.getServerType().supportsSequences();
             sql.append("SELECT c.oid,c.*,d.description");
-            if (getDataSource().isServerVersionAtLeast(10, 0)) {
+            if (dataSource.isServerVersionAtLeast(10, 0)) {
                 sql.append(",pg_catalog.pg_get_expr(c.relpartbound, c.oid) as partition_expr,  pg_catalog.pg_get_partkeydef(c.oid) as partition_key ");
             }
+            if (supportsSequences) {
+                sql.append(", dep.objid, dep.refobjsubid");
+            }
             sql.append("\nFROM pg_catalog.pg_class c\n")
-                .append("LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0 AND d.classoid='pg_class'::regclass\n")
-                .append("WHERE c.relnamespace=? AND c.relkind not in ('i','I','c')")
+                .append("LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0 AND d.classoid='pg_class'::regclass\n");
+            if (supportsSequences) {
+                // Search connection with sequence object
+                sql.append("LEFT OUTER JOIN pg_depend dep on dep.refobjid = c.\"oid\" AND dep.deptype = 'i' and dep.refobjsubid <> 0\n");
+            }
+            sql.append("WHERE c.relnamespace=? AND c.relkind not in ('i','I','c')")
                 .append(object == null && objectName == null ? "" : " AND relname=?");
             final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             dbStat.setLong(1, getObjectId());

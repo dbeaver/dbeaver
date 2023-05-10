@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.QualifiedName;
@@ -31,7 +30,10 @@ import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.ui.editors.text.EditorsUI;
-import org.eclipse.ui.texteditor.spelling.*;
+import org.eclipse.ui.texteditor.spelling.ISpellingProblemCollector;
+import org.eclipse.ui.texteditor.spelling.SpellingAnnotation;
+import org.eclipse.ui.texteditor.spelling.SpellingProblem;
+import org.eclipse.ui.texteditor.spelling.SpellingService;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -59,9 +61,8 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     private IProgressMonitor monitor;
 
     // Spelling
-    private ISpellingProblemCollector spellingProblemCollector;
     private SpellingService spellingService;
-    private SpellingContext spellingContext;
+    private SQLSpellingContext spellingContext;
     private boolean initialized;
 
     public SQLReconcilingStrategy(SQLEditorBase editor) {
@@ -83,23 +84,9 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
         spellingService = EditorsUI.getSpellingService();
         if (spellingService.getActiveSpellingEngineDescriptor(editor.getViewerConfiguration().getPreferenceStore()) != null) {
-            this.spellingProblemCollector = createSpellingProblemCollector();
-            this.spellingContext = new SpellingContext();
+            this.spellingContext = new SQLSpellingContext(editor);
             this.spellingContext.setContentType(SQLEditorUtils.getSQLContentType());
         }
-    }
-
-    /**
-     * Creates a new spelling problem collector.
-     *
-     * @return the collector or <code>null</code> if none is available
-     */
-    protected ISpellingProblemCollector createSpellingProblemCollector() {
-        IAnnotationModel model = getAnnotationModel();
-        if (model == null) {
-            return null;
-        }
-        return new SpellingProblemCollector(model);
     }
 
     @Override
@@ -281,10 +268,13 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         cache.removeAll(deletedPositions);
         cache.addAll(additions.values());
 
-        if (isSpellingEnabled() && spellingProblemCollector != null) {
+        if (isSpellingEnabled() && spellingContext != null) {
             IRegion[] regions = new IRegion[]{
                 new Region(damagedRegionOffset, damagedRegionLength)
             };
+            ISpellingProblemCollector spellingProblemCollector = new SpellingProblemCollector(
+                getAnnotationModel(), damagedRegionOffset, damagedRegionLength);
+
             spellingService.check(document, regions, spellingContext, spellingProblemCollector, monitor);
         }
     }
@@ -435,16 +425,23 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
         private final IAnnotationModel annotationModel;
         private Map<Annotation, Position> addedAnnotations;
+        private final int regionOffset;
+        private final int regionLength;
         private final Object lockObject;
 
-        public SpellingProblemCollector(IAnnotationModel annotationModel) {
-            Assert.isLegal(annotationModel != null);
+        public SpellingProblemCollector(
+            IAnnotationModel annotationModel,
+            int regionOffset,
+            int regionLength
+        ) {
             this.annotationModel = annotationModel;
             if (this.annotationModel instanceof ISynchronizable) {
                 lockObject = ((ISynchronizable) this.annotationModel).getLockObject();
             } else {
                 lockObject = this.annotationModel;
             }
+            this.regionOffset = regionOffset;
+            this.regionLength = regionLength;
         }
 
         @Override
@@ -467,8 +464,13 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
                 Iterator<Annotation> iter = annotationModel.getAnnotationIterator();
                 while (iter.hasNext()) {
                     Annotation annotation = iter.next();
-                    if (SpellingAnnotation.TYPE.equals(annotation.getType()))
-                        toRemove.add(annotation);
+                    if (annotation instanceof SpellingAnnotation) {
+                        SpellingProblem spellingProblem = ((SpellingAnnotation) annotation).getSpellingProblem();
+                        int problemOffset = spellingProblem.getOffset();
+                        if (problemOffset >= regionOffset && problemOffset < regionOffset + regionLength) {
+                            toRemove.add(annotation);
+                        }
+                    }
                 }
                 Annotation[] annotationsToRemove = toRemove.toArray(new Annotation[0]);
 

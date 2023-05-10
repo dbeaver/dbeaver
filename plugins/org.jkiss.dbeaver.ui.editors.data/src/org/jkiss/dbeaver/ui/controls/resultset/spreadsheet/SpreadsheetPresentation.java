@@ -60,6 +60,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -2774,7 +2775,15 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Nullable
         @Override
         public String getToolTipText(IGridItem element) {
-            if (element.getElement() instanceof DBDAttributeBinding) {
+            if (element == null) {
+                String readOnlyStatus = getController().getReadOnlyStatus();
+                if (readOnlyStatus == null && controller.isAllAttributesReadOnly()) {
+                    readOnlyStatus = ModelMessages.all_columns_read_only;
+                }
+                if (readOnlyStatus != null) {
+                    return readOnlyStatus;
+                }
+            } else if (element.getElement() instanceof DBDAttributeBinding) {
                 DBDAttributeBinding attributeBinding = (DBDAttributeBinding) element.getElement();
                 final String name = attributeBinding.getName();
                 final String typeName = attributeBinding.getFullTypeName();

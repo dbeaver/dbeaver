@@ -47,6 +47,7 @@ public class DatabricksView extends GenericView {
     private String createdTime;
     private String tableProperties;
     private String storageProperties;
+    private String description;
 
     public DatabricksView(
         GenericStructContainer container,
@@ -83,9 +84,9 @@ public class DatabricksView extends GenericView {
 
     @Nullable
     @Override
+    @Property(viewable = true, length = PropertyLength.MULTILINE, order = 100)
     public String getDescription() {
-        // Not supported
-        return null;
+        return description;
     }
 
     private void checkExtraInfo(@NotNull DBRProgressMonitor monitor) {
@@ -120,6 +121,9 @@ public class DatabricksView extends GenericView {
                                     break;
                                 case DatabricksConstants.PROP_STORAGE_PROPERTIES:
                                     storageProperties = value;
+                                    break;
+                                case "Comment":
+                                    description = value;
                                     break;
                             }
                         }

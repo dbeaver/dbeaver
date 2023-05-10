@@ -738,6 +738,7 @@
             <enabledWhen>
                 <and>
                     <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
+                    <not><test property="org.jkiss.dbeaver.core.global.distributed"/></not>
                     <with variable="selection">
                         <count value="1"/>
                         <iterate operator="and">
@@ -756,6 +757,7 @@
             <enabledWhen>
                 <and>
                     <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
+                    <not><test property="org.jkiss.dbeaver.core.global.distributed"/></not>
                     <with variable="selection">
                         <count value="1"/>
                         <iterate operator="and">

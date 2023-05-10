@@ -80,6 +80,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     private final DBPPreferenceStore globalDataSourcePreferenceStore;
 
     private final Map<String, DataSourceOriginProviderDescriptor> dataSourceOrigins = new LinkedHashMap<>();
+    private final Map<String, DBPDriverSubstitutionDescriptor> driverSubstitutions = new HashMap<>();
 
     private DataSourceProviderRegistry() {
         globalDataSourcePreferenceStore = new SimplePreferenceStore() {
@@ -149,6 +150,19 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                         }
                         break;
                     }
+                    case "datasourceReplace": {
+                        String providerId = ext.getAttribute("provider");
+                        String providerClass = ext.getAttribute("class");
+                        if (providerId != null && providerClass != null) {
+                            DataSourceProviderDescriptor provider = getDataSourceProvider(providerId);
+                            if (provider == null) {
+                                log.error("Cannot replace provider '" + providerId + "' - bad provider ID");
+                            } else {
+                                provider.replaceImplClass(ext.getContributor(), providerClass);
+                            }
+                        }
+                        break;
+                    }
                     case RegistryConstants.TAG_EDITOR_CONTRIBUTION: {
                         // Load tree contributions
                         EditorContributionDescriptor descriptor = new EditorContributionDescriptor(ext);
@@ -156,6 +170,11 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                         List<EditorContributionDescriptor> list = contributionCategoryMap.computeIfAbsent(
                             descriptor.getCategory(), k -> new ArrayList<>());
                         list.add(descriptor);
+                        break;
+                    }
+                    case RegistryConstants.TAG_DRIVER_SUBSTITUTION: {
+                        final DBPDriverSubstitutionDescriptor descriptor = new DriverSubstitutionDescriptor(ext);
+                        driverSubstitutions.put(descriptor.getId(), descriptor);
                         break;
                     }
                 }
@@ -360,6 +379,18 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
 
         return driver;
+    }
+
+    @Nullable
+    @Override
+    public DBPDriverSubstitutionDescriptor getDriverSubstitution(@NotNull String id) {
+        return driverSubstitutions.get(id);
+    }
+
+    @NotNull
+    @Override
+    public DBPDriverSubstitutionDescriptor[] getAllDriverSubstitutions() {
+        return driverSubstitutions.values().toArray(DBPDriverSubstitutionDescriptor[]::new);
     }
 
     //////////////////////////////////////////////
