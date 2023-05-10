@@ -232,9 +232,9 @@ public class EditMavenArtifactDialog extends BaseDialog {
         fallbackVersionText.add(MavenArtifactReference.VERSION_PATTERN_RELEASE);
         fallbackVersionText.add(MavenArtifactReference.VERSION_PATTERN_LATEST);
         if (originalArtifact != null) {
-            fallbackVersionText.setText(originalArtifact.getReference().getVersion());
+            fallbackVersionText.setText(CommonUtils.notEmpty(originalArtifact.getReference().getFallbackVersion()));
         }
-        if (fallbackVersionText.getSelectionIndex() == -1) {
+        if (fallbackVersionText.getText().isEmpty()) {
             fallbackVersionText.select(0);
         }
 

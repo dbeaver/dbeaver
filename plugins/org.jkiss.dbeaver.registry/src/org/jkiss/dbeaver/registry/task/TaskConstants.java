@@ -20,7 +20,7 @@ public class TaskConstants {
 
     static final String TEMPORARY_ID = "#temp";
     public static final String CONFIG_FILE = "tasks.json";
-    static final String TASK_STATS_FOLDER = "task-stats";
+    public static final String TASK_STATS_FOLDER = "task-stats";
     static final String TASKS_FOLDERS_TAG = "##tasksFolders";
 
     static final String TAG_TASK = "task";

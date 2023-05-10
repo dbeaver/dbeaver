@@ -448,7 +448,9 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
         List<SQLInsertReplaceMethodDescriptor> insertMethodsDescriptors = null;
         if (dataSource != null) {
             SQLDialectDescriptor dialectDescriptor = SQLDialectRegistry.getInstance().getDialect(dataSource.getSQLDialect().getDialectId());
-            insertMethodsDescriptors = dialectDescriptor.getSupportedInsertReplaceMethodsDescriptors();
+            if (dialectDescriptor != null) {
+                insertMethodsDescriptors = dialectDescriptor.getSupportedInsertReplaceMethodsDescriptors();
+            }
         }
 
         onDuplicateKeyInsertMethods.removeAll();

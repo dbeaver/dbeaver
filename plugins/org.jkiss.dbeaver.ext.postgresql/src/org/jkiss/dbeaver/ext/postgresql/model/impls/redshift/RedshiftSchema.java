@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
@@ -27,7 +26,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -78,14 +76,5 @@ public class RedshiftSchema extends PostgreSchema {
         }
     }
 
-    void resetStatistics() {
-        this.hasStatistics = false;
-    }
-
-    @Override
-    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        hasStatistics = false;
-        return super.refreshObject(monitor);
-    }
 }
 

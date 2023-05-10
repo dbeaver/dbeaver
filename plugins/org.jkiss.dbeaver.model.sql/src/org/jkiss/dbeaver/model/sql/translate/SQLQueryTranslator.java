@@ -22,10 +22,7 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLDialectDDLExtension;
-import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.dbeaver.model.sql.SQLScriptElement;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.utils.CommonUtils;
@@ -162,7 +159,7 @@ public class SQLQueryTranslator implements SQLTranslator {
                             newDataType = extendedDialect.getTimestampDataType();
                         }
                         break;
-                    case "BIGINT":
+                    case SQLConstants.DATA_TYPE_BIGINT:
                         if (extendedDialect != null) {
                             newDataType = extendedDialect.getBigIntegerType();
                         }
