@@ -238,6 +238,18 @@ public class EditMavenArtifactDialog extends BaseDialog {
             fallbackVersionText.select(0);
         }
 
+        if (originalArtifact != null && !originalArtifact.isCustom()) {
+            // Artifact reference is read-only. We use it to find libraries
+            // To change artifact info delete it and create a new one
+            groupText.setEditable(false);
+            artifactText.setEditable(false);
+            classifierText.setEditable(false);
+            preferredVersionText.setEditable(false);
+            fallbackVersionText.setEnabled(false);
+
+            UIUtils.createInfoLabel(container, "Predefined Maven artifacts are read-only", GridData.FILL_HORIZONTAL, 2);
+        }
+
         TabItem item = new TabItem(folder, SWT.NONE);
         item.setText(UIConnectionMessages.dialog_edit_driver_edit_maven_manual);
         item.setControl(container);
