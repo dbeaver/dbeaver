@@ -819,7 +819,7 @@ public class PostgreUtils {
      * If the column doesn't exist, then there will be an exception
      *
      * @param tableName name of the system table
-     * @param columnName name of the system column
+     * @param columnName name of the system column. Use "*" param, if you need to check access to the full table/view.
      * @return query for the system column checking
      */
     @NotNull

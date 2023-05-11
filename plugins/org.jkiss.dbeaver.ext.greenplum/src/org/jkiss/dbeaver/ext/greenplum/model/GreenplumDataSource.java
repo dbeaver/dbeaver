@@ -42,6 +42,8 @@ public class GreenplumDataSource extends PostgreDataSource {
 
     private Version gpVersion;
     private Boolean supportsFmterrtblColumn;
+    private Boolean supportsRelstorageColumn;
+    private Boolean hasAccessToExttable;
 
     public GreenplumDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         super(monitor, container);
@@ -73,8 +75,27 @@ public class GreenplumDataSource extends PostgreDataSource {
         return true;
     }
 
+    boolean isHasAccessToExttable(@NotNull JDBCSession session) {
+        if (hasAccessToExttable == null) {
+            try {
+                JDBCUtils.queryString(
+                    session,
+                    PostgreUtils.getQueryForSystemColumnChecking("pg_exttable", "*"));
+                hasAccessToExttable = true;
+            } catch (SQLException e) {
+                log.debug("Error reading system information from the system pg_exttable table", e);
+                hasAccessToExttable = false;
+            }
+        }
+        return hasAccessToExttable;
+    }
+
     boolean isServerSupportFmterrtblColumn(@NotNull JDBCSession session) {
         if (supportsFmterrtblColumn == null) {
+            if (!isHasAccessToExttable(session)) {
+                supportsFmterrtblColumn = false;
+                return false;
+            }
             try {
                 JDBCUtils.queryString(
                     session,
@@ -86,5 +107,20 @@ public class GreenplumDataSource extends PostgreDataSource {
             }
         }
         return supportsFmterrtblColumn;
+    }
+
+    boolean isServerSupportRelstorageColumn(@NotNull JDBCSession session) {
+        if (supportsRelstorageColumn == null) {
+            try {
+                JDBCUtils.queryString(
+                    session,
+                    PostgreUtils.getQueryForSystemColumnChecking("pg_class", "relstorage"));
+                supportsRelstorageColumn = true;
+            } catch (SQLException e) {
+                log.debug("Error reading system information from the pg_class table", e);
+                supportsRelstorageColumn = false;
+            }
+        }
+        return supportsRelstorageColumn;
     }
 }
