@@ -77,15 +77,7 @@ public class GreenplumDataSource extends PostgreDataSource {
 
     boolean isHasAccessToExttable(@NotNull JDBCSession session) {
         if (hasAccessToExttable == null) {
-            try {
-                JDBCUtils.queryString(
-                    session,
-                    PostgreUtils.getQueryForSystemColumnChecking("pg_exttable", "*"));
-                hasAccessToExttable = true;
-            } catch (SQLException e) {
-                log.debug("Error reading system information from the system pg_exttable table", e);
-                hasAccessToExttable = false;
-            }
+            hasAccessToExttable = PostgreUtils.isMetaObjectExists(session, "pg_exttable", "*");
         }
         return hasAccessToExttable;
     }
@@ -94,16 +86,8 @@ public class GreenplumDataSource extends PostgreDataSource {
         if (supportsFmterrtblColumn == null) {
             if (!isHasAccessToExttable(session)) {
                 supportsFmterrtblColumn = false;
-                return false;
-            }
-            try {
-                JDBCUtils.queryString(
-                    session,
-                    PostgreUtils.getQueryForSystemColumnChecking("pg_exttable", "fmterrtbl"));
-                supportsFmterrtblColumn = true;
-            } catch (SQLException e) {
-                log.debug("Error reading system information from the pg_exttable table", e);
-                supportsFmterrtblColumn = false;
+            } else {
+                supportsFmterrtblColumn = PostgreUtils.isMetaObjectExists(session, "pg_exttable", "fmterrtbl");
             }
         }
         return supportsFmterrtblColumn;
@@ -111,15 +95,7 @@ public class GreenplumDataSource extends PostgreDataSource {
 
     boolean isServerSupportRelstorageColumn(@NotNull JDBCSession session) {
         if (supportsRelstorageColumn == null) {
-            try {
-                JDBCUtils.queryString(
-                    session,
-                    PostgreUtils.getQueryForSystemColumnChecking("pg_class", "relstorage"));
-                supportsRelstorageColumn = true;
-            } catch (SQLException e) {
-                log.debug("Error reading system information from the pg_class table", e);
-                supportsRelstorageColumn = false;
-            }
+            supportsRelstorageColumn = PostgreUtils.isMetaObjectExists(session, "pg_class", "relstorage");
         }
         return supportsRelstorageColumn;
     }

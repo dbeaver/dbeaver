@@ -828,6 +828,24 @@ public class PostgreUtils {
     }
 
     /**
+     * Returns state of the meta object existence from the system catalogs.
+     *
+     * @param session to execute a query
+     * @param tableName name of the required table
+     * @param columnName name of the required column or symbol *
+     * @return state of the meta object existence in the system data
+     */
+    public static boolean isMetaObjectExists(@NotNull JDBCSession session, @NotNull String tableName, @NotNull String columnName) {
+        try {
+            JDBCUtils.queryString(session, getQueryForSystemColumnChecking(tableName, columnName));
+            return true;
+        } catch (SQLException e) {
+            log.debug("Error reading system information from the " + tableName + " table", e);
+        }
+        return false;
+    }
+
+    /**
      * Retrieves delimiter used for separating array elements of the given type.
      *
      * @param type type to get array delimiter for
