@@ -110,7 +110,7 @@ public class SQLServerGenericDataSource extends GenericDataSource {
                 case SQLServerConstants.TYPE_SMALLDATETIME:
                     return DBPDataKind.DATETIME;
                 case SQLServerConstants.TYPE_DATETIMEOFFSET:
-                    return DBPDataKind.STRING;
+                    return DBPDataKind.DATETIME;
             }
         }
         return super.resolveDataKind(typeName, valueType);
