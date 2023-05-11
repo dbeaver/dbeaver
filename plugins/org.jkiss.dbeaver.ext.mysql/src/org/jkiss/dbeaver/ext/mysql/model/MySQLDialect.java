@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectSchemaController;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
@@ -37,16 +38,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
-* MySQL dialect
-*/
-public class MySQLDialect extends JDBCSQLDialect {
+ * MySQL dialect
+ */
+public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaController {
 
     public static final String[] MYSQL_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
         BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
         new String[]{
             "USE", "SHOW",
             "CREATE", "ALTER", "DROP",
-            SQLConstants.KEYWORD_EXPLAIN, "DESCRIBE", "DESC" }
+            SQLConstants.KEYWORD_EXPLAIN, "DESCRIBE", "DESC"}
     );
 
     private static final String[] ADVANCED_KEYWORDS = {
@@ -160,7 +161,7 @@ public class MySQLDialect extends JDBCSQLDialect {
     
     @Override
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
-    	initBaseDriverSettings(session, dataSource, metaData);
+        initBaseDriverSettings(session, dataSource, metaData);
 
         addDataTypes(Arrays.asList("GEOMETRY", "POINT"));
         addFunctions(Arrays.asList(MYSQL_GEOMETRY_FUNCTIONS));
@@ -304,14 +305,33 @@ public class MySQLDialect extends JDBCSQLDialect {
     public boolean validIdentifierStart(char c) {
         return Character.isLetterOrDigit(c);
     }
-    
+
     @NotNull
     @Override
-    public String getTypeCastClause(@NotNull DBSTypedObject attribute, @NotNull String expression, boolean isInCondition) {
+    public String getTypeCastClause(
+        @NotNull DBSTypedObject attribute,
+        @NotNull String expression,
+        boolean isInCondition
+    ) {
         if (isInCondition && attribute.getTypeName().equalsIgnoreCase(MySQLConstants.TYPE_JSON)) {
             return "CAST(" + expression + " AS JSON)";
         } else {
             return super.getTypeCastClause(attribute, expression, isInCondition);
         }
+    }
+
+    @NotNull
+    @Override
+    public String getSchemaExistQuery(@NotNull String schemaName) {
+        return "SELECT TRUE FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '" + schemaName + "'";
+    }
+
+    @Override
+    public String getCreateSchemaQuery(
+        @NotNull String schemaName,
+        @NotNull String ownerUserName,
+        @NotNull String password
+    ) {
+        return "CREATE SCHEMA " + schemaName;
     }
 }

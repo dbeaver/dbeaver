@@ -52,11 +52,12 @@ import java.util.Locale;
 /**
  * Oracle SQL dialect
  */
-public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConverter, SQLDialectDDLExtension {
+public class OracleSQLDialect extends JDBCSQLDialect
+    implements SQLDataTypeConverter, SQLDialectDDLExtension, SQLDialectSchemaController {
 
     private static final Log log = Log.getLog(OracleSQLDialect.class);
 
-    private static final String[] EXEC_KEYWORDS = new String[]{ "call" };
+    private static final String[] EXEC_KEYWORDS = new String[]{"call"};
 
     private static final String[] ORACLE_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
         BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
@@ -727,5 +728,20 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
     @Override
     public boolean needsDefaultDataTypes() {
         return false;
+    }
+
+    @NotNull
+    @Override
+    public String getSchemaExistQuery(@NotNull String schemaName) {
+        return null;
+    }
+
+    @Override
+    public String getCreateSchemaQuery(
+        @NotNull String schemaName,
+        @NotNull String ownerUserName,
+        @NotNull String password
+    ) {
+        return null;
     }
 }
