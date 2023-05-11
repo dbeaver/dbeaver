@@ -55,6 +55,7 @@ import org.jkiss.utils.Pair;
 import java.lang.reflect.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -863,6 +864,18 @@ public class PostgreUtils {
         }
     }
 
+    /**
+     * Attempts to retrieve an array using {@link ResultSet#getArray(String)}, and if it can't
+     * be done due to an exception, falls back to manually parsing the string representation
+     * of an array retrieved using {@link ResultSet#getString(String)}.
+     *
+     * @param dbResult   a result set to retrieve data from
+     * @param columnName a name of a column to retrieve data from
+     * @param converter  a function that takes string representation of an element and returns {@code T}
+     * @param generator  a function that takes a length and creates array of {@code T}
+     * @return array elements
+     * @see PostgreValueParser#parsePrimitiveArray(String, Function, IntFunction)
+     */
     @SuppressWarnings("unchecked")
     @Nullable
     public static <T> T[] safeGetArray(
@@ -871,37 +884,66 @@ public class PostgreUtils {
         @NotNull Function<String, T> converter,
         @NotNull IntFunction<T[]> generator
     ) {
+        Exception exception = null;
+
         try {
             final java.sql.Array value = dbResult.getArray(columnName);
             return value != null ? (T[]) value.getArray() : null;
-        } catch (Exception ignored) {
+        } catch (SQLFeatureNotSupportedException ignored) {
+            // Some drivers (ODBC) might not have an implementation for that API, just ignore and try with a string
+        } catch (Exception e) {
+            exception = e;
         }
 
         try {
             final String value = dbResult.getString(columnName);
             return value != null ? PostgreValueParser.parsePrimitiveArray(value, converter, generator) : null;
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            if (exception == null) {
+                exception = e;
+            }
         }
 
-        // Fallback just in case, also prints debug message
-        return JDBCUtils.safeGetArray(dbResult, columnName);
+        log.debug("Can't get column '" + columnName + "': " + exception.getMessage());
+        return null;
     }
 
+    /**
+     * Attempts to retrieve an array of strings from the result set under the given {@code columnName}.
+     *
+     * @see #safeGetArray(ResultSet, String, Function, IntFunction)
+     */
     @Nullable
     public static String[] safeGetStringArray(@NotNull ResultSet dbResult, @NotNull String columnName) {
         return safeGetArray(dbResult, columnName, Function.identity(), String[]::new);
     }
+
+    /**
+     * Attempts to retrieve an array of shorts from the result set under the given {@code columnName}.
+     *
+     * @see #safeGetArray(ResultSet, String, Function, IntFunction)
+     */
 
     @Nullable
     public static Short[] safeGetShortArray(@NotNull ResultSet dbResult, @NotNull String columnName) {
         return safeGetArray(dbResult, columnName, Short::valueOf, Short[]::new);
     }
 
+    /**
+     * Attempts to retrieve an array of longs from the result set under the given {@code columnName}.
+     *
+     * @see #safeGetArray(ResultSet, String, Function, IntFunction)
+     */
     @Nullable
     public static Long[] safeGetLongArray(@NotNull ResultSet dbResult, @NotNull String columnName) {
         return safeGetArray(dbResult, columnName, Long::valueOf, Long[]::new);
     }
 
+    /**
+     * Attempts to retrieve an array of booleans from the result set under the given {@code columnName}.
+     *
+     * @see #safeGetArray(ResultSet, String, Function, IntFunction)
+     */
     @Nullable
     public static Boolean[] safeGetBooleanArray(@NotNull ResultSet dbResult, @NotNull String columnName) {
         return safeGetArray(dbResult, columnName, Boolean::valueOf, Boolean[]::new);

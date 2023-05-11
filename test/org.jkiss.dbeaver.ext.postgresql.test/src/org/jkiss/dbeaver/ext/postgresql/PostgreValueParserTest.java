@@ -235,11 +235,35 @@ public class PostgreValueParserTest {
             new String[]{},
             PostgreValueParser.parsePrimitiveArray("{}", Function.identity(), String[]::new));
         Assert.assertArrayEquals(
+            new String[]{null, "NULL"},
+            PostgreValueParser.parsePrimitiveArray("{NULL,\"NULL\"}", Function.identity(), String[]::new));
+        Assert.assertArrayEquals(
             new String[]{"ab", "cd", null, "NULL", " spa ce "},
-            PostgreValueParser.parsePrimitiveArray("{ab,cd,NULL,\"NULL\",\" spa ce \"}", Function.identity(), String[]::new));
+            PostgreValueParser.parsePrimitiveArray("{ ab , cd ,NULL,\"NULL\",\" spa ce \"}", Function.identity(), String[]::new));
         Assert.assertArrayEquals(
             new Integer[]{1, null, 3},
             PostgreValueParser.parsePrimitiveArray("{1,NULL,3}", Integer::valueOf, Integer[]::new));
+
+        Assert.assertThrows(
+            "Array value must start with \"{\"",
+            IllegalStateException.class,
+            () -> PostgreValueParser.parsePrimitiveArray("1}", Function.identity(), String[]::new));
+        Assert.assertThrows(
+            "Unexpected \"}\" character",
+            IllegalStateException.class,
+            () -> PostgreValueParser.parsePrimitiveArray("{1,}", Function.identity(), String[]::new));
+        Assert.assertThrows(
+            "Unexpected \",\" character",
+            IllegalStateException.class,
+            () -> PostgreValueParser.parsePrimitiveArray("{,}", Function.identity(), String[]::new));
+        Assert.assertThrows(
+            "Unexpected end of input",
+            IllegalStateException.class,
+            () -> PostgreValueParser.parsePrimitiveArray("{1,", Function.identity(), String[]::new));
+        Assert.assertThrows(
+            "Junk after closing right brace",
+            IllegalStateException.class,
+            () -> PostgreValueParser.parsePrimitiveArray("{1},", Function.identity(), String[]::new));
     }
 
     private void setupGeneralWhenMocks() throws Exception {

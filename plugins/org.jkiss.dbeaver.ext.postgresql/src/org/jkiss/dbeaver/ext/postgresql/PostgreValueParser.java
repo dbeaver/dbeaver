@@ -434,53 +434,94 @@ public class PostgreValueParser {
     ) {
         final int length = value.length();
 
-        if (length < 2 || value.charAt(0) != '{' || value.charAt(length - 1) != '}') {
-            throw new IllegalArgumentException("Not a valid array: " + value);
+        if (value.equals("{}")) {
+            // Fast path for empty arrays
+            return generator.apply(0);
         }
 
         final List<T> result = new ArrayList<>();
         final StringBuilder buffer = new StringBuilder();
-        int offset = 1;
-        boolean isQuoted = false;
+        int offset = 0;
+        State state = State.EXPECT_START;
         boolean wasQuoted = false;
 
         while (offset < length) {
             final char ch = value.charAt(offset++);
 
-            if (ch == '"') {
-                // String opening quotes
-                wasQuoted = isQuoted;
-                isQuoted = !isQuoted;
-            } else if (!isQuoted && ch == '\\') {
-                // Backslash escape
-                buffer.append(value.charAt(offset++));
-            } else if (!isQuoted && (ch == delimiter || ch == '}')) {
-                // Either a delimiter, string closing quote, or array closing parenthesis
-                final String element = buffer.toString();
-
-                if (!wasQuoted && element.equalsIgnoreCase(SQLConstants.NULL_VALUE)) {
-                    result.add(null);
-                } else if (wasQuoted || !element.isEmpty()) {
-                    result.add(converter.apply(element));
+            if (state == State.EXPECT_START) {
+                if (ch != '{') {
+                    throw new IllegalStateException("Array value must start with \"{\"");
+                } else {
+                    state = State.MAYBE_VALUE;
                 }
-
-                if (ch == '}') {
+            } else if (state == State.MAYBE_VALUE || state == State.EXPECT_VALUE) {
+                if (ch == '"') {
+                    state = State.INSIDE_QUOTES;
+                    wasQuoted = true;
+                } else if (ch == '\\') {
+                    buffer.append(value.charAt(offset++));
+                } else if (ch == '}') {
+                    if (state == State.EXPECT_VALUE) {
+                        throw new IllegalStateException("Unexpected \"}\" character");
+                    }
+                    final String element = buffer.toString();
+                    if (!element.isEmpty()) {
+                        if (!wasQuoted && element.equalsIgnoreCase(SQLConstants.NULL_VALUE)) {
+                            result.add(null);
+                        } else {
+                            result.add(converter.apply(element));
+                        }
+                    }
+                    buffer.setLength(0);
+                    state = State.AFTER_END;
                     break;
+                } else if (ch == delimiter) {
+                    final String element = buffer.toString();
+                    if (!element.isEmpty()) {
+                        if (!wasQuoted && element.equalsIgnoreCase(SQLConstants.NULL_VALUE)) {
+                            result.add(null);
+                        } else {
+                            result.add(converter.apply(element));
+                        }
+                    } else {
+                        throw new IllegalStateException("Unexpected \",\" character");
+                    }
+                    buffer.setLength(0);
+                    state = State.EXPECT_VALUE;
+                    wasQuoted = false;
+                } else {
+                    if (!Character.isWhitespace(ch)) {
+                        buffer.append(ch);
+                    }
+                    state = State.MAYBE_VALUE;
                 }
-
-                buffer.setLength(0);
-                isQuoted = false;
-                wasQuoted = false;
             } else {
-                // A regular character
-                buffer.append(ch);
+                if (ch == '\\') {
+                    buffer.append(value.charAt(offset++));
+                } else if (ch == '"') {
+                    state = State.MAYBE_VALUE;
+                } else {
+                    buffer.append(ch);
+                }
             }
         }
 
-        if (offset != length) {
-            throw new IllegalArgumentException("Trailing data after array: " + value);
+        if (state != State.AFTER_END) {
+            throw new IllegalArgumentException("Unexpected end of input");
+        }
+
+        if (offset < length) {
+            throw new IllegalArgumentException("Junk after closing right brace");
         }
 
         return result.toArray(generator);
+    }
+
+    private enum State {
+        EXPECT_START,
+        EXPECT_VALUE,
+        MAYBE_VALUE,
+        INSIDE_QUOTES,
+        AFTER_END
     }
 }
