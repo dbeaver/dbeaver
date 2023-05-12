@@ -22,6 +22,7 @@ public interface SQLDialectSchemaController {
     @NotNull
     String getSchemaExistQuery(@NotNull String schemaName);
 
+    @NotNull
     String getCreateSchemaQuery(
         @NotNull String schemaName,
         @NotNull String ownerUserName,

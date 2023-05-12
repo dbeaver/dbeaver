@@ -323,15 +323,16 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
     @NotNull
     @Override
     public String getSchemaExistQuery(@NotNull String schemaName) {
-        return "SELECT TRUE FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '" + schemaName + "'";
+        return "SELECT 1 FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '" + schemaName + "'";
     }
 
+    @NotNull
     @Override
     public String getCreateSchemaQuery(
         @NotNull String schemaName,
         @NotNull String ownerUserName,
         @NotNull String password
     ) {
-        return "CREATE SCHEMA " + schemaName;
+        return "CREATE DATABASE " + schemaName;
     }
 }

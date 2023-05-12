@@ -733,15 +733,16 @@ public class OracleSQLDialect extends JDBCSQLDialect
     @NotNull
     @Override
     public String getSchemaExistQuery(@NotNull String schemaName) {
-        return null;
+        return "SELECT 1 FROM all_users WHERE USERNAME='" + schemaName + "'";
     }
 
+    @NotNull
     @Override
     public String getCreateSchemaQuery(
         @NotNull String schemaName,
         @NotNull String ownerUserName,
         @NotNull String password
     ) {
-        return null;
+        return "CREATE USER " + schemaName + " IDENTIFIED BY " + password;
     }
 }
