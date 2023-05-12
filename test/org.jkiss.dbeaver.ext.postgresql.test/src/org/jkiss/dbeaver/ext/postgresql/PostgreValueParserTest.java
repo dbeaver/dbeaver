@@ -246,23 +246,23 @@ public class PostgreValueParserTest {
 
         Assert.assertThrows(
             "Array value must start with \"{\"",
-            IllegalStateException.class,
+            IllegalArgumentException.class,
             () -> PostgreValueParser.parsePrimitiveArray("1}", Function.identity(), String[]::new));
         Assert.assertThrows(
             "Unexpected \"}\" character",
-            IllegalStateException.class,
+            IllegalArgumentException.class,
             () -> PostgreValueParser.parsePrimitiveArray("{1,}", Function.identity(), String[]::new));
         Assert.assertThrows(
             "Unexpected \",\" character",
-            IllegalStateException.class,
+            IllegalArgumentException.class,
             () -> PostgreValueParser.parsePrimitiveArray("{,}", Function.identity(), String[]::new));
         Assert.assertThrows(
             "Unexpected end of input",
-            IllegalStateException.class,
+            IllegalArgumentException.class,
             () -> PostgreValueParser.parsePrimitiveArray("{1,", Function.identity(), String[]::new));
         Assert.assertThrows(
             "Junk after closing right brace",
-            IllegalStateException.class,
+            IllegalArgumentException.class,
             () -> PostgreValueParser.parsePrimitiveArray("{1},", Function.identity(), String[]::new));
     }
 

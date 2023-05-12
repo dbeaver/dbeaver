@@ -424,6 +424,7 @@ public class PostgreValueParser {
      * @param generator a function that takes a length and creates array of {@code T}
      * @param delimiter a delimiter that separates elements
      * @return array elements
+     * @throws IllegalArgumentException if the {@code value} can't be parsed
      */
     @NotNull
     public static <T> T[] parsePrimitiveArray(
@@ -450,7 +451,7 @@ public class PostgreValueParser {
 
             if (state == State.EXPECT_START) {
                 if (ch != '{') {
-                    throw new IllegalStateException("Array value must start with \"{\"");
+                    throw new IllegalArgumentException("Array value must start with \"{\"");
                 } else {
                     state = State.MAYBE_VALUE;
                 }
@@ -462,7 +463,7 @@ public class PostgreValueParser {
                     buffer.append(value.charAt(offset++));
                 } else if (ch == '}') {
                     if (state == State.EXPECT_VALUE) {
-                        throw new IllegalStateException("Unexpected \"}\" character");
+                        throw new IllegalArgumentException("Unexpected \"}\" character");
                     }
                     final String element = buffer.toString();
                     if (!element.isEmpty()) {
@@ -484,7 +485,7 @@ public class PostgreValueParser {
                             result.add(converter.apply(element));
                         }
                     } else {
-                        throw new IllegalStateException("Unexpected \",\" character");
+                        throw new IllegalArgumentException("Unexpected \",\" character");
                     }
                     buffer.setLength(0);
                     state = State.EXPECT_VALUE;
