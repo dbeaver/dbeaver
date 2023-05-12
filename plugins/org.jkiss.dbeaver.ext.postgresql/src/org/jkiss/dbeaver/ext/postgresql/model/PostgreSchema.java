@@ -759,7 +759,8 @@ public class PostgreSchema implements
                 .append("LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0 AND d.classoid='pg_class'::regclass\n");
             if (supportsSequences) {
                 // Search connection with sequence object
-                sql.append("LEFT OUTER JOIN pg_depend dep on dep.refobjid = c.\"oid\" AND dep.deptype = 'i' and dep.refobjsubid <> 0\n");
+                sql.append("LEFT OUTER JOIN pg_depend dep on dep.refobjid = c.\"oid\" " +
+                    "AND dep.deptype = 'i' and dep.refobjsubid <> 0 and dep.classid = dep.refclassid\n");
             }
             sql.append("WHERE c.relnamespace=? AND c.relkind not in ('i','I','c')")
                 .append(object == null && objectName == null ? "" : " AND relname=?");
