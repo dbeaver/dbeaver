@@ -44,8 +44,6 @@ import java.util.List;
 public class DriverLibraryLocal extends DriverLibraryAbstract {
     private static final Log log = Log.getLog(DriverLibraryLocal.class);
 
-    private boolean deleteAfterRestart;
-
     public DriverLibraryLocal(DriverDescriptor driver, FileType type, String path) {
         super(driver, type, path);
     }
@@ -206,13 +204,4 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
         }
     }
 
-    @Override
-    public boolean isDeleteAfterRestart() {
-        return deleteAfterRestart;
-    }
-
-    @Override
-    public void setDeleteAfterRestart(boolean deleteAfterRestart) {
-        this.deleteAfterRestart = deleteAfterRestart;
-    }
 }

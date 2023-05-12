@@ -107,11 +107,4 @@ public interface DBPDriverLibrary {
 
     boolean isSecureDownload(DBRProgressMonitor monitor);
 
-    /**
-     * The flag that shows us if we need to delete the local driver library file after restart
-     */
-    boolean isDeleteAfterRestart();
-
-    void setDeleteAfterRestart(boolean deleteAfterRestart);
-
 }

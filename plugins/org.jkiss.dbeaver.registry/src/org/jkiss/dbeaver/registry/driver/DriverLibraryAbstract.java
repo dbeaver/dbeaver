@@ -148,16 +148,6 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
         // do nothing
     }
 
-    @Override
-    public boolean isDeleteAfterRestart() {
-        return false;
-    }
-
-    @Override
-    public void setDeleteAfterRestart(boolean deleteAfterRestart) {
-        // do nothing
-    }
-
     @NotNull
     @Override
     public FileType getType() {

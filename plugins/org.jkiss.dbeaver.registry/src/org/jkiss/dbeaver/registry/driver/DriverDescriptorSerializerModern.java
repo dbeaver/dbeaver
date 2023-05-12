@@ -93,9 +93,6 @@ public class DriverDescriptorSerializerModern extends DriverDescriptorSerializer
                         if (lib.isDisabled()) {
                             JSONUtils.field(json, RegistryConstants.ATTR_DISABLED, true);
                         }
-                        if (lib.isDeleteAfterRestart()) {
-                            JSONUtils.field(json, RegistryConstants.ATTR_DELETE_AFTER_RESTART, true);
-                        }
                         if (!CommonUtils.isEmpty(lib.getPreferredVersion())) {
                             JSONUtils.field(json, RegistryConstants.ATTR_VERSION, lib.getPreferredVersion());
                         }
