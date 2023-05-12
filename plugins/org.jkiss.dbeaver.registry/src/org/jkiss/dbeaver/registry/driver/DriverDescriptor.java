@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.impl.ProviderPropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
@@ -198,7 +199,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private final List<DriverFileSource> fileSources = new ArrayList<>();
     private final List<DBPDriverLibrary> libraries = new ArrayList<>();
     private final List<DBPDriverLibrary> origFiles = new ArrayList<>();
-    private final List<DBPPropertyDescriptor> providerPropertyDescriptors = new ArrayList<>();
+    private final List<ProviderPropertyDescriptor> providerPropertyDescriptors = new ArrayList<>();
     private final List<OSDescriptor> supportedSystems = new ArrayList<>();
 
     private final List<ReplaceInfo> driverReplacements = new ArrayList<>();
@@ -404,8 +405,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             if (!ArrayUtils.isEmpty(pp)) {
                 this.providerPropertyDescriptors.addAll(
                     Arrays.stream(pp[0].getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))
-                        .map(PropertyDescriptor::extractProperties)
-                        .flatMap(List<DBPPropertyDescriptor>::stream)
+                        .map(ProviderPropertyDescriptor::extractProviderProperties)
+                        .flatMap(List<ProviderPropertyDescriptor>::stream)
                         .collect(Collectors.toList()));
             }
         }
@@ -1014,11 +1015,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @NotNull
     @Override
-    public DBPPropertyDescriptor[] getProviderPropertyDescriptors() {
-        return providerPropertyDescriptors.toArray(new DBPPropertyDescriptor[0]);
+    public ProviderPropertyDescriptor[] getProviderPropertyDescriptors() {
+        return providerPropertyDescriptors.toArray(new ProviderPropertyDescriptor[0]);
     }
 
-    public void addProviderPropertyDescriptors(Collection<DBPPropertyDescriptor> props) {
+    public void addProviderPropertyDescriptors(Collection<ProviderPropertyDescriptor> props) {
         providerPropertyDescriptors.addAll(props);
     }
 
