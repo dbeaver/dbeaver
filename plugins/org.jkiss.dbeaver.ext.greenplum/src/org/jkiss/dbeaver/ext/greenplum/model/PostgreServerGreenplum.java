@@ -53,7 +53,7 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
 
     @Override
     public PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult) {
-        if (kind == PostgreClass.RelKind.r) {
+        if (kind == PostgreClass.RelKind.r || kind == PostgreClass.RelKind.p) {
             if (isRelationExternal(dbResult)) {
                 return new GreenplumExternalTable(schema, dbResult);
             }
@@ -66,7 +66,7 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
 
     @Override
     public PostgreTableBase createNewRelation(DBRProgressMonitor monitor, PostgreSchema schema, PostgreClass.RelKind kind, Object copyFrom) throws DBException {
-        if (kind == PostgreClass.RelKind.r) {
+        if (kind == PostgreClass.RelKind.r || kind == PostgreClass.RelKind.p) {
             return new GreenplumTable(schema);
         } else if (kind == PostgreClass.RelKind.m) {
             return new GreenplumMaterializedView(schema);
