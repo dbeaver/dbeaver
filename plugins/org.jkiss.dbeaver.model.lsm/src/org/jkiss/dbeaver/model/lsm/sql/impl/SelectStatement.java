@@ -20,10 +20,8 @@ import org.jkiss.dbeaver.model.lsm.LSMElement;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxNode;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxSubnode;
-import org.jkiss.dbeaver.model.lsm.mapping.SyntaxTerm;
 import org.jkiss.dbeaver.model.lsm.sql.LSMSelectStatement;
 
-import java.util.List;
 
 @SyntaxNode(name = "directSelectStatementMultipleRows")
 public class SelectStatement extends AbstractSyntaxNode implements LSMSelectStatement, LSMElement {

@@ -161,6 +161,7 @@ updateRule: ON UPDATE referentialAction;
 referentialAction: (CASCADE|SET NULL|SET DEFAULT|NO ACTION);
 deleteRule: ON DELETE referentialAction;
 checkConstraintDefinition: CHECK LeftParen searchCondition RightParen;
+
 searchCondition: booleanTerm (OR booleanTerm)*;
 booleanTerm: booleanFactor (AND booleanFactor)*;
 booleanFactor: (NOT)? booleanTest;
@@ -170,6 +171,8 @@ predicate: (comparisonPredicate|betweenPredicate|inPredicate|likePredicate|nullP
 comparisonPredicate: rowValueConstructor compOp rowValueConstructor;
 rowValueConstructor: (rowValueConstructorElement|LeftParen rowValueConstructorList RightParen|rowSubquery);
 rowValueConstructorElement: (valueExpression|nullSpecification|defaultSpecification);
+
+// value expression
 valueExpression: (numericValueExpression|stringValueExpression|datetimeValueExpression|intervalValueExpression);
 numericValueExpression: term ((PlusSign term)|(MinusSign term))*;
 term: factor ((Asterisk factor)|(Solidus factor))*;
@@ -241,11 +244,17 @@ groupingColumnReference: columnReference (collateClause)?;
 collateClause: COLLATE collationName;
 collationName: qualifiedName;
 havingClause: HAVING searchCondition;
+
+// explicit and values-based table definition
 tableValueConstructor: VALUES tableValueConstructorList;
 tableValueConstructorList: rowValueConstructor ((Comma rowValueConstructor)+)?;
 explicitTable: TABLE tableName;
+
+// corresponding spec
 correspondingSpec: CORRESPONDING (BY LeftParen correspondingColumnList RightParen)?;
 correspondingColumnList: columnNameList;
+
+// case, whne
 caseExpression: (caseAbbreviation|caseSpecification);
 caseAbbreviation: (NULLIF LeftParen valueExpression Comma valueExpression RightParen|COALESCE LeftParen valueExpression (Comma valueExpression)+ RightParen);
 caseSpecification: (simpleCase|searchedCase);
@@ -261,6 +270,7 @@ searchedWhenClause: WHEN searchCondition THEN result;
 castSpecification: CAST LeftParen castOperand AS castTarget RightParen;
 castOperand: (valueExpression|NULL);
 castTarget: (domainName|dataType);
+
 numericValueFunction: (positionExpression|extractExpression|lengthExpression);
 positionExpression: POSITION LeftParen characterValueExpression IN characterValueExpression RightParen;
 characterValueExpression: (concatenation|characterFactor);
@@ -307,6 +317,8 @@ timeZone: AT timeZoneSpecifier;
 timeZoneSpecifier: (LOCAL|TIME ZONE intervalValueExpression);
 lengthExpression: (charLengthExpression|octetLengthExpression|bitLengthExpression);
 charLengthExpression: (CHAR_LENGTH|CHARACTER_LENGTH) LeftParen stringValueExpression RightParen;
+
+// string value expression
 stringValueExpression: (characterValueExpression|bitValueExpression);
 octetLengthExpression: OCTET_LENGTH LeftParen stringValueExpression RightParen;
 bitLengthExpression: BIT_LENGTH LeftParen stringValueExpression RightParen;
@@ -315,6 +327,8 @@ defaultSpecification: DEFAULT;
 rowValueConstructorList: rowValueConstructorElement ((Comma rowValueConstructorElement)+)?;
 rowSubquery: subquery;
 compOp: (EqualsOperator|NotEqualsOperator|LessThanOperator|GreaterThanOperator|LessThanOrEqualsOperator|GreaterThanOrEqualsOperator);
+
+// predicates
 betweenPredicate: rowValueConstructor (NOT)? BETWEEN rowValueConstructor AND rowValueConstructor;
 inPredicate: rowValueConstructor (NOT)? IN inPredicateValue;
 inPredicateValue: (tableSubquery|LeftParen inValueList RightParen);
@@ -328,8 +342,10 @@ quantifiedComparisonPredicate: rowValueConstructor compOp quantifier tableSubque
 quantifier: (all|some);
 all: ALL;
 some: (SOME|ANY);
+
 existsPredicate: EXISTS tableSubquery;
 // uniquePredicate: UNIQUE tableSubquery;
+
 matchPredicate: rowValueConstructor MATCH (UNIQUE)? ((PARTIAL|FULL))? tableSubquery;
 overlapsPredicate: rowValueConstructor1 OVERLAPS rowValueConstructor2;
 rowValueConstructor1: rowValueConstructor;

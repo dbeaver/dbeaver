@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.lsm.sql.impl;
 
 import org.jkiss.dbeaver.model.lsm.mapping.*;
+import org.jkiss.dbeaver.model.lsm.sql.impl.expression.SearchCondition;
 
 import java.util.List;
 
@@ -40,4 +41,10 @@ public class SelectionQuery extends AbstractSyntaxNode {
 
     @SyntaxSubnode(type = GroupingSpec.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/groupByClause")
     public GroupingSpec groupBy;
+
+    @SyntaxSubnodesSpecification(type = SearchCondition.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/whereClause/searchCondition")
+    public SearchCondition where;
+
+    @SyntaxSubnodesSpecification(type = SearchCondition.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/havingClause/searchCondition")
+    public SearchCondition having;
 }
