@@ -1698,6 +1698,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return true;
     }
 
+    public void deleteDriverLibrary(DBPDriverLibrary library) {
+        resolvedFiles.remove(library);
+        libraries.remove(library);
+    }
+
     private void resolveDirectories(Path targetFileLocation, DBPDriverLibrary library, Path srcLocalFile, Path trgLocalFile, List<DriverFileInfo> libraryFiles) throws IOException {
         if (!Files.exists(trgLocalFile)) {
             try {
