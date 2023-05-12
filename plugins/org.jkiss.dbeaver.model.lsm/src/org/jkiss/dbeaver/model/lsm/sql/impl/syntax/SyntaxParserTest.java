@@ -50,7 +50,9 @@ public class SyntaxParserTest {
             + "ON ProductSubCategory.ProductSubcategoryID = Product.ProductSubcategoryID\r\n"
             + "UNION JOIN Cat.Production.ProductCategory\r\n"
             + "USING(ProductCategoryID)\r\n"
+            + "WHERE id > 1 OR id < 5 AND Name = 'Ivan' IS NOT UNKNOWN OR NOT ProductNumber = 0"
             + "GROUP BY ProductName\r\n"
+            + "HAVING ProductID IS NOT 0"
             + "ORDER BY Product.ModifiedDate DESC";
         var input = CharStreams.fromString(inputText);
         //var input = CharStreams.fromFileName("D:\\projects\\TestSqlXmlWtf\\TestSqlXmlWtf\\sqlxml-s.xml");
@@ -121,7 +123,7 @@ public class SyntaxParserTest {
         
         System.out.println();
         try { // print human-readable representation of the complete form of the parse tree and model 
-            Path dir = Path.of("d:\\Temp");
+            Path dir = Path.of("c:\\Temp");
             Files.writeString(dir.resolve("parsed.xml"), model.toXml(tree));
             Files.writeString(dir.resolve("model.json"), model.stringify(result.getModel()));
         } catch (IOException ex) {
@@ -144,14 +146,14 @@ public class SyntaxParserTest {
         }
         
         
-//        var resultModel = result.getModel();
-//        var lr = resultModel.findBoundSyntaxAt(11);
-//        if (lr != null) {
-//            var lri = lr.getInterval();
-//            System.out.println(" found " + lr + " \t - \"" + inputText.substring(lri.a, lri.b + 1).replace("\r", "\\r").replace("\n", "\\n") + "\" \t - " + lr.getAstNodeFullName());
-//        } else {
-//            System.out.println(" not found in 0.." + inputText.length());
-//        }
+        var resultModel = result.getModel();
+        var lr = resultModel.findBoundSyntaxAt(11);
+        if (lr != null) {
+            var lri = lr.getInterval();
+            System.out.println(" found " + lr + " \t - \"" + inputText.substring(lri.a, lri.b + 1).replace("\r", "\\r").replace("\n", "\\n") + "\" \t - " + lr.getAstNodeFullName());
+        } else {
+            System.out.println(" not found in 0.." + inputText.length());
+        }
     }
     
     private static void collect(Tree ctx, Parser pp, StringBuilder sb, String indent) {
