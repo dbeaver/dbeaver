@@ -1366,7 +1366,7 @@ public class UIUtils {
     }
 
     public static boolean isUIThread() {
-        return Display.getDefault().getThread() == Thread.currentThread();
+        return Display.getCurrent() != null;
     }
 
     /**

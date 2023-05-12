@@ -143,7 +143,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         // Some criteria doesn't work without alias
         // (e.g. structured attributes in Oracle or composite types in PostgreSQL requires table alias)
         String tableAlias = null;
-        if ((dataFilter != null || rowIdAttribute != null) && dataSource.getSQLDialect().supportsAliasInSelect()) {
+        if (needAliasInSelect(dataFilter, rowIdAttribute, dataSource)) {
             tableAlias = DEFAULT_TABLE_ALIAS;
         }
 
@@ -155,10 +155,11 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         StringBuilder query = new StringBuilder(100);
         query.append("SELECT ");
         appendSelectSource(monitor, query, tableAlias, rowIdAttribute);
-        query.append(" FROM ").append(getFullyQualifiedName(DBPEvaluationContext.DML));
+        query.append(" FROM ").append(getTableName());
         if (tableAlias != null) {
             query.append(" ").append(tableAlias); //$NON-NLS-1$
         }
+        appendExtraSelectParameters(query);
         SQLUtils.appendQueryConditions(dataSource, query, tableAlias, dataFilter);
         SQLUtils.appendQueryOrder(dataSource, query, tableAlias, dataFilter);
 
@@ -223,6 +224,11 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
     }
 
+    @NotNull
+    protected String getTableName() {
+        return getFullyQualifiedName(DBPEvaluationContext.DML);
+    }
+
     protected void appendSelectSource(DBRProgressMonitor monitor, StringBuilder query, String tableAlias, DBDPseudoAttribute rowIdAttribute) {
         if (rowIdAttribute != null) {
             // If we have pseudo attributes then query gonna be more complex
@@ -239,6 +245,18 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
     }
 
+    protected boolean needAliasInSelect(
+        @Nullable DBDDataFilter dataFilter,
+        @Nullable DBDPseudoAttribute rowIdAttribute,
+        @NotNull DBPDataSource dataSource
+    ) {
+        return (dataFilter != null || rowIdAttribute != null) && dataSource.getSQLDialect().supportsAliasInSelect();
+    }
+
+    protected void appendExtraSelectParameters(@NotNull StringBuilder query) {
+
+    }
+
     ////////////////////////////////////////////////////////////////////
     // Count
 
@@ -248,7 +266,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
         StringBuilder query = new StringBuilder("SELECT COUNT(*) FROM "); //$NON-NLS-1$
-        query.append(getFullyQualifiedName(DBPEvaluationContext.DML));
+        query.append(getTableName());
         SQLUtils.appendQueryConditions(getDataSource(), query, null, dataFilter);
         monitor.subTask(ModelMessages.model_jdbc_fetch_table_row_count);
         try (DBCStatement dbStat = session.prepareStatement(

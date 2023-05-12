@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.net;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
@@ -181,4 +182,14 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
         return createTrustStoreSslContext(dataSource, sslConfig).getSocketFactory();
     }
 
+    /**
+     * Creates a non-validating SSL socket factory.
+     */
+    @NotNull
+    public static SSLSocketFactory createNonValidatingSslSocketFactory() throws Exception {
+        final SSLContext context = SSLContext.getInstance("SSL");
+        context.init(null, CertificateGenHelper.NON_VALIDATING_TRUST_MANAGERS, new SecureRandom());
+
+        return context.getSocketFactory();
+    }
 }
