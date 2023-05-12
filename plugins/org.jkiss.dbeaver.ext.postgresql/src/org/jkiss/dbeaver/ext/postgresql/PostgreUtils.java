@@ -819,12 +819,30 @@ public class PostgreUtils {
      * If the column doesn't exist, then there will be an exception
      *
      * @param tableName name of the system table
-     * @param columnName name of the system column
+     * @param columnName name of the system column. Use "*" param, if you need to check access to the full table/view.
      * @return query for the system column checking
      */
     @NotNull
     public static String getQueryForSystemColumnChecking(@NotNull String tableName, @NotNull String columnName) {
         return "SELECT " + columnName + " FROM pg_catalog." + tableName + " WHERE 1<>1 LIMIT 1";
+    }
+
+    /**
+     * Returns state of the meta object existence from the system catalogs.
+     *
+     * @param session to execute a query
+     * @param tableName name of the required table
+     * @param columnName name of the required column or symbol *
+     * @return state of the meta object existence in the system data
+     */
+    public static boolean isMetaObjectExists(@NotNull JDBCSession session, @NotNull String tableName, @NotNull String columnName) {
+        try {
+            JDBCUtils.queryString(session, getQueryForSystemColumnChecking(tableName, columnName));
+            return true;
+        } catch (SQLException e) {
+            log.debug("Error reading system information from the " + tableName + " table", e);
+        }
+        return false;
     }
 
     /**
