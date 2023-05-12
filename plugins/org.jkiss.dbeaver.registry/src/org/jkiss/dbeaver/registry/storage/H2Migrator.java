@@ -256,10 +256,19 @@ public class H2Migrator {
             v1Paths = new H2FilesPaths(dbFolderPath, dbNameV1);
             v2Paths = new H2FilesPaths(dbFolderPath, dbNameV2);
 
-            v1DataBackupPath = dbFolderPath.resolve(V1_DATA_BACKUP_FILE_NAME);
-            v1TraceBackupPath = dbFolderPath.resolve(V1_TRACE_BACKUP_FILE_NAME);
+
+            v1DataBackupPath = dbFolderPath.resolve(createBackupFileName(v1Paths.dbDataFile));
+            v1TraceBackupPath = dbFolderPath.resolve(createBackupFileName(v1Paths.dbTraceFile));
 
             exportFilePath = dbFolderPath.resolve(EXPORT_SCRIPT_FILE_NAME);
+        }
+
+        private String createBackupFileName(Path file) {
+            String backupFileName = file.getFileName().toString() + ".backup";
+            if (!backupFileName.startsWith(".")) {
+                backupFileName = "." + backupFileName;
+            }
+            return backupFileName;
         }
 
         @NotNull
