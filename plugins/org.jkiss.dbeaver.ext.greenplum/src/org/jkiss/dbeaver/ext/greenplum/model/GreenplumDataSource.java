@@ -42,6 +42,8 @@ public class GreenplumDataSource extends PostgreDataSource {
 
     private Version gpVersion;
     private Boolean supportsFmterrtblColumn;
+    private Boolean supportsRelstorageColumn;
+    private Boolean hasAccessToExttable;
 
     public GreenplumDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         super(monitor, container);
@@ -73,18 +75,28 @@ public class GreenplumDataSource extends PostgreDataSource {
         return true;
     }
 
+    boolean isHasAccessToExttable(@NotNull JDBCSession session) {
+        if (hasAccessToExttable == null) {
+            hasAccessToExttable = PostgreUtils.isMetaObjectExists(session, "pg_exttable", "*");
+        }
+        return hasAccessToExttable;
+    }
+
     boolean isServerSupportFmterrtblColumn(@NotNull JDBCSession session) {
         if (supportsFmterrtblColumn == null) {
-            try {
-                JDBCUtils.queryString(
-                    session,
-                    PostgreUtils.getQueryForSystemColumnChecking("pg_exttable", "fmterrtbl"));
-                supportsFmterrtblColumn = true;
-            } catch (SQLException e) {
-                log.debug("Error reading system information from the pg_exttable table", e);
+            if (!isHasAccessToExttable(session)) {
                 supportsFmterrtblColumn = false;
+            } else {
+                supportsFmterrtblColumn = PostgreUtils.isMetaObjectExists(session, "pg_exttable", "fmterrtbl");
             }
         }
         return supportsFmterrtblColumn;
+    }
+
+    boolean isServerSupportRelstorageColumn(@NotNull JDBCSession session) {
+        if (supportsRelstorageColumn == null) {
+            supportsRelstorageColumn = PostgreUtils.isMetaObjectExists(session, "pg_class", "relstorage");
+        }
+        return supportsRelstorageColumn;
     }
 }
