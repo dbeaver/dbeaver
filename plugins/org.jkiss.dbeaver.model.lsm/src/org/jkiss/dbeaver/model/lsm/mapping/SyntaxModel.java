@@ -36,6 +36,7 @@ import javax.xml.xpath.*;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -46,7 +47,7 @@ import java.util.stream.Stream;
 public class SyntaxModel {
 
     private final Parser parser;
-    private final Map<String, NodeTypeInfo> nodeTypeByRuleName = new HashMap<>();
+    // private final Map<String, NodeTypeInfo> nodeTypeByRuleName = new HashMap<>();
     private final Map<Class<?>, NodeTypeInfo> nodeTypeByClass = new HashMap<>();
     private final Map<String, LiteralTypeInfo> literalTypeByRuleName = new HashMap<>();
     private final Map<Class<?>, LiteralTypeInfo> literalTypeByClass = new HashMap<>();
@@ -105,7 +106,7 @@ public class SyntaxModel {
         this.appendIndent(sb, indent);
         sb.append("{");
         indent++;
-        NodeTypeInfo typeInfo = this.nodeTypeByRuleName.get(model.getName());
+        NodeTypeInfo typeInfo = this.nodeTypeByClass.get(model.getClass()); //this.nodeTypeByRuleName.get(model.getName());
         int n = 0;
         {
             sb.append("\n");
@@ -350,7 +351,7 @@ public class SyntaxModel {
         }
     }
 
-	public <T extends AbstractSyntaxNode> ModelErrorsCollection introduce(Class<T> modelType) {
+    public <T extends AbstractSyntaxNode> ModelErrorsCollection introduce(Class<T> modelType) {
         ModelErrorsCollection errors = new ModelErrorsCollection();
         
         Set<Class<?>> processedTypes = new HashSet<>();
@@ -384,6 +385,7 @@ public class SyntaxModel {
                 public final Field info = f;
                 public final SyntaxSubnode[] subnodeSpecs = f.getAnnotationsByType(SyntaxSubnode.class);
                 public final SyntaxTerm[] termSpecs = f.getAnnotationsByType(SyntaxTerm.class);
+                public final SyntaxSubnodesSpecification[] externalSubnodeSpecs = f.getAnnotationsByType(SyntaxSubnodesSpecification.class); 
             }).filter(
                 f -> !Modifier.isStatic(f.info.getModifiers())
             ).collect(Collectors.toList());
@@ -404,7 +406,6 @@ public class SyntaxModel {
                 }
                 
                 List<XPathExpression> termExprs = new ArrayList<>(field.termSpecs.length);
-                List<SubnodeInfo> subnodeExprs = new ArrayList<>(field.subnodeSpecs.length);
                 for (var termSpec : field.termSpecs) {
                     try {
                         termExprs.add(xpath.compile(termSpec.xpath())); // TODO collect raw string too
@@ -418,7 +419,31 @@ public class SyntaxModel {
                             + field.info.getName() + " of type " + type.getName());
                     }
                 }
-                for (var subnodeSpec : field.subnodeSpecs) {
+
+                List<Pair<XPathExpression, SyntaxSubnode>> subnodeSpecs = Stream.concat(
+                    Stream.of(field.externalSubnodeSpecs).flatMap(
+                        s -> {
+                            XPathExpression scopeExpr;
+                            try {
+                                scopeExpr = s.xpath() != null && s.xpath().length() > 0 ? xpath.compile(s.xpath()) : null; // TODO collect raw string too
+                            } catch (XPathExpressionException ex) {
+                                scopeExpr = null;
+                                errors.add(ex, "Failed to prepare prescope xpath exprssion for external subnodes specification of type " + s.type().getName() + " at "
+                                    + field.info.getName() + " of type " + type.getName());
+                            }
+                            XPathExpression scopeExpr2 = scopeExpr;
+                            return Stream.of(s.type().getMethods())
+                                    .filter(m -> m.getName().equals("member"))
+                                    .flatMap(m -> Stream.of(m.getAnnotationsByType(SyntaxSubnode.class)))
+                                    .map(sss -> new Pair<>(scopeExpr2, sss));
+                        }
+                    ),
+                    Stream.of(field.subnodeSpecs).map(sss -> new Pair<>((XPathExpression)null, sss))
+                ).collect(Collectors.toList());
+
+                List<SubnodeInfo> subnodeExprs = new ArrayList<>(subnodeSpecs.size());
+                for (var subnodeSpecDescr : subnodeSpecs) {
+                    SyntaxSubnode subnodeSpec = subnodeSpecDescr.b;
                     Class<? extends AbstractSyntaxNode> subnodeType;
                     if (subnodeSpec.type() == null || subnodeSpec.type().equals(AbstractSyntaxNode.class)) {
                         if (AbstractSyntaxNode.class.isAssignableFrom(fieldType)) {
@@ -438,7 +463,7 @@ public class SyntaxModel {
                     try {
                         XPathExpression scopeExpr = subnodeSpec.xpath() != null && subnodeSpec.xpath().length() > 0
                             ? xpath.compile(subnodeSpec.xpath()) : null; // TODO collect raw string too
-                        subnodeExprs.add(new SubnodeInfo(scopeExpr, subnodeType, subnodeSpec.lookup()));
+                        subnodeExprs.add(new SubnodeInfo(subnodeSpecDescr.a, scopeExpr, subnodeType, subnodeSpec.lookup()));
                         queue.add(new Pair<>(field.info, subnodeType));
                     } catch (XPathExpressionException ex) {
                         errors.add(ex, "Failed to prepare subnode xpath exprssion for field "
@@ -461,7 +486,7 @@ public class SyntaxModel {
 
             String ruleName = ruleAnnotation.name() != null && ruleAnnotation.name().length() > 0 ? ruleAnnotation.name() : type.getName();
             NodeTypeInfo nodeTypeInfo = new NodeTypeInfo(ruleName, type, ctor, modelFields);
-            nodeTypeByRuleName.put(ruleName, nodeTypeInfo);
+            // nodeTypeByRuleName.put(ruleName, nodeTypeInfo);
             nodeTypeByClass.put(type, nodeTypeInfo);
         }
         

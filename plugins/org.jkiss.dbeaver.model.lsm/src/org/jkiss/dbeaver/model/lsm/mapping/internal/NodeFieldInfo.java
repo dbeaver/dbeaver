@@ -28,15 +28,18 @@ import java.util.List;
 public class NodeFieldInfo {
 
     public static class SubnodeInfo {
+        public final XPathExpression preScopeExpr;
         public final XPathExpression scopeExpr;
         public final Class<? extends AbstractSyntaxNode> subnodeType;
         public final SyntaxSubnodeLookupMode lookupMode;
         
         private NodeTypeInfo nodeTypeInfo;
         
-        public SubnodeInfo(XPathExpression scopeExpr, 
+        public SubnodeInfo(XPathExpression preScopeExpr,
+                           XPathExpression scopeExpr,
                            Class<? extends AbstractSyntaxNode> subnodeType, 
                            SyntaxSubnodeLookupMode lookupMode) {
+            this.preScopeExpr = preScopeExpr;
             this.scopeExpr = scopeExpr;
             this.subnodeType = subnodeType;
             this.lookupMode = lookupMode;
