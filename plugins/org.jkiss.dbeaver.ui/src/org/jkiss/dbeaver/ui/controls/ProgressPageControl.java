@@ -25,7 +25,6 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ContributionManager;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
@@ -101,7 +100,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         //layout.verticalSpacing = 0;
         this.setLayout(layout);
         addDisposeListener(e -> disposeControl());
-        searchNotFoundColor = new Color(getDisplay(), 255, 128, 128);
+        searchNotFoundColor = UIStyles.getDefaultWidgetBackground();
     }
 
     @Override
@@ -462,7 +461,6 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             customToolbarManager.dispose();
             customToolbarManager = null;
         }
-        UIUtils.dispose(searchNotFoundColor);
     }
 
     protected boolean cancelProgress()
