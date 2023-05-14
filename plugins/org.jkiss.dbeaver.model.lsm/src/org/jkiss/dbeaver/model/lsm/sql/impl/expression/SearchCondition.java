@@ -58,7 +58,7 @@ public abstract class SearchCondition implements SyntaxSubnodesSpecificationDefi
         public PredicateClarificationKind clarification;
     }
 
-    @SyntaxLiteral(name = "truthValue", xstring = "x:joinStrings('_', ../*[position > 1], x:flatten(., \"./*|./text()\", true(), false()))")
+    @SyntaxLiteral(name = "truthValue", xstring = "x:joinStrings('_', x:echo(..//text()))")
     public enum PredicateClarificationKind {
         IS_TRUE,
         IS_FALSE,

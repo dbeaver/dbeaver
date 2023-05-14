@@ -113,18 +113,19 @@ public class SyntaxModelMappingSession {
                 for (var subnodeInfo : field.subnodesInfo) {
                     boolean tryDescedants = subnodeInfo.lookupMode == SyntaxSubnodeLookupMode.DEPTH_FIRST;
                     try {
+                        XTreeNodeBase scopedNodeInfo = nodeInfo;
                         if (subnodeInfo.preScopeExpr != null) {
-                            XPathEvaluationResult<?> scope = subnodeInfo.preScopeExpr.evaluateExpression(nodeInfo);
+                            XPathEvaluationResult<?> scope = subnodeInfo.preScopeExpr.evaluateExpression(scopedNodeInfo);
                             if (scope.value() instanceof XPathNodes && ((XPathNodes) scope.value()).size() > 0) {
-                                nodeInfo = (XTreeNodeBase) ((XPathNodes) scope.value()).get(0);
+                                scopedNodeInfo = (XTreeNodeBase) ((XPathNodes) scope.value()).get(0);
                             } else if (scope.value() instanceof XTreeNodeBase) {
-                                nodeInfo = (XTreeNodeBase) scope.value();
+                                scopedNodeInfo = (XTreeNodeBase) scope.value();
                             } else {
                                 continue;
                             }
                         }
                         if (subnodeInfo.scopeExpr != null) {
-                            XPathEvaluationResult<?> scopeOrSubnode = subnodeInfo.scopeExpr.evaluateExpression(nodeInfo);
+                            XPathEvaluationResult<?> scopeOrSubnode = subnodeInfo.scopeExpr.evaluateExpression(scopedNodeInfo);
                             if (scopeOrSubnode.type() == XPathResultType.NODESET && scopeOrSubnode.value() instanceof XPathNodes) {
                                 for (var scopeSubnode : (XPathNodes) scopeOrSubnode.value()) {
                                     if (scopeSubnode instanceof XTreeNodeBase) {
@@ -138,9 +139,9 @@ public class SyntaxModelMappingSession {
                             }
                         } else {
                             if (tryDescedants) {
-                                mapSubtrees(nodeInfo, subnodeInfo.getNodeTypeInfo(), false, true, subnodes);
+                                mapSubtrees(scopedNodeInfo, subnodeInfo.getNodeTypeInfo(), false, true, subnodes);
                             } else {
-                                for (var candidateSubnode : nodeInfo.getSubnodes().getCollection()) {
+                                for (var candidateSubnode : scopedNodeInfo.getSubnodes().getCollection()) {
                                     mapSubtrees(candidateSubnode, subnodeInfo.getNodeTypeInfo(), true, false, subnodes);
                                 }
                             }
@@ -161,19 +162,20 @@ public class SyntaxModelMappingSession {
                 for (var subnodeInfo : field.subnodesInfo) {
                     boolean tryDescedants = subnodeInfo.lookupMode == SyntaxSubnodeLookupMode.DEPTH_FIRST;
                     try {
-                        AbstractSyntaxNode subnode = null;
+                    	XTreeNodeBase scopedNodeInfo = nodeInfo;
+                    	AbstractSyntaxNode subnode = null;
                         if (subnodeInfo.preScopeExpr != null) {
-                            XPathEvaluationResult<?> scope = subnodeInfo.preScopeExpr.evaluateExpression(nodeInfo);
+                            XPathEvaluationResult<?> scope = subnodeInfo.preScopeExpr.evaluateExpression(scopedNodeInfo);
                             if (scope.value() instanceof XPathNodes && ((XPathNodes) scope.value()).size() > 0) {
-                                nodeInfo = (XTreeNodeBase) ((XPathNodes) scope.value()).get(0);
+                                scopedNodeInfo = (XTreeNodeBase) ((XPathNodes) scope.value()).get(0);
                             } else if (scope.value() instanceof XTreeNodeBase) {
-                                nodeInfo = (XTreeNodeBase) scope.value();
+                                scopedNodeInfo = (XTreeNodeBase) scope.value();
                             } else {
                                 continue;
                             }
                         }
                         if (subnodeInfo.scopeExpr != null) {
-                            XPathEvaluationResult<?> scopeOrSubnode = subnodeInfo.scopeExpr.evaluateExpression(nodeInfo);
+                            XPathEvaluationResult<?> scopeOrSubnode = subnodeInfo.scopeExpr.evaluateExpression(scopedNodeInfo);
                             if (scopeOrSubnode.type() == XPathResultType.NODESET && scopeOrSubnode.value() instanceof XPathNodes) {
                                 for (var scopeSubnode : (XPathNodes) scopeOrSubnode.value()) {
                                     if (scopeSubnode instanceof XTreeNodeBase) {
@@ -190,9 +192,9 @@ public class SyntaxModelMappingSession {
                             }
                         } else {
                             if (tryDescedants) {
-                                subnode = mapSubtree(nodeInfo, subnodeInfo.getNodeTypeInfo(), false, true);
+                                subnode = mapSubtree(scopedNodeInfo, subnodeInfo.getNodeTypeInfo(), false, true);
                             } else {
-                                for (var candidateSubnode : nodeInfo.getSubnodes().getCollection()) {
+                                for (var candidateSubnode : scopedNodeInfo.getSubnodes().getCollection()) {
                                     mapSubtrees(candidateSubnode, subnodeInfo.getNodeTypeInfo(), true, false, subnodes);
                                 }
                             }
@@ -367,7 +369,6 @@ public class SyntaxModelMappingSession {
         try {
             this.bindRawValueImpl(nodeInfo, fieldInfo, value);
         } catch (IllegalArgumentException | IllegalAccessException ex) {
-        	System.out.println();
             errors.add(ex, "Failed to bind raw value to field " + fieldInfo.getFieldName()
                 +  " of type " + fieldInfo.getDeclaringClassName());
         }

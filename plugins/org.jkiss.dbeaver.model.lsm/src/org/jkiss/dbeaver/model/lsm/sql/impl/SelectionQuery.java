@@ -43,8 +43,8 @@ public class SelectionQuery extends AbstractSyntaxNode {
     public GroupingSpec groupBy;
 
     @SyntaxSubnodesSpecification(type = SearchCondition.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/whereClause/searchCondition")
-    public SearchCondition where;
+    public SearchCondition.BooleanExpression where;
 
     @SyntaxSubnodesSpecification(type = SearchCondition.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/havingClause/searchCondition")
-    public SearchCondition having;
+    public SearchCondition.BooleanExpression having;
 }

@@ -50,9 +50,9 @@ public class SyntaxParserTest {
             + "ON ProductSubCategory.ProductSubcategoryID = Product.ProductSubcategoryID\r\n"
             + "UNION JOIN Cat.Production.ProductCategory\r\n"
             + "USING(ProductCategoryID)\r\n"
-            + "WHERE id > 1 OR id < 5 AND Name = 'Ivan' IS NOT UNKNOWN OR NOT ProductNumber = 0"
+            + "WHERE id > 1 OR (id < 5 AND Name = 'Ivan' IS NOT UNKNOWN) OR NOT ProductNumber = 0"
             + "GROUP BY ProductName\r\n"
-            + "HAVING ProductID IS NOT 0"
+            + "HAVING ProductID IS NOT NULL"
             + "ORDER BY Product.ModifiedDate DESC";
         var input = CharStreams.fromString(inputText);
         //var input = CharStreams.fromFileName("D:\\projects\\TestSqlXmlWtf\\TestSqlXmlWtf\\sqlxml-s.xml");

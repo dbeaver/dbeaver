@@ -156,7 +156,8 @@ public class SyntaxModel {
                 this.appendIndent(sb, indent);
                 sb.append("\"").append("node").append("\"");
                 sb.append(": ");
-                sb.append("\"").append(binding.astNode.getFullPathName().substring(model.getAstNode().getFullPathName().length())).append("\"");
+                //sb.append("\"").append(binding.astNode.getFullPathName().substring(model.getAstNode().getFullPathName().length())).append("\"");
+                sb.append("\"").append(binding.astNode.getFullPathName()).append("\"");
                 sb.append("\n");
                 indent--;
                 this.appendIndent(sb, indent);
@@ -393,17 +394,6 @@ public class SyntaxModel {
             
             for (var field : fields) {
                 Class<?> fieldType = field.info.getType();
-                boolean expectsSubnode = field.subnodeSpecs.length > 0;
-                boolean expectsLiteral = field.termSpecs.length > 0;
-                FieldTypeKind kind;
-                if (expectsSubnode && expectsLiteral) {
-                    errors.add("Field of terminal value kind cannot be bound with complex subnode type");
-                }
-                if (expectsSubnode) {
-                    kind = FieldTypeKind.resolveModelSubnodeFieldKind(fieldType);
-                } else {
-                    kind = FieldTypeKind.resolveModelLiteralFieldKind(fieldType);
-                }
                 
                 List<XPathExpression> termExprs = new ArrayList<>(field.termSpecs.length);
                 for (var termSpec : field.termSpecs) {
@@ -471,6 +461,18 @@ public class SyntaxModel {
                     }
                 }
                 
+                boolean expectsSubnode = subnodeExprs.size() > 0;
+                boolean expectsLiteral = termExprs.size() > 0;
+                FieldTypeKind kind;
+                if (expectsSubnode && expectsLiteral) {
+                    errors.add("Field of terminal value kind cannot be bound with complex subnode type");
+                } 
+                if (expectsSubnode) {
+                    kind = FieldTypeKind.resolveModelSubnodeFieldKind(fieldType);
+                } else { // if (expectsLiteral) {
+                    kind = FieldTypeKind.resolveModelLiteralFieldKind(fieldType);
+                }
+            
                 NodeFieldInfo fieldInfo = new NodeFieldInfo(kind, field.info, termExprs, subnodeExprs); 
                 modelFields.put(field.info.getName(), fieldInfo);
                 fieldsToFixup.addLast(fieldInfo);
