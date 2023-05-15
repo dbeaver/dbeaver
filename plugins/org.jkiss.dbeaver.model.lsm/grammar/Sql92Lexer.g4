@@ -381,8 +381,8 @@ UnsignedNumericLiteral: (ExactNumericLiteral|ApproximateNumericLiteral);
 ExactNumericLiteral: (UnsignedInteger (Period (UnsignedInteger)?)?|Period UnsignedInteger);
 UnsignedInteger: (Digit)+;
 ApproximateNumericLiteral: ExactNumericLiteral 'E' SignedInteger;
-SignedInteger: (Sign)? UnsignedInteger;
 Sign: (PlusSign|MinusSign);
+SignedInteger: (Sign)? UnsignedInteger;
 
 
 // special characters and character sequences

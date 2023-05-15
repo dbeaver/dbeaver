@@ -16,14 +16,14 @@
  */
 package org.jkiss.dbeaver.model.lsm.mapping.internal;
 
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.xml.namespace.QName;
 import javax.xml.xpath.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class XFunctionResolver implements XPathFunctionResolver {
@@ -131,6 +131,48 @@ public class XFunctionResolver implements XPathFunctionResolver {
                 }
                 return sb.toString();
             }
+        }),
+        xfunction("children", args -> {
+            NodesList<Node> result = new NodesList<>(); 
+            for (int i = 0; i < args.size(); i++) {
+                for (Node node : CustomXPathUtils.iterableOf((NodeList) args.get(i))) {
+                    result.addAll(((XTreeNodeBase)node).getSubnodes().getCollection());
+                }
+            }
+            return result;
+        }),
+        xfunction("sourceText", args -> {
+            StringBuilder sb = new StringBuilder();
+            String separator = args.get(0).toString();
+            XPathExpression filter = prepareExpr(args.get(1).toString());
+            
+            List<XTreeNodeBase> roots = new ArrayList<>(); 
+            for (int i = 2; i < args.size(); i++) {
+                for (Node node : CustomXPathUtils.iterableOf((NodeList) args.get(i))) {
+                    roots.add((XTreeNodeBase)node);
+                }
+            }
+            roots.sort((a, b) -> Integer.compare(b.getRealInterval().a, a.getRealInterval().a));
+            
+            Stack<XTreeNodeBase> stack = new Stack<>();
+            stack.addAll(roots);
+            while (stack.size() > 0) {
+                XTreeNodeBase node = stack.pop();
+                if (node instanceof TerminalNode) {
+                    TerminalNode term = (TerminalNode)node;
+                    if (sb.length() > 0) {
+                        sb.append(separator);
+                    }
+                    sb.append(term.getText());
+                } else  if (filter.evaluateExpression(node, Boolean.class).equals(Boolean.TRUE)) {
+                    List<XTreeNodeBase> subnodes = node.getSubnodes().getCollection();
+                    for (int i = subnodes.size() - 1; i >= 0; i--) {
+                        stack.push(subnodes.get(i));
+                    }
+                }
+            }
+
+            return sb.toString();
         })
     );
     

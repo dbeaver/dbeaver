@@ -174,8 +174,12 @@ rowValueConstructorElement: (valueExpression|nullSpecification|defaultSpecificat
 
 // value expression
 valueExpression: (numericValueExpression|stringValueExpression|datetimeValueExpression|intervalValueExpression);
-numericValueExpression: term ((PlusSign term)|(MinusSign term))*;
-term: factor ((Asterisk factor)|(Solidus factor))*;
+numericValueExpression: term (plusTerm|minusTerm)*;
+plusTerm: (PlusSign term);
+minusTerm: (MinusSign term);
+term: factor (multiplyFactor|divideFactor)*;
+multiplyFactor: (Asterisk factor);
+divideFactor: (Solidus factor);
 factor: (Sign)? numericPrimary;
 numericPrimary: (valueExpressionPrimary|numericValueFunction);
 valueExpressionPrimary: (unsignedValueSpecification|columnReference|setFunctionSpecification|scalarSubquery|caseExpression|LeftParen valueExpression RightParen|castSpecification);

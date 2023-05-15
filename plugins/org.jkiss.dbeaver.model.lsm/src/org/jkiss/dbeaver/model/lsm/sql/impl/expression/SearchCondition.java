@@ -18,14 +18,21 @@ package org.jkiss.dbeaver.model.lsm.sql.impl.expression;
 
 import org.jkiss.dbeaver.model.lsm.mapping.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public abstract class SearchCondition implements SyntaxSubnodesSpecificationDefinition<SearchCondition.BooleanExpression> {
 
     @SyntaxSubnode(type = OrExpression.class, xpath = "self::searchCondition[count(./*) > 1]")
     @SyntaxSubnode(type = AndExpression.class, xpath = "self::searchCondition[count(./*) = 1]/booleanTerm[count(./*) > 1]")
-    @SyntaxSubnode(type = ComparisonExpression.class, xpath = "self::searchCondition[count(./*) = 1]/booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary/predicate/comparisonPredicate")
+    @SyntaxSubnode(type = ComparisonPredicate.class, xpath = "self::searchCondition[count(./*) = 1]/booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary/predicate/comparisonPredicate")
+    @SyntaxSubnode(type = BetweenPredicate.class, xpath = "self::searchCondition[count(./*) = 1]/booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary/predicate/betweenPredicate")
+    @SyntaxSubnode(type = InPredicate.class, xpath = "self::searchCondition[count(./*) = 1]/booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary/predicate/inPredicate")
+    @SyntaxSubnode(type = LikePredicate.class, xpath = "self::searchCondition[count(./*) = 1]/booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary/predicate/likePredicate")
+    @SyntaxSubnode(type = NullPredicate.class, xpath = "self::searchCondition[count(./*) = 1]/booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary/predicate/nullPredicate")
+    @SyntaxSubnode(type = QuantifiedComparisonPredicate.class, xpath = "self::searchCondition[count(./*) = 1]/booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary/predicate/quantifiedComparisonPredicate")
+    @SyntaxSubnode(type = ExistsPredicate.class, xpath = "self::searchCondition[count(./*) = 1]/booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary/predicate/existsPredicate")
+    @SyntaxSubnode(type = MatchPredicate.class, xpath = "self::searchCondition[count(./*) = 1]/booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary/predicate/matchPredicate")
+    @SyntaxSubnode(type = OverlapsPredicate.class, xpath = "self::searchCondition[count(./*) = 1]/booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary/predicate/overlapsPredicate")
     @SyntaxSubnode(type = SubconditionExpression.class, xpath = "self::searchCondition[count(./*) = 1]/booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary[count(./searchCondition) > 0]")
     public abstract BooleanExpression member();
 
@@ -36,15 +43,32 @@ public abstract class SearchCondition implements SyntaxSubnodesSpecificationDefi
 
     @SyntaxNode(name = "searchCondition")
     public static class OrExpression extends BooleanExpression {
+
         @SyntaxSubnode(type = AndExpression.class, xpath = "./booleanTerm[count(./*) > 1]")
-        @SyntaxSubnode(type = ComparisonExpression.class, xpath = "./booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary/predicate/comparisonPredicate")
+        @SyntaxSubnode(type = ComparisonPredicate.class, xpath = "./booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary/predicate/comparisonPredicate")
+        @SyntaxSubnode(type = BetweenPredicate.class, xpath = "./booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary/predicate/betweenPredicate")
+        @SyntaxSubnode(type = InPredicate.class, xpath = "./booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary/predicate/inPredicate")
+        @SyntaxSubnode(type = LikePredicate.class, xpath = "./booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary/predicate/likePredicate")
+        @SyntaxSubnode(type = NullPredicate.class, xpath = "./booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary/predicate/nullPredicate")
+        @SyntaxSubnode(type = QuantifiedComparisonPredicate.class, xpath = "./booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary/predicate/quantifiedComparisonPredicate")
+        @SyntaxSubnode(type = ExistsPredicate.class, xpath = "./booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary/predicate/existsPredicate")
+        @SyntaxSubnode(type = MatchPredicate.class, xpath = "./booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary/predicate/matchPredicate")
+        @SyntaxSubnode(type = OverlapsPredicate.class, xpath = "./booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary/predicate/overlapsPredicate")
         @SyntaxSubnode(type = SubconditionExpression.class, xpath = "./booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary[count(./searchCondition) > 0]")
         public List<BooleanExpression> children;
     }
 
     @SyntaxNode(name = "booleanTerm")
     public static class AndExpression extends BooleanExpression {
-        @SyntaxSubnode(type = ComparisonExpression.class, xpath = "./booleanFactor/booleanTest/booleanPrimary/predicate/comparisonPredicate")
+        @SyntaxSubnode(type = ComparisonPredicate.class, xpath = "./booleanFactor/booleanTest/booleanPrimary/predicate/comparisonPredicate")
+        @SyntaxSubnode(type = BetweenPredicate.class, xpath = "./booleanFactor/booleanTest/booleanPrimary/predicate/betweenPredicate")
+        @SyntaxSubnode(type = InPredicate.class, xpath = "./booleanFactor/booleanTest/booleanPrimary/predicate/inPredicate")
+        @SyntaxSubnode(type = LikePredicate.class, xpath = "./booleanFactor/booleanTest/booleanPrimary/predicate/likePredicate")
+        @SyntaxSubnode(type = NullPredicate.class, xpath = "./booleanFactor/booleanTest/booleanPrimary/predicate/nullPredicate")
+        @SyntaxSubnode(type = QuantifiedComparisonPredicate.class, xpath = "./booleanFactor/booleanTest/booleanPrimary/predicate/quantifiedComparisonPredicate")
+        @SyntaxSubnode(type = ExistsPredicate.class, xpath = "./booleanFactor/booleanTest/booleanPrimary/predicate/existsPredicate")
+        @SyntaxSubnode(type = MatchPredicate.class, xpath = "./booleanFactor/booleanTest/booleanPrimary/predicate/matchPredicate")
+        @SyntaxSubnode(type = OverlapsPredicate.class, xpath = "./booleanFactor/booleanTest/booleanPrimary/predicate/overlapsPredicate")
         @SyntaxSubnode(type = SubconditionExpression.class, xpath = "./booleanFactor/booleanTest/booleanPrimary[count(./searchCondition) > 0]")
         public List<BooleanExpression> children;
     }
@@ -58,7 +82,7 @@ public abstract class SearchCondition implements SyntaxSubnodesSpecificationDefi
         public PredicateClarificationKind clarification;
     }
 
-    @SyntaxLiteral(name = "truthValue", xstring = "x:joinStrings('_', x:echo(..//text()))")
+    @SyntaxLiteral(name = "truthValue", xstring = "x:sourceText('_', \"boolean(local-name()!='booleanPrimary')\", ..)")
     public enum PredicateClarificationKind {
         IS_TRUE,
         IS_FALSE,
@@ -70,15 +94,58 @@ public abstract class SearchCondition implements SyntaxSubnodesSpecificationDefi
 
     @SyntaxNode(name = "booleanPrimary")
     public final static class SubconditionExpression extends PredicateExpression {
-        @SyntaxSubnode(type = OrExpression.class, xpath = "./searchCondition[count(./*) > 1]")
-        @SyntaxSubnode(type = AndExpression.class, xpath = "./searchCondition[count(./*) = 1]/booleanTerm[count(./*) > 1]")
-        @SyntaxSubnode(type = ComparisonExpression.class, xpath = "./searchCondition[count(./*) = 1]/booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary/predicate/comparisonPredicate")
-        @SyntaxSubnode(type = SubconditionExpression.class, xpath = "./searchCondition[count(./*) = 1]/booleanTerm[count(./*) = 1]/booleanFactor/booleanTest/booleanPrimary[count(./searchCondition) > 0]")
+
+        @SyntaxSubnodesSpecification(type = SearchCondition.class, xpath = "./searchCondition")
         public BooleanExpression child;
     }
 
     @SyntaxNode(name = "comparisonPredicate")
-    public final static class ComparisonExpression extends PredicateExpression {
+    public final static class ComparisonPredicate extends PredicateExpression {
+
+        @SyntaxSubnodesSpecification(type = Expression.RowValueExpressionSpecification.class, xpath = "./rowValueConstructor[1]")
+        public Expression.RowValue left;
+
+        @SyntaxSubnodesSpecification(type = Expression.RowValueExpressionSpecification.class, xpath = "./rowValueConstructor[2]")
+        public Expression.RowValue right;
+    }
+
+    @SyntaxNode(name = "betweenPredicate")
+    public final static class BetweenPredicate extends PredicateExpression {
+
+    }
+
+    @SyntaxNode(name = "inPredicate")
+    public final static class InPredicate extends PredicateExpression {
+
+    }
+
+    @SyntaxNode(name = "likePredicate")
+    public final static class LikePredicate extends PredicateExpression {
+
+    }
+
+    @SyntaxNode(name = "nullPredicate")
+    public final static class NullPredicate extends PredicateExpression {
+
+    }
+
+    @SyntaxNode(name = "quantifiedComparisonPredicate")
+    public final static class QuantifiedComparisonPredicate extends PredicateExpression {
+
+    }
+
+    @SyntaxNode(name = "existsPredicate")
+    public final static class ExistsPredicate extends PredicateExpression {
+
+    }
+
+    @SyntaxNode(name = "matchPredicate")
+    public final static class MatchPredicate extends PredicateExpression {
+
+    }
+
+    @SyntaxNode(name = "overlapsPredicate")
+    public final static class OverlapsPredicate extends PredicateExpression {
 
     }
 }
