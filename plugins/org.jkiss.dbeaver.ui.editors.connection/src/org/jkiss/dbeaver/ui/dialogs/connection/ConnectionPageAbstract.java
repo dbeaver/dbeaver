@@ -356,11 +356,6 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     }
 
     protected void createDriverSubstitutionControls(@NotNull Composite parent) {
-        if (((IConnectionWizard) site.getWizard()).isNew()) {
-            UIUtils.createPlaceholder(parent, 1);
-            return;
-        }
-
         final DBPDriverSubstitutionDescriptor[] driverSubstitutions = DataSourceProviderRegistry.getInstance().getAllDriverSubstitutions();
 
         if (driverSubstitutions.length > 0) {
