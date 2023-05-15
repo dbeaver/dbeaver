@@ -1290,6 +1290,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             // We are in distributed mode
             return syncDistributedDependencies();
         }
+        List<Path> allDrivers = new ArrayList<>();
+        if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            allDrivers.addAll(syncDistributedDependencies());
+        }
 
         boolean localLibsExists = false;
         final List<DBPDriverLibrary> downloadCandidates = new ArrayList<>();
@@ -1391,8 +1395,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             }
         }
 
+        allDrivers.addAll(DriverUtils.extractZipArchives(result));
         // Check if local files are zip archives with jars inside
-        return DriverUtils.extractZipArchives(result);
+        return allDrivers;
     }
 
     /**
@@ -1409,7 +1414,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             List<DriverFileInfo> files = resolvedFiles.get(library);
             if (files != null) {
                 for (DriverFileInfo depFile : files) {
-                    Path driverFolder = getWorkspaceStorageFolder();
+                    Path driverFolder = getWorkspaceDriversStorageFolder();
                     Path localDriverFile = driverFolder.resolve(depFile.getFile());
                     if (!Files.exists(localDriverFile) || depFile.getFileCRC() == 0 ||
                         depFile.getFileCRC() != calculateFileCRC(localDriverFile))
@@ -1430,7 +1435,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 DBPDriverLibrary library = libEntry.getKey();
                 for (DriverFileInfo fileInfo : libEntry.getValue()) {
                     try {
-                        Path driverFolder = getWorkspaceStorageFolder();
+                        Path driverFolder = getWorkspaceDriversStorageFolder();
                         Path localDriverFile = driverFolder.resolve(fileInfo.getFile());
                         if (!Files.exists(localDriverFile.getParent())) {
                             Files.createDirectories(localDriverFile.getParent());
@@ -1758,7 +1763,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     // Static utilities
 
     public static Path getWorkspaceDriversStorageFolder() {
-        return DBWorkbench.getPlatform().getWorkspace().getMetadataFolder().resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
+        return DBWorkbench.getPlatform().getWorkspace().getAbsolutePath()
+            .resolve(DBFileController.DATA_FOLDER)
+            .resolve(DBFileController.TYPE_DATABASE_DRIVER);
     }
 
     public static Path getDriversContribFolder() throws IOException {
