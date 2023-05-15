@@ -2191,7 +2191,8 @@ public class SQLEditor extends SQLEditorBase implements
             .append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_path, scriptPath))
             .append("\n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_connecton, dataSourceContainer.getName()))
             .append("\n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_type, dataSourceContainer.getDriver().getFullName()))
-            .append("\n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_url, dataSourceContainer.getConnectionConfiguration().getUrl()));
+            .append("\n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_url, dataSourceContainer.getConnectionConfiguration().getUrl()))
+            .append("\n").append(NLS.bind(SQLEditorMessages.sql_sql_editor_title_tooltip_project, dataSourceContainer.getFolder().getName()));
 
         SQLEditorVariablesResolver scriptNameResolver = new SQLEditorVariablesResolver(dataSourceContainer,
                 dataSourceContainer.getConnectionConfiguration(),
