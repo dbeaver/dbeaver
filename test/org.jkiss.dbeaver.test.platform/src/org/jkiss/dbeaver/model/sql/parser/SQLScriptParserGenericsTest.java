@@ -117,9 +117,9 @@ public class SQLScriptParserGenericsTest {
         }
         {
             String query = "/* Issue */\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
-            SQLParserContext context = createParserContext(setDialect("oracle"), query);
+            SQLParserContext context = createParserContext(setDialect("snowflake"), query);
             SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
-            Assert.assertEquals("/* Issue */\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;", element.getText());
+            Assert.assertEquals("/* Issue */\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
         }
         {
             String query = "/* Issue */\n\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
@@ -132,6 +132,14 @@ public class SQLScriptParserGenericsTest {
             SQLParserContext context = createParserContext(hanaDialect, query);
             SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
             Assert.assertEquals("DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
+        }
+        {
+            String query = "/* Issue */\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
+            SQLDialect oracle = setDialect("oracle");
+            Assert.assertFalse(oracle.isStripCommentsBeforeBlocks());
+            SQLParserContext context = createParserContext(oracle, query);
+            SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
+            Assert.assertEquals("/* Issue */\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;", element.getText());
         }
     }
 
