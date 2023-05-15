@@ -68,6 +68,9 @@ public class GreenplumSchema extends PostgreSchema {
     }
 
     public class GreenplumTableCache extends TableCache {
+
+        private boolean hasAccessToPartitionsView;
+
         GreenplumTableCache() {
             super();
         }
@@ -79,34 +82,37 @@ public class GreenplumSchema extends PostgreSchema {
                                                     @Nullable PostgreTableBase object,
                                                     @Nullable String objectName) throws SQLException {
             GreenplumDataSource dataSource = getDataSource();
-            String uriLocationColumn =
-                dataSource.isGreenplumVersionAtLeast(session.getProgressMonitor(), 5, 0) ? "urilocation" : "location";
-            String execLocationColumn =
-                dataSource.isGreenplumVersionAtLeast(session.getProgressMonitor(), 5, 0) ? "execlocation" : "location";
-            boolean serverSupportFmterrtblColumn = dataSource.isServerSupportFmterrtblColumn(session);
-            StringBuilder sqlQuery = new StringBuilder("SELECT c.oid,d.description,p.partitiontablename,c.*,\n" +
-                    "CASE WHEN x." + uriLocationColumn + " IS NOT NULL THEN array_to_string(x." + uriLocationColumn + ", ',') ELSE '' END AS urilocation,\n" +
-                    "CASE WHEN x.command IS NOT NULL THEN x.command ELSE '' END AS command,\n" +
-                    "x.fmttype, x.fmtopts,\n" +
-                    "coalesce(x.rejectlimit, 0) AS rejectlimit,\n" +
-                    "coalesce(x.rejectlimittype, '') AS rejectlimittype,\n" +
-                    "array_to_string(x." + execLocationColumn + ", ',') AS execlocation,\n" +
-                    "pg_encoding_to_char(x.encoding) AS encoding,\n" +
-                    "x.writable,\n")
-                    .append(serverSupportFmterrtblColumn ?
-                            "case when x.fmterrtbl is not NULL then true else false end as \"is_logging_errors\",\n" : "")
-                    .append(
-                            "case when c.relstorage = 'x' then true else false end as \"is_ext_table\",\n" +
-                                    "case when (ns.nspname !~ '^pg_toast' and ns.nspname like 'pg_temp%') then true else false end as \"is_temp_table\"\n" +
-                                    "FROM pg_catalog.pg_class c\n" +
-                                    "INNER JOIN pg_catalog.pg_namespace ns\n\ton ns.oid = c.relnamespace\n" +
-                                    "LEFT OUTER JOIN pg_catalog.pg_description d\n\tON d.objoid=c.oid AND d.objsubid=0\n" +
-                                    "LEFT OUTER JOIN pg_catalog.pg_exttable x\n\ton x.reloid = c.oid\n" +
-                                    "LEFT OUTER JOIN pg_catalog.pg_partitions p\n\ton c.relname = p.partitiontablename and ns.nspname = p.schemaname\n" +
-                                    "WHERE c.relnamespace= ? AND c.relkind not in ('i','c') ")
-                    .append((object == null && objectName == null ? "" : " AND relname=?"));
-
-            final JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery.toString());
+            boolean greenplumVersionAtLeast5 = dataSource.isGreenplumVersionAtLeast(session.getProgressMonitor(), 5, 0);
+            String uriLocationColumn = greenplumVersionAtLeast5 ? "urilocation" : "location";
+            String execLocationColumn = greenplumVersionAtLeast5 ? "execlocation" : "location";
+            boolean hasAccessToExttable = dataSource.isHasAccessToExttable(session);
+            hasAccessToPartitionsView = !dataSource.isGreenplumVersionAtLeast(session.getProgressMonitor(), 7, 0);
+            String sqlQuery = "SELECT c.oid,c.*,d.description,\n" +
+                (hasAccessToPartitionsView ? "p.partitiontablename,p.partitionboundary as partition_expr," :
+                    "pg_catalog.pg_get_expr(c.relpartbound, c.oid) as partition_expr, pg_catalog.pg_get_partkeydef(c.oid) as partition_key,") +
+                (hasAccessToExttable ? "CASE WHEN x." + uriLocationColumn + " IS NOT NULL THEN array_to_string(x." + uriLocationColumn +
+                    ", ',') ELSE '' END AS urilocation,\n" +
+                "CASE WHEN x.command IS NOT NULL THEN x.command ELSE '' END AS command,\n" +
+                "x.fmttype, x.fmtopts,\n" +
+                "coalesce(x.rejectlimit, 0) AS rejectlimit,\n" +
+                "coalesce(x.rejectlimittype, '') AS rejectlimittype,\n" +
+                "array_to_string(x." + execLocationColumn + ", ',') AS execlocation,\n" +
+                "pg_encoding_to_char(x.encoding) AS encoding,\n" +
+                "x.writable,\n" : "") +
+                (dataSource.isServerSupportFmterrtblColumn(session) ?
+                    "case when x.fmterrtbl is not NULL then true else false end as \"is_logging_errors\",\n" : "") +
+                (dataSource.isServerSupportRelstorageColumn(session) ?
+                    "case when c.relstorage = 'x' then true else false end as \"is_ext_table\",\n" : "false as \"is_ext_table\",\n") +
+                "case when (ns.nspname !~ '^pg_toast' and ns.nspname like 'pg_temp%') then true else false end as \"is_temp_table\"\n" +
+                "FROM pg_catalog.pg_class c\n" +
+                "INNER JOIN pg_catalog.pg_namespace ns\n\ton ns.oid = c.relnamespace\n" +
+                "LEFT OUTER JOIN pg_catalog.pg_description d\n\tON d.objoid=c.oid AND d.objsubid=0\n" +
+                (hasAccessToExttable ? "LEFT OUTER JOIN pg_catalog.pg_exttable x\n\ton x.reloid = c.oid\n" : "") +
+                (hasAccessToPartitionsView ? "LEFT OUTER JOIN pg_catalog.pg_partitions p\n\ton c.relname = p.partitiontablename " +
+                    "and ns.nspname = p.schemaname\n" : "") +
+                "WHERE c.relnamespace= ? AND c.relkind not in ('i','c') " +
+                (object == null && objectName == null ? "" : " AND relname=?");
+            final JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery);
             dbStat.setLong(1, getObjectId());
             if (object != null || objectName != null)
                 dbStat.setString(2, object != null ? object.getName() : objectName);
@@ -115,7 +121,8 @@ public class GreenplumSchema extends PostgreSchema {
 
         @Override
         protected boolean isPartitionTableRow(@NotNull JDBCResultSet dbResult) {
-            return !CommonUtils.isEmpty(JDBCUtils.safeGetString(dbResult, "partitiontablename"));
+            return hasAccessToPartitionsView ? CommonUtils.isNotEmpty(JDBCUtils.safeGetString(dbResult, "partitiontablename")) :
+               super.isPartitionTableRow(dbResult);
         }
     }
 

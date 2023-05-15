@@ -1261,7 +1261,7 @@ public class SQLEditor extends SQLEditorBase implements
                                 public void run() {
                                     final List<CTabItem> tabs = new ArrayList<>();
                                     for (CTabItem tab : resultTabs.getItems()) {
-                                        if (tab.getShowClose() && tab != activeTab) {
+                                        if (tab.getShowClose() && tab != activeTab && !isPinned(tab)) {
                                             tabs.add(tab);
                                         }
                                     }
@@ -1278,7 +1278,10 @@ public class SQLEditor extends SQLEditorBase implements
                                     public void run() {
                                         final List<CTabItem> tabs = new ArrayList<>();
                                         for (int i = 0, last = resultTabs.indexOf(activeTab); i < last; i++) {
-                                            tabs.add(resultTabs.getItem(i));
+                                            CTabItem tab = resultTabs.getItem(i);
+                                            if (!isPinned(tab)) {
+                                                tabs.add(tab);
+                                            }
                                         }
                                         for (CTabItem tab : tabs) {
                                             tab.dispose();
@@ -1293,7 +1296,10 @@ public class SQLEditor extends SQLEditorBase implements
                                     public void run() {
                                         final List<CTabItem> tabs = new ArrayList<>();
                                         for (int i = resultTabs.indexOf(activeTab) + 1; i < resultTabs.getItemCount(); i++) {
-                                            tabs.add(resultTabs.getItem(i));
+                                            CTabItem tab = resultTabs.getItem(i);
+                                            if (!isPinned(tab)) {
+                                                tabs.add(tab);
+                                            }
                                         }
                                         for (CTabItem tab : tabs) {
                                             tab.dispose();
@@ -1393,6 +1399,13 @@ public class SQLEditor extends SQLEditorBase implements
     private void setActiveResultsContainer(QueryResultsContainer data) {
         curResultsContainer = data;
         curQueryProcessor = curResultsContainer.queryProcessor;
+    }
+
+    private boolean isPinned(CTabItem tabItem) {
+        if (tabItem.getData() instanceof QueryResultsContainer) {
+            return ((QueryResultsContainer) tabItem.getData()).isPinned();
+        }
+        return false;
     }
 
     /////////////////////////////////////////////////////////////
@@ -1578,7 +1591,6 @@ public class SQLEditor extends SQLEditorBase implements
                         return item;
                     }
                 }
-                return item;
             }
         }
         return null;
@@ -2683,7 +2695,7 @@ public class SQLEditor extends SQLEditorBase implements
     private int closeExtraResultTabs(@Nullable QueryProcessor queryProcessor, boolean confirmClose, boolean keepFirstTab) {
         List<CTabItem> tabsToClose = new ArrayList<>();
         for (CTabItem item : resultTabs.getItems()) {
-            if (item.getData() instanceof QueryResultsContainer && item.getShowClose()) {
+            if (item.getData() instanceof QueryResultsContainer && item.getShowClose() && !isPinned(item)) {
                 QueryResultsContainer resultsProvider = (QueryResultsContainer)item.getData();
                 if (queryProcessor != null && queryProcessor != resultsProvider.queryProcessor) {
                     continue;
@@ -3607,14 +3619,6 @@ public class SQLEditor extends SQLEditorBase implements
             }
             ResultSetViewer rsv = resultsProvider.getResultSetController();
             return rsv == null ? null : rsv.getDataReceiver();
-        }
-
-        @Override
-        public void releaseDataReceiver(int resultSetNumber) {
-            if (resultContainers.size() > resultSetNumber) {
-                final CTabItem tab = resultContainers.get(resultSetNumber).resultsTab;
-                UIUtils.syncExec(tab::dispose);
-            }
         }
 
         @Override

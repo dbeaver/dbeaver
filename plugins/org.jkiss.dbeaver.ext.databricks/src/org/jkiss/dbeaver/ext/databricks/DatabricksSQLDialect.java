@@ -17,10 +17,15 @@
 
 package org.jkiss.dbeaver.ext.databricks;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.util.Arrays;
 
@@ -113,4 +118,26 @@ public class DatabricksSQLDialect extends GenericSQLDialect {
         return true;
     }
 
+    @Override
+    public String getColumnTypeModifiers(
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBSTypedObject column,
+        @NotNull String typeName,
+        @NotNull DBPDataKind dataKind
+    ) {
+        switch (typeName) {
+            case SQLConstants.DATA_TYPE_BIGINT:
+            case SQLConstants.DATA_TYPE_BINARY:
+            case SQLConstants.DATA_TYPE_BOOLEAN:
+            case SQLConstants.DATA_TYPE_DOUBLE:
+            case SQLConstants.DATA_TYPE_FLOAT:
+            case SQLConstants.DATA_TYPE_INT:
+            case SQLConstants.DATA_TYPE_SMALLINT:
+            case SQLConstants.DATA_TYPE_STRING:
+            case SQLConstants.DATA_TYPE_TINYINT:
+                // These are data types without parameters
+                return null;
+        }
+        return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
+    }
 }

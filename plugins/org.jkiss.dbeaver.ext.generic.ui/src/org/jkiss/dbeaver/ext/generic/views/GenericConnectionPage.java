@@ -53,8 +53,8 @@ import org.jkiss.utils.IOUtils;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.InvalidPathException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -379,7 +379,8 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         super.loadSettings();
 
         // Load values from new connection info
-        DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
+        final DBPDataSourceContainer dataSource = site.getActiveDataSource();
+        DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         this.parseSampleURL(site.getDriver());
         final boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
         if (controlGroupsByUrl.size() > 0) {
@@ -429,7 +430,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         if (urlText != null) {
             if (CommonUtils.isEmpty(connectionInfo.getUrl())) {
                 try {
-                    saveSettings(site.getActiveDataSource());
+                    saveSettings(dataSource);
                 } catch (Exception e) {
                     setMessage(e.getMessage());
                 }

@@ -180,6 +180,16 @@ public class SQLScriptParserTest {
             "    dbms_output.put_line(test_v||chr(9)||test_f(test_v));\n" +
             "    dbms_output.put_line('End');\n" +
             "END;\n" +
+            
+            "DECLARE\n" +
+            "    i int;\n" +
+            "BEGIN\n" +
+            "    i := 0;\n" +
+            "    IF i < 5 THEN\n" +
+            "        i := i + 1;\n" +
+            "        DBMS_OUTPUT.PUT_LINE ('This is: '||i);\n" +
+            "    END IF;\n" +
+            "END;\n" +
 
             "CREATE TRIGGER TRI_CODE_SYSTEM\n" +
             "BEFORE INSERT ON CODE_SYSTEM\n" +
@@ -297,6 +307,16 @@ public class SQLScriptParserTest {
                 "    dbms_output.put_line('Start');\n" +
                 "    dbms_output.put_line(test_v||chr(9)||test_f(test_v));\n" +
                 "    dbms_output.put_line('End');\n" +
+                "END;",
+                
+                "DECLARE\n" +
+                "    i int;\n" +
+                "BEGIN\n" +
+                "    i := 0;\n" +
+                "    IF i < 5 THEN\n" +
+                "        i := i + 1;\n" +
+                "        DBMS_OUTPUT.PUT_LINE ('This is: '||i);\n" +
+                "    END IF;\n" +
                 "END;",
 
                 "CREATE TRIGGER TRI_CODE_SYSTEM\n" +
