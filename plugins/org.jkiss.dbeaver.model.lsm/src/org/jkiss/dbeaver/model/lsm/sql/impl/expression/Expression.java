@@ -24,6 +24,8 @@ import java.util.List;
 public abstract class Expression extends AbstractSyntaxNode {
 
     public abstract class RowValueExpressionSpecification implements SyntaxSubnodesSpecificationDefinition<RowValue> {
+
+        private final static String valueExpressionPath = "self::rowValueConstructor/rowValueConstructorElement/valueExpression/";
         
         @SyntaxSubnode(type = RowSubqueryValue.class, xpath = "self::rowValueConstructor/rowSubquery")
         @SyntaxSubnode(type = RowValueListExpression.class, xpath = "self::rowValueConstructor/rowValueConstructorList")
@@ -31,11 +33,11 @@ public abstract class Expression extends AbstractSyntaxNode {
         @SyntaxSubnode(type = NullValue.class, xpath = "self::rowValueConstructor/rowValueConstructorElement/nullSpecification")
         // @SyntaxSubnode(type = null, xpath =
         // "self::rowValueConstructor/rowValueConstructorElement/valueExpression/...")
-        @SyntaxSubnode(type = Sum.class, xpath = "self::rowValueConstructor/rowValueConstructorElement/valueExpression/numericValueExpression/*[last()][name()='plusTerm']")
-        @SyntaxSubnode(type = Sub.class, xpath = "self::rowValueConstructor/rowValueConstructorElement/valueExpression/numericValueExpression/*[last()][name()='minusTerm']")
-        @SyntaxSubnode(type = Mul.class, xpath = "self::rowValueConstructor/rowValueConstructorElement/valueExpression/numericValueExpression[count(./*) = 1]/term/*[last()][name()='multiplyFactor']")
-        @SyntaxSubnode(type = Div.class, xpath = "self::rowValueConstructor/rowValueConstructorElement/valueExpression/numericValueExpression[count(./*) = 1]/term/*[last()][name()='divideFactor']")
-        @SyntaxSubnode(type = Number.class, xpath = "self::rowValueConstructor/rowValueConstructorElement/valueExpression/numericValueExpression[count(./*) = 1]/term[count(./*) = 1]/factor/numericPrimary/unsignedValueSpecification/unsignedLiteral")
+        @SyntaxSubnode(type = Sum.class, xpath = valueExpressionPath + "numericValueExpression/*[last()][name()='plusTerm']")
+        @SyntaxSubnode(type = Sub.class, xpath = valueExpressionPath + "numericValueExpression/*[last()][name()='minusTerm']")
+        @SyntaxSubnode(type = Mul.class, xpath = valueExpressionPath + "numericValueExpression[count(./*) = 1]/term/*[last()][name()='multiplyFactor']")
+        @SyntaxSubnode(type = Div.class, xpath = valueExpressionPath + "numericValueExpression[count(./*) = 1]/term/*[last()][name()='divideFactor']")
+        @SyntaxSubnode(type = Number.class, xpath = valueExpressionPath + "numericValueExpression[count(./*) = 1]/term[count(./*) = 1]/factor/numericPrimary/unsignedValueSpecification/unsignedLiteral")
         public abstract RowValue member();
     }
 
