@@ -1050,11 +1050,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
 
     @NotNull
     @Override
-    public String getCreateSchemaQuery(
-        @NotNull String schemaName,
-        @NotNull String ownerUserName,
-        @NotNull String password
-    ) {
+    public String getCreateSchemaQuery(@NotNull String schemaName) {
         return "CREATE SCHEMA " + schemaName;
     }
 }

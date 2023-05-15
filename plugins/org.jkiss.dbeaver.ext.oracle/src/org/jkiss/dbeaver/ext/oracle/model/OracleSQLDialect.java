@@ -48,6 +48,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.UUID;
 
 /**
  * Oracle SQL dialect
@@ -739,10 +740,8 @@ public class OracleSQLDialect extends JDBCSQLDialect
     @NotNull
     @Override
     public String getCreateSchemaQuery(
-        @NotNull String schemaName,
-        @NotNull String ownerUserName,
-        @NotNull String password
+        @NotNull String schemaName
     ) {
-        return "CREATE USER " + schemaName + " IDENTIFIED BY " + password;
+        return "CREATE USER " + schemaName + " IDENTIFIED BY " + UUID.randomUUID();
     }
 }
