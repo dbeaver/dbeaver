@@ -30,7 +30,6 @@ import java.util.Map;
  * Task configuration
  */
 public interface DBTTask extends DBPNamedObject, DBPObjectWithDescription {
-
     @NotNull
     String getId();
 
