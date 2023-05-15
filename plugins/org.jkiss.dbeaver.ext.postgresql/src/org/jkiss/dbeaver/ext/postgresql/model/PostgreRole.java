@@ -339,7 +339,7 @@ public class PostgreRole implements
                 dbStat.setLong(1, getObjectId());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
-                        String[] setconfig = JDBCUtils.safeGetArray(dbResult, "setconfig");
+                        String[] setconfig = PostgreUtils.safeGetStringArray(dbResult, "setconfig");
                         if (ArrayUtils.isEmpty(setconfig)) {
                             // something went wrong
                             continue;

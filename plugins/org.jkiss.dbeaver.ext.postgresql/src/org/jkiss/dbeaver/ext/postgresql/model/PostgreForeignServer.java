@@ -67,7 +67,7 @@ public class PostgreForeignServer extends PostgreInformation implements PostgreS
         this.dataWrapperId = JDBCUtils.safeGetLong(dbResult, "srvfdw");
         this.type = JDBCUtils.safeGetString(dbResult, "srvtype");
         this.version = JDBCUtils.safeGetString(dbResult, "srvversion");
-        this.options = JDBCUtils.safeGetArray(dbResult, "srvoptions");
+        this.options = PostgreUtils.safeGetStringArray(dbResult, "srvoptions");
     }
 
     @NotNull
