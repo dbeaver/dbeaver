@@ -34,12 +34,14 @@ import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Date;
 
 /**
@@ -258,6 +260,8 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
             return new java.sql.Timestamp(((Date) value).getTime());
         } else if (value instanceof LocalDateTime) {
             return Timestamp.valueOf(((LocalDateTime) value));
+        } else if (value instanceof OffsetDateTime) {
+            return Timestamp.valueOf((((OffsetDateTime) value).toLocalDateTime()));
         } else if (value != null) {
             return java.sql.Timestamp.valueOf(value.toString());
         } else {

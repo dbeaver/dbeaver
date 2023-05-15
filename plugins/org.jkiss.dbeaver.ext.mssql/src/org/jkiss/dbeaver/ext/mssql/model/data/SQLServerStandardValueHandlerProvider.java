@@ -35,6 +35,8 @@ public class SQLServerStandardValueHandlerProvider extends JDBCStandardValueHand
             return SQLServerMoneyValueHandler.INSTANCE;
         } else if (typeName.equals(SQLServerConstants.TYPE_SQL_VARIANT)) {
             return SQLServerSQLVariantValueHandler.INSTANCE;
+        } else if (typeName.equals(SQLServerConstants.TYPE_DATETIMEOFFSET)) {
+            return new SQLServerDateTimeOffsetHandler(preferences);
         } else {
             return null;
         }

@@ -113,11 +113,20 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
     @Override
     public Object parseValue(String value, Class<?> typeHint) throws ParseException
     {
-        if (typeHint != null && TemporalAccessor.class.isAssignableFrom(typeHint)) {
-            try {
-                return LocalDateTime.parse(value, dateTimeFormatter);
-            } catch (DateTimeParseException e) {
-                throw new ParseException(e.getParsedString(), e.getErrorIndex());
+        if (typeHint != null) {
+            if (LocalDateTime.class.isAssignableFrom(typeHint)) {
+                try {
+                    return LocalDateTime.parse(value, dateTimeFormatter);
+                } catch (DateTimeParseException e) {
+                    throw new ParseException(e.getParsedString(), e.getErrorIndex());
+                }
+            }
+            if (OffsetDateTime.class.isAssignableFrom(typeHint)) {
+                try {
+                    return OffsetDateTime.parse(value, dateTimeFormatter);
+                } catch (DateTimeParseException e) {
+                    throw new ParseException(e.getParsedString(), e.getErrorIndex());
+                }
             }
         }
         return dateFormat.parse(value);

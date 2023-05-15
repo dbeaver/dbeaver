@@ -32,21 +32,20 @@ public class SQLQueryParameter {
 
 
     private final SQLSyntaxManager syntaxManager;
-    private int ordinalPosition;
-    private String name;
+    private final int ordinalPosition;
+    private final String name;
+    private final String originalName;
     private String value;
     private boolean variableSet;
     private final int tokenOffset;
     private final int tokenLength;
     private SQLQueryParameter previous;
 
-    public SQLQueryParameter(SQLSyntaxManager syntaxManager, int ordinalPosition, String name)
-    {
-        this(syntaxManager, ordinalPosition, name, 0, 0);
+    public SQLQueryParameter(SQLSyntaxManager syntaxManager, int ordinalPosition, String name, String originalName) {
+        this(syntaxManager, ordinalPosition, name, originalName, 0, 0);
     }
 
-    public SQLQueryParameter(SQLSyntaxManager syntaxManager, int ordinalPosition, String name, int tokenOffset, int tokenLength)
-    {
+    public SQLQueryParameter(SQLSyntaxManager syntaxManager, int ordinalPosition, String name, String originalName, int tokenOffset, int tokenLength) {
         this.syntaxManager = syntaxManager;
         if (tokenOffset < 0) {
             throw new IndexOutOfBoundsException("Bad parameter offset: " + tokenOffset);
@@ -56,6 +55,7 @@ public class SQLQueryParameter {
         }
         this.ordinalPosition = ordinalPosition;
         this.name = name.trim();
+        this.originalName = originalName;
         this.tokenOffset = tokenOffset;
         this.tokenLength = tokenLength;
     }
@@ -80,23 +80,23 @@ public class SQLQueryParameter {
         this.previous = previous;
     }
 
-    public int getOrdinalPosition()
-    {
+    public int getOrdinalPosition() {
         return ordinalPosition;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public String getValue()
-    {
+    public String getOriginalName() {
+        return originalName;
+    }
+
+    public String getValue() {
         return value;
     }
 
-    public void setValue(String value)
-    {
+    public void setValue(String value) {
         this.value = value;
     }
 

@@ -806,6 +806,7 @@ public class SQLScriptParser {
                             syntaxManager,
                             parameters.size(),
                             preparedParamName,
+                            paramName,
                             tokenOffset - queryOffset,
                             tokenLength
                         );
@@ -844,10 +845,12 @@ public class SQLScriptParser {
                         }
 
                         if (param == null) {
+                            String paramName = matcher.group(SQLQueryParameter.VARIABLE_NAME_GROUP_NAME);
                             param = new SQLQueryParameter(
                                 syntaxManager,
                                 orderPos,
-                                matcher.group(SQLQueryParameter.VARIABLE_NAME_GROUP_NAME).toUpperCase(Locale.ENGLISH),
+                                paramName.toUpperCase(Locale.ENGLISH),
+                                paramName,
                                 start,
                                 matcher.end() - matcher.start()
                             );
