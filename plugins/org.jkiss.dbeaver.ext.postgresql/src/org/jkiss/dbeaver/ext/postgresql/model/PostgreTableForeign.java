@@ -91,7 +91,7 @@ public class PostgreTableForeign extends PostgreTable implements DBPForeignObjec
                 try (JDBCResultSet result = stat.executeQuery()) {
                     if (result.next()) {
                         foreignServerId = JDBCUtils.safeGetLong(result, "ftserver");
-                        foreignOptions = JDBCUtils.safeGetArray(result, "ftoptions");
+                        foreignOptions = PostgreUtils.safeGetStringArray(result, "ftoptions");
                     }
                 }
             } catch (SQLException e) {
