@@ -56,7 +56,7 @@ public class PostgreForeignDataWrapper extends PostgreInformation implements Pos
         this.handlerProcId = JDBCUtils.safeGetLong(dbResult, "fdwhandler");
         this.validatorProcId = JDBCUtils.safeGetLong(dbResult, "fdwvalidator");
         this.handlerSchemaId = JDBCUtils.safeGetLong(dbResult, "handler_schema_id");
-        this.options = JDBCUtils.safeGetArray(dbResult, "fdwoptions");
+        this.options = PostgreUtils.safeGetStringArray(dbResult, "fdwoptions");
     }
 
     @NotNull

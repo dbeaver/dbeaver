@@ -41,7 +41,7 @@ public class SerializerDescriptor extends AbstractDescriptor
 
         this.id = config.getAttribute("id");
         this.serializerType = new ObjectType(config.getAttribute("class"));
-        this.distributed = CommonUtils.getBoolean(config.getAttribute("distributed"), true);
+        this.distributed = CommonUtils.getBoolean(config.getAttribute("supportsDistributedMode"), true);
     }
 
     public String getId() {

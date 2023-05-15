@@ -32,6 +32,8 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 
+import java.util.function.Consumer;
+
 /**
  * NewConnectionDialog.
  *
@@ -111,12 +113,29 @@ public class NewConnectionDialog extends ActiveWizardDialog {
         return openNewConnectionDialog(window, null, null);
     }
 
-    public static boolean openNewConnectionDialog(@NotNull IWorkbenchWindow window, @Nullable DBPDriver initialDriver, @Nullable DBPConnectionConfiguration initialConfiguration) {
+    public static boolean openNewConnectionDialog(
+        @NotNull IWorkbenchWindow window,
+        @Nullable DBPDriver initialDriver,
+        @Nullable DBPConnectionConfiguration initialConfiguration
+    ) {
+        return openNewConnectionDialog(window, initialDriver, initialConfiguration, null);
+    }
+
+    public static boolean openNewConnectionDialog(
+        @NotNull IWorkbenchWindow window,
+        @Nullable DBPDriver initialDriver,
+        @Nullable DBPConnectionConfiguration initialConfiguration,
+        @Nullable Consumer<NewConnectionWizard> wizardConfigurer
+    ) {
         if (dialogInstance != null) {
             dialogInstance.getShell().forceActive();
             return true;
         } else {
-            dialogInstance = new NewConnectionDialog(window, new NewConnectionWizard(initialDriver, initialConfiguration));
+            final NewConnectionWizard wizard = new NewConnectionWizard(initialDriver, initialConfiguration);
+            if (wizardConfigurer != null) {
+                wizardConfigurer.accept(wizard);
+            }
+            dialogInstance = new NewConnectionDialog(window, wizard);
             try {
                 return dialogInstance.open() == IDialogConstants.OK_ID;
             } finally {

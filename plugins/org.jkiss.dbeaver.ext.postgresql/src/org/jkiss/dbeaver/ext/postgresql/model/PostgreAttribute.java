@@ -197,7 +197,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.acl = JDBCUtils.safeGetObject(dbResult, "attacl");
 
         if (getTable() instanceof PostgreTableForeign) {
-            foreignTableColumnOptions = JDBCUtils.safeGetArray(dbResult, "attfdwoptions");
+            foreignTableColumnOptions = PostgreUtils.safeGetStringArray(dbResult, "attfdwoptions");
         }
 
         setPersisted(true);

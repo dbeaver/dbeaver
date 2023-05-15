@@ -26,11 +26,7 @@ import java.util.Date;
 /**
  * TaskRunImpl
  */
-class TaskRunImpl implements DBTTaskRun {
-
-    static final String RUN_LOG_PREFIX = "run_";
-    static final String RUN_LOG_EXT = "log";
-
+public class TaskRunImpl implements DBTTaskRun {
     private String id;
     private Date startTime;
     private String startUser;
