@@ -210,7 +210,7 @@ public class Log {
     }
 
     public void trace(Object message) {
-        if (handler != null) {
+        if (handler != null && getLogWriter() == null) {
             handler.trace(name, message);
         } else if (message instanceof Throwable) {
             trace(message.toString(), (Throwable) message);
@@ -220,7 +220,7 @@ public class Log {
     }
 
     public void trace(Object message, Throwable t) {
-        if (handler != null) {
+        if (handler != null && getLogWriter() == null) {
             handler.trace(name, message, t);
         } else if (TRACE_LOG_ENABLED) {
             debug(message, t);
@@ -228,7 +228,7 @@ public class Log {
     }
 
     public void debug(Object message) {
-        if (handler != null) {
+        if (handler != null && getLogWriter() == null) {
             handler.debug(name, message);
         } else if (message instanceof Throwable) {
             debug(message.toString(), (Throwable) message);
@@ -238,7 +238,7 @@ public class Log {
     }
 
     public void debug(Object message, Throwable t) {
-        if (handler != null) {
+        if (handler != null && getLogWriter() == null) {
             handler.debug(name, message, t);
         } else {
             debugMessage(message, t);
@@ -293,7 +293,7 @@ public class Log {
     }
 
     public void info(Object message) {
-        if (handler != null) {
+        if (handler != null && getLogWriter() == null) {
             handler.info(name, message);
             return;
         }
@@ -307,7 +307,7 @@ public class Log {
     }
 
     public void info(Object message, Throwable t) {
-        if (handler != null) {
+        if (handler != null && getLogWriter() == null) {
             handler.info(name, message, t);
         } else {
             writeExceptionStatus(Status.INFO, message, t);
@@ -315,7 +315,7 @@ public class Log {
     }
 
     public void warn(Object message) {
-        if (handler != null) {
+        if (handler != null && getLogWriter() == null) {
             handler.warn(name, message);
             return;
         } else if (message instanceof Throwable) {
@@ -328,7 +328,7 @@ public class Log {
     }
 
     public void warn(Object message, Throwable t) {
-        if (handler != null) {
+        if (handler != null && getLogWriter() == null) {
             handler.warn(name, message, t);
         } else {
             writeExceptionStatus(Status.WARNING, message, t);
@@ -336,7 +336,7 @@ public class Log {
     }
 
     public void error(Object message) {
-        if (handler != null) {
+        if (handler != null && getLogWriter() == null) {
             handler.error(name, message);
             return;
         } else if (message instanceof Throwable) {
@@ -349,7 +349,7 @@ public class Log {
     }
 
     public void error(Object message, Throwable t) {
-        if (handler != null) {
+        if (handler != null && getLogWriter() == null) {
             handler.error(name, message, t);
         } else {
             writeExceptionStatus(Status.ERROR, message, t);
@@ -357,7 +357,7 @@ public class Log {
     }
 
     public void fatal(Object message) {
-        if (handler != null) {
+        if (handler != null && getLogWriter() == null) {
             handler.fatal(name, message);
         } else {
             error(message);
@@ -365,7 +365,7 @@ public class Log {
     }
 
     public void fatal(Object message, Throwable t) {
-        if (handler != null) {
+        if (handler != null && getLogWriter() == null) {
             handler.fatal(name, message, t);
         } else {
             error(message, t);
