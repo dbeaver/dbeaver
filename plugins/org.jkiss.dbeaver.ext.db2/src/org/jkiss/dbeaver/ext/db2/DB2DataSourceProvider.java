@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -65,8 +66,10 @@ public class DB2DataSourceProvider extends JDBCDataSourceProvider {
     }
 
     @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
-    {
+    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+        if (connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL) {
+            return connectionInfo.getUrl();
+        }
         StringBuilder url = new StringBuilder(128);
         url.append("jdbc:db2://").append(connectionInfo.getHostName());
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {

@@ -27,17 +27,11 @@ public final class MySQLUIMessages extends NLS {
         NLS.initializeMessages(BUNDLE_NAME, MySQLUIMessages.class);
     }
 
-    public static String dialog_connection_advanced_tab;
-    public static String dialog_connection_advanced_tab_tooltip;
-    public static String dialog_connection_general_tab;
-    public static String dialog_connection_general_tab_tooltip;
     public static String dialog_connection_host;
     public static String dialog_connection_instance;
     public static String dialog_connection_database;
-    public static String dialog_connection_password;
     public static String dialog_connection_port;
-    public static String dialog_connection_test_connection;
-    public static String dialog_connection_user_name;
+    public static String dialog_connection_group_advanced;
     public static String dialog_connection_server_timezone;
     public static String dialog_connection_auto_detect;
     public static String dialog_connection_local_client;

@@ -43,9 +43,6 @@ import java.util.List;
 
 public class SQLServerConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
 
-    protected static final String GROUP_CONNECTION = "connection"; //$NON-NLS-1$
-    protected static final List<String> GROUP_CONNECTION_ARR = List.of(GROUP_CONNECTION);
-
     private Label hostLabel;
     private Text hostText;
     private Label portLabel;
@@ -354,12 +351,6 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[] { new DriverPropertiesDialogPage(this) };
-    }
-    
-    
-    @Override
-    protected boolean isCustomURL() {
-        return typeURLRadio.getSelection();
     }
 
     private void updateUrl() {
