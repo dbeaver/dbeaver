@@ -739,9 +739,7 @@ public class OracleSQLDialect extends JDBCSQLDialect
 
     @NotNull
     @Override
-    public String getCreateSchemaQuery(
-        @NotNull String schemaName
-    ) {
+    public String getCreateSchemaQuery(@NotNull String schemaName) {
         return "CREATE USER " + schemaName + " IDENTIFIED BY " + UUID.randomUUID();
     }
 }

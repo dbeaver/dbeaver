@@ -308,11 +308,7 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
     @NotNull
     @Override
-    public String getTypeCastClause(
-        @NotNull DBSTypedObject attribute,
-        @NotNull String expression,
-        boolean isInCondition
-    ) {
+    public String getTypeCastClause(@NotNull DBSTypedObject attribute, @NotNull String expression, boolean isInCondition) {
         if (isInCondition && attribute.getTypeName().equalsIgnoreCase(MySQLConstants.TYPE_JSON)) {
             return "CAST(" + expression + " AS JSON)";
         } else {
