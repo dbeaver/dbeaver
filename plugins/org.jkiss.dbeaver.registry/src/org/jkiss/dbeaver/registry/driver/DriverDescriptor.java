@@ -1290,10 +1290,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             // We are in distributed mode
             return syncDistributedDependencies();
         }
-        List<Path> allDrivers = new ArrayList<>();
-        if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
-            allDrivers.addAll(syncDistributedDependencies());
-        }
 
         boolean localLibsExists = false;
         final List<DBPDriverLibrary> downloadCandidates = new ArrayList<>();
@@ -1395,9 +1391,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             }
         }
 
-        allDrivers.addAll(DriverUtils.extractZipArchives(result));
         // Check if local files are zip archives with jars inside
-        return allDrivers;
+        return DriverUtils.extractZipArchives(result);
     }
 
     /**
