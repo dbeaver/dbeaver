@@ -19,7 +19,12 @@ package org.jkiss.dbeaver.ui.editors.sql.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.ui.ISaveablesLifecycleListener;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.Saveable;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.internal.SaveablesList;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -28,12 +33,17 @@ import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerAllRows;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerExpression;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorDescriptor;
 import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.actions.exec.SQLScriptExecutor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class SQLEditorHandlerExecute extends AbstractHandler
@@ -67,6 +77,24 @@ public class SQLEditorHandlerExecute extends AbstractHandler
                     .getExecutorDescriptor(editor.getDataSourceContainer());
                 if (executorDescriptor == null) {
                     throw new ExecutionException("Valid native executor is not found");
+                }
+                if (editor.isDirty()) {
+                    if (editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE)) {
+                        editor.doSave(new NullProgressMonitor());
+                    } else {
+                        SaveablesList service = (SaveablesList) PlatformUI.getWorkbench()
+                            .getService(ISaveablesLifecycleListener.class);
+                        ArrayList<Saveable> files = new ArrayList<>(List.of(editor.getActiveSaveables()));
+                        boolean cancelled = service.promptForSaving(files,
+                            UIUtils.getActiveWorkbenchWindow(),
+                            UIUtils.getActiveWorkbenchWindow(),
+                            true,
+                            false
+                        );
+                        if (cancelled) {
+                            return null;
+                        }
+                    }
                 }
                 try {
                     if (editor.getExecutionContext() instanceof DBCExecutionContextDefaults) {
