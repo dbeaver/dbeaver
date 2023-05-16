@@ -49,8 +49,9 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
     private static final Map<DBPDataSourceContainer, EditConnectionDialog> openDialogs = Collections.synchronizedMap(new IdentityHashMap<>());
 
     private static final int TEST_BUTTON_ID = 2000;
-    private static final String PROP_DIALOG_RECOMMENDED_SIZE_HEIGHT = "dialog.preferredSize.height";
-    private static final String PROP_DIALOG_RECOMMENDED_SIZE_WIDTH = "dialog.preferredSize.width";
+
+    private static final String DIALOG_WIDTH = "DIALOG_WIDTH";
+    private static final String DIALOG_HEIGHT = "DIALOG_HEIGHT";
     private static String lastActivePage;
 
     private Button testButton;
@@ -99,23 +100,23 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
 
     @Override
     protected Point getInitialSize() {
-        Point minSize = super.getInitialSize();
+        Point size = super.getInitialSize();
         IDialogSettings settings = getDialogBoundsSettings();
-        Point proposedSize = new Point(minSize.x, minSize.y);
         try {
             // Get the stored width and height.
-            int width = settings.getInt("DIALOG_WIDTH");
+            int width = settings.getInt(DIALOG_WIDTH);
             if (width != DIALOG_DEFAULT_BOUNDS) {
-                proposedSize.x = Math.max(width, proposedSize.x);
+                size.x = Math.max(width, size.x);
             }
-            int height = settings.getInt("DIALOG_HEIGHT");
+            int height = settings.getInt(DIALOG_HEIGHT);
             if (height != DIALOG_DEFAULT_BOUNDS) {
-                proposedSize.y = Math.max(height, proposedSize.y);
+                size.y = Math.max(height, size.y);
             }
         }
-        catch (NumberFormatException e) {
+        catch (NumberFormatException ignored) {
+
         }
-        return proposedSize;
+        return size;
     }
 
     @Override
