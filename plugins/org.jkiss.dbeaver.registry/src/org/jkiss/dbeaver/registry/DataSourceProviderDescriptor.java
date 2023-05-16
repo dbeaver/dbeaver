@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.impl.ProviderPropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.navigator.meta.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -166,9 +167,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
                 {
                     for (IConfigurationElement propsElement : driversElement.getChildren(RegistryConstants.TAG_PROVIDER_PROPERTIES)) {
                         String driversSpec = propsElement.getAttribute("drivers");
-                        List<DBPPropertyDescriptor> providerProperties = new ArrayList<>();
+                        List<ProviderPropertyDescriptor> providerProperties = new ArrayList<>();
                         for (IConfigurationElement prop : propsElement.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP)) {
-                            providerProperties.addAll(PropertyDescriptor.extractProperties(prop));
+                            providerProperties.addAll(ProviderPropertyDescriptor.extractProviderProperties(prop));
                         }
                         List<DriverDescriptor> appDrivers;
                         if (CommonUtils.isEmpty(driversSpec) || driversSpec.equals("*")) {
@@ -349,8 +350,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
      * @param id identifier of the driver to retrieve
      * @return driver or {@code null} if no driver was found
      */
-    public DriverDescriptor getDriver(String id)
-    {
+    @Nullable
+    @Override
+    public DriverDescriptor getDriver(@NotNull String id) {
         for (DriverDescriptor driver : drivers) {
             if (driver.getId().equals(id)) {
                 while (driver.getReplacedBy() != null) {

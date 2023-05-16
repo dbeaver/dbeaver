@@ -226,13 +226,7 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
-                        final IFile targetFile = targetFolder.getFile(new Path(file.getName()));
-                        if (targetFile.exists()) {
-                            throw new IOException("Target file '" + targetFile.getFullPath() + "' already exists");
-                        }
-                        try (InputStream is = new FileInputStream(file)) {
-                            targetFile.create(is, true, monitor.getNestedMonitor());
-                        }
+                        copyFileInFolder(monitor, targetFolder, file);
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     }
@@ -242,6 +236,32 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
             DBWorkbench.getPlatformUI().showError("Copy error", "Error copying resource", e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
+        }
+    }
+
+    private void copyFileInFolder(DBRProgressMonitor monitor, IContainer targetFolder, File file) throws IOException, CoreException {
+        if (monitor.isCanceled()) {
+            return;
+        }
+        if (file.isDirectory()) {
+            IFolder subFolder = targetFolder.getFolder(new Path(file.getName()));
+            if (!subFolder.exists()) {
+                subFolder.create(true, true, monitor.getNestedMonitor());
+            }
+            File[] folderFile = file.listFiles();
+            if (folderFile != null) {
+                for (File subFile : folderFile) {
+                    copyFileInFolder(monitor, subFolder, subFile);
+                }
+            }
+        } else {
+            final IFile targetFile = targetFolder.getFile(new Path(file.getName()));
+            if (targetFile.exists()) {
+                throw new IOException("Target file '" + targetFile.getFullPath() + "' already exists");
+            }
+            try (InputStream is = new FileInputStream(file)) {
+                targetFile.create(is, true, monitor.getNestedMonitor());
+            }
         }
     }
 

@@ -532,6 +532,7 @@
             <type name="MONEY"/>
             <type name="SMALLMONEY"/>
             <type name="SQL_VARIANT"/>
+            <type name="DATETIMEOFFSET"/>
         </provider>
     </extension>
 

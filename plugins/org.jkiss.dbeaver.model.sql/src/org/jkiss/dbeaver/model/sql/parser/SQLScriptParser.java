@@ -86,6 +86,7 @@ public class SQLScriptParser {
         SQLDialect dialect = context.getDialect();
         SQLTokenPredicateEvaluator predicateEvaluator = new SQLTokenPredicateEvaluator(dialect.getSkipTokenPredicates());
         boolean isPredicateEvaluationEnabled = isPredicateEvaluationEnabled();
+        boolean newTokenCaptured = false;
 
         // Parse range
         TPRuleBasedScanner ruleScanner = context.getScanner();
@@ -115,7 +116,8 @@ public class SQLScriptParser {
             try {
                 if (isPredicateEvaluationEnabled && tokenLength > 0 && !token.isWhitespace()) {
                     String tokenText = document.get(tokenOffset, tokenLength);
-                    predicateEvaluator.captureToken(new SQLTokenEntry(tokenText, tokenType));
+                    predicateEvaluator.captureToken(new SQLTokenEntry(tokenText, tokenType, false));
+                    newTokenCaptured = true;
                 }
 
                 boolean isDelimiter = (tokenType == SQLTokenType.T_DELIMITER) ||
@@ -211,7 +213,8 @@ public class SQLScriptParser {
                     }
                 }
 
-                if (isPredicateEvaluationEnabled && !token.isEOF()) {
+                if (isPredicateEvaluationEnabled && !token.isEOF() && newTokenCaptured) {
+                    newTokenCaptured = false;
                     SQLParserActionKind actionKind = predicateEvaluator.evaluatePredicates();
                     if (actionKind == SQLParserActionKind.BEGIN_BLOCK) {
                         // header blocks seems optional and we are in the block either way
@@ -803,6 +806,7 @@ public class SQLScriptParser {
                             syntaxManager,
                             parameters.size(),
                             preparedParamName,
+                            paramName,
                             tokenOffset - queryOffset,
                             tokenLength
                         );
@@ -841,10 +845,12 @@ public class SQLScriptParser {
                         }
 
                         if (param == null) {
+                            String paramName = matcher.group(SQLQueryParameter.VARIABLE_NAME_GROUP_NAME);
                             param = new SQLQueryParameter(
                                 syntaxManager,
                                 orderPos,
-                                matcher.group(SQLQueryParameter.VARIABLE_NAME_GROUP_NAME).toUpperCase(Locale.ENGLISH),
+                                paramName.toUpperCase(Locale.ENGLISH),
+                                paramName,
                                 start,
                                 matcher.end() - matcher.start()
                             );

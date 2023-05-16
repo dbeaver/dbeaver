@@ -86,13 +86,13 @@ class SQLTokenPredicateFactory extends TokenPredicateFactory {
                 TPToken token = fRule.evaluate(scanner);
                 if (!token.isUndefined()) {
                     SQLTokenType tokenType = token instanceof TPTokenDefault ? (SQLTokenType) ((TPTokenDefault) token).getData() : SQLTokenType.T_OTHER;
-                    return new SQLTokenEntry(string, tokenType);
+                    return new SQLTokenEntry(string, tokenType, false);
                 }
             } catch (Throwable e) {
                 // some rules raise exceptions in a certain situations when the string does not correspond the rule
                 log.debug(e.getMessage());
             }
         }
-        return new SQLTokenEntry(string, null);
+        return new SQLTokenEntry(string, null, false);
     }
 }

@@ -252,7 +252,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
     @Override
     public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer) {
-        return parent -> new DefaultInformationControl(parent, true);
+        return parent -> new DefaultInformationControl(parent, false);
     }
 
     /**

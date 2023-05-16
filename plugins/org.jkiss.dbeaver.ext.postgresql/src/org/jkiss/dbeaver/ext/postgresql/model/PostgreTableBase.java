@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -83,7 +84,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
             JDBCUtils.safeGetBoolean(dbResult, "relispartition");
         this.acl = JDBCUtils.safeGetObject(dbResult, "relacl");
         if (getDataSource().isServerVersionAtLeast(8, 2)) {
-            this.relOptions = JDBCUtils.safeGetArray(dbResult, "reloptions");
+            this.relOptions = PostgreUtils.safeGetStringArray(dbResult, "reloptions");
         }
         //this.reloptions = PostgreUtils.parseObjectString()
 

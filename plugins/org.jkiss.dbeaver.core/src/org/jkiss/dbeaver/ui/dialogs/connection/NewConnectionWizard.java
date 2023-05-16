@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -38,6 +40,7 @@ import org.jkiss.dbeaver.registry.DataSourceViewRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,6 +69,19 @@ public class NewConnectionWizard extends ConnectionWizard
         setWindowTitle(CoreMessages.dialog_new_connection_wizard_title);
         this.initialDriver = initialDriver;
         this.initialConfiguration = initialConfiguration;
+
+        addPropertyChangeListener(event -> {
+            if (ConnectionPageAbstract.PROP_DRIVER_SUBSTITUTION.equals(event.getProperty())) {
+                ((Dialog) getContainer()).close();
+
+                UIUtils.asyncExec(() -> NewConnectionDialog.openNewConnectionDialog(
+                    UIUtils.getActiveWorkbenchWindow(),
+                    getActiveDataSource().getDriver(),
+                    getActiveDataSource().getConnectionConfiguration(),
+                    wizard -> wizard.setDriverSubstitution((DBPDriverSubstitutionDescriptor) event.getNewValue())
+                ));
+            }
+        });
     }
 
     @Override
@@ -134,9 +150,7 @@ public class NewConnectionWizard extends ConnectionWizard
             availableProvides.add(provider);
             DataSourceViewDescriptor view = DataSourceViewRegistry.getInstance().findView(provider, IActionConstants.NEW_CONNECTION_POINT);
             if (view != null) {
-                ConnectionPageSettings pageSettings = new ConnectionPageSettings(
-                    NewConnectionWizard.this,
-                    view);
+                ConnectionPageSettings pageSettings = new ConnectionPageSettings(this, view, null, getDriverSubstitution());
                 settingsPages.put(provider, pageSettings);
                 addPage(pageSettings);
             }

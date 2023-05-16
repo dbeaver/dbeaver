@@ -67,9 +67,9 @@ public class TaskManagerImpl implements DBTTaskManager {
     private final List<TaskFolderImpl> tasksFolders = new ArrayList<>();
     private final Path statisticsFolder;
 
-    public TaskManagerImpl(BaseProjectImpl projectMetadata) {
+    public TaskManagerImpl(BaseProjectImpl projectMetadata, Path statisticsFolder) {
         this.projectMetadata = projectMetadata;
-        this.statisticsFolder = projectMetadata.getWorkspace().getMetadataFolder().resolve(TaskConstants.TASK_STATS_FOLDER);
+        this.statisticsFolder = statisticsFolder;
         this.systemDateFormat = new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH);
         systemDateFormat.setTimeZone(TimeZone.getTimeZone(TimezoneRegistry.getUserDefaultTimezone()));
         loadConfiguration();
@@ -148,16 +148,23 @@ public class TaskManagerImpl implements DBTTaskManager {
         @NotNull String label,
         @Nullable String description,
         @Nullable String taskFolderName,
-        @NotNull Map<String, Object> properties) throws DBException
-    {
+        @NotNull Map<String, Object> properties) throws DBException {
         if (getTaskByName(label) != null) {
             throw new DBException("Task with name '" + label + "' already exists");
         }
         Date createTime = new Date();
         String id = UUID.randomUUID().toString();
         TaskFolderImpl taskFolder = searchTaskFolderByName(taskFolderName);
-        TaskImpl task = new TaskImpl(projectMetadata, taskDescriptor, id, label, description, createTime, createTime, taskFolder);
-        task.setProperties(properties);
+        TaskImpl task = createTask(
+            taskDescriptor,
+            id,
+            label,
+            description,
+            createTime,
+            createTime,
+            taskFolder,
+            properties
+        );
 
         return task;
     }
@@ -365,16 +372,16 @@ public class TaskManagerImpl implements DBTTaskManager {
                     }
 
                     TaskFolderImpl taskFolder = searchTaskFolderByName(taskFolderName);
-                    TaskImpl taskConfig = new TaskImpl(
-                        projectMetadata,
+                    TaskImpl taskConfig = createTask(
                         taskDescriptor,
                         id,
                         label,
                         description,
                         createTime,
                         updateTime,
-                        taskFolder);
-                    taskConfig.setProperties(state);
+                        taskFolder,
+                        state
+                    );
                     if (taskFolder != null) {
                         taskFolder.addTaskToFolder(taskConfig);
                         if (!tasksFolders.contains(taskFolder)) {
@@ -394,6 +401,31 @@ public class TaskManagerImpl implements DBTTaskManager {
             }
 
         }
+    }
+
+    @NotNull
+    protected TaskImpl createTask(
+        @NotNull DBTTaskType taskType,
+        @NotNull String id,
+        @NotNull String label,
+        @Nullable String description,
+        @NotNull Date createTime,
+        @NotNull Date updateTime,
+        @Nullable TaskFolderImpl taskFolder,
+        @NotNull Map<String, Object> properties
+    ) {
+        TaskImpl taskConfig = new TaskImpl(
+            getProject(),
+            taskType,
+            id,
+            label,
+            description,
+            createTime,
+            updateTime,
+            taskFolder
+        );
+        taskConfig.setProperties(properties);
+        return taskConfig;
     }
 
     protected String loadConfigFile() throws DBException {
