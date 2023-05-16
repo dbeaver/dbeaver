@@ -16,9 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.e4.tools.emf.ui.internal.common.component.HandlerEditor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -49,6 +51,8 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
     private static final Map<DBPDataSourceContainer, EditConnectionDialog> openDialogs = Collections.synchronizedMap(new IdentityHashMap<>());
 
     private static final int TEST_BUTTON_ID = 2000;
+    private static final String PROP_DIALOG_RECOMMENDED_SIZE_HEIGHT = "dialog.preferredSize.height";
+    private static final String PROP_DIALOG_RECOMMENDED_SIZE_WIDTH = "dialog.preferredSize.width";
     private static String lastActivePage;
 
     private Button testButton;
@@ -75,8 +79,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
 
     @Override
     protected Control createContents(Composite parent) {
-        Control contents = super.createContents(parent);
-
+        Control contents = super.createContents(parent);;
         String activePage = defaultPageName;
         if (CommonUtils.isEmpty(activePage)) {
             activePage = lastActivePage;
@@ -94,7 +97,27 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
         if (items.length > 0) {
             items[0].setExpanded(true);
         }
+        computeDesiredSize(contents);
+        contents.getShell().addListener(SWT.Resize, event -> {
+            Shell shell = getShell();
+            if (shell != null && !shell.isDisposed()) {
+                Point size = shell.getSize();
+                getDialogBoundsSettings().put(PROP_DIALOG_RECOMMENDED_SIZE_HEIGHT, size.y);
+                getDialogBoundsSettings().put(PROP_DIALOG_RECOMMENDED_SIZE_WIDTH, size.x);
+            }
+        });
         return contents;
+    }
+
+    private void computeDesiredSize(@NotNull Control contents) {
+        try {
+            int height = getDialogBoundsSettings().getInt(PROP_DIALOG_RECOMMENDED_SIZE_HEIGHT);
+            int width = getDialogBoundsSettings().getInt(PROP_DIALOG_RECOMMENDED_SIZE_WIDTH);
+            contents.getShell().setSize(width, height);
+        } catch (NumberFormatException ignore) {
+            // ignore
+        }
+        contents.getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
     }
 
     @Override
