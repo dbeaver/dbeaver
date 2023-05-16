@@ -29,7 +29,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
@@ -89,34 +88,34 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
                 getWizard().openSettingsPage(finalActivePage);
             });
         }
-
         // Expand first page
         Tree pagesTree = getPagesTree();
         TreeItem[] items = pagesTree.getItems();
         if (items.length > 0) {
             items[0].setExpanded(true);
         }
-        computeDesiredSize(contents);
-        contents.getShell().addListener(SWT.Resize, event -> {
-            Shell shell = getShell();
-            if (shell != null && !shell.isDisposed()) {
-                Point size = shell.getSize();
-                getDialogBoundsSettings().put(PROP_DIALOG_RECOMMENDED_SIZE_HEIGHT, size.y);
-                getDialogBoundsSettings().put(PROP_DIALOG_RECOMMENDED_SIZE_WIDTH, size.x);
-            }
-        });
         return contents;
     }
 
-    private void computeDesiredSize(@NotNull Control contents) {
+    @Override
+    protected Point getInitialSize() {
+        Point minSize = super.getInitialSize();
+        IDialogSettings settings = getDialogBoundsSettings();
+        Point proposedSize = new Point(minSize.x, minSize.y);
         try {
-            int height = getDialogBoundsSettings().getInt(PROP_DIALOG_RECOMMENDED_SIZE_HEIGHT);
-            int width = getDialogBoundsSettings().getInt(PROP_DIALOG_RECOMMENDED_SIZE_WIDTH);
-            contents.getShell().setSize(width, height);
-        } catch (NumberFormatException ignore) {
-            // ignore
+            // Get the stored width and height.
+            int width = settings.getInt("DIALOG_WIDTH");
+            if (width != DIALOG_DEFAULT_BOUNDS) {
+                proposedSize.x = Math.max(width, proposedSize.x);
+            }
+            int height = settings.getInt("DIALOG_HEIGHT");
+            if (height != DIALOG_DEFAULT_BOUNDS) {
+                proposedSize.y = Math.max(height, proposedSize.y);
+            }
         }
-        contents.getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        catch (NumberFormatException e) {
+        }
+        return proposedSize;
     }
 
     @Override
