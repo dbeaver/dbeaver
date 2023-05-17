@@ -53,6 +53,12 @@ public class HANASQLDialect extends GenericSQLDialect implements TPRuleProvider 
         {"WHILE", SQLConstants.BLOCK_END + " WHILE"}
     };
 
+    @Nullable
+    @Override
+    public String[] getBlockHeaderStrings() {
+        return new String[]{"DO"};
+    }
+
     private static String[] HANA_FUNCTIONS = new String[]{
         "ADD_DAYS",
         "ADD_MONTH",
@@ -198,5 +204,10 @@ public class HANASQLDialect extends GenericSQLDialect implements TPRuleProvider 
         if (position == RulePosition.FINAL) {
             rules.add(new SQLVariableRule(this));
         }
+    }
+
+    @Override
+    public boolean isStripCommentsBeforeBlocks() {
+        return true;
     }
 }
