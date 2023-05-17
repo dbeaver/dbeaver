@@ -180,7 +180,7 @@ public class JDBCRemoteInstance implements DBSInstance {
         }
     }
 
-    @NotNull
+    @Nullable
     @Override
     public JDBCExecutionContext getDefaultContext(DBRProgressMonitor monitor, boolean meta) {
         if (sharedInstance != null) {
@@ -189,7 +189,7 @@ public class JDBCRemoteInstance implements DBSInstance {
         return getDefaultContext(meta);
     }
 
-    @NotNull
+    @Nullable
     public JDBCExecutionContext getDefaultContext(boolean meta) {
         if (sharedInstance != null) {
             return sharedInstance.getDefaultContext(meta);

@@ -209,7 +209,7 @@ public class DBNModel implements IResourceChangeListener {
                     }
                 }
             }
-            // Get just first one
+            // Get just the first one
             return nodeList.get(0);
         } else {
             // Never be here

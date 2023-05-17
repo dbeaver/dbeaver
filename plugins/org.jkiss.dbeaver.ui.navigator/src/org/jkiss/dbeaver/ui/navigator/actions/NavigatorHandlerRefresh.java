@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -30,6 +32,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -64,7 +67,7 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
 
         // If navigator refresh is possible then do not refresh active part directly
         // Because active part should be refresh in navigator event handler
-        if (refreshInNavigator(event, workbenchPart)) {
+        if (refreshInNavigator(event, workbenchPart).initiated) {
             return null;
         }
 
@@ -83,18 +86,17 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
             if (((IRefreshablePart) workbenchPart).refreshPart(this, true) == IRefreshablePart.RefreshResult.CANCELED) {
                 return null;
             }
-            //return null;
         }
 
         return null;
     }
 
-    private boolean refreshInNavigator(ExecutionEvent event, IWorkbenchPart workbenchPart) {
+    private RefreshStatus refreshInNavigator(ExecutionEvent event, IWorkbenchPart workbenchPart) {
         // Try to get navigator view and refresh node
         INavigatorModelView navigatorView = GeneralUtils.adapt(workbenchPart, INavigatorModelView.class);
         if (navigatorView == null) {
             // Nothing to refresh
-            return false;
+            return RefreshStatus.skipped();
         }
         final List<DBNNode> refreshObjects = new ArrayList<>();
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
@@ -118,18 +120,28 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                 }
             }
         }
-
+        
+        return prepareRefresh(this, refreshObjects);
+    }
+    
+    @NotNull
+    public static RefreshStatus refresh(@NotNull Object source, @NotNull List<? extends DBNNode> refreshObjects) {
+        return prepareRefresh(source, refreshObjects);
+    }
+    
+    @NotNull
+    private static RefreshStatus prepareRefresh(@NotNull Object source, @NotNull List<? extends DBNNode> refreshObjects) {
         // Check for open editors with selected objects
         if (!refreshObjects.isEmpty()) {
             for (IEditorReference er : UIUtils.getActiveWorkbenchWindow().getActivePage().getEditorReferences()) {
                 IEditorPart editorPart = er.getEditor(false);
                 if (editorPart instanceof IRefreshablePart && editorPart.getEditorInput() instanceof DatabaseEditorInput && editorPart.isDirty()) {
                     DBNDatabaseNode editorNode = ((DatabaseEditorInput<?>) editorPart.getEditorInput()).getNavigatorNode();
-                    for (Iterator<DBNNode> iter = refreshObjects.iterator(); iter.hasNext(); ) {
+                    for (Iterator<? extends DBNNode> iter = refreshObjects.iterator(); iter.hasNext();) {
                         DBNNode nextNode = iter.next();
                         if (nextNode == editorNode || editorNode.isChildOf(nextNode) || nextNode.isChildOf(editorNode)) {
-                            if (((IRefreshablePart) editorPart).refreshPart(this, true) == IRefreshablePart.RefreshResult.CANCELED) {
-                                return true;
+                            if (((IRefreshablePart) editorPart).refreshPart(source, true) == IRefreshablePart.RefreshResult.CANCELED) {
+                                return RefreshStatus.completed();
                             }
                             if (nextNode == editorNode) {
                                 iter.remove();
@@ -142,12 +154,12 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
 
         // Refresh objects
         if (!refreshObjects.isEmpty()) {
-            return refreshNavigator(refreshObjects);
+            return RefreshStatus.initiated(refreshNavigator(refreshObjects));
         }
-        return false;
+        return RefreshStatus.skipped();
     }
 
-    public static boolean refreshNavigator(final Collection<? extends DBNNode> refreshObjects)
+    public static Job refreshNavigator(final Collection<? extends DBNNode> refreshObjects)
     {
         Job refreshJob = new AbstractJob("Refresh navigator object(s)") {
             @Override
@@ -215,7 +227,7 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
         refreshJob.setUser(true);
         refreshJob.schedule();
 
-        return true;
+        return refreshJob;
     }
 
     private static boolean showConfirmation(DBNNode node) {

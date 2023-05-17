@@ -81,6 +81,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -95,6 +96,8 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI.UserChoiceResponse;
@@ -128,6 +131,8 @@ import org.jkiss.dbeaver.ui.editors.sql.variables.AssignVariableAction;
 import org.jkiss.dbeaver.ui.editors.sql.variables.SQLVariablesPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
+import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.ResourceUtils;
@@ -144,6 +149,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * SQL Executor
@@ -184,7 +190,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     public static final String VIEW_PART_PROP_NAME = "org.jkiss.dbeaver.ui.editors.sql.SQLEditor";
 
-
+    private static final String REFRESH_DATA_SOURCE_ON_DDL_QUERY_POPUP_ID_PART = "refreshDataSourceOnDdlQuery";
 
     public static final String DEFAULT_TITLE_PATTERN = "<${" + SQLPreferenceConstants.VAR_CONNECTION_NAME + "}> ${" + SQLPreferenceConstants.VAR_FILE_NAME + "}";
     public static final String DEFAULT_SCRIPT_FILE_NAME = "Script";
@@ -325,7 +331,13 @@ public class SQLEditor extends SQLEditorBase implements
             return executionContextProvider.getExecutionContext();
         }
         if (dataSourceContainer != null && !SQLEditorUtils.isOpenSeparateConnection(dataSourceContainer)) {
-            return DBUtils.getDefaultContext(getDataSource(), false);
+            try {
+                return DBUtils.getDefaultContext(getDataSource(), false);
+            } catch (IllegalStateException e) {
+                // Probably we are in the metadata refresh state in the single connection mode
+                log.debug(e);
+                return null;
+            }
         }
         return null;
     }
@@ -4152,6 +4164,7 @@ public class SQLEditor extends SQLEditorBase implements
         private final ITextSelection originalSelection = (ITextSelection) getSelectionProvider().getSelection();
         private int topOffset, visibleLength;
         private boolean closeTabOnError;
+        private boolean ddlQueryMet = false;
         private SQLQueryListener extListener;
 
         private SQLEditorQueryListener(QueryProcessor queryProcessor, boolean closeTabOnError) {
@@ -4227,8 +4240,10 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public void onEndQuery(final DBCSession session, final SQLQueryResult result, DBCStatistics statistics) {
             try {
+                SQLQuery query = result.getStatement();
+                ddlQueryMet |= query.getType() == SQLQueryType.DDL;
                 synchronized (runningQueries) {
-                    runningQueries.remove(result.getStatement());
+                    runningQueries.remove(query);
                 }
                 queryProcessor.curJobRunning.decrementAndGet();
                 if (getTotalQueryRunning() <= 0) {
@@ -4240,7 +4255,9 @@ public class SQLEditor extends SQLEditorBase implements
                         updateDirtyFlag();
                     });
                 }
-
+                if (ddlQueryMet && query.equals(queryProcessor.curJob.getLastQuery())) {
+                    showMetadataChangedNotification();
+                }
                 if (isDisposed()) {
                     return;
                 }
@@ -4259,6 +4276,74 @@ public class SQLEditor extends SQLEditorBase implements
                     extListener.onEndQuery(session, result, statistics);
                 }
             }
+        }
+        
+        private void showMetadataChangedNotification() {
+            DBPDataSource dataSource = getDataSource();
+            if (dataSource == null) {
+                return;
+            }
+            UIUtils.runInUI(m -> {
+                NotificationUtils.sendNotification(
+                    REFRESH_DATA_SOURCE_ON_DDL_QUERY_POPUP_ID_PART + dataSource.getContainer().getId(),
+                    NLS.bind(SQLEditorMessages.sql_editor_refresh_data_source_on_ddl_query_popup_title, dataSource.getName()),
+                    SQLEditorMessages.sql_editor_refresh_data_source_on_ddl_query_popup_text,
+                    DBPMessageType.WARNING,
+                    () -> {
+                        UIUtils.runUIJob("Refreshing data source metadata after statement execution", monitor -> {
+                            DBSInstance defaultObject = getExecutionContext().getOwnerInstance();
+                            DBNDatabaseNode defObjNode = DBNUtils.getNodeByObject(monitor, defaultObject, true);
+                            DBSObject oldDefaultObject = null;
+                            if (defaultObject != null) {
+                                if (defObjNode != null) {
+                                    oldDefaultObject = defObjNode.getObject();
+                                } else {
+                                    log.warn("Failed to resolve node for default object. Default object wouldn't be refreshed.");
+                                }
+                            }
+                            DBNDatabaseNode dsNode = DBNUtils.getNodeByObject(monitor, dataSource, true);
+                            
+                            if (NavigatorHandlerRefresh.refresh(SQLEditor.this, List.of(dsNode)).join(0, monitor.getNestedMonitor())) {
+                                if (oldDefaultObject != null) {
+                                    List<DBCExecutionContext> executionContexts = Stream.of(
+                                        getExecutionContext(), 
+                                        dataSource.getDefaultInstance().getDefaultContext(monitor, true),
+                                        dataSource.getDefaultInstance().getDefaultContext(monitor, false)
+                                    ).distinct().collect(Collectors.toList());
+                                    for (DBCExecutionContext executionContext: executionContexts) {
+                                        DBCExecutionContextDefaults editorContextDefaults = executionContext.getContextDefaults();
+                                        if (editorContextDefaults != null) {
+                                            DBSObject newDefaultObject = defObjNode.getObject();
+                                            if (defObjNode.getObject() != oldDefaultObject
+                                                && getExecutionContext().getOwnerInstance() == oldDefaultObject
+                                            ) {
+                                                try {
+                                                    if (oldDefaultObject instanceof DBSCatalog
+                                                        && oldDefaultObject == editorContextDefaults.getDefaultCatalog()
+                                                    ) {
+                                                        monitor.subTask("Change default catalog");
+                                                        editorContextDefaults.setDefaultCatalog(monitor, (DBSCatalog) newDefaultObject, null);
+                                                    } else if (oldDefaultObject instanceof DBSSchema
+                                                        && oldDefaultObject == editorContextDefaults.getDefaultSchema()
+                                                    ) {
+                                                        monitor.subTask("Change default schema");
+                                                        editorContextDefaults.setDefaultSchema(monitor, (DBSSchema) newDefaultObject);
+                                                    }
+                                                } catch (Throwable ex) {
+                                                    log.error("Failed to refresh execution context default object", ex);
+                                                }
+                                            }
+                                        } else {
+                                            log.trace("Execution context doesn't support explicit default object refresh."
+                                                + "Data context node object identity is mandatory.");
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                );
+            });
         }
 
         private void processQueryResult(DBRProgressMonitor monitor, SQLQueryResult result, DBCStatistics statistics) {

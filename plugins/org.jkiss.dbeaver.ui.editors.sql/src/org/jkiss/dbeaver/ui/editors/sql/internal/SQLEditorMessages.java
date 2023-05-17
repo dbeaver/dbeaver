@@ -372,6 +372,8 @@ public class SQLEditorMessages extends NLS {
 
     public static String sql_editor_panel_output_filter_message;
     public static String sql_editor_panel_output_filter_hint;
+    public static String sql_editor_refresh_data_source_on_ddl_query_popup_title;
+    public static String sql_editor_refresh_data_source_on_ddl_query_popup_text;
 
     static {
         // initialize resource bundle
