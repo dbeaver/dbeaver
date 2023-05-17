@@ -19,6 +19,8 @@
 package org.jkiss.dbeaver.ext.mysql.tools;
 
 import org.eclipse.jface.wizard.IWizardPage;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteSettings;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLTasks;
@@ -28,6 +30,7 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeScriptExecuteWizard;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.Map;
 
@@ -37,6 +40,16 @@ class MySQLScriptExecuteWizard extends AbstractNativeScriptExecuteWizard<MySQLSc
 
     MySQLScriptExecuteWizard(MySQLCatalog catalog, boolean isImport) {
         super(Collections.singleton(catalog), isImport ? MySQLUIMessages.tools_script_execute_wizard_db_import : MySQLUIMessages.tools_script_execute_wizard_execute_script);
+        this.getSettings().setImport(isImport);
+    }
+
+    MySQLScriptExecuteWizard(@NotNull MySQLCatalog catalog, boolean isImport, @Nullable File file) {
+        super(
+            Collections.singleton(catalog),
+            isImport
+            ? MySQLUIMessages.tools_script_execute_wizard_db_import
+            : MySQLUIMessages.tools_script_execute_wizard_execute_script,
+            file);
         this.getSettings().setImport(isImport);
     }
 

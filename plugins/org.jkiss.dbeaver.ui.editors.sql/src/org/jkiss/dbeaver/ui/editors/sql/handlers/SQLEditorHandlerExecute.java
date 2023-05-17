@@ -19,14 +19,35 @@ package org.jkiss.dbeaver.ui.editors.sql.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerAllRows;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerExpression;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorDescriptor;
+import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorRegistry;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
+import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
+import org.jkiss.dbeaver.ui.actions.exec.SQLScriptExecutor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class SQLEditorHandlerExecute extends AbstractHandler
@@ -34,7 +55,7 @@ public class SQLEditorHandlerExecute extends AbstractHandler
     private static final Log log = Log.getLog(SQLEditorHandlerExecute.class);
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
+    public Object execute(@NotNull ExecutionEvent event) throws ExecutionException
     {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
         if (editor == null) {
@@ -52,6 +73,61 @@ public class SQLEditorHandlerExecute extends AbstractHandler
             case SQLEditorCommands.CMD_EXECUTE_SCRIPT:
                 editor.processSQL(false, true);
                 break;
+            case SQLEditorCommands.CMD_EXECUTE_SCRIPT_NATIVE: {
+                if (editor.getDataSourceContainer() == null) {
+                    break;
+                }
+                SQLNativeExecutorDescriptor executorDescriptor = SQLNativeExecutorRegistry.getInstance()
+                    .getExecutorDescriptor(editor.getDataSourceContainer());
+                if (executorDescriptor == null) {
+                    throw new ExecutionException("Valid native executor is not found");
+                }
+                if (editor.isDirty()) {
+                    if (editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE)) {
+                        editor.doSave(new NullProgressMonitor());
+                    } else {
+                        Reply reply = MessageBoxBuilder.builder()
+                            .setMessage(SQLEditorMessages.dialog_save_script_message)
+                            .setTitle(SQLEditorMessages.dialog_save_script_title)
+                            .setReplies(Reply.YES, Reply.NO, Reply.CANCEL).setPrimaryImage(DBIcon.STATUS_INFO)
+                            .showMessageBox();
+                        // Cancel the execution
+                        if (reply != null) {
+                            if (reply.equals(Reply.CANCEL)) {
+                                return null;
+                            }
+                            if (reply.equals(Reply.YES)) {
+                                editor.doSave(new NullProgressMonitor());
+                            }
+                        }
+                    }
+                }
+                try {
+                    if (editor.getExecutionContext() instanceof DBCExecutionContextDefaults) {
+                        DBCExecutionContextDefaults<?, ?> executionContext
+                            = (DBCExecutionContextDefaults<?, ?>) editor.getExecutionContext();
+                        SQLScriptExecutor<DBSObject> nativeExecutor
+                            = (SQLScriptExecutor<DBSObject>) executorDescriptor.getNativeExecutor();
+                        if (nativeExecutor == null) {
+                            throw new ExecutionException("Valid native executor is not found");
+                        }
+                        DBSObject object = executionContext.getDefaultCatalog();
+                        if (object == null) {
+                            object = editor.getDataSource();
+                        }
+                        if (editor.getGlobalScriptContext().getSourceFile() != null) {
+                            nativeExecutor.execute(object, editor.getGlobalScriptContext().getSourceFile());
+                        } else {
+                            nativeExecutor.execute(object, null);
+                        }
+                    } else {
+                        throw new DBException("Disconnected from database");
+                    }
+                } catch (DBException e) {
+                    log.error(e);
+                }
+                break;
+            }
             case SQLEditorCommands.CMD_EXECUTE_SCRIPT_FROM_POSITION:
                 editor.processSQL(false, true, true);
                 break;

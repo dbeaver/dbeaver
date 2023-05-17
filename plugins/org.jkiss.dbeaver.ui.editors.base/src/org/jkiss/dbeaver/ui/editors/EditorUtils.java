@@ -69,7 +69,7 @@ public class EditorUtils {
     public static final String PROP_SQL_PROJECT_ID = "sql-editor-project-id"; //$NON-NLS-1$
 
     public static final String PROP_CONTEXT_DEFAULT_DATASOURCE = "default-datasource"; //$NON-NLS-1$
-    private static final String PROP_CONTEXT_DEFAULT_CATALOG = "default-catalog"; //$NON-NLS-1$
+    public static final String PROP_CONTEXT_DEFAULT_CATALOG = "default-catalog"; //$NON-NLS-1$
     private static final String PROP_CONTEXT_DEFAULT_SCHEMA = "default-schema"; //$NON-NLS-1$
 
     private static final String PROP_SQL_DATA_SOURCE_CONTAINER = "sql-editor-data-source-container"; //$NON-NLS-1$

@@ -737,6 +737,9 @@
             <command commandId="org.jkiss.dbeaver.core.sql.script.associate">
                 <visibleWhen checkEnabled="true"/>
             </command>
+            <command commandId="org.jkiss.dbeaver.core.sql.script.run.scriptNative">
+                <visibleWhen checkEnabled="true"/>
+            </command>
             <command commandId="org.jkiss.dbeaver.core.show.in.explorer">
                 <visibleWhen checkEnabled="true"/>
             </command>

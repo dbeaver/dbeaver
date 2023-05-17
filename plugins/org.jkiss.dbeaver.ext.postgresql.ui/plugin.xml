@@ -151,7 +151,9 @@
 
 
     </extension>
-
+    <extension point="org.jkiss.dbeaver.sql.executors">
+        <executor class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreScriptExecutor" datasource="postgresql"/>
+    </extension>
     <extension point="org.jkiss.dbeaver.dataManager">
         <!--
                 <manager class="org.jkiss.dbeaver.ui.data.managers.StringValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreMoneyValueManager">
