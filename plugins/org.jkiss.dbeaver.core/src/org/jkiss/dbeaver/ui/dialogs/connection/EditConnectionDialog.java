@@ -112,8 +112,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
             if (height != DIALOG_DEFAULT_BOUNDS) {
                 size.y = Math.max(height, size.y);
             }
-        }
-        catch (NumberFormatException ignored) {
+        } catch (NumberFormatException ignored) {
         }
         return size;
     }
