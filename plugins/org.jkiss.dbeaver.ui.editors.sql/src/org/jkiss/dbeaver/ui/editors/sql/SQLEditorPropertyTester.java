@@ -41,7 +41,7 @@ public class SQLEditorPropertyTester extends PropertyTester
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.ui.editors.sql";
     public static final String PROP_CAN_EXECUTE = "canExecute";
-    public static final String PROP_CAN_EXECUTE_NATIVELY = "canExecuteNative";
+    public static final String PROP_CAN_EXECUTE_NATIVE = "canExecuteNative";
     public static final String PROP_CAN_EXPLAIN = "canExplain";
     public static final String PROP_CAN_NAVIGATE = "canNavigate";
     public static final String PROP_CAN_EXPORT = "canExport";
@@ -70,7 +70,7 @@ public class SQLEditorPropertyTester extends PropertyTester
             case PROP_CAN_EXECUTE:
                 // Do not check hasActiveQuery - sometimes jface don't update action enablement after cursor change/typing
                 return true;/* && (!"statement".equals(expectedValue) || editor.hasActiveQuery())*/
-            case PROP_CAN_EXECUTE_NATIVELY: {
+            case PROP_CAN_EXECUTE_NATIVE: {
                 try {
                     if (editor.getDataSourceContainer() == null) {
                         return false;
