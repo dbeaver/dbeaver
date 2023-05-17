@@ -26,6 +26,8 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerAllRows;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
@@ -35,6 +37,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorDescriptor;
 import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorRegistry;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
+import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.actions.exec.SQLScriptExecutor;
@@ -82,19 +86,19 @@ public class SQLEditorHandlerExecute extends AbstractHandler
                     if (editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE)) {
                         editor.doSave(new NullProgressMonitor());
                     } else {
-                        int result = MessageDialog.open(
-                            MessageDialog.QUESTION_WITH_CANCEL,
-                            UIUtils.getActiveWorkbenchShell(),
-                            SQLEditorMessages.dialog_save_script_title,
-                            SQLEditorMessages.dialog_save_script_message,
-                            0, IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL, IDialogConstants.CANCEL_LABEL
-                        );
-                        // Cancel
-                        if (result == 2) {
-                            return null;
-                        }
-                        if (result == MessageDialog.OK) {
-                            editor.doSave(new NullProgressMonitor());
+                        Reply reply = MessageBoxBuilder.builder()
+                            .setMessage(SQLEditorMessages.dialog_save_script_message)
+                            .setTitle(SQLEditorMessages.dialog_save_script_title)
+                            .setReplies(Reply.YES, Reply.NO, Reply.CANCEL).setPrimaryImage(DBIcon.STATUS_INFO)
+                            .showMessageBox();
+                        // Cancel the execution
+                        if (reply != null) {
+                            if (reply.equals(Reply.CANCEL)) {
+                                return null;
+                            }
+                            if (reply.equals(Reply.YES)) {
+                                editor.doSave(new NullProgressMonitor());
+                            }
                         }
                     }
                 }
