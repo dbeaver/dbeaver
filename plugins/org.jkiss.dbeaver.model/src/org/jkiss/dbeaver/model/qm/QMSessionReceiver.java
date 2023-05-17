@@ -17,7 +17,8 @@
 package org.jkiss.dbeaver.model.qm;
 
 /**
- * Query manager session receiver
+ * Query manager session receiver.
+ * It helps us to differ CE and EE products (CE product doesn't have QM database).
  */
 public interface QMSessionReceiver {
 
