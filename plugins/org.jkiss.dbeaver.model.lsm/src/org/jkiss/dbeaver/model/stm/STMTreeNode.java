@@ -35,7 +35,8 @@ public interface STMTreeNode extends Tree {
                 last = last.getChild(last.getChildCount() - 1);
             }
             if (first instanceof TerminalNode && last instanceof TerminalNode) {
-                TerminalNode a = (TerminalNode) first, b = (TerminalNode) last;
+                TerminalNode a = (TerminalNode) first;
+                TerminalNode b = (TerminalNode) last;
                 Interval textRange = Interval.of(a.getSymbol().getStartIndex(), b.getSymbol().getStopIndex());
                 result = b.getSymbol().getTokenSource().getInputStream().getText(textRange);
             }

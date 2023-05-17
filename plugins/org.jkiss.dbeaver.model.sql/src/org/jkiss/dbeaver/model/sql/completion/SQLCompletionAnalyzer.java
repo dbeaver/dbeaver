@@ -993,13 +993,13 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             log.debug("Failed to extract table names from query", e);
             return Collections.emptyList();
         }
-        log.debug("Extracted table names: " + tableRefs);
+        // log.debug("Extracted table names: " + tableRefs);
         if (CommonUtils.isNotEmpty(tableAlias)) {
             tableRefs = tableRefs.stream().filter(r -> allowPartialMatch 
                 ? CommonUtils.startsWithIgnoreCase(r.getSecond(), tableAlias)
                 : r.getSecond().equalsIgnoreCase(tableAlias)
             ).collect(Collectors.toList());
-            log.debug("Matched ("+(allowPartialMatch ? "partial" : "exact")+") table names: " + tableRefs);
+            // log.debug("Matched ("+(allowPartialMatch ? "partial" : "exact")+") table names: " + tableRefs);
         }
         return tableRefs;
     }
