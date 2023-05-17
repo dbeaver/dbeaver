@@ -377,24 +377,24 @@ fragment Bit: ('0'|'1');
 
 
 // numeric literals
-UnsignedNumericLiteral: (ExactNumericLiteral|ApproximateNumericLiteral);
-ExactNumericLiteral: (UnsignedInteger (Period (UnsignedInteger)?)?|Period UnsignedInteger);
+DecimalLiteral: (UnsignedInteger Period UnsignedInteger)|(UnsignedInteger Period)|(Period UnsignedInteger);
 UnsignedInteger: (Digit)+;
-ApproximateNumericLiteral: ExactNumericLiteral 'E' SignedInteger;
-SignedInteger: (Sign)? UnsignedInteger;
+ApproximateNumericLiteral: (UnsignedInteger|DecimalLiteral) 'E' SignedInteger;
+fragment SignedInteger: (Sign)? UnsignedInteger;
 Sign: (PlusSign|MinusSign);
 
+
+LineComment
+   : '--' ~ [\r\n]* -> channel (HIDDEN)
+   ;
 
 // special characters and character sequences
 fragment NonquoteCharacter: ~'~';
 QuoteSymbol: Quote Quote;
 Introducer: Underscore;
 fragment NewLine: ([\r][\n])|[\n]|[\r];
-Separator: ((Comment|NewLine|Space))+ -> channel(HIDDEN);
+Separator: (NewLine|Space)+ -> channel(HIDDEN);
 Space: [ \t]+;
-Comment: CommentIntroducer ((CommentCharacter)+)? NewLine;
-fragment CommentIntroducer: MinusSign MinusSign ((MinusSign)+)?;
-fragment CommentCharacter: (NonquoteCharacter|Quote);
 
 
 // identifiers

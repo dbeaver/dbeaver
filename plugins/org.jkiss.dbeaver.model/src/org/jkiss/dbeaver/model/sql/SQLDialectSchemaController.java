@@ -14,17 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm;
+package org.jkiss.dbeaver.model.sql;
 
-import org.jkiss.utils.Pair;
+import org.jkiss.code.NotNull;
 
-import java.util.List;
-import java.util.concurrent.Future;
+public interface SQLDialectSchemaController {
+    @NotNull
+    String getSchemaExistQuery(@NotNull String schemaName);
 
-
-public interface LSMAnalysis<T extends LSMElement> {    
-    
-    Future<T> getModel();
-
-    List<Pair<String, String>> getTableAndAliasFromSources();
+    @NotNull
+    String getCreateSchemaQuery(@NotNull String schemaName);
 }
