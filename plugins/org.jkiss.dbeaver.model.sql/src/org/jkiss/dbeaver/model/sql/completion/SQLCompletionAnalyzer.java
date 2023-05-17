@@ -35,8 +35,15 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
+import org.jkiss.dbeaver.model.lsm.LSMAnalysis;
+import org.jkiss.dbeaver.model.lsm.LSMAnalysisCase;
+import org.jkiss.dbeaver.model.lsm.LSMDialect;
+import org.jkiss.dbeaver.model.lsm.LSMElement;
+import org.jkiss.dbeaver.model.lsm.LSMSource;
+import org.jkiss.dbeaver.model.lsm.sql.dialect.Sql92Dialect;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.*;
@@ -56,8 +63,10 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
+import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Completion analyzer
@@ -67,6 +76,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
     private static final String ALL_COLUMNS_PATTERN = "*";
     private static final String ENABLE_HIPPIE = "SQLEditor.ContentAssistant.activate.hippie";
+    private static final String ENABLE_EXPERIMENTAL_FEATURES = "SQLEditor.ContentAssistant.experimental.enable";
     private static final String MATCH_ANY_PATTERN = "%";
     public static final int MAX_ATTRIBUTE_VALUE_PROPOSALS = 50;
     public static final int MAX_STRUCT_PROPOSALS = 100;
@@ -673,7 +683,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             if (wordPart.indexOf(request.getContext().getSyntaxManager().getStructSeparator()) != -1 || wordPart.equals(ALL_COLUMNS_PATTERN)) {
                 return;
             }
-            final List<Pair<String, String>> names = extractTableNames(wordPart, true);
+            final DBPPreferenceStore prefStore = request.getContext().getDataSource().getContainer().getPreferenceStore();
+            final List<Pair<String, String>> names = extractTableNames(wordPart, true, prefStore);
             for (Pair<String, String> name : names) {
                 final String tableName = name.getFirst();
                 final String tableAlias = name.getSecond();
@@ -927,7 +938,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             token = token.substring(0, token.length() - 1);
         }
 
-        final List<Pair<String, String>> names = extractTableNames(token, false);
+        final List<Pair<String, String>> names = extractTableNames(token, false, dataSource.getContainer().getPreferenceStore());
         for (Pair<String, String> name : names) {
             if (name != null && CommonUtils.isNotEmpty(name.getFirst())) {
                 final String[][] quoteStrings = sqlDialect.getIdentifierQuoteStrings();
@@ -953,7 +964,48 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     };
 
     @NotNull
-    private List<Pair<String, String>> extractTableNames(@Nullable String tableAlias, boolean allowPartialMatch) {
+    private List<Pair<String, String>> extractTableNames(
+        @Nullable String tableAlias,
+        boolean allowPartialMatch,
+        @NotNull DBPPreferenceStore preferenceStore
+    ) {
+        if (preferenceStore.getBoolean(ENABLE_EXPERIMENTAL_FEATURES)) {
+            return newExtractTableNames(tableAlias, allowPartialMatch);
+        }
+        
+        return oldExtractTableNames(tableAlias, allowPartialMatch);
+    }
+    
+    @NotNull
+    private List<Pair<String, String>> newExtractTableNames(@Nullable String tableAlias, boolean allowPartialMatch) {
+        final SQLScriptElement activeQuery = request.getActiveQuery();
+        if (activeQuery == null) {
+            return Collections.emptyList();
+        }
+        List<Pair<String, String>> tableRefs = new ArrayList<>();
+        try {
+            LSMSource querySource = LSMSource.fromReader(new StringReader(activeQuery.getText()));
+            LSMDialect dd = Sql92Dialect.getInstance();
+            LSMAnalysisCase<LSMElement, ?> selectStmtAnalysisCase = dd.findAnalysisCase(LSMElement.class);
+            LSMAnalysis<LSMElement> analysis = dd.prepareAnalysis(querySource, selectStmtAnalysisCase).get();
+            tableRefs = analysis.getTableAndAliasFromSources();
+        } catch (Exception e) {
+            //log.debug("Failed to extract table names from query", e);
+            return Collections.emptyList();
+        }
+        //log.debug("Extracted table names: " + tableRefs);
+        if (CommonUtils.isNotEmpty(tableAlias)) {
+            tableRefs = tableRefs.stream().filter(r -> allowPartialMatch 
+                ? CommonUtils.startsWithIgnoreCase(r.getSecond(), tableAlias)
+                : r.getSecond().equalsIgnoreCase(tableAlias)
+            ).collect(Collectors.toList());
+            //log.debug("Matched ("+(allowPartialMatch ? "partial" : "exact")+") table names: " + tableRefs);
+        }
+        return tableRefs;
+    }
+    
+    @NotNull
+    private List<Pair<String, String>> oldExtractTableNames(@Nullable String tableAlias, boolean allowPartialMatch) {
         final SQLScriptElement activeQuery = request.getActiveQuery();
         if (activeQuery == null) {
             return Collections.emptyList();
@@ -1341,7 +1393,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             if (aliases.contains(s) || sqlDialect.getKeywordType(s) != null) {
                                 return true;
                             }
-                            return !extractTableNames(s, false).isEmpty();
+                            final DBPPreferenceStore prefStore = request.getContext().getDataSource().getContainer().getPreferenceStore();
+                            return !extractTableNames(s, false, prefStore).isEmpty();
                         });
                         if (alias.equalsIgnoreCase(object.getName())) {
                             // Don't use alias, when it's identical to entity name

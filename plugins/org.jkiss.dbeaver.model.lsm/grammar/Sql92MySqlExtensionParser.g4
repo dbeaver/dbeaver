@@ -21,7 +21,7 @@ import Sql92Parser;
 options {
     tokenVocab=Sql92MySqlExtensionLexer;
     superClass=org.jkiss.dbeaver.model.lsm.mapping.internal.ParserOverrides;
-    contextSuperClass=org.jkiss.dbeaver.model.lsm.mapping.internal.TreeRuleNode;
+    //contextSuperClass=org.jkiss.dbeaver.model.lsm.mapping.internal.TreeRuleNode;
 }
 
 // See https://dev.mysql.com/doc/refman/8.0/en/extensions-to-ansi.html

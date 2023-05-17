@@ -14,17 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm;
+package org.jkiss.dbeaver.model.stm;
 
-import org.jkiss.utils.Pair;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.ErrorNodeImpl;
+import org.jkiss.code.NotNull;
 
-import java.util.concurrent.Future;
-import java.util.List;
 
-
-public interface LSMAnalysis<T extends LSMElement> {    
+public class TreeTermErrorNode extends ErrorNodeImpl implements STMTreeNode {
     
-    Future<T> getModel();
+    public TreeTermErrorNode(@NotNull Token symbol) {
+        super(symbol);
+    }
 
-    List<Pair<String, String>> getTableAndAliasFromSources();
+    @NotNull
+    public Interval getRealInterval() {
+        return new Interval(this.getSymbol().getStartIndex(), this.getSymbol().getStopIndex());
+    }
 }
