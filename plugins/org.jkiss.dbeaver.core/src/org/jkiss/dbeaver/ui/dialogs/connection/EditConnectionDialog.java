@@ -114,7 +114,6 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
             }
         }
         catch (NumberFormatException ignored) {
-
         }
         return size;
     }
