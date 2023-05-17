@@ -14,15 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-lexer grammar Sql92MySqlExtensionLexer;
+package org.jkiss.dbeaver.model.stm;
 
-import Sql92Lexer;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.TerminalNodeImpl;
+import org.jkiss.code.NotNull;
 
 
-STRAIGHT_JOIN: S T R A I G H T '_' J O I N;
-SQL_SMALL_RESULT: S Q L '_' S M A L L '_' R E S U L T;
-SQL_BIG_RESULT: S Q L '_' B I G '_' R E S U L T;
-SQL_BUFFER_RESULT: S Q L '_' B U F F E R '_' R E S U L T;
-SQL_NO_CACHE: S Q L '_' N O '_' C A C H E;
-SQL_CALC_FOUND_ROWS: S Q L '_' C A L C '_' F O U N D '_' R O W S;
+public class TreeTermNode extends TerminalNodeImpl implements STMTreeNode {
+    
+    public TreeTermNode(@NotNull Token symbol) {
+        super(symbol);
+    }
 
+    @NotNull
+    public Interval getRealInterval() {
+        return new Interval(this.getSymbol().getStartIndex(), this.getSymbol().getStopIndex());
+    }
+}

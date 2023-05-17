@@ -16,9 +16,15 @@
  */
 package org.jkiss.dbeaver.model.lsm;
 
+import org.jkiss.utils.Pair;
+
+import java.util.List;
 import java.util.concurrent.Future;
+
 
 public interface LSMAnalysis<T extends LSMElement> {    
     
     Future<T> getModel();
+
+    List<Pair<String, String>> getTableAndAliasFromSources();
 }

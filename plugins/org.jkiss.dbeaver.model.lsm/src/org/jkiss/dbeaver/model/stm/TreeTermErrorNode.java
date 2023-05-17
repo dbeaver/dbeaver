@@ -14,19 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-grammar Sql92MySqlExtensionParser;
+package org.jkiss.dbeaver.model.stm;
 
-import Sql92Parser;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.ErrorNodeImpl;
+import org.jkiss.code.NotNull;
 
-options {
-    tokenVocab=Sql92MySqlExtensionLexer;
-    superClass=org.jkiss.dbeaver.model.lsm.mapping.internal.ParserOverrides;
-    contextSuperClass=org.jkiss.dbeaver.model.lsm.mapping.internal.TreeRuleNode;
+
+public class TreeTermErrorNode extends ErrorNodeImpl implements STMTreeNode {
+    
+    public TreeTermErrorNode(@NotNull Token symbol) {
+        super(symbol);
+    }
+
+    @NotNull
+    public Interval getRealInterval() {
+        return new Interval(this.getSymbol().getStartIndex(), this.getSymbol().getStopIndex());
+    }
 }
-
-// See https://dev.mysql.com/doc/refman/8.0/en/extensions-to-ansi.html
-
-querySpecification: SELECT STRAIGHT_JOIN?
-    SQL_SMALL_RESULT? SQL_BIG_RESULT? SQL_BUFFER_RESULT?
-    SQL_NO_CACHE? SQL_CALC_FOUND_ROWS?
-    (setQuantifier)? selectList tableExpression;
