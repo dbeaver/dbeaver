@@ -16,12 +16,19 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.ai.preferences;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.forms.events.ExpansionAdapter;
+import org.eclipse.ui.forms.events.ExpansionEvent;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AICompletionConstants;
 import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 import org.jkiss.dbeaver.model.ai.AISettings;
@@ -52,18 +59,31 @@ public class AIConfiguratorDefault implements IObjectPropertyConfigurator<GPTCom
     private Combo modelCombo;
     private Text temperatureText;
     private Button logQueryCheck;
+    private ExpansionAdapter expansionAdapter;
 
     @Override
     public void createControl(@NotNull Composite placeholder, GPTCompletionEngine object, @NotNull Runnable propertyChangeListener) {
+        ScrolledComposite scrolledComposite = UIUtils.createScrolledComposite(placeholder);
+
+        final Composite composite = new Composite(scrolledComposite, SWT.NONE);
+        final GridData gridData = new GridData(GridData.FILL_BOTH);
+        gridData.widthHint = UIUtils.getFontHeight(composite) * 80;
+        composite.setLayoutData(gridData);
+        composite.setLayout(new GridLayout(1, false));
+
+        scrolledComposite.setContent(composite);
+        scrolledComposite.setExpandHorizontal(true);
+        scrolledComposite.setExpandVertical(true);
+
         enableAICheck = UIUtils.createCheckbox(
-            placeholder,
-            "Enable smart completion",
-            "Enable AI smart completion. If you don't want to see it in SQL editor then you can disable this feature.",
+            composite,
+            AIUIMessages.gpt_preference_page_checkbox_enable_ai_label,
+            AIUIMessages.gpt_preference_page_checkbox_enable_ai_tip,
             false,
             2);
 
         {
-            Group authorizationGroup = UIUtils.createControlGroup(placeholder,
+            Group authorizationGroup = UIUtils.createControlGroup(composite,
                 AIUIMessages.gpt_preference_page_group_authorization,
                 2,
                 SWT.NONE,
@@ -74,24 +94,25 @@ public class AIConfiguratorDefault implements IObjectPropertyConfigurator<GPTCom
             tokenText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             Link link = UIUtils.createLink(
                 authorizationGroup,
-                "Copy-paste API token from <a>" + API_KEY_URL + "</a>",
+                NLS.bind(AIUIMessages.gpt_preference_page_token_info, API_KEY_URL),
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         UIUtils.openWebBrowser(API_KEY_URL);
                     }
-                });
+                }
+                );
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             link.setLayoutData(gd);
             authorizationGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
         {
-            Composite settingsPanel = UIUtils.createComposite(placeholder, 2);
+            Composite settingsPanel = UIUtils.createComposite(composite, 2);
             settingsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             Group completionGroup = UIUtils.createControlGroup(settingsPanel,
-                "Completion",
+                AIUIMessages.gpt_preference_page_completion_group,
                 2,
                 SWT.NONE,
                 5
@@ -99,46 +120,58 @@ public class AIConfiguratorDefault implements IObjectPropertyConfigurator<GPTCom
             completionGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             includeSourceTextInCommentCheck = UIUtils.createCheckbox(
                 completionGroup,
-                "Include source in query comment",
-                "Add your human language text in query comment",
+                AIUIMessages.gpt_preference_page_completion_include_source_label,
+                AIUIMessages.gpt_preference_page_completion_include_source_tip,
                 false,
                 2);
             executeQueryImmediatelyCheck = UIUtils.createCheckbox(
                 completionGroup,
-                "Execute SQL immediately",
-                "Try to execute translated SQL immediately after completion",
+                AIUIMessages.gpt_preference_page_completion_execute_immediately_label,
+                AIUIMessages.gpt_preference_page_completion_execute_immediately_tip,
                 false,
                 2);
 
             createCompletionSettings(completionGroup, propertyChangeListener);
 
             createFormattingSettings(settingsPanel, propertyChangeListener);
-        }
-        {
-            Group modelGroup = UIUtils.createControlGroup(placeholder,
-                AIUIMessages.gpt_preference_page_group_model,
-                2,
-                SWT.NONE,
-                5
-            );
-            modelGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            modelCombo = UIUtils.createLabelCombo(modelGroup,
-                AIUIMessages.gpt_preference_page_combo_engine,
-                SWT.READ_ONLY
-            );
-            for (GPTModel model : GPTModel.values()) {
-                modelCombo.add(model.getName());
-            }
-            UIUtils.createInfoLabel(modelGroup, "gpt-3.5-turbo model suits the best for SQL code completion",
-                GridData.FILL_HORIZONTAL, 2);
-            {
-                Group modelAdvancedGroup = UIUtils.createControlGroup(placeholder,
-                    AIUIMessages.gpt_preference_page_group_model_advanced,
-                    2,
-                    SWT.NONE,
-                    5
-                );
 
+            createProxySettings(composite, propertyChangeListener);
+
+        }
+
+        {
+            expansionAdapter = new ExpansionAdapter() {
+                @Override
+                public void expansionStateChanged(ExpansionEvent e) {
+                    scrolledComposite.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+                    UIUtils.resizeShell(placeholder.getShell());
+                }
+            };
+            {
+                final Composite modelGroup = createExpandable(
+                    composite,
+                    AIUIMessages.gpt_preference_page_group_model,
+                    expansionAdapter
+                );
+                modelCombo = UIUtils.createLabelCombo(modelGroup,
+                    AIUIMessages.gpt_preference_page_combo_engine,
+                    SWT.READ_ONLY
+                );
+                for (GPTModel model : GPTModel.values()) {
+                    modelCombo.add(model.getName());
+                }
+                UIUtils.createInfoLabel(modelGroup,
+                    AIUIMessages.gpt_preference_page_info_model,
+                    GridData.FILL_HORIZONTAL,
+                    2
+                );
+            }
+
+            {
+                final Composite modelAdvancedGroup = createExpandable(
+                    composite,
+                    AIUIMessages.gpt_preference_page_group_model_advanced, expansionAdapter
+                );
                 temperatureText = UIUtils.createLabelText(modelAdvancedGroup,
                     AIUIMessages.gpt_preference_page_text_temperature,
                     "0.0"
@@ -147,7 +180,6 @@ public class AIConfiguratorDefault implements IObjectPropertyConfigurator<GPTCom
                 UIUtils.createInfoLabel(modelAdvancedGroup, "Lower temperatures give more precise results", GridData.FILL_HORIZONTAL, 2);
 
                 temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
-                modelAdvancedGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
                 logQueryCheck = UIUtils.createCheckbox(
                     modelAdvancedGroup,
@@ -158,7 +190,33 @@ public class AIConfiguratorDefault implements IObjectPropertyConfigurator<GPTCom
 
                 createAdvancedSettings(modelAdvancedGroup, propertyChangeListener);
             }
+
         }
+    }
+
+    @NotNull
+    protected final Composite createExpandable(
+        @NotNull Composite composite,
+        @NotNull String text,
+        @Nullable ExpansionAdapter expansionAdapter
+    ) {
+        GridLayout layout = new GridLayout(2, false);
+
+        final ExpandableComposite expandable = new ExpandableComposite(composite, SWT.CHECK);
+        expandable.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+        expandable.setText(text);
+
+        final Composite modelGroup = new Composite(expandable, SWT.BORDER);
+        GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
+        gridData.widthHint = 5;
+        modelGroup.setLayoutData(gridData);
+        modelGroup.setLayout(layout);
+        expandable.setClient(modelGroup);
+
+        if (expansionAdapter != null) {
+            expandable.addExpansionListener(expansionAdapter);
+        }
+        return modelGroup;
     }
 
     protected void createCompletionSettings(Group group, Runnable propertyChangeListener) {
@@ -170,7 +228,11 @@ public class AIConfiguratorDefault implements IObjectPropertyConfigurator<GPTCom
 
     }
 
-    protected void createAdvancedSettings(Group group, Runnable propertyChangeListener) {
+    protected void createProxySettings(Composite settingsPanel, Runnable propertyChangeListener) {
+
+    }
+
+    protected void createAdvancedSettings(Composite group, Runnable propertyChangeListener) {
 
     }
 
@@ -234,4 +296,8 @@ public class AIConfiguratorDefault implements IObjectPropertyConfigurator<GPTCom
         return !CommonUtils.isEmpty(tokenText.getText());
     }
 
+    @NotNull
+    public ExpansionAdapter getExpansionAdapter() {
+        return expansionAdapter;
+    }
 }

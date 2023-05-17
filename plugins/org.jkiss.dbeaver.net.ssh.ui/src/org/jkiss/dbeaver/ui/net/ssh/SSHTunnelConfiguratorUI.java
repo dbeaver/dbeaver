@@ -93,9 +93,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     @Override
     public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener)
     {
-        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL);
-        scrolledComposite.setLayout(new GridLayout(1, false));
-        scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        ScrolledComposite scrolledComposite = UIUtils.createScrolledComposite(parent);
 
         final Composite composite = new Composite(scrolledComposite, SWT.NONE);
         final GridData gridData = new GridData(GridData.FILL_BOTH);

@@ -115,7 +115,7 @@ public class GPTCompletionEngine implements DAICompletionEngine {
     /**
      * Initializes OpenAiService instance using token provided by {@link GPTConstants} GTP_TOKEN_PATH
      */
-    private static OpenAiService initGPTApiClientInstance() throws DBException {
+    protected OpenAiService initGPTApiClientInstance() throws DBException {
         String token = acquireToken();
         if (CommonUtils.isEmpty(token)) {
             throw new DBException("Empty API token value");
@@ -123,7 +123,7 @@ public class GPTCompletionEngine implements DAICompletionEngine {
         return new OpenAiService(token, Duration.ofSeconds(30));
     }
 
-    private static String acquireToken() {
+    protected String acquireToken() {
         AIEngineSettings openAiConfig = AISettings.getSettings().getEngineConfiguration(GPTConstants.OPENAI_ENGINE);
         Object token = openAiConfig.getProperties().get(GPTConstants.GPT_API_TOKEN);
         if (token != null) {
