@@ -126,6 +126,9 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
             if (!driver.isInstantiable()) {
                 xml.addAttribute(RegistryConstants.ATTR_INSTANTIABLE, driver.isInstantiable());
             }
+            if (!driver.isSupportsDistributedMode()) {
+                xml.addAttribute(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE, driver.isSupportsDistributedMode());
+            }
 
             // Libraries
             for (DBPDriverLibrary lib : driver.getDriverLibraries()) {
@@ -294,6 +297,10 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                     if (atts.getValue(RegistryConstants.ATTR_USE_URL_TEMPLATE) != null) {
                         curDriver.setUseURL((
                             CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_USE_URL_TEMPLATE), true)));
+                    }
+                    if (atts.getValue(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE) != null) {
+                        curDriver.setSupportsDistributedMode((
+                            CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE), true)));
                     }
                     curDriver.setModified(true);
                     String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
