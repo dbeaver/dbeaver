@@ -20,11 +20,9 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.ui.ISaveablesLifecycleListener;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.Saveable;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.internal.SaveablesList;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -36,10 +34,12 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorDescriptor;
 import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorRegistry;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.actions.exec.SQLScriptExecutor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.ArrayList;
@@ -82,17 +82,19 @@ public class SQLEditorHandlerExecute extends AbstractHandler
                     if (editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE)) {
                         editor.doSave(new NullProgressMonitor());
                     } else {
-                        SaveablesList service = (SaveablesList) PlatformUI.getWorkbench()
-                            .getService(ISaveablesLifecycleListener.class);
-                        ArrayList<Saveable> files = new ArrayList<>(List.of(editor.getActiveSaveables()));
-                        boolean cancelled = service.promptForSaving(files,
-                            UIUtils.getActiveWorkbenchWindow(),
-                            UIUtils.getActiveWorkbenchWindow(),
-                            true,
-                            false
+                        int result = MessageDialog.open(
+                            MessageDialog.QUESTION_WITH_CANCEL,
+                            UIUtils.getActiveWorkbenchShell(),
+                            SQLEditorMessages.dialog_save_script_title,
+                            SQLEditorMessages.dialog_save_script_message,
+                            0, IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL, IDialogConstants.CANCEL_LABEL
                         );
-                        if (cancelled) {
+                        // Cancel
+                        if (result == 2) {
                             return null;
+                        }
+                        if (result == MessageDialog.OK) {
+                            editor.doSave(new NullProgressMonitor());
                         }
                     }
                 }
