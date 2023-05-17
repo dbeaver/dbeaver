@@ -319,12 +319,12 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
     @NotNull
     @Override
     public String getSchemaExistQuery(@NotNull String schemaName) {
-        return "SHOW DATABASES LIKE '" + schemaName + "'";
+        return "SHOW DATABASES LIKE " + getQuotedString(schemaName);
     }
 
     @NotNull
     @Override
     public String getCreateSchemaQuery(@NotNull String schemaName) {
-        return "CREATE DATABASE " + schemaName;
+        return "CREATE DATABASE " + getQuotedString(schemaName);
     }
 }
