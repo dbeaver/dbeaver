@@ -14,15 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-lexer grammar Sql92MySqlExtensionLexer;
+package org.jkiss.dbeaver.model.qm;
 
-import Sql92Lexer;
+/**
+ * Query manager session receiver.
+ * It helps us to differ CE and EE products (CE product doesn't have QM database).
+ */
+public interface QMSessionReceiver {
 
-
-STRAIGHT_JOIN: S T R A I G H T '_' J O I N;
-SQL_SMALL_RESULT: S Q L '_' S M A L L '_' R E S U L T;
-SQL_BIG_RESULT: S Q L '_' B I G '_' R E S U L T;
-SQL_BUFFER_RESULT: S Q L '_' B U F F E R '_' R E S U L T;
-SQL_NO_CACHE: S Q L '_' N O '_' C A C H E;
-SQL_CALC_FOUND_ROWS: S Q L '_' C A L C '_' F O U N D '_' R O W S;
-
+}
