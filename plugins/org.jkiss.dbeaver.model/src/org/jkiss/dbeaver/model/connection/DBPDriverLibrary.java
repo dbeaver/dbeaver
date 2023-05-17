@@ -38,7 +38,11 @@ public interface DBPDriverLibrary {
         jar,
         lib,
         executable,
-        license
+        license;
+
+        public static FileType getFileTypeByFileName(String fileName) {
+            return fileName.endsWith(".jar") || fileName.endsWith(".zip") ? DBPDriverLibrary.FileType.jar : DBPDriverLibrary.FileType.lib;
+        }
     }
 
     @NotNull
