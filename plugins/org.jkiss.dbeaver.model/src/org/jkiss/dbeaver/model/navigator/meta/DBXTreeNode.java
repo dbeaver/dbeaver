@@ -359,4 +359,8 @@ public abstract class DBXTreeNode
         }
     }
 
+    public String getTreeId() {
+        return getId();
+    }
+
 }

@@ -199,6 +199,12 @@ public class DBXTreeItem extends DBXTreeNode
     }
 
     @Override
+    public String getTreeId() {
+        var id = getId();
+        return CommonUtils.isNotEmpty(id) ? id : path;
+    }
+
+    @Override
     public String toString() {
         return "Item " + label;
     }

@@ -167,6 +167,17 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         }
     }
 
+    public String getNodeId() {
+        if (getObject() == null) {
+            return "";
+        }
+        var meta = getMeta();
+        if (meta == null || meta.getTreeId() == null) {
+            return getNodeName();
+        }
+        return meta.getTreeId() + "_" + getNodeName();
+    }
+
     @Override
     public String getNodeDescription() {
         return getObject() == null ? null : getObject().getDescription();
@@ -816,7 +827,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             if (pathName.length() > 0) {
                 pathName.insert(0, '/');
             }
-            pathName.insert(0, node.getNodeName().replace("/", DBNModel.SLASH_ESCAPE_TOKEN));
+            pathName.insert(0, ((DBNDatabaseNode) node).getNodeId().replace("/", DBNModel.SLASH_ESCAPE_TOKEN));
         }
         return pathName.toString();
     }

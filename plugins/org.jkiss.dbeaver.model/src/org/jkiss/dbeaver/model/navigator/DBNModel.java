@@ -427,6 +427,10 @@ public class DBNModel implements IResourceChangeListener {
                                     nextChild = child;
                                 }
                             }
+                        } else if (child instanceof DBNDatabaseNode) {
+                            if (((DBNDatabaseNode) child).getNodeId().equals(item)) {
+                                nextChild = child;
+                            }
                         }
                         if (child.getName().equals(item)) {
                             nextChild = child;
