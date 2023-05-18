@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 
 import javax.xml.XMLConstants;
@@ -82,10 +83,12 @@ public class XMLUtils {
         }
     }
 
-    public static Element getChildElement(Element element,
-                                          String childName) {
-        for (org.w3c.dom.Node node = element.getFirstChild(); node != null; node = node.getNextSibling()) {
-            if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE &&
+    public static Element getChildElement(Element element, @NotNull String childName) {
+        if (element == null) {
+            return null;
+        }
+        for (Node node = element.getFirstChild(); node != null; node = node.getNextSibling()) {
+            if (node.getNodeType() == Node.ELEMENT_NODE &&
                 ((Element) node).getTagName().equals(childName)) {
                 return (Element) node;
             }
@@ -94,10 +97,12 @@ public class XMLUtils {
     }
 
     @Nullable
-    public static String getChildElementBody(Element element,
-                                             String childName) {
-        for (org.w3c.dom.Node node = element.getFirstChild(); node != null; node = node.getNextSibling()) {
-            if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE &&
+    public static String getChildElementBody(Element element, @NotNull String childName) {
+        if (element == null) {
+            return null;
+        }
+        for (Node node = element.getFirstChild(); node != null; node = node.getNextSibling()) {
+            if (node.getNodeType() == Node.ELEMENT_NODE &&
                 ((Element) node).getTagName().equals(childName)) {
                 return getElementBody((Element) node);
             }
@@ -106,7 +111,7 @@ public class XMLUtils {
     }
 
     @Nullable
-    public static String getElementBody(Element element) {
+    public static String getElementBody(@NotNull Element element) {
         return element.getTextContent();
     }
 
@@ -116,10 +121,12 @@ public class XMLUtils {
         Element parent,
         String nodeName) {
         List<Element> list = new ArrayList<>();
-        for (org.w3c.dom.Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
-            if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE &&
-                nodeName.equals(node.getNodeName())) {
-                list.add((Element) node);
+        if (parent != null) {
+            for (Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
+                if (node.getNodeType() == Node.ELEMENT_NODE &&
+                    nodeName.equals(node.getNodeName())) {
+                    list.add((Element) node);
+                }
             }
         }
         return list;
@@ -131,10 +138,12 @@ public class XMLUtils {
         Element parent,
         String nsURI) {
         List<Element> list = new ArrayList<>();
-        for (org.w3c.dom.Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
-            if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE &&
-                node.getNamespaceURI().equals(nsURI)) {
-                list.add((Element) node);
+        if (parent != null) {
+            for (Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
+                if (node.getNodeType() == Node.ELEMENT_NODE &&
+                    node.getNamespaceURI().equals(nsURI)) {
+                    list.add((Element) node);
+                }
             }
         }
         return list;
@@ -146,8 +155,8 @@ public class XMLUtils {
         String nodeName,
         String nsURI) {
         List<Element> list = new ArrayList<>();
-        for (org.w3c.dom.Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
-            if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE &&
+        for (Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
+            if (node.getNodeType() == Node.ELEMENT_NODE &&
                 node.getLocalName().equals(nodeName) &&
                 node.getNamespaceURI().equals(nsURI)) {
                 list.add((Element) node);
@@ -162,8 +171,8 @@ public class XMLUtils {
         Element parent,
         String[] nodeNameList) {
         List<Element> list = new ArrayList<>();
-        for (org.w3c.dom.Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
-            if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+        for (Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
                 for (int i = 0; i < nodeNameList.length; i++) {
                     if (node.getNodeName().equals(nodeNameList[i])) {
                         list.add((Element) node);
@@ -178,8 +187,8 @@ public class XMLUtils {
     @Nullable
     public static Element findChildElement(
         Element parent) {
-        for (org.w3c.dom.Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
-            if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+        for (Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
                 return (Element) node;
             }
         }
@@ -270,9 +279,11 @@ public class XMLUtils {
 
     public static Collection<Element> getChildElementList(Element element) {
         List<Element> children = new ArrayList<>();
-        for (org.w3c.dom.Node node = element.getFirstChild(); node != null; node = node.getNextSibling()) {
-            if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                children.add((Element) node);
+        if (element != null) {
+            for (Node node = element.getFirstChild(); node != null; node = node.getNextSibling()) {
+                if (node.getNodeType() == Node.ELEMENT_NODE) {
+                    children.add((Element) node);
+                }
             }
         }
         return children;
