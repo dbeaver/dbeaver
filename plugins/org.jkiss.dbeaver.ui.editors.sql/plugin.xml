@@ -1367,7 +1367,7 @@
                 parent="sql-editor.main"
                 class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLExecute"
                 title="%page.org.jkiss.dbeaver.preferences.main.sqlexecute.name"
-                description="%page.org.jkiss.dbeaver.preferences.main.sql.sqlexecute.description"/>
+                description="%page.org.jkiss.dbeaver.preferences.main.sqlexecute.description"/>
         </dataSourceConfigurator>
     </extension>
 

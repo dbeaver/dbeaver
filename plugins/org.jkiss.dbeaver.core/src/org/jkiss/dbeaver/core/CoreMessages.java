@@ -550,10 +550,6 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_edit_wizard_data_format_description;
 	public static String dialog_connection_edit_wizard_presentation;
 	public static String dialog_connection_edit_wizard_presentation_description;
-	public static String dialog_connection_edit_wizard_sql_formatting;
-	public static String dialog_connection_edit_wizard_sql_formatting_description;
-	public static String dialog_connection_edit_wizard_sql_processing;
-	public static String dialog_connection_edit_wizard_sql_processing_description;
 
 	public static String dialog_connection_edit_wizard_conn_change_title;
 	public static String dialog_connection_edit_wizard_conn_change_question;

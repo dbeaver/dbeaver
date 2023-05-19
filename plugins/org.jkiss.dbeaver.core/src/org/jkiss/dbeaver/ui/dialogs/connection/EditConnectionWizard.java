@@ -187,14 +187,6 @@ public class EditConnectionWizard extends ConnectionWizard {
         for (DataSourcePageDescriptor page : DataSourceViewRegistry.getInstance().getRootDataSourcePages(dataSource)) {
             addDataSourcePage(null, page);
         }
-/*
-        {
-            WizardPrefPage sqlPage = addPreferencePage(new PrefPageSQLEditor(), CoreMessages.dialog_connection_edit_wizard_sql_editor, CoreMessages.page.org.jkiss.dbeaver.preferences.main.sqleditor.description);
-            sqlPage.addSubPage(new PrefPageSQLCompletion(), CoreMessages.dialog_connection_edit_wizard_sql_code_completion, CoreMessages.page.org.jkiss.dbeaver.preferences.main.sql.completion.description);
-            sqlPage.addSubPage(new PrefPageSQLFormat(), CoreMessages.dialog_connection_edit_wizard_sql_formatting, CoreMessages.dialog_connection_edit_wizard_sql_formatting_description);
-            sqlPage.addSubPage(new PrefPageSQLExecute(), CoreMessages.dialog_connection_edit_wizard_sql_processing, CoreMessages.dialog_connection_edit_wizard_sql_processing_description);
-        }
-*/
     }
 
     private void addDataSourcePage(WizardPrefPage parent, DataSourcePageDescriptor page) {
