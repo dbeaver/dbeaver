@@ -1347,6 +1347,7 @@
         <dataSourceConfigurator>
             <dataSourcePage
                 id="sql-editor.main"
+                after="data-editor-main"
                 class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLEditor"
                 title="%page.org.jkiss.dbeaver.preferences.main.sqleditor.name"
                 description="%page.org.jkiss.dbeaver.preferences.main.sqleditor.description"/>

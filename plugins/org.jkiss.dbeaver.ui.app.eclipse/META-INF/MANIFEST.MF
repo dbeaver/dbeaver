@@ -8,5 +8,6 @@ Bundle-Release-Date: 20230522
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.core,
- org.jkiss.dbeaver.ui
+ org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.ui.editors.sql
 Automatic-Module-Name: org.jkiss.dbeaver.ui.app.eclipse
