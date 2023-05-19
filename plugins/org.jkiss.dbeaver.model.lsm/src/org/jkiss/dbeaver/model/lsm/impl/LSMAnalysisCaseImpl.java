@@ -17,35 +17,41 @@
 package org.jkiss.dbeaver.model.lsm.impl;
 
 import org.antlr.v4.runtime.ANTLRErrorListener;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.LSMAnalysisCase;
 import org.jkiss.dbeaver.model.lsm.LSMElement;
 import org.jkiss.dbeaver.model.lsm.LSMParser;
 import org.jkiss.dbeaver.model.lsm.LSMSource;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 
-public abstract class LSMAnalysisCaseImpl<T extends LSMElement, M extends AbstractSyntaxNode & LSMElement> implements LSMAnalysisCase<T, M> {
+public abstract class LSMAnalysisCaseImpl<T extends LSMElement, M extends AbstractSyntaxNode & LSMElement>
+    implements LSMAnalysisCase<T, M> {
 
     private final Class<T> modelContractType;
     private final Class<M> modelRootType;
     
     public LSMAnalysisCaseImpl(
-        Class<T> modelContractType,
-        Class<M> modelRootType
+        @NotNull Class<T> modelContractType,
+        @NotNull Class<M> modelRootType
     ) {
         this.modelContractType = modelContractType;
         this.modelRootType = modelRootType;
     }
 
+    @NotNull
     @Override
     public Class<T> getModelContractType() {
         return modelContractType;
     }
 
+    @NotNull
     @Override
     public Class<M> getModelRootType() {
         return modelRootType;
     }
 
+    @Nullable
     @Override
-    public abstract LSMParser createParser(LSMSource source, ANTLRErrorListener errorListener);
+    public abstract LSMParser createParser(@NotNull LSMSource source, @Nullable ANTLRErrorListener errorListener);
 }

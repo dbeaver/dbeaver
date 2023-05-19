@@ -31,13 +31,15 @@ public abstract class ParserOverrides extends Parser {
         this.setBuildParseTree(true);
     }
 
+    @NotNull
     @Override
-    public ErrorNode createErrorNode(ParserRuleContext parent, @NotNull Token t) {
+    public ErrorNode createErrorNode(@NotNull ParserRuleContext parent, @NotNull Token t) {
         return new TreeTermErrorNode(t);
     }
-    
+
+    @NotNull
     @Override
-    public TerminalNode createTerminalNode(ParserRuleContext parent, @NotNull Token t) {
+    public TerminalNode createTerminalNode(@NotNull ParserRuleContext parent, @NotNull Token t) {
         return new TreeTermNode(t);
     }
 

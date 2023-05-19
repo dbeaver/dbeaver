@@ -16,20 +16,7 @@
  */
 package org.jkiss.dbeaver.model.lsm.sql.dialect;
 
-import java.util.BitSet;
-import java.util.Map;
 
-import org.antlr.v4.runtime.ANTLRErrorListener;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.ConsoleErrorListener;
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
-import org.antlr.v4.runtime.atn.ATNConfigSet;
-import org.antlr.v4.runtime.atn.PredictionMode;
-import org.antlr.v4.runtime.dfa.DFA;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.LSMDialect;
@@ -45,11 +32,21 @@ import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.antlr.v4.runtime.ANTLRErrorListener;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ConsoleErrorListener;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.atn.PredictionMode;
+
+import java.util.Map;
+
 public class Sql92Dialect {
     private static final Logger log = LoggerFactory.getLogger(Sql92Dialect.class);
     
     private static final LSMDialect dialect = new LSMDialectImpl(
-        Map.of(LSMSelectStatement.class, new LSMAnalysisCaseImpl<LSMSelectStatement, SelectStatement>(LSMSelectStatement.class, SelectStatement.class) {
+        Map.of(LSMSelectStatement.class, new LSMAnalysisCaseImpl<>(LSMSelectStatement.class, SelectStatement.class) {
 
             @Nullable
             @Override

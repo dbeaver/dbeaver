@@ -60,32 +60,38 @@ class LSMAnalysisImpl<T extends LSMElement, M extends AbstractSyntaxNode & LSMEl
         this.model = new CompletableFuture<>();
     }
 
-    @NotNull
+    @Nullable
     Future<Tree> getTree(@Nullable ANTLRErrorListener errorListener) {
         if (!this.tree.isDone()) {
-            LSMParser parser = errorListener == null ?
-                analysisCase.createParser(source) :
-                analysisCase.createParser(source, errorListener);
-            
-            Tree tree = parser.parse();
-            if (tree != null) {
-                this.tree.complete(tree);
+            LSMParser parser = errorListener == null
+                ? analysisCase.createParser(source)
+                : analysisCase.createParser(source, errorListener);
+            Tree newTree = null;
+            if (parser != null) {
+                newTree = parser.parse();
+            }
+            if (newTree != null) {
+                this.tree.complete(newTree);
             }
         }
         return this.tree;
     }
-    
+
+    @Nullable
     @Override
     public Future<T> getModel() {
         try {
             if (!this.model.isDone()) {
-                Tree tree = this.getTree(null).get();
-                
-                SyntaxModelMappingResult<M> result = this.syntaxModel.map(tree, analysisCase.getModelRootType());
-                
-                @SuppressWarnings("unchecked")
-                T model = (T) result.getModel();
-                this.model.complete(model);
+                Future<Tree> futureTree = this.getTree(null);
+                if (futureTree != null) {
+                    SyntaxModelMappingResult<M> result = this.syntaxModel.map(futureTree.get(), analysisCase.getModelRootType());
+
+                    @SuppressWarnings("unchecked")
+                    T model = (T) result.getModel();
+                    if (model != null) {
+                        this.model.complete(model);
+                    }
+                }
             }
         } catch (InterruptedException | ExecutionException e) {
             this.model.completeExceptionally(e);
@@ -99,9 +105,9 @@ class LSMAnalysisImpl<T extends LSMElement, M extends AbstractSyntaxNode & LSMEl
     public List<Pair<String, String>> getTableAndAliasFromSources() {
         Tree tree = null;
         try {
-            Future<Tree> fTree = getTree(new LSMSkippingErrorListener());
-            if (fTree != null) {
-                tree = fTree.get();
+            Future<Tree> futureTree = getTree(new LSMSkippingErrorListener());
+            if (futureTree != null) {
+                tree = futureTree.get();
             } else {
                 return null;
             }
