@@ -11,6 +11,16 @@
         <propertyConfigurator class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative" uiClass="org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.ui.dataSourceConfigurator">
+        <dataSourceConfigurator>
+<!--
+            <dataSourcePage class="org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageGeneral"/>
+            <dataSourcePage class="org.jkiss.dbeaver.ui.preferences.PrefPageMetaData"/>
+            <dataSourcePage class="org.jkiss.dbeaver.ui.preferences.PrefPageErrorHandle"/>
+-->
+        </dataSourceConfigurator>
+    </extension>
+
     <extension point="org.eclipse.ui.commands">
         <command id="org.jkiss.dbeaver.core.driver.manager" name="%command.org.jkiss.dbeaver.core.driver.manager.name" description="%command.org.jkiss.dbeaver.core.driver.manager.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.connection.changeCurrentPassword" name="%command.org.jkiss.dbeaver.connection.changeCurrentPassword.name" description="%command.org.jkiss.dbeaver.connection.changeCurrentPassword.description" categoryId="org.jkiss.dbeaver.core.navigator"/>

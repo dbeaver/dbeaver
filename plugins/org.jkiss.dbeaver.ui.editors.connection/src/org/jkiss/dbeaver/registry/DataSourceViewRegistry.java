@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
-import org.jkiss.dbeaver.ui.IDataSourceConfigurator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,14 +78,29 @@ public class DataSourceViewRegistry {
         return result;
     }
 
-    public List<IDataSourceConfigurator> getConfigurators(DBPDataSourceContainer dataSourceContainer) {
-        List<IDataSourceConfigurator> result = new ArrayList<>();
+    public List<DataSourceConfiguratorDescriptor> getConfigurators(DBPDataSourceContainer dataSourceContainer) {
+        List<DataSourceConfiguratorDescriptor> result = new ArrayList<>();
         for (DataSourceConfiguratorDescriptor configuratorDesc : configurators) {
-            if (configuratorDesc.getInstance().appliesTo(dataSourceContainer)) {
-                result.add(configuratorDesc.getInstance());
+            if (configuratorDesc.appliesTo(dataSourceContainer)) {
+                result.add(configuratorDesc);
             }
         }
         return result;
     }
 
+    public List<DataSourcePageDescriptor> getRootDataSourcePages(DataSourceDescriptor dataSource) {
+        List<DataSourcePageDescriptor> roots = new ArrayList<>();
+        for (DataSourceConfiguratorDescriptor configurator : getConfigurators(dataSource)) {
+            roots.addAll(configurator.getRootPages(dataSource));
+        }
+        return roots;
+    }
+
+    public List<DataSourcePageDescriptor> getChildDataSourcePages(DBPDataSourceContainer dataSource, String parentId) {
+        List<DataSourcePageDescriptor> children = new ArrayList<>();
+        for (DataSourceConfiguratorDescriptor configurator : getConfigurators(dataSource)) {
+            children.addAll(configurator.getChildPages(dataSource, parentId));
+        }
+        return children;
+    }
 }
