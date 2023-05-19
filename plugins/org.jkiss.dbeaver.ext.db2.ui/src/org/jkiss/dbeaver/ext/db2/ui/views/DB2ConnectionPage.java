@@ -49,9 +49,10 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
     private Text hostText;
     private Text portText;
     private Text dbText;
-    private Text usernameText;
 
     private Image logoImage;
+
+    private boolean activated = false;
 
     public DB2ConnectionPage() {
         logoImage = createImage("icons/db2_logo.png"); //$NON-NLS-1$
@@ -76,8 +77,10 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
         control.setLayout(new GridLayout(1, false));
         control.setLayoutData(new GridData(GridData.FILL_BOTH));
         ModifyListener textListener = e -> {
-            updateUrl();
-            site.updateButtons();
+            if (activated) {
+                updateUrl();
+                site.updateButtons();
+            }
         };
 
         {
@@ -196,6 +199,7 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
         }
         setupConnectionModeSelection(urlText, useURL, GROUP_CONNECTION_ARR);
         updateUrl();
+        activated = true;
     }
 
     @Override
