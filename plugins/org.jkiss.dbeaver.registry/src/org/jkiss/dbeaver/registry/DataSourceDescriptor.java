@@ -66,6 +66,7 @@ import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
 import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
+import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -79,6 +80,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * DataSourceDescriptor
@@ -1506,8 +1508,20 @@ public class DataSourceDescriptor
         return preferenceStore;
     }
 
+    @Override
     public void resetPassword() {
         connectionInfo.setUserPassword(null);
+        var passwordProperties = ObjectPropertyDescriptor.extractAnnotations(
+                null,
+                connectionInfo.getAuthModel().createCredentials().getClass(),
+                (o, p) -> true,
+                null
+            ).stream()
+            .filter(ObjectPropertyDescriptor::isPassword)
+            .collect(Collectors.toList());
+        for (ObjectPropertyDescriptor passwordProperty : passwordProperties) {
+            connectionInfo.setAuthProperty(passwordProperty.getId(), null);
+        }
     }
 
     @Nullable
