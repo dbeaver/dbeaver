@@ -45,7 +45,6 @@ import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.BaseAuthDialog;
-import org.jkiss.dbeaver.ui.editors.data.preferences.*;
 import org.jkiss.dbeaver.ui.preferences.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -175,14 +174,6 @@ public class EditConnectionWizard extends ConnectionWizard {
 
         addPreferencePage(new PrefPageMetaData(), CoreMessages.dialog_connection_edit_wizard_metadata,  CoreMessages.dialog_connection_edit_wizard_metadata_description);
         addPreferencePage(new PrefPageErrorHandle(), CoreMessages.pref_page_error_handle_name,  CoreMessages.pref_page_error_handle_description);
-        {
-            WizardPrefPage rsPage = addPreferencePage(new PrefPageResultSetMain(), CoreMessages.dialog_connection_edit_wizard_resultset, CoreMessages.dialog_connection_edit_wizard_resultset_description);
-            rsPage.addSubPage(new PrefPageResultSetEditors(), CoreMessages.dialog_connection_edit_wizard_editors, CoreMessages.dialog_connection_edit_wizard_editors_description);
-            rsPage.addSubPage(new PrefPageDataFormat(), CoreMessages.dialog_connection_edit_wizard_data_format, CoreMessages.dialog_connection_edit_wizard_data_format_description);
-            WizardPrefPage pagePresentation = rsPage.addSubPage(PrefPageResultSetPresentation.PAGE_ID, PrefPageResultSetPresentation.class, new PrefPageResultSetPresentation());
-            pagePresentation.addSubPage(PrefPageResultSetPresentationGrid.PAGE_ID, PrefPageResultSetPresentation.class, new PrefPageResultSetPresentationGrid());
-            pagePresentation.addSubPage(PrefPageResultSetPresentationPlainText.PAGE_ID, PrefPageResultSetPresentation.class, new PrefPageResultSetPresentationPlainText());
-        }
 
         for (DataSourcePageDescriptor page : DataSourceViewRegistry.getInstance().getRootDataSourcePages(dataSource)) {
             addDataSourcePage(null, page);
@@ -194,7 +185,7 @@ public class EditConnectionWizard extends ConnectionWizard {
         WizardPrefPage thisWizardPage = null;
         if (parent != null) {
             if (page.getTitle() != null) {
-                parent.addSubPage(pageInstance, page.getTitle(), page.getDescription());
+                thisWizardPage = parent.addSubPage(pageInstance, page.getTitle(), page.getDescription());
             } else {
                 parent.addSubPage(page.getId(), pageInstance);
             }

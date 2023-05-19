@@ -1456,21 +1456,41 @@
 
     <extension point="org.jkiss.dbeaver.ui.dataSourceConfigurator">
         <dataSourceConfigurator>
-<!--
             <dataSourcePage
-                    id="sql-editor.main"
-                    after="data-editor-main"
+                    id="data-editor.main"
                     class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain"
-                    title="%page.org.jkiss.dbeaver.preferences.main.sqleditor.name"
-                    description="%page.org.jkiss.dbeaver.preferences.main.sqleditor.description"/>
+                    title="%page.org.jkiss.dbeaver.preferences.main.resultset.name"
+                    description="%page.org.jkiss.dbeaver.preferences.main.resultset.description"/>
             <dataSourcePage
-                    id="sql-editor.completion"
-                    parent="sql-editor.main"
-                    class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLCompletion"
-                    title="%page.org.jkiss.dbeaver.preferences.main.sql.completion.name"
-                    description="%page.org.jkiss.dbeaver.preferences.main.sql.completion.description"/>
-                    description="%page.org.jkiss.dbeaver.preferences.main.sqlexecute.description"/>
--->
+                    id="data-editor.binary"
+                    parent="data-editor.main"
+                    class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetEditors"
+                    title="%page.org.jkiss.dbeaver.preferences.main.resultset.editors.name"
+                    description="%page.org.jkiss.dbeaver.preferences.main.resultset.editors.description"/>
+            <dataSourcePage
+                    id="data-editor.formats"
+                    parent="data-editor.main"
+                    class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataFormat"
+                    title="%page.org.jkiss.dbeaver.preferences.main.dataformat.name"
+                    description="%page.org.jkiss.dbeaver.preferences.main.dataformat.description"/>
+            <dataSourcePage
+                    id="data-editor.presentation"
+                    parent="data-editor.main"
+                    class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentation"
+                    title="%page.org.jkiss.dbeaver.preferences.main.resultset.presentation.name"
+                    description="%page.org.jkiss.dbeaver.preferences.main.resultset.presentation.description"/>
+            <dataSourcePage
+                    id="data-editor.presentation.grid"
+                    parent="data-editor.presentation"
+                    class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentationGrid"
+                    title="%page.org.jkiss.dbeaver.preferences.main.resultset.grid.name"
+                    description="%page.org.jkiss.dbeaver.preferences.main.resultset.grid.description"/>
+            <dataSourcePage
+                    id="data-editor.presentation.text"
+                    parent="data-editor.presentation"
+                    class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentationPlainText"
+                    title="%page.org.jkiss.dbeaver.preferences.main.resultset.plain.text.name"
+                    description="%page.org.jkiss.dbeaver.preferences.main.resultset.plain.text.description"/>
         </dataSourceConfigurator>
     </extension>
 
