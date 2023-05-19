@@ -47,7 +47,6 @@ import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.Locale;
 
 /**
