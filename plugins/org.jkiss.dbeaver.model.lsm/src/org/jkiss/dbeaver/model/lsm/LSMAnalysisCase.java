@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.lsm;
 
+import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 
 public interface LSMAnalysisCase<T extends LSMElement, M extends AbstractSyntaxNode & LSMElement> extends LSMObject<LSMAnalysisCase<T, M>> {
@@ -23,8 +24,11 @@ public interface LSMAnalysisCase<T extends LSMElement, M extends AbstractSyntaxN
     Class<T> getModelContractType();
     
     Class<M> getModelRootType();
-    
+
+
     LSMParser createParser(LSMSource source);
+    
+    LSMParser createParser(LSMSource source, ANTLRErrorListener errorListener);
 
     
 }

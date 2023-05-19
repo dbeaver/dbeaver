@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.lsm.impl;
 
+import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.jkiss.dbeaver.model.lsm.LSMAnalysisCase;
 import org.jkiss.dbeaver.model.lsm.LSMElement;
 import org.jkiss.dbeaver.model.lsm.LSMParser;
@@ -46,5 +47,5 @@ public abstract class LSMAnalysisCaseImpl<T extends LSMElement, M extends Abstra
     }
 
     @Override
-    public abstract LSMParser createParser(LSMSource source);
+    public abstract LSMParser createParser(LSMSource source, ANTLRErrorListener errorListener);
 }
