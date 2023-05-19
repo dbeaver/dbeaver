@@ -179,9 +179,9 @@ public class EditConnectionWizard extends ConnectionWizard {
             WizardPrefPage rsPage = addPreferencePage(new PrefPageResultSetMain(), CoreMessages.dialog_connection_edit_wizard_resultset, CoreMessages.dialog_connection_edit_wizard_resultset_description);
             rsPage.addSubPage(new PrefPageResultSetEditors(), CoreMessages.dialog_connection_edit_wizard_editors, CoreMessages.dialog_connection_edit_wizard_editors_description);
             rsPage.addSubPage(new PrefPageDataFormat(), CoreMessages.dialog_connection_edit_wizard_data_format, CoreMessages.dialog_connection_edit_wizard_data_format_description);
-            WizardPrefPage pagePresentation = rsPage.addSubPage(PrefPageResultSetPresentation.PAGE_ID, EditConnectionWizard.class, new PrefPageResultSetPresentation());
-            pagePresentation.addSubPage(PrefPageResultSetPresentationGrid.PAGE_ID, EditConnectionWizard.class, new PrefPageResultSetPresentationGrid());
-            pagePresentation.addSubPage(PrefPageResultSetPresentationPlainText.PAGE_ID, EditConnectionWizard.class, new PrefPageResultSetPresentationPlainText());
+            WizardPrefPage pagePresentation = rsPage.addSubPage(PrefPageResultSetPresentation.PAGE_ID, PrefPageResultSetPresentation.class, new PrefPageResultSetPresentation());
+            pagePresentation.addSubPage(PrefPageResultSetPresentationGrid.PAGE_ID, PrefPageResultSetPresentation.class, new PrefPageResultSetPresentationGrid());
+            pagePresentation.addSubPage(PrefPageResultSetPresentationPlainText.PAGE_ID, PrefPageResultSetPresentation.class, new PrefPageResultSetPresentationPlainText());
         }
 
         for (DataSourcePageDescriptor page : DataSourceViewRegistry.getInstance().getRootDataSourcePages(dataSource)) {
