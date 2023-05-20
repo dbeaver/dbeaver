@@ -101,10 +101,20 @@ SELECT ALL
     ProductSubCategory.Name AS ProductSubCategory,
     Product.ProductModelID
 -- INTO Product
+# ANOTHER INFO Product
 FROM Production.Product
 INNER JOIN Production.ProductSubCategory
 ON ProductSubCategory.ProductSubcategoryID = Product.ProductSubcategoryID
 UNION JOIN Production.ProductCategory
 ON ProductCategory.ProductCategoryID = ProductSubCategory.ProductCategoryID
 ORDER BY Product.ModifiedDate DESC;
+
+SELECT c.category_name, p.product_name, SUM(s.quantity) AS total_quantity, AVG(s.price) AS average_price
+FROM sales s
+JOIN products p ON s.product_id = p.product_id
+JOIN categories c ON p.category_id = c.category_id
+WHERE s.sale_date BETWEEN '2022-01-01' AND '2022-12-31'
+GROUP BY c.category_name, p.product_name
+HAVING total_quantity > 100
+ORDER BY average_price DESC;
 
