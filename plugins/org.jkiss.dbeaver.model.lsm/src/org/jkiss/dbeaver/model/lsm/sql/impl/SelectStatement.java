@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.lsm.sql.LSMSelectStatement;
 
 import java.util.List;
 
-@SyntaxNode(name = "directSelectStatementMultipleRows")
+@SyntaxNode(name = "selectStatement")
 public class SelectStatement extends AbstractSyntaxNode implements LSMSelectStatement, LSMElement {
 
     private static final String nonJoinSimpleQuerySpecPath = "./queryExpression/nonJoinQueryTerm/queryPrimary/nonJoinQueryPrimary/simpleTable/querySpecification";

@@ -58,7 +58,8 @@ public class SQLExternalFormatterConfigurationPage extends BaseFormatterConfigur
         externalTimeout = UIUtils.createLabelSpinner(settingsGroup,
             SQLEditorMessages.pref_page_sql_format_label_external_exec_timeout,
             SQLEditorMessages.pref_page_sql_format_label_external_exec_timeout_tip,
-            100, 100, 10000);
+            100, 100, Integer.MAX_VALUE);
+        externalTimeout.setIncrement(10);
 
         return parent;
     }

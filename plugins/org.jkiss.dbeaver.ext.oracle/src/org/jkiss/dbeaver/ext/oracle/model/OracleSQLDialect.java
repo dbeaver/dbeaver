@@ -48,15 +48,17 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.UUID;
 
 /**
  * Oracle SQL dialect
  */
-public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConverter, SQLDialectDDLExtension {
+public class OracleSQLDialect extends JDBCSQLDialect
+    implements SQLDataTypeConverter, SQLDialectDDLExtension, SQLDialectSchemaController {
 
     private static final Log log = Log.getLog(OracleSQLDialect.class);
 
-    private static final String[] EXEC_KEYWORDS = new String[]{ "call" };
+    private static final String[] EXEC_KEYWORDS = new String[]{"call"};
 
     private static final String[] ORACLE_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
         BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
@@ -727,5 +729,17 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
     @Override
     public boolean needsDefaultDataTypes() {
         return false;
+    }
+
+    @NotNull
+    @Override
+    public String getSchemaExistQuery(@NotNull String schemaName) {
+        return "SELECT 1 FROM all_users WHERE USERNAME='" + schemaName + "'";
+    }
+
+    @NotNull
+    @Override
+    public String getCreateSchemaQuery(@NotNull String schemaName) {
+        return "CREATE USER \"" + schemaName + "\" IDENTIFIED BY \"" + UUID.randomUUID() + "\"";
     }
 }

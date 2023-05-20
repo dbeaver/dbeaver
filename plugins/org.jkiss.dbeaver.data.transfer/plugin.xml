@@ -282,6 +282,6 @@
                     class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumerSerializer"/>
         <serializer id="streamTransferConsumer"
                     class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer$ObjectSerializer"
-                    distributed="false"/>
+                    supportsDistributedMode="false"/>
     </extension>
 </plugin>

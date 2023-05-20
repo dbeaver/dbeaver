@@ -6,12 +6,16 @@ Bundle-Version: 1.0.1.qualifier
 Bundle-Release-Date: 20230522
 Bundle-SymbolicName: org.jkiss.dbeaver.model.lsm;singleton:=true
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.jkiss.bundle.antlr4
+Require-Bundle: org.jkiss.bundle.antlr4,
+ org.jkiss.utils
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Export-Package: org.jkiss.dbeaver.model.lsm.mapping,
+Export-Package: org.jkiss.dbeaver.model.lsm,
+ org.jkiss.dbeaver.model.lsm.mapping,
  org.jkiss.dbeaver.model.lsm.mapping.internal,
  org.jkiss.dbeaver.model.lsm.sql,
+ org.jkiss.dbeaver.model.lsm.sql.dialect,
  org.jkiss.dbeaver.model.lsm.sql.impl,
  org.jkiss.dbeaver.model.lsm.sql.impl.syntax
-Import-Package: org.jkiss.code
+Import-Package: org.jkiss.code,
+ org.slf4j
 Automatic-Module-Name: org.jkiss.dbeaver.model.lsm

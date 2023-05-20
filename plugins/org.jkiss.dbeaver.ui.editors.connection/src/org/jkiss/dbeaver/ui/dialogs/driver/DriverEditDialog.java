@@ -626,7 +626,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                     libraries.add(
                         DriverLibraryAbstract.createFromPath(
                             driver,
-                            fileName.endsWith(".jar") || fileName.endsWith(".zip") ? DBPDriverLibrary.FileType.jar : DBPDriverLibrary.FileType.lib,
+                            DBPDriverLibrary.FileType.getFileTypeByFileName(fileName),
                             new File(folderFile, fileName).getAbsolutePath(),
                             null));
                 }

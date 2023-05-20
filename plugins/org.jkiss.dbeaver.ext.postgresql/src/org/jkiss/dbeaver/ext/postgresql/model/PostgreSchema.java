@@ -759,7 +759,8 @@ public class PostgreSchema implements
                 .append("LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0 AND d.classoid='pg_class'::regclass\n");
             if (supportsSequences) {
                 // Search connection with sequence object
-                sql.append("LEFT OUTER JOIN pg_depend dep on dep.refobjid = c.\"oid\" AND dep.deptype = 'i' and dep.refobjsubid <> 0\n");
+                sql.append("LEFT OUTER JOIN pg_depend dep on dep.refobjid = c.\"oid\" " +
+                    "AND dep.deptype = 'i' and dep.refobjsubid <> 0 and dep.classid = dep.refclassid\n");
             }
             sql.append("WHERE c.relnamespace=? AND c.relkind not in ('i','I','c')")
                 .append(object == null && objectName == null ? "" : " AND relname=?");
@@ -921,7 +922,7 @@ public class PostgreSchema implements
         @Override
         protected PostgreTableConstraintColumn[] fetchObjectRow(JDBCSession session, PostgreTableBase table, PostgreTableConstraintBase constraint, JDBCResultSet resultSet)
             throws SQLException, DBException {
-            Object keyNumbers = JDBCUtils.safeGetArray(resultSet, "conkey");
+            Short[] keyNumbers = PostgreUtils.safeGetShortArray(resultSet, "conkey");
             if (keyNumbers == null) {
                 return null;
             }
@@ -933,22 +934,21 @@ public class PostgreSchema implements
                     log.warn("Unresolved reference table of '" + foreignKey.getName() + "'");
                     return null;
                 }
-                Object keyRefNumbers = JDBCUtils.safeGetArray(resultSet, "confkey");
+                Short[] keyRefNumbers = PostgreUtils.safeGetShortArray(resultSet, "confkey");
                 Collection<? extends PostgreTableColumn> attributes = table.getAttributes(monitor);
                 Collection<? extends PostgreTableColumn> refAttributes = refTable.getAttributes(monitor);
-                assert attributes != null && refAttributes != null;
-                int colCount = Array.getLength(keyNumbers);
-                int refColCount = Array.getLength(keyRefNumbers);
+                assert keyRefNumbers != null && attributes != null && refAttributes != null;
+                int colCount = keyNumbers.length;
+                int refColCount = keyRefNumbers.length;
                 PostgreTableForeignKeyColumn[] fkCols = new PostgreTableForeignKeyColumn[colCount];
                 for (int i = 0; i < colCount; i++) {
-                    Number colNumber = (Number) Array.get(keyNumbers, i); // Column number - 1-based
+                    short colNumber = keyNumbers[i]; // Column number - 1-based
                     if (i >= refColCount) {
                         log.debug("Number of foreign columns is less than constraint columns (" + refColCount + " < " + colCount + ") in " + constraint.getFullyQualifiedName(DBPEvaluationContext.DDL));
                         break;
                     }
-                    Number colRefNumber = (Number) Array.get(keyRefNumbers, i);
-                    final PostgreTableColumn attr = PostgreUtils.getAttributeByNum(attributes, colNumber.intValue());
-                    final PostgreTableColumn refAttr = PostgreUtils.getAttributeByNum(refAttributes, colRefNumber.intValue());
+                    final PostgreTableColumn attr = PostgreUtils.getAttributeByNum(attributes, colNumber);
+                    final PostgreTableColumn refAttr = PostgreUtils.getAttributeByNum(refAttributes, keyRefNumbers[i]);
                     if (attr == null) {
                         log.warn("Bad foreign key attribute index: " + colNumber);
                         continue;

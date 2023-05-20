@@ -141,6 +141,23 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         if (eventPool.isEmpty()) {
             return Collections.emptyList();
         }
+        // qm session id might be null if database migration is in progress for single user product
+        if (DBWorkbench.getPlatform().getApplication() instanceof QMSessionReceiver) {
+            for (QMMetaEvent event : eventPool) {
+                if (event.getSessionId() != null) {
+                    continue;
+                }
+                var workspace = DBWorkbench.getPlatform().getWorkspace();
+                if (workspace == null) {
+                    continue;
+                }
+                var sessionId = QMUtils.getQmSessionId(workspace.getWorkspaceSession());
+                if (sessionId == null) {
+                    return Collections.emptyList();
+                }
+                event.setSessionId(sessionId);
+            }
+        }
         List<QMMetaEvent> events = eventPool;
         eventPool = new ArrayList<>();
         return events;

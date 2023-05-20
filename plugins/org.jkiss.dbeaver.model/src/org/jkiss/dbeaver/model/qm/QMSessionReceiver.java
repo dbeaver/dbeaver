@@ -14,19 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-grammar Sql92MySqlExtensionParser;
+package org.jkiss.dbeaver.model.qm;
 
-import Sql92Parser;
+/**
+ * Query manager session receiver.
+ * It helps us to differ CE and EE products (CE product doesn't have QM database).
+ */
+public interface QMSessionReceiver {
 
-options {
-    tokenVocab=Sql92MySqlExtensionLexer;
-    superClass=org.jkiss.dbeaver.model.lsm.mapping.internal.ParserOverrides;
-    contextSuperClass=org.jkiss.dbeaver.model.lsm.mapping.internal.TreeRuleNode;
 }
-
-// See https://dev.mysql.com/doc/refman/8.0/en/extensions-to-ansi.html
-
-querySpecification: SELECT STRAIGHT_JOIN?
-    SQL_SMALL_RESULT? SQL_BIG_RESULT? SQL_BUFFER_RESULT?
-    SQL_NO_CACHE? SQL_CALC_FOUND_ROWS?
-    (setQuantifier)? selectList tableExpression;
