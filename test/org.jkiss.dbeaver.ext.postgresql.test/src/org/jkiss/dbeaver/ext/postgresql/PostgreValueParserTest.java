@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ext.postgresql;
 
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreArrayValueHandler;
@@ -38,6 +40,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import static org.junit.Assert.assertEquals;
 
 import java.sql.Types;
 import java.util.*;
@@ -82,10 +86,25 @@ public class PostgreValueParserTest {
     @Mock
     DBDFormatSettings dbdFormatSettings;
 
+    @Mock
+    DBSTypedObject arrayType;
+
+
+
     @Before
     public void setUp() throws Exception {
         numberDataFormatter.init(doubleItemType, Locale.ENGLISH, new HashMap<>());
         setupGeneralWhenMocks();
+    }
+
+    @Test
+    public void testConvertStringToValueForSmallint() throws DBCException {
+
+        String string = "12345";
+
+        Object result = PostgreValueParser.convertStringToValue(session, arrayType, string);
+
+        Assert.assertEquals((short) 12345, result);
     }
 
     @Test
@@ -122,7 +141,7 @@ public class PostgreValueParserTest {
 
         //Bad input data tests
         Assert.assertEquals("{{{1.1,22.22},{3.3,44.44}},{1.1,22.22},{3.3,44.44}}}",
-            PostgreValueParser.convertStringToValue(session, arrayDoubleItemType, "{{{1.1,22.22},{3.3,44.44}},{1.1,22.22},{3.3,44.44}}}"));
+                PostgreValueParser.convertStringToValue(session, arrayDoubleItemType, "{{{1.1,22.22},{3.3,44.44}},{1.1,22.22},{3.3,44.44}}}"));
         Assert.assertEquals("{{{1.1,22.22},3.3,44.44}},{1.1,22.22},{3.3,44.44}",
                 PostgreValueParser.convertStringToValue(session, arrayDoubleItemType, "{{{1.1,22.22},3.3,44.44}},{1.1,22.22},{3.3,44.44}"));
         Assert.assertEquals("{{1.1,22.22},3.3,44.44}},{1.1,22.22},{3.3,",
@@ -170,13 +189,13 @@ public class PostgreValueParserTest {
     @Test
     public void convertArrayToString() {
         final Function<String[], DBDCollection> make2d = values ->
-            new JDBCCollection(session.getProgressMonitor(), stringItemType, PostgreArrayValueHandler.INSTANCE, values);
+                new JDBCCollection(session.getProgressMonitor(), stringItemType, PostgreArrayValueHandler.INSTANCE, values);
 
         final Function<String[][], DBDCollection> make3d = values ->
-            new JDBCCollection(session.getProgressMonitor(), arrayStringItemType, PostgreArrayValueHandler.INSTANCE, Arrays.stream(values).map(make2d).toArray());
+                new JDBCCollection(session.getProgressMonitor(), arrayStringItemType, PostgreArrayValueHandler.INSTANCE, Arrays.stream(values).map(make2d).toArray());
 
         final BiConsumer<String, DBDCollection> tester = (expected, collection) ->
-            Assert.assertEquals(expected, PostgreArrayValueHandler.INSTANCE.getValueDisplayString(collection.getComponentType(), collection, DBDDisplayFormat.NATIVE));
+                Assert.assertEquals(expected, PostgreArrayValueHandler.INSTANCE.getValueDisplayString(collection.getComponentType(), collection, DBDDisplayFormat.NATIVE));
 
         tester.accept("NULL", make2d.apply(null));
         tester.accept("{}", make2d.apply(new String[]{}));
@@ -232,38 +251,38 @@ public class PostgreValueParserTest {
     @Test
     public void testParsePrimitiveArray() {
         Assert.assertArrayEquals(
-            new String[]{},
-            PostgreValueParser.parsePrimitiveArray("{}", Function.identity(), String[]::new));
+                new String[]{},
+                PostgreValueParser.parsePrimitiveArray("{}", Function.identity(), String[]::new));
         Assert.assertArrayEquals(
-            new String[]{null, "NULL"},
-            PostgreValueParser.parsePrimitiveArray("{NULL,\"NULL\"}", Function.identity(), String[]::new));
+                new String[]{null, "NULL"},
+                PostgreValueParser.parsePrimitiveArray("{NULL,\"NULL\"}", Function.identity(), String[]::new));
         Assert.assertArrayEquals(
-            new String[]{"ab", "cd", null, "NULL", " spa ce "},
-            PostgreValueParser.parsePrimitiveArray("{ ab , cd ,NULL,\"NULL\",\" spa ce \"}", Function.identity(), String[]::new));
+                new String[]{"ab", "cd", null, "NULL", " spa ce "},
+                PostgreValueParser.parsePrimitiveArray("{ ab , cd ,NULL,\"NULL\",\" spa ce \"}", Function.identity(), String[]::new));
         Assert.assertArrayEquals(
-            new Integer[]{1, null, 3},
-            PostgreValueParser.parsePrimitiveArray("{1,NULL,3}", Integer::valueOf, Integer[]::new));
+                new Integer[]{1, null, 3},
+                PostgreValueParser.parsePrimitiveArray("{1,NULL,3}", Integer::valueOf, Integer[]::new));
 
         Assert.assertThrows(
-            "Array value must start with \"{\"",
-            IllegalArgumentException.class,
-            () -> PostgreValueParser.parsePrimitiveArray("1}", Function.identity(), String[]::new));
+                "Array value must start with \"{\"",
+                IllegalArgumentException.class,
+                () -> PostgreValueParser.parsePrimitiveArray("1}", Function.identity(), String[]::new));
         Assert.assertThrows(
-            "Unexpected \"}\" character",
-            IllegalArgumentException.class,
-            () -> PostgreValueParser.parsePrimitiveArray("{1,}", Function.identity(), String[]::new));
+                "Unexpected \"}\" character",
+                IllegalArgumentException.class,
+                () -> PostgreValueParser.parsePrimitiveArray("{1,}", Function.identity(), String[]::new));
         Assert.assertThrows(
-            "Unexpected \",\" character",
-            IllegalArgumentException.class,
-            () -> PostgreValueParser.parsePrimitiveArray("{,}", Function.identity(), String[]::new));
+                "Unexpected \",\" character",
+                IllegalArgumentException.class,
+                () -> PostgreValueParser.parsePrimitiveArray("{,}", Function.identity(), String[]::new));
         Assert.assertThrows(
-            "Unexpected end of input",
-            IllegalArgumentException.class,
-            () -> PostgreValueParser.parsePrimitiveArray("{1,", Function.identity(), String[]::new));
+                "Unexpected end of input",
+                IllegalArgumentException.class,
+                () -> PostgreValueParser.parsePrimitiveArray("{1,", Function.identity(), String[]::new));
         Assert.assertThrows(
-            "Junk after closing right brace",
-            IllegalArgumentException.class,
-            () -> PostgreValueParser.parsePrimitiveArray("{1},", Function.identity(), String[]::new));
+                "Junk after closing right brace",
+                IllegalArgumentException.class,
+                () -> PostgreValueParser.parsePrimitiveArray("{1},", Function.identity(), String[]::new));
     }
 
     private void setupGeneralWhenMocks() throws Exception {
