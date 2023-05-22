@@ -388,6 +388,15 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 changePage();
                 return;
             }
+            for (TreeItem child : item.getItems()) {
+                if (child.getData() == page) {
+                    pagesTree.setSelection(child);
+                    changePage();
+                    return;
+                }
+            }
+        }
+        for (TreeItem item : pagesTree.getItems()) {
             if (item.getData() instanceof ICompositeDialogPageContainer) {
                 IDialogPage[] subPages = ((ICompositeDialogPageContainer) item.getData()).getDialogPages(false, false);
                 if (!ArrayUtils.isEmpty(subPages)) {
@@ -401,13 +410,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                     }
                 }
             }
-            for (TreeItem child : item.getItems()) {
-                if (child.getData() == page) {
-                    pagesTree.setSelection(child);
-                    changePage();
-                    return;
-                }
-            }
+
         }
     }
 
