@@ -404,7 +404,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                         final int currentLine = document.getLineOfOffset(sourceViewer.getSelectedRange().x);
 
                         if (currentLine > visibleLine) {
-                            final int revealToLine = Math.min(document.getNumberOfLines(), currentLine + 1);
+                            final int revealToLine = Math.min(document.getNumberOfLines() - 1, currentLine + 1);
                             final int revealToOffset = document.getLineOffset(revealToLine);
                             sourceViewer.revealRange(revealToOffset, 0);
                         }
