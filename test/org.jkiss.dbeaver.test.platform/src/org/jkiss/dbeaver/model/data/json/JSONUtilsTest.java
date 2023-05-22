@@ -81,7 +81,7 @@ public class JSONUtilsTest {
 	public void getStringTest() {
 		Assert.assertEquals("London", JSONUtils.getString(map, "Location"));
 		Assert.assertEquals(null, JSONUtils.getString(map, "Time"));
-	}
+    }
 
 	@Test
 	public void getObjectTest() {
@@ -96,7 +96,7 @@ public class JSONUtilsTest {
 		Assert.assertEquals(Collections.emptyList(), JSONUtils.getObjectList(map3, "Time"));
 	}
 	
-	@Test
+    @Test
     public void testEscapeJsonString() {
         Assert.assertEquals("Hello\\tWorld\\n\\\"DBeaver\\\"", JSONUtils.escapeJsonString("Hello\tWorld\n\"DBeaver\""));
         Assert.assertEquals("\\/", JSONUtils.escapeJsonString("/"));
@@ -105,15 +105,14 @@ public class JSONUtilsTest {
         Assert.assertEquals("", JSONUtils.escapeJsonString(""));
     }
 
-	@Test
-	public void testDeserializeProperties(){
-		Assert.assertEquals(null, JSONUtils.deserializeProperties(map, "Time"));
-		Assert.assertEquals(null, JSONUtils.deserializeProperties(map, "Location"));
-		Assert.assertEquals(null, JSONUtils.deserializeProperties(map3, "Location"));
-		Map<String, String> expected = new LinkedHashMap<>();
-		expected.put("Apple", "iPhone");
-		Assert.assertEquals(expected, JSONUtils.deserializeProperties(map2, "Product"));
-	}
-
+    @Test
+    public void testDeserializeProperties() {
+        Assert.assertEquals(null, JSONUtils.deserializeProperties(map, "Time"));
+        Assert.assertEquals(null, JSONUtils.deserializeProperties(map, "Location"));
+        Assert.assertEquals(null, JSONUtils.deserializeProperties(map3, "Location"));
+        Map<String, String> expected = new LinkedHashMap<>();
+        expected.put("Apple", "iPhone");
+        Assert.assertEquals(expected, JSONUtils.deserializeProperties(map2, "Product"));
+    }
 
 }
