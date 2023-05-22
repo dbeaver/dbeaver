@@ -321,7 +321,7 @@
         </command>
 
         <command id="org.jkiss.dbeaver.ui.editors.data.forSelection" name="%command.org.jkiss.dbeaver.ui.editors.data.forSelection.name" description="%command.org.jkiss.dbeaver.ui.editors.data.forSelection.description" categoryId="org.jkiss.dbeaver.core.database"/>
-        <command id="org.jkiss.dbeaver.core.generate.uuid" name="%command.org.jkiss.dbeaver.core.generate.uuid.name" description="%command.org.jkiss.dbeaver.core.generate.uuid.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.generate.uuid" name="%command.org.jkiss.dbeaver.ui.editors.data.generate.uuid.name" description="%command.org.jkiss.dbeaver.ui.editors.data.generate.uuid.description" categoryId="org.jkiss.dbeaver.core.database"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
