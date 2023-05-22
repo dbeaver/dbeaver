@@ -321,6 +321,7 @@
         </command>
 
         <command id="org.jkiss.dbeaver.ui.editors.data.forSelection" name="%command.org.jkiss.dbeaver.ui.editors.data.forSelection.name" description="%command.org.jkiss.dbeaver.ui.editors.data.forSelection.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.generate.uuid" name="%command.org.jkiss.dbeaver.core.generate.uuid.name" description="%command.org.jkiss.dbeaver.core.generate.uuid.description" categoryId="org.jkiss.dbeaver.core.database"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -349,6 +350,7 @@
         <image commandId="org.jkiss.dbeaver.core.resultset.filterSave" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter_save.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.filterClear" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/erase.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.filterMenu.distinct" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter_input.png"/>
+        <image commandId="org.jkiss.dbeaver.core.generate.uuid" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/uuid.png"/>
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">
@@ -832,6 +834,15 @@
             </enabledWhen>
         </handler>
 
+        <handler commandId="org.jkiss.dbeaver.core.generate.uuid" class="org.jkiss.dbeaver.ui.controls.resultset.handler.GenerateUUIDHandler">
+            <with variable="activePart">
+                <or>
+                    <adapt type="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
+                    <adapt type="org.eclipse.jface.text.ITextViewer"/>
+                </or>
+            </with>
+        </handler>
+
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -949,6 +960,11 @@
             </menu>
         </menuContribution>
 
+        <menuContribution allPopups="false" locationURI="menu:edit?after=transforms">
+            <command commandId="org.jkiss.dbeaver.core.generate.uuid">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
     </extension>
 
     <extension point="org.eclipse.core.contenttype.contentTypes">
@@ -1016,6 +1032,7 @@
             <parameter id="panelId" value="column-aggregate"/>
         </key>
 
+        <key commandId="org.jkiss.dbeaver.core.generate.uuid" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ALT+U"/>
     </extension>
 
     <extension point="org.eclipse.ui.contexts">

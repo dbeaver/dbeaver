@@ -143,6 +143,8 @@ public class DataEditorsMessages extends NLS {
     public static String spreadsheet_accessibility_rows_selected;
     public static String spreadsheet_accessibility_freeform_range_selected;
     public static String spreadsheet_accessibility_description;
+    public static String notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy;
+    public static String notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy_text;
 
 
     static {
