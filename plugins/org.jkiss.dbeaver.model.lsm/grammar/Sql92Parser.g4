@@ -202,7 +202,7 @@ nonJoinQueryTerm: queryPrimary intersectTerm*;
 intersectTerm: (INTERSECT (ALL)? (correspondingSpec)? queryPrimary);
 nonJoinQueryPrimary: (simpleTable|LeftParen nonJoinQueryExpression RightParen);
 simpleTable: (querySpecification|tableValueConstructor|explicitTable);
-querySpecification: SELECT (setQuantifier)? selectList tableExpression;
+querySpecification: SELECT (setQuantifier)? selectList tableExpression?;
 selectList: (Asterisk|selectSublist (Comma selectSublist)*);
 selectSublist: (derivedColumn|qualifier Period Asterisk);
 derivedColumn: valueExpression (asClause)?;
