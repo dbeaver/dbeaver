@@ -29,6 +29,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -57,6 +58,8 @@ import java.util.Locale;
  */
 
 public class EditConnectionWizard extends ConnectionWizard {
+    private static final Log log = Log.getLog(EditConnectionWizard.class);
+
     @NotNull
     private final DataSourceDescriptor originalDataSource;
     @NotNull
@@ -181,7 +184,13 @@ public class EditConnectionWizard extends ConnectionWizard {
     }
 
     private void addDataSourcePage(WizardPrefPage parent, DataSourcePageDescriptor page) {
-        IPreferencePage pageInstance = page.createPage();
+        IPreferencePage pageInstance;
+        try {
+            pageInstance = page.createPage();
+        } catch (Exception e) {
+            log.error("Error instantiating connection preference page '" + page.getId() + "'", e);
+            return;
+        }
         WizardPrefPage thisWizardPage = null;
         if (parent != null) {
             if (page.getTitle() != null) {
