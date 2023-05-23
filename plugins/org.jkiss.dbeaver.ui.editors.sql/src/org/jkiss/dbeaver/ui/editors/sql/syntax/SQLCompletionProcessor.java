@@ -184,12 +184,11 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     @NotNull
     private ICompletionProposal[] makeTemplateProposals(ITextViewer viewer, SQLCompletionRequest request) {
         String wordPart = request.getWordPart().toLowerCase();
-        String contextId = SQLEditorUtils.getEditorContextTypeId(editor);
         final List<SQLTemplateCompletionProposal> templateProposals = new ArrayList<>();
         // Templates
         for (Template template : editor.getTemplatesPage().getTemplateStore().getTemplates()) {
             if (template.getName().toLowerCase().startsWith(wordPart)
-                && SQLEditorUtils.isTemplateContextFitsEditorContext(template.getContextTypeId(), contextId)
+                && SQLEditorUtils.isTemplateContextFitsEditorContext(template.getContextTypeId(), editor)
             ) { 
                 SQLContext templateContext = new SQLContext(
                     SQLTemplatesRegistry.getInstance().getTemplateContextRegistry().getContextType(template.getContextTypeId()),
