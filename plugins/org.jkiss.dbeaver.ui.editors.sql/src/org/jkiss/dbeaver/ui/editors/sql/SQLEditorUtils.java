@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -46,6 +47,7 @@ import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeDriver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -554,27 +556,39 @@ public class SQLEditorUtils {
         );
     }
     
+    
     /**
-     * Returns type id of the driver of data source container, associated with SQLEditor, 
-     * or {@code null} if editor is not instance of SQLEditor or data source container is null
+     * Checks whether template's context is suitable for the editor context
      */
-    @Nullable
-    public static String getEditorContextTypeId(@NotNull SQLEditorBase editor) {
-        String contextTypeId = null;
+    public static boolean isTemplateContextFitsEditorContext(@NotNull String templateContextTypeId, @NotNull SQLEditorBase editor) {
+        boolean result = false;
+        String editorContextTypeId = null;
         if (editor instanceof SQLEditor) {
             DBPDataSourceContainer dsContainer = ((SQLEditor) editor).getDataSourceContainer();
             if (dsContainer != null) {
-                contextTypeId = SQLContextTypeDriver.getTypeId(dsContainer.getDriver());
+                DBPDriver driver = dsContainer.getDriver();
+                editorContextTypeId = SQLContextTypeDriver.getTypeId(driver);
+                result = isTemplateContextFitsEditorContext(templateContextTypeId, editorContextTypeId);
+                if (!result) {
+                    for (Pair<String, String> replInfo : driver.getDriverReplacementsInfo()) {
+                        editorContextTypeId = SQLContextTypeDriver.getTypeId(replInfo.getFirst(), replInfo.getSecond());
+                        result = isTemplateContextFitsEditorContext(templateContextTypeId, editorContextTypeId);
+                        if (result) {
+                            break;
+                        }
+                    }
+                    
+                }
             }
         }
-        return contextTypeId;
+        return result;
     }
     
     /**
      * Checks whether template's context is suitable for the editor context
      */
-    public static boolean isTemplateContextFitsEditorContext(@NotNull String templateContextTypeId, @Nullable String editorContextId) {
-        return editorContextId != null && templateContextTypeId.equalsIgnoreCase(editorContextId) 
+    private static boolean isTemplateContextFitsEditorContext(@NotNull String templateContextTypeId, @Nullable String editorContextTypeId) {
+        return editorContextTypeId != null && templateContextTypeId.equalsIgnoreCase(editorContextTypeId) 
             || templateContextTypeId.equalsIgnoreCase(SQLContextTypeBase.ID_SQL);
     }
 }

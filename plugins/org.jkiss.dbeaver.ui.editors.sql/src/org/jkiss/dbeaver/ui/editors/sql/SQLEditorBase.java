@@ -37,6 +37,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
@@ -90,6 +92,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     static protected final Log log = Log.getLog(SQLEditorBase.class);
     public static final long MAX_FILE_LENGTH_FOR_RULES = 1024 * 1000 * 2; // 2MB
+    private static final int SCROLL_ON_RESIZE_THRESHOLD_PX = 10;
 
     static final String STATS_CATEGORY_SELECTION_STATE = "SelectionState";
 
@@ -378,6 +381,35 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
                 private boolean within(@NotNull IRegion region, int index) {
                     return region.getLength() > 0 && index >= region.getOffset() && index < region.getOffset() + region.getLength();
+                }
+            });
+
+            // A listener that reveals obscured part of the document the cursor was located in before the control was resized
+            widget.addControlListener(new ControlAdapter() {
+                private int lastHeight;
+
+                @Override
+                public void controlResized(ControlEvent e) {
+                    final int currentHeight = widget.getSize().y;
+                    final int lastHeight = this.lastHeight;
+                    this.lastHeight = currentHeight;
+
+                    if (Math.abs(currentHeight - lastHeight) < SCROLL_ON_RESIZE_THRESHOLD_PX) {
+                        return;
+                    }
+
+                    try {
+                        final IDocument document = sourceViewer.getDocument();
+                        final int visibleLine = sourceViewer.getBottomIndex();
+                        final int currentLine = document.getLineOfOffset(sourceViewer.getSelectedRange().x);
+
+                        if (currentLine > visibleLine) {
+                            final int revealToLine = Math.min(document.getNumberOfLines() - 1, currentLine + 1);
+                            final int revealToOffset = document.getLineOffset(revealToLine);
+                            sourceViewer.revealRange(revealToOffset, 0);
+                        }
+                    } catch (BadLocationException ignored) {
+                    }
                 }
             });
         }
