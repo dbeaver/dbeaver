@@ -969,11 +969,13 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         boolean allowPartialMatch,
         @NotNull DBPPreferenceStore preferenceStore
     ) {
+        List<Pair<String, String>> tableRefs = new ArrayList<>();
         if (preferenceStore.getBoolean(ENABLE_EXPERIMENTAL_FEATURES)) {
-            return newExtractTableNames(tableAlias, allowPartialMatch);
+            tableRefs = newExtractTableNames(tableAlias, allowPartialMatch);
+        } else {
+            tableRefs = oldExtractTableNames(tableAlias, allowPartialMatch);
         }
-        
-        return oldExtractTableNames(tableAlias, allowPartialMatch);
+        return tableRefs; 
     }
     
     @NotNull
@@ -996,8 +998,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         // log.debug("Extracted table names: " + tableRefs);
         if (CommonUtils.isNotEmpty(tableAlias)) {
             tableRefs = tableRefs.stream().filter(r -> allowPartialMatch 
-                ? CommonUtils.startsWithIgnoreCase(r.getSecond(), tableAlias)
-                : r.getSecond().equalsIgnoreCase(tableAlias)
+                ? r.getSecond() != null && CommonUtils.startsWithIgnoreCase(r.getSecond(), tableAlias)
+                : r.getSecond() != null && r.getSecond().equalsIgnoreCase(tableAlias)
             ).collect(Collectors.toList());
             // log.debug("Matched ("+(allowPartialMatch ? "partial" : "exact")+") table names: " + tableRefs);
         }
