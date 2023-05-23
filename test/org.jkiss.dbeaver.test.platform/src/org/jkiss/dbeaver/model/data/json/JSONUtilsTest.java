@@ -95,7 +95,7 @@ public class JSONUtilsTest {
 		Assert.assertEquals(list, JSONUtils.getObjectList(map3, "Location"));
 		Assert.assertEquals(Collections.emptyList(), JSONUtils.getObjectList(map3, "Time"));
 	}
-	
+
     @Test
     public void testEscapeJsonString() {
         Assert.assertEquals("Hello\\tWorld\\n\\\"DBeaver\\\"", JSONUtils.escapeJsonString("Hello\tWorld\n\"DBeaver\""));
