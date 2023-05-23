@@ -188,12 +188,16 @@ class LSMAnalysisImpl<T extends LSMElement, M extends AbstractSyntaxNode & LSMEl
     @Nullable
     private static Pair<String, String> getTableAndAlias(@NotNull NonjoinedTableReferenceContext nonJoinedTableReference) {
         CorrelationSpecificationContext correlationSpec = nonJoinedTableReference.correlationSpecification();
+        String alias = null;
+        String tableName = null;
         if (correlationSpec != null) {
-            if (nonJoinedTableReference.tableName() != null) {
-                return new Pair<>(nonJoinedTableReference.tableName().getText(), correlationSpec.correlationName().getText());
-            }
+            alias = correlationSpec.correlationName().getText();
+            
         }
-        return null;
+        if (nonJoinedTableReference.tableName() != null) {
+            tableName = nonJoinedTableReference.tableName().getText();
+        }
+        return new Pair<>(tableName, alias);
     }
 
 
