@@ -345,7 +345,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
 
     private class NodeRenderer extends ViewerRenderer {
         @Override
-        public boolean isHyperlink(Object cellValue)
+        public boolean isHyperlink(Object element, Object cellValue)
         {
             Object ownerObject = null;
             if (rootNode instanceof DBNDatabaseNode) {

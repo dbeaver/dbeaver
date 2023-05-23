@@ -170,8 +170,13 @@ public class PropertyTreeViewer extends TreeViewer {
             }
 
             @Override
-            public boolean isHyperlink(Object cellValue)
-            {
+            public boolean isHyperlink(Object element, Object cellValue) {
+                if (element instanceof TreeNode) {
+                    DBPPropertyDescriptor property = ((TreeNode) element).property;
+                    if (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).isHref()) {
+                        return true;
+                    }
+                }
                 return cellValue instanceof DBSObject;
             }
 
@@ -180,6 +185,11 @@ public class PropertyTreeViewer extends TreeViewer {
             {
                 if (cellValue instanceof DBSObject) {
                     DBWorkbench.getPlatformUI().openEntityEditor((DBSObject) cellValue);
+                } else {
+                    String url = CommonUtils.toString(cellValue);
+                    if (url != null && url.contains("://")) {
+                        UIUtils.openWebBrowser(url);
+                    }
                 }
             }
 
@@ -1029,7 +1039,7 @@ public class PropertyTreeViewer extends TreeViewer {
                         } else {
                             return "";
                         }
-                    } else if (propertyValue == null || renderer.isHyperlink(propertyValue)) {
+                    } else if (propertyValue == null || renderer.isHyperlink(node, propertyValue)) {
                         return ""; //$NON-NLS-1$
                     } else if (isHidePropertyValue(node.property)) {
                         // Mask value
