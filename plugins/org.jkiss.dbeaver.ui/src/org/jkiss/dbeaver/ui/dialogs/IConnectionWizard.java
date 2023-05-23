@@ -20,9 +20,13 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.wizard.IWizard;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 
 public interface IConnectionWizard extends IWizard {
     boolean isNew();
+
+    @Nullable
+    DBPDriverSubstitutionDescriptor getDriverSubstitution();
 
     void addPropertyChangeListener(@NotNull IPropertyChangeListener listener);
 
