@@ -135,8 +135,6 @@ public class AIConfiguratorDefault implements IObjectPropertyConfigurator<GPTCom
 
             createFormattingSettings(settingsPanel, propertyChangeListener);
 
-            createProxySettings(composite, propertyChangeListener);
-
         }
 
         {
@@ -225,10 +223,6 @@ public class AIConfiguratorDefault implements IObjectPropertyConfigurator<GPTCom
 
     protected void createFormattingSettings(Composite settingsPanel, Runnable propertyChangeListener) {
         UIUtils.createEmptyLabel(settingsPanel, 1, 1);
-
-    }
-
-    protected void createProxySettings(Composite settingsPanel, Runnable propertyChangeListener) {
 
     }
 
