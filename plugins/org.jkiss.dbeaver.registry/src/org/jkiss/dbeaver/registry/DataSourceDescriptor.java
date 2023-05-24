@@ -80,7 +80,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * DataSourceDescriptor
@@ -1511,17 +1510,14 @@ public class DataSourceDescriptor
     @Override
     public void resetPassword() {
         connectionInfo.setUserPassword(null);
-        var passwordProperties = ObjectPropertyDescriptor.extractAnnotations(
+        ObjectPropertyDescriptor.extractAnnotations(
                 null,
                 connectionInfo.getAuthModel().createCredentials().getClass(),
                 (o, p) -> true,
                 null
             ).stream()
             .filter(ObjectPropertyDescriptor::isPassword)
-            .collect(Collectors.toList());
-        for (ObjectPropertyDescriptor passwordProperty : passwordProperties) {
-            connectionInfo.setAuthProperty(passwordProperty.getId(), null);
-        }
+            .forEach(passwordProperty -> connectionInfo.setAuthProperty(passwordProperty.getKeyName(), null));
     }
 
     @Nullable
