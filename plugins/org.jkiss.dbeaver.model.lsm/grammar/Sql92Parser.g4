@@ -162,7 +162,7 @@ updateRule: ON UPDATE referentialAction;
 referentialAction: (CASCADE|SET NULL|SET DEFAULT|NO ACTION);
 deleteRule: ON DELETE referentialAction;
 checkConstraintDefinition: CHECK LeftParen searchCondition RightParen;
-searchCondition: booleanTerm (OR booleanTerm)*;
+searchCondition: (booleanTerm|(.*?)) (OR booleanTerm)*; // (.*?) - for error recovery
 booleanTerm: booleanFactor (AND booleanFactor)*;
 booleanFactor: (NOT)? booleanTest;
 booleanTest: booleanPrimary (IS (NOT)? truthValue)?;
@@ -202,12 +202,12 @@ nonJoinQueryTerm: queryPrimary intersectTerm*;
 intersectTerm: (INTERSECT (ALL)? (correspondingSpec)? queryPrimary);
 nonJoinQueryPrimary: (simpleTable|LeftParen nonJoinQueryExpression RightParen);
 simpleTable: (querySpecification|tableValueConstructor|explicitTable);
-querySpecification: SELECT (setQuantifier)? selectList tableExpression;
-selectList: (Asterisk|selectSublist (Comma selectSublist)*);
+querySpecification: SELECT (setQuantifier)? selectList tableExpression?;
+selectList: Asterisk|selectSublist (Comma selectSublist)*; // (Comma selectSublist)* contains any quantifier for error recovery;
 selectSublist: (derivedColumn|qualifier Period Asterisk);
 derivedColumn: valueExpression (asClause)?;
 asClause: (AS)? columnName;
-tableExpression: (.*?) fromClause (whereClause)? (groupByClause)? (havingClause)?;
+tableExpression: (.*?) fromClause (whereClause)? (groupByClause)? (havingClause)?; // (.*?) - for error recovery
 queryPrimary: (nonJoinQueryPrimary|joinedTable);
 queryTerm: (nonJoinQueryTerm|joinedTable);
 queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
@@ -224,7 +224,7 @@ tableSubquery: subquery;
 
 //joins
 crossJoinTerm: CROSS JOIN tableReference;
-naturalJoinTerm: (NATURAL)? (joinType)? JOIN tableReference (joinSpecification|(.*?))?;
+naturalJoinTerm: (NATURAL)? (joinType)? JOIN tableReference (joinSpecification|(.*?))?; // (.*?) - for error recovery
 joinType: (INNER|outerJoinType (OUTER)?|UNION);
 outerJoinType: (LEFT|RIGHT|FULL);
 joinSpecification: (joinCondition|namedColumnsJoin);
