@@ -327,6 +327,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
+    public void resetPassword() {
+
+    }
+
+    @Override
     public IVariableResolver getVariablesResolver(boolean actualConfig) {
         return null;
     }
