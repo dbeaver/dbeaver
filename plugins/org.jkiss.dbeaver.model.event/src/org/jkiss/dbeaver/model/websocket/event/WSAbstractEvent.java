@@ -33,6 +33,8 @@ public abstract class WSAbstractEvent implements WSEvent {
     private final String topicId;
     private final long timestamp = System.currentTimeMillis();
 
+    private boolean sendForce = false;
+
     protected WSAbstractEvent(@NotNull WSEventType eventType) {
         this(eventType, null, null);
     }
@@ -72,4 +74,16 @@ public abstract class WSAbstractEvent implements WSEvent {
     public long getTimestamp() {
         return timestamp;
     }
+
+    @Override
+    public boolean isSendForce() {
+        return sendForce;
+    }
+
+    @Override
+    public void setSendForce(boolean sendForce) {
+        this.sendForce = sendForce;
+    }
+
+
 }

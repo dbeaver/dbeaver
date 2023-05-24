@@ -22,4 +22,5 @@ public interface WSProjectEvent extends WSEvent {
 
     @NotNull
     String getProjectId();
+
 }

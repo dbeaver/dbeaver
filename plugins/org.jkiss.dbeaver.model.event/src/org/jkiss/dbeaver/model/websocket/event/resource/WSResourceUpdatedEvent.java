@@ -124,7 +124,7 @@ public class WSResourceUpdatedEvent extends WSProjectResourceEvent {
     }
 
     @NotNull
-    public Object getResourceParsedPath() {
+    public RMResource[] getResourceParsedPath() {
         return resourceParsedPath;
     }
 

@@ -14,9 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.rm;
+package org.jkiss.dbeaver.model.websocket.event.resource;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.rm.RMEvent;
+import org.jkiss.dbeaver.model.websocket.event.WSProjectEvent;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -37,7 +39,7 @@ public class RMEventManager {
         listeners.remove(listener);
     }
 
-    public static void fireEvent(RMEvent event) {
+    public static void fireEvent(WSProjectEvent event) {
         for (var listener : listeners) {
             try {
                 listener.handleRMEvent(event);

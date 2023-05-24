@@ -33,4 +33,8 @@ public interface WSEvent {
     String getUserId();
 
     long getTimestamp();
+
+    boolean isSendForce();
+
+    void setSendForce(boolean sendForce);
 }

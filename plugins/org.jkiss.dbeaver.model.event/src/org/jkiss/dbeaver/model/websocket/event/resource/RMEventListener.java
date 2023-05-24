@@ -14,8 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.rm;
+package org.jkiss.dbeaver.model.websocket.event.resource;
+
+
+import org.jkiss.dbeaver.model.websocket.event.WSProjectEvent;
 
 public interface RMEventListener {
-    void handleRMEvent(RMEvent event);
+    void handleRMEvent(WSProjectEvent event);
 }
