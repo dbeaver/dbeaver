@@ -342,7 +342,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
     public synchronized Collection<MySQLTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        if (!foreignKeys.isFullyCached()) {
+        if (!foreignKeys.isFullyCached() && getDataSource().getInfo().supportsReferentialIntegrity()) {
             List<MySQLTableForeignKey> fkList = loadForeignKeys(monitor, false);
             foreignKeys.setCache(fkList);
         }
