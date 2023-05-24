@@ -143,6 +143,8 @@ public class DataSourceDescriptor
 
     @NotNull
     private final DataSourcePreferenceStore preferenceStore;
+    @NotNull
+    private final Map<String, String> properties;
     @Nullable
     private DBPDataSource dataSource;
     @Nullable
@@ -214,6 +216,7 @@ public class DataSourceDescriptor
         this.originalDriver = originalDriver;
         this.driver = substitutedDriver;
         this.connectionInfo = connectionInfo;
+        this.properties = new LinkedHashMap<>();
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.virtualModel = new DBVModel(this);
         this.navigatorSettings = new DataSourceNavigatorSettings(DataSourceNavigatorSettings.getDefaultSettings());
@@ -263,6 +266,7 @@ public class DataSourceDescriptor
             this.folder = (DataSourceFolder) registry.getFolder(source.folder.getFolderPath());
         }
 
+        this.properties = new LinkedHashMap<>(source.properties);
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.preferenceStore.setProperties(source.preferenceStore.getProperties());
         this.preferenceStore.setDefaultProperties(source.preferenceStore.getDefaultProperties());
@@ -1466,6 +1470,26 @@ public class DataSourceDescriptor
     @Override
     public void fireEvent(DBPEvent event) {
         registry.notifyDataSourceListeners(event);
+    }
+
+    @Nullable
+    @Override
+    public String getProperty(@NotNull String name) {
+        return properties.get(name);
+    }
+
+    @Override
+    public void setProperty(@NotNull String name, @Nullable String value) {
+        if (value == null) {
+            this.properties.remove(name);
+        } else {
+            this.properties.put(name, value);
+        }
+    }
+
+    @NotNull
+    public Map<String, String> getProperties() {
+        return properties;
     }
 
     @Override

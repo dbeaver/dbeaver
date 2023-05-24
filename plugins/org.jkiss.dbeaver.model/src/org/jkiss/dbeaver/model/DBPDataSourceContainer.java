@@ -21,7 +21,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.connection.*;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
@@ -213,6 +216,11 @@ public interface DBPDataSourceContainer extends
     void release(DBPDataSourceTask user);
 
     void fireEvent(DBPEvent event);
+
+    @Nullable
+    String getProperty(@NotNull String name);
+
+    void setProperty(@NotNull String name, @Nullable String value);
 
     /**
      * Preference store associated with this datasource

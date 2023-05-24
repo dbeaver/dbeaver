@@ -275,7 +275,12 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     @Override
     protected Object getObjectValue(DBNNode item)
     {
-        return item instanceof DBSWrapper ? ((DBSWrapper)item).getObject() : item;
+        if (item instanceof DBSWrapper) {
+            return ((DBSWrapper)item).getObject();
+        } else if (item instanceof DBNObjectNode) {
+            return ((DBNObjectNode) item).getNodeObject();
+        }
+        return item;
     }
 
     @Override
