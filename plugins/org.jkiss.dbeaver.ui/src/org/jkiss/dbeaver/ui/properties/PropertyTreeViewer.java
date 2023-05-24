@@ -157,8 +157,7 @@ public class PropertyTreeViewer extends TreeViewer {
 
         renderer = new ObjectViewerRenderer(this) {
             @Override
-            public Object getCellValue(Object element, int columnIndex)
-            {
+            public Object getCellValue(Object element, int columnIndex) {
                 final TreeNode node = (TreeNode) element;
                 if (columnIndex == 0) {
                     return node.category != null ?
@@ -181,8 +180,7 @@ public class PropertyTreeViewer extends TreeViewer {
             }
 
             @Override
-            public void navigateHyperlink(Object cellValue)
-            {
+            public void navigateHyperlink(Object cellValue) {
                 if (cellValue instanceof DBSObject) {
                     DBWorkbench.getPlatformUI().openEntityEditor((DBSObject) cellValue);
                 } else {
@@ -207,6 +205,22 @@ public class PropertyTreeViewer extends TreeViewer {
             refresh();
         };
         this.themeChangeListener.propertyChange(null);
+        treeControl.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                TreeItem[] selection = treeControl.getSelection();
+                if (selection.length > 0) {
+                    TreeItem item = selection[0];
+                    Object itemData = item.getData();
+                    if (itemData instanceof TreeNode) {
+                        Object propertyValue = getPropertyValue((TreeNode) itemData);
+                        if (renderer.isHyperlink(itemData, propertyValue)) {
+                            renderer.navigateHyperlink(propertyValue);
+                        }
+                    }
+                }
+            }
+        });
 
         PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
         getControl().addDisposeListener(e -> PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener));
