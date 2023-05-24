@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCNumberValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCUUIDValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -37,15 +38,17 @@ public class ClickhouseValueHandlerProvider implements DBDValueHandlerProvider {
             return ClickhouseArrayValueHandler.INSTANCE;
         } else if (dataKind == DBPDataKind.STRUCT) {
             return ClickhouseStructValueHandler.INSTANCE;
-        } else if (dataKind == DBPDataKind.NUMERIC &&
-            (lowerTypeName.contains("int128") || lowerTypeName.contains("int256")
-            || lowerTypeName.contains("uint64") || lowerTypeName.contains("uint128") || lowerTypeName.contains("uint256"))
-        ) {
-            return new ClickhouseBigNumberValueHandler(type, preferences);
         } else if ("bool".equals(lowerTypeName)) {
             return ClickhouseBoolValueHandler.INSTANCE;
         } else if ("uuid".equals(lowerTypeName)) {
             return JDBCUUIDValueHandler.INSTANCE;
+        } else if (dataKind == DBPDataKind.NUMERIC) {
+            if (lowerTypeName.contains("int128") || lowerTypeName.contains("int256")
+                || lowerTypeName.contains("uint64") || lowerTypeName.contains("uint128") || lowerTypeName.contains("uint256")) {
+                return new ClickhouseBigNumberValueHandler(type, preferences);
+            } else {
+                return new JDBCNumberValueHandler(type, preferences);
+            }
         } else {
             return null;
         }
