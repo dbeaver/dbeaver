@@ -489,7 +489,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
 
 
                 if (isLogInputStream) {
-                    Thread readInputFuture = new Thread("Reading process input stream") {
+                    Thread readInputThread = new Thread("Reading process input stream") {
                         @Override
                         public void run() {
                             try {
@@ -499,13 +499,13 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                             }
                         }
                     };
-                    readInputFuture.start();
+                    readInputThread.start();
                     String errorMessage = readStream(input.getErrorStream());
                     if (!CommonUtils.isEmpty(errorMessage)) {
                         taskErrorMessage = errorMessage;
                     }
                     try {
-                        readInputFuture.join();
+                        readInputThread.join();
                     } catch (InterruptedException ignore) {
                         // ignore
                     }
