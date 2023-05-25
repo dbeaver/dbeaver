@@ -17,7 +17,8 @@
 package org.jkiss.dbeaver.model.navigator;
 
 /**
- * DBNObjectNode
+ * Non-database specific node.
+ * May require non-standard handling (editors, management)
  */
 public interface DBNObjectNode {
 
