@@ -49,8 +49,6 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeToolSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG> implements DBTTaskHandler {
 
@@ -491,26 +489,15 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
 
 
                 if (isLogInputStream) {
-                    CompletableFuture<Void> readInput = CompletableFuture.runAsync(() -> {
-                        try {
-                            readStream(input.getInputStream());
-                        } catch (IOException e) {
-                            logWriter.println(e.getMessage() + lf);
-                        }
-                    });
                     String errorMessage = readStream(input.getErrorStream());
+                    readStream(input.getInputStream());
                     if (!CommonUtils.isEmpty(errorMessage)) {
                         taskErrorMessage = errorMessage;
-                    }
-                    try {
-                        readInput.get();
-                    } catch (InterruptedException ignore) {
-                        // ignore
                     }
                 } else {
                     readStream(input.getErrorStream());
                 }
-            } catch (IOException | ExecutionException e) {
+            } catch (IOException e) {
                 // just skip
                 logWriter.println(e.getMessage() + lf);
             } finally {
