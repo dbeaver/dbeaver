@@ -78,7 +78,7 @@ public class EditConnectionWizard extends ConnectionWizard {
         this.originalDataSource = dataSource;
         this.dataSource = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
         if (!this.dataSource.isSavePassword()) {
-            this.dataSource.getConnectionConfiguration().setUserPassword(null);
+            this.dataSource.resetPassword();
         }
 
         setWindowTitle(CoreMessages.dialog_connection_wizard_title);
@@ -343,7 +343,7 @@ public class EditConnectionWizard extends ConnectionWizard {
 
         // Reset password if "Save password" was disabled
         if (!dataSource.isSavePassword()) {
-            dataSource.getConnectionConfiguration().setUserPassword(null);
+            dataSource.resetPassword();
         }
     }
 

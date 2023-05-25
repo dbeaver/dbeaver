@@ -246,7 +246,13 @@ public interface DBPDataSourceContainer extends
     SQLDialectMetadata getScriptDialect();
 
     /**
+     * reset all secured properties
+     */
+    void resetPassword();
+
+    /**
      * Make variable resolver for datasource properties.
+     *
      * @param actualConfig if true then actual connection config will be used (e.g. with preprocessed host/port values).
      */
     IVariableResolver getVariablesResolver(boolean actualConfig);
