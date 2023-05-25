@@ -16,58 +16,53 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.sql;
 
-import static org.junit.Assert.assertEquals;
-
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
-import org.jkiss.dbeaver.model.text.parser.*;
 
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.*;
 
 
 @RunWith(MockitoJUnitRunner.class)
 public class PostgreEscapeStringRuleTest {
 
-    private static final Logger log = LoggerFactory.getLogger(SyntaxParserTest.class);
+    private static final Logger log = LoggerFactory.getLogger(PostgreEscapeStringRuleTest.class);
 
     @Mock
     TPCharacterScanner scannerMock;
+
     @Test
     public void testEvaluate() {
-         PostgreEscapeStringRule obj = new PostgreEscapeStringRule();
+        PostgreEscapeStringRule obj = new PostgreEscapeStringRule();
 
-         boolean resume = false;
+        boolean resume = false;
 
-         // Mock the TPCharacterScanner
-         try {
+        // Mock the TPCharacterScanner
+        try {
 
 
-             when(scannerMock.getColumn()).thenReturn(0);
-             when(scannerMock.read()).thenReturn(TPCharacterScanner.EOF);
+            when(scannerMock.getColumn()).thenReturn(0);
+            when(scannerMock.read()).thenReturn(TPCharacterScanner.EOF);
 
-             // Call the method under test
-             TPToken result = obj.evaluate(scannerMock, resume);
+            // Call the method under test
+            TPToken result = obj.evaluate(scannerMock, resume);
 
-             // Assert that the result matches the expected token
-             assertEquals(SQLTokenType.T_STRING, result);
+            // Assert that the result matches the expected token
+            assertEquals(SQLTokenType.T_STRING, result);
 
-             // Verify that the expected methods were called on the scanner
-             verify(scannerMock).getColumn();
-             verify(scannerMock, times(4)).read();
-             verify(scannerMock, times(2)).unread();
-         } catch (Exception e) {
-             log.error("Error"+ e);
+            // Verify that the expected methods were called on the scanner
+            verify(scannerMock).getColumn();
+            verify(scannerMock, times(4)).read();
+            verify(scannerMock, times(2)).unread();
+        } catch (Exception e) {
+            log.error("Error" + e);
 
-         }
+        }
     }
 
 }
