@@ -45,6 +45,9 @@ public interface DBPAuthModelDescriptor extends DBPNamedObject {
     // Model works in desktop application only
     boolean isDesktopModel();
 
+    // Model works in cloud mode only
+    boolean isCloudModel();
+
     // Model needs a configuration on a local FS
     boolean requiresLocalConfiguration();
 
