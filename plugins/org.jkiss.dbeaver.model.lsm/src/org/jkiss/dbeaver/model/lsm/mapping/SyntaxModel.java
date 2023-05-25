@@ -24,15 +24,6 @@ import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode.BindingInfo;
 import org.jkiss.dbeaver.model.lsm.mapping.internal.*;
 import org.jkiss.dbeaver.model.lsm.mapping.internal.NodeFieldInfo.SubnodeInfo;
 
-import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.*;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -42,6 +33,14 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.xml.stream.FactoryConfigurationError;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.*;
 
 public class SyntaxModel {
 
@@ -61,7 +60,8 @@ public class SyntaxModel {
         xpath.setXPathFunctionResolver(new XFunctionResolver(xpath));
     }
 
-    private XTreeNodeBase prepareTree(Tree root) {
+    @NotNull
+    private XTreeNodeBase prepareTree(@NotNull Tree root) {
         if (!(root instanceof XTreeNodeBase)) {
             throw new IllegalArgumentException("Failed to prepare syntax model due to unsupported syntax tree typeing." +
                 "Consider using adapted grammar with correct superClass and contextSuperClass options.");
@@ -73,8 +73,9 @@ public class SyntaxModel {
         }
         return rootNode;
     }
-    
-    public String toXml(Tree root) throws XMLStreamException, FactoryConfigurationError, TransformerException {
+
+    @NotNull
+    public String toXml(@NotNull Tree root) throws FactoryConfigurationError, TransformerException {
         XTreeNodeBase rootInfo = prepareTree(root);
         TransformerFactory transFactory = TransformerFactory.newInstance();
         Transformer transformer = transFactory.newTransformer();
@@ -84,24 +85,26 @@ public class SyntaxModel {
         transformer.transform(new DOMSource(rootInfo), new StreamResult(buffer));
         return buffer.toString();
     }
-    
-    public <T extends AbstractSyntaxNode> SyntaxModelMappingResult<T> map(Tree root, Class<T> type) {
+
+    @NotNull
+    public <T extends AbstractSyntaxNode> SyntaxModelMappingResult<T> map(@NotNull Tree root, @NotNull Class<T> type) {
         XTreeNodeBase rootInfo = prepareTree(root);
         SyntaxModelMappingSession mappingSession = new SyntaxModelMappingSession(this);
         return mappingSession.map(rootInfo, type);
     }
 
-    private void appendIndent(StringBuilder sb, int indent) {
+    private void appendIndent(@NotNull StringBuilder sb, int indent) {
         sb.append("\t".repeat(Math.max(0, indent)));
     }
-    
-    public String stringify(AbstractSyntaxNode model) {
+
+    @NotNull
+    public String stringify(@NotNull AbstractSyntaxNode model) {
         StringBuilder sb = new StringBuilder();
         stringifyImpl(model, sb, 0);
         return sb.toString();
     }
     
-    private void stringifyImpl(AbstractSyntaxNode model, StringBuilder sb, int indent) {
+    private void stringifyImpl(@NotNull AbstractSyntaxNode model, @NotNull StringBuilder sb, int indent) {
         this.appendIndent(sb, indent);
         sb.append("{");
         indent++;
@@ -150,12 +153,14 @@ public class SyntaxModel {
                 this.appendIndent(sb, indent);
                 sb.append("\"").append("model").append("\"");
                 sb.append(": ");
-                sb.append("\"").append(binding.field.getDeclaringClassName() + "." + binding.field.getFieldName()).append("\"");
+                sb.append("\"").append(binding.field.getDeclaringClassName()).append(".").append(binding.field.getFieldName()).append("\"");
                 sb.append(",\n");
                 this.appendIndent(sb, indent);
                 sb.append("\"").append("node").append("\"");
                 sb.append(": ");
-                sb.append("\"").append(binding.astNode.getFullPathName().substring(model.getAstNode().getFullPathName().length())).append("\"");
+                sb.append("\"");
+                sb.append(binding.astNode.getFullPathName().substring(model.getAstNode().getFullPathName().length()));
+                sb.append("\"");
                 sb.append("\n");
                 indent--;
                 this.appendIndent(sb, indent);
@@ -198,7 +203,7 @@ public class SyntaxModel {
                     sb.append("\"_type\": \"").append(value.getClass().getName()).append("\"");
                     sb.append(",").append("\n");
                     this.appendIndent(sb, indent);
-                    sb.append("\"_error\": \"").append(value.toString()).append("\"");
+                    sb.append("\"_error\": \"").append(value).append("\"");
                     indent--;
                     sb.append("\n");
                     this.appendIndent(sb, indent);
@@ -298,7 +303,8 @@ public class SyntaxModel {
         } else if (!type.isEnum()) {
             errors.add("Type " + type.getName() + " is not a enum while marked as syntax literal!");
         }
-        
+
+        assert literalAnnotation != null;
         var existing = literalTypeByRuleName.get(literalAnnotation.name());
         if (existing == null) {
             var enumEntries = Stream.of(type.getFields()).filter(Field::isEnumConstant).map(captureExceptionInfo(
@@ -350,7 +356,7 @@ public class SyntaxModel {
         }
     }
 
-	public <T extends AbstractSyntaxNode> ModelErrorsCollection introduce(Class<T> modelType) {
+    public <T extends AbstractSyntaxNode> ModelErrorsCollection introduce(Class<T> modelType) {
         ModelErrorsCollection errors = new ModelErrorsCollection();
         
         Set<Class<?>> processedTypes = new HashSet<>();

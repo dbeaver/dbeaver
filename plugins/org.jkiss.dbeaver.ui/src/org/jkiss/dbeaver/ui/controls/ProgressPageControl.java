@@ -83,6 +83,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
     private ToolBarManager searchToolbarManager;
     private ToolBarManager customToolbarManager;
     private Composite customControlsComposite;
+    private Color defaultBackgroundColor;
 
     public ProgressPageControl(
         Composite parent,
@@ -440,7 +441,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 });
             }
             searchToolbarManager.createControl(searchControlsComposite);
-
+            defaultBackgroundColor = searchText.getBackground();
             searchControlsComposite.getParent().layout();
         } finally {
             searchControlsComposite.getParent().setRedraw(true);
@@ -514,7 +515,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 options |= ISearchExecutor.SEARCH_NEXT;
             }
             boolean success = getSearchRunner().performSearch(getProgressControl().curSearchText, options);
-            getProgressControl().searchText.setBackground(success ? null : searchNotFoundColor);
+            getProgressControl().searchText.setBackground(success ? getProgressControl().defaultBackgroundColor : searchNotFoundColor);
             return success;
         } else {
             cancelSearch(false);
@@ -537,7 +538,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         if (hide) {
             hideControls(true);
         } else {
-            getProgressControl().searchText.setBackground(null);
+            getProgressControl().searchText.setBackground(getProgressControl().defaultBackgroundColor);
         }
     }
 

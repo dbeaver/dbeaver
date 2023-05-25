@@ -376,7 +376,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 final int index = driverSubstitutionCombo.getSelectionIndex();
                 final DBPDriverSubstitutionDescriptor driverSubstitution = index > 0 ? driverSubstitutions[index - 1] : null;
                 final IConnectionWizard wizard = (IConnectionWizard) site.getWizard();
-                wizard.firePropertyChangeEvent(PROP_DRIVER_SUBSTITUTION, null, driverSubstitution);
+                wizard.firePropertyChangeEvent(PROP_DRIVER_SUBSTITUTION, wizard.getDriverSubstitution(), driverSubstitution);
             }));
             driverSubstitutionCombo.add("JDBC");
 

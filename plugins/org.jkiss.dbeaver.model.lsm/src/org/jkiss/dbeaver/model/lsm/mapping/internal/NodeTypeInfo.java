@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.lsm.mapping.internal;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 
 import java.lang.reflect.Constructor;
@@ -31,17 +32,18 @@ public class NodeTypeInfo {
     public final Map<String, NodeFieldInfo> fields;
 
     public NodeTypeInfo(
-        String ruleName,
-        Class<? extends AbstractSyntaxNode> type,
-        Constructor<? extends AbstractSyntaxNode> ctor,
-        Map<String, NodeFieldInfo> fields
+        @NotNull String ruleName,
+        @NotNull Class<? extends AbstractSyntaxNode> type,
+        @NotNull Constructor<? extends AbstractSyntaxNode> ctor,
+        @NotNull Map<String, NodeFieldInfo> fields
     ) {
         this.ruleName = ruleName;
         this.type = type;
         this.ctor = ctor;
         this.fields = Collections.unmodifiableMap(fields);
     }
-    
+
+    @NotNull
     public Collection<NodeFieldInfo> getFields() {
         return this.fields.values();
     }     

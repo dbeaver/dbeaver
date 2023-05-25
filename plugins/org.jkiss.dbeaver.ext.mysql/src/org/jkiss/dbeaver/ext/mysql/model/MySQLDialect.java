@@ -268,7 +268,7 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
     @Override
     public String[] getSingleLineComments() {
-        return new String[] { "-- ", "#" };
+        return new String[] { "-- ", "--\t", "#" };
     }
 
     @Override

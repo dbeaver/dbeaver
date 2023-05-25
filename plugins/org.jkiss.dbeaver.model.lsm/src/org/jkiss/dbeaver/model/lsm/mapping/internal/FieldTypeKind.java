@@ -16,11 +16,13 @@
  */
 package org.jkiss.dbeaver.model.lsm.mapping.internal;
 
+import org.jkiss.code.NotNull;
+
 import java.util.ArrayList;
 import java.util.Map;
 
 public enum FieldTypeKind {
-    String(true), 
+    String(true),
     Byte(true),
     Short(true), 
     Int(true),
@@ -41,7 +43,7 @@ public enum FieldTypeKind {
     }
 
     private static final Map<Class<?>, FieldTypeKind> builtinTypeKinds = Map.ofEntries(
-        java.util.Map.entry(String.class, FieldTypeKind.String), 
+        java.util.Map.entry(String.class, FieldTypeKind.String),
         java.util.Map.entry(Byte.class, FieldTypeKind.Byte),
         java.util.Map.entry(Short.class, FieldTypeKind.Short), 
         java.util.Map.entry(Integer.class, FieldTypeKind.Int), 
@@ -58,8 +60,9 @@ public enum FieldTypeKind {
         java.util.Map.entry(float.class, FieldTypeKind.Float),
         java.util.Map.entry(double.class, FieldTypeKind.Double) 
     );
-    
-    public static FieldTypeKind resolveModelLiteralFieldKind(Class<?> fieldType) {
+
+    @NotNull
+    public static FieldTypeKind resolveModelLiteralFieldKind(@NotNull Class<?> fieldType) {
         FieldTypeKind kind = builtinTypeKinds.get(fieldType);
         if (kind == null) {
             if (fieldType.isEnum()) {
@@ -73,7 +76,8 @@ public enum FieldTypeKind {
         return kind;
     }
 
-    public static FieldTypeKind resolveModelSubnodeFieldKind(Class<?> fieldType) {
+    @NotNull
+    public static FieldTypeKind resolveModelSubnodeFieldKind(@NotNull Class<?> fieldType) {
         FieldTypeKind kind;
         if (fieldType.isArray()) {
             kind = FieldTypeKind.Array;

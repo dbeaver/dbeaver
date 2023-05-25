@@ -16,23 +16,25 @@
  */
 package org.jkiss.dbeaver.model.lsm;
 
+import org.jkiss.code.NotNull;
+
 public class LSMException extends Exception {
     public LSMException() {
     }
 
-    public LSMException(String message) {
+    public LSMException(@NotNull String message) {
         super(message);
     }
 
-    public LSMException(String message, Throwable cause) {
+    public LSMException(@NotNull String message, @NotNull Throwable cause) {
         super(message, cause);
     }
 
-    public LSMException(Throwable cause) {
+    public LSMException(@NotNull Throwable cause) {
         super(cause);
     }
 
-    public LSMException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public LSMException(@NotNull String message, @NotNull Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

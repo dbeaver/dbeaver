@@ -171,12 +171,12 @@ public abstract class ObjectAttributeDescriptor {
 
     public abstract String getDescription();
 
+    @NotNull
     public static List<ObjectPropertyDescriptor> extractAnnotations(
         @Nullable DBPPropertySource source,
         Class<?> theClass,
         IPropertyFilter filter,
-        @Nullable String locale)
-    {
+        @Nullable String locale) {
         List<ObjectPropertyDescriptor> annoProps = new ArrayList<ObjectPropertyDescriptor>();
         extractAnnotations(source, null, theClass, annoProps, filter, locale);
         return annoProps;
