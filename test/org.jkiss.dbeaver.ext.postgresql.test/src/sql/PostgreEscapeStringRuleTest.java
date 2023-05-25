@@ -21,15 +21,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
-
 @RunWith(MockitoJUnitRunner.class)
 public class PostgreEscapeStringRuleTest {
 
-    //private static final Logger log = LoggerFactory.getLogger(PostgreEscapeStringRuleTest.class);
+    private static final Logger log = LoggerFactory.getLogger(PostgreEscapeStringRuleTest.class);
 
     @Mock
     TPCharacterScanner scannerMock;
@@ -42,8 +43,6 @@ public class PostgreEscapeStringRuleTest {
 
         // Mock the TPCharacterScanner
         try {
-
-
             when(scannerMock.getColumn()).thenReturn(0);
             when(scannerMock.read()).thenReturn(TPCharacterScanner.EOF);
 
@@ -59,7 +58,6 @@ public class PostgreEscapeStringRuleTest {
             verify(scannerMock, times(2)).unread();
         } catch (Exception e) {
             //log.error("Error" + e);
-
         }
     }
 
