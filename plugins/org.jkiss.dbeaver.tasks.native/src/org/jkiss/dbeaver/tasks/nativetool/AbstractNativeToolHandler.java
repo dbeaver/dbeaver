@@ -491,26 +491,30 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
 
 
                 if (isLogInputStream) {
-                    CompletableFuture<Void> readInputFuture = CompletableFuture.runAsync(() -> {
-                        try {
-                    readStream(input.getInputStream());
-                        } catch (IOException e) {
-                            logWriter.println(e.getMessage() + lf);
+                    Thread readInputFuture = new Thread("Reading process input stream") {
+                        @Override
+                        public void run() {
+                            try {
+                                readStream(input.getInputStream());
+                            } catch (IOException e) {
+                                logWriter.println(e.getMessage() + lf);
+                            }
                         }
-                    });
+                    };
+                    readInputFuture.start();
                     String errorMessage = readStream(input.getErrorStream());
                     if (!CommonUtils.isEmpty(errorMessage)) {
                         taskErrorMessage = errorMessage;
                     }
                     try {
-                        readInputFuture.get();
+                        readInputFuture.join();
                     } catch (InterruptedException ignore) {
                         // ignore
                     }
                 } else {
                     readStream(input.getErrorStream());
                 }
-            } catch (IOException | ExecutionException e) {
+            } catch (IOException e) {
                 // just skip
                 logWriter.println(e.getMessage() + lf);
             } finally {
