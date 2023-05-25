@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.lsm;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 
 import java.util.Collection;
@@ -26,11 +28,15 @@ public interface LSMDialect {
     
     Collection<LSMAnalysisCase<? extends LSMElement, ? extends AbstractSyntaxNode>> getSupportedCases();
 
-    <T extends LSMElement> LSMAnalysisCase<T, ? extends AbstractSyntaxNode> findAnalysisCase(Class<T> expectedModelType) throws LSMException;
-    
+    @Nullable
+    <T extends LSMElement> LSMAnalysisCase<T, ? extends AbstractSyntaxNode> findAnalysisCase(
+        @NotNull Class<T> expectedModelType
+    ) throws LSMException;
+
+    @NotNull
     <T extends LSMElement> Future<LSMAnalysis<T>> prepareAnalysis(
-        LSMSource source,
-        LSMAnalysisCase<T, ? extends AbstractSyntaxNode> analysisCase
+        @NotNull LSMSource source,
+        @NotNull LSMAnalysisCase<T, ? extends AbstractSyntaxNode> analysisCase
     );
     
 }

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.lsm.impl;
 
+import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.Tree;
 import org.jkiss.code.NotNull;
@@ -23,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.LSMAnalysis;
 import org.jkiss.dbeaver.model.lsm.LSMElement;
 import org.jkiss.dbeaver.model.lsm.LSMParser;
+import org.jkiss.dbeaver.model.lsm.LSMSkippingErrorListener;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModel;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModelMappingResult;
@@ -40,9 +42,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 class LSMAnalysisImpl<T extends LSMElement, M extends AbstractSyntaxNode & LSMElement> implements LSMAnalysis<T> {
-    
+
     private static final Logger log = LoggerFactory.getLogger(LSMAnalysisImpl.class);
-    
     private final LSMSourceImpl source;
     private final LSMAnalysisCaseImpl<T, M> analysisCase;
     private final SyntaxModel syntaxModel;
@@ -58,28 +59,39 @@ class LSMAnalysisImpl<T extends LSMElement, M extends AbstractSyntaxNode & LSMEl
         this.tree = new CompletableFuture<>();
         this.model = new CompletableFuture<>();
     }
-    
-    Future<Tree> getTree() {
+
+    @Nullable
+    Future<Tree> getTree(@Nullable ANTLRErrorListener errorListener) {
         if (!this.tree.isDone()) {
-            LSMParser parser = analysisCase.createParser(source);
-            
-            Tree tree = parser.parse();
-            this.tree.complete(tree);
+            LSMParser parser = errorListener == null
+                ? analysisCase.createParser(source)
+                : analysisCase.createParser(source, errorListener);
+            Tree newTree = null;
+            if (parser != null) {
+                newTree = parser.parse();
+            }
+            if (newTree != null) {
+                this.tree.complete(newTree);
+            }
         }
         return this.tree;
     }
-    
+
+    @Nullable
     @Override
     public Future<T> getModel() {
         try {
             if (!this.model.isDone()) {
-                Tree tree = this.getTree().get();
-                
-                SyntaxModelMappingResult<M> result = this.syntaxModel.map(tree, analysisCase.getModelRootType());
-                
-                @SuppressWarnings("unchecked")
-                T model = (T) result.getModel();
-                this.model.complete(model);
+                Future<Tree> futureTree = this.getTree(null);
+                if (futureTree != null) {
+                    SyntaxModelMappingResult<M> result = this.syntaxModel.map(futureTree.get(), analysisCase.getModelRootType());
+
+                    @SuppressWarnings("unchecked")
+                    T model = (T) result.getModel();
+                    if (model != null) {
+                        this.model.complete(model);
+                    }
+                }
             }
         } catch (InterruptedException | ExecutionException e) {
             this.model.completeExceptionally(e);
@@ -93,7 +105,12 @@ class LSMAnalysisImpl<T extends LSMElement, M extends AbstractSyntaxNode & LSMEl
     public List<Pair<String, String>> getTableAndAliasFromSources() {
         Tree tree = null;
         try {
-            tree = getTree().get();
+            Future<Tree> futureTree = getTree(new LSMSkippingErrorListener());
+            if (futureTree != null) {
+                tree = futureTree.get();
+            } else {
+                return null;
+            }
         } catch (InterruptedException | ExecutionException e) {
             log.error("Exception occurred during syntax analysis", e);
         }
