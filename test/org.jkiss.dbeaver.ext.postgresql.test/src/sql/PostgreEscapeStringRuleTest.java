@@ -22,6 +22,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.*;
 
@@ -35,6 +37,8 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class PostgreEscapeStringRuleTest {
 
+    private static final Logger log = LoggerFactory.getLogger(SyntaxParserTest.class);
+
     @Mock
     TPCharacterScanner scannerMock;
     @Test
@@ -45,21 +49,24 @@ public class PostgreEscapeStringRuleTest {
 
          // Mock the TPCharacterScanner
          try {
-         when(scannerMock.getColumn()).thenReturn(0);
-         when(scannerMock.read()).thenReturn(TPCharacterScanner.EOF);
 
-         // Call the method under test
-         TPToken result = obj.evaluate(scannerMock, resume);
 
-         // Assert that the result matches the expected token
-         assertEquals(SQLTokenType.T_STRING, result);
+             when(scannerMock.getColumn()).thenReturn(0);
+             when(scannerMock.read()).thenReturn(TPCharacterScanner.EOF);
 
-         // Verify that the expected methods were called on the scanner
-         verify(scannerMock).getColumn();
-         verify(scannerMock, times(4)).read();
-         verify(scannerMock, times(2)).unread();
+             // Call the method under test
+             TPToken result = obj.evaluate(scannerMock, resume);
+
+             // Assert that the result matches the expected token
+             assertEquals(SQLTokenType.T_STRING, result);
+
+             // Verify that the expected methods were called on the scanner
+             verify(scannerMock).getColumn();
+             verify(scannerMock, times(4)).read();
+             verify(scannerMock, times(2)).unread();
          } catch (Exception e) {
-         e.printStackTrace();
+             log.error("Error"+ e);
+
          }
     }
 
