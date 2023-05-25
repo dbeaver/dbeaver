@@ -90,7 +90,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     protected Point getInitialSize() {
-        return new Point(700, 500);
+        Point minSize = new Point(700, 500);
+        Point suggestedSize = super.getInitialSize();
+        return new Point(Math.max(minSize.x, suggestedSize.x), Math.max(minSize.y, suggestedSize.y));
     }
 
     public IWizard getWizard() {
