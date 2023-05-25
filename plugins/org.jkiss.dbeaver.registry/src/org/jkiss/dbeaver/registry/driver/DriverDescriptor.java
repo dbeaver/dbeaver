@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 import org.jkiss.utils.StandardConstants;
 
 import java.io.File;
@@ -495,6 +496,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             }
         }
         return false;
+    }
+    
+    @Override
+    public List<Pair<String,String>> getDriverReplacementsInfo() {
+        List<Pair<String, String>> result = new ArrayList<>();
+        for (ReplaceInfo replaceInfo : driverReplacements) {
+            result.add(new Pair<String, String>(replaceInfo.providerId, replaceInfo.driverId));
+        }
+        return result;
     }
 
     void makeIconExtensions() {

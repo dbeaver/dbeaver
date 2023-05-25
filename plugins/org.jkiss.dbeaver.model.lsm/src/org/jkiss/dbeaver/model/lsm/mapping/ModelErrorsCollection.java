@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.model.lsm.mapping;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -25,7 +28,7 @@ public class ModelErrorsCollection {
         public final Throwable exception;
         public final String message;
 
-        public ErrorInfo(Throwable exception, String message) {
+        public ErrorInfo(@Nullable Throwable exception, @NotNull String message) {
             this.exception = exception;
             this.message = message;
         }
@@ -33,11 +36,11 @@ public class ModelErrorsCollection {
     
     private final List<ErrorInfo> errors = new LinkedList<>();
 
-    public void add(String message) {
+    public void add(@NotNull String message) {
         this.errors.add(new ErrorInfo(null, message));
     }
 
-    public void add(Throwable ex, String message) {
+    public void add(@Nullable Throwable ex, @NotNull String message) {
         this.errors.add(new ErrorInfo(ex, message));
     }
 

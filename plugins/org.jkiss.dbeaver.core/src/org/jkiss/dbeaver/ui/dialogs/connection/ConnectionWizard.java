@@ -51,10 +51,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Abstract connection wizard
@@ -143,6 +140,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
     }
 
     @Nullable
+    @Override
     public DBPDriverSubstitutionDescriptor getDriverSubstitution() {
         return driverSubstitution;
     }
@@ -253,6 +251,10 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
     @Override
     public void firePropertyChangeEvent(@NotNull String property, @Nullable Object oldValue, @Nullable Object newValue) {
+        if (Objects.equals(oldValue, newValue)) {
+            return;
+        }
+
         for (IPropertyChangeListener listener : propertyListeners) {
             listener.propertyChange(new PropertyChangeEvent(this, property, oldValue, newValue));
         }

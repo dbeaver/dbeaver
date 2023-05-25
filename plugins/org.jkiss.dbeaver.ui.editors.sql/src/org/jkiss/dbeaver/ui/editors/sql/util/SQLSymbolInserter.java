@@ -265,10 +265,9 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
                     if (curOffset != offset) {
                         String templateName = document.get(curOffset, offset - curOffset);
                         SQLTemplatesPage templatesPage = editor.getTemplatesPage();
-                        String contextId = SQLEditorUtils.getEditorContextTypeId(editor);
                         Template template = templatesPage.getTemplateStore().findTemplate(templateName);
                         if (template != null && template.isAutoInsertable()
-                            && SQLEditorUtils.isTemplateContextFitsEditorContext(template.getContextTypeId(), contextId)
+                            && SQLEditorUtils.isTemplateContextFitsEditorContext(template.getContextTypeId(), editor)
                         ) {
                             sourceViewer.setSelectedRange(curOffset, offset - curOffset);
                             templatesPage.insertTemplate(template, document);
