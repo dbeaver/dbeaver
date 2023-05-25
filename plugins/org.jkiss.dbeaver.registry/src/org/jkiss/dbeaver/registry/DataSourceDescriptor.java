@@ -1697,6 +1697,7 @@ public class DataSourceDescriptor
         this.virtualModel.copyFrom(descriptor.getVirtualModel());
 
         this.description = descriptor.description;
+        this.properties.putAll(descriptor.properties);
         this.savePassword = descriptor.savePassword;
         this.connectionReadOnly = descriptor.connectionReadOnly;
         this.forceUseSingleConnection = descriptor.forceUseSingleConnection;
@@ -1736,6 +1737,7 @@ public class DataSourceDescriptor
                 CommonUtils.equalObjects(this.clientHome, source.clientHome) &&
                 CommonUtils.equalObjects(this.lockPasswordHash, source.lockPasswordHash) &&
                 CommonUtils.equalObjects(this.folder, source.folder) &&
+                CommonUtils.equalObjects(this.properties, source.properties) &&
                 CommonUtils.equalObjects(this.preferenceStore, source.preferenceStore) &&
                 CommonUtils.equalsContents(this.connectionModifyRestrictions, source.connectionModifyRestrictions);
     }
