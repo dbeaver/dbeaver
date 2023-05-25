@@ -409,7 +409,7 @@ public class GPTCompletionEngine implements DAICompletionEngine {
             return true;
         }
         DBSObject parent = object.getParentObject();
-        return parent == null || !(
+        return parent != null && !(
             parent.equals(context.getContextDefaults().getDefaultCatalog())
                 || parent.equals(context.getContextDefaults().getDefaultSchema()));
     }
