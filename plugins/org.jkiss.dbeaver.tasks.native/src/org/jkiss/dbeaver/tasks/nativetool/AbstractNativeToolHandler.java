@@ -489,8 +489,8 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
 
 
                 if (isLogInputStream) {
-                    String errorMessage = readStream(input.getErrorStream());
                     readStream(input.getInputStream());
+                    String errorMessage = readStream(input.getErrorStream());
                     if (!CommonUtils.isEmpty(errorMessage)) {
                         taskErrorMessage = errorMessage;
                     }
