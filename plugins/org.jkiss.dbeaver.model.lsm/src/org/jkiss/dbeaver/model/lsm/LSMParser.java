@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.model.lsm;
 
 import org.antlr.v4.runtime.tree.Tree;
+import org.jkiss.code.Nullable;
 
 public interface LSMParser extends LSMObject<LSMParser> {
-    
+
+    @Nullable
     Tree parse();
 }

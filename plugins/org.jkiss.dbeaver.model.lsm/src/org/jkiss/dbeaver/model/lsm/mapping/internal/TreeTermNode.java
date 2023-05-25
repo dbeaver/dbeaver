@@ -20,6 +20,7 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.lsm.mapping.internal.TreeRuleNode.SubnodesList;
 import org.w3c.dom.NodeList;
 
@@ -32,7 +33,7 @@ public class TreeTermNode extends TerminalNodeImpl implements XTreeTextBase {
     
     private Map<String, Object> userData;
     
-    public TreeTermNode(Token symbol) {
+    public TreeTermNode(@NotNull Token symbol) {
         super(symbol);
     }
     
@@ -41,20 +42,23 @@ public class TreeTermNode extends TerminalNodeImpl implements XTreeTextBase {
     }
     
     @Override
-    public void fixup(Parser parser, int index) {
+    public void fixup(@NotNull Parser parser, int index) {
         this.index = index;
     }
-    
+
+    @NotNull
     @Override
     public Interval getRealInterval() {
         return new Interval(this.getSymbol().getStartIndex(), this.getSymbol().getStopIndex());
     }
-    
+
+    @NotNull
     @Override
     public SubnodesList getSubnodes() {
         return EmptyNodesList.INSTANCE;
     }
-    
+
+    @NotNull
     @Override
     public NodeList getChildNodes() {
         return EmptyNodesList.INSTANCE;
@@ -64,12 +68,14 @@ public class TreeTermNode extends TerminalNodeImpl implements XTreeTextBase {
     public short getNodeType() {
         return TEXT_NODE;
     }
-    
+
+    @NotNull
     @Override
     public String getNodeName() {
         return "#text";
     }
-    
+
+    @NotNull
     @Override
     public Map<String, Object> getUserDataMap(boolean createIfMissing) {
         return userData != null ? userData : (userData = new HashMap<>());
