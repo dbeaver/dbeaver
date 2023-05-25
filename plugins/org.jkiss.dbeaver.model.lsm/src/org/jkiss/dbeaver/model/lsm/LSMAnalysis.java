@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.lsm;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.utils.Pair;
 
 import java.util.List;
@@ -23,8 +25,10 @@ import java.util.concurrent.Future;
 
 
 public interface LSMAnalysis<T extends LSMElement> {    
-    
+
+    @Nullable
     Future<T> getModel();
 
+    @Nullable
     List<Pair<String, String>> getTableAndAliasFromSources();
 }

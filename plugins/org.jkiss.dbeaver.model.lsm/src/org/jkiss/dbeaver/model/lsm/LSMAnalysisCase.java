@@ -16,15 +16,24 @@
  */
 package org.jkiss.dbeaver.model.lsm;
 
+import org.antlr.v4.runtime.ANTLRErrorListener;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 
 public interface LSMAnalysisCase<T extends LSMElement, M extends AbstractSyntaxNode & LSMElement> extends LSMObject<LSMAnalysisCase<T, M>> {
-    
+    @NotNull
     Class<T> getModelContractType();
-    
+
+    @NotNull
     Class<M> getModelRootType();
-    
-    LSMParser createParser(LSMSource source);
+
+
+    @Nullable
+    LSMParser createParser(@NotNull LSMSource source);
+
+    @Nullable
+    LSMParser createParser(LSMSource source, ANTLRErrorListener errorListener);
 
     
 }

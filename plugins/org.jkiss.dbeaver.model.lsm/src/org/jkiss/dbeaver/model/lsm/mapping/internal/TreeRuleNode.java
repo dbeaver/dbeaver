@@ -25,6 +25,8 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.Trees;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -39,21 +41,27 @@ public class TreeRuleNode extends ParserRuleContext implements Element, XTreeEle
 
     public interface SubnodesList extends NodeList {
 
+        @NotNull
         List<XTreeNodeBase> getCollection();
 
+        @Nullable
         XTreeNodeBase item(int index);
 
+        @Nullable
         XTreeNodeBase getFirst();
 
+        @Nullable
         XTreeNodeBase getLast();
     }
     
     private class SubnodesListImpl implements SubnodesList {
-        
+
+        @NotNull
         public List<XTreeNodeBase> getCollection() {
-            return (List<XTreeNodeBase>)(Object)TreeRuleNode.this.children;
+            return (List<XTreeNodeBase>) (Object) TreeRuleNode.this.children;
         }
-        
+
+        @Nullable
         @Override
         public XTreeNodeBase item(int index) {
             List<XTreeNodeBase> items = getCollection();
@@ -65,11 +73,13 @@ public class TreeRuleNode extends ParserRuleContext implements Element, XTreeEle
             return getCollection().size();
         }
 
+        @Nullable
         public XTreeNodeBase getFirst() {
             List<XTreeNodeBase> items = getCollection();
             return items.size() > 0 ? items.get(0) : null;
         }
 
+        @Nullable
         public XTreeNodeBase getLast() {
             List<XTreeNodeBase> items = getCollection();
             return items.size() > 0 ? items.get(items.size() - 1) : null;
@@ -87,7 +97,7 @@ public class TreeRuleNode extends ParserRuleContext implements Element, XTreeEle
         super();
     }
 
-    public TreeRuleNode(ParserRuleContext parent, int invokingStateNumber) {
+    public TreeRuleNode(@NotNull ParserRuleContext parent, int invokingStateNumber) {
         super(parent, invokingStateNumber);
     }    
     
@@ -96,25 +106,27 @@ public class TreeRuleNode extends ParserRuleContext implements Element, XTreeEle
         return index;
     }
     
-    public void setModel(AbstractSyntaxNode model) {
+    public void setModel(@Nullable AbstractSyntaxNode model) {
         if (this.model != null) {
             throw new IllegalStateException();
         } else {
             this.model = model;
         }
     }
-    
+
+    @Nullable
     public AbstractSyntaxNode getModel() {
         return this.model;
     }
-    
+
+    @NotNull
     @Override
     public Interval getRealInterval() {
         return new Interval(this.getStart().getStartIndex(), this.getStop().getStopIndex());
     }
     
     @Override
-    public void fixup(Parser parserCtx, int index) {
+    public void fixup(@NotNull Parser parserCtx, int index) {
         this.index = index;
         if (this.getChildCount() > 0) {
             nodeName = Trees.getNodeText(this, parserCtx);
@@ -126,46 +138,52 @@ public class TreeRuleNode extends ParserRuleContext implements Element, XTreeEle
             throw new IllegalStateException(); // Should never happen?
         }
     }
-    
+
+    @NotNull
     @Override
-    public RuleContext addChild(RuleContext ruleInvocation) {
+    public RuleContext addChild(@NotNull RuleContext ruleInvocation) {
         if (!(ruleInvocation instanceof XTreeNodeBase)) {
             throw new IllegalStateException();
         } else {
             return super.addChild(ruleInvocation);
         }
     }
-    
+
+    @NotNull
     @Override
-    public TerminalNode addChild(Token matchedToken) {
+    public TerminalNode addChild(@NotNull Token matchedToken) {
         return super.addChild(new TreeTermNode(matchedToken));
     }
-    
+
+    @NotNull
     @Override
-    public TerminalNode addChild(TerminalNode t) {
+    public TerminalNode addChild(@NotNull TerminalNode t) {
         if (!(t instanceof XTreeNodeBase)) {
             throw new IllegalStateException();
         } else {
             return super.addChild(t);
         }
     }
-    
+
+    @NotNull
     @Override
-    public <T extends ParseTree> T addAnyChild(T t) {
+    public <T extends ParseTree> T addAnyChild(@NotNull T t) {
         if (!(t instanceof XTreeNodeBase)) {
             throw new IllegalStateException();
         } else {
             return super.addAnyChild(t);
         }
     }
-    
+
+    @NotNull
     @Override
-    public ErrorNode addErrorNode(Token badToken) {
+    public ErrorNode addErrorNode(@NotNull Token badToken) {
         return super.addAnyChild(new TreeTermErrorNode(badToken));
     }
-    
+
+    @NotNull
     @Override
-    public ErrorNode addErrorNode(ErrorNode errorNode) {
+    public ErrorNode addErrorNode(@NotNull ErrorNode errorNode) {
         if (!(errorNode instanceof XTreeNodeBase)) {
             throw new IllegalStateException();
         } else {

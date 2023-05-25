@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.model.lsm.mapping;
 
 import org.antlr.v4.runtime.misc.Interval;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.LSMElement;
 import org.jkiss.dbeaver.model.lsm.mapping.internal.NodeFieldInfo;
 import org.jkiss.dbeaver.model.lsm.mapping.internal.XTreeNodeBase;
@@ -29,11 +31,12 @@ public abstract class AbstractSyntaxNode implements LSMElement {
     private static final Map<Class<? extends AbstractSyntaxNode>, String> syntaxNodeNameByType = new HashMap<>(
         Map.of(ConcreteSyntaxNode.class, "")
     );
-    
-    private static String getNodeName(Class<? extends AbstractSyntaxNode> type) {
+
+    @NotNull
+    private static String getNodeName(@NotNull Class<? extends AbstractSyntaxNode> type) {
         return syntaxNodeNameByType.computeIfAbsent(
             type,
-            t -> Optional.ofNullable(t.getAnnotation(SyntaxNode.class).name()).orElse(t.getName())
+            t -> Optional.of(t.getAnnotation(SyntaxNode.class).name()).orElse(t.getName())
         );
     }
 
@@ -42,7 +45,7 @@ public abstract class AbstractSyntaxNode implements LSMElement {
         public final Object value;
         public final XTreeNodeBase astNode;
         
-        public BindingInfo(NodeFieldInfo field, Object value, XTreeNodeBase astNode) {
+        public BindingInfo(@NotNull NodeFieldInfo field, @Nullable Object value, @NotNull XTreeNodeBase astNode) {
             this.field = field;
             this.value = value;
             this.astNode = astNode;
@@ -61,10 +64,11 @@ public abstract class AbstractSyntaxNode implements LSMElement {
         this.name = getNodeName(this.getClass());
     }
     
-    protected AbstractSyntaxNode(String name) {
+    protected AbstractSyntaxNode(@Nullable String name) {
         this.name = name;
     }
-    
+
+    @Nullable
     public String getName() {
         return this.name;
     }
@@ -77,16 +81,17 @@ public abstract class AbstractSyntaxNode implements LSMElement {
         return this.astNode != null ? this.astNode.getRealInterval().b : UNDEFINED_POSITION;
     }
     
-    void setAstNode(XTreeNodeBase astNode) {
+    void setAstNode(@NotNull XTreeNodeBase astNode) {
         this.astNode = astNode;
         this.subnodeBindings = null;
     }
 
+    @NotNull
     XTreeNodeBase getAstNode() {
         return this.astNode;
     }
 
-    void appendBinding(BindingInfo binding) {
+    void appendBinding(@NotNull BindingInfo binding) {
         if (subnodeBindings == null) {
             this.subnodeBindings = new LinkedList<>();
         }
@@ -102,7 +107,8 @@ public abstract class AbstractSyntaxNode implements LSMElement {
         }
         return rc;
     };
-    
+
+    @NotNull
     List<BindingInfo> getBindings() {
         if (this.subnodeBindings == null) {
             return Collections.emptyList();
@@ -119,28 +125,33 @@ public abstract class AbstractSyntaxNode implements LSMElement {
         final BindingInfo binding;
         final XTreeNodeBase astNode;
         
-        public SyntaxModelLookupResult(AbstractSyntaxNode node, BindingInfo binding) {
+        public SyntaxModelLookupResult(@NotNull AbstractSyntaxNode node, @Nullable BindingInfo binding) {
             this.node = node;
             this.binding = binding;
             this.astNode = binding == null ? node.astNode : binding.astNode;
         }
-        
+
+        @NotNull
         public Interval getInterval() {
             return astNode.getRealInterval();
         }
-        
+
+        @Nullable
         public String getEntityName() {
             return node.getName();
         }
-        
+
+        @Nullable
         public String getEntityFieldName() {
             return binding == null ? null : binding.field.getFieldName();
         }
-        
+
+        @NotNull
         public String getAstNodeFullName() {
             return astNode.getFullPathName();
         }
-        
+
+        @NotNull
         @Override
         public String toString() {
             String element = binding == null ? this.getEntityName() : (this.getEntityFieldName() + " of " + this.getEntityName());
@@ -148,6 +159,7 @@ public abstract class AbstractSyntaxNode implements LSMElement {
         }
     }
 
+    @Nullable
     public SyntaxModelLookupResult findBoundSyntaxAt(int position) {
         Interval location = new Interval(position, position);
         AbstractSyntaxNode node = this;
@@ -162,8 +174,9 @@ public abstract class AbstractSyntaxNode implements LSMElement {
             return null;
         }
     }
-    
-    private static BindingInfo findBindingOfLocation(AbstractSyntaxNode node, Interval location) {
+
+    @Nullable
+    private static BindingInfo findBindingOfLocation(@NotNull AbstractSyntaxNode node, @NotNull Interval location) {
         List<BindingInfo> bindings = node.getBindings();
         int index = binarySearchByKey(bindings, b -> b.astNode.getRealInterval(), location, (x, y) ->  {
             if (x.b < y.a) {
@@ -210,8 +223,13 @@ public abstract class AbstractSyntaxNode implements LSMElement {
         
         return result;
     }
-    
-    private static <T, K> int binarySearchByKey(List<T> list, Function<T, K> keyGetter, K key, Comparator<K> comparator) {
+
+    private static <T, K> int binarySearchByKey(
+        @NotNull List<T> list,
+        @NotNull Function<T, K> keyGetter,
+        @NotNull K key,
+        @NotNull Comparator<K> comparator
+    ) {
         int low = 0;
         int high = list.size() - 1;
 
