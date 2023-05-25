@@ -57,7 +57,7 @@ public class PostgreEscapeStringRuleTest {
             verify(scannerMock, times(4)).read();
             verify(scannerMock, times(2)).unread();
         } catch (Exception e) {
-            //log.error("Error" + e);
+            log.error("Error" + e);
         }
     }
 
