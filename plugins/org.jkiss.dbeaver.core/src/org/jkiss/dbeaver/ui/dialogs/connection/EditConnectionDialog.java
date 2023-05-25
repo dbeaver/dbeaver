@@ -50,8 +50,6 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
 
     private static final int TEST_BUTTON_ID = 2000;
 
-    private static final String DIALOG_WIDTH = "DIALOG_WIDTH";
-    private static final String DIALOG_HEIGHT = "DIALOG_HEIGHT";
     private static String lastActivePage;
 
     private Button testButton;
@@ -96,25 +94,6 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
             items[0].setExpanded(true);
         }
         return contents;
-    }
-
-    @Override
-    protected Point getInitialSize() {
-        Point size = super.getInitialSize();
-        IDialogSettings settings = getDialogBoundsSettings();
-        try {
-            // Get the stored width and height.
-            int width = settings.getInt(DIALOG_WIDTH);
-            if (width != DIALOG_DEFAULT_BOUNDS) {
-                size.x = Math.max(width, size.x);
-            }
-            int height = settings.getInt(DIALOG_HEIGHT);
-            if (height != DIALOG_DEFAULT_BOUNDS) {
-                size.y = Math.max(height, size.y);
-            }
-        } catch (NumberFormatException ignored) {
-        }
-        return size;
     }
 
     @Override
