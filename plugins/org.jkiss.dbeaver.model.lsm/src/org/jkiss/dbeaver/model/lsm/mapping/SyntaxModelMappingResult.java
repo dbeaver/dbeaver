@@ -17,25 +17,28 @@
 package org.jkiss.dbeaver.model.lsm.mapping;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 public class SyntaxModelMappingResult<T> {
     
     private final ModelErrorsCollection errors;
     private final T model;
     
-    public SyntaxModelMappingResult(ModelErrorsCollection errors, @NotNull T model) {
+    public SyntaxModelMappingResult(@NotNull ModelErrorsCollection errors, @Nullable T model) {
         this.errors = errors;
         this.model = model;
-    }   
-    
+    }
+
     public boolean isNoErrors() {
         return model != null && errors.isEmpty();
     }
-    
+
+    @Nullable
     public T getModel() {
         return model;
     }
-    
+
+    @NotNull
     public ModelErrorsCollection getErrors() {
         return errors;
     }

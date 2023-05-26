@@ -20,6 +20,7 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ErrorNodeImpl;
+import org.jkiss.code.NotNull;
 import org.w3c.dom.NodeList;
 
 import java.util.HashMap;
@@ -31,7 +32,7 @@ public class TreeTermErrorNode extends ErrorNodeImpl implements XTreeTextBase {
     
     private Map<String, Object> userData;
     
-    public TreeTermErrorNode(Token symbol) {
+    public TreeTermErrorNode(@NotNull Token symbol) {
         super(symbol);
     }
     
@@ -39,21 +40,24 @@ public class TreeTermErrorNode extends ErrorNodeImpl implements XTreeTextBase {
         return index;
     }
 
+    @NotNull
     @Override
     public Interval getRealInterval() {
         return new Interval(this.getSymbol().getStartIndex(), this.getSymbol().getStopIndex());
     }
     
     @Override
-    public void fixup(Parser parser, int index) {
+    public void fixup(@NotNull Parser parser, int index) {
         this.index = index;
     }
-    
+
+    @NotNull
     @Override
     public TreeRuleNode.SubnodesList getSubnodes() {
         return EmptyNodesList.INSTANCE;
     }
-    
+
+    @NotNull
     @Override
     public NodeList getChildNodes() {
         return EmptyNodesList.INSTANCE;
@@ -63,12 +67,14 @@ public class TreeTermErrorNode extends ErrorNodeImpl implements XTreeTextBase {
     public short getNodeType() {
         return TEXT_NODE;
     }
-    
+
+    @NotNull
     @Override
     public String getNodeName() {
         return "#text";
     }
-    
+
+    @NotNull
     @Override
     public Map<String, Object> getUserDataMap(boolean createIfMissing) {
         return userData != null ? userData : (userData = new HashMap<>());

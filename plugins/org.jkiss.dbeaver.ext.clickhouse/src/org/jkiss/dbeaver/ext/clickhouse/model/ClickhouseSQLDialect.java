@@ -73,6 +73,7 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
         "toDateTime64",
         "toUInt64",
         "toUInt128",
+        "toUInt256",
         "toInt32",
         "toInt64",
         "toInt128",
