@@ -225,7 +225,7 @@ public class MySQLView extends MySQLTableBase implements DBSView
                                 }
                                 String statement;
                                 if (getDataSource().supportsAlterView()) {
-                                    statement = "ALTER";
+                                    statement = isPersisted() ? "ALTER" : "CREATE";
                                 } else {
                                     statement = "CREATE OR REPLACE";
                                 }
