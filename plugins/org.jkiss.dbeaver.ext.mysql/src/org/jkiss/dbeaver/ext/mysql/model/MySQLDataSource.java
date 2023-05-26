@@ -870,4 +870,21 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     public boolean supportsColumnStatistics() {
         return !isMariaDB() && isServerVersionAtLeast(8, 0);
     }
+
+    public boolean supportsUserManagement() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-users"), true);
+    }
+
+    public boolean supportsPartitioning() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-partitions"), true);
+    }
+
+    public boolean supportsEvents() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-events"), true);
+    }
+
+    public boolean supportsAlterView() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-alter-view"), false);
+    }
+
 }
