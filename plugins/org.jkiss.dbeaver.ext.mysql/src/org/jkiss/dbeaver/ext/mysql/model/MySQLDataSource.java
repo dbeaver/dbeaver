@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -773,12 +774,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         }
     }
 
-    public boolean isSystemCatalog(String name) {
-        return MySQLConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(name) ||
-            MySQLConstants.PERFORMANCE_SCHEMA_NAME.equalsIgnoreCase(name) ||
-            MySQLConstants.MYSQL_SCHEMA_NAME.equalsIgnoreCase(name);
-    }
-
     static class CatalogCache extends JDBCObjectCache<MySQLDataSource, MySQLCatalog> {
         @NotNull
         @Override
@@ -887,4 +882,14 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-alter-view"), false);
     }
 
+
+    /**
+     * Checks if table partitioning is supported.
+     *
+     * @return {@code true} if table partitioning is supported
+     */
+    @Association
+    public boolean supportsPartitions() {
+        return isServerVersionAtLeast(5, 1);
+    }
 }
