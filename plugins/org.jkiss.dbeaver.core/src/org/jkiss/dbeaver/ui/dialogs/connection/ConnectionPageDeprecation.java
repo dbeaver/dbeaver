@@ -21,10 +21,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.forms.events.IHyperlinkListener;
 import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.ui.ShellUtils;
 
 public class ConnectionPageDeprecation extends ConnectionWizardPage {
     private final DBPDataSourceContainer dataSource;
@@ -45,10 +47,13 @@ public class ConnectionPageDeprecation extends ConnectionWizardPage {
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
         composite.setLayout(new FillLayout(SWT.HORIZONTAL | SWT.VERTICAL));
 
-        final FormText formText = toolkit.createFormText(composite, false);
-        formText.setFont("h1", JFaceResources.getFont("org.eclipse.jface.headerfont"));
-        formText.setText("<form>" + dataSource.getDriver().getDeprecationReason() + "</form>", true, false);
-        formText.setHyperlinkSettings(toolkit.getHyperlinkGroup());
+        final FormText text = new FormText(composite, SWT.NO_FOCUS);
+        text.setFont("header", JFaceResources.getFont("org.eclipse.jface.headerfont"));
+        text.setText(dataSource.getDriver().getDeprecationReason(), true, false);
+        text.setHyperlinkSettings(toolkit.getHyperlinkGroup());
+        text.addHyperlinkListener(IHyperlinkListener.linkActivatedAdapter(e -> ShellUtils.launchProgram(e.getHref().toString())));
+
+        toolkit.adapt(text, false, true);
 
         setControl(composite);
     }
