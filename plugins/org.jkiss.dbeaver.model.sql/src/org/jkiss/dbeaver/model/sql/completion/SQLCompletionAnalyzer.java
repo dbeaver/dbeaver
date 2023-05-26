@@ -996,7 +996,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             return Collections.emptyList();
         }
         // log.debug("Extracted table names: " + tableRefs);
-        if (CommonUtils.isNotEmpty(tableAlias)) {
+        if (CommonUtils.isNotEmpty(tableAlias) && tableRefs != null) {
             tableRefs = tableRefs.stream().filter(r -> allowPartialMatch 
                 ? r.getSecond() != null && CommonUtils.startsWithIgnoreCase(r.getSecond(), tableAlias)
                 : r.getSecond() != null && r.getSecond().equalsIgnoreCase(tableAlias)
