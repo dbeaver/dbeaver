@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.lsm.impl;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.lsm.LSMSource;
 
 import java.io.IOException;
@@ -28,10 +29,11 @@ public class LSMSourceImpl implements LSMSource {
     
     private final CharStream stream;
     
-    public LSMSourceImpl(Reader reader) throws IOException {
+    public LSMSourceImpl(@NotNull Reader reader) throws IOException {
         this.stream = CharStreams.fromReader(reader);
     }
 
+    @NotNull
     @Override
     public CharStream getStream() {
         return this.stream;

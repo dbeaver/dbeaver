@@ -42,8 +42,11 @@ import org.jkiss.utils.SecurityUtils;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.util.*;
 
 /**
@@ -282,7 +285,30 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
             workspaceInfo.setProperty(WORKSPACE_ID, workspaceId);
             BaseWorkspaceImpl.writeWorkspaceInfo(GeneralUtils.getMetadataFolder(), workspaceInfo);
         }
-        return workspaceId;
+        return workspaceId + "-" + getLocalHostId();
+    }
+
+    private static String getLocalHostId() {
+        // Here we get local machine identifier. It is hashed and thus depersonalized
+        try {
+            InetAddress localHost = InetAddress.getLocalHost();
+            NetworkInterface ni = NetworkInterface.getByInetAddress(localHost);
+            byte[] hardwareAddress = ni.getHardwareAddress();
+
+            // Use MD5
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] messageDigest = md.digest(hardwareAddress);
+
+            long lValue = 0;
+            for (int i = 0; i < messageDigest.length; i++) {
+                lValue += (long)messageDigest[i] << (i * 8);
+            }
+
+            return Long.toString(Math.abs(lValue), 36).toUpperCase();
+        } catch (Exception e) {
+            log.debug(e);
+            return "XXXXXXXXXX";
+        }
     }
 
     ////////////////////////////////////////////////////////
