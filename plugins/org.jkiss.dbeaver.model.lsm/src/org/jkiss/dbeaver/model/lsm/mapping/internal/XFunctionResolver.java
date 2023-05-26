@@ -16,36 +16,41 @@
  */
 package org.jkiss.dbeaver.model.lsm.mapping.internal;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.xml.namespace.QName;
-import javax.xml.xpath.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.xml.namespace.QName;
+import javax.xml.xpath.*;
 
 public class XFunctionResolver implements XPathFunctionResolver {
 
     @FunctionalInterface
     private interface MyXPathFunction {
-        Object evaluate(List<?> args) throws XPathExpressionException;
+        @Nullable
+        Object evaluate(@NotNull List<?> args) throws XPathExpressionException;
     }
 
-    private static java.util.Map.Entry<String, XPathFunction> xfunction(String name, MyXPathFunction impl) {
-        return java.util.Map.entry(name, new XPathFunction() {
-            @Override
-            public Object evaluate(List<?> args) throws XPathFunctionException {
-                try {
-                    return impl.evaluate(args);
-                } catch (XPathExpressionException ex) {
-                    throw new XPathFunctionException(ex);
+    @NotNull
+    private static java.util.Map.Entry<String, XPathFunction> xfunction(@NotNull String name, @Nullable MyXPathFunction impl) {
+        return java.util.Map.entry(name, args -> {
+            try {
+                if (impl == null) {
+                    throw new IllegalArgumentException("Can't evaluate function " + name);
                 }
+                return impl.evaluate(args);
+            } catch (XPathExpressionException ex) {
+                throw new XPathFunctionException(ex);
             }
         });
     }
-    
+
+    @NotNull
     private final Map<String, XPathFunction> functionByName = Map.ofEntries(
         xfunction("echo", args -> {
             for (Object o : args) {

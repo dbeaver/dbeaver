@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.lsm.mapping.internal;
 
+import org.jkiss.code.NotNull;
+
 import javax.xml.xpath.XPathExpression;
 import java.util.Map;
 
@@ -28,11 +30,11 @@ public class LiteralTypeInfo {
     public final boolean isCaseSensitive;
     
     public LiteralTypeInfo(
-        String ruleName,
-        Class<?> type,
-        XPathExpression stringExpr,
-        Map<Object, XPathExpression> exprByValue,
-        Map<String, Object> valuesByName,
+        @NotNull String ruleName,
+        @NotNull Class<?> type,
+        @NotNull XPathExpression stringExpr,
+        @NotNull Map<Object, XPathExpression> exprByValue,
+        @NotNull Map<String, Object> valuesByName,
         boolean isCaseSensitive
     ) {
         this.ruleName = ruleName;

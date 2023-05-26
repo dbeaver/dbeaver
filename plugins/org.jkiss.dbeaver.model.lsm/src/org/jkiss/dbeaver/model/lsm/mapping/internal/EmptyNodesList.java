@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.lsm.mapping.internal;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.w3c.dom.NodeList;
 
 import java.util.Collections;
@@ -33,11 +35,13 @@ public class EmptyNodesList implements NodeList, TreeRuleNode.SubnodesList {
         return 0;
     }
 
+    @NotNull
     @Override
     public List<XTreeNodeBase> getCollection() {
         return Collections.emptyList();
     }
 
+    @Nullable
     @Override
     public XTreeNodeBase item(int index) {
         return null;
