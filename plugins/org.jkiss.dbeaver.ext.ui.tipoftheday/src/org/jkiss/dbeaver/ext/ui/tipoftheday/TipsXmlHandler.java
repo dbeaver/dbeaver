@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.ui.tipoftheday;
 
+import org.eclipse.core.runtime.Platform;
+import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -28,13 +31,20 @@ import java.util.List;
 public class TipsXmlHandler extends DefaultHandler {
 
     private static final String TIP = "tip";
+    private final String productEdition;
     private boolean tipTagStarted;
+    private boolean tipApplicable;
+
     private StringBuilder tipTagContent = new StringBuilder();
-    private List<String> tips = new ArrayList<>();
+    private final List<String> tips = new ArrayList<>();
     private static final List<String> HTML_TAGS = Arrays.asList("br", "b", "i", "u", "q", "a", "p", "div");
     private static final String TAG_BRACKET_BEGIN = "<";
     private static final String TAG_BRACKET_END = ">";
     private static final String SLASH = "/";
+
+    public TipsXmlHandler() {
+        productEdition = Platform.getProduct().getProperty("appEdition");
+    }
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -47,6 +57,11 @@ public class TipsXmlHandler extends DefaultHandler {
         }
         if (qName.equalsIgnoreCase(TIP)) {
             this.tipTagStarted = true;
+            this.tipApplicable = true;
+            String tipProducts = attributes.getValue("product");
+            if (!CommonUtils.isEmpty(tipProducts) && !CommonUtils.isEmpty(productEdition)) {
+                this.tipApplicable = ArrayUtils.contains(tipProducts.split(","), productEdition);
+            }
         }
     }
 
@@ -60,8 +75,11 @@ public class TipsXmlHandler extends DefaultHandler {
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
         if (qName.equalsIgnoreCase(TIP)) {
-            this.tips.add(tipTagContent.toString());
+            if (tipApplicable) {
+                this.tips.add(tipTagContent.toString());
+            }
             this.tipTagStarted = false;
+            this.tipApplicable = true;
             tipTagContent = new StringBuilder();
         }
 
