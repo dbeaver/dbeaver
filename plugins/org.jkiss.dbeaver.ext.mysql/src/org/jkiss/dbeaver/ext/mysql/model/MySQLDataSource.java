@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
-import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -870,10 +869,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-users"), true);
     }
 
-    public boolean supportsPartitioning() {
-        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-partitions"), true);
-    }
-
     public boolean supportsEvents() {
         return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-events"), true);
     }
@@ -888,8 +883,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
      *
      * @return {@code true} if table partitioning is supported
      */
-    @Association
     public boolean supportsPartitions() {
-        return isServerVersionAtLeast(5, 1);
+        return
+            CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-partitions"), true) &&
+            isServerVersionAtLeast(5, 1);
     }
 }
