@@ -520,7 +520,7 @@ public class SQLEditor extends SQLEditorBase implements
         UIUtils.asyncExec(() -> fireDataSourceChanged(null));
     }
 
-    private void initSeparateConnection(@NotNull DBPDataSource dataSource, Runnable onSuccess, boolean readFromInstance) {
+    private void initSeparateConnection(@NotNull DBPDataSource dataSource, Runnable onSuccess, boolean readDefaultsFromInstance) {
         DBSInstance dsInstance = dataSource.getDefaultInstance();
         String[] contextDefaults = isRestoreActiveSchemaFromScript() ?
             EditorUtils.getInputContextDefaults(dataSource.getContainer(), getEditorInput()) : null;
@@ -531,7 +531,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
         {
-            final OpenContextJob job = new OpenContextJob(dsInstance, onSuccess, readFromInstance);
+            final OpenContextJob job = new OpenContextJob(dsInstance, onSuccess, readDefaultsFromInstance);
             job.schedule();
         }
     }
@@ -693,13 +693,13 @@ public class SQLEditor extends SQLEditorBase implements
         private final DBSInstance instance;
         private final Runnable onSuccess;
         private Throwable error;
-        private boolean readFromInstance;
+        private boolean readDefaultsFromInstance;
 
-        OpenContextJob(DBSInstance instance, Runnable onSuccess, boolean readFromInstance) {
+        OpenContextJob(DBSInstance instance, Runnable onSuccess, boolean readDefaultsFromInstance) {
             super("Open connection to " + instance.getDataSource().getContainer().getName());
             this.instance = instance;
             this.onSuccess = onSuccess;
-            this.readFromInstance = readFromInstance;
+            this.readDefaultsFromInstance = readDefaultsFromInstance;
             setUser(true);
         }
 
@@ -712,7 +712,7 @@ public class SQLEditor extends SQLEditorBase implements
                 DBCExecutionContext newContext = instance.openIsolatedContext(monitor, title, instance.getDefaultContext(monitor, false));
                 // Set context defaults
                 String[] contextDefaultNames = null;
-                if (readFromInstance && datasourceChanged) {
+                if (readDefaultsFromInstance && datasourceChanged) {
                     DBCExecutionContext defaultContext = DBUtils.getDefaultContext(instance, false);
                     if (defaultContext != null) {
                         DBCExecutionContextDefaults contextDefaultsDB = defaultContext.getContextDefaults();
