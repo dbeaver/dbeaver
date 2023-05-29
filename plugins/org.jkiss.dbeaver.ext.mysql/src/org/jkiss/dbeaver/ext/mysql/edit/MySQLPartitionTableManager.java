@@ -16,11 +16,23 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
+
 public class MySQLPartitionTableManager extends MySQLTableManager {
 
     @Override
     public boolean canCreateObject(Object container) {
         // Creating partitions separately is not supported in MySQL/MariaDB
+        return false;
+    }
+
+    @Override
+    public boolean canRenameObject(MySQLTableBase object) {
+        return false;
+    }
+
+    @Override
+    public boolean canDeleteObject(MySQLTableBase object) {
         return false;
     }
 }
