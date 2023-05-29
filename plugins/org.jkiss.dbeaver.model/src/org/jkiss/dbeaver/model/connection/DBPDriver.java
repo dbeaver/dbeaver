@@ -76,6 +76,9 @@ public interface DBPDriver extends DBPNamedObject
     DBPImage getIconBig();
 
     @Nullable
+    DBPImage getLogoImage();
+
+    @Nullable
     String getDriverClassName();
 
     @Nullable

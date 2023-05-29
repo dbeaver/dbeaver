@@ -210,6 +210,16 @@ public class MySQLConstants {
     public static final String TYPE_VARCHAR = "varchar";
     public static final String TYPE_JSON = "json";
     public static final String TYPE_GEOMETRY = "geometry";
+    public static final String TYPE_POINT = "point";
+    public static final String TYPE_LINESTRING = "linestring";
+    public static final String TYPE_POLYGON = "polygon";
+    public static final String TYPE_MULTIPOINT = "multipoint";
+    public static final String TYPE_MULTILINESTRING = "multilinestring";
+    public static final String TYPE_MULTIPOLYGON = "multipolygon";
+    public static final String TYPE_GEOMETRYCOLLECTION = "geometrycollection";
+    public static final String TYPE_GEOGRAPHY = "geography";
+    public static final String TYPE_GEOGRAPHYPOINT = "geographypoint";
+
     public static final String TYPE_YEAR = "year";
     public static final String TYPE_ENUM = "enum";
     public static final String TYPE_SET = "set";
