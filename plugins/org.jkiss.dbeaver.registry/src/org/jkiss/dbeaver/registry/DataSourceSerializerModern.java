@@ -523,9 +523,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 if (substitutedDriver == null || substitutedDriver.isTemporary()) {
                     substitutedDriver = originalDriver;
                 }
-                while (substitutedDriver.getReplacedBy() != null) {
-                    substitutedDriver = substitutedDriver.getReplacedBy();
+
+                if (getReplacementDriver(substitutedDriver) == originalDriver) {
+                    final DriverDescriptor original = originalDriver;
+                    originalDriver = substitutedDriver;
+                    substitutedDriver = original;
                 }
+
+                substitutedDriver = getReplacementDriver(substitutedDriver);
 
                 DataSourceDescriptor dataSource = registry.getDataSource(id);
                 boolean newDataSource = (dataSource == null);
@@ -1260,4 +1265,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
         return creds;
     }
 
+    @NotNull
+    private static DriverDescriptor getReplacementDriver(@NotNull DriverDescriptor driver) {
+        DriverDescriptor replacement = driver;
+
+        while (replacement.getReplacedBy() != null) {
+            replacement = replacement.getReplacedBy();
+        }
+
+        return replacement;
+    }
 }

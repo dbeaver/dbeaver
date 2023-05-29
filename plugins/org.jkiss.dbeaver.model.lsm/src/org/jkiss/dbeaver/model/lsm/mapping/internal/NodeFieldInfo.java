@@ -16,14 +16,15 @@
  */
 package org.jkiss.dbeaver.model.lsm.mapping.internal;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModel;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxSubnodeLookupMode;
 
-import javax.xml.xpath.XPathExpression;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
+import javax.xml.xpath.XPathExpression;
 
 public class NodeFieldInfo {
 
@@ -34,18 +35,21 @@ public class NodeFieldInfo {
         
         private NodeTypeInfo nodeTypeInfo;
         
-        public SubnodeInfo(XPathExpression scopeExpr, 
-                           Class<? extends AbstractSyntaxNode> subnodeType, 
-                           SyntaxSubnodeLookupMode lookupMode) {
+        public SubnodeInfo(
+            @NotNull XPathExpression scopeExpr,
+            @NotNull Class<? extends AbstractSyntaxNode> subnodeType,
+            @NotNull SyntaxSubnodeLookupMode lookupMode
+        ) {
             this.scopeExpr = scopeExpr;
             this.subnodeType = subnodeType;
             this.lookupMode = lookupMode;
         }
 
-        public void fixup(SyntaxModel syntaxModel) {
+        public void fixup(@NotNull SyntaxModel syntaxModel) {
             nodeTypeInfo = syntaxModel.findNodeTypeInfo(subnodeType);
         }
 
+        @NotNull
         public NodeTypeInfo getNodeTypeInfo() {
             return nodeTypeInfo;
         }
@@ -58,29 +62,36 @@ public class NodeFieldInfo {
     
     private LiteralTypeInfo literalTypeInfo;
     
-    public NodeFieldInfo(FieldTypeKind kind, Field info, List<XPathExpression> termExprs, List<SubnodeInfo> subnodesInfo) {
+    public NodeFieldInfo(
+        @NotNull FieldTypeKind kind,
+        @NotNull Field info,
+        @NotNull List<XPathExpression> termExprs,
+        @NotNull List<SubnodeInfo> subnodesInfo
+    ) {
         this.kind = kind;
         this.info = info;
         this.termExprs = Collections.unmodifiableList(termExprs);
         this.subnodesInfo = Collections.unmodifiableList(subnodesInfo);
     }
-    
+
+    @NotNull
     public String getFieldName() {
         return this.info.getName();
     }
-    
+
+    @NotNull
     public String getDeclaringClassName() {
         return this.info.getDeclaringClass().getName();
     }
 
-    public void fixup(SyntaxModel syntaxModel) {
+    public void fixup(@NotNull SyntaxModel syntaxModel) {
         if (kind == FieldTypeKind.Enum) {
             literalTypeInfo = syntaxModel.findLiteralTypeInfo(info.getType());
         } else {
             literalTypeInfo = null;
         }
         
-        for (SubnodeInfo subnodeInfo: subnodesInfo) {
+        for (SubnodeInfo subnodeInfo : subnodesInfo) {
             subnodeInfo.fixup(syntaxModel);
         }   
     }

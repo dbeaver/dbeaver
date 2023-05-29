@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.lsm.impl;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.*;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModel;
@@ -44,12 +46,15 @@ public class LSMDialectImpl implements LSMDialect {
         return casesByContractType.values();
     }
 
+    @Nullable
     @Override
-    public <T extends LSMElement> LSMAnalysisCase<T, ? extends AbstractSyntaxNode> findAnalysisCase(Class<T> expectedContractType) throws LSMException {
+    public <T extends LSMElement> LSMAnalysisCase<T, ? extends AbstractSyntaxNode> findAnalysisCase(
+        @NotNull Class<T> expectedContractType
+    ) throws LSMException {
         @SuppressWarnings("unchecked")
-        LSMAnalysisCase<T, ? extends AbstractSyntaxNode> result = (LSMAnalysisCase<T, ? extends AbstractSyntaxNode>) casesByContractType.get(expectedContractType);
+        var result = (LSMAnalysisCase<T, ? extends AbstractSyntaxNode>) casesByContractType.get(expectedContractType);
         if (result == null) {
-            for (Map.Entry<Class<? extends LSMElement>, LSMAnalysisCase<? extends LSMElement, ? extends AbstractSyntaxNode>> entry : casesByContractType.entrySet()) {
+            for (var entry : casesByContractType.entrySet()) {
                 if (expectedContractType.isAssignableFrom(entry.getKey())) {
                     return (LSMAnalysisCase<T, ? extends AbstractSyntaxNode>) entry.getValue();
                 }
@@ -59,8 +64,12 @@ public class LSMDialectImpl implements LSMDialect {
         return result;
     }
 
+    @NotNull
     @Override
-    public <T extends LSMElement> Future<LSMAnalysis<T>> prepareAnalysis(LSMSource source, LSMAnalysisCase<T, ? extends AbstractSyntaxNode> analysisCase) {
+    public <T extends LSMElement> Future<LSMAnalysis<T>> prepareAnalysis(
+        @NotNull LSMSource source,
+        @NotNull LSMAnalysisCase<T, ? extends AbstractSyntaxNode> analysisCase
+    ) {
         LSMSourceImpl source2 = source.coerce(LSMSourceImpl.class);
         @SuppressWarnings("unchecked")
         LSMAnalysisCaseImpl<T, ? extends AbstractSyntaxNode> analysisCase2 = analysisCase.coerce(LSMAnalysisCaseImpl.class);

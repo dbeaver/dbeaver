@@ -613,10 +613,14 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         protected MySQLPartition fetchObject(@NotNull JDBCSession session, @NotNull MySQLTable table, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
         {
             String partitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_PARTITION_NAME);
+            String subPartitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SUBPARTITION_NAME);
+            if (CommonUtils.isEmpty(partitionName) && CommonUtils.isEmpty(subPartitionName)) {
+                // This is default empty info partition for tables without partitions. Do not create it.
+                return null;
+            }
             if (partitionName == null) {
                 partitionName = "PARTITION";
             }
-            String subPartitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SUBPARTITION_NAME);
             if (CommonUtils.isEmpty(subPartitionName)) {
                 return new MySQLPartition(table, null, partitionName, dbResult);
             } else {

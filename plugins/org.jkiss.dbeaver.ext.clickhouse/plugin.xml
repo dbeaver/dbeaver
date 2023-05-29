@@ -108,16 +108,12 @@
                 label="ClickHouse data types provider"
                 description="ClickHouse data types provider">
 
-            <datasource class="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseDataSource"/>
+            <datasource id="clickhouse"/>
             <type standard="ARRAY"/>
             <type standard="STRUCT"/>
             <type name="ENUM8"/>
             <type name="ENUM16"/>
-            <type name="INT128"/>
-            <type name="INT256"/>
-            <type name="UINT64"/>
-            <type name="UINT128"/>
-            <type name="UINT256"/>
+            <type kind="NUMERIC"/>
             <type name="BOOL"/>
             <type name="UUID"/>
         </provider>

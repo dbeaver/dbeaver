@@ -39,7 +39,7 @@ public class SQLContextTypeRegistry extends ContextTypeRegistry {
                 //provider.loadTemplateVariableResolvers(contextType);
             } else {
                 Set<String> categoriesAdded = new HashSet<>();
-                for (DBPDriver driver : provider.getEnabledDrivers()) {
+                for (DBPDriver driver : provider.getDrivers()) {
                     if (!CommonUtils.isEmpty(driver.getCategory())) {
                         if (categoriesAdded.contains(driver.getCategory())) {
                             continue;

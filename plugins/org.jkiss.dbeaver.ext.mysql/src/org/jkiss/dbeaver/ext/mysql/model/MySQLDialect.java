@@ -268,7 +268,7 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
     @Override
     public String[] getSingleLineComments() {
-        return new String[] { "-- ", "#" };
+        return new String[] { "-- ", "--\t", "#" };
     }
 
     @Override
@@ -325,6 +325,6 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
     @NotNull
     @Override
     public String getCreateSchemaQuery(@NotNull String schemaName) {
-        return "CREATE DATABASE " + getQuotedString(schemaName);
+        return "CREATE DATABASE " + schemaName;
     }
 }
