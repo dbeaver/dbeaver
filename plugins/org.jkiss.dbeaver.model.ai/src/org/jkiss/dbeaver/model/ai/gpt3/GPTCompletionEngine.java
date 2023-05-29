@@ -404,8 +404,7 @@ public class GPTCompletionEngine implements DAICompletionEngine {
     }
 
     private boolean isRequiresFullyQualifiedName(@NotNull DBSObject object, @Nullable DBCExecutionContext context) {
-        if (context == null || context.getContextDefaults() == null
-        ) {
+        if (context == null || context.getContextDefaults() == null) {
             return true;
         }
         DBSObject parent = object.getParentObject();
