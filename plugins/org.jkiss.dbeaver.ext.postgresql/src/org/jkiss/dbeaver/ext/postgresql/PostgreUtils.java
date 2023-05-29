@@ -923,20 +923,9 @@ public class PostgreUtils {
      *
      * @see #safeGetArray(ResultSet, String, Function, IntFunction)
      */
-
     @Nullable
-    public static Short[] safeGetShortArray(@NotNull ResultSet dbResult, @NotNull String columnName) {
-        return safeGetArray(dbResult, columnName, Short::valueOf, Short[]::new);
-    }
-
-    /**
-     * Attempts to retrieve an array of longs from the result set under the given {@code columnName}.
-     *
-     * @see #safeGetArray(ResultSet, String, Function, IntFunction)
-     */
-    @Nullable
-    public static Long[] safeGetLongArray(@NotNull ResultSet dbResult, @NotNull String columnName) {
-        return safeGetArray(dbResult, columnName, Long::valueOf, Long[]::new);
+    public static Number[] safeGetNumberArray(@NotNull ResultSet dbResult, @NotNull String columnName) {
+        return safeGetArray(dbResult, columnName, PostgreUtils::parseNumber, Number[]::new);
     }
 
     /**
@@ -947,5 +936,14 @@ public class PostgreUtils {
     @Nullable
     public static Boolean[] safeGetBooleanArray(@NotNull ResultSet dbResult, @NotNull String columnName) {
         return safeGetArray(dbResult, columnName, Boolean::valueOf, Boolean[]::new);
+    }
+
+    @NotNull
+    private static Number parseNumber(@NotNull String str) {
+        try {
+            return Long.parseLong(str);
+        } catch (NumberFormatException e) {
+            return Double.parseDouble(str);
+        }
     }
 }
