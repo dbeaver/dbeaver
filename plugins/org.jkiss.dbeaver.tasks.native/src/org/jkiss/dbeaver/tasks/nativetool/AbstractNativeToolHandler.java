@@ -489,10 +489,25 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
 
 
                 if (isLogInputStream) {
+                    Thread readInputThread = new Thread("Reading process input stream") {
+                        @Override
+                        public void run() {
+                            try {
+                                readStream(input.getInputStream());
+                            } catch (IOException e) {
+                                logWriter.println(e.getMessage() + lf);
+                            }
+                        }
+                    };
+                    readInputThread.start();
                     String errorMessage = readStream(input.getErrorStream());
-                    readStream(input.getInputStream());
                     if (!CommonUtils.isEmpty(errorMessage)) {
                         taskErrorMessage = errorMessage;
+                    }
+                    try {
+                        readInputThread.join();
+                    } catch (InterruptedException ignore) {
+                        // ignore
                     }
                 } else {
                     readStream(input.getErrorStream());

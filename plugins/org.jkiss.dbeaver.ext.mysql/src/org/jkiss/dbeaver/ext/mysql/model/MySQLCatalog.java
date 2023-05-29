@@ -517,9 +517,8 @@ public class MySQLCatalog implements
     }
 
     @Override
-    public boolean isSystem()
-    {
-        return MySQLConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(getName()) || MySQLConstants.PERFORMANCE_SCHEMA_NAME.equalsIgnoreCase(getName()) || MySQLConstants.MYSQL_SCHEMA_NAME.equalsIgnoreCase(getName());
+    public boolean isSystem() {
+        return getDataSource().isSystemCatalog(getName());
     }
 
     @Override
