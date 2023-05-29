@@ -3039,7 +3039,7 @@ public class SQLEditor extends SQLEditorBase implements
                 saveJob.schedule();
 
                 // Wait until job finished
-                UIUtils.waitJobCompletion(saveJob);
+                UIUtils.waitJobCompletion(saveJob, monitor);
                 if (!saveJob.success) {
                     monitor.setCanceled(true);
                     return;
