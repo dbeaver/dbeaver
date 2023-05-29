@@ -363,7 +363,6 @@ PlusSign: '+';
 QuestionMark: '?';
 Underscore: '_';
 VerticalBar: '|';
-Quote: DoubleQuote|SingleQuote|BackQuote;
 
 
 // characters
@@ -400,11 +399,12 @@ Space: [ \t]+;
 
 
 // identifiers
-DelimitedIdentifier: Quote DelimitedIdentifierBody Quote;
+DelimitedIdentifier: IdentifierQuote DelimitedIdentifierBody IdentifierQuote;
+fragment IdentifierQuote: (DoubleQuote|BackQuote);
 fragment DelimitedIdentifierBody: (DelimitedIdentifierPart)+;
 fragment DelimitedIdentifierPart: (NondoublequoteCharacter|DoublequoteSymbol);
-fragment NondoublequoteCharacter: ~'"';
-fragment DoublequoteSymbol: Quote Quote;
+fragment NondoublequoteCharacter: ~[`"];
+fragment DoublequoteSymbol: IdentifierQuote IdentifierQuote;
 
 Identifier: IdentifierBody;
 fragment IdentifierBody: IdentifierStart ((Underscore|IdentifierPart)+)?;
