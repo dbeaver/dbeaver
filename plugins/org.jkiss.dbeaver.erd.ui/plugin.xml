@@ -427,10 +427,10 @@
     </extension>
 
     <extension point="org.eclipse.ui.bindings">
-        <key commandId="org.jkiss.dbeaver.erd.focus.diagram" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+1"/>
-        <key commandId="org.jkiss.dbeaver.erd.focus.palette" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+2"/>
-        <key commandId="org.jkiss.dbeaver.erd.focus.outline" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+3"/>
-        <key commandId="org.jkiss.dbeaver.erd.focus.parameter" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+4"/>
+        <key commandId="org.jkiss.dbeaver.erd.focus.diagram" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="ALT+1"/>
+        <key commandId="org.jkiss.dbeaver.erd.focus.palette" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="ALT+2"/>
+        <key commandId="org.jkiss.dbeaver.erd.focus.outline" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="ALT+3"/>
+        <key commandId="org.jkiss.dbeaver.erd.focus.parameter" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="ALT+4"/>
         <key commandId="org.jkiss.dbeaver.erd.toggleHand" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="TAB"/>
     </extension>
 
@@ -460,10 +460,34 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.erd.focus.diagram" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerFocus"/>
-        <handler commandId="org.jkiss.dbeaver.erd.focus.palette" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerFocus"/>
-        <handler commandId="org.jkiss.dbeaver.erd.focus.outline" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerFocus"/>
-        <handler commandId="org.jkiss.dbeaver.erd.focus.parameter" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerFocus"/>
+        <handler commandId="org.jkiss.dbeaver.erd.focus.diagram" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerFocus">
+            <activeWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart"/>
+                </with>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.erd.focus.palette" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerFocus">
+            <activeWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart"/>
+                </with>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.erd.focus.outline" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerFocus">
+            <activeWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart"/>
+                </with>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.erd.focus.parameter" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerFocus">
+            <activeWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart"/>
+                </with>
+            </activeWhen>
+        </handler>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
