@@ -97,6 +97,9 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
 
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+        if (connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL) {
+            return connectionInfo.getUrl();
+        }
         if (driver.isSampleURLApplicable()) {
             return JDBCURL.generateUrlByTemplate(driver, connectionInfo);
         }

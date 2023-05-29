@@ -21,7 +21,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.connection.*;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
@@ -238,7 +241,13 @@ public interface DBPDataSourceContainer extends
     SQLDialectMetadata getScriptDialect();
 
     /**
+     * reset all secured properties
+     */
+    void resetPassword();
+
+    /**
      * Make variable resolver for datasource properties.
+     *
      * @param actualConfig if true then actual connection config will be used (e.g. with preprocessed host/port values).
      */
     IVariableResolver getVariablesResolver(boolean actualConfig);

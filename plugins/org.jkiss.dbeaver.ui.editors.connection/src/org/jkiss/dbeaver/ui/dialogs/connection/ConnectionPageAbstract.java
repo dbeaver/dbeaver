@@ -60,6 +60,8 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     public static final String PROP_DRIVER_SUBSTITUTION = "driver-substitution";
 
     protected static final String GROUP_CONNECTION_MODE = "connectionMode"; //$NON-NLS-1$
+    protected static final String GROUP_CONNECTION = "connection"; //$NON-NLS-1$
+    protected static final List<String> GROUP_CONNECTION_ARR = List.of(GROUP_CONNECTION);
     @NotNull
     protected final Map<String, List<Control>> propGroupMap = new HashMap<>();
 
@@ -94,9 +96,8 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         this.site = site;
     }
 
-    protected boolean isCustomURL()
-    {
-        return false;
+    protected boolean isCustomURL() {
+        return typeURLRadio != null && typeURLRadio.getSelection();
     }
 
     @Override
@@ -375,7 +376,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 final int index = driverSubstitutionCombo.getSelectionIndex();
                 final DBPDriverSubstitutionDescriptor driverSubstitution = index > 0 ? driverSubstitutions[index - 1] : null;
                 final IConnectionWizard wizard = (IConnectionWizard) site.getWizard();
-                wizard.firePropertyChangeEvent(PROP_DRIVER_SUBSTITUTION, null, driverSubstitution);
+                wizard.firePropertyChangeEvent(PROP_DRIVER_SUBSTITUTION, wizard.getDriverSubstitution(), driverSubstitution);
             }));
             driverSubstitutionCombo.add("JDBC");
 

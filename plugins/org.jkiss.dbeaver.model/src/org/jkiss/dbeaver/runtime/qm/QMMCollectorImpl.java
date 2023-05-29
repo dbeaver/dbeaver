@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.runtime.qm;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -143,12 +142,16 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
             return Collections.emptyList();
         }
         // qm session id might be null if database migration is in progress for single user product
-        if (!DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+        if (DBWorkbench.getPlatform().getApplication() instanceof QMSessionReceiver) {
             for (QMMetaEvent event : eventPool) {
                 if (event.getSessionId() != null) {
                     continue;
                 }
-                var sessionId = QMUtils.getQmSessionId(DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession());
+                var workspace = DBWorkbench.getPlatform().getWorkspace();
+                if (workspace == null) {
+                    continue;
+                }
+                var sessionId = QMUtils.getQmSessionId(workspace.getWorkspaceSession());
                 if (sessionId == null) {
                     return Collections.emptyList();
                 }

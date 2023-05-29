@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
@@ -2015,9 +2016,16 @@ public class UIUtils {
     }
 
     public static void waitJobCompletion(AbstractJob job) {
+        waitJobCompletion(job, null);
+    }
+
+    public static void waitJobCompletion(@NotNull AbstractJob job, @Nullable IProgressMonitor monitor) {
         // Wait until job finished
         Display display = Display.getCurrent();
         while (!job.isFinished()) {
+            if (monitor != null && monitor.isCanceled()) {
+                job.cancel();
+            }
             if (!display.readAndDispatch()) {
                 display.sleep();
             }

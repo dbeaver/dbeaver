@@ -167,14 +167,14 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             this.estRows = JDBCUtils.safeGetFloat(dbResult, "prorows");
         }
 
-        Long[] allArgTypes = PostgreUtils.safeGetLongArray(dbResult, "proallargtypes");
+        Number[] allArgTypes = PostgreUtils.safeGetNumberArray(dbResult, "proallargtypes");
         String[] argNames = PostgreUtils.safeGetStringArray(dbResult, "proargnames");
         if (!ArrayUtils.isEmpty(allArgTypes)) {
             String[] argModes = PostgreUtils.safeGetStringArray(dbResult, "proargmodes");
 
             for (int i = 0; i < allArgTypes.length; i++) {
-                Long paramType = allArgTypes[i];
-                final PostgreDataType dataType = container.getDatabase().getDataType(monitor, paramType.intValue());
+                final long paramType = allArgTypes[i].longValue();
+                final PostgreDataType dataType = container.getDatabase().getDataType(monitor, paramType);
                 if (dataType == null) {
                     log.warn("Parameter data type [" + paramType + "] not found");
                     continue;

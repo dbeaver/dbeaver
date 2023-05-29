@@ -43,12 +43,21 @@ public @interface Property
 
     /**
      * Property human readable name
+     *
      * @return name
      */
     String name() default DEFAULT_LOCAL_STRING;
 
     /**
+     * Property name which used on serialization
+     *
+     * @return name
+     */
+    String keyName() default DEFAULT_LOCAL_STRING;
+
+    /**
      * Property category (optional). A human readable string
+     *
      * @return category
      */
     String category() default ""; //NON-NLS-1
