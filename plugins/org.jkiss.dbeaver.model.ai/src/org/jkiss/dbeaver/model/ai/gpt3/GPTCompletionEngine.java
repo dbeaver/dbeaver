@@ -409,9 +409,8 @@ public class GPTCompletionEngine implements DAICompletionEngine {
         }
         DBSObject parent = object.getParentObject();
         DBCExecutionContextDefaults contextDefaults = context.getContextDefaults();
-        return parent != null && !(
-            parent.equals(contextDefaults.getDefaultCatalog())
-                || parent.equals(contextDefaults.getDefaultSchema()));
+        return parent != null && !(parent.equals(contextDefaults.getDefaultCatalog())
+            || parent.equals(contextDefaults.getDefaultSchema()));
     }
 
     private String generateObjectDescription(
