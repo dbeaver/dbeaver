@@ -427,13 +427,19 @@
     </extension>
 
     <extension point="org.eclipse.ui.bindings">
-        <key commandId="org.jkiss.dbeaver.erd.focus.diagram" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="ALT+1"/>
-        <key commandId="org.jkiss.dbeaver.erd.focus.palette" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="ALT+2"/>
-        <key commandId="org.jkiss.dbeaver.erd.focus.outline" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="ALT+3"/>
-        <key commandId="org.jkiss.dbeaver.erd.focus.parameter" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="ALT+4"/>
+        <key commandId="org.jkiss.dbeaver.erd.focus.diagram" contextId="org.jkiss.dbeaver.ui.erd" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="ALT+1"/>
+        <key commandId="org.jkiss.dbeaver.erd.focus.palette" contextId="org.jkiss.dbeaver.ui.erd" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="ALT+2"/>
+        <key commandId="org.jkiss.dbeaver.erd.focus.outline" contextId="org.jkiss.dbeaver.ui.erd" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="ALT+3"/>
+        <key commandId="org.jkiss.dbeaver.erd.focus.parameter" contextId="org.jkiss.dbeaver.ui.erd" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="ALT+4"/>
         <key commandId="org.jkiss.dbeaver.erd.toggleHand" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="TAB"/>
     </extension>
-
+    <extension point="org.eclipse.ui.contexts">
+        <context
+                id="org.jkiss.dbeaver.ui.erd"
+                parentId="org.eclipse.ui.contexts.window"
+                name="ERD"
+                description="DBeaver ERD Context"/>
+    </extension>
     <extension point="org.eclipse.ui.handlers">
         <handler commandId="org.jkiss.dbeaver.erd.diagram.view" class="org.jkiss.dbeaver.erd.ui.navigator.ViewDiagramHandler">
             <enabledWhen>
