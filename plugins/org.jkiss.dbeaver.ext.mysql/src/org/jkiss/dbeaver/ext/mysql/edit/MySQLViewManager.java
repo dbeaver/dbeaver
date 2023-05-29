@@ -110,7 +110,7 @@ public class MySQLViewManager extends MySQLTableManager {
         
         if (!view.isPersisted() && SQLSemanticProcessor.isSelectQuery(view.getDataSource().getSQLDialect(), viewDDL)) {
             if (view.getDataSource().supportsAlterView()) {
-                decl.append("ALTER");
+                decl.append("CREATE");
             } else {
                 decl.append("CREATE OR REPLACE");
             }
