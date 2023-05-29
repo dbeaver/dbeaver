@@ -405,12 +405,13 @@ public class GPTCompletionEngine implements DAICompletionEngine {
 
     private boolean isRequiresFullyQualifiedName(@NotNull DBSObject object, @Nullable DBCExecutionContext context) {
         if (context == null || context.getContextDefaults() == null) {
-            return true;
+            return false;
         }
         DBSObject parent = object.getParentObject();
+        DBCExecutionContextDefaults contextDefaults = context.getContextDefaults();
         return parent != null && !(
-            parent.equals(context.getContextDefaults().getDefaultCatalog())
-                || parent.equals(context.getContextDefaults().getDefaultSchema()));
+            parent.equals(contextDefaults.getDefaultCatalog())
+                || parent.equals(contextDefaults.getDefaultSchema()));
     }
 
     private String generateObjectDescription(
