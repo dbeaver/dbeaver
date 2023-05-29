@@ -922,7 +922,7 @@ public class PostgreSchema implements
         @Override
         protected PostgreTableConstraintColumn[] fetchObjectRow(JDBCSession session, PostgreTableBase table, PostgreTableConstraintBase constraint, JDBCResultSet resultSet)
             throws SQLException, DBException {
-            Short[] keyNumbers = PostgreUtils.safeGetShortArray(resultSet, "conkey");
+            Number[] keyNumbers = PostgreUtils.safeGetNumberArray(resultSet, "conkey");
             if (keyNumbers == null) {
                 return null;
             }
@@ -934,7 +934,7 @@ public class PostgreSchema implements
                     log.warn("Unresolved reference table of '" + foreignKey.getName() + "'");
                     return null;
                 }
-                Short[] keyRefNumbers = PostgreUtils.safeGetShortArray(resultSet, "confkey");
+                Number[] keyRefNumbers = PostgreUtils.safeGetNumberArray(resultSet, "confkey");
                 Collection<? extends PostgreTableColumn> attributes = table.getAttributes(monitor);
                 Collection<? extends PostgreTableColumn> refAttributes = refTable.getAttributes(monitor);
                 assert keyRefNumbers != null && attributes != null && refAttributes != null;
@@ -942,13 +942,13 @@ public class PostgreSchema implements
                 int refColCount = keyRefNumbers.length;
                 PostgreTableForeignKeyColumn[] fkCols = new PostgreTableForeignKeyColumn[colCount];
                 for (int i = 0; i < colCount; i++) {
-                    short colNumber = keyNumbers[i]; // Column number - 1-based
+                    short colNumber = keyNumbers[i].shortValue(); // Column number - 1-based
                     if (i >= refColCount) {
                         log.debug("Number of foreign columns is less than constraint columns (" + refColCount + " < " + colCount + ") in " + constraint.getFullyQualifiedName(DBPEvaluationContext.DDL));
                         break;
                     }
                     final PostgreTableColumn attr = PostgreUtils.getAttributeByNum(attributes, colNumber);
-                    final PostgreTableColumn refAttr = PostgreUtils.getAttributeByNum(refAttributes, keyRefNumbers[i]);
+                    final PostgreTableColumn refAttr = PostgreUtils.getAttributeByNum(refAttributes, keyRefNumbers[i].intValue());
                     if (attr == null) {
                         log.warn("Bad foreign key attribute index: " + colNumber);
                         continue;

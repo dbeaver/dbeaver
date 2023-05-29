@@ -320,8 +320,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         ProposalSearchJob(SQLCompletionAnalyzer analyzer) {
             super("Search proposals...");
-            setSystem(false);
             this.analyzer = analyzer;
+            setSystem(true);
+            setUser(false);
         }
 
         @Override
