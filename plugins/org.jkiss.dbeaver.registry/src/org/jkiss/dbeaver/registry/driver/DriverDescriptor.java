@@ -206,6 +206,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     private final List<ReplaceInfo> driverReplacements = new ArrayList<>();
     private DriverDescriptor replacedBy;
+    private String deprecationReason;
 
     private final Map<String, Object> defaultParameters = new HashMap<>();
     private final Map<String, Object> customParameters = new HashMap<>();
@@ -322,6 +323,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.customConnectionProperties.putAll(copyFrom.customConnectionProperties);
             this.configurationTypes.addAll(copyFrom.configurationTypes);
             this.supportsDistributedMode = copyFrom.supportsDistributedMode;
+            this.deprecationReason = copyFrom.deprecationReason;
         } else {
             this.categories = new ArrayList<>();
             this.name = "";
@@ -360,6 +362,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.origAllowsEmptyPassword = this.allowsEmptyPassword = CommonUtils.getBoolean("allowsEmptyPassword");
         this.licenseRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_LICENSE_REQUIRED));
         this.supportsDistributedMode = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE), true);
+        this.deprecationReason = config.getAttribute(RegistryConstants.ATTR_DEPRECATED);
         this.custom = false;
         this.isLoaded = false;
 
@@ -487,6 +490,17 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @Override
     public DriverDescriptor getReplacedBy() {
         return replacedBy;
+    }
+
+    @Override
+    public boolean isDeprecated() {
+        return deprecationReason != null;
+    }
+
+    @NotNull
+    @Override
+    public String getDeprecationReason() {
+        return deprecationReason;
     }
 
     public void setReplacedBy(DriverDescriptor replaceBy) {
@@ -669,7 +683,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     public boolean isDisabled() {
-        return disabled;
+        return disabled || isDeprecated();
     }
 
     public void setDisabled(boolean disabled) {
