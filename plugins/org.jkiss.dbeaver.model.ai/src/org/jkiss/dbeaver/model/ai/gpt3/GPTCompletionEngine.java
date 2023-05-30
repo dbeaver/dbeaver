@@ -30,6 +30,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AICompletionConstants;
 import org.jkiss.dbeaver.model.ai.AIEngineSettings;
@@ -375,10 +376,24 @@ public class GPTCompletionEngine implements DAICompletionEngine {
         int maxRequestLength = MAX_PROMPT_LENGTH - additionalMetadata.length() - tail.length() - 20;
 
         if (request.getScope() != DAICompletionScope.CUSTOM) {
-            additionalMetadata.append(generateObjectDescription(monitor, request, mainObject, maxRequestLength));
+            additionalMetadata.append(generateObjectDescription(
+                monitor,
+                request,
+                mainObject,
+                executionContext,
+                maxRequestLength,
+                false
+            ));
         } else {
             for (DBSEntity entity : request.getCustomEntities()) {
-                additionalMetadata.append(generateObjectDescription(monitor, request, entity, maxRequestLength));
+                additionalMetadata.append(generateObjectDescription(
+                    monitor,
+                    request,
+                    entity,
+                    executionContext,
+                    maxRequestLength,
+                    isRequiresFullyQualifiedName(entity, executionContext)
+                ));
             }
         }
 
@@ -388,11 +403,23 @@ public class GPTCompletionEngine implements DAICompletionEngine {
         return additionalMetadata.toString();
     }
 
+    private boolean isRequiresFullyQualifiedName(@NotNull DBSObject object, @Nullable DBCExecutionContext context) {
+        if (context == null || context.getContextDefaults() == null) {
+            return false;
+        }
+        DBSObject parent = object.getParentObject();
+        DBCExecutionContextDefaults contextDefaults = context.getContextDefaults();
+        return parent != null && !(parent.equals(contextDefaults.getDefaultCatalog())
+            || parent.equals(contextDefaults.getDefaultSchema()));
+    }
+
     private String generateObjectDescription(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DAICompletionRequest request,
         @NotNull DBSObject object,
-        int maxRequestLength
+        @Nullable DBCExecutionContext context,
+        int maxRequestLength,
+        boolean useFullyQualifiedName
     ) throws DBException {
         if (DBNUtils.getNodeByObject(monitor, object, false) == null) {
             // Skip hidden objects
@@ -400,7 +427,12 @@ public class GPTCompletionEngine implements DAICompletionEngine {
         }
         StringBuilder description = new StringBuilder();
         if (object instanceof DBSEntity) {
-            description.append("# ").append(DBUtils.getQuotedIdentifier(object));
+            String name = useFullyQualifiedName && context != null ? DBUtils.getObjectFullName(
+                context.getDataSource(),
+                object,
+                DBPEvaluationContext.DDL
+            ) : DBUtils.getQuotedIdentifier(object);
+            description.append("# ").append(name);
             description.append("(");
             boolean firstAttr = addPromptAttributes(monitor, (DBSEntity) object, description, true);
             addPromptExtra(monitor, (DBSEntity) object, description, firstAttr);
@@ -416,7 +448,14 @@ public class GPTCompletionEngine implements DAICompletionEngine {
                 if (DBUtils.isSystemObject(child) || DBUtils.isHiddenObject(child) || child instanceof DBSTablePartition) {
                     continue;
                 }
-                String childText = generateObjectDescription(monitor, request, child, maxRequestLength);
+                String childText = generateObjectDescription(
+                    monitor,
+                    request,
+                    child,
+                    context,
+                    maxRequestLength,
+                    isRequiresFullyQualifiedName(child, context)
+                );
                 if (description.length() + childText.length() > maxRequestLength) {
                     log.debug("Trim GPT metadata prompt  at table '" + child.getName() + "' - too long request");
                     break;
