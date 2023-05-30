@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.util;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationHover;
+import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.Log;
@@ -68,12 +69,14 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
         if (!(textViewer instanceof ISourceViewer)) {
             return null;
         }
-        ISourceViewer sourceViewer = (ISourceViewer) textViewer;
-        for (Iterator<Annotation> ai = sourceViewer.getAnnotationModel().getAnnotationIterator(); ai.hasNext(); ) {
-            Annotation anno = ai.next();
-            Position annoPosition = sourceViewer.getAnnotationModel().getPosition(anno);
-            if (annoPosition != null && annoPosition.overlapsWith(offset, 1)) {
-                return new Region(annoPosition.getOffset(), annoPosition.getLength());
+        IAnnotationModel annotationModel = ((ISourceViewer) textViewer).getAnnotationModel();
+        if (annotationModel != null) {
+            for (Iterator<Annotation> ai = annotationModel.getAnnotationIterator(); ai.hasNext(); ) {
+                Annotation anno = ai.next();
+                Position annoPosition = annotationModel.getPosition(anno);
+                if (annoPosition != null && annoPosition.overlapsWith(offset, 1)) {
+                    return new Region(annoPosition.getOffset(), annoPosition.getLength());
+                }
             }
         }
         return null;
