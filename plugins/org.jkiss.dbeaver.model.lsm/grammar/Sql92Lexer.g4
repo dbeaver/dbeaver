@@ -339,7 +339,8 @@ EqualsOperator: '=';
 NotEqualsOperator: '<>';
 RightParen: ')';
 LeftParen: '(';
-Quote: '\'';
+SingleQuote: '\'';
+BackQuote: '`';
 Comma: ',';
 Colon: ':';
 Semicolon: ';';
@@ -390,7 +391,7 @@ LineComment
 
 // special characters and character sequences
 fragment NonquoteCharacter: ~'~';
-QuoteSymbol: Quote Quote;
+QuoteSymbol: SingleQuote SingleQuote;
 Introducer: Underscore;
 fragment NewLine: ([\r][\n])|[\n]|[\r];
 Separator: (NewLine|Space)+ -> channel(HIDDEN);
@@ -398,25 +399,28 @@ Space: [ \t]+;
 
 
 // identifiers
-DelimitedIdentifier: DoubleQuote DelimitedIdentifierBody DoubleQuote;
+DelimitedIdentifier: IdentifierQuote DelimitedIdentifierBody IdentifierQuote;
+fragment IdentifierQuote: (DoubleQuote|BackQuote);
 fragment DelimitedIdentifierBody: (DelimitedIdentifierPart)+;
 fragment DelimitedIdentifierPart: (NondoublequoteCharacter|DoublequoteSymbol);
-fragment NondoublequoteCharacter: ~'"';
-fragment DoublequoteSymbol: DoubleQuote DoubleQuote;
+fragment NondoublequoteCharacter: ~[`"];
+fragment DoublequoteSymbol: IdentifierQuote IdentifierQuote;
 
 Identifier: IdentifierBody;
-fragment IdentifierBody: IdentifierStart (((Underscore|IdentifierPart))+)?;
+fragment IdentifierBody: IdentifierStart ((Underscore|IdentifierPart)+)?;
 fragment IdentifierStart: SimpleLatinLetter;
 fragment IdentifierPart: (IdentifierStart|Digit);
 
+SquareBracketIdentifier: '[' (~']' | ']' ']')* ']';
+
 
 // literals
-NationalCharacterStringLiteral: 'N' Quote ((CharacterRepresentation)+)? Quote (((Separator)+ Quote ((CharacterRepresentation)+)? Quote)+)?;
+NationalCharacterStringLiteral: 'N' SingleQuote ((CharacterRepresentation)+)? SingleQuote (((Separator)+ SingleQuote ((CharacterRepresentation)+)? SingleQuote)+)?;
 CharacterRepresentation: (NonquoteCharacter|QuoteSymbol);
-BitStringLiteral: 'B' Quote ((Bit)+)? Quote (((Separator)+ Quote ((Bit)+)? Quote)+)?;
-HexStringLiteral: 'X' Quote ((Hexit)+)? Quote (((Separator)+ Quote ((Hexit)+)? Quote)+)?;
+BitStringLiteral: 'B' SingleQuote ((Bit)+)? SingleQuote (((Separator)+ SingleQuote ((Bit)+)? SingleQuote)+)?;
+HexStringLiteral: 'X' SingleQuote ((Hexit)+)? SingleQuote (((Separator)+ SingleQuote ((Hexit)+)? SingleQuote)+)?;
 
-StringLiteralContent: Quote ((CharacterRepresentation)+)? Quote (((Separator)+ Quote ((CharacterRepresentation)+)? Quote)+)?;
+StringLiteralContent: SingleQuote ((CharacterRepresentation)+)? SingleQuote (((Separator)+ SingleQuote ((CharacterRepresentation)+)? SingleQuote)+)?;
 
 C_: C;
 WS: Separator;

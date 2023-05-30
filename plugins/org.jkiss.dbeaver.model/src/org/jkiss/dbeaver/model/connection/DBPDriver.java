@@ -133,7 +133,12 @@ public interface DBPDriver extends DBPNamedObject
 
     boolean isDisabled();
     DBPDriver getReplacedBy();
-    
+
+    boolean isDeprecated();
+
+    @NotNull
+    String getDeprecationReason();
+
     /**
      * @return a pair of providerId and driverId for each of driver replacement
      */
