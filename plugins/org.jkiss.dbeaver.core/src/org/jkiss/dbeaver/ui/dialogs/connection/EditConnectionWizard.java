@@ -141,6 +141,11 @@ public class EditConnectionWizard extends ConnectionWizard {
      */
     @Override
     public void addPages() {
+        if (dataSource.getDriver().isDeprecated()) {
+            addPage(new ConnectionPageDeprecation(dataSource));
+            return;
+        }
+
         DataSourceViewDescriptor view = DataSourceViewRegistry.getInstance().findView(
             dataSource.getDriver().getProviderDescriptor(),
             IActionConstants.EDIT_CONNECTION_POINT);
@@ -221,6 +226,10 @@ public class EditConnectionWizard extends ConnectionWizard {
      */
     @Override
     public boolean performFinish() {
+        if (dataSource.getDriver().isDeprecated()) {
+            return true;
+        }
+
         DBPDataSourceRegistry registry = originalDataSource.getRegistry();
         DataSourceDescriptor dsCopy = new DataSourceDescriptor(originalDataSource, registry);
         DataSourceDescriptor dsChanged = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
@@ -303,6 +312,10 @@ public class EditConnectionWizard extends ConnectionWizard {
 
     @Override
     protected void saveSettings(DataSourceDescriptor dataSource) {
+        if (dataSource.getDriver().isDeprecated()) {
+            return;
+        }
+
         if (isPageActive(pageSettings)) {
             pageSettings.saveSettings(dataSource);
         }

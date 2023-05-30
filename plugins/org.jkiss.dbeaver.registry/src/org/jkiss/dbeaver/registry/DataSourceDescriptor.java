@@ -1794,8 +1794,9 @@ public class DataSourceDescriptor
     @Nullable
     @Override
     public String getRequiredExternalAuth() {
-        if (origin instanceof DBPDataSourceOriginExternal) {
-            var externalOrigin = (DBPDataSourceOriginExternal) origin;
+        var dsOrigin = getOrigin();
+        if (dsOrigin instanceof DBPDataSourceOriginExternal) {
+            var externalOrigin = (DBPDataSourceOriginExternal) dsOrigin;
             return externalOrigin.getSubType();
         }
 

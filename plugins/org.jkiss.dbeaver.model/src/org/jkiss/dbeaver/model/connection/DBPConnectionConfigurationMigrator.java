@@ -14,29 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.connection;
 
-package org.jkiss.dbeaver.ext.mysql.model;
-
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 
 /**
- * MySQLDataSourceInfo
+ * Migrates data source's connection configuration after its driver was replaced.
  */
-public class MySQLDataSourceInfo extends JDBCDataSourceInfo {
+public interface DBPConnectionConfigurationMigrator {
+    void migrateConfiguration(
+        @NotNull DBPConnectionConfiguration oldConfiguration,
+        @NotNull DBPConnectionConfiguration newConfiguration) throws DBException;
 
-    public MySQLDataSourceInfo(JDBCDatabaseMetaData metaData) {
-        super(metaData);
-    }
-
-    @Override
-    public boolean supportsMultipleResults() {
-        return true;
-    }
-
-    @Override
-    public boolean needsTableMetaForColumnResolution() {
-        return true;
-    }
-
+    boolean migrationRequired(@NotNull DBPConnectionConfiguration oldConfiguration);
 }

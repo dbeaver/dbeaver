@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.runtime.jobs;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -60,6 +61,12 @@ public class ConnectJob extends AbstractJob
     protected IStatus run(DBRProgressMonitor monitor)
     {
         try {
+            if (container.getDriver().isDeprecated()) {
+                throw new DBException(
+                    "Driver " + container.getDriver().getFullName()+ " is deprecated." +
+                    " Please see the connection page for more info.");
+            }
+
             connectThread = getThread();
             String oldName = connectThread == null ? null : connectThread.getName();
             if (reflect && connectThread != null) {

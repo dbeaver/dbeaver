@@ -338,6 +338,7 @@
                     description="ODBC bridge driver"
                     supportedConfigurationTypes="MANUAL,URL"
                     supportsDistributedMode="false"
+                    deprecated="%driver.odbc.deprecation.reason"
                     categories="sql">
                     <os name="win32"/>
                     <file type="jar" path="https://github.com/dbeaver/jdbc-odbc-bridge-jre7/raw/main/jdbc-odbc-bridge-jre7.jar" bundle="!drivers.odbc"/>
