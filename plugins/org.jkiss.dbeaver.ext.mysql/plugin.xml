@@ -119,7 +119,7 @@
                         </folder>
                     </items>
                 </folder>
-                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLUser" label="%tree.users.node.name" icon="#folder_user" description="%tree.users.node.tip" visibleIf="object.dataSource.supportsUserManagement()">
+                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLUser" label="%tree.users.node.name" icon="#folder_user" description="%tree.users.node.tip" visibleIf="connected &amp;&amp; object.dataSource.supportsUserManagement()">
                     <items label="%tree.user.node.name" path="users" property="users" icon="#user">
                         <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLGrant" label="%tree.userGrants.node.name" description="%tree.userGrants.node.tip">
                             <items label="%tree.user.node.name" path="grants" property="grants"/>
