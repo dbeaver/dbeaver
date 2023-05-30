@@ -353,7 +353,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
 
     @Override
     protected boolean isCustomURL() {
-        return isCustom || typeURLRadio.getSelection();
+        return isCustom || (typeURLRadio != null && typeURLRadio.getSelection());
     }
 
     @Override
@@ -467,7 +467,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         final Set<String> properties = metaURL == null ? Collections.emptySet() : metaURL.getAvailableProperties();
 
         connectionInfo.setConfigurationType(
-            typeURLRadio.getSelection() ? DBPDriverConfigurationType.URL : DBPDriverConfigurationType.MANUAL);
+            typeURLRadio != null && typeURLRadio.getSelection() ? DBPDriverConfigurationType.URL : DBPDriverConfigurationType.MANUAL);
 
         if (hostText != null && properties.contains(JDBCConstants.PROP_HOST)) {
             connectionInfo.setHostName(hostText.getText().trim());
