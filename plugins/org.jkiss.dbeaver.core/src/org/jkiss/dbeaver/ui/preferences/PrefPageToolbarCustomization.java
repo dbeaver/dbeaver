@@ -29,8 +29,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Resource;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandImageService;
 import org.eclipse.ui.commands.ICommandService;
@@ -38,6 +36,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.ToolBarConfigurationDescriptor;
 import org.jkiss.dbeaver.ui.actions.ToolBarConfigurationPropertyTester;
@@ -53,8 +53,10 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 
-public class PrefPageToolbarCustomization extends AbstractPrefPage implements IWorkbenchPreferencePage {
-    
+public class PrefPageToolbarCustomization extends TargetPrefPage {
+
+    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.toolbar.customization"; //$NON-NLS-1$
+
     /**
      * Tree node with checkbox
      */
@@ -193,6 +195,41 @@ public class PrefPageToolbarCustomization extends AbstractPrefPage implements IW
             .collect(Collectors.toList());
     }
 
+    @Override
+    public final boolean isDataSourcePreferencePage() {
+        return false;
+    }
+
+    @Override
+    protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dsContainer) {
+        return false;
+    }
+
+    @Override
+    protected boolean supportsDataSourceSpecificOptions() {
+        return false;
+    }
+
+    @Override
+    protected void loadPreferences(DBPPreferenceStore store) {
+        // do nothing
+    }
+
+    @Override
+    protected void savePreferences(DBPPreferenceStore store) {
+        performOk();
+    }
+
+    @Override
+    protected void clearPreferences(DBPPreferenceStore store) {
+        performDefaults();
+    }
+
+    @Override
+    protected String getPropertyPageID() {
+        return PAGE_ID;
+    }
+
     @Nullable
     private Image findBundleImage(@NotNull String pluginId, @NotNull String bundlePath) {
         Bundle bundle = Platform.getBundle(pluginId);
@@ -203,11 +240,6 @@ public class PrefPageToolbarCustomization extends AbstractPrefPage implements IW
             }
         }
         return null;
-    }
-    
-    @Override
-    public void init(IWorkbench workbench) {
-        // do nothing
     }
 
     @NotNull
