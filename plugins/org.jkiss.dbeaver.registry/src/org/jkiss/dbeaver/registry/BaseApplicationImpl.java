@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
 import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.UUID;
+
 /**
  * Base application implementation
  */
@@ -35,6 +37,9 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
     private static final Log log = Log.getLog(BaseApplicationImpl.class);
 
     private static DBPApplication INSTANCE;
+
+    private final String applicationRunId = UUID.randomUUID().toString();
+    private final long applicationStartTime = System.currentTimeMillis();
 
     protected BaseApplicationImpl() {
         if (INSTANCE != null && !(INSTANCE instanceof EclipsePluginApplicationImpl)) {
@@ -89,6 +94,16 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
     @Override
     public boolean isDistributed() {
         return false;
+    }
+
+    @NotNull
+    public String getApplicationRunId() {
+        return applicationRunId;
+    }
+
+    @Override
+    public long getApplicationStartTime() {
+        return applicationStartTime;
     }
 
     @Override

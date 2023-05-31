@@ -16,13 +16,11 @@
  */
 package org.jkiss.dbeaver.model.lsm;
 
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.tree.Tree;
+import org.jkiss.code.Nullable;
 
-public abstract class LSMParser extends Parser {
+public interface LSMParser extends LSMObject<LSMParser> {
 
-    public LSMParser(TokenStream input) {
-        super(input);
-    }
-
+    @Nullable
+    Tree parse();
 }

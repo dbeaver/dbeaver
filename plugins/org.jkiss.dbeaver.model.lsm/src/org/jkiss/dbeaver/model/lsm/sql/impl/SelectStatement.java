@@ -16,17 +16,19 @@
  */
 package org.jkiss.dbeaver.model.lsm.sql.impl;
 
+import org.jkiss.dbeaver.model.lsm.LSMElement;
 import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxNode;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxSubnode;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxTerm;
+import org.jkiss.dbeaver.model.lsm.sql.LSMSelectStatement;
 
 import java.util.List;
 
-@SyntaxNode(name = "queryExpression")
-public class SelectStatement extends AbstractSyntaxNode {
+@SyntaxNode(name = "selectStatement")
+public class SelectStatement extends AbstractSyntaxNode implements LSMSelectStatement, LSMElement {
 
-    private static final String nonJoinSimpleQuerySpecPath = "./nonJoinQueryTerm/queryPrimary/nonJoinQueryPrimary/simpleTable/querySpecification";
+    private static final String nonJoinSimpleQuerySpecPath = "./queryExpression/nonJoinQueryTerm/queryPrimary/nonJoinQueryPrimary/simpleTable/querySpecification";
     
     @SyntaxTerm(xpath = nonJoinSimpleQuerySpecPath + "/setQuantifier")
     public SelectQuantifier quantifier;
@@ -39,4 +41,9 @@ public class SelectStatement extends AbstractSyntaxNode {
     @SyntaxSubnode(type = SelectionSource.CrossJoin.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/fromClause/tableReference/joinedTable/crossJoinTerm")
     @SyntaxSubnode(type = SelectionSource.NaturalJoin.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/fromClause/tableReference/joinedTable/naturalJoinTerm")
     public List<SelectionSource> sources;
+
+    @SyntaxSubnode(type = OrderingSpec.class, xpath = "./orderByClause")
+    public OrderingSpec orderBy;
+    @SyntaxSubnode(type = GroupingSpec.class, xpath = nonJoinSimpleQuerySpecPath + "/tableExpression/groupByClause")
+    public GroupingSpec groupBy;
 }

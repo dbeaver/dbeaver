@@ -1057,7 +1057,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     @Override
     protected String getStandardSQLDataTypeName(@NotNull DBPDataKind dataKind) {
         switch (dataKind) {
-            case BOOLEAN: return OracleConstants.TYPE_NAME_BOOLEAN;
+            case BOOLEAN: return SQLConstants.DATA_TYPE_BOOLEAN;
             case NUMERIC: return OracleConstants.TYPE_NAME_NUMERIC;
             case DATETIME: return OracleConstants.TYPE_NAME_TIMESTAMP;
             case BINARY:

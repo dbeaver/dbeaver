@@ -360,7 +360,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
                 return DBPDataKind.DATETIME;
 
             case SQLServerConstants.TYPE_DATETIMEOFFSET:
-                return DBPDataKind.STRING;
+                return DBPDataKind.DATETIME;
 
             case SQLServerConstants.TYPE_BINARY:
             case SQLServerConstants.TYPE_VARBINARY:

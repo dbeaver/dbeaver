@@ -167,14 +167,14 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             this.estRows = JDBCUtils.safeGetFloat(dbResult, "prorows");
         }
 
-        Long[] allArgTypes = JDBCUtils.safeGetArray(dbResult, "proallargtypes");
-        String[] argNames = JDBCUtils.safeGetArray(dbResult, "proargnames");
+        Number[] allArgTypes = PostgreUtils.safeGetNumberArray(dbResult, "proallargtypes");
+        String[] argNames = PostgreUtils.safeGetStringArray(dbResult, "proargnames");
         if (!ArrayUtils.isEmpty(allArgTypes)) {
-            String[] argModes = JDBCUtils.safeGetArray(dbResult, "proargmodes");
+            String[] argModes = PostgreUtils.safeGetStringArray(dbResult, "proargmodes");
 
             for (int i = 0; i < allArgTypes.length; i++) {
-                Long paramType = allArgTypes[i];
-                final PostgreDataType dataType = container.getDatabase().getDataType(monitor, paramType.intValue());
+                final long paramType = allArgTypes[i].longValue();
+                final PostgreDataType dataType = container.getDatabase().getDataType(monitor, paramType);
                 if (dataType == null) {
                     log.warn("Parameter data type [" + paramType + "] not found");
                     continue;
@@ -291,7 +291,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         this.acl = JDBCUtils.safeGetObject(dbResult, "proacl");
 
         if (dataSource.isServerVersionAtLeast(8, 3)) {
-            this.config = JDBCUtils.safeGetArray(dbResult, "proconfig");
+            this.config = PostgreUtils.safeGetStringArray(dbResult, "proconfig");
         }
 
         if (dataSource.getServerType().supportsStoredProcedures()) {

@@ -37,7 +37,6 @@ import org.jkiss.utils.Pair;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * SQL dialect
@@ -120,11 +119,11 @@ public interface SQLDialect {
      *         SQL92 keywords
      */
     @NotNull
-    Set<String> getReservedWords();
+    Collection<String> getReservedWords();
     @NotNull
-    Set<String> getFunctions();
+    Collection<String> getFunctions();
     @NotNull
-    Set<String> getDataTypes(@Nullable DBPDataSource dataSource);
+    Collection<String> getDataTypes(@Nullable DBPDataSource dataSource);
     @Nullable
     DBPKeywordType getKeywordType(@NotNull String word);
     @NotNull
@@ -419,6 +418,12 @@ public interface SQLDialect {
      */
     @Nullable
     String getDualTableName();
+
+    /**
+     * Returns true if the comments need to be removed from the statement if
+     * they are right before the block declaration
+     */
+    boolean isStripCommentsBeforeBlocks();
 
     /**
      * Returns true if query is definitely transactional. Otherwise returns false, however it still may be transactional.

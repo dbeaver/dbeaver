@@ -53,8 +53,12 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.lang.reflect.Array;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 
 /**
  * postgresql utils
@@ -819,12 +823,30 @@ public class PostgreUtils {
      * If the column doesn't exist, then there will be an exception
      *
      * @param tableName name of the system table
-     * @param columnName name of the system column
+     * @param columnName name of the system column. Use "*" param, if you need to check access to the full table/view.
      * @return query for the system column checking
      */
     @NotNull
     public static String getQueryForSystemColumnChecking(@NotNull String tableName, @NotNull String columnName) {
         return "SELECT " + columnName + " FROM pg_catalog." + tableName + " WHERE 1<>1 LIMIT 1";
+    }
+
+    /**
+     * Returns state of the meta object existence from the system catalogs.
+     *
+     * @param session to execute a query
+     * @param tableName name of the required table
+     * @param columnName name of the required column or symbol *
+     * @return state of the meta object existence in the system data
+     */
+    public static boolean isMetaObjectExists(@NotNull JDBCSession session, @NotNull String tableName, @NotNull String columnName) {
+        try {
+            JDBCUtils.queryString(session, getQueryForSystemColumnChecking(tableName, columnName));
+            return true;
+        } catch (SQLException e) {
+            log.debug("Error reading system information from the " + tableName + " table", e);
+        }
+        return false;
     }
 
     /**
@@ -839,6 +861,89 @@ public class PostgreUtils {
             return ((PostgreDataType) type).getArrayDelimiter();
         } else {
             return ",";
+        }
+    }
+
+    /**
+     * Attempts to retrieve an array using {@link ResultSet#getArray(String)}, and if it can't
+     * be done due to an exception, falls back to manually parsing the string representation
+     * of an array retrieved using {@link ResultSet#getString(String)}.
+     *
+     * @param dbResult   a result set to retrieve data from
+     * @param columnName a name of a column to retrieve data from
+     * @param converter  a function that takes string representation of an element and returns {@code T}
+     * @param generator  a function that takes a length and creates array of {@code T}
+     * @return array elements
+     * @see PostgreValueParser#parsePrimitiveArray(String, Function, IntFunction)
+     */
+    @SuppressWarnings("unchecked")
+    @Nullable
+    public static <T> T[] safeGetArray(
+        @NotNull ResultSet dbResult,
+        @NotNull String columnName,
+        @NotNull Function<String, T> converter,
+        @NotNull IntFunction<T[]> generator
+    ) {
+        Exception exception = null;
+
+        try {
+            final java.sql.Array value = dbResult.getArray(columnName);
+            return value != null ? (T[]) value.getArray() : null;
+        } catch (SQLFeatureNotSupportedException ignored) {
+            // Some drivers (ODBC) might not have an implementation for that API, just ignore and try with a string
+        } catch (Exception e) {
+            exception = e;
+        }
+
+        try {
+            final String value = dbResult.getString(columnName);
+            return value != null ? PostgreValueParser.parsePrimitiveArray(value, converter, generator) : null;
+        } catch (Exception e) {
+            if (exception == null) {
+                exception = e;
+            }
+        }
+
+        log.debug("Can't get column '" + columnName + "': " + exception.getMessage());
+        return null;
+    }
+
+    /**
+     * Attempts to retrieve an array of strings from the result set under the given {@code columnName}.
+     *
+     * @see #safeGetArray(ResultSet, String, Function, IntFunction)
+     */
+    @Nullable
+    public static String[] safeGetStringArray(@NotNull ResultSet dbResult, @NotNull String columnName) {
+        return safeGetArray(dbResult, columnName, Function.identity(), String[]::new);
+    }
+
+    /**
+     * Attempts to retrieve an array of shorts from the result set under the given {@code columnName}.
+     *
+     * @see #safeGetArray(ResultSet, String, Function, IntFunction)
+     */
+    @Nullable
+    public static Number[] safeGetNumberArray(@NotNull ResultSet dbResult, @NotNull String columnName) {
+        return safeGetArray(dbResult, columnName, PostgreUtils::parseNumber, Number[]::new);
+    }
+
+    /**
+     * Attempts to retrieve an array of booleans from the result set under the given {@code columnName}.
+     *
+     * @see #safeGetArray(ResultSet, String, Function, IntFunction)
+     */
+    @Nullable
+    public static Boolean[] safeGetBooleanArray(@NotNull ResultSet dbResult, @NotNull String columnName) {
+        return safeGetArray(dbResult, columnName, Boolean::valueOf, Boolean[]::new);
+    }
+
+    @NotNull
+    private static Number parseNumber(@NotNull String str) {
+        try {
+            return Long.parseLong(str);
+        } catch (NumberFormatException e) {
+            return Double.parseDouble(str);
         }
     }
 }

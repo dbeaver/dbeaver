@@ -190,7 +190,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         }
         for (DBNProject node : projects) {
             if (node.getProject().equals(project) ||
-                CommonUtils.equalObjects(node.getProject().getProjectID(), project.getProjectID()))
+                CommonUtils.equalObjects(node.getProject().getId(), project.getId()))
             {
                 return node;
             }

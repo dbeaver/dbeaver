@@ -51,6 +51,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
     private static final Log log = Log.getLog(MySQLTable.class);
 
     private static final String INNODB_COMMENT = "InnoDB free";
+    private static final String PARTITIONED_STATUS = "partitioned";
 
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
@@ -67,24 +68,96 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         private long dataFree;
         private long indexLength;
         private String rowFormat;
+        private boolean partitioned;
 
-        @Property(viewable = true, editable = true, updatable = true, listProvider = EngineListProvider.class, order = 3) public MySQLEngine getEngine() { return engine; }
-        @Property(viewable = true, editable = true, updatable = true, order = 4) public long getAutoIncrement() { return autoIncrement; }
-        @Property(viewable = false, editable = true, updatable = true, listProvider = CharsetListProvider.class, order = 5) public MySQLCharset getCharset() { return charset; }
-        @Property(viewable = false, editable = true, updatable = true, listProvider = CollationListProvider.class, order = 6) public MySQLCollation getCollation() { return collation; }
-        @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100) public String getDescription() { return description; }
+        @Property(viewable = true, editable = true, updatable = true, listProvider = EngineListProvider.class,
+            visibleIf = PartitionedTablePropertyValidator.class, order = 3)
+        public MySQLEngine getEngine() {
+            return engine;
+        }
 
-        @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 10) public long getRowCount() { return rowCount; }
-        @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 11) public long getAvgRowLength() { return avgRowLength; }
-        @Property(category = DBConstants.CAT_STATISTICS, viewable = true, order = 12, formatter = ByteNumberFormat.class) public long getDataLength() { return dataLength; }
-        @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 13, formatter = ByteNumberFormat.class) public long getMaxDataLength() { return maxDataLength; }
-        @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 14, formatter = ByteNumberFormat.class) public long getDataFree() { return dataFree; }
-        @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 15, formatter = ByteNumberFormat.class) public long getIndexLength() { return indexLength; }
-        @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 16) public String getRowFormat() { return rowFormat; }
+        @Property(viewable = true, editable = true, updatable = true, visibleIf = PartitionedTablePropertyValidator.class, order = 4)
+        public long getAutoIncrement() {
+            return autoIncrement;
+        }
 
-        @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 20) public Date getCreateTime() { return createTime; }
-        @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 21) public Date getUpdateTime() { return updateTime; }
-        @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 22) public Date getCheckTime() { return checkTime; }
+        @Property(editable = true, updatable = true, listProvider = CharsetListProvider.class,
+            visibleIf = PartitionedTablePropertyValidator.class, order = 5)
+        public MySQLCharset getCharset() {
+            return charset;
+        }
+
+        @Property(editable = true, updatable = true, listProvider = CollationListProvider.class,
+            visibleIf = PartitionedTablePropertyValidator.class, order = 6)
+        public MySQLCollation getCollation() {
+            return collation;
+        }
+
+        @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE,
+            visibleIf = PartitionedTablePropertyValidator.class, order = 100)
+        public String getDescription() {
+            return description;
+        }
+
+        @Property(category = DBConstants.CAT_STATISTICS, visibleIf = PartitionedTablePropertyValidator.class, order = 10)
+        public long getRowCount() {
+            return rowCount;
+        }
+
+        @Property(category = DBConstants.CAT_STATISTICS, visibleIf = PartitionedTablePropertyValidator.class, order = 11)
+        public long getAvgRowLength() {
+            return avgRowLength;
+        }
+
+        @Property(category = DBConstants.CAT_STATISTICS, viewable = true, order = 12,
+            visibleIf = PartitionedTablePropertyValidator.class, formatter = ByteNumberFormat.class)
+        public long getDataLength() {
+            return dataLength;
+        }
+
+        @Property(category = DBConstants.CAT_STATISTICS, order = 13,
+            visibleIf = PartitionedTablePropertyValidator.class, formatter = ByteNumberFormat.class)
+        public long getMaxDataLength() {
+            return maxDataLength;
+        }
+
+        @Property(category = DBConstants.CAT_STATISTICS, order = 14,
+            visibleIf = PartitionedTablePropertyValidator.class, formatter = ByteNumberFormat.class)
+        public long getDataFree() {
+            return dataFree;
+        }
+
+        @Property(category = DBConstants.CAT_STATISTICS, order = 15,
+            visibleIf = PartitionedTablePropertyValidator.class, formatter = ByteNumberFormat.class)
+        public long getIndexLength() {
+            return indexLength;
+        }
+
+        @Property(category = DBConstants.CAT_STATISTICS, order = 16,
+            visibleIf = PartitionedTablePropertyValidator.class)
+        public String getRowFormat() {
+            return rowFormat;
+        }
+
+        @Property(category = DBConstants.CAT_STATISTICS, visibleIf = PartitionedTablePropertyValidator.class, order = 20)
+        public Date getCreateTime() {
+            return createTime;
+        }
+
+        @Property(category = DBConstants.CAT_STATISTICS, visibleIf = PartitionedTablePropertyValidator.class, order = 21)
+        public Date getUpdateTime() {
+            return updateTime;
+        }
+
+        @Property(category = DBConstants.CAT_STATISTICS, visibleIf = PartitionedTablePropertyValidator.class, order = 22)
+        public Date getCheckTime() {
+            return checkTime;
+        }
+
+        @Property(viewable = true, visibleIf = PartitionedTablePropertyValidator.class, order = 23)
+        public boolean isPartitioned() {
+            return partitioned;
+        }
 
         public void setEngine(MySQLEngine engine) { this.engine = engine; }
         public void setAutoIncrement(long autoIncrement) { this.autoIncrement = autoIncrement; }
@@ -127,6 +200,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
             additionalInfo.charset = sourceAI.charset;
             additionalInfo.collation = sourceAI.collation;
             additionalInfo.engine = sourceAI.engine;
+            additionalInfo.partitioned = sourceAI.partitioned;
 
             // Copy triggers
             for (MySQLTrigger srcTrigger : ((MySQLTable) source).getTriggers(monitor)) {
@@ -135,7 +209,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
             }
             // Copy partitions
             for (MySQLPartition partition : ((MySQLTable)source).partitionCache.getCachedObjects()) {
-                partitionCache.cacheObject(new MySQLPartition(monitor, this, partition));
+                partitionCache.cacheObject(new MySQLPartition(monitor, this, partition, source));
             }
         }
         if (source instanceof DBSTable) {
@@ -214,6 +288,11 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         return false;
     }
 
+    @Association
+    public boolean hasPartitions() {
+        return additionalInfo.partitioned;
+    }
+
     @Override
     @Association
     public Collection<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor)
@@ -276,7 +355,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
     public synchronized Collection<MySQLTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        if (!foreignKeys.isFullyCached()) {
+        if (!foreignKeys.isFullyCached() && getDataSource().getInfo().supportsReferentialIntegrity()) {
             List<MySQLTableForeignKey> fkList = loadForeignKeys(monitor, false);
             foreignKeys.setCache(fkList);
         }
@@ -367,6 +446,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         additionalInfo.dataFree = JDBCUtils.safeGetLong(dbResult, "Data_free");
         additionalInfo.indexLength = JDBCUtils.safeGetLong(dbResult, "Index_length");
         additionalInfo.rowFormat = JDBCUtils.safeGetString(dbResult, "Row_format");
+        additionalInfo.partitioned = PARTITIONED_STATUS.equalsIgnoreCase(JDBCUtils.safeGetString(dbResult, "Create_options"));
 
         additionalInfo.loaded = true;
     }
@@ -547,19 +627,30 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         protected MySQLPartition fetchObject(@NotNull JDBCSession session, @NotNull MySQLTable table, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
         {
             String partitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_PARTITION_NAME);
+            String subPartitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SUBPARTITION_NAME);
+            if (CommonUtils.isEmpty(partitionName) && CommonUtils.isEmpty(subPartitionName)) {
+                // This is default empty info partition for tables without partitions. Do not create it.
+                return null;
+            }
             if (partitionName == null) {
                 partitionName = "PARTITION";
             }
-            String subPartitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SUBPARTITION_NAME);
             if (CommonUtils.isEmpty(subPartitionName)) {
                 return new MySQLPartition(table, null, partitionName, dbResult);
             } else {
                 MySQLPartition parentPartition = partitionMap.get(partitionName);
+                boolean parentFetched = false;
                 if (parentPartition == null) {
                     parentPartition = new MySQLPartition(table, null, partitionName, dbResult);
                     partitionMap.put(partitionName, parentPartition);
+                } else {
+                    parentFetched = true;
                 }
+                // create subpartition
                 new MySQLPartition(table, parentPartition, subPartitionName, dbResult);
+                if (!parentFetched) {
+                    return parentPartition;
+                }
                 return null;
             }
         }
@@ -567,7 +658,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         @Override
         protected void invalidateObjects(DBRProgressMonitor monitor, MySQLTable owner, Iterator<MySQLPartition> objectIter)
         {
-            partitionMap = null;
+            partitionMap.clear();
         }
     }
 
@@ -686,6 +777,13 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
             } else {
                 return object.additionalInfo.charset.getCollations().toArray();
             }
+        }
+    }
+
+    public static class PartitionedTablePropertyValidator implements IPropertyValueValidator<MySQLTable, Object> {
+        @Override
+        public boolean isValidValue(MySQLTable object, Object value) throws IllegalArgumentException {
+            return !object.isPartition();
         }
     }
 

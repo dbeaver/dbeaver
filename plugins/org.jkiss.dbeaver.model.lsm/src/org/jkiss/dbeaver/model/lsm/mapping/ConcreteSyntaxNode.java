@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.model.lsm.mapping;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,10 +31,11 @@ public class ConcreteSyntaxNode extends AbstractSyntaxNode {
         super();
     }
 
-    public ConcreteSyntaxNode(String name) {
+    public ConcreteSyntaxNode(@NotNull String name) {
         super(name);
     }
 
+    @NotNull
     public List<AbstractSyntaxNode> getChildren() {
         if (children == null) {
             return Collections.emptyList();
@@ -43,7 +47,8 @@ public class ConcreteSyntaxNode extends AbstractSyntaxNode {
         }
     }
 
-    public List<AbstractSyntaxNode> getChildren(String name) {
+    @NotNull
+    public List<AbstractSyntaxNode> getChildren(@Nullable String name) {
         List<AbstractSyntaxNode> result;
         if (this.children == null) {
             result = Collections.emptyList();
@@ -58,7 +63,8 @@ public class ConcreteSyntaxNode extends AbstractSyntaxNode {
         return result;
     }
 
-    public <T extends AbstractSyntaxNode> List<T> getChildren(Class<T> subnodeType) {
+    @NotNull
+    public <T extends AbstractSyntaxNode> List<T> getChildren(@NotNull Class<T> subnodeType) {
         List<T> result;
         if (this.children == null) {
             result = Collections.emptyList();
@@ -75,7 +81,7 @@ public class ConcreteSyntaxNode extends AbstractSyntaxNode {
         return result;
     }
 
-    void addChild(AbstractSyntaxNode node) {
+    void addChild(@NotNull AbstractSyntaxNode node) {
         if (this.children == null) {
             this.children = new ArrayList<>();
         }

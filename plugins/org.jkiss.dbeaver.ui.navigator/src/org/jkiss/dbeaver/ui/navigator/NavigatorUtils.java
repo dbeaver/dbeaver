@@ -17,9 +17,11 @@
 package org.jkiss.dbeaver.ui.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -81,7 +83,6 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -90,6 +91,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Navigator utils
@@ -622,8 +625,8 @@ public class NavigatorUtils {
                                 if (curResource instanceof IFile) {
                                     curResource = curResource.getParent();
                                 }
-                                if (curResource instanceof IFolder) {
-                                    IFolder toFolder = (IFolder) curResource;
+                                if (curResource instanceof IContainer) {
+                                    IContainer toFolder = (IContainer) curResource;
                                     new AbstractJob("Copy files to workspace") {
                                         {
                                             setUser(true);
@@ -669,22 +672,42 @@ public class NavigatorUtils {
         return null;
     }
 
-    private static void dropFilesIntoFolder(DBRProgressMonitor monitor, IFolder toFolder, String[] data) throws Exception {
+    private static void dropFilesIntoFolder(DBRProgressMonitor monitor, IContainer toFolder, String[] data) throws Exception {
         for (String extFileName : data) {
-            File extFile = new File(extFileName);
-            if (extFile.exists()) {
-                monitor.subTask("Copy file " + extFile.getName());
+            Path extFile = Path.of(extFileName);
+            dropFileIntoContainer(monitor, toFolder, extFile);
+        }
+    }
+
+    private static void dropFileIntoContainer(DBRProgressMonitor monitor, IContainer toFolder, Path extFile) throws CoreException, IOException {
+        if (Files.exists(extFile)) {
+            org.eclipse.core.runtime.Path ePath = new org.eclipse.core.runtime.Path(extFile.getFileName().toString());
+
+            if (Files.isDirectory(extFile)) {
+                IFolder subFolder = toFolder.getFolder(ePath);
+                if (!subFolder.exists()) {
+                    subFolder.create(true, true, monitor.getNestedMonitor());
+                }
+                List<Path> sourceFolderContents;
+                try (Stream<Path> list = Files.list(extFile)) {
+                    sourceFolderContents = list.collect(Collectors.toList());
+                }
+                for (Path folderFile : sourceFolderContents) {
+                    dropFileIntoContainer(monitor, subFolder, folderFile);
+                }
+            } else {
+                monitor.subTask("Copy file " + extFile);
                 try {
-                    if (!toFolder.exists()) {
-                        toFolder.create(true, true, monitor.getNestedMonitor());
+                    if (toFolder instanceof IFolder && !toFolder.exists()) {
+                        ((IFolder) toFolder).create(true, true, monitor.getNestedMonitor());
                     }
-                    IFile targetFile = toFolder.getFile(extFile.getName());
+                    IFile targetFile = toFolder.getFile(ePath);
                     if (targetFile.exists()) {
                         if (!UIUtils.confirmAction("File exists", "File '" + targetFile.getName() + "' exists. Do you want to overwrite it?")) {
-                            continue;
+                            return;
                         }
                     }
-                    try (InputStream is = Files.newInputStream(extFile.toPath())) {
+                    try (InputStream is = Files.newInputStream(extFile)) {
                         if (targetFile.exists()) {
                             targetFile.setContents(is, true, false, monitor.getNestedMonitor());
                         } else {

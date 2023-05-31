@@ -65,6 +65,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
     private static final String ATTR_ORIGINAL_PROVIDER = "original-provider"; //$NON-NLS-1$
     private static final String ATTR_ORIGINAL_DRIVER = "original-driver"; //$NON-NLS-1$
+    private static final String ATTR_DRIVER_SUBSTITUTION = "driver-substitution"; //$NON-NLS-1$
 
     public static final String TAG_ORIGIN = "origin"; //$NON-NLS-1$
     private static final String ATTR_ORIGIN_TYPE = "$type"; //$NON-NLS-1$
@@ -525,9 +526,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 if (substitutedDriver == null || substitutedDriver.isTemporary()) {
                     substitutedDriver = originalDriver;
                 }
-                while (substitutedDriver.getReplacedBy() != null) {
-                    substitutedDriver = substitutedDriver.getReplacedBy();
+
+                if (getReplacementDriver(substitutedDriver) == originalDriver) {
+                    final DriverDescriptor original = originalDriver;
+                    originalDriver = substitutedDriver;
+                    substitutedDriver = original;
                 }
+
+                substitutedDriver = getReplacementDriver(substitutedDriver);
 
                 DataSourceDescriptor dataSource = registry.getDataSource(id);
                 boolean newDataSource = (dataSource == null);
@@ -563,12 +569,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 }
                 dataSource.setName(JSONUtils.getString(conObject, RegistryConstants.ATTR_NAME));
                 dataSource.setDescription(JSONUtils.getString(conObject, RegistryConstants.TAG_DESCRIPTION));
-                boolean savePassword = JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SAVE_PASSWORD);
                 dataSource.setSharedCredentials(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SHARED_CREDENTIALS));
-                if (!dataSource.getProject().isUseSecretStorage() || dataSource.isSharedCredentials()) {
-                    dataSource.setSavePassword(savePassword);
-                }
+                dataSource.setSavePassword(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SAVE_PASSWORD));
                 dataSource.setTemplate(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_TEMPLATE));
+                dataSource.setDriverSubstitution(DataSourceProviderRegistry.getInstance()
+                    .getDriverSubstitution(CommonUtils.notEmpty(JSONUtils.getString(conObject, ATTR_DRIVER_SUBSTITUTION))));
 
                 DataSourceNavigatorSettings navSettings = dataSource.getNavigatorSettings();
                 navSettings.setShowSystemObjects(JSONUtils.getBoolean(conObject,
@@ -601,8 +606,12 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             readPlainCredentials(cfgObject) :
                             readSecuredCredentials(dataSource, null, null);
                         config.setUserName(creds.getUserName());
-                        if (savePassword) {
+                        if (dataSource.isSavePassword() || !CommonUtils.isEmpty(creds.getUserPassword())) {
                             config.setUserPassword(creds.getUserPassword());
+                        }
+                        boolean savePasswordApplicable = (!dataSource.getProject().isUseSecretStorage() || dataSource.isSharedCredentials());
+                        if (savePasswordApplicable && !CommonUtils.isEmpty(creds.getUserPassword())) {
+                            dataSource.setSavePassword(true);
                         }
                         dataSource.forgetSecrets();
                     }
@@ -688,6 +697,23 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         bootstrap.setIgnoreErrors(JSONUtils.getBoolean(bootstrapCfg, RegistryConstants.ATTR_IGNORE_ERRORS));
                     }
                     bootstrap.setInitQueries(JSONUtils.deserializeStringList(bootstrapCfg, RegistryConstants.TAG_QUERY));
+
+                    if (originalDriver != substitutedDriver) {
+                        final DBPDataSourceProvider dataSourceProvider = substitutedDriver.getDataSourceProvider();
+                        if (dataSourceProvider instanceof DBPConnectionConfigurationMigrator) {
+                            final DBPConnectionConfigurationMigrator migrator = (DBPConnectionConfigurationMigrator) dataSourceProvider;
+                            if (migrator.migrationRequired(config)) {
+                                final DBPConnectionConfiguration migrated = new DBPConnectionConfiguration(config);
+                                try {
+                                    migrator.migrateConfiguration(config, migrated);
+                                    dataSource.setConnectionInfo(migrated);
+                                    log.debug("Connection configuration for data source '" + id + "' was migrated successfully");
+                                } catch (DBException e) {
+                                    log.error("Unable to migrate connection configuration for data source '" + id + "'", e);
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // Permissions
@@ -892,6 +918,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (dataSource.getDriver() != dataSource.getOriginalDriver()) {
             JSONUtils.field(json, ATTR_ORIGINAL_PROVIDER, dataSource.getOriginalDriver().getProviderDescriptor().getId());
             JSONUtils.field(json, ATTR_ORIGINAL_DRIVER, dataSource.getOriginalDriver().getId());
+        }
+        if (dataSource.getDriverSubstitution() != null) {
+            JSONUtils.field(json, ATTR_DRIVER_SUBSTITUTION, dataSource.getDriverSubstitution().getId());
         }
         DBPDataSourceOrigin origin = dataSource.getOriginSource();
         if (origin != DataSourceOriginLocal.INSTANCE) {
@@ -1228,8 +1257,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
     {
         assert dataSource != null || profile != null;
 
-        DBPProject project = registry.getProject();
-
         SecureCredentials creds = new SecureCredentials();
 
         String topNodeId = profile != null ? "profile:" + profile.getProfileId() : dataSource.getId();
@@ -1258,4 +1285,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
         return creds;
     }
 
+    @NotNull
+    private static DriverDescriptor getReplacementDriver(@NotNull DriverDescriptor driver) {
+        DriverDescriptor replacement = driver;
+
+        while (replacement.getReplacedBy() != null) {
+            replacement = replacement.getReplacedBy();
+        }
+
+        return replacement;
+    }
 }

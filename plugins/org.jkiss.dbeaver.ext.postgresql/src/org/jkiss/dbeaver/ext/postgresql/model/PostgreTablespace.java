@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -58,8 +59,8 @@ public class PostgreTablespace extends PostgreInformation implements PostgreScri
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "spcname");
         this.ownerId = JDBCUtils.safeGetLong(dbResult, "spcowner");
-        Object opts[] = JDBCUtils.safeGetArray(dbResult, "spcoptions");
-        this.options = opts == null ? "" : Stream.of(opts).map(Object::toString).collect(Collectors.joining(","));
+        String[] opts = PostgreUtils.safeGetStringArray(dbResult, "spcoptions");
+        this.options = opts == null ? "" : String.join(",", opts);
         this.loc = JDBCUtils.safeGetString(dbResult, "loc");
     }
 

@@ -79,17 +79,19 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
         return new WMIDataSource(container);
     }
 
-    private void loadNativeLib(DBPDriver driver) throws DBException
-    {
+    private void loadNativeLib(DBPDriver driver) throws DBException {
         for (DBPDriverLibrary libFile : driver.getDriverLibraries()) {
             if (libFile.matchesCurrentPlatform() && libFile.getType() == DBPDriverLibrary.FileType.lib) {
                 Path localFile = libFile.getLocalFile();
-                if (localFile != null) {
-                    try {
+                try {
+                    if (localFile != null) {
                         WMIService.linkNative(localFile.toAbsolutePath().toString());
-                    } catch (UnsatisfiedLinkError e) {
-                        throw new DBException("Can't load native library '" + localFile.toAbsolutePath() + "'", e);
+                    } else {
+                        // Load dll from any accessible location
+                        WMIService.linkNative();
                     }
+                } catch (UnsatisfiedLinkError e) {
+                    throw new DBException("Can't load native library '" + libFile.getDisplayName() + "'", e);
                 }
             }
         }

@@ -16,26 +16,31 @@
  */
 package org.jkiss.dbeaver.model.lsm.mapping.internal;
 
+import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.lsm.LSMParser;
 
-public abstract class ParserOverrides extends LSMParser {
+public abstract class ParserOverrides extends Parser {
 
-    public ParserOverrides(TokenStream input) {
+    public ParserOverrides(@NotNull TokenStream input) {
         super(input);
+        this.setBuildParseTree(true);
     }
 
+    @NotNull
     @Override
-    public ErrorNode createErrorNode(ParserRuleContext parent, Token t) {
+    public ErrorNode createErrorNode(@NotNull ParserRuleContext parent, @NotNull Token t) {
         return new TreeTermErrorNode(t);
     }
-    
+
+    @NotNull
     @Override
-    public TerminalNode createTerminalNode(ParserRuleContext parent, Token t) {
+    public TerminalNode createTerminalNode(@NotNull ParserRuleContext parent, @NotNull Token t) {
         return new TreeTermNode(t);
     }
 

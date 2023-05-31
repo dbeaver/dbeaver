@@ -26,27 +26,28 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectSchemaController;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
-* MySQL dialect
-*/
-public class MySQLDialect extends JDBCSQLDialect {
+ * MySQL dialect
+ */
+public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaController {
 
     public static final String[] MYSQL_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
         BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
         new String[]{
             "USE", "SHOW",
             "CREATE", "ALTER", "DROP",
-            SQLConstants.KEYWORD_EXPLAIN, "DESCRIBE", "DESC" }
+            SQLConstants.KEYWORD_EXPLAIN, "DESCRIBE", "DESC"}
     );
 
     private static final String[] ADVANCED_KEYWORDS = {
@@ -129,7 +130,7 @@ public class MySQLDialect extends JDBCSQLDialect {
     
     private static final Pattern ONE_OR_MORE_DIGITS_PATTERN = Pattern.compile("[0-9]+");
 
-    private static String[] EXEC_KEYWORDS =  { "CALL" };
+    private static final String[] EXEC_KEYWORDS =  { "CALL" };
     private int lowerCaseTableNames;
 
     public MySQLDialect() {
@@ -145,24 +146,22 @@ public class MySQLDialect extends JDBCSQLDialect {
         this.lowerCaseTableNames = ((MySQLDataSource)dataSource).getLowerCaseTableNames();
         this.setSupportsUnquotedMixedCase(lowerCaseTableNames != 2);
 
-        Collections.addAll(tableQueryWords, SQLConstants.KEYWORD_EXPLAIN, "DESCRIBE", "DESC");
-        addFunctions(Arrays.asList("SLEEP"));
+        addTableQueryKeywords(SQLConstants.KEYWORD_EXPLAIN, "DESCRIBE", "DESC");
+        addFunctions(List.of("SLEEP"));
 
-        for (String kw : ADVANCED_KEYWORDS) {
-            addSQLKeyword(kw);
-        }
+        addSQLKeywords(Arrays.asList(ADVANCED_KEYWORDS));
         removeSQLKeyword("SOURCE");
 
         // CHAR is data type, not function
         removeSQLKeyword("CHAR");
 
-        addDataTypes(Arrays.asList("CHAR"));
+        addDataTypes(List.of("CHAR"));
         addFunctions(Arrays.asList(MYSQL_EXTRA_FUNCTIONS));
     }
     
     @Override
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
-    	initBaseDriverSettings(session, dataSource, metaData);
+        initBaseDriverSettings(session, dataSource, metaData);
 
         addDataTypes(Arrays.asList("GEOMETRY", "POINT"));
         addFunctions(Arrays.asList(MYSQL_GEOMETRY_FUNCTIONS));
@@ -269,7 +268,7 @@ public class MySQLDialect extends JDBCSQLDialect {
 
     @Override
     public String[] getSingleLineComments() {
-        return new String[] { "-- ", "#" };
+        return new String[] { "-- ", "--\t", "#" };
     }
 
     @Override
@@ -306,7 +305,7 @@ public class MySQLDialect extends JDBCSQLDialect {
     public boolean validIdentifierStart(char c) {
         return Character.isLetterOrDigit(c);
     }
-    
+
     @NotNull
     @Override
     public String getTypeCastClause(@NotNull DBSTypedObject attribute, @NotNull String expression, boolean isInCondition) {
@@ -315,5 +314,17 @@ public class MySQLDialect extends JDBCSQLDialect {
         } else {
             return super.getTypeCastClause(attribute, expression, isInCondition);
         }
+    }
+
+    @NotNull
+    @Override
+    public String getSchemaExistQuery(@NotNull String schemaName) {
+        return "SHOW DATABASES LIKE " + getQuotedString(schemaName);
+    }
+
+    @NotNull
+    @Override
+    public String getCreateSchemaQuery(@NotNull String schemaName) {
+        return "CREATE DATABASE " + schemaName;
     }
 }

@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.git.feature"
       label="%featureName"
-      version="1.0.92.qualifier"
+      version="1.0.95.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -23,7 +23,7 @@
    </requires>
 
    <!-- DBeaver deps -->
-   <plugin id="org.jkiss.dbeaver.team.git" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
-   <plugin id="org.jkiss.dbeaver.team.git.ui" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.jkiss.dbeaver.team.git" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.jkiss.dbeaver.team.git.ui" download-size="0" install-size="0" version="0.0.0"/>
 
 </feature>

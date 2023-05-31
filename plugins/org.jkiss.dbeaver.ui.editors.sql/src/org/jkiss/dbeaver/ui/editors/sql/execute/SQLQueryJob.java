@@ -59,7 +59,6 @@ import org.jkiss.dbeaver.model.sql.registry.SQLPragmaHandlerDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.ui.ISmartTransactionManager;
 import org.jkiss.dbeaver.ui.UITask;
@@ -68,6 +67,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -706,7 +706,10 @@ public class SQLQueryJob extends DataSourceJob
     }
 
     private void showExecutionResult(DBCSession session) {
-        if (isShowExecutionResult()) { // Single statement with some stats
+        int statementsCount = statistics.getStatementsCount();
+        if (statementsCount > 1 || // Many statements
+            (statementsCount == 1 && resultSetNumber == 0) || // Single non-select statement
+            (resultSetNumber == 0 && (statistics.getRowsUpdated() >= 0 || statistics.getRowsFetched() >= 0))) { // Single statement with some stats
             SQLQuery query = new SQLQuery(session.getDataSource(), "", -1, -1);
             if (queries.size() == 1) {
                 query.setText(queries.get(0).getText());
@@ -720,19 +723,6 @@ public class SQLQueryJob extends DataSourceJob
                     log.error("Error generating execution result stats", e);
                 }
             }
-        } else {
-            resultsConsumer.releaseDataReceiver(resultSetNumber);
-        }
-    }
-
-    private boolean isShowExecutionResult() {
-        if (resultSetNumber <= 0 || statistics.getRowsUpdated() >= 0) {
-            // If there are no results or we have updated some rows, always display statistics
-            return true;
-        } else {
-            // Otherwise, display statistics if the option is set
-            final DBPPreferenceStore store = getDataSourceContainer().getPreferenceStore();
-            return statistics.getStatementsCount() > 1 && store.getBoolean(SQLPreferenceConstants.SHOW_STATISTICS_FOR_QUERIES_WITH_RESULTS);
         }
     }
 

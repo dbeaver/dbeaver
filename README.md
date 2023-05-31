@@ -1,5 +1,4 @@
 [![Twitter URL](https://img.shields.io/twitter/url/https/twitter.com/dbeaver_news.svg?style=social&label=Follow%20%40dbeaver_news)](https://twitter.com/dbeaver_news)
-[![Build Status](https://api.travis-ci.com/dbeaver/dbeaver.svg?branch=devel)](https://app.travis-ci.com/github/dbeaver/dbeaver)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/fa0bb9cf5a904c7d87424f8f6351ba92)](https://www.codacy.com/gh/dbeaver/dbeaver/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dbeaver/dbeaver&amp;utm_campaign=Badge_Grade)
 [![Apache 2.0](https://img.shields.io/github/license/cronn-de/jira-sync.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Java CI](https://github.com/dbeaver/dbeaver/workflows/Java%20CI/badge.svg)](https://github.com/dbeaver/dbeaver/actions?query=workflow%3A%22Java+CI%22)
@@ -43,23 +42,9 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 * <a href="https://github.com/dbeaver/dbeaver/wiki">WIKI</a>
 * <a href="https://github.com/dbeaver/dbeaver/issues">Issue tracker</a>
 
-## Building
+## Build from sources
 
-#### Prerequisites:
-
- 1. Java (JDK) 17 or later (<a href="https://adoptium.net/" target="_blank">OpenJDK 17</a> is our default Java at the moment).
- 2. <a href="https://maven.apache.org/" target="_blank">Apache Maven 3.8.6+</a>
- 3. Internet access
- 4. Git client
-
-#### Build
-
-```sh
-git clone https://github.com/dbeaver/dbeaver.git dbeaver
-cd dbeaver
-mvn package
-```
-Binaries are in `product/community/target/products`
+<a href="https://github.com/dbeaver/dbeaver/wiki/Build-from-sources">See this article.</a>
 
 ## Notes
 

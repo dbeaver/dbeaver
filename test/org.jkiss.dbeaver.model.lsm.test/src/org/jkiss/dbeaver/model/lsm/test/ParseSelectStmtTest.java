@@ -75,7 +75,7 @@ public class ParseSelectStmtTest {
             var pp = new Sql92Parser(tokens);
             pp.setBuildParseTree(true);
             
-            var tree = pp.queryExpression();
+            var tree = pp.sqlQuery();
             var noErrors = pp.getNumberOfSyntaxErrors() == 0;
             if (!noErrors) {
                 System.err.println();

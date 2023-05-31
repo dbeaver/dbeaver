@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
+import org.jkiss.dbeaver.registry.task.TaskConstants;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -202,7 +203,10 @@ public abstract class BaseProjectImpl implements DBPProject {
         if (taskManager == null) {
             synchronized (metadataSync) {
                 if (taskManager == null) {
-                    taskManager = new TaskManagerImpl(this);
+                    taskManager = new TaskManagerImpl(
+                        this,
+                        getWorkspace().getMetadataFolder().resolve(TaskConstants.TASK_STATS_FOLDER)
+                    );
                 }
             }
         }

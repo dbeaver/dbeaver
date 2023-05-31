@@ -206,7 +206,9 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
                             }
                             monitor.subTask("Read indexes for '" + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
                             Collection<? extends GenericTableIndex> tableIndexes = table.getIndexes(monitor);
-                            newIndexCache.addAll(tableIndexes);
+                            if (!CommonUtils.isEmpty(tableIndexes)) {
+                                newIndexCache.addAll(tableIndexes);
+                            }
                             monitor.worked(1);
                         }
                     } finally {

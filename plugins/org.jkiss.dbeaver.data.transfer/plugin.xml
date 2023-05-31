@@ -273,10 +273,15 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.serialize">
-        <serializer id="databaseTransferProducer" class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer$ObjectSerializer"/>
-        <serializer id="streamTransferProducer" class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer$ObjectSerializer"/>
+        <serializer id="databaseTransferProducer"
+                    class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer$ObjectSerializer"/>
+        <serializer id="streamTransferProducer"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer$ObjectSerializer"/>
 
-        <serializer id="databaseTransferConsumer" class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumerSerializer"/>
-        <serializer id="streamTransferConsumer" class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer$ObjectSerializer"/>
+        <serializer id="databaseTransferConsumer"
+                    class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumerSerializer"/>
+        <serializer id="streamTransferConsumer"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer$ObjectSerializer"
+                    supportsDistributedMode="false"/>
     </extension>
 </plugin>

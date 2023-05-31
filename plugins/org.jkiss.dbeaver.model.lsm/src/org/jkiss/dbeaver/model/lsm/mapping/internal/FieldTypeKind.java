@@ -16,11 +16,13 @@
  */
 package org.jkiss.dbeaver.model.lsm.mapping.internal;
 
+import org.jkiss.code.NotNull;
+
 import java.util.ArrayList;
 import java.util.Map;
 
 public enum FieldTypeKind {
-    String(true), 
+    String(true),
     Byte(true),
     Short(true), 
     Int(true),
@@ -29,6 +31,7 @@ public enum FieldTypeKind {
     Float(true),
     Double(true),
     Enum(true),
+    LiteralList(true),
     Object(false),
     Array(false),
     List(false);
@@ -40,7 +43,7 @@ public enum FieldTypeKind {
     }
 
     private static final Map<Class<?>, FieldTypeKind> builtinTypeKinds = Map.ofEntries(
-        java.util.Map.entry(String.class, FieldTypeKind.String), 
+        java.util.Map.entry(String.class, FieldTypeKind.String),
         java.util.Map.entry(Byte.class, FieldTypeKind.Byte),
         java.util.Map.entry(Short.class, FieldTypeKind.Short), 
         java.util.Map.entry(Integer.class, FieldTypeKind.Int), 
@@ -58,18 +61,30 @@ public enum FieldTypeKind {
         java.util.Map.entry(double.class, FieldTypeKind.Double) 
     );
 
-    public static FieldTypeKind resolveModelFieldKind(Class<?> fieldType) {
+    @NotNull
+    public static FieldTypeKind resolveModelLiteralFieldKind(@NotNull Class<?> fieldType) {
         FieldTypeKind kind = builtinTypeKinds.get(fieldType);
         if (kind == null) {
             if (fieldType.isEnum()) {
                 kind = FieldTypeKind.Enum;
-            } else if (fieldType.isArray()) {
-                kind = FieldTypeKind.Array;
             } else if (fieldType.isAssignableFrom(ArrayList.class)) {
-                kind = FieldTypeKind.List; 
+                kind = LiteralList;
             } else {
-                kind = FieldTypeKind.Object;
+                kind = FieldTypeKind.String;
             }
+        }
+        return kind;
+    }
+
+    @NotNull
+    public static FieldTypeKind resolveModelSubnodeFieldKind(@NotNull Class<?> fieldType) {
+        FieldTypeKind kind;
+        if (fieldType.isArray()) {
+            kind = FieldTypeKind.Array;
+        } else if (fieldType.isAssignableFrom(ArrayList.class)) {
+            kind = FieldTypeKind.List; 
+        } else {
+            kind = FieldTypeKind.Object;
         }
         return kind;
     }

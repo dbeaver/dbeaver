@@ -37,6 +37,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
@@ -47,6 +49,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.dialogs.PropertyDialog;
 import org.eclipse.ui.texteditor.*;
+import org.eclipse.ui.texteditor.spelling.SpellingAnnotation;
 import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
@@ -89,6 +92,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     static protected final Log log = Log.getLog(SQLEditorBase.class);
     public static final long MAX_FILE_LENGTH_FOR_RULES = 1024 * 1000 * 2; // 2MB
+    private static final int SCROLL_ON_RESIZE_THRESHOLD_PX = 10;
 
     static final String STATS_CATEGORY_SELECTION_STATE = "SelectionState";
 
@@ -275,12 +279,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     @Nullable
     public IAnnotationModel getAnnotationModel() {
-        return getSourceViewer().getAnnotationModel();
+        final ISourceViewer viewer = getSourceViewer();
+        return viewer != null ? viewer.getAnnotationModel() : null;
     }
 
     @Nullable
     public ProjectionAnnotationModel getProjectionAnnotationModel() {
-        return ((ProjectionViewer) getSourceViewer()).getProjectionAnnotationModel();
+        final ProjectionViewer viewer = (ProjectionViewer) getSourceViewer();
+        return viewer != null ? viewer.getProjectionAnnotationModel() : null;
     }
 
     public SQLEditorSourceViewerConfiguration getViewerConfiguration() {
@@ -375,6 +381,35 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
                 private boolean within(@NotNull IRegion region, int index) {
                     return region.getLength() > 0 && index >= region.getOffset() && index < region.getOffset() + region.getLength();
+                }
+            });
+
+            // A listener that reveals obscured part of the document the cursor was located in before the control was resized
+            widget.addControlListener(new ControlAdapter() {
+                private int lastHeight;
+
+                @Override
+                public void controlResized(ControlEvent e) {
+                    final int currentHeight = widget.getSize().y;
+                    final int lastHeight = this.lastHeight;
+                    this.lastHeight = currentHeight;
+
+                    if (Math.abs(currentHeight - lastHeight) < SCROLL_ON_RESIZE_THRESHOLD_PX) {
+                        return;
+                    }
+
+                    try {
+                        final IDocument document = sourceViewer.getDocument();
+                        final int visibleLine = sourceViewer.getBottomIndex();
+                        final int currentLine = document.getLineOfOffset(sourceViewer.getSelectedRange().x);
+
+                        if (currentLine > visibleLine) {
+                            final int revealToLine = Math.min(document.getNumberOfLines() - 1, currentLine + 1);
+                            final int revealToOffset = document.getLineOffset(revealToLine);
+                            sourceViewer.revealRange(revealToOffset, 0);
+                        }
+                    } catch (BadLocationException ignored) {
+                    }
                 }
             });
         }
@@ -480,6 +515,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         sourceViewer.addPainter(matchPainter);
 
         return sourceViewer;
+    }
+
+    protected SourceViewerDecorationSupport getSourceViewerDecorationSupport(ISourceViewer viewer) {
+        if (fSourceViewerDecorationSupport == null) {
+            fSourceViewerDecorationSupport= new SQLSourceViewerDecorationSupport(viewer, getOverviewRuler(), getAnnotationAccess(), getSharedColors());
+            configureSourceViewerDecorationSupport(fSourceViewerDecorationSupport);
+        }
+        return fSourceViewerDecorationSupport;
     }
 
     protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {
@@ -626,13 +669,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         setAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL, action);
 
         setAction(ITextEditorActionConstants.CONTEXT_PREFERENCES, new ShowPreferencesAction());
-/*
-        // Add the task action to the Edit pulldown menu (bookmark action is  'free')
-        ResourceAction ra = new AddTaskAction(bundle, "AddTask.", this);
-        ra.setHelpContextId(ITextEditorHelpContextIds.ADD_TASK_ACTION);
-        ra.setActionDefinitionId(ITextEditorActionDefinitionIds.ADD_TASK);
-        setAction(IDEActionFactory.ADD_TASK.getId(), ra);
-*/
+
+        SQLEditorCustomActions.registerCustomActions(this);
     }
 
     // Exclude input additions. Get rid of tons of crap from debug/team extensions
@@ -1101,6 +1139,20 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     int getLastQueryErrorPosition() {
         return lastQueryErrorPosition;
+    }
+
+    protected boolean isNavigationTarget(Annotation annotation) {
+        if (annotation instanceof SpellingAnnotation) {
+            // Iterate over spelling problems only if we do not have problems
+            for (Iterator<Annotation> i = getAnnotationModel().getAnnotationIterator(); i.hasNext(); ) {
+                Annotation anno = i.next();
+                if (anno instanceof SQLProblemAnnotation) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return super.isNavigationTarget(annotation);
     }
 
     ////////////////////////////////////////////////////////

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
@@ -1366,7 +1367,7 @@ public class UIUtils {
     }
 
     public static boolean isUIThread() {
-        return Display.getDefault().getThread() == Thread.currentThread();
+        return Display.getCurrent() != null;
     }
 
     /**
@@ -2008,9 +2009,16 @@ public class UIUtils {
     }
 
     public static void waitJobCompletion(AbstractJob job) {
+        waitJobCompletion(job, null);
+    }
+
+    public static void waitJobCompletion(@NotNull AbstractJob job, @Nullable IProgressMonitor monitor) {
         // Wait until job finished
         Display display = Display.getCurrent();
         while (!job.isFinished()) {
+            if (monitor != null && monitor.isCanceled()) {
+                job.cancel();
+            }
             if (!display.readAndDispatch()) {
                 display.sleep();
             }
@@ -2239,6 +2247,44 @@ public class UIUtils {
             return;
         }
         applyMainFont(control, JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MAIN_FONT));
+    }
+
+    @Nullable
+    public static Text recreateTextControl(@Nullable Text original, int style) {
+        if (original == null || original.getStyle() == style) {
+            return original;
+        }
+
+        final Composite parent = original.getParent();
+        final Control[] tabList = parent.getTabList();
+
+        final Text text = new Text(parent, style);
+        text.setText(original.getText());
+        text.setLayoutData(original.getLayoutData());
+        text.moveAbove(original);
+
+        copyListeners(original, text, SWT.DefaultSelection);
+        copyListeners(original, text, SWT.Modify);
+        copyListeners(original, text, SWT.Verify);
+
+        original.dispose();
+
+        for (int i = 0; i < tabList.length; i++) {
+            if (tabList[i] == original) {
+                tabList[i] = text;
+            }
+        }
+
+        parent.setTabList(tabList);
+        parent.layout(true, true);
+
+        return text;
+    }
+
+    private static void copyListeners(@NotNull Widget source, @NotNull Widget target, int eventType) {
+        for (Listener listener : source.getListeners(eventType)) {
+            target.addListener(eventType, listener);
+        }
     }
 
     private static void applyMainFont(@NotNull Control control, @NotNull Font font) {

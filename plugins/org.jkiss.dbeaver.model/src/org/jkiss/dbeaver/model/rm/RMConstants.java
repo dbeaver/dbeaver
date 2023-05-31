@@ -19,12 +19,14 @@ package org.jkiss.dbeaver.model.rm;
 /**
  * RM constants
  */
-public interface RMConstants  {
+public interface RMConstants {
     String PERMISSION_PROJECT_DATASOURCES_EDIT = "project-datasource-edit";
     String PERMISSION_PROJECT_DATASOURCES_VIEW = "project-datasource-view";
 
     String PERMISSION_PROJECT_RESOURCE_VIEW = "project-resource-view";
     String PERMISSION_PROJECT_RESOURCE_EDIT = "project-resource-edit";
+    String PERMISSION_TASK_MANAGER = "task-manager";
+
 
     String PERMISSION_PROJECT_ADMIN = "project-admin";
 
@@ -34,4 +36,7 @@ public interface RMConstants  {
     String PERMISSION_DRIVER_MANAGER = "driver-manager";
 
     String PERMISSION_CONFIGURATION_MANAGER = "configuration-manager";
+    String PERMISSION_DATABASE_DEVELOPER = "database-developer";
+    String PERMISSION_METADATA_EDITOR = "metadata-editor";
+    String PERMISSION_SQL_GENERATOR = "sql-generator";
 }

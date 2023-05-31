@@ -19,8 +19,8 @@ parser grammar Sql92Parser;
 
 options {
     tokenVocab=Sql92Lexer;
-    superClass=org.jkiss.dbeaver.model.lsm.mapping.internal.ParserOverrides;
-    contextSuperClass=org.jkiss.dbeaver.model.lsm.mapping.internal.TreeRuleNode;
+    superClass=org.jkiss.dbeaver.model.stm.ParserOverrides;
+    contextSuperClass=org.jkiss.dbeaver.model.stm.TreeRuleNode;
 }
 
 @header {
@@ -50,16 +50,16 @@ schemaName: (catalogName Period)? unqualifiedSchemaName;
 unqualifiedSchemaName: identifier;
 catalogName: identifier;
 identifier: (Introducer characterSetSpecification)? actualIdentifier;
-actualIdentifier: (Identifier|DelimitedIdentifier|nonReserved);
+actualIdentifier: (Identifier|DelimitedIdentifier|SquareBracketIdentifier|nonReserved);
 
 // date-time literals
-dateString: Quote dateValue Quote;
+dateString: SingleQuote dateValue SingleQuote;
 dateValue: yearsValue MinusSign monthsValue MinusSign daysValue;
 yearsValue: datetimeValue;
 datetimeValue: UnsignedInteger;
 monthsValue: datetimeValue;
 daysValue: datetimeValue;
-timeString: Quote timeValue (timeZoneInterval)? Quote;
+timeString: SingleQuote timeValue (timeZoneInterval)? SingleQuote;
 timeValue: hoursValue Colon minutesValue Colon secondsValue;
 hoursValue: datetimeValue;
 minutesValue: datetimeValue;
@@ -67,8 +67,8 @@ secondsValue: secondsIntegerValue (Period (secondsFraction)?)?;
 secondsIntegerValue: UnsignedInteger;
 secondsFraction: UnsignedInteger;
 timeZoneInterval: Sign hoursValue Colon minutesValue;
-timestampString: Quote dateValue Space timeValue (timeZoneInterval)? Quote;
-intervalString: Quote (yearMonthLiteral|dayTimeLiteral) Quote;
+timestampString: SingleQuote dateValue Space timeValue (timeZoneInterval)? SingleQuote;
+intervalString: SingleQuote (yearMonthLiteral|dayTimeLiteral) SingleQuote;
 yearMonthLiteral: (yearsValue|(yearsValue MinusSign)? monthsValue);
 dayTimeLiteral: (dayTimeInterval|timeInterval);
 dayTimeInterval: daysValue (Space hoursValue (Colon minutesValue (Colon secondsValue)?)?)?;
@@ -131,7 +131,8 @@ defaultOption: (literal|datetimeValueFunction|USER|CURRENT_USER|SESSION_USER|SYS
 
 // data type literals
 literal: (signedNumericLiteral|generalLiteral);
-signedNumericLiteral: (Sign)? UnsignedNumericLiteral;
+unsignedNumericLiteral: (UnsignedInteger|DecimalLiteral|ApproximateNumericLiteral);
+signedNumericLiteral: (Sign)? unsignedNumericLiteral;
 characterStringLiteral: (Introducer characterSetSpecification)? StringLiteralContent;
 generalLiteral: (characterStringLiteral|NationalCharacterStringLiteral|BitStringLiteral|HexStringLiteral|datetimeLiteral|intervalLiteral);
 datetimeLiteral: (dateLiteral|timeLiteral|timestampLiteral);
@@ -161,7 +162,7 @@ updateRule: ON UPDATE referentialAction;
 referentialAction: (CASCADE|SET NULL|SET DEFAULT|NO ACTION);
 deleteRule: ON DELETE referentialAction;
 checkConstraintDefinition: CHECK LeftParen searchCondition RightParen;
-searchCondition: booleanTerm (OR booleanTerm)*;
+searchCondition: (booleanTerm|(.*?)) (OR booleanTerm)*; // (.*?) - for error recovery
 booleanTerm: booleanFactor (AND booleanFactor)*;
 booleanFactor: (NOT)? booleanTest;
 booleanTest: booleanPrimary (IS (NOT)? truthValue)?;
@@ -177,7 +178,7 @@ factor: (Sign)? numericPrimary;
 numericPrimary: (valueExpressionPrimary|numericValueFunction);
 valueExpressionPrimary: (unsignedValueSpecification|columnReference|setFunctionSpecification|scalarSubquery|caseExpression|LeftParen valueExpression RightParen|castSpecification);
 unsignedValueSpecification: (unsignedLiteral|generalValueSpecification);
-unsignedLiteral: (UnsignedNumericLiteral|generalLiteral);
+unsignedLiteral: (unsignedNumericLiteral|generalLiteral);
 generalValueSpecification: (parameterSpecification|dynamicParameterSpecification|USER|CURRENT_USER|SESSION_USER|SYSTEM_USER|VALUE);
 parameterSpecification: parameterName (indicatorParameter)?;
 parameterName: Colon identifier;
@@ -201,12 +202,12 @@ nonJoinQueryTerm: queryPrimary intersectTerm*;
 intersectTerm: (INTERSECT (ALL)? (correspondingSpec)? queryPrimary);
 nonJoinQueryPrimary: (simpleTable|LeftParen nonJoinQueryExpression RightParen);
 simpleTable: (querySpecification|tableValueConstructor|explicitTable);
-querySpecification: SELECT (setQuantifier)? selectList tableExpression;
-selectList: (Asterisk|selectSublist ((Comma selectSublist)+)?);
-selectSublist: (derivedColumn|qualifier Period Asterisk);
+querySpecification: SELECT (setQuantifier)? selectList tableExpression?;
+selectList: Asterisk|selectSublist (Comma selectSublist)*; // (Comma selectSublist)* contains any quantifier for error recovery;
+selectSublist: (derivedColumn|qualifier Period Asterisk)*; // * for whole rule to handle select fields autocompletion when from immediately after select 
 derivedColumn: valueExpression (asClause)?;
 asClause: (AS)? columnName;
-tableExpression: fromClause (whereClause)? (groupByClause)? (havingClause)?;
+tableExpression: (.*?) fromClause (whereClause)? (groupByClause)? (havingClause)?; // (.*?) - for error recovery
 queryPrimary: (nonJoinQueryPrimary|joinedTable);
 queryTerm: (nonJoinQueryTerm|joinedTable);
 queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
@@ -223,7 +224,7 @@ tableSubquery: subquery;
 
 //joins
 crossJoinTerm: CROSS JOIN tableReference;
-naturalJoinTerm: (NATURAL)? (joinType)? JOIN tableReference (joinSpecification)?;
+naturalJoinTerm: (NATURAL)? (joinType)? JOIN tableReference (joinSpecification|(.*?))?; // (.*?) - for error recovery
 joinType: (INNER|outerJoinType (OUTER)?|UNION);
 outerJoinType: (LEFT|RIGHT|FULL);
 joinSpecification: (joinCondition|namedColumnsJoin);
@@ -266,7 +267,7 @@ concatenation: characterFactor (ConcatenationOperator characterFactor)+;
 characterFactor: characterPrimary (collateClause)?;
 characterPrimary: (valueExpressionPrimary|stringValueFunction);
 
-// functions and operatore
+// functions and operators
 stringValueFunction: (characterValueFunction|bitValueFunction);
 characterValueFunction: (characterSubstringFunction|fold|formOfUseConversion|characterTranslation|trimFunction);
 characterSubstringFunction: SUBSTRING LeftParen characterValueExpression FROM startPosition (FOR stringLength)? RightParen;
@@ -344,19 +345,24 @@ uniqueColumnList: columnNameList;
 referentialConstraintDefinition: FOREIGN KEY LeftParen referencingColumns RightParen referencesSpecification;
 referencingColumns: referenceColumnList;
 
-// cursor and procedure
-moduleContents: (declareCursor|dynamicDeclareCursor|procedure);
-declareCursor: DECLARE cursorName (INSENSITIVE)? (SCROLL)? CURSOR FOR cursorSpecification;
-cursorName: identifier;
-cursorSpecification: queryExpression (orderByClause)? (updatabilityClause)?;
+// order by
 orderByClause: ORDER BY sortSpecificationList;
 sortSpecificationList: sortSpecification ((Comma sortSpecification)+)?;
 sortSpecification: sortKey (collateClause)? (orderingSpecification)?;
 sortKey: (columnReference|UnsignedInteger);
 orderingSpecification: (ASC|DESC);
+
+
+// cursor and procedure
+moduleContents: (declareCursor|dynamicDeclareCursor|procedure);
+declareCursor: DECLARE cursorName (INSENSITIVE)? (SCROLL)? CURSOR FOR cursorSpecification;
+cursorName: identifier;
+cursorSpecification: queryExpression (orderByClause)? (updatabilityClause)?;
 updatabilityClause: FOR (READ ONLY|UPDATE (OF columnNameList)?);
 dynamicDeclareCursor: DECLARE cursorName (INSENSITIVE)? (SCROLL)? CURSOR FOR statementName;
 statementName: identifier;
+
+// procedure
 procedure: PROCEDURE procedureName parameterDeclarationList Semicolon sqlProcedureStatement Semicolon;
 procedureName: identifier;
 parameterDeclarationList: LeftParen parameterDeclaration ((Comma parameterDeclaration)+)? RightParen;
@@ -402,7 +408,7 @@ schemaCharacterSetName: characterSetName;
 limitedCollationDefinition: COLLATION FROM collationSource;
 collationSource: (collatingSequenceDefinition|translationCollation);
 collatingSequenceDefinition: (externalCollation|collationName|DESC LeftParen collationName RightParen|DEFAULT);
-externalCollation: EXTERNAL LeftParen Quote collationName Quote RightParen;
+externalCollation: EXTERNAL LeftParen SingleQuote collationName SingleQuote RightParen;
 translationCollation: TRANSLATION translationName (THEN COLLATION collationName)?;
 collationDefinition: CREATE COLLATION collationName FOR characterSetSpecification FROM collationSource (padAttribute)?;
 padAttribute: (NO PAD|PAD SPACE);
@@ -411,7 +417,7 @@ sourceCharacterSetSpecification: characterSetSpecification;
 targetCharacterSetSpecification: characterSetSpecification;
 translationSource: translationSpecification;
 translationSpecification: (externalTranslation|IDENTITY|translationName);
-externalTranslation: EXTERNAL LeftParen Quote translationName Quote RightParen;
+externalTranslation: EXTERNAL LeftParen SingleQuote translationName SingleQuote RightParen;
 
 // schema ddl
 sqlSchemaManipulationStatement: (dropSchemaStatement|alterTableStatement|dropTableStatement|dropViewStatement|revokeStatement|alterDomainStatement|dropDomainStatement|dropCharacterSetStatement|dropCollationStatement|dropTranslationStatement|dropAssertionStatement);
@@ -587,38 +593,26 @@ preparableSqlSessionStatement: sqlSessionStatement;
 
 // direct statement - base rule
 directSqlStatement: (directSqlDataStatement|sqlSchemaStatement|sqlTransactionStatement|sqlConnectionStatement|sqlSessionStatement);
-directSqlDataStatement: (deleteStatementSearched|directSelectStatementMultipleRows|insertStatement|updateStatementSearched|temporaryTableDeclaration);
-directSelectStatementMultipleRows: queryExpression (orderByClause)?;
+directSqlDataStatement: (deleteStatementSearched|selectStatement|insertStatement|updateStatementSearched|temporaryTableDeclaration);
+selectStatement: queryExpression (orderByClause)?;
 
 // root rule for script
-// TODO: work only with one statement for now
-sqlQueries: (sqlQuery ';'?)* EOF; // don't stop early. must match all input
+sqlQueries: (sqlQuery ';'?)* EOF; // EOF - don't stop early. must match all input
 sqlQuery: directSqlStatement|preparableStatement|module|statementOrDeclaration;
 
 
-nonReserved: 
-    ABSOLUTE | ACTION | ADA | ADD | ALL | ALLOCATE | ALTER | AND | ANY | ARE | AS | ASC |
-    ASSERTION | AT | AUTHORIZATION | AVG | BETWEEN | BIT | BIT_LENGTH | BOTH | BY |
-    CASCADE | CASCADED | CASE | CAST | CATALOG | CATALOG_NAME | CHAR | CHARACTER | CHARACTER_LENGTH |
-    CHARACTER_SET_CATALOG | CHARACTER_SET_NAME | CHARACTER_SET_SCHEMA | CHAR_LENGTH | CHECK | CLASS_ORIGIN |
-    CLOSE | COALESCE | COBOL | COLLATE | COLLATION | COLLATION_CATALOG | COLLATION_NAME | COLLATION_SCHEMA | COLUMN |
-    COLUMN_NAME | COMMAND_FUNCTION | COMMIT | COMMITTED | CONDITION_NUMBER | CONNECT | CONNECTION | CONNECTION_NAME |
-    CONSTRAINT | CONSTRAINTS | CONSTRAINT_CATALOG | CONSTRAINT_NAME | CONSTRAINT_SCHEMA | CONVERT | CORRESPONDING |
-    COUNT | CREATE | CROSS | CURRENT | CURRENT_DATE | CURRENT_TIME | CURRENT_TIMESTAMP | CURRENT_USER | CURSOR |
-    CURSOR_NAME | DATA | DATE | DATETIME_INTERVAL_CODE | DATETIME_INTERVAL_PRECISION | DAY | DEALLOCATE | DEC | DECIMAL |
-    DECLARE | DEFAULT | DEFERRABLE | DEFERRED | DELETE | DESC | DESCRIBE | DESCRIPTOR | DIAGNOSTICS | DISCONNECT |
-    DISTINCT | DOMAIN | DOUBLE | DROP | DYNAMIC_FUNCTION | ELSE | END | ESCAPE | EXCEPT | EXCEPTION | EXECUTE | EXISTS |
-    EXTERNAL | EXTRACT | FALSE | FETCH | FIRST | FLOAT | FOR | FOREIGN | FORTRAN | FROM | FULL | GET | GLOBAL | GRANT | GROUP |
-    HAVING | HOUR | IDENTITY | IMMEDIATE | IN | INDICATOR | INITIALLY | INNER | INPUT | INSENSITIVE | INSERT | INT | INTEGER |
-    INTERSECT | INTERVAL | INTO | IS | ISOLATION | JOIN | KEY | LANGUAGE | LAST | LEADING | LEFT | LENGTH | LEVEL | LIKE |
-    LOCAL | LOWER | MATCH | MAX | MESSAGE_LENGTH | MESSAGE_OCTET_LENGTH | MESSAGE_TEXT | MIN | MINUTE | MODULE | MONTH |
-    MUMPS | MORE_KW | NAME | NAMES | NATIONAL | NATURAL | NCHAR | NEXT | NO | NOT | NULL | NULLABLE | NULLIF | NUMBER |
-    NUMERIC | OCTET_LENGTH | OF | ON | ONLY | OPEN | OPTION | OR | ORDER | OUTER | OUTPUT | OVERLAPS | PAD | PASCAL |
-    PARTIAL | POSITION | PLI | PRECISION | PREPARE | PRESERVE | PRIMARY | PRIOR | PRIVILEGES | PROCEDURE | PUBLIC | READ |
-    REAL | REFERENCES | RELATIVE | REPEATABLE | RESTRICT | RETURNED_LENGTH | RETURNED_OCTET_LENGTH | RETURNED_SQLSTATE |
-    REVOKE | RIGHT | ROLLBACK | ROWS | ROW_COUNT | SCALE | SCHEMA | SCHEMA_NAME | SCROLL | SECOND | SELECT | SERIALIZABLE |
-    SERVER_NAME | SESSION | SESSION_USER | SET | SIZE | SMALLINT | SOME | SPACE | SQL | SQLCODE | SQLSTATE | SUBCLASS_ORIGIN |
-    SUBSTRING | SUM | SYSTEM_USER | TABLE | TABLE_NAME | TEMPORARY | THEN | TIME | TIMESTAMP | TIMEZONE_HOUR | TIMEZONE_MINUTE |
-    TO | TRAILING | TRANSACTION | TRANSLATE | TRANSLATION | TRIM | TRUE | TYPE | UNCOMMITTED | UNION | UNIQUE | UNKNOWN | UNNAMED |
-    UPDATE | UPPER | USAGE | USER | USING | VALUE | VALUES | VARCHAR | VARYING | VIEW | WHEN | WHERE | WITH | WORK | WRITE |
-    YEAR | ZONE;
+nonReserved: ADA
+    |    C_ | CATALOG_NAME | CHARACTER_SET_CATALOG | CHARACTER_SET_NAME | CHARACTER_SET_SCHEMA
+    |    CLASS_ORIGIN | COBOL | COLLATION_CATALOG | COLLATION_NAME | COLLATION_SCHEMA
+    |    COLUMN_NAME | COMMAND_FUNCTION | COMMITTED | CONDITION_NUMBER | CONNECTION_NAME
+    |    CONSTRAINT_CATALOG | CONSTRAINT_NAME | CONSTRAINT_SCHEMA | CURSOR_NAME
+    |    DATA | DATETIME_INTERVAL_CODE | DATETIME_INTERVAL_PRECISION | DYNAMIC_FUNCTION
+    |    FORTRAN
+    |    LENGTH
+    |    MESSAGE_LENGTH | MESSAGE_OCTET_LENGTH | MESSAGE_TEXT | MORE_KW | MUMPS
+    |    NAME | NULLABLE | NUMBER
+    |    PASCAL | PLI | PUBLIC
+    |    REPEATABLE | RETURNED_LENGTH | RETURNED_OCTET_LENGTH | RETURNED_SQLSTATE | ROW_COUNT
+    |    SCALE | SCHEMA_NAME | SERIALIZABLE | SERVER_NAME | SUBCLASS_ORIGIN
+    |    TABLE_NAME | TYPE
+    |    UNCOMMITTED | UNNAMED;

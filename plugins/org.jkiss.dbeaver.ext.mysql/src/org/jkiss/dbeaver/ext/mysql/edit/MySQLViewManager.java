@@ -109,7 +109,12 @@ public class MySQLViewManager extends MySQLTableManager {
         }
         
         if (!view.isPersisted() && SQLSemanticProcessor.isSelectQuery(view.getDataSource().getSQLDialect(), viewDDL)) {
-            decl.append("CREATE OR REPLACE VIEW ").append(view.getFullyQualifiedName(DBPEvaluationContext.DDL)).append(lineSeparator) //$NON-NLS-1$
+            if (view.getDataSource().supportsAlterView()) {
+                decl.append("CREATE");
+            } else {
+                decl.append("CREATE OR REPLACE");
+            }
+            decl.append(" VIEW ").append(view.getFullyQualifiedName(DBPEvaluationContext.DDL)).append(lineSeparator) //$NON-NLS-1$
                 .append("AS "); //$NON-NLS-1$
         }
 

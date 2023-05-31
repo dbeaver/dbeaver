@@ -260,6 +260,12 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         log.debug("Instance path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         log.debug("Memory available " + (runtime.totalMemory() / (1024 * 1024)) + "Mb/" + (runtime.maxMemory() / (1024 * 1024)) + "Mb");
 
+        if (RuntimeUtils.isWindows()) {
+            // Set JNA library path (#19735)
+            String installPath = SystemVariablesResolver.getInstallPath();
+            System.setProperty("jna.boot.library.path", installPath);
+        }
+
         // Write version info
         writeWorkspaceInfo();
 

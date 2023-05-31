@@ -74,9 +74,8 @@ public class CustomSashForm extends SashForm {
     private static final int NO_ARROW = -1;
     
     protected Color arrowColor;
-    protected Color borderColor;
 
-    private class SashInfo {
+    private static class SashInfo {
         public Sash sash;
         public boolean enabled;    // Whether this sashinfo is enabled (i.e. if there is more than one, this will be disabled).
         public int restoreWeight = NO_WEIGHT;    // If slammed to an edge this is the restore weight. -1 means not slammed. This is the restoreWeight in the 2nd section form, i.e. weights[1].
@@ -91,6 +90,8 @@ public class CustomSashForm extends SashForm {
             this.sash = sash;
         }
     }
+
+    public static final Color DEFAULT_BORDER_COLOR = new Color(153, 180, 209, 255);
 
 
     public interface ICustomSashFormListener {
@@ -142,19 +143,10 @@ public class CustomSashForm extends SashForm {
 
         sashBorders = new boolean[]{true, true};
 
-        SASH_WIDTH = (3 + getOrientation() == SWT.VERTICAL ? ARROW_HEIGHT : ARROW_HEIGHT) + ARROW_MARGIN;
+        SASH_WIDTH = ARROW_HEIGHT + ARROW_MARGIN;
 
-        arrowColor = new Color(parent.getDisplay(), 51, 142, 204);
-        borderColor = new Color(parent.getDisplay(), 205, 205, 205);
-
-        addDisposeListener(new DisposeListener() {
-            public void widgetDisposed(DisposeEvent e) {
-                arrowColor.dispose();
-                borderColor.dispose();
-                arrowColor = borderColor = null;
-            }
-
-        });
+        arrowColor = DEFAULT_BORDER_COLOR;
+        //JFaceResources.getColorRegistry().get(IWorkbenchThemeConstants.ACTIVE_TAB_BG_END);
     }
 
     public boolean isShowBorders() {
@@ -223,7 +215,7 @@ public class CustomSashForm extends SashForm {
         if (currentSashInfo == null)
             currentSashInfo = new SashInfo(null);
 
-        downHideClicked(currentSashInfo);
+        downHideClicked();
     }
 
     public boolean isDownHidden() {
@@ -275,16 +267,17 @@ public class CustomSashForm extends SashForm {
         // If there is no current sash, and there is only one sash, then create the sashinfo for it.
         Control[] children = getChildren();
         Sash newSash = null;
-        for (int i = 0; i < children.length; i++) {
-            if (children[i] instanceof Sash)
-                if (newSash == null)
-                    newSash = (Sash) children[i];
-                else {
+        for (Control child : children) {
+            if (child instanceof Sash) {
+                if (newSash == null) {
+                    newSash = (Sash) child;
+                } else {
                     // We have more than one sash, so need to disable current sash, if we have one.
                     if (currentSashInfo != null)
                         currentSashInfo.enabled = false;
                     return;    // Don't go on.
                 }
+            }
         }
 
         if (newSash == null)
@@ -296,112 +289,93 @@ public class CustomSashForm extends SashForm {
                 currentSashInfo = new SashInfo(newSash);
             else
                 currentSashInfo.sash = newSash;
-            newSash.addPaintListener(new PaintListener() {
-                /**
-                 * @see org.eclipse.swt.events.PaintListener#paintControl(PaintEvent)
-                 */
-                public void paintControl(PaintEvent e) {
-                    // Need to find the index of the sash we're interested in.
+            newSash.addPaintListener(e -> {
+                // Need to find the index of the sash we're interested in.
 
-                    GC gc = e.gc;
-                    Color oldFg = gc.getForeground();
-                    Color oldBg = gc.getBackground();
+                GC gc = e.gc;
+                final Color oldFg = gc.getForeground();
+                final Color oldBg = gc.getBackground();
 
-                    boolean isTwoArrows = currentSashInfo.sashLocs.length > 1;
-                    drawArrow(gc, currentSashInfo.sashLocs[0], currentSashInfo.cursorOver == 0, isTwoArrows);    // Draw first arrow
-                    if (isTwoArrows) {
-                        drawArrow(gc, currentSashInfo.sashLocs[1], currentSashInfo.cursorOver == 1, isTwoArrows);    // Draw second arrow
-                    }
-
-                    if (showBorders) {
-                        if (currentSashInfo.sashBorderLeft)
-                            drawSashBorder(gc, currentSashInfo.sash, true);
-                        if (currentSashInfo.sashBorderRight)
-                            drawSashBorder(gc, currentSashInfo.sash, false);
-                    }
-
-                    gc.setForeground(oldFg);
-                    gc.setBackground(oldBg);
+                boolean isTwoArrows = currentSashInfo.sashLocs.length > 1;
+                drawArrow(gc, currentSashInfo.sashLocs[0], currentSashInfo.cursorOver == 0, isTwoArrows);    // Draw first arrow
+                if (isTwoArrows) {
+                    drawArrow(gc, currentSashInfo.sashLocs[1], currentSashInfo.cursorOver == 1, isTwoArrows);    // Draw second arrow
                 }
 
+                {
+                    drawSashBorder(gc, currentSashInfo);
+                    //if (currentSashInfo.sashBorderLeft)
+                    //if (currentSashInfo.sashBorderRight)
+                    //    drawSashBorder(gc, currentSashInfo.sash, false);
+                }
+
+                gc.setForeground(oldFg);
+                gc.setBackground(oldBg);
             });
 
             newSash.addControlListener(new ControlListener() {
-                /**
-                 * @see org.eclipse.swt.events.ControlAdapter#controlMoved(ControlEvent)
-                 */
                 public void controlMoved(ControlEvent e) {
-                    //System.out.println("controlMoved");
                     recomputeSashInfo();
+                    if (currentSashInfo != null) {
+                        currentSashInfo.sash.redraw();
+                    }
                 }
-
-                /**
-                 * @see org.eclipse.swt.events.ControlAdapter#controlResized(ControlEvent)
-                 */
                 public void controlResized(ControlEvent e) {
                     recomputeSashInfo();
+                    currentSashInfo.sash.redraw();
                 }
 
 
             });
 
-            newSash.addDisposeListener(new DisposeListener() {
-                /**
-                 * @see org.eclipse.swt.events.DisposeListener#widgetDisposed(DisposeEvent)
-                 */
-                public void widgetDisposed(DisposeEvent e) {
-                    // Need to clear out the widget from current.
-                    currentSashInfo = null;
-                }
+            newSash.addDisposeListener(e -> {
+                // Need to clear out the widget from current.
+                currentSashInfo = null;
             });
 
 
             // This is a kludge because we can't override the set cursor hit test.
-            newSash.addMouseMoveListener(new MouseMoveListener() {
-                /**
-                 * @see org.eclipse.swt.events.MouseMoveListener#mouseMove(MouseEvent)
-                 */
-                public void mouseMove(MouseEvent e) {
-                    // See if within one of the arrows.
-                    int x = e.x;
-                    int y = e.y;
-                    for (int i = 0; i < currentSashInfo.sashLocs.length; i++) {
-                        int[] locs = currentSashInfo.sashLocs[i];
-                        boolean vertical = getOrientation() == SWT.VERTICAL;
-                        int loc = vertical ? x : y;
-                        int locIndex = vertical ? X_INDEX : Y_INDEX;
-                        int sizeIndex = vertical ? WIDTH_INDEX : HEIGHT_INDEX;
-                        // Does the mouse position lie within the bounds of the arrow?
-                        if (locs[locIndex] <= loc && loc <= locs[locIndex] + locs[sizeIndex]) {
-                            if (currentSashInfo.cursorOver == NO_ARROW) {
-                                currentSashInfo.sash.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
-                            }
-                            if (currentSashInfo.cursorOver != i) {
-                                currentSashInfo.cursorOver = i;
-                                currentSashInfo.sash.redraw();
-                                switch (locs[ARROW_TYPE_INDEX]) {
-                                    case UP_RESTORE_ARROW:
-                                    case DOWN_RESTORE_ARROW:
-                                        currentSashInfo.sash.setToolTipText(UIMessages.tooltip_restore);
-                                        break;
-                                    case UP_HIDE_ARROW:
-                                    case DOWN_HIDE_ARROW:
-                                        currentSashInfo.sash.setToolTipText(UIMessages.tooltip_hide);
-                                        break;
-                                }
-                            }
-                            return;
+            newSash.addMouseMoveListener(e -> {
+                // See if within one of the arrows.
+                int x = e.x;
+                int y = e.y;
+                for (int i = 0; i < currentSashInfo.sashLocs.length; i++) {
+                    int[] locs = currentSashInfo.sashLocs[i];
+                    boolean vertical = getOrientation() == SWT.VERTICAL;
+                    int loc = vertical ? x : y;
+                    int locIndex = vertical ? X_INDEX : Y_INDEX;
+                    int sizeIndex = vertical ? WIDTH_INDEX : HEIGHT_INDEX;
+                    // Does the mouse position lie within the bounds of the arrow?
+                    if (locs[locIndex] <= loc && loc <= locs[locIndex] + locs[sizeIndex]) {
+                        if (currentSashInfo.cursorOver == NO_ARROW) {
+                            currentSashInfo.sash.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
                         }
-                    }
-                    // If we got here, the mouse position does not lie within the bounds of an arrow
-                    if (currentSashInfo.cursorOver != NO_ARROW) {
-                        currentSashInfo.sash.setCursor(null);
-                        currentSashInfo.cursorOver = NO_ARROW;
-                        currentSashInfo.sash.redraw();
-                        currentSashInfo.sash.setToolTipText(null);
+                        if (currentSashInfo.cursorOver != i) {
+                            currentSashInfo.cursorOver = i;
+                            //currentSashInfo.sash.redraw();
+                            switch (locs[ARROW_TYPE_INDEX]) {
+                                case UP_RESTORE_ARROW:
+                                case DOWN_RESTORE_ARROW:
+                                    currentSashInfo.sash.setToolTipText(UIMessages.tooltip_restore);
+                                    break;
+                                case UP_HIDE_ARROW:
+                                case DOWN_HIDE_ARROW:
+                                    currentSashInfo.sash.setToolTipText(UIMessages.tooltip_hide);
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        return;
                     }
                 }
-
+                // If we got here, the mouse position does not lie within the bounds of an arrow
+                if (currentSashInfo.cursorOver != NO_ARROW) {
+                    currentSashInfo.sash.setCursor(null);
+                    currentSashInfo.cursorOver = NO_ARROW;
+                    //currentSashInfo.sash.redraw();
+                    currentSashInfo.sash.setToolTipText(null);
+                }
             });
 
             // Need to know when we leave so that we can clear the cursor feedback if set.
@@ -414,7 +388,7 @@ public class CustomSashForm extends SashForm {
                         // Undo the cursor.
                         currentSashInfo.sash.setCursor(null);
                         currentSashInfo.cursorOver = NO_ARROW;
-                        currentSashInfo.sash.redraw();
+                        //currentSashInfo.sash.redraw();
                         currentSashInfo.sash.setToolTipText(null);
                     }
                 }
@@ -422,11 +396,7 @@ public class CustomSashForm extends SashForm {
 
             // Want to handle mouse down as a selection.
             newSash.addMouseListener(new MouseAdapter() {
-                /**
-                 * @see org.eclipse.swt.events.MouseAdapter#mouseDown(MouseEvent)
-                 */
                 public void mouseDown(MouseEvent e) {
-                    //System.out.println("mouseDown");
                     inMouseClick = true;
                     // If we're within a button, then redraw to wipe out stipple and get button push effect.
                     int x = e.x;
@@ -444,11 +414,7 @@ public class CustomSashForm extends SashForm {
                     }
                 }
 
-                /**
-                 * @see org.eclipse.swt.events.MouseListener#mouseDown(MouseEvent)
-                 */
                 public void mouseUp(MouseEvent e) {
-                    //System.out.println("mouseUp");
                     // See if within one of the arrows.
                     inMouseClick = false;    // No longer in down click
                     int x = e.x;
@@ -473,7 +439,7 @@ public class CustomSashForm extends SashForm {
                                     downRestoreClicked(currentSashInfo);
                                     break;
                                 case DOWN_HIDE_ARROW:
-                                    downHideClicked(currentSashInfo);
+                                    downHideClicked();
                                     break;
                             }
                             break;
@@ -483,13 +449,11 @@ public class CustomSashForm extends SashForm {
                     currentSashInfo.sash.redraw();    // Make sure stipple goes away from the mouse up if not over an arrow button.
                     fireDividerMoved();
                 }
-
             });
+
             recomputeSashInfo();    // Get initial setting
         }
-
     }
-
 
     /*
      * Constants for recording whether the sash is slammed to the top/bottom or not slammed
@@ -617,7 +581,8 @@ public class CustomSashForm extends SashForm {
         }
         getNewSashArray(currentSashInfo, addArrows, drawArrows);
 
-        currentSashInfo.sash.redraw();    // Need to schedule a redraw because it has already drawn the old ones during the set bounds in super layout.
+        // Need to schedule a redraw (?) because it has already drawn the old ones during the set bounds in super layout.
+        //currentSashInfo.sash.redraw();
     }
 
     protected void upRestoreClicked(SashInfo sashinfo) {
@@ -678,7 +643,7 @@ public class CustomSashForm extends SashForm {
         fireDividerMoved();
     }
 
-    protected void downHideClicked(SashInfo sashinfo) {
+    protected void downHideClicked() {
         int[] weights = getWeights();
 
         // Down hide, so save the current restoreWeight of 1 into the sash info, and move to the bottom.
@@ -777,22 +742,28 @@ public class CustomSashForm extends SashForm {
         }
     }
 
-    protected void drawSashBorder(GC gc, Sash sash, boolean leftBorder) {
-        gc.setForeground(borderColor);
-        gc.setLineStyle(SWT.LINE_DOT);
-        Point s = sash.getSize();
+    protected void drawSashBorder(GC gc, SashInfo sashInfo) {
+        gc.setForeground(arrowColor);
+        gc.setLineStyle(SWT.LINE_SOLID);
+        Point s = sashInfo.sash.getSize();
+        int[][] sashLocs = sashInfo.sashLocs;
+        int lastLocIndex = sashLocs.length - 1;
+
+        int sashDim = getSashWidth();
         if (getOrientation() == SWT.VERTICAL) {
-            int maxWidth = Math.min(100, s.x);
-            int leftPos = (s.x - maxWidth) / 2;
-            if (leftBorder) // i.e. top for VERTICAL sash
-                gc.drawLine(leftPos, 0, leftPos + maxWidth, 0);
-            else  // i.e. bottom for VERTICAL sash
-                gc.drawLine(leftPos, s.y - 1, leftPos + maxWidth, s.y - 1);
+            int leftArrowPos = sashLocs[0][2] - ARROW_MARGIN;
+            int rightArrowPos = sashLocs[lastLocIndex][2] + sashLocs[lastLocIndex][5] + ARROW_MARGIN * 3;
+
+            gc.drawLine(0,  sashDim / 2, leftArrowPos, sashDim / 2);
+            gc.drawLine(rightArrowPos,  sashDim / 2, s.x - 1, sashDim / 2);
+            gc.drawRoundRectangle(leftArrowPos, 0, rightArrowPos - leftArrowPos, sashDim - 1, 3, 3);
         } else {
-            if (leftBorder)
-                gc.drawLine(0, 0, 0, s.y - 1);
-            else
-                gc.drawLine(s.x - 1, 0, s.x - 1, s.y - 1);
+            int topArrowPos = sashLocs[0][3] - ARROW_MARGIN;
+            int bottomArrowPos = sashLocs[lastLocIndex][3] + sashLocs[lastLocIndex][4] + ARROW_MARGIN * 3;
+
+            gc.drawLine(sashDim / 2, 0, sashDim / 2, topArrowPos);
+            gc.drawLine(sashDim / 2, bottomArrowPos, sashDim / 2, s.y - 1);
+            gc.drawRoundRectangle(0, topArrowPos, sashDim - 1, bottomArrowPos - topArrowPos, 3, 3);
         }
     }
 
@@ -810,9 +781,11 @@ public class CustomSashForm extends SashForm {
                 gc.drawLine(sashLoc[X_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX], sashLoc[X_INDEX], sashLoc[Y_INDEX]);
                 gc.drawLine(sashLoc[X_INDEX], sashLoc[Y_INDEX], sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX]);
 
-                gc.setForeground(normalShadow);
-                gc.drawLine(sashLoc[X_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX], sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX]);
-                gc.drawLine(sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX], sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX]);
+                //gc.setForeground(normalShadow);
+                //gc.drawLine(sashLoc[X_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX],
+                //  sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX]);
+                //gc.drawLine(sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX],
+                //  sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX]);
             } else {
                 // Draw pushed selection box.
                 indent = 1;
@@ -822,9 +795,11 @@ public class CustomSashForm extends SashForm {
                 gc.drawLine(sashLoc[X_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX], sashLoc[X_INDEX], sashLoc[Y_INDEX]);
                 gc.drawLine(sashLoc[X_INDEX], sashLoc[Y_INDEX], sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX]);
 
-                gc.setForeground(highlightShadow);
-                gc.drawLine(sashLoc[X_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX], sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX]);
-                gc.drawLine(sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX], sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX]);
+                //gc.setForeground(highlightShadow);
+                //gc.drawLine(sashLoc[X_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX],
+                //  sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX]);
+                //gc.drawLine(sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX],
+                //  sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX], sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX]);
             }
         }
 

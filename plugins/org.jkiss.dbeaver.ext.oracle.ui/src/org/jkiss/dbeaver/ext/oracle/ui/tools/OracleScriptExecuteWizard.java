@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.ext.oracle.ui.tools;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.tasks.OracleScriptExecuteSettings;
 import org.jkiss.dbeaver.ext.oracle.tasks.OracleTasks;
@@ -30,6 +32,7 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeScriptExecuteWizard;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.Map;
 
@@ -43,6 +46,10 @@ class OracleScriptExecuteWizard extends AbstractNativeScriptExecuteWizard<Oracle
 
     OracleScriptExecuteWizard(OracleDataSource oracleSchema) {
         super(Collections.singleton(oracleSchema), OracleUIMessages.tools_script_execute_wizard_page_name);
+    }
+
+    OracleScriptExecuteWizard(@NotNull OracleDataSource oracleSchema, @Nullable File sourceFile) {
+        super(Collections.singleton(oracleSchema), OracleUIMessages.tools_script_execute_wizard_page_name, sourceFile);
     }
 
     @Override

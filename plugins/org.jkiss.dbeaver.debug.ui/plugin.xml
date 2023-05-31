@@ -111,7 +111,11 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" class="org.jkiss.dbeaver.debug.ui.actions.OpenDebugConfigurationHandler"/>
+        <handler commandId="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" class="org.jkiss.dbeaver.debug.ui.actions.OpenDebugConfigurationHandler">
+            <enabledWhen>
+                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+            </enabledWhen>
+        </handler>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -126,7 +130,12 @@
             <command commandId="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" id="org.jkiss.dbeaver.debug.ui.menu.pulldown"
                      label="%commands.command.debugConfigurations.name"
                      tooltip="%commands.command.debugConfigurations.description" style="pulldown">
-                <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                <visibleWhen>
+                    <and>
+                        <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                        <reference definitionId="DBeaverPerspectiveActive"/>
+                    </and>
+                </visibleWhen>
             </command>
         </menuContribution>
 

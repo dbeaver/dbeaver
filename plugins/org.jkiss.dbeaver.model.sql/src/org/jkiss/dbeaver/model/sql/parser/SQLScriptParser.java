@@ -86,6 +86,7 @@ public class SQLScriptParser {
         SQLDialect dialect = context.getDialect();
         SQLTokenPredicateEvaluator predicateEvaluator = new SQLTokenPredicateEvaluator(dialect.getSkipTokenPredicates());
         boolean isPredicateEvaluationEnabled = isPredicateEvaluationEnabled();
+        boolean newTokenCaptured = false;
 
         // Parse range
         TPRuleBasedScanner ruleScanner = context.getScanner();
@@ -115,7 +116,8 @@ public class SQLScriptParser {
             try {
                 if (isPredicateEvaluationEnabled && tokenLength > 0 && !token.isWhitespace()) {
                     String tokenText = document.get(tokenOffset, tokenLength);
-                    predicateEvaluator.captureToken(new SQLTokenEntry(tokenText, tokenType));
+                    predicateEvaluator.captureToken(new SQLTokenEntry(tokenText, tokenType, false));
+                    newTokenCaptured = true;
                 }
 
                 boolean isDelimiter = (tokenType == SQLTokenType.T_DELIMITER) ||
@@ -152,7 +154,9 @@ public class SQLScriptParser {
                     // Another trick. If BEGIN follows with delimiter then it is not a block (#7821)
                     if (curBlock != null) curBlock = curBlock.parent;
                 }
-
+                if (dialect.isStripCommentsBeforeBlocks() && tokenType == SQLTokenType.T_BLOCK_HEADER && prevNotEmptyTokenType == SQLTokenType.T_COMMENT) {
+                    statementStart = tokenOffset;
+                }
                 if (tokenType == SQLTokenType.T_BLOCK_HEADER) {
                     curBlock = new ScriptBlockInfo(curBlock, true);
                     hasBlocks = true;
@@ -211,7 +215,8 @@ public class SQLScriptParser {
                     }
                 }
 
-                if (isPredicateEvaluationEnabled && !token.isEOF()) {
+                if (isPredicateEvaluationEnabled && !token.isEOF() && newTokenCaptured) {
+                    newTokenCaptured = false;
                     SQLParserActionKind actionKind = predicateEvaluator.evaluatePredicates();
                     if (actionKind == SQLParserActionKind.BEGIN_BLOCK) {
                         // header blocks seems optional and we are in the block either way
@@ -290,8 +295,8 @@ public class SQLScriptParser {
                         statementStart = tokenOffset + tokenLength;
                         continue;
                     }
-                    String queryText = document.get(statementStart, tokenOffset - statementStart);
-                    queryText = SQLUtils.fixLineFeeds(queryText);
+                    String originalQueryText = document.get(statementStart, tokenOffset - statementStart);
+                    String queryText = SQLUtils.fixLineFeeds(originalQueryText);
 
                     if (isDelimiter &&
                         (keepDelimiters ||
@@ -317,6 +322,7 @@ public class SQLScriptParser {
                     return new SQLQuery(
                         context.getDataSource(),
                         queryText,
+                        originalQueryText,
                         statementStart,
                         queryEndPos - statementStart);
                 }
@@ -428,24 +434,24 @@ public class SQLScriptParser {
             try {
                 int currLineIndex = document.getLineOfOffset(currentPos);
                 IRegion currLine = document.getLineInformation(currLineIndex);
-                int currLineEnd = currLine.getOffset() + currLine.getLength(); 
+                int currLineEnd = currLine.getOffset() + currLine.getLength();
                 boolean hasNextLine = currLineIndex + 1 < document.getNumberOfLines();
-                boolean inTailComment = SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(partitioner.getContentType(currentPos)); 
+                boolean inTailComment = SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(partitioner.getContentType(currentPos));
                 if (!inTailComment && currentPos >= currLineEnd &&
                     (!hasNextLine || (hasNextLine && currentPos < document.getLineInformation(currLineIndex + 1).getOffset()))
-                ) { 
+                ) {
                     inTailComment = SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(partitioner.getContentType(currLineEnd - 1));
                 }
                 if (inTailComment) {
                     int observablePosition = currentPos < document.getLength() ? currentPos : currentPos - 1;
                     int letterBeforeComment = skipCommentsBackTillLetter(document, partitioner, observablePosition, currLine.getOffset());
                     if (letterBeforeComment >= currLine.getOffset()) {
-                        // if we are in the single-line comment and there are letters before the comment, then extract  
+                        // if we are in the single-line comment and there are letters before the comment, then extract
                         currentPos = letterBeforeComment;
                     }
                 }
-            } catch (BadLocationException ex) { 
-                return null; 
+            } catch (BadLocationException ex) {
+                return null;
             }
             // Move to default partition. We don't want to be in the middle of multi-line comment or string
             while (currentPos < docLength && isMultiCommentPartition(partitioner, currentPos)) {
@@ -567,7 +573,7 @@ public class SQLScriptParser {
     private static boolean isMultiCommentPartition(IDocumentPartitioner partitioner, int currentPos) {
         return partitioner != null && SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(partitioner.getContentType(currentPos));
     }
-    
+
     public static SQLScriptElement extractNextQuery(SQLParserContext context, int offset, boolean next) {
         SQLScriptElement curElement = extractQueryAtPos(context, offset);
         if (curElement == null) {
@@ -585,14 +591,14 @@ public class SQLScriptParser {
                 final String[] statementDelimiters = context.getSyntaxManager().getStatementDelimiters();
                 curPos = curElement.getOffset() + curElement.getLength();
                 while (curPos < docLength) {
-                    if (partitioner != null) { 
+                    if (partitioner != null) {
                         ITypedRegion region = partitioner.getPartition(curPos);
                         switch (region.getType()) {
                             case SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT:
                             case SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT: {
                                 curPos = region.getOffset() + region.getLength();
                                 continue;
-                            }   
+                            }
                         }
                     }
                     char c = document.getChar(curPos);
@@ -622,7 +628,7 @@ public class SQLScriptParser {
             return null;
         }
     }
-    
+
     private static int skipCommentsBackTillLetter(
         @NotNull IDocument document,
         @Nullable IDocumentPartitioner partitioner,
@@ -631,14 +637,14 @@ public class SQLScriptParser {
     ) throws BadLocationException {
         int curPos = pos;
         while (curPos >= limit) {
-            if (partitioner != null) { 
+            if (partitioner != null) {
                 ITypedRegion region = partitioner.getPartition(curPos);
                 switch (region.getType()) {
                     case SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT:
                     case SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT: {
                         curPos = region.getOffset() - 1;
                         continue;
-                    }   
+                    }
                 }
             }
             char c = document.getChar(curPos);
@@ -649,7 +655,7 @@ public class SQLScriptParser {
         }
         return -1;
     }
-    
+
     @Nullable
     public static SQLScriptElement extractActiveQuery(SQLParserContext context, int selOffset, int selLength) {
         return extractActiveQuery(context, new IRegion[]{new Region(selOffset, selLength)});
@@ -689,8 +695,8 @@ public class SQLScriptParser {
                 element = parsedElement;
             } else {
                 // Use selected query as is
-                selText = SQLUtils.fixLineFeeds(selText);
-                element = new SQLQuery(context.getDataSource(), selText, region.getOffset(), region.getLength());
+                String fixedSelText = SQLUtils.fixLineFeeds(selText);
+                element = new SQLQuery(context.getDataSource(), fixedSelText, selText, region.getOffset(), region.getLength());
             }
         } else if (region.getOffset() >= 0) {
             element = extractQueryAtPos(context, region.getOffset());
@@ -803,6 +809,7 @@ public class SQLScriptParser {
                             syntaxManager,
                             parameters.size(),
                             preparedParamName,
+                            paramName,
                             tokenOffset - queryOffset,
                             tokenLength
                         );
@@ -841,10 +848,12 @@ public class SQLScriptParser {
                         }
 
                         if (param == null) {
+                            String paramName = matcher.group(SQLQueryParameter.VARIABLE_NAME_GROUP_NAME);
                             param = new SQLQueryParameter(
                                 syntaxManager,
                                 orderPos,
-                                matcher.group(SQLQueryParameter.VARIABLE_NAME_GROUP_NAME).toUpperCase(Locale.ENGLISH),
+                                paramName.toUpperCase(Locale.ENGLISH),
+                                paramName,
                                 start,
                                 matcher.end() - matcher.start()
                             );

@@ -28,7 +28,6 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
@@ -291,7 +290,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 saveJob.schedule();
 
                 // Wait until job finished
-                UIUtils.waitJobCompletion(saveJob);
+                UIUtils.waitJobCompletion(saveJob, monitor);
                 if (!saveJob.success) {
                     monitor.setCanceled(true);
                     return;
@@ -330,6 +329,16 @@ public class EntityEditor extends MultiPageDatabaseEditor
         DBECommandContext commandContext = getCommandContext();
         if (commandContext != null) {
             commandContext.resetChanges(true);
+        }
+    }
+
+    @Override
+    public boolean loadEditorInput() {
+        final IDatabaseEditorInput input = getEditorInput();
+        if (input instanceof DatabaseLazyEditorInput && !((DatabaseLazyEditorInput) input).canLoadImmediately()) {
+            return ((ProgressEditorPart) getActiveEditor()).scheduleEditorLoad();
+        } else {
+            return false;
         }
     }
 
@@ -615,6 +624,14 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
         // Add contributed pages
         addContributions(EntityEditorDescriptor.POSITION_END);
+
+        if (databaseObject != null) {
+            EntityEditorFeatures.ENTITY_EDITOR_OPEN.use(Map.of(
+                "className", databaseObject.getClass().getSimpleName(),
+                "driver", databaseObject.getDataSource() == null ? "" :
+                    databaseObject.getDataSource().getContainer().getDriver().getPreconfiguredId()
+            ));
+        }
 
         String defPageId = editorInput.getDefaultPageId();
         String defFolderId = editorInput.getDefaultFolderId();

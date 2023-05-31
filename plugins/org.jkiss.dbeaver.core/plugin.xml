@@ -489,10 +489,13 @@
         <!-- Tools menu -->
         <handler commandId="org.jkiss.dbeaver.ui.tools.menu" class="org.jkiss.dbeaver.ui.actions.datasource.ToolsContextMenuHandler">
             <activeWhen>
-                <or>
-                    <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
-                    <reference definitionId="org.jkiss.dbeaver.core.ui.datasource.part"/>
-                </or>
+                <and>
+                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                    <or>
+                        <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
+                        <reference definitionId="org.jkiss.dbeaver.core.ui.datasource.part"/>
+                    </or>
+                </and>
             </activeWhen>
         </handler>
 
@@ -516,10 +519,10 @@
 
                 <separator name="driverGroup" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.new.connection">
-                    <visibleWhen checkEnabled="true"/>
+                    <visibleWhen checkEnabled="true"><test property="org.jkiss.dbeaver.core.global.canCreateConnection"/></visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.core.new.connection.from.url">
-                    <visibleWhen checkEnabled="true"/>
+                    <visibleWhen checkEnabled="true"><test property="org.jkiss.dbeaver.core.global.canCreateConnection"/></visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.core.driver.manager">
                     <visibleWhen checkEnabled="true"/>
@@ -568,7 +571,12 @@
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?before=additions">
             <toolbar id="dbeaver-general" label="%toolbar.dbeaver-general.label">
                 <command commandId="org.jkiss.dbeaver.core.new.connection" id="org.jkiss.dbeaver.core.menu.newConnection" style="pulldown">
-                    <visibleWhen checkEnabled="true"><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
+                    <visibleWhen checkEnabled="true">
+                        <and>
+                            <test property="org.jkiss.dbeaver.core.global.canCreateConnection"/>
+                            <reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/>
+                        </and>
+                    </visibleWhen>
                 </command>
                 <separator name="connection-tools" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.connect">
@@ -680,7 +688,10 @@
                         <count value="1"/>
                         <iterate operator="and">
                             <adapt type="org.jkiss.dbeaver.model.navigator.DBNDataSource">
-                                <test property="org.jkiss.dbeaver.core.datasource.editable"/>
+                                <and>
+                                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                                    <test property="org.jkiss.dbeaver.core.datasource.editable"/>
+                                </and>
                             </adapt>
                         </iterate>
                     </with>
@@ -724,6 +735,9 @@
 -->
 
             <command commandId="org.jkiss.dbeaver.core.sql.script.associate">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.sql.script.run.scriptNative">
                 <visibleWhen checkEnabled="true"/>
             </command>
             <command commandId="org.jkiss.dbeaver.core.show.in.explorer">
@@ -1296,6 +1310,5 @@
             class="org.jkiss.dbeaver.ui.preferences.PrefPageToolbarCustomization"
             name="%org.jkiss.dbeaver.preferences.main.toolbar.customization.name"/>
     </extension>
-
 
 </plugin>

@@ -123,7 +123,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         @Nullable String defaultPageId,
         IWorkbenchWindow workbenchWindow)
     {
-        return openEntityEditor(selectedNode, defaultPageId, null, null, workbenchWindow, true);
+        return openEntityEditor(selectedNode, defaultPageId, null, null, workbenchWindow, true, true);
     }
 
     public static IEditorPart openEntityEditor(
@@ -134,7 +134,19 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         IWorkbenchWindow workbenchWindow,
         boolean activate)
     {
-        if (selectedNode instanceof DBNDataSource) {
+        return openEntityEditor(selectedNode, defaultPageId, defaultFolderId, attributes, workbenchWindow, activate, false);
+    }
+
+    public static IEditorPart openEntityEditor(
+        @NotNull DBNNode selectedNode,
+        @Nullable String defaultPageId,
+        @Nullable String defaultFolderId,
+        @Nullable Map<String, Object> attributes,
+        IWorkbenchWindow workbenchWindow,
+        boolean activate,
+        boolean connectionEditorAllowed
+    ) {
+        if (connectionEditorAllowed && selectedNode instanceof DBNDataSource) {
             final DBPDataSourceContainer dataSourceContainer = ((DBNDataSource)selectedNode).getDataSourceContainer();
             if (dataSourceContainer.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
                 openConnectionEditor(workbenchWindow, dataSourceContainer);

@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IContributor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.impl.ProviderPropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.navigator.meta.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -59,7 +61,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private DataSourceProviderRegistry registry;
     private DataSourceProviderDescriptor parentProvider;
     private final String id;
-    private final ObjectType implType;
+    private ObjectType implType;
     private final String name;
     private final String description;
     private final boolean temporary;
@@ -165,9 +167,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
                 {
                     for (IConfigurationElement propsElement : driversElement.getChildren(RegistryConstants.TAG_PROVIDER_PROPERTIES)) {
                         String driversSpec = propsElement.getAttribute("drivers");
-                        List<DBPPropertyDescriptor> providerProperties = new ArrayList<>();
+                        List<ProviderPropertyDescriptor> providerProperties = new ArrayList<>();
                         for (IConfigurationElement prop : propsElement.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP)) {
-                            providerProperties.addAll(PropertyDescriptor.extractProperties(prop));
+                            providerProperties.addAll(ProviderPropertyDescriptor.extractProviderProperties(prop));
                         }
                         List<DriverDescriptor> appDrivers;
                         if (CommonUtils.isEmpty(driversSpec) || driversSpec.equals("*")) {
@@ -264,8 +266,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     }
 
     @NotNull
-    public DBPDataSourceProvider getInstance(DriverDescriptor driver)
-    {
+    public DBPDataSourceProvider getInstance(DriverDescriptor driver) {
         if (instance == null) {
             initProviderBundle(driver);
             try {
@@ -280,6 +281,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             }
         }
         return instance;
+    }
+
+    void replaceImplClass(IContributor contributor, String providerClass) {
+        this.replaceContributor(contributor);
+        this.implType = new ObjectType(providerClass);
     }
 
     @Override
@@ -344,8 +350,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
      * @param id identifier of the driver to retrieve
      * @return driver or {@code null} if no driver was found
      */
-    public DriverDescriptor getDriver(String id)
-    {
+    @Nullable
+    @Override
+    public DriverDescriptor getDriver(@NotNull String id) {
         for (DriverDescriptor driver : drivers) {
             if (driver.getId().equals(id)) {
                 while (driver.getReplacedBy() != null) {

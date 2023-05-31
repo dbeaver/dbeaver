@@ -393,4 +393,9 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
     public String getClobDataType() {
         return SQLServerConstants.TYPE_VARCHAR + "(max)";
     }
+
+    @Override
+    public boolean needsDefaultDataTypes() {
+        return false;
+    }
 }

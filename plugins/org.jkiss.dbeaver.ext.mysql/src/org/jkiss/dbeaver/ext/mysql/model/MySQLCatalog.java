@@ -517,9 +517,8 @@ public class MySQLCatalog implements
     }
 
     @Override
-    public boolean isSystem()
-    {
-        return MySQLConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(getName()) || MySQLConstants.PERFORMANCE_SCHEMA_NAME.equalsIgnoreCase(getName()) || MySQLConstants.MYSQL_SCHEMA_NAME.equalsIgnoreCase(getName());
+    public boolean isSystem() {
+        return getDataSource().isSystemCatalog(getName());
     }
 
     @Override
@@ -1006,7 +1005,7 @@ public class MySQLCatalog implements
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM information_schema.EVENTS WHERE EVENT_SCHEMA=?");
-            dbStat.setString(1, DBUtils.getQuotedIdentifier(owner));
+            dbStat.setString(1, owner.getName());
             return dbStat;
         }
 

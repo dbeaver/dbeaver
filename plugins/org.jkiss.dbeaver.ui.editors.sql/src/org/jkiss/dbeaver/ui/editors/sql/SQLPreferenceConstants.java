@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 
-public class SQLPreferenceConstants
-{
-
-
+public class SQLPreferenceConstants {
 
     public enum EmptyScriptCloseBehavior {
         NOTHING(SQLEditorMessages.script_close_behavior_do_not_delete),
@@ -65,6 +62,7 @@ public class SQLPreferenceConstants
     public static final String INSERT_SINGLE_PROPOSALS_AUTO            = "SQLEditor.ContentAssistant.insert.single.proposal";
     public static final String ENABLE_HIPPIE                           = "SQLEditor.ContentAssistant.activate.hippie";
     public static final String ENABLE_AUTO_ACTIVATION                  = "SQLEditor.ContentAssistant.auto.activation.enable";
+    public static final String ENABLE_EXPERIMENTAL_FEATURES            = "SQLEditor.ContentAssistant.experimental.enable";
     public static final String ENABLE_KEYSTROKE_ACTIVATION             = "SQLEditor.ContentAssistant.auto.keystrokes.activation";
     public static final String AUTO_ACTIVATION_DELAY                   = "SQLEditor.ContentAssistant.auto.activation.delay";
     public static final String PROPOSAL_INSERT_CASE                    = "SQLEditor.ContentAssistant.insert.case";
@@ -99,15 +97,16 @@ public class SQLPreferenceConstants
     public static final String SQLEDITOR_CLOSE_COMMENTS                = "SQLEditor.closeComments";
     public static final String SQLEDITOR_CLOSE_BLOCKS                  = "SQLEditor.closeBlocks";
 
+    public static final String SMART_WORD_ITERATOR                     = "SQLEditor.smartWordIterator";
+
     // Matching brackets
     public final static String MATCHING_BRACKETS                        = "SQLEditor.matchingBrackets";
     public final static String MATCHING_BRACKETS_HIGHLIGHT              = "SQLEditor.matchingBracketsHighlight";
     // Reuse "AbstractTextEditor.Color.Foreground" color
-    public final static String MATCHING_BRACKETS_COLOR                  = "AbstractTextEditor.Color.Foreground";//"org.jkiss.dbeaver.sql.editor.color.matchingBrackets.foreground";
+    public final static String MATCHING_BRACKETS_COLOR                  = "AbstractTextEditor.Color.Foreground";
 
     public final static String RESET_CURSOR_ON_EXECUTE                  = "SQLEditor.resetCursorOnExecute";
     public final static String MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE        = "SQLEditor.maxEditorOnScriptExecute";
-    public static final String SHOW_STATISTICS_FOR_QUERIES_WITH_RESULTS = "SQLEditor.showStatisticsForQueriesWithResults";
 
     public final static String SQL_FORMAT_KEYWORD_CASE_AUTO             = "SQLEditor.format.keywordCaseAuto";
     public final static String SQL_FORMAT_EXTRACT_FROM_SOURCE           = "SQLEditor.format.extractFromSource";

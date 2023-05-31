@@ -23,6 +23,7 @@ import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -69,6 +70,8 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     private static final String PROP_TRUESTRING = "trueString";
     private static final String PROP_FALSESTRING = "falseString";
 
+    private static final String PROP_TRIM_STRINGS = "trimString";
+
     private static final String PROP_EXPORT_SQL = "exportSql";
     private static final String PROP_SPLIT_SQLTEXT = "splitSqlText";
 
@@ -97,9 +100,9 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     private String boolTrue = "true";
     private String boolFalse = "false";
     private boolean booleRedefined;
+    private boolean trimStrings;
     private boolean exportSql = false;
     private boolean splitSqlText = false;
-    private String dateFormat = "";
     private AppendStrategy appendStrategy = AppendStrategy.CREATE_NEW_SHEETS;
 
     private int splitByRowCount = EXCEL2007MAXROWS;
@@ -122,6 +125,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         properties.put(DataExporterXLSX.PROP_HEADER_FONT, "BOLD");
         properties.put(DataExporterXLSX.PROP_TRUESTRING, "true");
         properties.put(DataExporterXLSX.PROP_FALSESTRING, "false");
+        properties.put(DataExporterXLSX.PROP_TRIM_STRINGS, "false");
         properties.put(DataExporterXLSX.PROP_EXPORT_SQL, false);
         properties.put(DataExporterXLSX.PROP_SPLIT_SQLTEXT, false);
         properties.put(DataExporterXLSX.PROP_SPLIT_BYROWCOUNT, EXCEL2007MAXROWS);
@@ -137,57 +141,18 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         Object nullStringProp = properties.get(PROP_NULL_STRING);
         nullString = nullStringProp == null ? null : nullStringProp.toString();
         headerFormat = HeaderFormat.of(CommonUtils.toString(properties.get(PROP_HEADER)));
-
-        try {
-            rowNumber = CommonUtils.getBoolean(properties.get(PROP_ROWNUMBER), false);
-        } catch (Exception e) {
-            rowNumber = false;
-        }
-
-        try {
-            boolTrue = CommonUtils.toString(properties.get(PROP_TRUESTRING), "true");
-        } catch (Exception e) {
-            boolTrue = "true";
-        }
-        try {
-            boolFalse = CommonUtils.toString(properties.get(PROP_FALSESTRING), "false");
-        } catch (Exception e) {
-            boolFalse = "false";
-        }
-        if (!"true".equals(boolTrue) || !"false".equals(boolFalse)) {
+        rowNumber = CommonUtils.getBoolean(properties.get(PROP_ROWNUMBER), false);
+        boolTrue = CommonUtils.toString(properties.get(PROP_TRUESTRING), Boolean.TRUE.toString());
+        boolFalse = CommonUtils.toString(properties.get(PROP_FALSESTRING), Boolean.FALSE.toString());
+        if (!Boolean.TRUE.toString().equals(boolTrue) || !Boolean.FALSE.toString().equals(boolFalse)) {
             booleRedefined = true;
         }
-
-        try {
-            exportSql = CommonUtils.getBoolean(properties.get(PROP_EXPORT_SQL), false);
-        } catch (Exception e) {
-            exportSql = false;
-        }
-
-        try {
-            splitSqlText = CommonUtils.getBoolean(properties.get(PROP_SPLIT_SQLTEXT), false);
-        } catch (Exception e) {
-            splitSqlText = false;
-        }
-
-        try {
-            splitByRowCount = CommonUtils.toInt(properties.get(PROP_SPLIT_BYROWCOUNT), EXCEL2007MAXROWS);
-        } catch (Exception e) {
-            splitByRowCount = EXCEL2007MAXROWS;
-        }
-
-        try {
-            splitByCol = CommonUtils.toInt(properties.get(PROP_SPLIT_BYCOL), 0);
-        } catch (Exception e) {
-            splitByCol = -1;
-        }
-
-        try {
-            dateFormat = CommonUtils.toString(properties.get(PROP_DATE_FORMAT), "");
-        } catch (Exception e) {
-            dateFormat = "";
-        }
-
+        trimStrings = CommonUtils.getBoolean(properties.get(PROP_TRIM_STRINGS), false);
+        exportSql = CommonUtils.getBoolean(properties.get(PROP_EXPORT_SQL), false);
+        splitSqlText = CommonUtils.getBoolean(properties.get(PROP_SPLIT_SQLTEXT), false);
+        splitByRowCount = CommonUtils.toInt(properties.get(PROP_SPLIT_BYROWCOUNT), EXCEL2007MAXROWS);
+        splitByCol = CommonUtils.toInt(properties.get(PROP_SPLIT_BYCOL), 0);
+        String dateFormat = CommonUtils.toString(properties.get(PROP_DATE_FORMAT), "");
         appendStrategy = AppendStrategy.of(CommonUtils.toString(properties.get(PROP_APPEND_STRATEGY)));
 
         if (wb == null) {
@@ -195,32 +160,17 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         }
 
         worksheets = new HashMap<>(1);
-
         styleHeader = (XSSFCellStyle) wb.createCellStyle();
 
-        BorderStyle border;
+        BorderStyle border = CommonUtils.valueOf(
+            BorderStyle.class,
+            CommonUtils.toString(properties.get(PROP_BORDER), BorderStyle.THIN.name()),
+            BorderStyle.THIN);
 
-        try {
-
-            border = BorderStyle.valueOf(CommonUtils.toString(properties.get(PROP_BORDER), BorderStyle.THIN.name()));
-
-        } catch (Exception e) {
-
-            border = BorderStyle.NONE;
-
-        }
-
-        FontStyleProp fontStyle;
-
-        try {
-
-            fontStyle = FontStyleProp.valueOf(CommonUtils.toString(properties.get(PROP_HEADER_FONT), FontStyleProp.BOLD.name()));
-
-        } catch (Exception e) {
-
-            fontStyle = FontStyleProp.NONE;
-
-        }
+        FontStyleProp fontStyle = CommonUtils.valueOf(
+            FontStyleProp.class,
+            CommonUtils.toString(properties.get(PROP_HEADER_FONT), FontStyleProp.BOLD.name()),
+            FontStyleProp.BOLD);
 
         styleHeader.setBorderTop(border);
         styleHeader.setBorderBottom(border);
@@ -230,25 +180,20 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         XSSFFont fontBold = (XSSFFont) wb.createFont();
 
         switch (fontStyle) {
-
-        case BOLD:
-            fontBold.setBold(true);
-            break;
-
-        case ITALIC:
-            fontBold.setItalic(true);
-            break;
-
-        case STRIKEOUT:
-            fontBold.setStrikeout(true);
-            break;
-
-        case UNDERLINE:
-            fontBold.setUnderline((byte) 3);
-            break;
-
-        default:
-            break;
+            case BOLD:
+                fontBold.setBold(true);
+                break;
+            case ITALIC:
+                fontBold.setItalic(true);
+                break;
+            case STRIKEOUT:
+                fontBold.setStrikeout(true);
+                break;
+            case UNDERLINE:
+                fontBold.setUnderline((byte) 3);
+                break;
+            default:
+                break;
         }
 
         styleHeader.setFont(fontBold);
@@ -265,11 +210,10 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         styleDate.setBorderLeft(border);
         styleDate.setBorderRight(border);
 
-        if (dateFormat == null || dateFormat.length() == 0) {
+        if (CommonUtils.isEmpty(dateFormat)) {
             styleDate.setDataFormat((short) 14);
         } else {
-           styleDate.setDataFormat(
-                wb.getCreationHelper().createDataFormat().getFormat(dateFormat));
+            styleDate.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat(dateFormat));
         }
 
         this.rowCount = 0;
@@ -580,11 +524,14 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         return wb.getXSSFWorkbook().getSheetAt(wb.getSheetIndex(sheet)).getPhysicalNumberOfRows();
     }
 
-    private String getPreparedString(String cellValue) {
-        if (cellValue.length() > EXCEL_MAX_CELL_CHARACTERS) {
+    private String getPreparedString(@Nullable String cellValue) {
+        if (CommonUtils.isNotEmpty(cellValue) && cellValue.length() > EXCEL_MAX_CELL_CHARACTERS) {
             // We must truncate long strings from our side, otherwise we get the error of the insertion from the apache.poi library
             log.warn("The string value of the row " + (rowCount + 1) + " was more maximum length, so it was cropped.");
-            return CommonUtils.truncateString(cellValue, EXCEL_MAX_CELL_CHARACTERS);
+            cellValue = CommonUtils.truncateString(cellValue, EXCEL_MAX_CELL_CHARACTERS);
+        }
+        if (trimStrings && CommonUtils.isNotEmpty(cellValue)) {
+            cellValue = cellValue.trim();
         }
         return cellValue;
     }

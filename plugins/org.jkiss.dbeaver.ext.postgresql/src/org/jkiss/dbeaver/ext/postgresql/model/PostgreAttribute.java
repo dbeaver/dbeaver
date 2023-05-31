@@ -74,6 +74,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     private String defaultValue;
     @Nullable
     private boolean isGeneratedColumn;
+    private long depObjectId;
 
     protected PostgreAttribute(
         OWNER table)
@@ -171,8 +172,10 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                 }
             }
         }
-        //setTypeName(dataType.getTypeName());
-        setValueType(dataType.getTypeID());
+        if (dataType != null) {
+            //setTypeName(dataType.getTypeName());
+            setValueType(dataType.getTypeID());
+        }
         typeMod = JDBCUtils.safeGetInt(dbResult, "atttypmod");
         this.description = JDBCUtils.safeGetString(dbResult, "description");
         this.arrayDim = JDBCUtils.safeGetInt(dbResult, "attndims");
@@ -196,10 +199,18 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.acl = JDBCUtils.safeGetObject(dbResult, "attacl");
 
         if (getTable() instanceof PostgreTableForeign) {
-            foreignTableColumnOptions = JDBCUtils.safeGetArray(dbResult, "attfdwoptions");
+            foreignTableColumnOptions = PostgreUtils.safeGetStringArray(dbResult, "attfdwoptions");
         }
 
         setPersisted(true);
+
+        if (getTable() instanceof PostgreTable) {
+            PostgreTable postgreTable = (PostgreTable) getTable();
+            if (postgreTable.getDepObjectAttrNumber() == getOrdinalPosition()) {
+                // ID of object which has dependency with this column
+                this.depObjectId = (postgreTable).getDepObjectId();
+            }
+        }
     }
 
     @NotNull
@@ -356,6 +367,10 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public long getDepObjectId() {
+        return depObjectId;
     }
 
     @Property(viewable = true, editableExpr = "!object.table.view", order = 30, listProvider = CollationListProvider.class)

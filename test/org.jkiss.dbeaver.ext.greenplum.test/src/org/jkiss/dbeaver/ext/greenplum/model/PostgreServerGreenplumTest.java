@@ -63,7 +63,7 @@ public class PostgreServerGreenplumTest {
 
     @Test
     public void createRelationOfClass_whenTableIsNotAGreenplumTable_returnsInstanceOfPostgresTableBase() {
-        Assert.assertEquals(PostgreTableRegular.class,
+        Assert.assertEquals(GreenplumTable.class,
                 server.createRelationOfClass(mockSchema, PostgreClass.RelKind.p, mockResults).getClass());
     }
 

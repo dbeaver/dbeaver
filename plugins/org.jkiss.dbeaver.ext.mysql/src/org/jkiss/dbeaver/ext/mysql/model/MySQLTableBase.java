@@ -52,6 +52,8 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
 {
     private static final Log log = Log.getLog(MySQLTableBase.class);
 
+    private boolean isPartition;
+
     protected MySQLTableBase(MySQLCatalog catalog)
     {
         super(catalog, false);
@@ -77,6 +79,14 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
         ResultSet dbResult)
     {
         super(catalog, JDBCUtils.safeGetString(dbResult, 1), true);
+    }
+
+    public boolean isPartition() {
+        return isPartition;
+    }
+
+    public void setPartition(boolean partition) {
+        isPartition = partition;
     }
 
     @Override

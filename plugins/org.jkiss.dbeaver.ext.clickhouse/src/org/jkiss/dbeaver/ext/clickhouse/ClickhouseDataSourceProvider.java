@@ -25,7 +25,7 @@ public class ClickhouseDataSourceProvider extends GenericDataSourceProvider {
 
     @Override
     public long getFeatures() {
-        return FEATURE_SCHEMAS;
+        return FEATURE_CATALOGS | FEATURE_SCHEMAS;
     }
 
 }

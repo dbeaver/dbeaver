@@ -25,6 +25,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.dbeaver.ui.DataEditorFeatures;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelRefresher;
@@ -86,6 +87,8 @@ public class ReferencesPanel implements IResultSetPanel {
             ((ISelectionProvider) presentation).addSelectionChangedListener(selectionListener);
             presentation.getControl().addDisposeListener(e -> ((ISelectionProvider) presentation).removeSelectionChangedListener(selectionListener));
         }
+
+        DataEditorFeatures.RESULT_SET_PANEL_REFS.use();
 
         return referencesPlaceholder;
     }
