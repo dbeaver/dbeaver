@@ -543,6 +543,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         this.userCache.clearCache();
         this.profileCache.clearCache();
         this.roleCache.clearCache();
+        hasStatistics = false;
 
         this.initialize(monitor);
 
