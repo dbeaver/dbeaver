@@ -192,7 +192,13 @@ public class NewConnectionWizard extends ConnectionWizard
     public IWizardPage getNextPage(IWizardPage page)
     {
         if (page == pageDrivers) {
-            ConnectionPageSettings pageSettings = getPageSettings((DriverDescriptor) getSelectedDriver());
+            final DBPDriver driver = getSelectedDriver();
+            if (driver.isDeprecated()) {
+                final ConnectionPageDeprecation nextPage = new ConnectionPageDeprecation(driver);
+                nextPage.setWizard(this);
+                return nextPage;
+            }
+            ConnectionPageSettings pageSettings = getPageSettings(driver);
             if (pageSettings == null) {
                 return pageGeneral;
             } else {
@@ -213,6 +219,9 @@ public class NewConnectionWizard extends ConnectionWizard
     @Override
     public boolean performFinish() {
         DriverDescriptor driver = (DriverDescriptor) getSelectedDriver();
+        if (driver.isDeprecated()) {
+            return true;
+        }
         ConnectionPageSettings pageSettings = getPageSettings();
         DataSourceDescriptor dataSourceTpl = pageSettings == null ? getActiveDataSource() : pageSettings.getActiveDataSource();
         DBPDataSourceRegistry dataSourceRegistry = getDataSourceRegistry();
@@ -239,7 +248,11 @@ public class NewConnectionWizard extends ConnectionWizard
 
     @Override
     protected void saveSettings(DataSourceDescriptor dataSource) {
-        ConnectionPageSettings pageSettings = getPageSettings(dataSource.getDriver());
+        final DBPDriver driver = dataSource.getDriver();
+        if (driver.isDeprecated()) {
+            return;
+        }
+        ConnectionPageSettings pageSettings = getPageSettings(driver);
         if (pageSettings != null) {
             pageSettings.saveSettings(dataSource);
         }
