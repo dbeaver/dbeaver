@@ -142,7 +142,7 @@ public class EditConnectionWizard extends ConnectionWizard {
     @Override
     public void addPages() {
         if (dataSource.getDriver().isDeprecated()) {
-            addPage(new ConnectionPageDeprecation(dataSource));
+            addPage(new ConnectionPageDeprecation(dataSource.getDriver()));
             return;
         }
 

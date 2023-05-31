@@ -62,6 +62,7 @@
         <module>org.jkiss.dbeaver.ext.vertica</module>
         <module>org.jkiss.dbeaver.ext.teradata</module>
         <module>org.jkiss.dbeaver.ext.tidb</module>
+        <module>org.jkiss.dbeaver.ext.trino</module>
         <module>org.jkiss.dbeaver.ext.kognitio</module>
         <module>org.jkiss.dbeaver.ext.datavirtuality</module>
         <module>org.jkiss.dbeaver.ext.denodo</module>

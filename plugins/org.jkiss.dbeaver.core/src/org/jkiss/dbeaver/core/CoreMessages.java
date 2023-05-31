@@ -568,6 +568,9 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_edit_wizard_error_md5_msg;
 	//Connection edit
 
+	public static String dialog_connection_deprecated_title;
+	public static String dialog_connection_deprecated_description;
+
 	// Driver edit
 
 	// Driver download
