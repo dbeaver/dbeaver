@@ -683,7 +683,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     public boolean isDisabled() {
-        return disabled || isDeprecated();
+        return disabled;
     }
 
     public void setDisabled(boolean disabled) {
