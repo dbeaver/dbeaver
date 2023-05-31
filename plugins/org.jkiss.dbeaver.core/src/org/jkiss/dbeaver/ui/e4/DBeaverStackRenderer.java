@@ -172,16 +172,26 @@ public class DBeaverStackRenderer extends StackRenderer {
                 }
             });
         }
-        if (inputFile.getLocation() != null) {
+        if (inputFile.getLocation() != null || inputFile.getLocationURI() != null) {
             MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
             menuItemOthers.setText(CoreMessages.editor_file_copy_path);
-            menuItemOthers.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    String filePath = inputFile.getLocation().toFile().getAbsolutePath();
-                    UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), filePath);
-                }
-            });
+            if (inputFile.getLocation() != null) {
+                menuItemOthers.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        String filePath = inputFile.getLocation().toFile().getAbsolutePath();
+                        UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), filePath);
+                    }
+                });
+            } else if (inputFile.getLocationURI() != null) {
+                menuItemOthers.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        String filePath = inputFile.getLocationURI().getPath();
+                        UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), filePath);
+                    }
+                });
+            }
         }
 
         new MenuItem(menu, SWT.SEPARATOR);
