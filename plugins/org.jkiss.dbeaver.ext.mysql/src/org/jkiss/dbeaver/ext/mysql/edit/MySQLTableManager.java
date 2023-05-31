@@ -66,16 +66,6 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     }
 
     @Override
-    public boolean canRenameObject(MySQLTableBase object) {
-        return !object.isPartition();
-    }
-
-    @Override
-    public boolean canDeleteObject(MySQLTableBase object) {
-        return !object.isPartition();
-    }
-
-    @Override
     protected MySQLTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
         final MySQLTable table;
         MySQLCatalog catalog = (MySQLCatalog) container;

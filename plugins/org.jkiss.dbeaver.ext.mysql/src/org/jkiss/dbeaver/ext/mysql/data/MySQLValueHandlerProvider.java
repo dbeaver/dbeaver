@@ -50,6 +50,15 @@ public class MySQLValueHandlerProvider implements DBDValueHandlerProvider {
             case MySQLConstants.TYPE_JSON:
                 return JDBCContentValueHandler.INSTANCE;
             case MySQLConstants.TYPE_GEOMETRY:
+            case MySQLConstants.TYPE_POINT:
+            case MySQLConstants.TYPE_LINESTRING:
+            case MySQLConstants.TYPE_POLYGON:
+            case MySQLConstants.TYPE_MULTIPOINT:
+            case MySQLConstants.TYPE_MULTILINESTRING:
+            case MySQLConstants.TYPE_MULTIPOLYGON:
+            case MySQLConstants.TYPE_GEOMETRYCOLLECTION:
+            case MySQLConstants.TYPE_GEOGRAPHY:
+            case MySQLConstants.TYPE_GEOGRAPHYPOINT:
                 return MySQLGeometryValueHandler.INSTANCE;
             case MySQLConstants.TYPE_ENUM:
             case MySQLConstants.TYPE_SET:

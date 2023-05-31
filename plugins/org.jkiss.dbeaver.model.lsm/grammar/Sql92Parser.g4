@@ -50,16 +50,16 @@ schemaName: (catalogName Period)? unqualifiedSchemaName;
 unqualifiedSchemaName: identifier;
 catalogName: identifier;
 identifier: (Introducer characterSetSpecification)? actualIdentifier;
-actualIdentifier: (Identifier|DelimitedIdentifier|nonReserved);
+actualIdentifier: (Identifier|DelimitedIdentifier|SquareBracketIdentifier|nonReserved);
 
 // date-time literals
-dateString: Quote dateValue Quote;
+dateString: SingleQuote dateValue SingleQuote;
 dateValue: yearsValue MinusSign monthsValue MinusSign daysValue;
 yearsValue: datetimeValue;
 datetimeValue: UnsignedInteger;
 monthsValue: datetimeValue;
 daysValue: datetimeValue;
-timeString: Quote timeValue (timeZoneInterval)? Quote;
+timeString: SingleQuote timeValue (timeZoneInterval)? SingleQuote;
 timeValue: hoursValue Colon minutesValue Colon secondsValue;
 hoursValue: datetimeValue;
 minutesValue: datetimeValue;
@@ -67,8 +67,8 @@ secondsValue: secondsIntegerValue (Period (secondsFraction)?)?;
 secondsIntegerValue: UnsignedInteger;
 secondsFraction: UnsignedInteger;
 timeZoneInterval: Sign hoursValue Colon minutesValue;
-timestampString: Quote dateValue Space timeValue (timeZoneInterval)? Quote;
-intervalString: Quote (yearMonthLiteral|dayTimeLiteral) Quote;
+timestampString: SingleQuote dateValue Space timeValue (timeZoneInterval)? SingleQuote;
+intervalString: SingleQuote (yearMonthLiteral|dayTimeLiteral) SingleQuote;
 yearMonthLiteral: (yearsValue|(yearsValue MinusSign)? monthsValue);
 dayTimeLiteral: (dayTimeInterval|timeInterval);
 dayTimeInterval: daysValue (Space hoursValue (Colon minutesValue (Colon secondsValue)?)?)?;
@@ -204,7 +204,7 @@ nonJoinQueryPrimary: (simpleTable|LeftParen nonJoinQueryExpression RightParen);
 simpleTable: (querySpecification|tableValueConstructor|explicitTable);
 querySpecification: SELECT (setQuantifier)? selectList tableExpression?;
 selectList: Asterisk|selectSublist (Comma selectSublist)*; // (Comma selectSublist)* contains any quantifier for error recovery;
-selectSublist: (derivedColumn|qualifier Period Asterisk);
+selectSublist: (derivedColumn|qualifier Period Asterisk)*; // * for whole rule to handle select fields autocompletion when from immediately after select 
 derivedColumn: valueExpression (asClause)?;
 asClause: (AS)? columnName;
 tableExpression: (.*?) fromClause (whereClause)? (groupByClause)? (havingClause)?; // (.*?) - for error recovery
@@ -408,7 +408,7 @@ schemaCharacterSetName: characterSetName;
 limitedCollationDefinition: COLLATION FROM collationSource;
 collationSource: (collatingSequenceDefinition|translationCollation);
 collatingSequenceDefinition: (externalCollation|collationName|DESC LeftParen collationName RightParen|DEFAULT);
-externalCollation: EXTERNAL LeftParen Quote collationName Quote RightParen;
+externalCollation: EXTERNAL LeftParen SingleQuote collationName SingleQuote RightParen;
 translationCollation: TRANSLATION translationName (THEN COLLATION collationName)?;
 collationDefinition: CREATE COLLATION collationName FOR characterSetSpecification FROM collationSource (padAttribute)?;
 padAttribute: (NO PAD|PAD SPACE);
@@ -417,7 +417,7 @@ sourceCharacterSetSpecification: characterSetSpecification;
 targetCharacterSetSpecification: characterSetSpecification;
 translationSource: translationSpecification;
 translationSpecification: (externalTranslation|IDENTITY|translationName);
-externalTranslation: EXTERNAL LeftParen Quote translationName Quote RightParen;
+externalTranslation: EXTERNAL LeftParen SingleQuote translationName SingleQuote RightParen;
 
 // schema ddl
 sqlSchemaManipulationStatement: (dropSchemaStatement|alterTableStatement|dropTableStatement|dropViewStatement|revokeStatement|alterDomainStatement|dropDomainStatement|dropCharacterSetStatement|dropCollationStatement|dropTranslationStatement|dropAssertionStatement);

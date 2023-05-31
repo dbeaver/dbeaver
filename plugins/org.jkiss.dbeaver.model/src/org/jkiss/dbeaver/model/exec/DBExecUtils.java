@@ -812,13 +812,16 @@ public class DBExecUtils {
                     }
 
                     if (tableColumn != null) {
-                        boolean updateColumnHandler = updateColumnMeta && rows != null
-                            && (sqlQuery == null || !DBDAttributeBindingMeta.haveEqualsTypes(tableColumn, attrMeta));
+                        boolean updateColumnHandler = updateColumnMeta && rows != null &&
+                            (sqlQuery == null || !DBDAttributeBindingMeta.haveEqualsTypes(tableColumn, attrMeta));
 
-                        if ((!updateColumnHandler && bindingMeta.getDataKind() != tableColumn.getDataKind())
-                            || (resultSet != null
-                            && !isSameDataTypes(tableColumn, resultSet.getMeta().getAttributes().get(attrMeta.getOrdinalPosition())))) {
-                            // Different data kind. Probably it is an alias which conflicts with column name
+                        DBCAttributeMetaData metaAttr = resultSet != null ? resultSet.getMeta().getAttributes().get(attrMeta.getOrdinalPosition()) : null;
+
+                        if ((!updateColumnHandler && bindingMeta.getDataKind() != tableColumn.getDataKind()) ||
+                            (resultSet != null && CommonUtils.isEmpty(metaAttr.getEntityName()) && !isSameDataTypes(tableColumn, metaAttr))
+                        ) {
+                            // Different data kind and meta attribute doesn't have table reference.
+                            // Probably it is an alias which conflicts with column name
                             // Do not update entity attribute.
                             // It is a silly workaround for PG-like databases
                         } else if (bindingMeta.setEntityAttribute(tableColumn, updateColumnHandler) && rows != null) {
