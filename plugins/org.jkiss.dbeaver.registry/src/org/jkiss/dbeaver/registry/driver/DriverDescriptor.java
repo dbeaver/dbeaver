@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
@@ -1243,7 +1244,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private void loadLibraries(DBRProgressMonitor monitor) throws DBException {
         this.classLoader = null;
 
-        List<Path> allLibraryFiles = validateFilesPresence(false);
+        List<Path> allLibraryFiles = validateFilesPresence(monitor, false);
 
         List<URL> libraryURLs = new ArrayList<>();
         // Load libraries
@@ -1298,12 +1299,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return rootClassLoader;
     }
 
-    public List<Path> getAllLibraryFiles() {
-        return validateFilesPresence(false);
+    public List<Path> getAllLibraryFiles(DBRProgressMonitor monitor) {
+        return validateFilesPresence(monitor, false);
     }
 
     public void updateFiles() {
-        validateFilesPresence(true);
+        validateFilesPresence(new LoggingProgressMonitor(log), true);
     }
 
     @Override
@@ -1320,10 +1321,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     @NotNull
-    private List<Path> validateFilesPresence(boolean resetVersions) {
+    private List<Path> validateFilesPresence(DBRProgressMonitor monitor, boolean resetVersions) {
         if (DBWorkbench.isDistributed()) {
             // We are in distributed mode
-            return syncDistributedDependencies();
+            return syncDistributedDependencies(monitor);
         }
 
         boolean localLibsExists = false;
@@ -1433,7 +1434,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     /**
      * Sync driver libs with remote server
      */
-    private List<Path> syncDistributedDependencies() {
+    private List<Path> syncDistributedDependencies(DBRProgressMonitor monitor) {
         List<Path> localFilePaths = new ArrayList<>();
 
         final Map<DBPDriverLibrary, List<DriverFileInfo>> downloadCandidates = new LinkedHashMap<>();
@@ -1463,7 +1464,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             DBFileController fileController = DBWorkbench.getPlatform().getFileController();
             for (var libEntry : downloadCandidates.entrySet()) {
                 DBPDriverLibrary library = libEntry.getKey();
-                for (DriverFileInfo fileInfo : libEntry.getValue()) {
+                List<DriverFileInfo> libFiles = libEntry.getValue();
+                monitor.beginTask("Load driver library '" + library.getDisplayName() + "'", libFiles.size());
+                for (DriverFileInfo fileInfo : libFiles) {
                     try {
                         Path driverFolder = getWorkspaceDriversStorageFolder();
                         Path localDriverFile = driverFolder.resolve(fileInfo.getFile());
@@ -1471,14 +1474,18 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                             Files.createDirectories(localDriverFile.getParent());
                         }
 
+                        monitor.subTask("Load driver file '" + fileInfo.id + "'");
                         byte[] fileData = fileController.loadFileData(DBFileController.TYPE_DATABASE_DRIVER, fileInfo.getFile().toString());
                         Files.write(localDriverFile, fileData, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
 
                         localFilePaths.add(localDriverFile);
                     } catch (Exception e) {
                         log.error("Error downloading driver file '" + fileInfo.getFile() + "'", e);
+                    } finally {
+                        monitor.worked(1);
                     }
                 }
+                monitor.done();
             }
         }
 
