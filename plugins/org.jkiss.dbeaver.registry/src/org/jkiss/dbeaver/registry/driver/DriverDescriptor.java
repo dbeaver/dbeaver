@@ -1439,12 +1439,18 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         final Map<DBPDriverLibrary, List<DriverFileInfo>> downloadCandidates = new LinkedHashMap<>();
         for (DBPDriverLibrary library : libraries) {
+            if (monitor.isCanceled()) {
+                break;
+            }
             if (library.isDisabled() || !library.matchesCurrentPlatform()) {
                 continue;
             }
             List<DriverFileInfo> files = resolvedFiles.get(library);
             if (files != null) {
                 for (DriverFileInfo depFile : files) {
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
                     Path driverFolder = getWorkspaceDriversStorageFolder();
                     Path localDriverFile = driverFolder.resolve(depFile.getFile());
                     if (!Files.exists(localDriverFile) || depFile.getFileCRC() == 0 ||
@@ -1463,10 +1469,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         if (!downloadCandidates.isEmpty()) {
             DBFileController fileController = DBWorkbench.getPlatform().getFileController();
             for (var libEntry : downloadCandidates.entrySet()) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
                 DBPDriverLibrary library = libEntry.getKey();
                 List<DriverFileInfo> libFiles = libEntry.getValue();
                 monitor.beginTask("Load driver library '" + library.getDisplayName() + "'", libFiles.size());
                 for (DriverFileInfo fileInfo : libFiles) {
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
                     try {
                         Path driverFolder = getWorkspaceDriversStorageFolder();
                         Path localDriverFile = driverFolder.resolve(fileInfo.getFile());
