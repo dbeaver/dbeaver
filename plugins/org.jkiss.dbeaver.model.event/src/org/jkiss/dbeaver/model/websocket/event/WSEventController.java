@@ -81,6 +81,8 @@ public class WSEventController {
 
         protected CBEventCheckJob() {
             super("CloudBeaver events job");
+            setUser(false);
+            setSystem(true);
         }
 
         @Override
