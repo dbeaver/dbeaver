@@ -155,7 +155,8 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
             this);
     }
 
-    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100, visibleIf = OracleTableNotPartitionPropertyValidator.class)
+    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100,
+        visibleIf = OracleTableNotPartitionPropertyValidator.class)
     @LazyProperty(cacheValidator = CommentsValidator.class)
     public String getComment(DBRProgressMonitor monitor) {
         if (comment == null) {

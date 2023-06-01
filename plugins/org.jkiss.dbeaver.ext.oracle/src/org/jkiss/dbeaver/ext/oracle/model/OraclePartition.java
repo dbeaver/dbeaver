@@ -60,25 +60,21 @@ public class OraclePartition extends OracleTable implements DBSTablePartition {
         private Object partitionTablespace;
 
         @Property(category = CAT_PARTITIONING, order = 120)
-        public PartitionType getPartitionType()
-        {
+        public PartitionType getPartitionType() {
             return partitionType;
         }
 
         @Property(category = CAT_PARTITIONING, order = 121)
-        public PartitionType getSubpartitionType()
-        {
+        public PartitionType getSubpartitionType() {
             return subpartitionType;
         }
 
         @Property(category = CAT_PARTITIONING, order = 122)
-        public Object getPartitionTablespace()
-        {
+        public Object getPartitionTablespace() {
             return partitionTablespace;
         }
 
-        public PartitionInfoBase(DBRProgressMonitor monitor, OracleDataSource dataSource, ResultSet dbResult) throws DBException
-        {
+        public PartitionInfoBase(DBRProgressMonitor monitor, OracleDataSource dataSource, ResultSet dbResult) throws DBException {
             this.partitionType = CommonUtils.valueOf(PartitionType.class, JDBCUtils.safeGetStringTrimmed(dbResult, "PARTITIONING_TYPE"));
             this.subpartitionType = CommonUtils.valueOf(PartitionType.class, JDBCUtils.safeGetStringTrimmed(dbResult, "SUBPARTITIONING_TYPE"));
             String partitionTablespaceName = JDBCUtils.safeGetStringTrimmed(dbResult, "DEF_TABLESPACE_NAME");
@@ -116,32 +112,27 @@ public class OraclePartition extends OracleTable implements DBSTablePartition {
     }
 
     @Property(viewable = true, order = 10)
-    public int getPosition()
-    {
+    public int getPosition() {
         return position;
     }
 
     @Property(viewable = true, order = 11)
-    public boolean isUsable()
-    {
+    public boolean isUsable() {
         return usable;
     }
 
     @Property(viewable = true, order = 30)
-    public String getHighValue()
-    {
+    public String getHighValue() {
         return highValue;
     }
 
     @Property(viewable = true, order = 41)
-    public long getSampleSize()
-    {
+    public long getSampleSize() {
         return sampleSize;
     }
 
     @Property(viewable = true, order = 42)
-    public Timestamp getLastAnalyzed()
-    {
+    public Timestamp getLastAnalyzed() {
         return lastAnalyzed;
     }
 
