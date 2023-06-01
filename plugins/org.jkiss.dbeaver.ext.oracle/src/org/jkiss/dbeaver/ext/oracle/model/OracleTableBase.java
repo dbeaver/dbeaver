@@ -101,6 +101,13 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         //this.comment = JDBCUtils.safeGetString(dbResult, "COMMENTS");
     }
 
+    protected OracleTableBase(@NotNull OracleSchema oracleSchema, @NotNull String name) {
+        // Table partition
+        super(oracleSchema, true);
+        setName(name);
+        this.valid = true;
+    }
+
     @Override
     public JDBCStructCache<OracleSchema, ? extends JDBCTable, ? extends JDBCTableColumn> getCache()
     {
@@ -129,12 +136,12 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return getComment();
     }
 
-    @Property(viewable = true, order = 13)
+    @Property(viewable = true, order = 13, visibleIf = OracleTableNotPartitionPropertyValidator.class)
     public Date getCreated() {
         return created;
     }
 
-    @Property(viewable = true, order = 14)
+    @Property(viewable = true, order = 14, visibleIf = OracleTableNotPartitionPropertyValidator.class)
     public Date getLastDDLTime() {
         return lastDDLTime;
     }
@@ -148,7 +155,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
             this);
     }
 
-    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
+    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100, visibleIf = OracleTableNotPartitionPropertyValidator.class)
     @LazyProperty(cacheValidator = CommentsValidator.class)
     public String getComment(DBRProgressMonitor monitor) {
         if (comment == null) {

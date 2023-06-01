@@ -167,6 +167,11 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         }
     }
 
+    public OracleTable(@NotNull OracleSchema schema, @NotNull ResultSet dbResult, @NotNull String name) {
+        // Partitioned table
+        super(schema, dbResult, name);
+    }
+
     @Override
     public TableAdditionalInfo getAdditionalInfo()
     {
@@ -261,37 +266,37 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         return false;
     }
 
-    @Property(viewable = false, order = 5)
+    @Property(viewable = false, order = 5, visibleIf = OracleTableNotPartitionPropertyValidator.class)
     public OracleDataType getTableType()
     {
         return tableType;
     }
 
-    @Property(viewable = false, order = 6)
+    @Property(viewable = false, order = 6, visibleIf = OracleTableNotPartitionPropertyValidator.class)
     public String getIotType()
     {
         return iotType;
     }
 
-    @Property(viewable = false, order = 7)
+    @Property(viewable = false, order = 7, visibleIf = OracleTableNotPartitionPropertyValidator.class)
     public String getIotName()
     {
         return iotName;
     }
 
-    @Property(viewable = false, order = 10)
+    @Property(viewable = false, order = 10, visibleIf = OracleTableNotPartitionPropertyValidator.class)
     public boolean isTemporary()
     {
         return temporary;
     }
 
-    @Property(viewable = false, order = 11)
+    @Property(viewable = false, order = 11, visibleIf = OracleTableNotPartitionPropertyValidator.class)
     public boolean isSecondary()
     {
         return secondary;
     }
 
-    @Property(viewable = false, order = 12)
+    @Property(viewable = false, order = 12, visibleIf = OracleTableNotPartitionPropertyValidator.class)
     public boolean isNested()
     {
         return nested;
