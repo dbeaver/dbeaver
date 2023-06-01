@@ -227,6 +227,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
         DriverDescriptor curDriver;
         DBPDriverLibrary curLibrary;
         boolean isLibraryUpgraded = false;
+        boolean isDistributed = DBWorkbench.isDistributed();
 
         public DriversParser(boolean provided) {
             this.providedDrivers = provided;
@@ -330,7 +331,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                     boolean custom = CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CUSTOM), true);
                     String version = atts.getValue(RegistryConstants.ATTR_VERSION);
                     DBPDriverLibrary lib = curDriver.getDriverLibrary(path);
-                    if (!providedDrivers && !custom && lib == null) {
+                    if (!isDistributed && !providedDrivers && !custom && lib == null) {
                         // Perhaps this library isn't included in driver bundle
                         // Or this is predefined library from some previous version - as it wasn't defined in plugin.xml
                         // so let's just skip it
