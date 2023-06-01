@@ -1817,6 +1817,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             .resolve(DBFileController.TYPE_DATABASE_DRIVER);
     }
 
+    public static Path getProvidedDriversStorageFolder() {
+        return DBWorkbench.getPlatform()
+            .getWorkspace()
+            .getMetadataFolder()
+            .resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
+    }
+
     public static Path getDriversContribFolder() throws IOException {
         return Path.of(Platform.getInstallLocation().getDataArea(DBConstants.DEFAULT_DRIVERS_FOLDER).toExternalForm());
     }
