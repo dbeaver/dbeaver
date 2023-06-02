@@ -964,6 +964,7 @@
                     description="TDengine driver"
                     supportedConfigurationTypes="MANUAL"
                     webURL="http://www.tdengine.com"
+                    icon="icons/tdengine_icon.png"
                     iconBig="icons/tdengine_icon_big.png"
                     categories="timeseries">
                     <file type="jar" path="https://repo1.maven.org/maven2/com/taosdata/jdbc/taos-jdbcdriver/3.2.1/taos-jdbcdriver-3.2.1-dist.jar"/>
@@ -979,7 +980,10 @@
                     description="TDengine Cloud driver"
                     supportedConfigurationTypes="URL"
                     webURL="http://cloud.tdengine.com"
+                    icon="icons/tdengine_icon.png"
                     iconBig="icons/tdengine_icon_big.png"
+                    embedded="true"
+                    anonymous="true"
                     categories="timeseries">
                     <file type="jar" path="https://repo1.maven.org/maven2/com/taosdata/jdbc/taos-jdbcdriver/3.2.1/taos-jdbcdriver-3.2.1-dist.jar"/>
                     <parameter name="supports-truncate" value="false"/>
