@@ -1669,8 +1669,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 if (library.isCustom()) {
                     // Resolve custom libraries directly from file
                     Path customFile = targetFileLocation
-                        .resolve(DBConstants.DEFAULT_DRIVERS_FOLDER)
-                        .resolve(getId())
                         .resolve(library.getPath());
                     if (Files.exists(customFile)) {
                         customFile = targetFileLocation.relativize(customFile);
