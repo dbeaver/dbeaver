@@ -975,15 +975,12 @@
                 <driver
                     id="tdengine_cloud"
                     label="TDengine Cloud"
-                    class="com.taosdata.jdbc.rs.RestfulDriver"
-                    sampleURL="jdbc:TAOS-RS://{host}?useSSL=true%26token={token}"
-                    description="TDengine Cloud driver"
-                    supportedConfigurationTypes="URL"
-                    webURL="http://cloud.tdengine.com"
                     icon="icons/tdengine_icon.png"
                     iconBig="icons/tdengine_icon_big.png"
-                    embedded="true"
+                    class="com.taosdata.jdbc.rs.RestfulDriver"
                     anonymous="true"
+                    webURL="http://cloud.tdengine.com"
+                    description="TDengine Cloud driver"
                     categories="timeseries">
                     <file type="jar" path="https://repo1.maven.org/maven2/com/taosdata/jdbc/taos-jdbcdriver/3.2.1/taos-jdbcdriver-3.2.1-dist.jar"/>
                     <parameter name="supports-truncate" value="false"/>
