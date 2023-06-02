@@ -1669,8 +1669,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 if (library.isCustom()) {
                     // Resolve custom libraries directly from file
                     Path customFile = targetFileLocation
-                        .resolve(DBConstants.DEFAULT_DRIVERS_FOLDER)
-                        .resolve(getId())
                         .resolve(library.getPath());
                     if (Files.exists(customFile)) {
                         customFile = targetFileLocation.relativize(customFile);
@@ -1815,6 +1813,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return DBWorkbench.getPlatform().getWorkspace().getAbsolutePath()
             .resolve(DBFileController.DATA_FOLDER)
             .resolve(DBFileController.TYPE_DATABASE_DRIVER);
+    }
+
+    public static Path getProvidedDriversStorageFolder() {
+        return DBWorkbench.getPlatform()
+            .getWorkspace()
+            .getMetadataFolder()
+            .resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
     }
 
     public static Path getDriversContribFolder() throws IOException {
