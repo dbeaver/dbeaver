@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+	<!--
+    <extension point="org.eclipse.ui.commands">
+        <category id="org.jkiss.dbeaver.ext.altibase" name="Altibase" description="Altibase Commands"/>
+        <command id="org.jkiss.dbeaver.ext.altibase.code.compile" name="Compile" description="Compile" categoryId="org.jkiss.dbeaver.ext.altibase"/>
+        <command id="org.jkiss.dbeaver.ext.altibase.code.package.navigate" name="Go to source code" description="Navigate to object source code" categoryId="org.jkiss.dbeaver.ext.altibase"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.ext.altibase.code.compile" icon="icons/compile.png"/>
+        <image commandId="org.jkiss.dbeaver.ext.altibase.code.package.navigate" icon="icons/source_navigate.png"/>
+        <image commandId="org.jkiss.dbeaver.ext.altibase.job.run" icon="icons/run.png"/>
+    </extension>
+    -->
+    
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.altibase.dataSourceWizardView"
+                dataSource="Altibase"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                label="%altibase.dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.altibase.ui.views.AltibaseConnectionPage"
+                icon="icons/altibase_icon.png">
+        </view>
+        <view
+                class="org.jkiss.dbeaver.ext.altibase.ui.views.AltibaseConnectionPage"
+                id="org.jkiss.dbeaver.ext.altibase.dataSourceEditorView"
+                dataSource="Altibase"
+                label="%altibase.dialog.connection.header"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+        </view>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <!--<editor
+              class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
+              description="%tree.ddl.node.tip"
+              icon="#sql_text"
+              id="generic.table.ddl.view"
+              label="DDL"
+              main="false"
+              position="additions_end"
+              type="folder">
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTable"/>
+        </editor>
+        <editor
+                id="generic.view.source.view"
+                class="org.jkiss.dbeaver.ext.altibase.ui.editors.AltibaseSourceViewEditor"
+                main="false"
+                label="Definition"
+                description="View definition"
+                position="additions_end"
+                icon="#sql_text"
+                type="folder"
+                embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseView"/>
+        </editor>
+        <editor id="altibase.source.view" class="org.jkiss.dbeaver.ext.altibase.ui.editors.AltibaseSourceViewEditor"
+                label="%editor.source.name" description="%editor.source.name" icon="#sql_text" position="additions_middle"
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseScriptObject"/>
+        </editor>-->
+        <editor id="source.declaration" class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
+                label="%editor.package.declaration.name" description="%editor.package.declaration.description" icon="#sql_text" position="additions_middle"
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
+            <!--<objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableIndex"/>-->
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseSequence"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseSynonym"/>
+            <!--<objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibasePackage"/>-->
+        </editor>
+        <!--
+        <editor id="source.definition" class="org.jkiss.dbeaver.ext.altibase.ui.editors.AltibaseSourceDefinitionEditor"
+                label="%editor.package.body.name" description="%editor.package.body.description" icon="#sql_text" position="additions_middle"
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibasePackage"/>
+        </editor>
+        -->
+        <!--<configurator class="org.jkiss.dbeaver.ext.generic.views.GenericTableForeignKeyConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableForeignKey"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.generic.views.GenericTableIndexConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableIndex"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.generic.views.GenericTablePrimaryKeyConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseUniqueKey"/>
+        </configurator>-->
+    </extension>
+
+</plugin>
