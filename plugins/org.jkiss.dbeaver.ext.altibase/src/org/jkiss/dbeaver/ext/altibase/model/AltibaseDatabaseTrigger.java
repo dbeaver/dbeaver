@@ -16,10 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 
 public class AltibaseDatabaseTrigger extends AltibaseTrigger<GenericStructContainer> {
 
@@ -28,13 +29,13 @@ public class AltibaseDatabaseTrigger extends AltibaseTrigger<GenericStructContai
     }
 
     @Override
-    public DBSTable getTable() {
-        return null;
+    public AltibaseTable getTable() {
+    	return (AltibaseTable) getParentObject();
     }
 
-	@Override
-	public String getFullyQualifiedName(DBPEvaluationContext context) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @NotNull
+    @Override
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
+        return DBUtils.getFullQualifiedName(getDataSource(), getTable().getCatalog(), getTable().getSchema(), this);
+    }
 }
