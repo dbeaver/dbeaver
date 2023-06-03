@@ -292,6 +292,17 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     }
 
+    @Nullable
+    @Override
+    public String getProperty(@NotNull String name) {
+        return null;
+    }
+
+    @Override
+    public void setProperty(@NotNull String name, @Nullable String value) {
+
+    }
+
     @NotNull
     @Override
     public DBPPreferenceStore getPreferenceStore() {
@@ -324,6 +335,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @Override
     public SQLDialectMetadata getScriptDialect() {
         return SQLDialectRegistry.getInstance().getDialect(BasicSQLDialect.ID);
+    }
+
+    @Override
+    public void resetPassword() {
+
     }
 
     @Override

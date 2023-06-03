@@ -223,7 +223,13 @@ public class MySQLView extends MySQLTableBase implements DBSView
                                 if (!CommonUtils.isEmpty(additionalInfo.algorithm)) {
                                     params += " ALGORITHM=" + additionalInfo.algorithm + " ";
                                 }
-                                definition = "CREATE OR REPLACE " + params + definition.substring(divPos);
+                                String statement;
+                                if (getDataSource().supportsAlterView()) {
+                                    statement = isPersisted() ? "ALTER" : "CREATE";
+                                } else {
+                                    statement = "CREATE OR REPLACE";
+                                }
+                                definition = statement + " " + params + definition.substring(divPos);
                             }
                         }
                         additionalInfo.setDefinition(

@@ -51,6 +51,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
     private static final Log log = Log.getLog(MySQLTable.class);
 
     private static final String INNODB_COMMENT = "InnoDB free";
+    private static final String PARTITIONED_STATUS = "partitioned";
 
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
@@ -67,6 +68,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         private long dataFree;
         private long indexLength;
         private String rowFormat;
+        private boolean partitioned;
 
         @Property(viewable = true, editable = true, updatable = true, listProvider = EngineListProvider.class,
             visibleIf = PartitionedTablePropertyValidator.class, order = 3)
@@ -152,6 +154,11 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
             return checkTime;
         }
 
+        @Property(viewable = true, visibleIf = PartitionedTablePropertyValidator.class, order = 23)
+        public boolean isPartitioned() {
+            return partitioned;
+        }
+
         public void setEngine(MySQLEngine engine) { this.engine = engine; }
         public void setAutoIncrement(long autoIncrement) { this.autoIncrement = autoIncrement; }
         public void setDescription(String description) { this.description = description; }
@@ -193,6 +200,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
             additionalInfo.charset = sourceAI.charset;
             additionalInfo.collation = sourceAI.collation;
             additionalInfo.engine = sourceAI.engine;
+            additionalInfo.partitioned = sourceAI.partitioned;
 
             // Copy triggers
             for (MySQLTrigger srcTrigger : ((MySQLTable) source).getTriggers(monitor)) {
@@ -280,6 +288,11 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         return false;
     }
 
+    @Association
+    public boolean hasPartitions() {
+        return additionalInfo.partitioned;
+    }
+
     @Override
     @Association
     public Collection<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor)
@@ -342,7 +355,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
     public synchronized Collection<MySQLTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        if (!foreignKeys.isFullyCached()) {
+        if (!foreignKeys.isFullyCached() && getDataSource().getInfo().supportsReferentialIntegrity()) {
             List<MySQLTableForeignKey> fkList = loadForeignKeys(monitor, false);
             foreignKeys.setCache(fkList);
         }
@@ -433,6 +446,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         additionalInfo.dataFree = JDBCUtils.safeGetLong(dbResult, "Data_free");
         additionalInfo.indexLength = JDBCUtils.safeGetLong(dbResult, "Index_length");
         additionalInfo.rowFormat = JDBCUtils.safeGetString(dbResult, "Row_format");
+        additionalInfo.partitioned = PARTITIONED_STATUS.equalsIgnoreCase(JDBCUtils.safeGetString(dbResult, "Create_options"));
 
         additionalInfo.loaded = true;
     }
@@ -613,10 +627,14 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         protected MySQLPartition fetchObject(@NotNull JDBCSession session, @NotNull MySQLTable table, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
         {
             String partitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_PARTITION_NAME);
+            String subPartitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SUBPARTITION_NAME);
+            if (CommonUtils.isEmpty(partitionName) && CommonUtils.isEmpty(subPartitionName)) {
+                // This is default empty info partition for tables without partitions. Do not create it.
+                return null;
+            }
             if (partitionName == null) {
                 partitionName = "PARTITION";
             }
-            String subPartitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SUBPARTITION_NAME);
             if (CommonUtils.isEmpty(subPartitionName)) {
                 return new MySQLPartition(table, null, partitionName, dbResult);
             } else {

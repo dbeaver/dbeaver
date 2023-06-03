@@ -47,16 +47,12 @@ import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.Locale;
 
 /**
  * PostgreConnectionPage
  */
 public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
-    
-    protected static final String GROUP_CONNECTION = "connection"; //$NON-NLS-1$
-    protected static final List<String> GROUP_CONNECTION_ARR = List.of(GROUP_CONNECTION);
     
     private Text urlText;
     private Label hostLabel;
@@ -296,11 +292,6 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
             new PostgreConnectionPageAdvanced(),
             new DriverPropertiesDialogPage(this)
         };
-    }
-    
-    @Override
-    protected boolean isCustomURL() {
-        return typeURLRadio != null && typeURLRadio.getSelection();
     }
     
     private void updateUrl() {

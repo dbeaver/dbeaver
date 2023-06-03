@@ -126,6 +126,9 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
             if (!driver.isInstantiable()) {
                 xml.addAttribute(RegistryConstants.ATTR_INSTANTIABLE, driver.isInstantiable());
             }
+            if (!driver.isSupportsDistributedMode()) {
+                xml.addAttribute(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE, driver.isSupportsDistributedMode());
+            }
 
             // Libraries
             for (DBPDriverLibrary lib : driver.getDriverLibraries()) {
@@ -224,6 +227,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
         DriverDescriptor curDriver;
         DBPDriverLibrary curLibrary;
         boolean isLibraryUpgraded = false;
+        boolean isDistributed = DBWorkbench.isDistributed();
 
         public DriversParser(boolean provided) {
             this.providedDrivers = provided;
@@ -295,6 +299,10 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         curDriver.setUseURL((
                             CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_USE_URL_TEMPLATE), true)));
                     }
+                    if (atts.getValue(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE) != null) {
+                        curDriver.setSupportsDistributedMode((
+                            CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE), true)));
+                    }
                     curDriver.setModified(true);
                     String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
                     if (CommonUtils.getBoolean(disabledAttr)) {
@@ -323,7 +331,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                     boolean custom = CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CUSTOM), true);
                     String version = atts.getValue(RegistryConstants.ATTR_VERSION);
                     DBPDriverLibrary lib = curDriver.getDriverLibrary(path);
-                    if (!providedDrivers && !custom && lib == null) {
+                    if (!isDistributed && !providedDrivers && !custom && lib == null) {
                         // Perhaps this library isn't included in driver bundle
                         // Or this is predefined library from some previous version - as it wasn't defined in plugin.xml
                         // so let's just skip it

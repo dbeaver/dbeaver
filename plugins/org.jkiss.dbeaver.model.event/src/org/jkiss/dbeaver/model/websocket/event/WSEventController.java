@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.websocket.WSEventHandler;
-import org.jkiss.dbeaver.model.websocket.registry.WSEventHandlerDescriptor;
 import org.jkiss.dbeaver.model.websocket.registry.WSEventHandlersRegistry;
 
 import java.util.ArrayList;
@@ -36,6 +35,7 @@ public class WSEventController {
 
     private final Map<String, List<WSEventHandler>> eventHandlersByType = new HashMap<>();
     protected final List<WSEvent> eventsPool = new ArrayList<>();
+    private boolean forceSkipEvents = false;
 
     public WSEventController() {
 
@@ -53,6 +53,9 @@ public class WSEventController {
      * Add cb event to the event pool
      */
     public void addEvent(@NotNull WSEvent event) {
+        if (forceSkipEvents) {
+            return;
+        }
         synchronized (eventsPool) {
             eventsPool.add(event);
         }
@@ -65,11 +68,21 @@ public class WSEventController {
         new CBEventCheckJob().schedule();
     }
 
+    /**
+     * Flag to check if we need to skip events
+     */
+    public void setForceSkipEvents(boolean forceSkipEvents) {
+        this.forceSkipEvents = forceSkipEvents;
+    }
+
+
     private class CBEventCheckJob extends AbstractJob {
         private static final long CHECK_PERIOD = 1000;
 
         protected CBEventCheckJob() {
             super("CloudBeaver events job");
+            setUser(false);
+            setSystem(true);
         }
 
         @Override

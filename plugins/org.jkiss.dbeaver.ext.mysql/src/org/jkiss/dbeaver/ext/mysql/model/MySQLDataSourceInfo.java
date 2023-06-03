@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 /**
  * MySQLDataSourceInfo
  */
-class MySQLDataSourceInfo extends JDBCDataSourceInfo {
+public class MySQLDataSourceInfo extends JDBCDataSourceInfo {
 
     public MySQLDataSourceInfo(JDBCDatabaseMetaData metaData) {
         super(metaData);

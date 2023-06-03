@@ -846,6 +846,22 @@ public class NavigatorUtils {
                 serviceSQL.openResource(resource);
             }
         } else if (node instanceof DBNNode && ((DBNNode) node).allowsOpen()) {
+            if (node instanceof DBNObjectNode) {
+                INavigatorObjectManager objectManager = GeneralUtils.adapt(((DBNObjectNode) node).getNodeObject(), INavigatorObjectManager.class);
+                if (objectManager != null) {
+                    if (((objectManager.getSupportedFeatures() & INavigatorObjectManager.FEATURE_OPEN)) != 0) {
+                        try {
+                            objectManager.openObjectEditor(window, (DBNObjectNode) node);
+                        } catch (Exception e) {
+                            DBWorkbench.getPlatformUI().showError(
+                                "Error opening object",
+                                "Error while opening object '" + ((DBNObjectNode) node).getNodeObject() + "'",
+                                e);
+                        }
+                    }
+                    return;
+                }
+            }
             Object activePage = parameters == null ? null : parameters.get(MultiPageDatabaseEditor.PARAMETER_ACTIVE_PAGE);
             NavigatorHandlerObjectOpen.openEntityEditor(
                 (DBNNode) node,

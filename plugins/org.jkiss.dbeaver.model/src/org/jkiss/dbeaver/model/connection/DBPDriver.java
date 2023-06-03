@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
+import org.jkiss.utils.Pair;
 
 import java.util.List;
 import java.util.Map;
@@ -73,6 +74,9 @@ public interface DBPDriver extends DBPNamedObject
 
     @NotNull
     DBPImage getIconBig();
+
+    @Nullable
+    DBPImage getLogoImage();
 
     @Nullable
     String getDriverClassName();
@@ -129,6 +133,16 @@ public interface DBPDriver extends DBPNamedObject
 
     boolean isDisabled();
     DBPDriver getReplacedBy();
+
+    boolean isDeprecated();
+
+    @NotNull
+    String getDeprecationReason();
+
+    /**
+     * @return a pair of providerId and driverId for each of driver replacement
+     */
+    List<Pair<String,String>> getDriverReplacementsInfo();
 
     int getPromotedScore();
 

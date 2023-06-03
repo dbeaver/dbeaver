@@ -66,6 +66,7 @@ import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
 import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
+import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -143,6 +144,8 @@ public class DataSourceDescriptor
 
     @NotNull
     private final DataSourcePreferenceStore preferenceStore;
+    @NotNull
+    private final Map<String, String> properties;
     @Nullable
     private DBPDataSource dataSource;
     @Nullable
@@ -214,6 +217,7 @@ public class DataSourceDescriptor
         this.originalDriver = originalDriver;
         this.driver = substitutedDriver;
         this.connectionInfo = connectionInfo;
+        this.properties = new LinkedHashMap<>();
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.virtualModel = new DBVModel(this);
         this.navigatorSettings = new DataSourceNavigatorSettings(DataSourceNavigatorSettings.getDefaultSettings());
@@ -263,6 +267,7 @@ public class DataSourceDescriptor
             this.folder = (DataSourceFolder) registry.getFolder(source.folder.getFolderPath());
         }
 
+        this.properties = new LinkedHashMap<>(source.properties);
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.preferenceStore.setProperties(source.preferenceStore.getProperties());
         this.preferenceStore.setDefaultProperties(source.preferenceStore.getDefaultProperties());
@@ -1468,6 +1473,26 @@ public class DataSourceDescriptor
         registry.notifyDataSourceListeners(event);
     }
 
+    @Nullable
+    @Override
+    public String getProperty(@NotNull String name) {
+        return properties.get(name);
+    }
+
+    @Override
+    public void setProperty(@NotNull String name, @Nullable String value) {
+        if (value == null) {
+            this.properties.remove(name);
+        } else {
+            this.properties.put(name, value);
+        }
+    }
+
+    @NotNull
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
     @Override
     public DBDDataFormatterProfile getDataFormatterProfile() {
         if (this.formatterProfile == null) {
@@ -1506,8 +1531,17 @@ public class DataSourceDescriptor
         return preferenceStore;
     }
 
+    @Override
     public void resetPassword() {
         connectionInfo.setUserPassword(null);
+        ObjectPropertyDescriptor.extractAnnotations(
+                null,
+                connectionInfo.getAuthModel().createCredentials().getClass(),
+                (o, p) -> true,
+                null
+            ).stream()
+            .filter(ObjectPropertyDescriptor::isPassword)
+            .forEach(passwordProperty -> connectionInfo.setAuthProperty(passwordProperty.getKeyName(), null));
     }
 
     @Nullable
@@ -1663,6 +1697,7 @@ public class DataSourceDescriptor
         this.virtualModel.copyFrom(descriptor.getVirtualModel());
 
         this.description = descriptor.description;
+        this.properties.putAll(descriptor.properties);
         this.savePassword = descriptor.savePassword;
         this.connectionReadOnly = descriptor.connectionReadOnly;
         this.forceUseSingleConnection = descriptor.forceUseSingleConnection;
@@ -1702,6 +1737,7 @@ public class DataSourceDescriptor
                 CommonUtils.equalObjects(this.clientHome, source.clientHome) &&
                 CommonUtils.equalObjects(this.lockPasswordHash, source.lockPasswordHash) &&
                 CommonUtils.equalObjects(this.folder, source.folder) &&
+                CommonUtils.equalObjects(this.properties, source.properties) &&
                 CommonUtils.equalObjects(this.preferenceStore, source.preferenceStore) &&
                 CommonUtils.equalsContents(this.connectionModifyRestrictions, source.connectionModifyRestrictions);
     }
@@ -1784,8 +1820,9 @@ public class DataSourceDescriptor
     @Nullable
     @Override
     public String getRequiredExternalAuth() {
-        if (origin instanceof DBPDataSourceOriginExternal) {
-            var externalOrigin = (DBPDataSourceOriginExternal) origin;
+        var dsOrigin = getOrigin();
+        if (dsOrigin instanceof DBPDataSourceOriginExternal) {
+            var externalOrigin = (DBPDataSourceOriginExternal) dsOrigin;
             return externalOrigin.getSubType();
         }
 

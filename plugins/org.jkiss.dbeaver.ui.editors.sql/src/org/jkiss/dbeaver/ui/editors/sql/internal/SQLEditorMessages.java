@@ -206,6 +206,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_group_sql_assistant;
     public static String pref_page_sql_completion_label_enable_auto_activation;
     public static String pref_page_sql_completion_label_enable_auto_activation_tip;
+    public static String pref_page_sql_completion_label_enable_experimental_features;
+    public static String pref_page_sql_completion_label_enable_experimental_features_tip;
     public static String pref_page_sql_completion_label_auto_activation_delay;
     public static String pref_page_sql_completion_label_set_auto_activation_delay_tip;
     public static String pref_page_sql_completion_label_activate_on_typing;
@@ -368,6 +370,9 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_confirm_no_fetch_result_for_big_script_yes;
     public static String sql_editor_confirm_no_fetch_result_for_big_script_no;
     public static String sql_editor_confirm_no_fetch_result_for_big_script_remember;
+
+    public static String dialog_save_script_title;
+    public static String dialog_save_script_message;
 
     public static String sql_editor_panel_output_filter_message;
     public static String sql_editor_panel_output_filter_hint;

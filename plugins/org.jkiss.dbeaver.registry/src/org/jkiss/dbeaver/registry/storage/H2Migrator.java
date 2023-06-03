@@ -20,8 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
@@ -220,7 +220,7 @@ public class H2Migrator {
             }
             log.info("v1 files restored");
         } catch (IOException e) {
-            log.error("Unable to restore old database file '" + workspacePaths.v1Paths.dbDataFile + "'");
+            log.error("Unable to restore old database file '" + workspacePaths.v1Paths.dbDataFile + "'", e);
         }
         databaseConfiguration.setUrl(oldUrl);
         databaseConfiguration.setDriver(oldDriver);

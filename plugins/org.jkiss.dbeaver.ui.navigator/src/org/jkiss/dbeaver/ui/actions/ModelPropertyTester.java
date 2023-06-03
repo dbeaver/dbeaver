@@ -69,10 +69,8 @@ public class ModelPropertyTester extends PropertyTester
             case PROP_IS_TABLE_CONTAINER: {
                 DBSObject object = DBUtils.getPublicObject((DBSObject) receiver);
                 if (object instanceof DBNContainer) {
-                    Object valueObject = ((DBNContainer) object).getValueObject();
-                    if (valueObject instanceof DBSObject) {
-                        object = (DBSObject) valueObject;
-                    }
+                    final Class<?> childrenClass = ((DBNContainer) object).getChildrenClass();
+                    return childrenClass != null && DBSDataContainer.class.isAssignableFrom(childrenClass);
                 }
                 if (object instanceof DBSSchema) {
                     return true;

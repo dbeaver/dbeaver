@@ -68,7 +68,7 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
         this.clients = new SSHClient[hosts.length];
 
         final int connectTimeout = configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT);
-        final int keepAliveInterval = configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL);
+        final int keepAliveInterval = configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL) / 1000; // sshj uses seconds for keep-alive interval
 
         for (int index = 0; index < hosts.length; index++) {
             final SSHHostConfiguration host = hosts[index];
@@ -161,6 +161,7 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
             configuration.getBooleanProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION)
         ) {
             client.addHostKeyVerifier(new PromiscuousVerifier());
+            client.getTransport().getConfig().setVerifyHostKeyCertificates(false);
         } else {
             client.addHostKeyVerifier(new KnownHostsVerifier(SSHUtils.getKnownSshHostsFileOrDefault(), actualHostConfiguration));
         }

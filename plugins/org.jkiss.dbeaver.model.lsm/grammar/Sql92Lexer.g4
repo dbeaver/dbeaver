@@ -339,7 +339,8 @@ EqualsOperator: '=';
 NotEqualsOperator: '<>';
 RightParen: ')';
 LeftParen: '(';
-Quote: '\'';
+SingleQuote: '\'';
+BackQuote: '`';
 Comma: ',';
 Colon: ':';
 Semicolon: ';';
@@ -377,46 +378,49 @@ fragment Bit: ('0'|'1');
 
 
 // numeric literals
-UnsignedNumericLiteral: (ExactNumericLiteral|ApproximateNumericLiteral);
-ExactNumericLiteral: (UnsignedInteger (Period (UnsignedInteger)?)?|Period UnsignedInteger);
+DecimalLiteral: (UnsignedInteger Period UnsignedInteger)|(UnsignedInteger Period)|(Period UnsignedInteger);
 UnsignedInteger: (Digit)+;
-ApproximateNumericLiteral: ExactNumericLiteral 'E' SignedInteger;
-SignedInteger: (Sign)? UnsignedInteger;
+ApproximateNumericLiteral: (UnsignedInteger|DecimalLiteral) 'E' SignedInteger;
+fragment SignedInteger: (Sign)? UnsignedInteger;
 Sign: (PlusSign|MinusSign);
 
 
+LineComment
+   : '--' ~ [\r\n]* -> channel (HIDDEN)
+   ;
+
 // special characters and character sequences
 fragment NonquoteCharacter: ~'~';
-QuoteSymbol: Quote Quote;
+QuoteSymbol: SingleQuote SingleQuote;
 Introducer: Underscore;
 fragment NewLine: ([\r][\n])|[\n]|[\r];
-Separator: ((Comment|NewLine|Space))+ -> channel(HIDDEN);
+Separator: (NewLine|Space)+ -> channel(HIDDEN);
 Space: [ \t]+;
-Comment: CommentIntroducer ((CommentCharacter)+)? NewLine;
-fragment CommentIntroducer: MinusSign MinusSign ((MinusSign)+)?;
-fragment CommentCharacter: (NonquoteCharacter|Quote);
 
 
 // identifiers
-DelimitedIdentifier: DoubleQuote DelimitedIdentifierBody DoubleQuote;
+DelimitedIdentifier: IdentifierQuote DelimitedIdentifierBody IdentifierQuote;
+fragment IdentifierQuote: (DoubleQuote|BackQuote);
 fragment DelimitedIdentifierBody: (DelimitedIdentifierPart)+;
 fragment DelimitedIdentifierPart: (NondoublequoteCharacter|DoublequoteSymbol);
-fragment NondoublequoteCharacter: ~'"';
-fragment DoublequoteSymbol: DoubleQuote DoubleQuote;
+fragment NondoublequoteCharacter: ~[`"];
+fragment DoublequoteSymbol: IdentifierQuote IdentifierQuote;
 
 Identifier: IdentifierBody;
-fragment IdentifierBody: IdentifierStart (((Underscore|IdentifierPart))+)?;
+fragment IdentifierBody: IdentifierStart ((Underscore|IdentifierPart)+)?;
 fragment IdentifierStart: SimpleLatinLetter;
 fragment IdentifierPart: (IdentifierStart|Digit);
 
+SquareBracketIdentifier: '[' (~']' | ']' ']')* ']';
+
 
 // literals
-NationalCharacterStringLiteral: 'N' Quote ((CharacterRepresentation)+)? Quote (((Separator)+ Quote ((CharacterRepresentation)+)? Quote)+)?;
+NationalCharacterStringLiteral: 'N' SingleQuote ((CharacterRepresentation)+)? SingleQuote (((Separator)+ SingleQuote ((CharacterRepresentation)+)? SingleQuote)+)?;
 CharacterRepresentation: (NonquoteCharacter|QuoteSymbol);
-BitStringLiteral: 'B' Quote ((Bit)+)? Quote (((Separator)+ Quote ((Bit)+)? Quote)+)?;
-HexStringLiteral: 'X' Quote ((Hexit)+)? Quote (((Separator)+ Quote ((Hexit)+)? Quote)+)?;
+BitStringLiteral: 'B' SingleQuote ((Bit)+)? SingleQuote (((Separator)+ SingleQuote ((Bit)+)? SingleQuote)+)?;
+HexStringLiteral: 'X' SingleQuote ((Hexit)+)? SingleQuote (((Separator)+ SingleQuote ((Hexit)+)? SingleQuote)+)?;
 
-StringLiteralContent: Quote ((CharacterRepresentation)+)? Quote (((Separator)+ Quote ((CharacterRepresentation)+)? Quote)+)?;
+StringLiteralContent: SingleQuote ((CharacterRepresentation)+)? SingleQuote (((Separator)+ SingleQuote ((CharacterRepresentation)+)? SingleQuote)+)?;
 
 C_: C;
 WS: Separator;

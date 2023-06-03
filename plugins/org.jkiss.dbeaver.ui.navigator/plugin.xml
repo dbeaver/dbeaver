@@ -116,7 +116,7 @@
             class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
             namespace="org.jkiss.dbeaver.core.object"
-            properties="canOpen,canCreateSingle,canCreateMulti,canPaste,canDelete,canRename,canMoveUp,canMoveDown,canFilter,canFilterObject,hasFilter,supportsIndexCreate,supportsConstraintCreate,projectResourceEditable,projectResourceViewable"
+            properties="canOpen,canCreateSingle,canCreateMulti,canPaste,canDelete,canRename,canMoveUp,canMoveDown,canFilter,canFilterObject,hasFilter,supportsIndexCreate,supportsConstraintCreate,supportsNativeExecution,projectResourceEditable,projectResourceViewable"
             type="org.jkiss.dbeaver.model.DBPNamedObject"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.actions.ModelPropertyTester"
@@ -274,6 +274,7 @@
         <command id="org.jkiss.dbeaver.core.navigator.set.default" name="%command.org.jkiss.dbeaver.core.navigator.set.default.name" description="%command.org.jkiss.dbeaver.core.navigator.set.default.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.open.browser" name="%command.org.jkiss.dbeaver.core.navigator.open.browser.name" description="%command.org.jkiss.dbeaver.core.navigator.open.browser.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.sql.script.associate" name="%command.org.jkiss.dbeaver.core.sql.script.associate.name" description="%command.org.jkiss.dbeaver.core.sql.script.associate.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.sql.script.run.scriptNative" name="%command.org.jkiss.dbeaver.core.sql.script.run.scriptNative.name" description="%command.org.jkiss.dbeaver.core.sql.script.run.scriptNative.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.core.show.in.explorer" name="%command.org.jkiss.dbeaver.core.show.in.explorer.name" description="%command.org.jkiss.dbeaver.core.show.in.explorer.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
 
         <command id="org.jkiss.dbeaver.ui.tools.select.connection" name="%command.org.jkiss.dbeaver.ui.tools.select.connection.name" description="%command.org.jkiss.dbeaver.ui.tools.select.connection.description" categoryId="org.jkiss.dbeaver.core.database">
@@ -315,7 +316,7 @@
         <image commandId="org.jkiss.dbeaver.core.navigator.linkeditor" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/link_to_editor.png"/>
         <image commandId="org.jkiss.dbeaver.core.navigator.preferences" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.png"/>
         <image commandId="org.jkiss.dbeaver.core.navigator.open.browser" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database_navigator.png"/>
-
+        <image commandId="org.jkiss.dbeaver.core.sql.script.run.scriptNative" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec_native.png"/>
         <image commandId="org.jkiss.dbeaver.ui.tools.select.connection" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/database.png"/>
         <image commandId="org.jkiss.dbeaver.ui.tools.select.schema" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/schema.png"/>
 
@@ -772,6 +773,26 @@
                 </and>
             </enabledWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.core.sql.script.run.scriptNative" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerExec">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/></activeWhen>
+            <enabledWhen>
+                <and>
+                    <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <and>
+                                <adapt type="org.eclipse.core.resources.IResource">
+                                    <test property="org.jkiss.dbeaver.core.resource.type" value="script"/>
+                                </adapt>
+                                <test property="org.jkiss.dbeaver.core.object.supportsNativeExecution"/>
+                            </and>
+                        </iterate>
+                    </with>
+                </and>
+            </enabledWhen>
+        </handler>
+
         <handler commandId="org.jkiss.dbeaver.core.sql.script.associate" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerAssociateScript">
             <enabledWhen>
                 <and>
