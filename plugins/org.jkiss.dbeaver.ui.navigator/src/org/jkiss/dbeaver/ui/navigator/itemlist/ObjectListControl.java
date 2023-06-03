@@ -25,7 +25,6 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -1001,7 +1000,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 return false;
             }
             ViewerCell cell = (ViewerCell) event.getSource();
-            if (renderer.isHyperlink(getCellValue(cell.getElement(), cell.getColumnIndex())) &&
+            if (renderer.isHyperlink(cell.getElement(), getCellValue(cell.getElement(), cell.getColumnIndex())) &&
                 getItemsViewer().getControl().getCursor() == getItemsViewer().getControl().getDisplay().getSystemCursor(SWT.CURSOR_HAND)) {
                 return false;
             }
@@ -1149,7 +1148,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             if (cellValue instanceof LazyValue) {
                 cellValue = ((LazyValue) cellValue).value;
             }
-            if (forUI && !sampleItems && renderer.isHyperlink(cellValue)) {
+            if (forUI && !sampleItems && renderer.isHyperlink(element, cellValue)) {
                 return EMPTY_STRING; //$NON-NLS-1$
             }
             if (element instanceof ObjectsGroupingWrapper) {

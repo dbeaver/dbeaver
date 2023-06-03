@@ -201,7 +201,9 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
                     items = nodesWithParent;
                 }
             }
-            items.removeIf(DBUtils::isHiddenObject);
+            if (items != null) {
+                items.removeIf(DBUtils::isHiddenObject);
+            }
             super.setListData(items, append, forUpdate);
         }
 
