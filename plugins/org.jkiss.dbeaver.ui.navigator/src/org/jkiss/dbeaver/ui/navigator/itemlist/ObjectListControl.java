@@ -1479,6 +1479,30 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         @Override
         public void fillConfigMenu(IContributionManager menuManager) {
             super.fillConfigMenu(menuManager);
+            // Traverse all columns, if there is a column with name "#", add a menu option "Revert sorting"
+            // which is to sort in the ascending order of the "#" column
+            int columnsCount = this.getColumnsCount();
+            int numberColumnInd = -1;
+            for (int i = 0; i < columnsCount; i++) {
+            	System.out.println(this.getColumnName(i));
+            	if (this.getColumnName(i).equals("#")) {
+            		numberColumnInd = i;
+            		break;
+            	}
+            }
+            if(numberColumnInd != -1) {
+            	final int finalNumberColumnInd = numberColumnInd;
+                menuManager.add(new Action(UINavigatorMessages.obj_editor_properties_control_action_columns_revert_sorting) {
+                	{
+                		setDescription(UINavigatorMessages.obj_editor_properties_control_action_columns_revert_sorting_description);
+                	}
+                	@Override
+                	public void run() {
+                       GroupingViewerColumnController.this.sortByColumn(finalNumberColumnInd, SWT.UP);
+                	}
+                });
+            }
+            
             if (isTree && supportsDataGrouping()) {
                 menuManager.add(new Separator());
                 int selectedColumnNumber = columnController.getSelectedColumnNumber();
