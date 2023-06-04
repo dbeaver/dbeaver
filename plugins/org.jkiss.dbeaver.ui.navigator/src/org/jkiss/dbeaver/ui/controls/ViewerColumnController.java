@@ -192,15 +192,6 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                 repackColumns(true);
             }
         });
-        menuManager.add(new Action(UINavigatorMessages.obj_editor_properties_control_action_columns_revert_sorting) {
-        	{
-        		setDescription(UINavigatorMessages.obj_editor_properties_control_action_columns_revert_sorting_description);
-        	}
-        	@Override
-        	public void run() {
-        		System.out.println("Revert sorting called");
-        	}
-        });
     }
 
     public void addColumn(
