@@ -1484,7 +1484,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             int columnsCount = this.getColumnsCount();
             int numberColumnInd = -1;
             for (int i = 0; i < columnsCount; i++) {
-            	System.out.println(this.getColumnName(i));
             	if (this.getColumnName(i).equals("#")) {
             		numberColumnInd = i;
             		break;
