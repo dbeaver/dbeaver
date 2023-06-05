@@ -1343,15 +1343,44 @@
         <keyword id="org.jkiss.dbeaver.pref.keyword.sql.sqleditor" label="%keyword.org.jkiss.dbeaver.pref.keyword.sql.sqleditor.label"/>
     </extension>
 
-<!--
-    <extension point="org.eclipse.ui.perspectiveExtensions">
-        <perspectiveExtension targetID="org.jkiss.dbeaver.core.perspective">
-            <hiddenToolBarItem id="org.jkiss.dbeaver.core.sql.editor.open"/>
-            <hiddenToolBarItem id="org.jkiss.dbeaver.core.sql.editor.create"/>
-            <hiddenToolBarItem id="org.jkiss.dbeaver.core.sql.editor.console"/>
-        </perspectiveExtension>
+    <extension point="org.jkiss.dbeaver.ui.dataSourceConfigurator">
+        <dataSourceConfigurator>
+            <dataSourcePage
+                id="sql-editor.main"
+                after="data-editor-main"
+                class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLEditor"
+                title="%page.org.jkiss.dbeaver.preferences.main.sqleditor.name"
+                description="%page.org.jkiss.dbeaver.preferences.main.sqleditor.description"/>
+            <dataSourcePage
+                id="sql-editor.completion"
+                parent="sql-editor.main"
+                class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLCompletion"
+                title="%page.org.jkiss.dbeaver.preferences.main.sql.completion.name"
+                description="%page.org.jkiss.dbeaver.preferences.main.sql.completion.description"/>
+            <dataSourcePage
+                id="sql-editor.format"
+                parent="sql-editor.main"
+                class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLFormat"
+                title="%page.org.jkiss.dbeaver.preferences.main.sql.format.name"
+                description="%page.org.jkiss.dbeaver.preferences.main.sql.format.description"/>
+            <dataSourcePage
+                id="sql-editor.execute"
+                parent="sql-editor.main"
+                class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLExecute"
+                title="%page.org.jkiss.dbeaver.preferences.main.sqlexecute.name"
+                description="%page.org.jkiss.dbeaver.preferences.main.sqlexecute.description"/>
+        </dataSourceConfigurator>
     </extension>
--->
+
+    <!--
+        <extension point="org.eclipse.ui.perspectiveExtensions">
+            <perspectiveExtension targetID="org.jkiss.dbeaver.core.perspective">
+                <hiddenToolBarItem id="org.jkiss.dbeaver.core.sql.editor.open"/>
+                <hiddenToolBarItem id="org.jkiss.dbeaver.core.sql.editor.create"/>
+                <hiddenToolBarItem id="org.jkiss.dbeaver.core.sql.editor.console"/>
+            </perspectiveExtension>
+        </extension>
+    -->
 
     <extension id="databaseScriptProblemMarker" name="%databaseScriptProblem.name" point="org.eclipse.core.resources.markers">
         <super type="org.eclipse.core.resources.problemmarker"/>
