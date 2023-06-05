@@ -58,7 +58,6 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Iterator;
 import java.util.Map;
 
 public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase implements IElementUpdater {
@@ -83,8 +82,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     return null;
                 }
             }
-            for (Iterator<?> iter = structSelection.iterator(); iter.hasNext(); ) {
-                Object element = iter.next();
+            for (Object element : structSelection) {
                 DBNNode node = null;
                 if (element instanceof IResource) {
                     UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
@@ -93,7 +91,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     }
                     continue;
                 } else if (element instanceof DBNNode) {
-                    node = (DBNNode)element;
+                    node = (DBNNode) element;
                 } else {
                     DBSObject object = RuntimeUtils.getObjectAdapter(element, DBSObject.class);
                     if (object != null) {
