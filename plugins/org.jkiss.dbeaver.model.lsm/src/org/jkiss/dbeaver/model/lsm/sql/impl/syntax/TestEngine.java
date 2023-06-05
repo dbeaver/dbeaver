@@ -27,20 +27,12 @@ import java.util.concurrent.ExecutionException;
 public class TestEngine {
 
     public static void main(String[] args) throws Exception {
-        try {
-            LSMSource source = LSMSource.fromReader(new StringReader("SELECT a, b, c FROM t1 x, t2 y"));
-            
-            LSMDialect dd = Sql92Dialect.getInstance();
-            
-            LSMAnalysisCase<LSMElement, ?> selectStmtAnalysisCase = dd.findAnalysisCase(LSMElement.class);
-            
-            LSMAnalysis<LSMElement> analysis = dd.prepareAnalysis(source, selectStmtAnalysisCase).get();
-            
-            LSMElement model = analysis.getModel().get();
-            
-            System.out.println(model);
-        } catch (IOException | InterruptedException | ExecutionException ex) {
-            ex.printStackTrace();
-        }
+        LSMSource source = LSMSource.fromReader(new StringReader("SELECT a, b, c FROM t1 x, t2 y"));
+        
+        LSMAnalyzer dd = Sql92Dialect.getAnalyzer();
+        
+        LSMElement model = dd.parseSqlQueryModel(source);
+        
+        System.out.println(model);
     }
 }

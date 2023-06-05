@@ -16,16 +16,24 @@
  */
 package org.jkiss.dbeaver.ext.sqlite.model;
 
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.ext.sqlite.model.syntax.SqliteLexer;
+import org.jkiss.dbeaver.ext.sqlite.model.syntax.SqliteParser;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
+import org.jkiss.dbeaver.model.lsm.LSMSource;
+import org.jkiss.dbeaver.model.lsm.impl.LSMAnalyzerImpl;
+import org.jkiss.dbeaver.model.stm.TreeRuleNode;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -118,4 +126,21 @@ public class SQLiteSQLDialect extends GenericSQLDialect {
         return true;
     }
 
+    private static final LSMAnalyzer dialect = new LSMAnalyzerImpl<SqliteLexer, SqliteParser>() {
+        @Override
+        protected Pair<SqliteLexer, SqliteParser> createParser(LSMSource source) {
+            SqliteLexer lexer = new SqliteLexer(source.getStream());
+            SqliteParser parser =  new SqliteParser(new CommonTokenStream(lexer));
+            return new Pair<>(lexer, parser);
+        }
+        @Override
+        protected TreeRuleNode parseSqlQueryImpl(SqliteParser parser) {
+            return parser.sqlQuery();
+        }
+    };
+    
+    @Override
+    public LSMAnalyzer getSyntaxAnalyzer() {
+        return dialect;
+    }
 }

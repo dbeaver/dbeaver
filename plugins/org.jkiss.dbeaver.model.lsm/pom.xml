@@ -23,6 +23,7 @@
 
   <build>
     <plugins>
+      <!--
       <plugin>
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-maven-plugin</artifactId>
@@ -43,6 +44,34 @@
                 </configuration>
             </execution>
         </executions>
+      </plugin>
+      -->
+      <plugin>
+          <artifactId>exec-maven-plugin</artifactId>
+          <groupId>org.codehaus.mojo</groupId>
+          <executions>
+            <execution>
+              <phase>generate-sources</phase>
+              <goals>
+                <goal>exec</goal>
+              </goals>
+              <configuration>
+                <executable>java</executable>
+                <arguments>
+                    <argument>-jar</argument>
+                    <argument>antlr-4.13.0-complete.jar</argument>
+                    <argument>-o</argument>
+                    <argument>target/generated-sources/antlr4/org/jkiss/dbeaver/model/lsm/sql/impl/syntax</argument>
+                    <argument>-package</argument>
+                    <argument>org.jkiss.dbeaver.model.lsm.sql.impl.syntax</argument>
+                    <argument>-lib</argument>
+                    <argument>grammar</argument>
+                    <argument>grammar/Sql92Lexer.g4</argument>
+                    <argument>grammar/Sql92Parser.g4</argument>
+                </arguments>
+              </configuration>
+            </execution>
+          </executions>
       </plugin>
     </plugins>
   </build>

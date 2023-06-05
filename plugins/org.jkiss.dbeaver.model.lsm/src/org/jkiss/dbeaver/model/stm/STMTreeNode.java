@@ -9,6 +9,11 @@ import org.jkiss.code.Nullable;
 
 public interface STMTreeNode extends Tree {
     
+    void fixup(@NotNull ParserOverrides parserCtx);
+
+    @NotNull
+    String getNodeName();
+        
     @NotNull
     Interval getRealInterval();
 
@@ -43,5 +48,8 @@ public interface STMTreeNode extends Tree {
         }
         return result;
     }
+
+    @NotNull
+    String getText();
     
 }

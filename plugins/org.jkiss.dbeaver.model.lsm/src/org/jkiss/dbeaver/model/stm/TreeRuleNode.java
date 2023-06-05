@@ -24,10 +24,13 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.tree.Trees;
 import org.jkiss.code.NotNull;
 
 
 public class TreeRuleNode extends ParserRuleContext implements STMTreeNode {
+    
+    private String nodeName = null;
     
     public TreeRuleNode() {
         super();
@@ -37,6 +40,19 @@ public class TreeRuleNode extends ParserRuleContext implements STMTreeNode {
         super(parent, invokingStateNumber);
     }
 
+    @Override
+    public void fixup(@NotNull ParserOverrides parserCtx) {
+        nodeName = Trees.getNodeText(this, parserCtx);
+        for (int i = 0; i < getChildCount(); i++) {
+            ((STMTreeNode) getChild(i)).fixup(parserCtx);
+        }
+    }
+
+    @NotNull
+    public String getNodeName() {
+        return nodeName;
+    }
+    
     @NotNull
     public Interval getRealInterval() {
         return new Interval(this.getStart().getStartIndex(), this.getStop().getStopIndex());

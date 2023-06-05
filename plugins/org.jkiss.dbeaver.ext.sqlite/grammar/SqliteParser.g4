@@ -14,13 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm;
+parser grammar SqliteParser;
 
-import org.antlr.v4.runtime.tree.Tree;
-import org.jkiss.code.Nullable;
+import Sql92Parser;
 
-public interface LSMParser extends LSMObject<LSMParser> {
-
-    @Nullable
-    Tree parse();
+options {
+    tokenVocab=SqliteLexer;
+    superClass=org.jkiss.dbeaver.model.stm.ParserOverrides;
+    contextSuperClass=org.jkiss.dbeaver.model.stm.TreeRuleNode;
 }
+
+@header {
+}
+
+actualIdentifier: (Identifier|DelimitedIdentifier|SquareBracketIdentifier|nonReserved);

@@ -21,15 +21,30 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ErrorNodeImpl;
 import org.jkiss.code.NotNull;
 
+import java.util.List;
+import java.util.Set;
+
 
 public class TreeTermErrorNode extends ErrorNodeImpl implements STMTreeNode {
     
     public TreeTermErrorNode(@NotNull Token symbol) {
         super(symbol);
     }
-
+   
+    private static String nodeName = "error"; 
+    
+    @Override
+    public void fixup(ParserOverrides parserCtx) {
+    }
+    
+    @Override
+    public String getNodeName() {
+        return nodeName;
+    }
+    
     @NotNull
     public Interval getRealInterval() {
         return new Interval(this.getSymbol().getStartIndex(), this.getSymbol().getStopIndex());
     }
+
 }

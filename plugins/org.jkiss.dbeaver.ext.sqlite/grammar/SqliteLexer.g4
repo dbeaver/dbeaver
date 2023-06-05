@@ -14,26 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm;
+lexer grammar SqliteLexer;
 
-import org.antlr.v4.runtime.ANTLRErrorListener;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
+import Sql92Lexer;
 
-public interface LSMAnalysisCase<T extends LSMElement, M extends AbstractSyntaxNode & LSMElement> extends LSMObject<LSMAnalysisCase<T, M>> {
-    @NotNull
-    Class<T> getModelContractType();
+@header {
 
-    @NotNull
-    Class<M> getModelRootType();
-
-
-    @Nullable
-    LSMParser createParser(@NotNull LSMSource source);
-
-    @Nullable
-    LSMParser createParser(LSMSource source, ANTLRErrorListener errorListener);
-
-    
 }
+
+SquareBracketIdentifier: '[' (~']' | ']' ']')* ']';

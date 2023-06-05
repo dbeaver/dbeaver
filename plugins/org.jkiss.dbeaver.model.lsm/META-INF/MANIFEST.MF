@@ -10,12 +10,14 @@ Require-Bundle: org.jkiss.bundle.antlr4,
  org.jkiss.utils
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: org.jkiss.dbeaver.model.lsm,
+ org.jkiss.dbeaver.model.lsm.impl,
  org.jkiss.dbeaver.model.lsm.mapping,
  org.jkiss.dbeaver.model.lsm.mapping.internal,
  org.jkiss.dbeaver.model.lsm.sql,
  org.jkiss.dbeaver.model.lsm.sql.dialect,
  org.jkiss.dbeaver.model.lsm.sql.impl,
- org.jkiss.dbeaver.model.lsm.sql.impl.syntax
+ org.jkiss.dbeaver.model.lsm.sql.impl.syntax,
+ org.jkiss.dbeaver.model.stm
 Import-Package: org.jkiss.code,
  org.slf4j
 Automatic-Module-Name: org.jkiss.dbeaver.model.lsm

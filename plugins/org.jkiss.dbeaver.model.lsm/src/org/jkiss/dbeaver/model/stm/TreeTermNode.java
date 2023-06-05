@@ -21,15 +21,32 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import org.jkiss.code.NotNull;
 
+import java.util.List;
+import java.util.Set;
+
 
 public class TreeTermNode extends TerminalNodeImpl implements STMTreeNode {
+    
+    private String nodeName = null; 
     
     public TreeTermNode(@NotNull Token symbol) {
         super(symbol);
     }
 
+    @Override
+    public void fixup(@NotNull ParserOverrides parserCtx) {
+        this.nodeName = parserCtx.getVocabulary().getSymbolicName(this.getSymbol().getType());
+    }
+
+    @NotNull
+    @Override
+    public String getNodeName() {
+        return this.nodeName;
+    }
+    
     @NotNull
     public Interval getRealInterval() {
         return new Interval(this.getSymbol().getStartIndex(), this.getSymbol().getStopIndex());
     }
+
 }

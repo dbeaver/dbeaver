@@ -8,9 +8,13 @@ Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.data.gis,
  org.jkiss.dbeaver.model,
- org.jkiss.bundle.gis
+ org.jkiss.bundle.gis,
+ org.jkiss.dbeaver.model.lsm,
+ org.jkiss.bundle.antlr4
 Export-Package: org.jkiss.dbeaver.ext.sqlite,
  org.jkiss.dbeaver.ext.sqlite.model
+Import-Package: org.jkiss.code,
+ org.slf4j
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: %Bundle-Vendor

@@ -111,6 +111,8 @@ Require-Bundle: org.eclipse.equinox.security;visibility:=reexport,
  org.apache.commons.jexl;visibility:=reexport,
  com.github.jsqlparser;visibility:=reexport,
  org.jkiss.utils;visibility:=reexport,
+ org.jkiss.dbeaver.model.lsm,
+ org.jkiss.bundle.antlr4,
  com.google.gson
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.model

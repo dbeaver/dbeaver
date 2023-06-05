@@ -1,4 +1,3 @@
-
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2023 DBeaver Corp and others
@@ -40,7 +39,6 @@ options {
      * See the License for the specific language governing permissions and
      * limitations under the License.
      */
-    package org.jkiss.dbeaver.model.lsm.sql.impl.syntax;
 }
 
 // identifiers
@@ -50,7 +48,7 @@ schemaName: (catalogName Period)? unqualifiedSchemaName;
 unqualifiedSchemaName: identifier;
 catalogName: identifier;
 identifier: (Introducer characterSetSpecification)? actualIdentifier;
-actualIdentifier: (Identifier|DelimitedIdentifier|SquareBracketIdentifier|nonReserved);
+actualIdentifier: (Identifier|DelimitedIdentifier|nonReserved);
 
 // date-time literals
 dateString: SingleQuote dateValue SingleQuote;
@@ -203,7 +201,7 @@ intersectTerm: (INTERSECT (ALL)? (correspondingSpec)? queryPrimary);
 nonJoinQueryPrimary: (simpleTable|LeftParen nonJoinQueryExpression RightParen);
 simpleTable: (querySpecification|tableValueConstructor|explicitTable);
 querySpecification: SELECT (setQuantifier)? selectList tableExpression?;
-selectList: Asterisk|selectSublist (Comma selectSublist)*; // (Comma selectSublist)* contains any quantifier for error recovery;
+selectList: (Asterisk|selectSublist) (Comma selectSublist)*; // (Comma selectSublist)* contains any quantifier for error recovery;
 selectSublist: (derivedColumn|qualifier Period Asterisk)*; // * for whole rule to handle select fields autocompletion when from immediately after select 
 derivedColumn: valueExpression (asClause)?;
 asClause: (AS)? columnName;
