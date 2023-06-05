@@ -28,6 +28,7 @@ import java.util.List;
  * DataSourceViewDescriptor
  */
 public class DataSourceViewDescriptor extends AbstractDescriptor {
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceView"; //$NON-NLS-1$
     private final String id;
     private final String targetID;
     private final List<String> dataSourceIds;

@@ -141,7 +141,7 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
 
     private class PlanTreeRenderer extends ViewerRenderer {
         @Override
-        public boolean isHyperlink(Object cellValue)
+        public boolean isHyperlink(Object element, Object cellValue)
         {
             return cellValue instanceof DBSObject;
         }
