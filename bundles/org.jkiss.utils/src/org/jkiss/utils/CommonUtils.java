@@ -20,12 +20,9 @@ package org.jkiss.utils;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -228,47 +225,6 @@ public class CommonUtils {
             return new ArrayList<>();
         } else {
             return new ArrayList<>(theList);
-        }
-    }
-
-    @NotNull
-    public static <T> List<T> deepCopy(@NotNull List<T> src) {
-        final List<T> dst = tryInstantiateOrDefault(src.getClass(), ArrayList::new);
-        for (T element : src) {
-            dst.add(deepCopy(element));
-        }
-        return dst;
-    }
-
-    @NotNull
-    public static <K, V> Map<K, V> deepCopy(@NotNull Map<K, V> src) {
-        final Map<K, V> dst = tryInstantiateOrDefault(src.getClass(), HashMap::new);
-        for (Map.Entry<K, V> entry : src.entrySet()) {
-            dst.put(entry.getKey(), deepCopy(entry.getValue()));
-        }
-        return dst;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <T> T deepCopy(@Nullable T object) {
-        if (object == null) {
-            return null;
-        } else if (object instanceof Map) {
-            return (T) deepCopy((Map<?, ?>) object);
-        } else if (object instanceof List) {
-            return (T) deepCopy((List<?>) object);
-        } else {
-            return object;
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    @NotNull
-    private static <T> T tryInstantiateOrDefault(@NotNull Class<?> cls, @NotNull Supplier<T> supplier) {
-        try {
-            return (T) MethodHandles.lookup().findConstructor(cls, MethodType.methodType(void.class)).invoke();
-        } catch (Throwable ignored) {
-            return supplier.get();
         }
     }
 
