@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
@@ -29,6 +30,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Resource;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandImageService;
 import org.eclipse.ui.commands.ICommandService;
@@ -36,8 +40,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.ToolBarConfigurationDescriptor;
 import org.jkiss.dbeaver.ui.actions.ToolBarConfigurationPropertyTester;
@@ -53,10 +55,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 
-public class PrefPageToolbarCustomization extends TargetPrefPage {
-
-    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.toolbar.customization"; //$NON-NLS-1$
-
+public class PrefPageToolbarCustomization extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
+    
     /**
      * Tree node with checkbox
      */
@@ -195,41 +195,6 @@ public class PrefPageToolbarCustomization extends TargetPrefPage {
             .collect(Collectors.toList());
     }
 
-    @Override
-    public final boolean isDataSourcePreferencePage() {
-        return false;
-    }
-
-    @Override
-    protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dsContainer) {
-        return false;
-    }
-
-    @Override
-    protected boolean supportsDataSourceSpecificOptions() {
-        return false;
-    }
-
-    @Override
-    protected void loadPreferences(DBPPreferenceStore store) {
-        // do nothing
-    }
-
-    @Override
-    protected void savePreferences(DBPPreferenceStore store) {
-        performOk();
-    }
-
-    @Override
-    protected void clearPreferences(DBPPreferenceStore store) {
-        performDefaults();
-    }
-
-    @Override
-    protected String getPropertyPageID() {
-        return PAGE_ID;
-    }
-
     @Nullable
     private Image findBundleImage(@NotNull String pluginId, @NotNull String bundlePath) {
         Bundle bundle = Platform.getBundle(pluginId);
@@ -240,6 +205,11 @@ public class PrefPageToolbarCustomization extends TargetPrefPage {
             }
         }
         return null;
+    }
+    
+    @Override
+    public void init(IWorkbench workbench) {
+        // do nothing
     }
 
     @NotNull
@@ -396,5 +366,15 @@ public class PrefPageToolbarCustomization extends TargetPrefPage {
         }
         ToolBarConfigurationPropertyTester.fireVisibilityPropertyChange();
         return true;
+    }
+
+    @Override
+    public IAdaptable getElement() {
+        return null;
+    }
+
+    @Override
+    public void setElement(IAdaptable element) {
+        // do nothing
     }
 }

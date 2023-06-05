@@ -1308,4 +1308,12 @@
                 group="%confirmation.group.general.actions"/>
     </extension>
 
+    <extension point="org.eclipse.ui.preferencePages">
+        <page
+            category="org.jkiss.dbeaver.preferences.main"
+            id="org.jkiss.dbeaver.preferences.main.toolbar.customization"
+            class="org.jkiss.dbeaver.ui.preferences.PrefPageToolbarCustomization"
+            name="%org.jkiss.dbeaver.preferences.main.toolbar.customization.name"/>
+    </extension>
+
 </plugin>

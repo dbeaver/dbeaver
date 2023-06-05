@@ -65,7 +65,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
     protected TargetPrefPage() {
     }
 
-    public boolean isDataSourcePreferencePage() {
+    public final boolean isDataSourcePreferencePage() {
         return dataSourceContainer != null;
     }
 
@@ -303,7 +303,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
     }
 
     @Override
-    public boolean performOk() {
+    public final boolean performOk() {
         DBPPreferenceStore store = getTargetPreferenceStore();
         if (isDataSourcePreferencePage() && !useDataSourceSettings()) {
             // Just delete datasource specific settings
