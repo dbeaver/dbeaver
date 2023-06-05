@@ -84,6 +84,8 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
 
     void removeDataSource(@NotNull DBPDataSourceContainer dataSource);
 
+    void removeDataSourceFromList(@NotNull DBPDataSourceContainer dataSource);
+
     void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException;
 
     @NotNull

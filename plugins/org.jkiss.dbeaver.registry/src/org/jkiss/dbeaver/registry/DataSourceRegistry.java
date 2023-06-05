@@ -538,9 +538,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     public void removeDataSource(@NotNull DBPDataSourceContainer dataSource) {
         final DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
-        synchronized (dataSources) {
-            this.dataSources.remove(descriptor.getId());
-        }
+        removeDataSourceFromList(descriptor);
         if (!descriptor.isDetached()) {
             persistDataSourceDelete(dataSource);
         }
@@ -553,6 +551,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, dataSource);
         } finally {
             descriptor.dispose();
+        }
+    }
+
+    @Override
+    public void removeDataSourceFromList(@NotNull DBPDataSourceContainer dataSource) {
+        synchronized (dataSources) {
+            this.dataSources.remove(dataSource.getId());
         }
     }
 
