@@ -167,11 +167,6 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         }
     }
 
-    public OracleTable(@NotNull OracleSchema schema, @NotNull ResultSet dbResult, @NotNull String name) {
-        // Partitioned table
-        super(schema, dbResult, name);
-    }
-
     @Override
     public TableAdditionalInfo getAdditionalInfo()
     {
@@ -266,37 +261,37 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         return false;
     }
 
-    @Property(viewable = false, order = 5, visibleIf = OracleTableNotPartitionPropertyValidator.class)
+    @Property(viewable = false, order = 5)
     public OracleDataType getTableType()
     {
         return tableType;
     }
 
-    @Property(viewable = false, order = 6, visibleIf = OracleTableNotPartitionPropertyValidator.class)
+    @Property(viewable = false, order = 6)
     public String getIotType()
     {
         return iotType;
     }
 
-    @Property(viewable = false, order = 7, visibleIf = OracleTableNotPartitionPropertyValidator.class)
+    @Property(viewable = false, order = 7)
     public String getIotName()
     {
         return iotName;
     }
 
-    @Property(viewable = false, order = 10, visibleIf = OracleTableNotPartitionPropertyValidator.class)
+    @Property(viewable = false, order = 10)
     public boolean isTemporary()
     {
         return temporary;
     }
 
-    @Property(viewable = false, order = 11, visibleIf = OracleTableNotPartitionPropertyValidator.class)
+    @Property(viewable = false, order = 11)
     public boolean isSecondary()
     {
         return secondary;
     }
 
-    @Property(viewable = false, order = 12, visibleIf = OracleTableNotPartitionPropertyValidator.class)
+    @Property(viewable = false, order = 12)
     public boolean isNested()
     {
         return nested;
@@ -359,6 +354,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
             tableSize = null;
             getTableSize(monitor);
         }
+        additionalInfo.loaded = false;
         return super.refreshObject(monitor);
     }
 

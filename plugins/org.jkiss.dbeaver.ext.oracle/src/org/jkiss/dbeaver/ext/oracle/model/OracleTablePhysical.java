@@ -71,9 +71,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         ResultSet dbResult)
     {
         super(schema, dbResult);
-        this.rowCount = JDBCUtils.safeGetLong(dbResult, "NUM_ROWS");
-        //this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
-        this.tablespace = JDBCUtils.safeGetString(dbResult, "TABLESPACE_NAME");
+        readSpecialProperties(dbResult);
 
         this.partitioned = JDBCUtils.safeGetBoolean(dbResult, "PARTITIONED", "Y");
         this.partitionCache = partitioned ? new PartitionCache() : null;
@@ -82,9 +80,13 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     protected OracleTablePhysical(@NotNull OracleSchema schema, @NotNull ResultSet dbResult, @NotNull String name) {
         // Table partition
         super(schema, name);
+        readSpecialProperties(dbResult);
+        this.partitioned = false;
+    }
+
+    private void readSpecialProperties(@NotNull ResultSet dbResult) {
         this.rowCount = JDBCUtils.safeGetLong(dbResult, "NUM_ROWS");
         this.tablespace = JDBCUtils.safeGetString(dbResult, "TABLESPACE_NAME");
-        this.partitioned = false;
     }
 
     @Property(category = DBConstants.CAT_STATISTICS, viewable = true, order = 20)
@@ -175,12 +177,13 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         return partitionInfo;
     }
 
+    @Association
     public boolean isPartitioned() {
         return partitioned;
     }
 
     @Association
-    public Collection<OraclePartition> getPartitions(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleTablePartition> getPartitions(DBRProgressMonitor monitor) throws DBException {
         if (partitionCache == null) {
             return Collections.emptyList();
         }
@@ -202,14 +205,14 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         this.valid = OracleUtils.getObjectStatus(monitor, this, OracleObjectType.TABLE);
     }
 
-    private static class PartitionCache extends JDBCObjectLookupCache<OracleTablePhysical, OraclePartition> {
+    private static class PartitionCache extends JDBCObjectLookupCache<OracleTablePhysical, OracleTablePartition> {
 
         @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(
             @NotNull JDBCSession session,
             @NotNull OracleTablePhysical table,
-            @Nullable OraclePartition partition,
+            @Nullable OracleTablePartition partition,
             @Nullable String partitionName
         ) throws SQLException {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -226,7 +229,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         }
 
         @Override
-        protected OraclePartition fetchObject(
+        protected OracleTablePartition fetchObject(
             @NotNull JDBCSession session,
             @NotNull OracleTablePhysical table,
             @NotNull JDBCResultSet resultSet
@@ -235,15 +238,13 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
             if (CommonUtils.isEmpty(partitionName)) {
                 return null;
             }
-            return new OraclePartition(table, partitionName, resultSet, null);
+            return new OracleTablePartition(table, partitionName, resultSet, null);
         }
     }
 
-    public static class PartitionInfo extends OraclePartition.PartitionInfoBase {
+    public static class PartitionInfo extends OracleTablePartition.PartitionInfoBase {
 
-        public PartitionInfo(DBRProgressMonitor monitor, OracleDataSource dataSource, ResultSet dbResult)
-            throws DBException
-        {
+        public PartitionInfo(DBRProgressMonitor monitor, OracleDataSource dataSource, ResultSet dbResult) {
             super(monitor, dataSource, dbResult);
         }
     }

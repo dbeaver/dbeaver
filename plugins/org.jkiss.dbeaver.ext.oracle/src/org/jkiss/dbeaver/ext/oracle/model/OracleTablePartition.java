@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
@@ -38,12 +39,14 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Oracle abstract partition
  */
-public class OraclePartition extends OracleTable implements DBSTablePartition {
+public class OracleTablePartition extends OracleTablePhysical implements DBSTablePartition, DBPImageProvider {
+
+    private static final Log log = Log.getLog(OracleTablePartition.class);
+
     public enum PartitionType {
         NONE,
         RANGE,
@@ -57,6 +60,8 @@ public class OraclePartition extends OracleTable implements DBSTablePartition {
     public static class PartitionInfoBase {
         private PartitionType partitionType;
         private PartitionType subpartitionType;
+        private String partitionInterval;
+        private long partitionCount;
         private Object partitionTablespace;
 
         @Property(category = CAT_PARTITIONING, order = 120)
@@ -70,34 +75,50 @@ public class OraclePartition extends OracleTable implements DBSTablePartition {
         }
 
         @Property(category = CAT_PARTITIONING, order = 122)
+        public String getPartitionInterval() {
+            return partitionInterval;
+        }
+
+        @Property(category = CAT_PARTITIONING, order = 123)
+        public long getPartitionCount() {
+            return partitionCount;
+        }
+
+        @Property(category = CAT_PARTITIONING, order = 124)
         public Object getPartitionTablespace() {
             return partitionTablespace;
         }
 
-        public PartitionInfoBase(DBRProgressMonitor monitor, OracleDataSource dataSource, ResultSet dbResult) throws DBException {
+        public PartitionInfoBase(DBRProgressMonitor monitor, OracleDataSource dataSource, ResultSet dbResult) {
             this.partitionType = CommonUtils.valueOf(PartitionType.class, JDBCUtils.safeGetStringTrimmed(dbResult, "PARTITIONING_TYPE"));
             this.subpartitionType = CommonUtils.valueOf(PartitionType.class, JDBCUtils.safeGetStringTrimmed(dbResult, "SUBPARTITIONING_TYPE"));
             String partitionTablespaceName = JDBCUtils.safeGetStringTrimmed(dbResult, "DEF_TABLESPACE_NAME");
+            this.partitionInterval = JDBCUtils.safeGetString(dbResult, "INTERVAL");
+            this.partitionCount = JDBCUtils.safeGetLong(dbResult, "PARTITION_COUNT");
             if (dataSource.isAdmin() && CommonUtils.isNotEmpty(partitionTablespaceName)) {
-                this.partitionTablespace = dataSource.tablespaceCache.getObject(monitor, dataSource, partitionTablespaceName);
+                try {
+                    this.partitionTablespace = dataSource.tablespaceCache.getObject(monitor, dataSource, partitionTablespaceName);
+                } catch (DBException e) {
+                    log.debug("Can not find tablespace " + partitionTablespaceName, e);
+                }
             }
         }
     }
 
     private OracleTablePhysical parent;
-    private OraclePartition partitionParent;
+    private OracleTablePartition partitionParent;
     private int position;
     private String highValue;
     private boolean usable;
     private long sampleSize;
     private Timestamp lastAnalyzed;
-    private List<OraclePartition> subPartitions;
+    private List<OracleTablePartition> subPartitions;
 
-    OraclePartition(
+    OracleTablePartition(
         @NotNull OracleTablePhysical parent,
         @NotNull String name,
         @NotNull ResultSet dbResult,
-        @Nullable OraclePartition partitionParent
+        @Nullable OracleTablePartition partitionParent
     ) {
         super(parent.getSchema(), dbResult, name);
         this.parent = parent;
@@ -137,7 +158,7 @@ public class OraclePartition extends OracleTable implements DBSTablePartition {
     }
 
     @Association
-    public List<OraclePartition> getSubPartitions(DBRProgressMonitor monitor) throws DBException {
+    public List<OracleTablePartition> getSubPartitions(DBRProgressMonitor monitor) throws DBException {
         if (partitionParent != null) {
             return Collections.emptyList();
         }
@@ -147,7 +168,7 @@ public class OraclePartition extends OracleTable implements DBSTablePartition {
         return subPartitions;
     }
 
-    private List<OraclePartition> readSubPartitions(@NotNull DBRProgressMonitor monitor) throws DBException {
+    private List<OracleTablePartition> readSubPartitions(@NotNull DBRProgressMonitor monitor) throws DBException {
         subPartitions = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read subpartitions")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM " +
@@ -163,7 +184,7 @@ public class OraclePartition extends OracleTable implements DBSTablePartition {
                         if (CommonUtils.isEmpty(subpartitionName)) {
                             return null;
                         }
-                        subPartitions.add(new OraclePartition(parent, subpartitionName, dbResult, this));
+                        subPartitions.add(new OracleTablePartition(parent, subpartitionName, dbResult, this));
                     }
                 }
             } catch (SQLException e) {
@@ -180,11 +201,18 @@ public class OraclePartition extends OracleTable implements DBSTablePartition {
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        if (parent instanceof OracleTable) {
-            return ((OracleTable) parent).getObjectDefinitionText(monitor, options);
-        }
-        return "-- DDL is not supported";
+    public TableAdditionalInfo getAdditionalInfo() {
+        return new TableAdditionalInfo();
+    }
+
+    @Override
+    protected String getTableTypeName() {
+        return "TABLE PARTITION";
+    }
+
+    @Override
+    public boolean isView() {
+        return false;
     }
 
     @Override

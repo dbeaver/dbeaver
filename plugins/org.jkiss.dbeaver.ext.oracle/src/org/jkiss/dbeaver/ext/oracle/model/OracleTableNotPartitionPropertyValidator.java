@@ -22,6 +22,6 @@ public class OracleTableNotPartitionPropertyValidator implements IPropertyValueV
 
     @Override
     public boolean isValidValue(OracleTableBase object, Object value) throws IllegalArgumentException {
-        return !(object instanceof OraclePartition);
+        return !(object instanceof OracleTablePartition);
     }
 }
