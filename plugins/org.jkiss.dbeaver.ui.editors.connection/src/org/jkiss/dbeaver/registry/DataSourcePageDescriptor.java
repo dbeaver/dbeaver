@@ -33,6 +33,7 @@ public class DataSourcePageDescriptor extends AbstractDescriptor {
 
     private final String id;
     private final String parentId;
+    private final String afterPageId;
     private final String title;
     private final String description;
     private final ObjectType pageClass;
@@ -42,6 +43,7 @@ public class DataSourcePageDescriptor extends AbstractDescriptor {
         super(config.getContributor().getName());
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.parentId = config.getAttribute(RegistryConstants.ATTR_PARENT);
+        this.afterPageId = config.getAttribute("after");
         this.title = config.getAttribute("title");
         this.description = config.getAttribute("description");
         this.pageClass = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
@@ -68,6 +70,10 @@ public class DataSourcePageDescriptor extends AbstractDescriptor {
 
     public String getParentId() {
         return parentId;
+    }
+
+    public String getAfterPageId() {
+        return afterPageId;
     }
 
     public String getTitle() {
