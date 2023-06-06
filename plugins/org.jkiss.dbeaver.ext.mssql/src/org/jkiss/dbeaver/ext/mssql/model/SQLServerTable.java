@@ -63,11 +63,8 @@ public class SQLServerTable extends SQLServerTableBase
         super(schema);
     }
 
-    public SQLServerTable(
-        SQLServerSchema catalog,
-        ResultSet dbResult)
-    {
-        super(catalog, dbResult);
+    public SQLServerTable(@NotNull SQLServerSchema catalog, @NotNull ResultSet dbResult, @NotNull String name) {
+        super(catalog, dbResult, name);
     }
 
     @Override
