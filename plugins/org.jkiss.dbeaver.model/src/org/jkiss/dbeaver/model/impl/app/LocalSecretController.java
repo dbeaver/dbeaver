@@ -54,7 +54,7 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
     @Override
     public String getSecretValue(@NotNull String secretId) throws DBException {
         try {
-            Path keyPath = root.resolve(secretId);
+            Path keyPath = root.resolve(escapeSecretKey(secretId));
 
             return getNodeByPath(keyPath.getParent())
                 .get(keyPath.getFileName().toString(), null);
@@ -66,7 +66,7 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
     @Override
     public void setSecretValue(@NotNull String secretId, @Nullable String secretValue) throws DBException {
         try {
-            Path keyPath = root.resolve(secretId);
+            Path keyPath = root.resolve(escapeSecretKey(secretId));
 
             getNodeByPath(keyPath.getParent())
                 .put(keyPath.getFileName().toString(), secretValue, true);
@@ -97,9 +97,9 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
     @NotNull
     @Override
     public List<DBSSecret> listSecrets(@Nullable String path) throws DBException {
-        Path keyPath = path == null ? root : root.resolve(path);
+        Path keyPath = path == null ? root : root.resolve(escapeSecretKey(path));
         return Arrays.stream(getNodeByPath(keyPath).keys())
-            .map(k -> new DBSSecret(keyPath.resolve(k).toString(), k))
+            .map(k -> new DBSSecret(keyPath.resolve(escapeSecretKey(k)).toString(), k))
             .collect(Collectors.toList());
     }
 
@@ -107,7 +107,7 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
     @Override
     public DBSSecret getSecret(@NotNull String secretId) throws DBException {
         try {
-            Path keyPath = root.resolve(secretId);
+            Path keyPath = root.resolve(escapeSecretKey(secretId));
             String keyId = keyPath.getFileName().toString();
             String value = getNodeByPath(keyPath.getParent()).get(keyId, null);
             if (value == null) {
@@ -126,7 +126,12 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
 
     @Override
     public void clearAllSecrets(String keyPrefix) throws DBException {
-        getNodeByPath(root.resolve(keyPrefix)).removeNode();
+        getNodeByPath(root.resolve(escapeSecretKey(keyPrefix))).removeNode();
+    }
+
+    private String escapeSecretKey(String key) {
+        // Replace : with _ because Windows do not support : in path names
+        return key.replace(':', '_');
     }
 
 }
