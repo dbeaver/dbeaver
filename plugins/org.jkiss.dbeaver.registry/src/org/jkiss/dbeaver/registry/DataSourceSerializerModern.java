@@ -728,6 +728,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     }
                 }
 
+                // Properties
+                dataSource.getProperties().putAll(
+                    JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_PROPERTIES)
+                );
+
                 // Preferences
                 dataSource.getPreferenceStore().getProperties().putAll(
                     JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES)
@@ -1093,6 +1098,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 json.endArray();
             }
         }
+
+        // Properties
+        JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, dataSource.getProperties());
 
         // Preferences
         {

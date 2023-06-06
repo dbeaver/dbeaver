@@ -542,22 +542,6 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_edit_wizard_transactions_description;
 	public static String dialog_connection_edit_wizard_metadata;
 	public static String dialog_connection_edit_wizard_metadata_description;
-	public static String dialog_connection_edit_wizard_resultset;
-	public static String dialog_connection_edit_wizard_resultset_description;
-	public static String dialog_connection_edit_wizard_editors;
-	public static String dialog_connection_edit_wizard_editors_description;
-	public static String dialog_connection_edit_wizard_data_format;
-	public static String dialog_connection_edit_wizard_data_format_description;
-	public static String dialog_connection_edit_wizard_presentation;
-	public static String dialog_connection_edit_wizard_presentation_description;
-	public static String dialog_connection_edit_wizard_sql_editor;
-	public static String dialog_connection_edit_wizard_sql_editor_description;
-	public static String dialog_connection_edit_wizard_sql_code_completion;
-	public static String dialog_connection_edit_wizard_sql_code_completion_description;
-	public static String dialog_connection_edit_wizard_sql_formatting;
-	public static String dialog_connection_edit_wizard_sql_formatting_description;
-	public static String dialog_connection_edit_wizard_sql_processing;
-	public static String dialog_connection_edit_wizard_sql_processing_description;
 
 	public static String dialog_connection_edit_wizard_conn_change_title;
 	public static String dialog_connection_edit_wizard_conn_change_question;
@@ -567,6 +551,9 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_edit_wizard_error_md5_title;
 	public static String dialog_connection_edit_wizard_error_md5_msg;
 	//Connection edit
+
+	public static String dialog_connection_deprecated_title;
+	public static String dialog_connection_deprecated_description;
 
 	// Driver edit
 
@@ -595,10 +582,7 @@ public class CoreMessages extends NLS {
 	public static String monitor_panel_transaction_monitor_tip;
 	public static String variable_host_or_database;
 
-    public static String notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy;
-    public static String notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy_text;
-
-    public static String dialog_data_source_synchronize_title;
+	public static String dialog_data_source_synchronize_title;
     public static String dialog_data_source_synchronize_message;
     public static String dialog_data_source_synchronize_reply_keep_local_label;
     public static String dialog_data_source_synchronize_reply_keep_remote_label;
