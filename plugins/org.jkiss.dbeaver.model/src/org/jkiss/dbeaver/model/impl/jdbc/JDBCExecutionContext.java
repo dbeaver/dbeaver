@@ -58,8 +58,8 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     private volatile JDBCRemoteInstance instance;
     private volatile Connection connection;
     private volatile Boolean autoCommit;
-    protected volatile Integer transactionIsolationLevel;
-    protected transient volatile boolean txnIsolationLevelReadInProgress;
+    private volatile Integer transactionIsolationLevel;
+    private transient volatile boolean txnIsolationLevelReadInProgress;
 
     public JDBCExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
         super(instance.getDataSource(), purpose);

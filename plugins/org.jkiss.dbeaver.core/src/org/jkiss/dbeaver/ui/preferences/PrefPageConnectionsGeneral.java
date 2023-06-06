@@ -168,8 +168,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         Link urlHelpLabel = UIUtils.createLink(
             composite,
             "<a>" + CoreMessages.pref_page_connections_wiki_link + "</a>",
-            new SelectionAdapter()
-            {
+            new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_CONNECTIONS_LINK));

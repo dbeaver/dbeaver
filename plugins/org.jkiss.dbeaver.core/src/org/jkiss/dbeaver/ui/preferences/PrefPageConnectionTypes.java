@@ -322,8 +322,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         Link urlHelpLabel = UIUtils.createLink(
             composite,
             "<a>" + CoreMessages.pref_page_connection_types_wiki_link + "</a>",
-            new SelectionAdapter()
-            {
+            new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_CONNECTION_TYPES_LINK));

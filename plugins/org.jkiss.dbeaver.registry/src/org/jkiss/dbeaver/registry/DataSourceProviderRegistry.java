@@ -676,7 +676,9 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                     CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_AUTOCOMMIT), origType != null && origType.isAutocommit()),
                     CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CONFIRM_EXECUTE), origType != null && origType.isConfirmExecute()),
                     CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CONFIRM_DATA_CHANGE), origType != null && origType.isConfirmDataChange()),
-                    CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_AUTO_CLOSE_TRANSACTIONS), origType != null && origType.isAutoCloseTransactions()),
+                    CommonUtils.getBoolean(
+                        atts.getValue(RegistryConstants.ATTR_AUTO_CLOSE_TRANSACTIONS),
+                        origType != null && origType.isAutoCloseTransactions()),
                     CommonUtils.toLong(
                         atts.getValue(RegistryConstants.ATTR_CLOSE_TRANSACTIONS_PERIOD),
                         origType != null ? origType.getCloseIdleConnectionPeriod() : RegistryConstants.DEFAULT_IDLE_TRANSACTION_PERIOD));

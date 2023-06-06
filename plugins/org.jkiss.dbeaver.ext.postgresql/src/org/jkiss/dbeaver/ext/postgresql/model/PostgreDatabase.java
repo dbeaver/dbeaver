@@ -236,18 +236,6 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return metaContext != null || executionContext != null || sharedInstance != null;
     }
 
-    @Override
-    public boolean isMetaConnectionSeparate(DBPDataSourceContainer container, ModelPreferences.SeparateConnectionBehavior behavior) {
-        switch (behavior) {
-            case NEVER:
-                return false;
-            case DEFAULT:
-            case ALWAYS:
-            default:
-                return true;
-        }
-    }
-
     protected void loadInfo(ResultSet dbResult) {
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "datname");
