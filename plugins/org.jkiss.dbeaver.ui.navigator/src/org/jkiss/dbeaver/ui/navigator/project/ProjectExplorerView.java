@@ -55,7 +55,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
     //static final Log log = Log.getLog(ProjectExplorerView.class);
 
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.projectExplorer";
-    private ViewerColumnController columnController;
+    private ViewerColumnController<?,?> columnController;
     private final NumberFormat sizeFormat = new DecimalFormat();
     
     private Composite treeContainer;
@@ -120,7 +120,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
         final Color shadowColor = viewer.getControl().getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
 
         final ILabelProvider mainLabelProvider = (ILabelProvider) viewer.getLabelProvider();
-        columnController = new ViewerColumnController("projectExplorer", viewer);
+        columnController = new ViewerColumnController<>("projectExplorer", viewer);
         columnController.setForceAutoSize(true);
         columnController.addColumn(UINavigatorMessages.navigator_project_explorer_columns_name_text,
                 UINavigatorMessages.navigator_project_explorer_columns_name_description,

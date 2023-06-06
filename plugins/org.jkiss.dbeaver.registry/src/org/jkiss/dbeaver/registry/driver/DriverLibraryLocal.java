@@ -99,7 +99,9 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
                 DriverDescriptor.DriverFileInfo driverFileInfo = driverFileInfos.get(0);
                 resolvedCache = DriverDescriptor.getWorkspaceDriversStorageFolder().resolve(driverFileInfo.getFile());
             } else {
-                resolvedCache = DriverDescriptor.getWorkspaceDriversStorageFolder().resolve(localFilePath);
+                // need to correct driver initialization, otherwise, if at least one file was copied,
+                // the driver configuration will be incorrect and other driver files will not be copied
+                resolvedCache = DriverDescriptor.getProvidedDriversStorageFolder().resolve(localFilePath);
             }
             if (Files.exists(resolvedCache)) {
                 localFilePath = resolvedCache.toAbsolutePath().toString();
