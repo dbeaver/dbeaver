@@ -404,7 +404,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
     }
 
     public void sortByColumn(int index, int direction) {
-        final ColumnInfo columnInfo = columns.get(index);
+        final ColumnInfo columnInfo = this.getColumnByIndex(index);
         columnInfo.sortListener.sortViewer(columnInfo.column, direction);
     }
 
