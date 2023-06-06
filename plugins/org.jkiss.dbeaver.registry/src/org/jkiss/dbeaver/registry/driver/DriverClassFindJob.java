@@ -66,7 +66,7 @@ public class DriverClassFindJob implements DBRRunnableWithProgress {
     }
 
     private void findDriverClasses(DBRProgressMonitor monitor) {
-        java.util.List<Path> libFiles = driver.getAllLibraryFiles();
+        java.util.List<Path> libFiles = driver.getAllLibraryFiles(monitor);
         java.util.List<URL> libURLs = new ArrayList<>();
         for (Path libFile : libFiles) {
             if (libFile != null && Files.exists(libFile) && !Files.isDirectory(libFile)) {
