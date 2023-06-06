@@ -53,7 +53,7 @@ public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends Pars
     protected abstract TreeRuleNode parseSqlQueryImpl(@NotNull TParser parser);
 
     @NotNull
-    private TParser prepareParser(@NotNull LSMSource source, @Nullable ANTLRErrorListener errorListener) {
+    protected TParser prepareParser(@NotNull LSMSource source, @Nullable ANTLRErrorListener errorListener) {
         Pair<TLexer, TParser> pair = this.createParser(source);
         TLexer lexer = pair.getFirst();
         TParser parser = pair.getSecond();

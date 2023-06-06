@@ -29,7 +29,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 
 public class Sql92Dialect {
     
-    private static final LSMAnalyzer dialect = new LSMAnalyzerImpl<Sql92Lexer, Sql92Parser>() {
+    public static class Sql92Analyzer extends LSMAnalyzerImpl<Sql92Lexer, Sql92Parser> {
         @NotNull
         @Override
         protected Pair<Sql92Lexer, Sql92Parser> createParser(@NotNull LSMSource source) {
@@ -43,7 +43,9 @@ public class Sql92Dialect {
         protected TreeRuleNode parseSqlQueryImpl(@NotNull Sql92Parser parser) {
             return parser.sqlQuery();
         }
-    };
+    }
+    
+    private static final LSMAnalyzer dialect = new Sql92Analyzer();
     
     @NotNull
     public static LSMAnalyzer getAnalyzer() {

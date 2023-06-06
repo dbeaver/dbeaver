@@ -39,7 +39,15 @@ options {
      * See the License for the specific language governing permissions and
      * limitations under the License.
      */
+    package org.jkiss.dbeaver.model.lsm.sql.impl.syntax;
 }
+
+@members {
+private boolean isSupportSquareBracketQuotation;
+public boolean isSupportSquareBracketQuotation() { return isSupportSquareBracketQuotation; }
+public void setIsSupportSquareBracketQuotation(boolean value) { isSupportSquareBracketQuotation = value; }
+}
+
 
 // identifiers
 characterSetSpecification: characterSetName;
@@ -48,7 +56,8 @@ schemaName: (catalogName Period)? unqualifiedSchemaName;
 unqualifiedSchemaName: identifier;
 catalogName: identifier;
 identifier: (Introducer characterSetSpecification)? actualIdentifier;
-actualIdentifier: (Identifier|DelimitedIdentifier|nonReserved);
+actualIdentifier: (Identifier|DelimitedIdentifier|squareBracketIdentifier|nonReserved);
+squareBracketIdentifier: {isSupportSquareBracketQuotation()}? '[' (~']' | ']' ']')* ']';
 
 // date-time literals
 dateString: SingleQuote dateValue SingleQuote;

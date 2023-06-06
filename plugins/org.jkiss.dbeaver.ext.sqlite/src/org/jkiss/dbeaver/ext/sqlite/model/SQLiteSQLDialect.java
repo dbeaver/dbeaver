@@ -16,12 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.sqlite.model;
 
-import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
-import org.jkiss.dbeaver.ext.sqlite.model.syntax.SqliteLexer;
-import org.jkiss.dbeaver.ext.sqlite.model.syntax.SqliteParser;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -29,8 +27,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
 import org.jkiss.dbeaver.model.lsm.LSMSource;
-import org.jkiss.dbeaver.model.lsm.impl.LSMAnalyzerImpl;
-import org.jkiss.dbeaver.model.stm.TreeRuleNode;
+import org.jkiss.dbeaver.model.lsm.sql.dialect.Sql92Dialect;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Lexer;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Parser;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -125,22 +124,19 @@ public class SQLiteSQLDialect extends GenericSQLDialect {
     public boolean supportsIndexCreateAndDrop() {
         return true;
     }
-
-    private static final LSMAnalyzer dialect = new LSMAnalyzerImpl<SqliteLexer, SqliteParser>() {
-        @Override
-        protected Pair<SqliteLexer, SqliteParser> createParser(LSMSource source) {
-            SqliteLexer lexer = new SqliteLexer(source.getStream());
-            SqliteParser parser =  new SqliteParser(new CommonTokenStream(lexer));
-            return new Pair<>(lexer, parser);
-        }
-        @Override
-        protected TreeRuleNode parseSqlQueryImpl(SqliteParser parser) {
-            return parser.sqlQuery();
-        }
-    };
     
+    private static final LSMAnalyzer analyzer = new Sql92Dialect.Sql92Analyzer() {
+        @Override
+        protected Sql92Parser prepareParser(LSMSource source, ANTLRErrorListener errorListener) {
+            Sql92Parser parser = super.prepareParser(source, errorListener);
+            parser.setIsSupportSquareBracketQuotation(true);
+            return parser;
+        };
+    };
+
     @Override
     public LSMAnalyzer getSyntaxAnalyzer() {
-        return dialect;
+        return analyzer;
     }
+
 }

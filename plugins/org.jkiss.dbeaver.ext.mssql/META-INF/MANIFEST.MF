@@ -9,6 +9,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.ext.generic,
+ org.jkiss.dbeaver.model.lsm,
+ org.jkiss.bundle.antlr4,
  com.github.jsqlparser,
  org.slf4j.api
 Export-Package: org.jkiss.dbeaver.ext.mssql,
