@@ -1486,18 +1486,18 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             for (int i = 0; i < columnsCount; i++) {
                 if (this.getColumnName(i).equals("#")) {
                     final int numberColumnInd = i;
-                    menuManager.add(
-                            new Action(UINavigatorMessages.obj_editor_properties_control_action_columns_revert_sorting) {
-                                {
-                                    setDescription(
-                                            UINavigatorMessages.obj_editor_properties_control_action_columns_revert_sorting_description);
-                                }
+                    menuManager.add(new Action(
+                            UINavigatorMessages.obj_editor_properties_control_action_columns_revert_sorting) {
+                        {
+                            setDescription(
+                                    UINavigatorMessages.obj_editor_properties_control_action_columns_revert_sorting_description);
+                        }
 
-                                @Override
-                                public void run() {
-                                    GroupingViewerColumnController.this.sortByColumn(numberColumnInd, SWT.UP);
-                                }
-                            });
+                        @Override
+                        public void run() {
+                            GroupingViewerColumnController.this.sortByColumn(numberColumnInd, SWT.UP);
+                        }
+                    });
                     break;
                 }
             }
