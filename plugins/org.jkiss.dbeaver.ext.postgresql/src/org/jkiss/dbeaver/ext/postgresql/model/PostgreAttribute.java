@@ -172,8 +172,10 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                 }
             }
         }
-        //setTypeName(dataType.getTypeName());
-        setValueType(dataType.getTypeID());
+        if (dataType != null) {
+            //setTypeName(dataType.getTypeName());
+            setValueType(dataType.getTypeID());
+        }
         typeMod = JDBCUtils.safeGetInt(dbResult, "atttypmod");
         this.description = JDBCUtils.safeGetString(dbResult, "description");
         this.arrayDim = JDBCUtils.safeGetInt(dbResult, "attndims");

@@ -116,7 +116,7 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
 
     @Override
     public boolean isComplete() {
-        return !isAuthEnabled() || authModelSelector.isComplete();
+        return !isAuthEnabled() || (authModelSelector != null && authModelSelector.isComplete());
     }
 
     protected boolean isAuthEnabled() {
