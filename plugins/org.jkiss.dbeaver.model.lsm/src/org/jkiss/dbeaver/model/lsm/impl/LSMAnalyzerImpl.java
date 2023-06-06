@@ -84,13 +84,17 @@ public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends Pars
         }
     }
 
-    @NotNull
+    @Nullable
     @Override
     public LSMElement parseSqlQueryModel(@NotNull LSMSource source) {
-        SyntaxModelMappingResult<SelectStatement> result = this.syntaxModel.map(parseSqlQueryTree(source, null), SelectStatement.class);
-        if (!result.isNoErrors()) {
-            result.getErrors().printToStderr();
+        TreeRuleNode root = parseSqlQueryTree(source, null);
+        if (root != null) {
+            SyntaxModelMappingResult<SelectStatement> result = this.syntaxModel.map(root, SelectStatement.class);
+            if (!result.isNoErrors()) {
+                result.getErrors().printToStderr();
+            }
+            return result.getModel();
         }
-        return result.getModel();
+        return null;
     }
 }

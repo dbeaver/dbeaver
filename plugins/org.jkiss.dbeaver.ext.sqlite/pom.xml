@@ -11,5 +11,4 @@
   <artifactId>org.jkiss.dbeaver.ext.sqlite</artifactId>
   <version>1.0.156-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
-
 </project>

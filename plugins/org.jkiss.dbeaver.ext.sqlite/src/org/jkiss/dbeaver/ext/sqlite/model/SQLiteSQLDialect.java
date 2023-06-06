@@ -28,11 +28,9 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
 import org.jkiss.dbeaver.model.lsm.LSMSource;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.Sql92Dialect;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Lexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Parser;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.Pair;
 
 import java.sql.SQLException;
 import java.util.List;

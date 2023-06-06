@@ -16,12 +16,12 @@
  */
 package org.jkiss.dbeaver.model.stm;
 
+import org.jkiss.code.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
-
-import org.jkiss.code.NotNull;
 
 public class STMUtils {
 
@@ -41,7 +41,7 @@ public class STMUtils {
             
             if (toCollect.contains(nodeName)) {
                 result.add(node);
-            } else if(toExpand.contains(nodeName)) {
+            } else if (toExpand.contains(nodeName)) {
                 for (int i = 0; i < node.getChildCount(); i++) {
                     stack.push((STMTreeNode) node.getChild(i));
                 }

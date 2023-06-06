@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
@@ -30,7 +31,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
 import org.jkiss.dbeaver.model.lsm.LSMSource;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.Sql92Dialect;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Lexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Parser;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialectDDLExtension;
@@ -45,7 +45,6 @@ import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.Pair;
 
 import java.util.*;
 
@@ -407,15 +406,16 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
     
     private static final LSMAnalyzer analyzer = new Sql92Dialect.Sql92Analyzer() {
         @Override
-        protected Pair<Sql92Lexer, Sql92Parser> createParser(LSMSource source) {
-            Pair<Sql92Lexer, Sql92Parser> result = super.createParser(source);
-            result.getSecond().setIsSupportSquareBracketQuotation(true);
-            return result;
-        }
+        protected Sql92Parser prepareParser(LSMSource source, ANTLRErrorListener errorListener) {
+            Sql92Parser parser = super.prepareParser(source, errorListener);
+            parser.setIsSupportSquareBracketQuotation(true);
+            return parser;
+        };
     };
 
     @Override
     public LSMAnalyzer getSyntaxAnalyzer() {
         return analyzer;
     }
+
 }

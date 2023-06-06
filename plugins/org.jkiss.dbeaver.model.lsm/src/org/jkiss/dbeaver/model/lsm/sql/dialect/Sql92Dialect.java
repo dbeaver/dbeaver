@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.lsm.sql.dialect;
 
 
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
 import org.jkiss.dbeaver.model.lsm.LSMSource;
@@ -25,7 +26,6 @@ import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Lexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Parser;
 import org.jkiss.dbeaver.model.stm.TreeRuleNode;
 import org.jkiss.utils.Pair;
-import org.antlr.v4.runtime.CommonTokenStream;
 
 public class Sql92Dialect {
     

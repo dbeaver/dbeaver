@@ -21,9 +21,6 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ErrorNodeImpl;
 import org.jkiss.code.NotNull;
 
-import java.util.List;
-import java.util.Set;
-
 
 public class TreeTermErrorNode extends ErrorNodeImpl implements STMTreeNode {
     
@@ -31,12 +28,13 @@ public class TreeTermErrorNode extends ErrorNodeImpl implements STMTreeNode {
         super(symbol);
     }
    
-    private static String nodeName = "error"; 
+    private static final String nodeName = "error";
     
     @Override
-    public void fixup(ParserOverrides parserCtx) {
+    public void fixup(@NotNull ParserOverrides parserCtx) {
     }
     
+    @NotNull
     @Override
     public String getNodeName() {
         return nodeName;

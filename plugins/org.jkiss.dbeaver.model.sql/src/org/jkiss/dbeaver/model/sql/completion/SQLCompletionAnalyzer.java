@@ -41,8 +41,6 @@ import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
 import org.jkiss.dbeaver.model.lsm.LSMSkippingErrorListener;
 import org.jkiss.dbeaver.model.lsm.LSMSource;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Parser;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Parser.*;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -1051,7 +1049,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             TableNameExtractionUtils.extractRulesToTableRef
         );
                 
-        for (STMTreeNode tableRef: tableReferences) {
+        for (STMTreeNode tableRef : tableReferences) {
             List<STMTreeNode> names = STMUtils.expandSubtree(
                 tableRef,
                 TableNameExtractionUtils.expandRulesToTableName,
@@ -1059,7 +1057,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             );
             String alias = null;
             String tableName = null;
-            for (STMTreeNode part: names) {
+            for (STMTreeNode part : names) {
                 String nodeName = part.getNodeName();
                 if (nodeName.equals(STMKnownRuleNames.tableName)) { 
                     tableName = part.getText();

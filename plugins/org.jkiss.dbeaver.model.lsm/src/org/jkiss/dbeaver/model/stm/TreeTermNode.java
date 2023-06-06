@@ -21,9 +21,6 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import org.jkiss.code.NotNull;
 
-import java.util.List;
-import java.util.Set;
-
 
 public class TreeTermNode extends TerminalNodeImpl implements STMTreeNode {
     

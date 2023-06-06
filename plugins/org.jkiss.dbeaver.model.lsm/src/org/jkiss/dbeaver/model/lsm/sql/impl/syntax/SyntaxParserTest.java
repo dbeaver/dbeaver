@@ -44,7 +44,7 @@ public class SyntaxParserTest {
             + "    Product.ProductNumber,\r\n"
             + "    ProductCategory.Name AS ProductCategory,\r\n"
             + "    ProductSubCategory.Name AS ProductSubCategory,\r\n"
-            + "    Product.ProductModelID\r\n"
+            + "    Product.ProductModelID,\r\n"
             + "FROM Production.Product AS Prod(ProductID, Name, ProductNumber), T as A, \r\n"
             + "s -- ololo\r\n"
             + ".c -- ololo\r\n"
@@ -57,7 +57,7 @@ public class SyntaxParserTest {
             + "USING(ProductCategoryID)\r\n"
             + "GROUP BY ProductName\r\n"
             + "ORDER BY Product.ModifiedDate DESC";
-        inputText += CharStreams.fromString("\n\rSELECT column_name FROM sch.table_name WHERE id > 3");
+        inputText += "\n\rSELECT schedule[1:2][1:1] FROM sal_emp se where s;";
         var input = CharStreams.fromString(inputText);
         var ll = new Sql92Lexer(input);
         var tokens = new CommonTokenStream(ll);
@@ -77,7 +77,7 @@ public class SyntaxParserTest {
                     sourceName = String.format("%s:%d:%d: ", sourceName, line, charPositionInLine);
                 }
 
-                log.error(sourceName + " line " + line + ":" + charPositionInLine + " " + msg);
+                System.out.println(sourceName + " line " + line + ":" + charPositionInLine + " " + msg);
             }
 
             @Override
@@ -98,18 +98,19 @@ public class SyntaxParserTest {
 //                System.out.println("reportAmbiguity");
             }
         });
-
         SqlQueriesContext tree = pp.sqlQueries();
-
+        
+        //System.out.println("err: " + tree.getRuleContexts(TableExpressionContext.class).get(0).err.getText());
+        
         String str = tree.getTextContent();
 
-        log.info(str);
+        System.out.println(str);
         
         { // print simple parse tree view
             var sb = new StringBuilder();
             sb.append("\n");
             collect(tree, pp, sb, "");
-            log.info(sb.toString());
+            System.out.println(sb.toString());
         }
         
     }
