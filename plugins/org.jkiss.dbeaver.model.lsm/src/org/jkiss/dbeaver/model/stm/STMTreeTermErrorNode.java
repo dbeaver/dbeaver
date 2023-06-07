@@ -18,27 +18,26 @@ package org.jkiss.dbeaver.model.stm;
 
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
-import org.antlr.v4.runtime.tree.TerminalNodeImpl;
+import org.antlr.v4.runtime.tree.ErrorNodeImpl;
 import org.jkiss.code.NotNull;
 
 
-public class TreeTermNode extends TerminalNodeImpl implements STMTreeNode {
+public class STMTreeTermErrorNode extends ErrorNodeImpl implements STMTreeNode {
     
-    private String nodeName = null; 
-    
-    public TreeTermNode(@NotNull Token symbol) {
+    public STMTreeTermErrorNode(@NotNull Token symbol) {
         super(symbol);
     }
-
+   
+    private static final String nodeName = "error";
+    
     @Override
-    public void fixup(@NotNull ParserOverrides parserCtx) {
-        this.nodeName = parserCtx.getVocabulary().getSymbolicName(this.getSymbol().getType());
+    public void fixup(@NotNull STMParserOverrides parserCtx) {
     }
-
+    
     @NotNull
     @Override
     public String getNodeName() {
-        return this.nodeName;
+        return nodeName;
     }
     
     @NotNull

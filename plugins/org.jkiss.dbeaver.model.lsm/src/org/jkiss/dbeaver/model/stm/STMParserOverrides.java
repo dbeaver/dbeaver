@@ -24,9 +24,9 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.jkiss.code.NotNull;
 
-public abstract class ParserOverrides extends Parser {
+public abstract class STMParserOverrides extends Parser {
 
-    public ParserOverrides(@NotNull TokenStream input) {
+    public STMParserOverrides(@NotNull TokenStream input) {
         super(input);
         this.setBuildParseTree(true);
     }
@@ -34,13 +34,13 @@ public abstract class ParserOverrides extends Parser {
     @NotNull
     @Override
     public ErrorNode createErrorNode(@NotNull ParserRuleContext parent, @NotNull Token t) {
-        return new TreeTermErrorNode(t);
+        return new STMTreeTermErrorNode(t);
     }
 
     @NotNull
     @Override
     public TerminalNode createTerminalNode(@NotNull ParserRuleContext parent, @NotNull Token t) {
-        return new TreeTermNode(t);
+        return new STMTreeTermNode(t);
     }
 
 }

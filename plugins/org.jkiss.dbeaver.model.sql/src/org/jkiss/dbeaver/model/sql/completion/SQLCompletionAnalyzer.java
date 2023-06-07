@@ -39,8 +39,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
-import org.jkiss.dbeaver.model.lsm.LSMSkippingErrorListener;
-import org.jkiss.dbeaver.model.lsm.LSMSource;
+import org.jkiss.dbeaver.model.stm.STMSkippingErrorListener;
+import org.jkiss.dbeaver.model.stm.STMSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -55,7 +55,7 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.stm.STMUtils;
-import org.jkiss.dbeaver.model.stm.TreeRuleNode;
+import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
@@ -990,9 +990,9 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
         List<Pair<String, String>> tableRefs = new ArrayList<>();
         try {
-            LSMSource querySource = LSMSource.fromReader(new StringReader(activeQuery.getText()));
+            STMSource querySource = STMSource.fromReader(new StringReader(activeQuery.getText()));
             LSMAnalyzer analyzer = request.getContext().getDataSource().getSQLDialect().getSyntaxAnalyzer();
-            TreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new LSMSkippingErrorListener());
+            STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
             tableRefs = getTableAndAliasFromSources(tree);
         } catch (Exception e) {
             log.debug("Failed to extract table names from query", e);
@@ -1040,7 +1040,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     }
 
     @Nullable
-    public List<Pair<String, String>> getTableAndAliasFromSources(TreeRuleNode query) {
+    public List<Pair<String, String>> getTableAndAliasFromSources(STMTreeRuleNode query) {
         List<Pair<String, String>> result = new ArrayList<>();
         
         List<STMTreeNode> tableReferences = STMUtils.expandSubtree(

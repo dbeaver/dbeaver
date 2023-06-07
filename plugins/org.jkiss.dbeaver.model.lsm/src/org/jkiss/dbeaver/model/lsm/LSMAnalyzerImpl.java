@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm.impl;
+package org.jkiss.dbeaver.model.lsm;
 
 import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.ConsoleErrorListener;
@@ -23,37 +23,35 @@ import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
-import org.jkiss.dbeaver.model.lsm.LSMElement;
-import org.jkiss.dbeaver.model.lsm.LSMSource;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModel;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModelMappingResult;
 import org.jkiss.dbeaver.model.lsm.sql.impl.SelectStatement;
-import org.jkiss.dbeaver.model.stm.ParserOverrides;
-import org.jkiss.dbeaver.model.stm.TreeRuleNode;
+import org.jkiss.dbeaver.model.stm.STMParserOverrides;
+import org.jkiss.dbeaver.model.stm.STMSource;
+import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
 import org.jkiss.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends ParserOverrides> implements LSMAnalyzer {
+public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends STMParserOverrides> implements LSMAnalyzer {
     private static final Logger log = LoggerFactory.getLogger(LSMAnalyzerImpl.class);
     
     private final SyntaxModel syntaxModel;
     
     public LSMAnalyzerImpl() {
-        Pair<TLexer, TParser> pair = this.createParser(LSMSource.fromString(""));
+        Pair<TLexer, TParser> pair = this.createParser(STMSource.fromString(""));
         syntaxModel = new SyntaxModel(pair.getSecond());
         syntaxModel.introduce(SelectStatement.class);
     }
 
     @NotNull
-    protected abstract Pair<TLexer, TParser> createParser(@NotNull LSMSource source);
+    protected abstract Pair<TLexer, TParser> createParser(@NotNull STMSource source);
 
     @NotNull
-    protected abstract TreeRuleNode parseSqlQueryImpl(@NotNull TParser parser);
+    protected abstract STMTreeRuleNode parseSqlQueryImpl(@NotNull TParser parser);
 
     @NotNull
-    protected TParser prepareParser(@NotNull LSMSource source, @Nullable ANTLRErrorListener errorListener) {
+    protected TParser prepareParser(@NotNull STMSource source, @Nullable ANTLRErrorListener errorListener) {
         Pair<TLexer, TParser> pair = this.createParser(source);
         TLexer lexer = pair.getFirst();
         TParser parser = pair.getSecond();
@@ -72,10 +70,10 @@ public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends Pars
 
     @Nullable
     @Override
-    public TreeRuleNode parseSqlQueryTree(@NotNull LSMSource source, @Nullable ANTLRErrorListener errorListener) {
+    public STMTreeRuleNode parseSqlQueryTree(@NotNull STMSource source, @Nullable ANTLRErrorListener errorListener) {
         try {
             TParser parser = prepareParser(source, errorListener);
-            TreeRuleNode result = parseSqlQueryImpl(parser);
+            STMTreeRuleNode result = parseSqlQueryImpl(parser);
             result.fixup(parser);
             return result;
         } catch (RecognitionException e) {
@@ -86,8 +84,8 @@ public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends Pars
 
     @Nullable
     @Override
-    public LSMElement parseSqlQueryModel(@NotNull LSMSource source) {
-        TreeRuleNode root = parseSqlQueryTree(source, null);
+    public LSMElement parseSqlQueryModel(@NotNull STMSource source) {
+        STMTreeRuleNode root = parseSqlQueryTree(source, null);
         if (root != null) {
             SyntaxModelMappingResult<SelectStatement> result = this.syntaxModel.map(root, SelectStatement.class);
             if (!result.isNoErrors()) {

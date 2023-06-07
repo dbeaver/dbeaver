@@ -14,17 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm;
+package org.jkiss.dbeaver.model.stm;
 
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.jkiss.code.NotNull;
 
-public interface LSMObject<T> {
-    @SuppressWarnings("unchecked")
-    default <T2 extends T> T2 coerce(@NotNull Class<T2> desired) {
-        if (desired.isAssignableFrom(this.getClass())) {
-            return (T2) this;
-        } else {
-            throw new UnsupportedOperationException();
-        }
+import java.io.IOException;
+import java.io.Reader;
+
+
+public interface STMSource {
+
+    CharStream getStream();
+
+    @NotNull
+    public static STMSource fromReader(@NotNull Reader reader) throws IOException {
+        return new STMSourceImpl(reader);
+    }
+    
+    public static STMSource fromString(String string) {
+        return () -> CharStreams.fromString(string);
     }
 }

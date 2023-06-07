@@ -18,16 +18,15 @@ package org.jkiss.dbeaver.model.lsm.sql.impl.syntax;
 
 import org.jkiss.dbeaver.model.lsm.*;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.Sql92Dialect;
+import org.jkiss.dbeaver.model.stm.STMSource;
 
-import java.io.IOException;
 import java.io.StringReader;
-import java.util.concurrent.ExecutionException;
 
 
 public class TestEngine {
 
     public static void main(String[] args) throws Exception {
-        LSMSource source = LSMSource.fromReader(new StringReader("SELECT a, b, c FROM t1 x, t2 y"));
+        STMSource source = STMSource.fromReader(new StringReader("SELECT a, b, c FROM t1 x, t2 y"));
         
         LSMAnalyzer dd = Sql92Dialect.getAnalyzer();
         

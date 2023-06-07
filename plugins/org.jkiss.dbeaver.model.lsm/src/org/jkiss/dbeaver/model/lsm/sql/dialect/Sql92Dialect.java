@@ -20,11 +20,11 @@ package org.jkiss.dbeaver.model.lsm.sql.dialect;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
-import org.jkiss.dbeaver.model.lsm.LSMSource;
-import org.jkiss.dbeaver.model.lsm.impl.LSMAnalyzerImpl;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzerImpl;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Lexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Parser;
-import org.jkiss.dbeaver.model.stm.TreeRuleNode;
+import org.jkiss.dbeaver.model.stm.STMSource;
+import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
 import org.jkiss.utils.Pair;
 
 public class Sql92Dialect {
@@ -32,7 +32,7 @@ public class Sql92Dialect {
     public static class Sql92Analyzer extends LSMAnalyzerImpl<Sql92Lexer, Sql92Parser> {
         @NotNull
         @Override
-        protected Pair<Sql92Lexer, Sql92Parser> createParser(@NotNull LSMSource source) {
+        protected Pair<Sql92Lexer, Sql92Parser> createParser(@NotNull STMSource source) {
             Sql92Lexer lexer = new Sql92Lexer(source.getStream());
             Sql92Parser parser =  new Sql92Parser(new CommonTokenStream(lexer));
             return new Pair<>(lexer, parser);
@@ -40,7 +40,7 @@ public class Sql92Dialect {
 
         @NotNull
         @Override
-        protected TreeRuleNode parseSqlQueryImpl(@NotNull Sql92Parser parser) {
+        protected STMTreeRuleNode parseSqlQueryImpl(@NotNull Sql92Parser parser) {
             return parser.sqlQuery();
         }
     }

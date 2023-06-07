@@ -406,11 +406,11 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
     
     private static final LSMAnalyzer analyzer = new Sql92Dialect.Sql92Analyzer() {
         @Override
-        protected Sql92Parser prepareParser(LSMSource source, ANTLRErrorListener errorListener) {
+        private Sql92Parser prepareParser(LSMSource source, ANTLRErrorListener errorListener) {
             Sql92Parser parser = super.prepareParser(source, errorListener);
             parser.setIsSupportSquareBracketQuotation(true);
             return parser;
-        };
+        }
     };
 
     @Override
