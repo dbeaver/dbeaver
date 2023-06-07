@@ -267,7 +267,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             autoCloseTransactionsCheck = UIUtils.createCheckbox(
                 placeholder,
                 CoreMessages.action_menu_transaction_auto_close_enabled,
-                CoreMessages.action_menu_transaction_auto_close_enabled_tip,
+                CoreMessages.pref_page_connection_types_label_auto_close_enabled_tip,
                 true,
                 1);
             autoCloseTransactionsCheck.addSelectionListener(new SelectionAdapter() {
@@ -278,7 +278,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             });
 
             autoCloseTransactionsTtlText = new Text(placeholder, SWT.BORDER);
-            autoCloseTransactionsTtlText.setToolTipText(CoreMessages.action_menu_transaction_auto_close_ttl_tip);
+            autoCloseTransactionsTtlText.setToolTipText(CoreMessages.pref_page_connection_types_label_auto_close_ttl_tip);
             autoCloseTransactionsTtlText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
             GridData grd = new GridData();
             grd.widthHint = UIUtils.getFontHeight(autoCloseTransactionsTtlText) * 6;

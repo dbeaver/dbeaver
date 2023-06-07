@@ -63,7 +63,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             false,
             true,
             true,
-            1200,
+            1800,
             true,
             null); //$NON-NLS-1$ //$NON-NLS-3$
         PROD = new DBPConnectionType(

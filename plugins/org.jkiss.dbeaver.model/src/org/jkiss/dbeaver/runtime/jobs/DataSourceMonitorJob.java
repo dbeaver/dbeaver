@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
@@ -175,8 +176,13 @@ public class DataSourceMonitorJob extends AbstractJob {
             // First check datasource settings from the Transactions preference page
             ttlSeconds = preferenceStore.getLong(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL);
         }
+        DBPConnectionConfiguration conConfig = dsDescriptor.getConnectionConfiguration();
         if (ttlSeconds == 0) {
-            ttlSeconds = dsDescriptor.getConnectionConfiguration().getConnectionType().getCloseIdleConnectionPeriod();
+            // Or get this info from the current connection type
+            DBPConnectionType connectionType = conConfig.getConnectionType();
+            if (connectionType.isAutoCloseTransactions()) {
+                ttlSeconds = connectionType.getCloseIdleConnectionPeriod();
+            }
         }
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
 
@@ -189,7 +195,6 @@ public class DataSourceMonitorJob extends AbstractJob {
         }
         long idleInterval = (System.currentTimeMillis() - lastUserActivityTime) / 1000;
 
-        DBPConnectionConfiguration conConfig = dsDescriptor.getConnectionConfiguration();
         if (conConfig.getCloseIdleInterval() > 0 && idleInterval > conConfig.getCloseIdleInterval()) {
             if (DisconnectJob.isInProcess(dsDescriptor)) {
                 return;
