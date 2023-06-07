@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthProfile;
 import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistryCache;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
@@ -54,7 +55,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePersistentRegistry {
+public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePersistentRegistry, DBPDataSourceRegistryCache {
     @Deprecated
     public static final String DEFAULT_AUTO_COMMIT = "default.autocommit"; //$NON-NLS-1$
     @Deprecated
@@ -526,7 +527,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         notifyDataSourceListeners(new DBPEvent(DBPEvent.Action.OBJECT_ADD, descriptor, true));
     }
 
-    void addDataSourceToList(@NotNull DataSourceDescriptor descriptor) {
+    @Override
+    public void addDataSourceToList(@NotNull DBPDataSourceContainer dataSource) {
+        final DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
         synchronized (dataSources) {
             this.dataSources.put(descriptor.getId(), descriptor);
             DBPDataSourceConfigurationStorage storage = descriptor.getStorage();
@@ -758,7 +761,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, ds);
             }
             for (DBPDataSourceContainer ds : parseResults.addedDataSources) {
-                addDataSourceToList((DataSourceDescriptor) ds);
+                addDataSourceToList(ds);
                 fireDataSourceEvent(DBPEvent.Action.OBJECT_ADD, ds);
             }
             for (DataSourceFolder folder : parseResults.addedFolders) {

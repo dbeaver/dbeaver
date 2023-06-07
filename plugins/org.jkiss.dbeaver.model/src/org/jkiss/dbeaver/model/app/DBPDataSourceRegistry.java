@@ -37,7 +37,7 @@ import java.util.Set;
  * Datasource registry.
  * Extends DBPObject to support datasources ObjectManager
  */
-public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder, DBPDataSourceRegistryCache {
+public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
 
     String LEGACY_CONFIG_FILE_PREFIX = ".dbeaver-data-sources"; //$NON-NLS-1$
     String LEGACY_CONFIG_FILE_EXT = ".xml"; //$NON-NLS-1$

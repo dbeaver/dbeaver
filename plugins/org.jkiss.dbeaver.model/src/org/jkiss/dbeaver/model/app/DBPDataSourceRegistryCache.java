@@ -19,10 +19,19 @@ package org.jkiss.dbeaver.model.app;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
+/**
+ * Data source registry cache.
+ * Provides actions without applying changes in storage.
+ */
 public interface DBPDataSourceRegistryCache {
 
     /**
-     * removes data source from registry without applying changes in storage
+     * Adds new data source to registry cache.
+     */
+    void addDataSourceToList(@NotNull DBPDataSourceContainer dataSource);
+
+    /**
+     * Removes data source from registry cache.
      */
     void removeDataSourceFromList(@NotNull DBPDataSourceContainer dataSource);
 }
