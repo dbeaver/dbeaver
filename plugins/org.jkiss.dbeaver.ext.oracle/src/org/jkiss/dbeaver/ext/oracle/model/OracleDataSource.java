@@ -818,6 +818,10 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return hasStatistics;
     }
 
+    void resetStatistics() {
+        hasStatistics = false;
+    }
+
     @Override
     public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasStatistics && !forceRefresh) {

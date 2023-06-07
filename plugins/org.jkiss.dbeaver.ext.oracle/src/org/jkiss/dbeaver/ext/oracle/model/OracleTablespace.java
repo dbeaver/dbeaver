@@ -297,7 +297,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
         usedSize = null;
         fileCache.clearCache();
         segmentCache.clearCache();
-        loadSizes(monitor);
+        getDataSource().resetStatistics();
         return this;
     }
 
