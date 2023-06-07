@@ -145,4 +145,5 @@ public class DBConstants {
 
 
     public static final String DRIVER_PARAM_DISABLE_NETWORK_PARAMETERS = "disableNetworkParameters";
+    public static final String DRIVER_PARAM_HAS_INHERITED_OBJECTS = "has-inherited-nodes";
 }
