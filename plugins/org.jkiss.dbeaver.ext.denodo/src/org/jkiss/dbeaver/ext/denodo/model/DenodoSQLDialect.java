@@ -52,4 +52,8 @@ public class DenodoSQLDialect extends GenericSQLDialect implements TPRuleProvide
         }
     }
 
+    @Override
+    public boolean supportsAliasInConditions() {
+        return false;
+    }
 }
