@@ -18,10 +18,12 @@ package org.jkiss.dbeaver.model.sql.analyzer.builder.request;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.*;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
@@ -80,9 +82,12 @@ public class RequestBuilder {
         final SQLDialectRegistry dialectRegistry = SQLDialectRegistry.getInstance();
 
         final DBPDataSourceContainer dataSourceContainer = mock(DBPDataSourceContainer.class);
+        final DBPDriver mockDriver = mock(DBPDriver.class);
         when(dataSourceContainer.getConnectionConfiguration()).thenReturn(connectionConfiguration);
         when(dataSourceContainer.getActualConnectionConfiguration()).thenReturn(connectionConfiguration);
         when(dataSourceContainer.getPreferenceStore()).thenReturn(preferenceStore);
+        when(dataSourceContainer.getDriver()).thenReturn(mockDriver);
+        when(mockDriver.getDriverParameter(DBConstants.DRIVER_PARAM_HAS_INHERITED_OBJECTS)).thenReturn(Boolean.FALSE);
 
         when(dataSource.getSQLDialect()).thenReturn(dialectRegistry.getDialect("generic").createInstance());
         when(dataSource.getContainer()).thenReturn(dataSourceContainer);
