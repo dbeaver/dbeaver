@@ -18,8 +18,8 @@ parser grammar Sql92Parser;
 
 options {
     tokenVocab=Sql92Lexer;
-    superClass=org.jkiss.dbeaver.model.stm.ParserOverrides;
-    contextSuperClass=org.jkiss.dbeaver.model.stm.TreeRuleNode;
+    superClass=org.jkiss.dbeaver.model.stm.STMParserOverrides;
+    contextSuperClass=org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
 }
 
 @header {

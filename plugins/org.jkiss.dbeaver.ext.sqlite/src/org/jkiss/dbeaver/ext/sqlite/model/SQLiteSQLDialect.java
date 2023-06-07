@@ -125,7 +125,7 @@ public class SQLiteSQLDialect extends GenericSQLDialect {
     
     private static final LSMAnalyzer analyzer = new Sql92Dialect.Sql92Analyzer() {
         @Override
-        private Sql92Parser prepareParser(STMSource source, ANTLRErrorListener errorListener) {
+        protected Sql92Parser prepareParser(STMSource source, ANTLRErrorListener errorListener) {
             Sql92Parser parser = super.prepareParser(source, errorListener);
             parser.setIsSupportSquareBracketQuotation(true);
             return parser;
