@@ -805,10 +805,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         if (executionContext == null) {
             return;
         }
-        boolean hasInheritedNodes = CommonUtils.getBoolean(
-            dataSource.getContainer().getDriver().getDriverParameter(DBConstants.DRIVER_PARAM_HAS_INHERITED_OBJECTS),
-            false);
-        if (hasInheritedNodes) {
+        if (dataSource.getInfo().hasInheritedNodes()) {
+            // We must skip the lack of nodes for data sources with a hierarchy structure.
             checkNavigatorNodes = false;
         }
 

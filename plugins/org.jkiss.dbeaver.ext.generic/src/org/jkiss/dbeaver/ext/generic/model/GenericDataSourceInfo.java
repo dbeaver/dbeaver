@@ -35,6 +35,7 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
     private boolean supportsNullableUniqueConstraints;
     private final boolean supportsTransactionsForDDL;
     private final boolean supportsConstraints;
+    private final boolean hasInheritedNodes;
 
     public GenericDataSourceInfo(DBPDriver driver, JDBCDatabaseMetaData metaData)
     {
@@ -49,6 +50,7 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
         supportsSchemaSelection = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_CATALOG_SELECTION), true);
         supportsNullableUniqueConstraints = false;
         supportsConstraints = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_CONSTRAINTS), true);
+        hasInheritedNodes = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_HAS_INHERITED_OBJECTS), false);
     }
 
     @Override
@@ -85,5 +87,10 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
 
     public boolean supportsTableConstraints() {
         return supportsConstraints;
+    }
+
+    @Override
+    public boolean hasInheritedNodes() {
+        return hasInheritedNodes;
     }
 }
