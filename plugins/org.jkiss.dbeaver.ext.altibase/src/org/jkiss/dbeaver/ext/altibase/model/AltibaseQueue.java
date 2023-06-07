@@ -22,10 +22,10 @@ import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
 public class AltibaseQueue extends GenericTable implements AltibaseTableBase, DBPNamedObject2 {
-	
+
     public AltibaseQueue(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
-		super(container, tableName, tableType, dbResult);
-	}
+        super(container, tableName, tableType, dbResult);
+    }
 
     @Override
     protected boolean isTruncateSupported() {

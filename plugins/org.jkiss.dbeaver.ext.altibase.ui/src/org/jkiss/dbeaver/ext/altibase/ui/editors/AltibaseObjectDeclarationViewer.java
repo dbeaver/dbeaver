@@ -25,12 +25,12 @@ public class AltibaseObjectDeclarationViewer extends SQLSourceViewer {
     protected boolean isReadOnly() {
         return true;
     }
-    
+
     @Override
     protected void setSourceText(DBRProgressMonitor monitor, String sourceText) {
         getInputPropertySource().setPropertyValue(
-            monitor,
-            "Definition",
-            sourceText);
+                monitor,
+                "Definition",
+                sourceText);
     }
 }

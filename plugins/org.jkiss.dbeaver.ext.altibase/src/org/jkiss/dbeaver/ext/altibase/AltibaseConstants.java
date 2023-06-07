@@ -18,14 +18,14 @@
 package org.jkiss.dbeaver.ext.altibase;
 
 public class AltibaseConstants {
-	public final static String PUBLIC_USER = "PUBLIC";
-	
-	public final static int PACKAGE_SPEC = 6;
-	public final static int PACKAGE_BODY = 7;
-	
+    public static final String PUBLIC_USER = "PUBLIC";
+
+    public static final int PACKAGE_SPEC = 6;
+    public static final int PACKAGE_BODY = 7;
+
     public static final String PROP_OBJECT_DEFINITION = "objectDefinitionText";
     public static final String PROP_OBJECT_BODY_DEFINITION = "extendedDefinitionText";
-    
+
     public static final int TYPE_BIGINT = -5;
     public static final int TYPE_BINARY = -2;
     public static final int TYPE_BIT = -7;
@@ -50,7 +50,7 @@ public class AltibaseConstants {
     public static final int TYPE_VARBIT = -100;
     public static final int TYPE_VARBYTE = 20003;
     public static final int TYPE_VARCHAR = 12;
-    
+
     public static final String TYPE_NAME_GEOMETRY = "GEOMETRY";
 
 }

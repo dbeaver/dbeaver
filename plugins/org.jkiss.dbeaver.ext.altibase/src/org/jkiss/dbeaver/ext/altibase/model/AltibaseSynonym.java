@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
-import java.util.Map;
-
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.altibase.AltibaseUtils;
@@ -30,69 +28,70 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Map;
+
 public class AltibaseSynonym extends GenericSynonym implements DBPScriptObject {
 
-	protected boolean isPublic;
-	protected String ref_object_schema;
-	protected String ref_object_name;
-	
-	protected String ddl;
-	
-	protected AltibaseSynonym(GenericStructContainer container, int owner_id, String name, String description, String ref_object_schema, String ref_object_name) {
-		super(container, name, description);
-		
-		isPublic = (owner_id < 1);
-		this.ref_object_schema = ref_object_schema;
-		this.ref_object_name = ref_object_name;
-	}
+    protected boolean isPublic;
+    protected String refObjectSchema;
+    protected String refObjectName;
+
+    protected String ddl;
+
+    protected AltibaseSynonym(GenericStructContainer container, int ownerId, 
+            String name, String description, String refObjectSchema, String refObjectName) {
+        super(container, name, description);
+
+        isPublic = (ownerId < 1);
+        this.refObjectSchema = refObjectSchema;
+        this.refObjectName = refObjectName;
+    }
 
     @Nullable
-    @Property(id="Reference", viewable = true, order = 3)
-    public String getReferencedObjectName()
-    {
-    	return AltibaseUtils.getQuotedName(ref_object_schema, ref_object_name);
+    @Property(id = "Reference", viewable = true, order = 3)
+    public String getReferencedObjectName() {
+        return AltibaseUtils.getQuotedName(refObjectSchema, refObjectName);
     }
-    
-	@Override
-	public DBSObject getTargetObject(DBRProgressMonitor monitor) throws DBException {
-		//getDataSource().
-		return null;
-	}
 
-	public String getSchemaName() {
-		return getParentObject().getName();
-	}
-	
-	public String getDdlLocal()
-	{
-		String ddl;
-		
-		if (isPublic) {
-			ddl = String.format("CREATE PUBLIC SYNONYM %s FOR %s;", 
-			        AltibaseUtils.getQuotedName(null, getName()), 
-					getReferencedObjectName());
-		} else {
-			ddl = String.format("CREATE SYNONYM %s FOR %s", 
-			        getFullyQualifiedName(DBPEvaluationContext.DDL), 
-					getReferencedObjectName());
-		}
-		
-		return ddl;
-	}
+    @Override
+    public DBSObject getTargetObject(DBRProgressMonitor monitor) throws DBException {
+        //getDataSource().
+        return null;
+    }
 
-	@Override
-	public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getSchemaName() {
+        return getParentObject().getName();
+    }
+
+    public String getDdlLocal() {
+        String ddl;
+
+        if (isPublic) {
+            ddl = String.format("CREATE PUBLIC SYNONYM %s FOR %s;", 
+                    AltibaseUtils.getQuotedName(null, getName()), 
+                    getReferencedObjectName());
+        } else {
+            ddl = String.format("CREATE SYNONYM %s FOR %s", 
+                    getFullyQualifiedName(DBPEvaluationContext.DDL), 
+                    getReferencedObjectName());
+        }
+
+        return ddl;
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_REFRESH)) {
             ddl = null;
         }
 
         if (ddl == null) {
-        	if (isPublic) {
-        		ddl = getDdlLocal();
-        	} else {
-        		ddl = ((AltibaseMetaModel)getDataSource().getMetaModel()).getSynonymDDL(monitor, this, options);
-        	}
+            if (isPublic) {
+                ddl = getDdlLocal();
+            } else {
+                ddl = ((AltibaseMetaModel) getDataSource().getMetaModel()).getSynonymDDL(monitor, this, options);
+            }
         }
         return ddl;
-	}
+    }
 }

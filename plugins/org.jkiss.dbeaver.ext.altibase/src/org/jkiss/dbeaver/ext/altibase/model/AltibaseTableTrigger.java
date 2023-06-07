@@ -25,12 +25,12 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 /**
  * AltibaseTableTrigger
  */
-public class AltibaseTableTrigger extends AltibaseTrigger<GenericTableBase>{
+public class AltibaseTableTrigger extends AltibaseTrigger<GenericTableBase> {
     public AltibaseTableTrigger(GenericTableBase container, String name, String description, JDBCResultSet dbResult) {
         super(container, name, description, dbResult);
     }
 
-	@Override
+    @Override
     public AltibaseTable getTable() {
         return (AltibaseTable) getParentObject();
     }

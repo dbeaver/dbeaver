@@ -28,11 +28,11 @@ import org.jkiss.utils.CommonUtils;
 
 public class AltibaseTableManager extends GenericTableManager {
     private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
-        AltibaseTableColumn.class,
-        GenericUniqueKey.class,
-        GenericTableForeignKey.class,
-        GenericTableIndex.class
-    );
+            AltibaseTableColumn.class,
+            GenericUniqueKey.class,
+            GenericTableForeignKey.class,
+            GenericTableIndex.class
+            );
 
     @NotNull
     @Override

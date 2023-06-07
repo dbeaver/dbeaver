@@ -38,17 +38,20 @@ public class AltibaseProcedureManager extends GenericProcedureManager {
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options){
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
+            List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         createOrReplaceProcedureQuery(actions, command.getObject());
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
+            List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
         createOrReplaceProcedureQuery(actionList, command.getObject());
     }
 
     @Override
-    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, 
+            Map<String, Object> options) throws DBException {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Procedure name cannot be empty");
         }
@@ -57,12 +60,9 @@ public class AltibaseProcedureManager extends GenericProcedureManager {
         }
     }
 
-    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, GenericProcedure procedure)
-    {
-        actions.add(
-        		new SQLDatabasePersistAction(
-        				"Create or replace " + procedure.getProcedureType().name(), 
-        				procedure.getSource()));
+    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, GenericProcedure procedure) {
+        actions.add(new SQLDatabasePersistAction(
+                "Create or replace " + procedure.getProcedureType().name(), 
+                procedure.getSource()));
     }
-
 }

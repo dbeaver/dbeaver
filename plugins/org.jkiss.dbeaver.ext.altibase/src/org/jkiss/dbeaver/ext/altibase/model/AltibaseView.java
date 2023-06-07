@@ -25,14 +25,13 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 public class AltibaseView extends GenericView implements AltibaseTableBase, DBSObjectWithScript, DBSView {
 
     public AltibaseView(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
-		super(container, tableName, tableType, dbResult);
-	}
-    
+        super(container, tableName, tableType, dbResult);
+    }
+
     /*
-	private String ownerName;
+    private String ownerName;
     private Map<String, String> columnDomainTypes;
 
-    
     public AltibaseView(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
 
@@ -71,5 +70,5 @@ public class AltibaseView extends GenericView implements AltibaseTableBase, DBSO
         }
         return columnDomainTypes.get(column.getName());
     }
-	*/
+     */
 }

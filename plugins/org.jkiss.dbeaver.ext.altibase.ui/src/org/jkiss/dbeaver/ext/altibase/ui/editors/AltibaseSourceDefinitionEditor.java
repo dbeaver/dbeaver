@@ -27,15 +27,15 @@ public class AltibaseSourceDefinitionEditor extends SQLSourceViewer<AltibaseSour
 
     @Override
     protected String getSourceText(DBRProgressMonitor monitor) throws DBException {
-        return ((DBPScriptObjectExt)getSourceObject()).getExtendedDefinitionText(monitor);
+        return ((DBPScriptObjectExt) getSourceObject()).getExtendedDefinitionText(monitor);
     }
 
     @Override
     protected void setSourceText(DBRProgressMonitor monitor, String sourceText) {
         getInputPropertySource().setPropertyValue(
-            monitor,
-            AltibaseConstants.PROP_OBJECT_BODY_DEFINITION,
-            sourceText);
+                monitor,
+                AltibaseConstants.PROP_OBJECT_BODY_DEFINITION,
+                sourceText);
     }
 
     @Override

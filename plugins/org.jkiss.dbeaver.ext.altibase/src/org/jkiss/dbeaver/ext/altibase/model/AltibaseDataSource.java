@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
-import java.util.Collection;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -36,40 +34,39 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-public class AltibaseDataSource extends GenericDataSource implements DBCQueryPlanner {
+import java.util.Collection;
 
+public class AltibaseDataSource extends GenericDataSource implements DBCQueryPlanner {
     private static final Log log = Log.getLog(AltibaseDataSource.class);
-    
     private GenericSchema publicSchema;
-    
+
     public AltibaseDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, AltibaseMetaModel metaModel)
-        throws DBException {
+            throws DBException {
         super(monitor, container, metaModel, new AltibaseSQLDialect());
-        
     }
- 
+
     /* TODO: DB33. Procedure PRINTLN */
     // private String mCallbackMsg = null;
-	/**
-	 * BUG-45342 Need to display the output from PSM execution using JDBC callback.
-	 * 
-	 * @see https://altra.altibase.com/altimis-2.0/app_bug_new/bug_view.jsp?pk=45342
-	 * @see https://docs.oracle.com/javase/8/docs/technotes/guides/reflection/proxy.html
-	 */
+    /**
+     * BUG-45342 Need to display the output from PSM execution using JDBC callback.
+     * 
+     * @see https://altra.altibase.com/altimis-2.0/app_bug_new/bug_view.jsp?pk=45342
+     * @see https://docs.oracle.com/javase/8/docs/technotes/guides/reflection/proxy.html
+     */
     /*
     @SuppressWarnings("rawtypes")
     protected void setCallBack(boolean aPrintConsole) {
         Class class4CallbackInterface = null;
         Object instance4Callback = null;
-         
+
         Method method4RegisterCallback = null;
         ClassLoader sClassLoader = java.sql.DriverManager.class.getClassLoader();
-         
+
         try {
             class4CallbackInterface = sClassLoader
                     .loadClass("Altibase.jdbc.driver.AltibaseMessageCallback");
             instance4Callback = getCallBack(aPrintConsole); // BUG-45839
- 
+
             method4RegisterCallback = sClassLoader.loadClass(
                     "Altibase.jdbc.driver.AltibaseConnection")
                     .getDeclaredMethod("registerMessageCallback",
@@ -80,63 +77,63 @@ public class AltibaseDataSource extends GenericDataSource implements DBCQueryPla
             log.warn("Fail to register PSM message callback.");
         }
     }
-    
+
     public String getCallBackMessage() { return mCallbackMsg.toString(); }
+     */
+    /**
+     * @see BUG-45839 Need to support shard table data rebuild.
+     * 	    https://altra.altibase.com/altimis-2.0/app_bug_new/bug_view.jsp?pk=45839
+     */
+    /*
+    private Object getCallBack(final boolean aPrintConsole) throws ClassNotFoundException
+    {
+        ClassLoader sClassLoader = java.sql.DriverManager.class.getClassLoader();
+        @SuppressWarnings("rawtypes")
+        Class class4CallbackInterface = sClassLoader
+        .loadClass(CLASS_NAME_4_CALLBACK_INTERFACE);
+
+        if (!aPrintConsole)
+            mSb4CallBackMsg = new StringBuilder();
+
+        return Proxy.newProxyInstance(mUrlClassLoader, new java.lang.Class[]
+                { class4CallbackInterface }, new InvocationHandler()
+        {
+            public Object invoke(Object aProxy, Method aMethod, Object[] aArgs)
+                    throws Throwable
+            {
+                String methodName = aMethod.getName();
+
+                //
+                // Implementation of the 'print' method in the
+                // 'AltibaseMessageCallback' interface
+                //
+                if (aPrintConsole)
+                {
+                    if (methodName.equals("print"))
+                        System.out.println(mDbQueryExecutor
+                                .prefixDbName((String) aArgs[0]));
+                }
+                else
+                {
+                    if (methodName.equals("print"))
+                        mSb4CallBackMsg.append((String) aArgs[0]);
+                }
+
+                return null;
+            }
+        });
+    }
     */
-	/**
-	 * @see BUG-45839 Need to support shard table data rebuild.
-	 * 		https://altra.altibase.com/altimis-2.0/app_bug_new/bug_view.jsp?pk=45839
-	 */
-	/*
-	private Object getCallBack(final boolean aPrintConsole) throws ClassNotFoundException
-	{
-		ClassLoader sClassLoader = java.sql.DriverManager.class.getClassLoader();
-		@SuppressWarnings("rawtypes")
-		Class class4CallbackInterface = sClassLoader
-				.loadClass(CLASS_NAME_4_CALLBACK_INTERFACE);
 
-		if (!aPrintConsole)
-			mSb4CallBackMsg = new StringBuilder();
-
-		return Proxy.newProxyInstance(mUrlClassLoader, new java.lang.Class[]
-			{ class4CallbackInterface }, new InvocationHandler()
-		{
-			public Object invoke(Object aProxy, Method aMethod, Object[] aArgs)
-					throws Throwable
-			{
-				String methodName = aMethod.getName();
-
-				//
-				// Implementation of the 'print' method in the
-				// 'AltibaseMessageCallback' interface
-				//
-				if (aPrintConsole)
-				{
-					if (methodName.equals("print"))
-						System.out.println(mDbQueryExecutor
-								.prefixDbName((String) aArgs[0]));
-				}
-				else
-				{
-					if (methodName.equals("print"))
-						mSb4CallBackMsg.append((String) aArgs[0]);
-				}
-				
-				return null;
-			}
-		});
-	}
-	*/
-    
     /* FIXME: parameter doesn't work */
     public boolean splitProceduresAndFunctions() {
-    	return true;
+        return true;
     }
-    
+
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.initialize(monitor);
-        
+
         // PublicSchema is for global objects such as public synonym.
         publicSchema = new GenericSchema(this, null, AltibaseConstants.PUBLIC_USER);
         publicSchema.setVirtual(true);
@@ -163,36 +160,37 @@ public class AltibaseDataSource extends GenericDataSource implements DBCQueryPla
     public List<AltibaseProcedure> getProcedures(DBRProgressMonitor monitor) throws DBException {
         return (List<AltibaseProcedure>) super.getProcedures(monitor);
     }
-    
+
     @Override
     public List<AltibaseTableTrigger> getTableTriggers(DBRProgressMonitor monitor) throws DBException {
         return (List<AltibaseTableTrigger>) super.getTableTriggers(monitor);
     }
-	*/
-    
+     */
+
     @NotNull
     @Override
     public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         return AltibaseTable.class;
     }
-    
+
     public Collection<AltibaseSynonym> getPublicSynonyms(DBRProgressMonitor monitor) throws DBException {
         return (Collection<AltibaseSynonym>) publicSchema.getSynonyms(monitor);
     }
-    
+
     ///////////////////////////////////////////////
     // Plan
-	@NotNull
+    @NotNull
     @Override
-	public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration) throws DBException {
-		AltibaseExecutionPlan plan = new AltibaseExecutionPlan(this, (JDBCSession) session, query);
+    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, 
+            @NotNull DBCQueryPlannerConfiguration configuration) throws DBException {
+        AltibaseExecutionPlan plan = new AltibaseExecutionPlan(this, (JDBCSession) session, query);
         plan.explain();
         return plan;
-	}
+    }
 
-	@NotNull
+    @NotNull
     @Override
-	public DBCPlanStyle getPlanStyle() {
-		return DBCPlanStyle.PLAN;
-	}
+    public DBCPlanStyle getPlanStyle() {
+        return DBCPlanStyle.PLAN;
+    }
 }

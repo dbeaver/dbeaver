@@ -28,82 +28,81 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 /**
  * AltibaseTrigger
  */
-public abstract class AltibaseTrigger<OWNER extends DBSObject> extends GenericTrigger<DBSObject> implements DBPSystemObject, DBPScriptObject {
+public abstract class AltibaseTrigger<OWNER extends DBSObject> 
+    extends GenericTrigger<DBSObject> implements DBPSystemObject, DBPScriptObject {
 
-	protected boolean is_enable;
-	protected String event_time;
-	protected String event_type;
-	protected String granularity;
-	protected int update_column_count;
-	protected int ref_row_count;
-	protected String dml_stmt_type;
-	protected String dmltable_schema;
-	protected String dmltable_table;
+    protected boolean isEnable;
+    protected String eventTime;
+    protected String eventType;
+    protected String granularity;
+    protected int updateColumnCount;
+    protected int refRowCount;
+    protected String dmlStmtType;
+    protected String dmlTableSchema;
+    protected String dmlTableName;
 
     public AltibaseTrigger(OWNER container, String name, String description, JDBCResultSet dbResult) {
         super(container, name, description);
-
-        this.is_enable 			= (JDBCUtils.safeGetInt(dbResult, "IS_ENABLE") == 1);
-        this.event_time 		= JDBCUtils.safeGetStringTrimmed(dbResult, "EVENT_TIME");
-        this.event_type 		= JDBCUtils.safeGetStringTrimmed(dbResult, "EVENT_TYPE");
-        this.granularity 		= JDBCUtils.safeGetStringTrimmed(dbResult, "GRANULARITY");
-        this.update_column_count= JDBCUtils.safeGetInt(dbResult, "UPDATE_COLUMN_CNT");
-        this.ref_row_count 		= JDBCUtils.safeGetInt(dbResult, "REF_ROW_CNT");
-        this.dml_stmt_type 		= JDBCUtils.safeGetString(dbResult, "DML_STMT_TYPE");
-        this.dmltable_schema 	= JDBCUtils.safeGetString(dbResult, "DMLTABLE_SCHEMA");
-        this.dmltable_table 	= JDBCUtils.safeGetString(dbResult, "DMLTABLE_NAME");
+        this.isEnable           = (JDBCUtils.safeGetInt(dbResult, "IS_ENABLE") == 1);
+        this.eventTime          = JDBCUtils.safeGetStringTrimmed(dbResult, "EVENT_TIME");
+        this.eventType          = JDBCUtils.safeGetStringTrimmed(dbResult, "EVENT_TYPE");
+        this.granularity        = JDBCUtils.safeGetStringTrimmed(dbResult, "GRANULARITY");
+        this.updateColumnCount  = JDBCUtils.safeGetInt(dbResult, "UPDATE_COLUMN_CNT");
+        this.refRowCount        = JDBCUtils.safeGetInt(dbResult, "REF_ROW_CNT");
+        this.dmlStmtType        = JDBCUtils.safeGetString(dbResult, "DML_STMT_TYPE");
+        this.dmlTableSchema     = JDBCUtils.safeGetString(dbResult, "DMLTABLE_SCHEMA");
+        this.dmlTableName       = JDBCUtils.safeGetString(dbResult, "DMLTABLE_NAME");
     }
 
     @Override
     public boolean isSystem() {
         return false;
     }
-    
+
     @Override
     @Property(viewable = true, order = 4)
     public DBSTable getTable() {
         return (DBSTable) getParentObject();
     }
-    
+
     @Property(viewable = true, order = 5)
     public boolean isEnabled() {
-        return is_enable;
+        return isEnable;
     }
-    
+
     @Property(viewable = true, order = 6)
     public String getEventTime() {
-        return event_time;
+        return eventTime;
     }
-    
+
     @Property(viewable = true, order = 7)
     public String getEventType() {
-        return event_type;
+        return eventType;
     }
-    
+
     @Property(viewable = true, order = 8)
     public int getUpdateColumnCount() {
-        return update_column_count;
+        return updateColumnCount;
     }
-    
+
     @Property(viewable = true, order = 9)
     public String getGranularity() {
         return granularity;
     }
-    
+
     @Property(viewable = true, order = 10)
     public String getTargetTable() {
-        return (dmltable_schema == null || dmltable_table == null)? "":dmltable_schema + "." + dmltable_table;
+        return (dmlTableSchema == null || dmlTableName == null) ? "" : dmlTableSchema + "." + dmlTableName;
     }
-    
+
     @Property(viewable = true, order = 11)
     public String getDmlType() {
-        return dml_stmt_type;
+        return dmlStmtType;
     }
-    
+
     @Override
     @Property(viewable = false, hidden = true, order = 100)
-    public String getDescription()
-    {
+    public String getDescription() {
         return null;
     }
 }

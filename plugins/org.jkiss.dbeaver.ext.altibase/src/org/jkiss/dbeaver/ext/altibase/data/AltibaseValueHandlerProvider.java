@@ -28,20 +28,22 @@ public class AltibaseValueHandlerProvider implements DBDValueHandlerProvider {
 
     @Nullable
     @Override
-	public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences,
-			DBSTypedObject typedObject) {
+    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences,
+            DBSTypedObject typedObject) {
 
-    	String typeName = typedObject.getTypeName();
-    	
-		switch (typeName) {
-        case "BIT":
-        case "VARBIT":
-        	return AltibaseBitSetValueHandler.INSTANCE;
-        case "GEOMETRY":
-        	return AltibaseGeometryValueHandler.INSTANCE;
-		}
+        String typeName = typedObject.getTypeName();
 
-		return null;
-	}
+        switch (typeName) {
+            case "BIT":
+            case "VARBIT":
+                return AltibaseBitSetValueHandler.INSTANCE;
+            case "GEOMETRY":
+                return AltibaseGeometryValueHandler.INSTANCE;
+            default:
+                // Do nothing
+                ;
+        }
 
+        return null;
+    }
 }

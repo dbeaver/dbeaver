@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
-import java.math.BigDecimal;
-import java.util.Map;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -29,59 +26,63 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.math.BigDecimal;
+import java.util.Map;
+
 /**
  * FireBirdDataSource
  */
 public class AltibaseSequence extends GenericSequence implements DBPScriptObject {
 
-	//private GenericStructContainer container;
+    //private GenericStructContainer container;
     //private String name;
     //private String description;
     private BigDecimal lastValue;
     private BigDecimal minValue;
     private BigDecimal maxValue;
     private BigDecimal incrementBy;
-    
+
     private BigDecimal cacheSize;
     private BigDecimal startWith;
     private boolean flagCycle;
-    
+
     private String source;
 
     public AltibaseSequence(GenericStructContainer container, JDBCResultSet dbResult) {
-    	super(container, JDBCUtils.safeGetString(dbResult, "TABLE_NAME"), "", 0, 0, 0, 0);
-    	
-        //this.container 	= container;
-        //this.name 		= JDBCUtils.safeGetString(dbResult, "TABLE_NAME");
-        //this.description 	= "";
-        this.lastValue 		= JDBCUtils.safeGetBigDecimal(dbResult, "CURRENT_SEQ");
-        this.startWith 		= JDBCUtils.safeGetBigDecimal(dbResult, "START_SEQ");
-        this.minValue 		= JDBCUtils.safeGetBigDecimal(dbResult, "MIN_SEQ");
-        this.maxValue 		= JDBCUtils.safeGetBigDecimal(dbResult, "MAX_SEQ");
-        this.incrementBy 	= JDBCUtils.safeGetBigDecimal(dbResult, "INCREMENT_SEQ");
-        this.cacheSize 		= JDBCUtils.safeGetBigDecimal(dbResult, "CACHE_SIZE");
-        this.flagCycle 		= JDBCUtils.safeGetBoolean(dbResult, "IS_CYCLE", "YES");
+        super(container, JDBCUtils.safeGetString(dbResult, "TABLE_NAME"), "", 0, 0, 0, 0);
+
+        //this.container    = container;
+        //this.name         = JDBCUtils.safeGetString(dbResult, "TABLE_NAME");
+        //this.description  = "";
+        this.lastValue      = JDBCUtils.safeGetBigDecimal(dbResult, "CURRENT_SEQ");
+        this.startWith      = JDBCUtils.safeGetBigDecimal(dbResult, "START_SEQ");
+        this.minValue       = JDBCUtils.safeGetBigDecimal(dbResult, "MIN_SEQ");
+        this.maxValue       = JDBCUtils.safeGetBigDecimal(dbResult, "MAX_SEQ");
+        this.incrementBy    = JDBCUtils.safeGetBigDecimal(dbResult, "INCREMENT_SEQ");
+        this.cacheSize      = JDBCUtils.safeGetBigDecimal(dbResult, "CACHE_SIZE");
+        this.flagCycle      = JDBCUtils.safeGetBoolean(dbResult, "IS_CYCLE", "YES");
     }
 
     @Override
     @Property(viewable = true, order = 2)
     public BigDecimal getLastValue() {
-    	/* If the target sequence has not been used at all, the CURRENT_SEQ returns NULL value */
-    	if (lastValue == null)
-    		return startWith;
-    	else
-    		return lastValue;
+        /* If the target sequence has not been used at all, the CURRENT_SEQ returns NULL value */
+        if (lastValue == null) {
+            return startWith;
+        } else {
+            return lastValue;
+        }
     }
 
     public void setLastValue(BigDecimal lastValue) {
         this.lastValue = lastValue;
     }
-    
+
     @Property(viewable = true, order = 3)
     public BigDecimal getStartWith() {
         return startWith;
     }
-    
+
     @Override
     @Property(viewable = true, order = 4)
     public BigDecimal getIncrementBy() {
@@ -91,7 +92,7 @@ public class AltibaseSequence extends GenericSequence implements DBPScriptObject
     public void setIncrementBy(BigDecimal incrementBy) {
         this.incrementBy = incrementBy;
     }
-    
+
     @Override
     @Property(viewable = true, order = 5)
     public BigDecimal getMinValue() {
@@ -111,21 +112,23 @@ public class AltibaseSequence extends GenericSequence implements DBPScriptObject
     public void setMaxValue(BigDecimal maxValue) {
         this.maxValue = maxValue;
     }
-    
+
     @Property(viewable = true, order = 7)
     public BigDecimal getCacheSize() {
         return cacheSize;
     }
-    
+
     @Property(viewable = true, order = 8)
     public boolean getCycle() {
         return flagCycle;
     }
-    
-    public boolean isCycle() { return flagCycle; }
+
+    public boolean isCycle() { 
+        return flagCycle; 
+    }
 
     //public GenericSchema getSchema() { return container.getSchema(); }
-    
+
     public String buildStatement(boolean forUpdate) {
         StringBuilder sb = new StringBuilder();
         if (forUpdate) {
@@ -138,13 +141,15 @@ public class AltibaseSequence extends GenericSequence implements DBPScriptObject
         if (getStartWith() != null) {
             sb.append(" START WITH ").append(getStartWith());
         }
-        
+
         if (getIncrementBy() != null) {
             sb.append(" INCREMENT BY ").append(getIncrementBy());
         }
+        
         if (getMinValue() != null) {
             sb.append(" MINVALUE ").append(getMinValue());
         }
+        
         if (getMaxValue() != null) {
             sb.append(" MAXVALUE ").append(getMaxValue());
         }
@@ -158,18 +163,19 @@ public class AltibaseSequence extends GenericSequence implements DBPScriptObject
         }
 
         sb.append(";");
-        
+
         return sb.toString();
     }
-    
+
     /*
-     * Unable to use DBMS_METADATA for sequence because it returns 'START_WITH' value as CURRENT_SEQ+INCREMENT_SEQ for schema migration
+     * Unable to use DBMS_METADATA for sequence because it returns 'START_WITH' value 
+     * as CURRENT_SEQ+INCREMENT_SEQ for schema migration
      */
     @Override
-	public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         if (source == null) {
-        	source = buildStatement(false);
+            source = buildStatement(false);
         }
         return source;
-	}
+    }
 }

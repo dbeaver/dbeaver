@@ -23,23 +23,21 @@ import org.jkiss.dbeaver.ui.UIUtils;
 /**
  * Altibase ConnectionPage
  */
-public class AltibaseConnectionPage extends GenericConnectionPage
-{
-    private final Image LOGO_ALTIBASE;
+public class AltibaseConnectionPage extends GenericConnectionPage {
+    private final Image log4Altibase;
 
     public AltibaseConnectionPage() {
-    	LOGO_ALTIBASE = createImage("icons/altibase_logo_wide.png");
+        log4Altibase = createImage("icons/altibase_logo_wide.png");
     }
-    
+
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         super.dispose();
-        UIUtils.dispose(LOGO_ALTIBASE);
+        UIUtils.dispose(log4Altibase);
     }
-    
+
     @Override
     public Image getImage() {
-        return LOGO_ALTIBASE;
+        return log4Altibase;
     }
 }

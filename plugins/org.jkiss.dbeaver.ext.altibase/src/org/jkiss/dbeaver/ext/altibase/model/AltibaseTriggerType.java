@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ext.altibase.model;
 /**
  * FireBirdDataSource
  */
-public enum AltibaseTriggerType
-{
+public enum AltibaseTriggerType {
     BEFORE_INSERT(1),
     AFTER_INSERT(2),
     BEFORE_UPDATE(3),
@@ -39,7 +38,7 @@ public enum AltibaseTriggerType
     ON_DISCONNECT(8193, true),
     ON_TRANSACTION_START(8194, true),
     ON_TRANSACTION_COMMIT(8195, true),
-    ON_TRANSACTION_ROLLBACK (8196, true);
+    ON_TRANSACTION_ROLLBACK(8196, true);
 
     private final int type;
     private final boolean dbEvent;

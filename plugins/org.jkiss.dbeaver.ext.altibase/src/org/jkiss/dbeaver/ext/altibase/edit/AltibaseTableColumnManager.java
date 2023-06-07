@@ -17,43 +17,26 @@
 
 package org.jkiss.dbeaver.ext.altibase.edit;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.altibase.model.AltibaseTableColumn;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
-import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.Map;
 
 /**
  * FireBirdTableColumnManager
  */
-public class AltibaseTableColumnManager extends GenericTableColumnManager
-    implements DBEObjectRenamer<GenericTableColumn>//, DBEObjectReorderer<GenericTableColumn>
-{
+public class AltibaseTableColumnManager extends GenericTableColumnManager implements DBEObjectRenamer<GenericTableColumn> {
 
-	@Override
-	public void renameObject(DBECommandContext commandContext, GenericTableColumn object, Map<String, Object> options,
-			String newName) throws DBException {
-		processObjectRename(commandContext, object, options, newName);
-	}
+    @Override
+    public void renameObject(DBECommandContext commandContext, GenericTableColumn object, 
+            Map<String, Object> options, String newName) throws DBException {
+        processObjectRename(commandContext, object, options, newName);
+    }
 
-	/*
+    /*
     private final ColumnModifier<GenericTableColumn> ComputedModifier = (monitor, column, sql, command) -> {
         final String definition = ((AltibaseTableColumn) column).getComputedDefinition();
         if (CommonUtils.isNotEmpty(definition)) {
@@ -86,11 +69,11 @@ public class AltibaseTableColumnManager extends GenericTableColumnManager
         return new ColumnModifier[] {DataTypeModifier, DefaultModifier, NotNullModifier};
     }
 
-	*/
+     */
     /**
      * Is is pretty standard
      */
-	/*
+    /*
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
         final AltibaseTableColumn column = (AltibaseTableColumn) command.getObject();
@@ -177,5 +160,5 @@ public class AltibaseTableColumnManager extends GenericTableColumnManager
     public void setObjectOrdinalPosition(DBECommandContext commandContext, GenericTableColumn object, List<GenericTableColumn> siblingObjects, int newPosition) throws DBException {
         processObjectReorder(commandContext, object, siblingObjects, newPosition);
     }
-	*/
+     */
 }

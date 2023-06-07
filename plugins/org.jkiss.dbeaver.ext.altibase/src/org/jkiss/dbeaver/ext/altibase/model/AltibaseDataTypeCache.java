@@ -17,10 +17,6 @@
 
 package org.jkiss.dbeaver.ext.altibase.model;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataTypeCache;
@@ -34,11 +30,14 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * AltibaseDataTypeCache
  */
-public class AltibaseDataTypeCache extends JDBCBasicDataTypeCache<GenericStructContainer, AltibaseDataType>
-{
+public class AltibaseDataTypeCache extends JDBCBasicDataTypeCache<GenericStructContainer, AltibaseDataType> {
     private static final Log log = Log.getLog(GenericDataTypeCache.class);
 
     public AltibaseDataTypeCache(GenericStructContainer owner) {
@@ -52,15 +51,14 @@ public class AltibaseDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
         if (dataSource == null) {
             throw new DBException(ModelMessages.error_not_connected_to_database);
         }
-        
+
         // Load domain types
         List<AltibaseDataType> tmpObjectList = new ArrayList<>();
 
         try {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load Altibase data types")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT * FROM V$DATATYPE ORDER BY TYPE_NAME"))
-                {
+                        "SELECT * FROM V$DATATYPE ORDER BY TYPE_NAME")) {
                     monitor.subTask("Load Altibase domain types");
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.next()) {
@@ -87,7 +85,7 @@ public class AltibaseDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
                             }
 
                             AltibaseDataType dataType = new AltibaseDataType(
-                                dataSource, fieldType, typeName, remarks, unsinged, searchabel, precision, minScale, maxScale);
+                                    dataSource, fieldType, typeName, remarks, unsinged, searchabel, precision, minScale, maxScale);
                             tmpObjectList.add(dataType);
                         }
                     }

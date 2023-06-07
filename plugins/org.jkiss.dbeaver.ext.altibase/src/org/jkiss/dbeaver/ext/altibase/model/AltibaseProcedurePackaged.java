@@ -17,9 +17,6 @@
 
 package org.jkiss.dbeaver.ext.altibase.model;
 
-import java.sql.SQLException;
-import java.util.Map;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericFunctionResultType;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -33,45 +30,48 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
+import java.sql.SQLException;
+import java.util.Map;
+
 public class AltibaseProcedurePackaged extends AltibaseProcedureBase {
 
-	private String pkgSchema;
-	
-	public AltibaseProcedurePackaged(GenericStructContainer container, String procedureName, String specificName,
-			String description, DBSProcedureType procedureType, GenericFunctionResultType functionResultType, String pkgSchema) {
-		super(container, procedureName, specificName, description, procedureType, functionResultType);
-		this.pkgSchema = pkgSchema;
-	}
+    private String pkgSchema;
+
+    public AltibaseProcedurePackaged(GenericStructContainer container, String procedureName, String specificName,
+            String description, DBSProcedureType procedureType, GenericFunctionResultType functionResultType, String pkgSchema) {
+        super(container, procedureName, specificName, description, procedureType, functionResultType);
+        this.pkgSchema = pkgSchema;
+    }
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         return "-- Unable to get pacakge depedent object source";
     }
-    
-    public void loadProcedureColumns(DBRProgressMonitor monitor) throws DBException
-    {
+
+    public void loadProcedureColumns(DBRProgressMonitor monitor) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load procedure columns")) {
-            JDBCPreparedStatement dbStat = ((AltibaseMetaModel)getDataSource().getMetaModel()).prepareProcedurePackagedColumnLoadStatement(session, pkgSchema, container.getName(), this.getName());
-    		dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
+            JDBCPreparedStatement dbStat = ((AltibaseMetaModel) getDataSource().getMetaModel())
+                    .prepareProcedurePackagedColumnLoadStatement(session, pkgSchema, container.getName(), this.getName());
+            dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
             dbStat.executeStatement();
             JDBCResultSet dbResult = dbStat.getResultSet();
             try {
                 while (dbResult.next()) {
-                	boolean isFunction  = (JDBCUtils.safeGetInt(dbResult, "SUB_TYPE") == 1);
-                    String columnName 	= JDBCUtils.safeGetString(dbResult, "PARA_NAME");
-                    int position 		= JDBCUtils.safeGetInt(dbResult, "PARA_ORDER");
+                    boolean isFunction  = (JDBCUtils.safeGetInt(dbResult, "SUB_TYPE") == 1);
+                    String columnName   = JDBCUtils.safeGetString(dbResult, "PARA_NAME");
+                    int position        = JDBCUtils.safeGetInt(dbResult, "PARA_ORDER");
                     //int columnSize 		= JDBCUtils.safeGetInt(dbResult, "SIZE"); It's physical size
-                    int precision 		= JDBCUtils.safeGetInt(dbResult, "PRECISION");
-                    int columnSize 		= precision;
-                    int scale 			= JDBCUtils.safeGetInt(dbResult, "SCALE");
-                    
-                    int columnTypeNum 	= JDBCUtils.safeGetInt(dbResult, "INOUT_TYPE"); // 0: IN, 1: OUT, 2: IN OUT
-                    int valueType 		= JDBCUtils.safeGetInt(dbResult, "DATA_TYPE");;
-                    String typeName 	= JDBCUtils.safeGetString(dbResult, "TYPE_NAME");
+                    int precision       = JDBCUtils.safeGetInt(dbResult, "PRECISION");
+                    int columnSize      = precision;
+                    int scale           = JDBCUtils.safeGetInt(dbResult, "SCALE");
+
+                    int columnTypeNum   = JDBCUtils.safeGetInt(dbResult, "INOUT_TYPE"); // 0: IN, 1: OUT, 2: IN OUT
+                    int valueType       = JDBCUtils.safeGetInt(dbResult, "DATA_TYPE");;
+                    String typeName     = JDBCUtils.safeGetString(dbResult, "TYPE_NAME");
                     String defaultValue = JDBCUtils.safeGetString(dbResult, "DEFAULT_VAL");
-                    boolean notNull 	= (defaultValue == null);
-                    String remarks 		= "";
-                    
+                    boolean notNull     = (defaultValue == null);
+                    String remarks      = "";
+
                     DBSProcedureParameterKind parameterType;
 
                     switch (columnTypeNum) {
@@ -88,31 +88,31 @@ public class AltibaseProcedurePackaged extends AltibaseProcedureBase {
                             parameterType = DBSProcedureParameterKind.UNKNOWN;
                             break;
                     }
-                    
+
                     // procedure with no argument case
                     if (isFunction == false && columnName == null && position == 0) {
-                    	return; 
+                        return; 
                     }
-                    
+
                     // function return type
                     if (isFunction == true && columnName == null && position == 1) {
-                    	continue; 
+                        continue; 
                     }
-                    
+
                     if (isFunction == true) {
-                    	--position;
+                        --position;
                     }
-                    
+
                     AltibaseProcedureParameter column = new AltibaseProcedureParameter(
-                        this,
-                        columnName,
-                        typeName,
-                        valueType,
-                        position,
-                        columnSize,
-                        scale, precision, notNull,
-                        remarks,
-                        parameterType);
+                            this,
+                            columnName,
+                            typeName,
+                            valueType,
+                            position,
+                            columnSize,
+                            scale, precision, notNull,
+                            remarks,
+                            parameterType);
 
                     this.addColumn(column);
                 }

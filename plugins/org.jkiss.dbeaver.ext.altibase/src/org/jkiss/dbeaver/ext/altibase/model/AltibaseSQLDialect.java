@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
-import java.util.Arrays;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.DBPKeywordType;
@@ -25,12 +23,14 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 
+import java.util.Arrays;
+
 public class AltibaseSQLDialect extends GenericSQLDialect {
 
-    private static final String[] ALTIBASE_BLOCK_HEADERS = new String[]{
-        "EXECUTE BLOCK",
-        "DECLARE",
-        "IS",
+    private static final String[] ALTIBASE_BLOCK_HEADERS = new String[] {
+            "EXECUTE BLOCK",
+            "DECLARE",
+            "IS",
     };
 
     private static final String[][] ALTIBASE_BEGIN_END_BLOCK = new String[][]{
@@ -38,14 +38,14 @@ public class AltibaseSQLDialect extends GenericSQLDialect {
     };
 
     private static final String[] DDL_KEYWORDS = new String[] {
-        "CREATE", "ALTER", "DROP", "EXECUTE", "CACHE"
+            "CREATE", "ALTER", "DROP", "EXECUTE", "CACHE"
     };
 
     private static final String[] ALTIBASE_KEYWORDS = new String[] {
-        "CURRENT_USER",
-        "CURRENT_ROLE",
-        "NCHAR",
-        "VALUE"
+            "CURRENT_USER",
+            "CURRENT_ROLE",
+            "NCHAR",
+            "VALUE"
     };
 
     public AltibaseSQLDialect() {

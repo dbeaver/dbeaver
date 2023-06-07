@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ext.altibase.model;
 
 public enum AltibaseSourceType {
-	
+
     TYPE(false),
     PROCEDURE(false),
     FUNCTION(false),
@@ -30,13 +30,11 @@ public enum AltibaseSourceType {
 
     private final boolean isCustom;
 
-    AltibaseSourceType(boolean custom)
-    {
+    AltibaseSourceType(boolean custom) {
         isCustom = custom;
     }
 
-    public boolean isCustom()
-    {
+    public boolean isCustom() {
         return isCustom;
     }
 }

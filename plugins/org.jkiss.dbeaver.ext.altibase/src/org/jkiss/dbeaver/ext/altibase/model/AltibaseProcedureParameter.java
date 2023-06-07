@@ -25,26 +25,25 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 
 public class AltibaseProcedureParameter extends GenericProcedureParameter {
 
-	public static final int PARAM_IN 	= 0;
-	public static final int PARAM_OUT 	= 1;
-	public static final int PARAM_INOUT = 2;
-	
-	// Constructor with GenericProcedureParameter
-    public AltibaseProcedureParameter(GenericProcedureParameter param)
-    {
+    public static final int PARAM_IN    = 0;
+    public static final int PARAM_OUT   = 1;
+    public static final int PARAM_INOUT = 2;
+
+    // Constructor with GenericProcedureParameter
+    public AltibaseProcedureParameter(GenericProcedureParameter param) {
         super(param.getParentObject(),
-        		param.getName(),
-        		param.getTypeName(),
-        		param.getTypeID(),
-        		param.getOrdinalPosition(),
-        		(int) param.getMaxLength(),
-        		param.getScale(),
-        		param.getPrecision(),
-        		param.isRequired(),
-        		param.getDescription(),
-        		param.getParameterKind());
+                param.getName(),
+                param.getTypeName(),
+                param.getTypeID(),
+                param.getOrdinalPosition(),
+                (int) param.getMaxLength(),
+                param.getScale(),
+                param.getPrecision(),
+                param.isRequired(),
+                param.getDescription(),
+                param.getParameterKind());
     }
-    
+
     public AltibaseProcedureParameter(
             GenericProcedure procedure,
             String columnName,
@@ -56,33 +55,29 @@ public class AltibaseProcedureParameter extends GenericProcedureParameter {
             Integer precision,
             boolean notNull,
             String remarks,
-            DBSProcedureParameterKind parameterKind)
-            //String defaultValue)
-    {
-        super(procedure, columnName, typeName, valueType, ordinalPosition, columnSize, scale, precision, notNull, remarks, parameterKind);
+            DBSProcedureParameterKind parameterKind) {
+        super(procedure, columnName, typeName, valueType, ordinalPosition, columnSize, scale, precision, 
+                notNull, remarks, parameterKind);
     }
-    
+
     @Override
     @Property(viewable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 42)
-    public Integer getPrecision()
-    {
+    public Integer getPrecision() {
         return precision == -1 ? null : precision;
     }
-    
+
     @Override
     @Property(viewable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 41)
-    public Integer getScale()
-    {
+    public Integer getScale() {
         return scale == -1 ? null : scale;
     }
-    
+
     @Override
     @Property(viewable = true, order = 43)
-    public boolean isRequired()
-    {
+    public boolean isRequired() {
         return required;
     }
-    
+
     /*
      * Hide: Altibase doesn't support comment for procedure and parameter
      */

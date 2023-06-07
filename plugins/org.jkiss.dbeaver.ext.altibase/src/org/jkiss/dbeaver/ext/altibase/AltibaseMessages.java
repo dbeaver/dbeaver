@@ -18,5 +18,6 @@
 package org.jkiss.dbeaver.ext.altibase;
 
 public class AltibaseMessages {
-	public static final String NO_DBMS_METADATA = "-- [WARNING] Without DBMS_METADATA package, the generated DDL may not be correct." + AltibaseUtils.NEW_LINE;
+    public static final String NO_DBMS_METADATA = 
+            "-- [WARNING] Without DBMS_METADATA package, the generated DDL may not be correct." + AltibaseUtils.NEW_LINE;
 }
