@@ -182,9 +182,4 @@ public interface DBPDataSourceInfo
     DBSObjectType[] getSupportedObjectTypes();
 
     boolean needsTableMetaForColumnResolution();
-
-    /**
-     * True for data sources with hierarchy nodes structure
-     */
-    boolean hasInheritedNodes();
 }

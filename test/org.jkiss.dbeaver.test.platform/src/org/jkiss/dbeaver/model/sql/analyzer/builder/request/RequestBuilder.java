@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.model.sql.analyzer.builder.request;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.*;
@@ -78,12 +80,9 @@ public class RequestBuilder {
         final SQLDialectRegistry dialectRegistry = SQLDialectRegistry.getInstance();
 
         final DBPDataSourceContainer dataSourceContainer = mock(DBPDataSourceContainer.class);
-        final DBPDataSourceInfo mockDatasourceInfo = mock(DBPDataSourceInfo.class);
         when(dataSourceContainer.getConnectionConfiguration()).thenReturn(connectionConfiguration);
         when(dataSourceContainer.getActualConnectionConfiguration()).thenReturn(connectionConfiguration);
         when(dataSourceContainer.getPreferenceStore()).thenReturn(preferenceStore);
-        when(dataSource.getInfo()).thenReturn(mockDatasourceInfo);
-        when(mockDatasourceInfo.hasInheritedNodes()).thenReturn(Boolean.FALSE);
 
         when(dataSource.getSQLDialect()).thenReturn(dialectRegistry.getDialect("generic").createInstance());
         when(dataSource.getContainer()).thenReturn(dataSourceContainer);

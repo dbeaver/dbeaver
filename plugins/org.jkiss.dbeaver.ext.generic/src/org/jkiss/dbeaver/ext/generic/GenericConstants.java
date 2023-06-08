@@ -73,7 +73,6 @@ public class GenericConstants {
     public static final String PARAM_SUPPORTS_MULTI_INSERT = "supports-multi-insert";
     public static final String PARAM_SUPPORTS_EMBEDDED_DATABASE_CREATION = "supports-embedded-database-creation";
     public static final String PARAM_IDENTIFIER_QUOTES = "identifier-quotes";
-    public static final String PARAM_HAS_INHERITED_OBJECTS = "has-inherited-nodes";
 
     public static final String PARAM_NATIVE_FORMAT_TIMESTAMP = "native-format-timestamp";
     public static final String PARAM_NATIVE_FORMAT_TIME = "native-format-time";

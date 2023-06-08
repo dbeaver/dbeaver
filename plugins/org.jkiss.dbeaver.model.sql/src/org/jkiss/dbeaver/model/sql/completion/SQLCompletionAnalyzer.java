@@ -805,10 +805,6 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         if (executionContext == null) {
             return;
         }
-        if (dataSource.getInfo().hasInheritedNodes()) {
-            // We must skip the lack of nodes for data sources with a hierarchy structure.
-            checkNavigatorNodes = false;
-        }
 
         DBSObjectContainer sc = rootContainer;
         DBSObject childObject = sc;
