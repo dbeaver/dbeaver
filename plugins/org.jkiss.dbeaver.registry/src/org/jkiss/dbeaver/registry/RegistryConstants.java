@@ -108,6 +108,8 @@ public class RegistryConstants {
     public static final String ATTR_DEFAULT_SCHEMA = "defaultSchema"; //$NON-NLS-1$
     public static final String ATTR_CONFIRM_EXECUTE = "confirmExecute"; //$NON-NLS-1$
     public static final String ATTR_CONFIRM_DATA_CHANGE = "confirmDataChange"; //$NON-NLS-1$
+    public static final String ATTR_SMART_COMMIT = "smartCommit"; //$NON-NLS-1$
+    public static final String ATTR_SMART_COMMIT_RECOVER = "smartCommitRecover"; //$NON-NLS-1$
     public static final String ATTR_AUTO_CLOSE_TRANSACTIONS = "autoCloseTransactions"; //$NON-NLS-1$
     public static final String ATTR_CLOSE_TRANSACTIONS_PERIOD = "closeTransactionsPeriod"; //$NON-NLS-1$
     public static final String ATTR_PARENT = "parent"; //$NON-NLS-1$

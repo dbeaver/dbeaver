@@ -50,8 +50,10 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             true,
             false,
             false,
-            DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED),
-            DBWorkbench.getPlatform().getPreferenceStore().getInt(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL),
+            false,
+            true,
+            true,
+            1800,
             true,
             null); //$NON-NLS-1$ //$NON-NLS-3$
         TEST = new DBPConnectionType(
@@ -59,6 +61,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             ModelMessages.dbp_connection_type_table_test,
             "org.jkiss.dbeaver.color.connectionType.qa.background",
             ModelMessages.dbp_connection_type_table_test_database,
+            true,
+            false,
             true,
             false,
             true,
@@ -73,6 +77,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             ModelMessages.dbp_connection_type_table_production_database,
             false,
             true,
+            true,
+            false,
             true,
             true,
             600,
@@ -90,6 +96,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     private boolean autocommit;
     private boolean confirmExecute;
     private boolean confirmDataChange;
+    private boolean smartCommit;
+    private boolean smartCommitRecover;
     private boolean autoCloseTransactions;
     private long closeIdleConnectionPeriod;
 
@@ -105,6 +113,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             source.autocommit,
             source.confirmExecute,
             source.confirmDataChange,
+            source.smartCommit,
+            source.smartCommitRecover,
             source.autoCloseTransactions,
             source.closeIdleConnectionPeriod,
             source.predefined,
@@ -119,6 +129,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         boolean autocommit,
         boolean confirmExecute,
         boolean confirmDataChange,
+        boolean smartCommit,
+        boolean smartCommitRecover,
         boolean autoCloseTransactions,
         long closeIdleConnectionPeriod)
     {
@@ -130,6 +142,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             autocommit,
             confirmExecute,
             confirmDataChange,
+            smartCommit,
+            smartCommitRecover,
             autoCloseTransactions,
             closeIdleConnectionPeriod,
             false,
@@ -144,6 +158,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         boolean autocommit,
         boolean confirmExecute,
         boolean confirmDataChange,
+        boolean smartCommit,
+        boolean smartCommitRecover,
         boolean autoCloseTransactions,
         long closeIdleConnectionPeriod,
         boolean predefined,
@@ -156,6 +172,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         this.autocommit = autocommit;
         this.confirmExecute = confirmExecute;
         this.confirmDataChange = confirmDataChange;
+        this.smartCommit = smartCommit;
+        this.smartCommitRecover = smartCommitRecover;
         this.autoCloseTransactions = autoCloseTransactions;
         this.closeIdleConnectionPeriod = closeIdleConnectionPeriod;
         this.predefined = predefined;
@@ -224,6 +242,22 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         this.confirmDataChange = confirmDataChange;
     }
 
+    public boolean isSmartCommit() {
+        return smartCommit;
+    }
+
+    public void setSmartCommit(boolean smartCommit) {
+        this.smartCommit = smartCommit;
+    }
+
+    public boolean isSmartCommitRecover() {
+        return smartCommitRecover;
+    }
+
+    public void setSmartCommitRecover(boolean smartCommitRecover) {
+        this.smartCommitRecover = smartCommitRecover;
+    }
+
     public boolean isAutoCloseTransactions() {
         return autoCloseTransactions;
     }
@@ -290,6 +324,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
                 autocommit == ct.autocommit &&
                 confirmExecute == ct.confirmExecute &&
                 confirmDataChange == ct.confirmDataChange &&
+                smartCommit == ct.smartCommit &&
+                smartCommitRecover == ct.smartCommitRecover &&
                 autoCloseTransactions == ct.autoCloseTransactions &&
                 CommonUtils.equalObjects(closeIdleConnectionPeriod, ct.closeIdleConnectionPeriod) &&
                 predefined == ct.predefined &&

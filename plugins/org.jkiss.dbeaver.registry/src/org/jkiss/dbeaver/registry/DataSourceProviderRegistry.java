@@ -534,6 +534,8 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 xml.addAttribute(RegistryConstants.ATTR_AUTOCOMMIT, connectionType.isAutocommit());
                 xml.addAttribute(RegistryConstants.ATTR_CONFIRM_EXECUTE, connectionType.isConfirmExecute());
                 xml.addAttribute(RegistryConstants.ATTR_CONFIRM_DATA_CHANGE, connectionType.isConfirmDataChange());
+                xml.addAttribute(RegistryConstants.ATTR_SMART_COMMIT, connectionType.isSmartCommit());
+                xml.addAttribute(RegistryConstants.ATTR_SMART_COMMIT_RECOVER, connectionType.isSmartCommitRecover());
                 xml.addAttribute(RegistryConstants.ATTR_AUTO_CLOSE_TRANSACTIONS, connectionType.isAutoCloseTransactions());
                 xml.addAttribute(RegistryConstants.ATTR_CLOSE_TRANSACTIONS_PERIOD, connectionType.getCloseIdleConnectionPeriod());
                 List<DBPDataSourcePermission> modifyPermission = connectionType.getModifyPermission();
@@ -676,6 +678,12 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                     CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_AUTOCOMMIT), origType != null && origType.isAutocommit()),
                     CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CONFIRM_EXECUTE), origType != null && origType.isConfirmExecute()),
                     CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CONFIRM_DATA_CHANGE), origType != null && origType.isConfirmDataChange()),
+                    CommonUtils.getBoolean(
+                        atts.getValue(RegistryConstants.ATTR_SMART_COMMIT),
+                        origType != null && origType.isSmartCommit()),
+                    CommonUtils.getBoolean(
+                        atts.getValue(RegistryConstants.ATTR_SMART_COMMIT_RECOVER),
+                        origType != null && origType.isSmartCommitRecover()),
                     CommonUtils.getBoolean(
                         atts.getValue(RegistryConstants.ATTR_AUTO_CLOSE_TRANSACTIONS),
                         origType != null && origType.isAutoCloseTransactions()),

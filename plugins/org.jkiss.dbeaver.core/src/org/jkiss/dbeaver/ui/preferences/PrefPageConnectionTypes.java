@@ -70,6 +70,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
     private Button confirmDataChangeCheck;
     private Button autoCloseTransactionsCheck;
     private Text autoCloseTransactionsTtlText;
+    private Button smartCommitCheck;
+    private Button smartCommitRecoverCheck;
     private ToolItem deleteButton;
     private DBPConnectionType selectedType;
 
@@ -127,6 +129,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                         name,
                         "255,255,255",
                         "New type",
+                        true,
+                        false,
                         true,
                         false,
                         true,
@@ -239,6 +243,32 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 300);
             placeholder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+            confirmCheck = UIUtils.createCheckbox(
+                placeholder,
+                CoreMessages.pref_page_connection_types_label_confirm_sql_execution,
+                CoreMessages.pref_page_connection_types_label_confirm_sql_execution_tip,
+                false,
+                2);
+            confirmCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    getSelectedType().setConfirmExecute(confirmCheck.getSelection());
+                }
+            });
+
+            confirmDataChangeCheck = UIUtils.createCheckbox(
+                placeholder,
+                CoreMessages.pref_page_connection_types_label_confirm_data_change,
+                CoreMessages.pref_page_connection_types_label_confirm_data_change_tip,
+                false,
+                2);
+            confirmDataChangeCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    getSelectedType().setConfirmDataChange(confirmDataChangeCheck.getSelection());
+                }
+            });
+
             autocommitCheck = UIUtils.createCheckbox(
                 placeholder,
                 CoreMessages.pref_page_connection_types_label_auto_commit_by_default,
@@ -251,16 +281,27 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                     getSelectedType().setAutocommit(autocommitCheck.getSelection());
                 }
             });
-            confirmCheck = UIUtils.createCheckbox(
-                placeholder,
-                CoreMessages.pref_page_connection_types_label_confirm_sql_execution,
-                CoreMessages.pref_page_connection_types_label_confirm_sql_execution_tip,
+
+            smartCommitCheck = UIUtils.createCheckbox(placeholder,
+                CoreMessages.action_menu_transaction_smart_auto_commit,
+                CoreMessages.action_menu_transaction_smart_auto_commit_tip,
                 false,
                 2);
-            confirmCheck.addSelectionListener(new SelectionAdapter() {
+            smartCommitCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    getSelectedType().setConfirmExecute(confirmCheck.getSelection());
+                    getSelectedType().setSmartCommit(smartCommitCheck.getSelection());
+                }
+            });
+            smartCommitRecoverCheck = UIUtils.createCheckbox(placeholder,
+                CoreMessages.action_menu_transaction_smart_auto_commit_recover,
+                CoreMessages.action_menu_transaction_smart_auto_commit_recover_tip,
+                false,
+                2);
+            smartCommitRecoverCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    getSelectedType().setSmartCommitRecover(smartCommitRecoverCheck.getSelection());
                 }
             });
 
@@ -285,19 +326,6 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             autoCloseTransactionsTtlText.setLayoutData(grd);
             autoCloseTransactionsTtlText.addModifyListener(e ->
                 getSelectedType().setCloseIdleConnectionPeriod(CommonUtils.toLong(autoCloseTransactionsTtlText.getText(), 1800)));
-
-            confirmDataChangeCheck = UIUtils.createCheckbox(
-                placeholder,
-                CoreMessages.pref_page_connection_types_label_confirm_data_change,
-                CoreMessages.pref_page_connection_types_label_confirm_data_change_tip,
-                false,
-                2);
-            confirmDataChangeCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    getSelectedType().setConfirmDataChange(confirmDataChangeCheck.getSelection());
-                }
-            });
 
             Button epButton = UIUtils.createDialogButton(
                 placeholder,
@@ -355,6 +383,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         autocommitCheck.setSelection(connectionType.isAutocommit());
         confirmCheck.setSelection(connectionType.isConfirmExecute());
         confirmDataChangeCheck.setSelection(connectionType.isConfirmDataChange());
+        smartCommitCheck.setSelection(connectionType.isSmartCommit());
+        smartCommitRecoverCheck.setSelection(connectionType.isSmartCommitRecover());
         autoCloseTransactionsCheck.setSelection(connectionType.isAutoCloseTransactions());
         autoCloseTransactionsTtlText.setText(String.valueOf(connectionType.getCloseIdleConnectionPeriod()));
 
@@ -487,6 +517,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 source.setConfirmDataChange(changed.isConfirmDataChange());
                 source.setColor(changed.getColor());
                 source.setModifyPermissions(changed.getModifyPermission());
+                source.setSmartCommit(changed.isSmartCommit());
+                source.setSmartCommitRecover(changed.isSmartCommitRecover());
                 source.setAutoCloseTransactions(changed.isAutoCloseTransactions());
                 source.setCloseIdleConnectionPeriod(changed.getCloseIdleConnectionPeriod());
                 hasChanges = true;
