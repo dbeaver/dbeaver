@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.model.lsm.test;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModel;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Lexer;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Parser;
 import org.jkiss.dbeaver.model.lsm.sql.impl.SelectStatement;
 import org.junit.Assert;
 import org.junit.Test;
@@ -68,11 +68,11 @@ public class ParseSelectStmtTest {
         
         for (String stmtText : statementsToParse) {
             var input = CharStreams.fromString(stmtText);
-            var ll = new SQLStandardLexer(input);
+            var ll = new Sql92Lexer(input);
             var tokens = new CommonTokenStream(ll);
             tokens.fill();
             
-            var pp = new SQLStandardParser(tokens);
+            var pp = new Sql92Parser(tokens);
             pp.setBuildParseTree(true);
             
             var tree = pp.sqlQuery();
@@ -85,16 +85,16 @@ public class ParseSelectStmtTest {
                 tokens.getTokens().forEach(t -> System.err.println(t.toString() + " - " + ll.getVocabulary().getSymbolicName(t.getType())));
             }
             Assert.assertTrue(noErrors);
-//            
+            
 //            SyntaxModel model = new SyntaxModel(pp);
 //            var ierrs = model.introduce(SelectStatement.class);
 //            if (!ierrs.isEmpty()) {
 //                ierrs.printToStderr();
 //            }
 //            Assert.assertTrue(ierrs.isEmpty());
-//            
+//
 //            var result = model.map(tree, SelectStatement.class);
-//            
+//
 //            if (!result.isNoErrors()) {
 //                System.err.println();
 //                System.err.println(model.stringify(result.getModel()));
