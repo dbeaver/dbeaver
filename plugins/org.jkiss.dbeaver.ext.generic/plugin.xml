@@ -954,6 +954,38 @@
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
 
+                <!-- TDengine -->
+                <driver
+                    id="tdengine"
+                    label="TDengine"
+                    class="com.taosdata.jdbc.rs.RestfulDriver"
+                    sampleURL="jdbc:TAOS-RS://{host}:{port}/[{db}]"
+                    defaultPort="6041"
+                    description="TDengine driver"
+                    supportedConfigurationTypes="MANUAL"
+                    webURL="http://www.tdengine.com"
+                    icon="icons/tdengine_icon.png"
+                    iconBig="icons/tdengine_icon_big.png"
+                    categories="timeseries">
+                    <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE[3.2.1]"/>
+                    <parameter name="supports-truncate" value="false"/>
+                </driver>
+
+                <!-- TDengine Cloud -->
+                <driver
+                    id="tdengine_cloud"
+                    label="TDengine Cloud"
+                    icon="icons/tdengine_icon.png"
+                    iconBig="icons/tdengine_icon_big.png"
+                    class="com.taosdata.jdbc.rs.RestfulDriver"
+                    anonymous="true"
+                    webURL="http://cloud.tdengine.com"
+                    description="TDengine Cloud driver"
+                    categories="timeseries">
+                    <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE[3.2.1]"/>
+                    <parameter name="supports-truncate" value="false"/>
+                </driver>
+
                 <!-- Yandex ClickHouse -->
                 <driver
                     id="yandex_clickhouse"
