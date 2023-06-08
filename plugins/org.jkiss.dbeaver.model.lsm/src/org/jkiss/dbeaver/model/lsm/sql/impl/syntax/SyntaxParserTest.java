@@ -21,7 +21,8 @@ import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.Tree;
 import org.antlr.v4.runtime.tree.Trees;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Parser.SqlQueriesContext;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser.SqlQueriesContext;
+import org.jkiss.dbeaver.model.stm.STMErrorListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,12 +60,12 @@ public class SyntaxParserTest {
             + "ORDER BY Product.ModifiedDate DESC";
         inputText += "\n\rSELECT schedule[1:2][1:1] FROM sal_emp se where s;";
         var input = CharStreams.fromString(inputText);
-        var ll = new Sql92Lexer(input);
+        var ll = new SQLStandardLexer(input);
         var tokens = new CommonTokenStream(ll);
         tokens.fill();
         
-        var pp = new Sql92Parser(tokens);
-        pp.addErrorListener(new ANTLRErrorListener() {
+        var pp = new SQLStandardParser(tokens);
+        pp.addErrorListener(new STMErrorListener() {
             @Override
             public void syntaxError(Recognizer<?, ?> recognizer, 
                 Object offendingSymbol, 

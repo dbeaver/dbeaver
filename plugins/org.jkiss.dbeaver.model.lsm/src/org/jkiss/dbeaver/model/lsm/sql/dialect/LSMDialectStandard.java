@@ -21,31 +21,31 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzerImpl;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Lexer;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Parser;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.stm.STMSource;
 import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
 import org.jkiss.utils.Pair;
 
-public class Sql92Dialect {
+public class LSMDialectStandard {
     
-    public static class Sql92Analyzer extends LSMAnalyzerImpl<Sql92Lexer, Sql92Parser> {
+    public static class SQLStandardAnalyzer extends LSMAnalyzerImpl<SQLStandardLexer, SQLStandardParser> {
         @NotNull
         @Override
-        protected Pair<Sql92Lexer, Sql92Parser> createParser(@NotNull STMSource source) {
-            Sql92Lexer lexer = new Sql92Lexer(source.getStream());
-            Sql92Parser parser =  new Sql92Parser(new CommonTokenStream(lexer));
+        protected Pair<SQLStandardLexer, SQLStandardParser> createParser(@NotNull STMSource source) {
+            SQLStandardLexer lexer = new SQLStandardLexer(source.getStream());
+            SQLStandardParser parser =  new SQLStandardParser(new CommonTokenStream(lexer));
             return new Pair<>(lexer, parser);
         }
 
         @NotNull
         @Override
-        protected STMTreeRuleNode parseSqlQueryImpl(@NotNull Sql92Parser parser) {
+        protected STMTreeRuleNode parseSqlQueryImpl(@NotNull SQLStandardParser parser) {
             return parser.sqlQuery();
         }
     }
     
-    private static final LSMAnalyzer dialect = new Sql92Analyzer();
+    private static final LSMAnalyzer dialect = new SQLStandardAnalyzer();
     
     @NotNull
     public static LSMAnalyzer getAnalyzer() {

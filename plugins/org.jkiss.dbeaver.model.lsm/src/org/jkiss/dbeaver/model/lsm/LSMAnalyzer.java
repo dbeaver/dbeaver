@@ -16,18 +16,18 @@
  */
 package org.jkiss.dbeaver.model.lsm;
 
-import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.stm.STMErrorListener;
 import org.jkiss.dbeaver.model.stm.STMSource;
 import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
 
 public interface LSMAnalyzer {
 
     @Nullable
-    STMTreeRuleNode parseSqlQueryTree(@NotNull STMSource source, @Nullable ANTLRErrorListener errorListener);
+    STMTreeRuleNode parseSqlQueryTree(@NotNull STMSource source, @Nullable STMErrorListener errorListener);
 
-    @NotNull
+    @Nullable
     LSMElement parseSqlQueryModel(@NotNull STMSource source);
     
 }

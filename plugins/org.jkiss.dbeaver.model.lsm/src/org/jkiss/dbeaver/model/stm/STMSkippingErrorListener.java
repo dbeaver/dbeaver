@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.stm;
 
-import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
@@ -25,7 +24,7 @@ import org.antlr.v4.runtime.dfa.DFA;
 
 import java.util.BitSet;
 
-public class STMSkippingErrorListener implements ANTLRErrorListener {
+public class STMSkippingErrorListener implements STMErrorListener {
 
     @Override
     public void syntaxError(Recognizer<?, ?> recognizer, Object o, int i, int i1, String s, RecognitionException e) {

@@ -26,6 +26,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModel;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModelMappingResult;
 import org.jkiss.dbeaver.model.lsm.sql.impl.SelectStatement;
+import org.jkiss.dbeaver.model.stm.STMErrorListener;
 import org.jkiss.dbeaver.model.stm.STMParserOverrides;
 import org.jkiss.dbeaver.model.stm.STMSource;
 import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
@@ -51,16 +52,16 @@ public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends STMP
     protected abstract STMTreeRuleNode parseSqlQueryImpl(@NotNull TParser parser);
 
     @NotNull
-    protected TParser prepareParser(@NotNull STMSource source, @Nullable ANTLRErrorListener errorListener) {
+    protected TParser prepareParser(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
         Pair<TLexer, TParser> pair = this.createParser(source);
         TLexer lexer = pair.getFirst();
         TParser parser = pair.getSecond();
         
         if (errorListener != null) {
             lexer.removeErrorListener(ConsoleErrorListener.INSTANCE);
-            lexer.addErrorListener(errorListener);
+            lexer.addErrorListener((ANTLRErrorListener) errorListener);
             parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
-            parser.addErrorListener(errorListener);
+            parser.addErrorListener((ANTLRErrorListener) errorListener);
         }
         
         parser.getInterpreter().setPredictionMode(PredictionMode.LL);
@@ -70,7 +71,7 @@ public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends STMP
 
     @Nullable
     @Override
-    public STMTreeRuleNode parseSqlQueryTree(@NotNull STMSource source, @Nullable ANTLRErrorListener errorListener) {
+    public STMTreeRuleNode parseSqlQueryTree(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
         try {
             TParser parser = prepareParser(source, errorListener);
             STMTreeRuleNode result = parseSqlQueryImpl(parser);

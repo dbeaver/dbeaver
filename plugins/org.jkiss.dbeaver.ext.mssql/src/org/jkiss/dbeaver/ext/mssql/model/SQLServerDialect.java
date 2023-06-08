@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
-import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
@@ -29,13 +28,14 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
-import org.jkiss.dbeaver.model.lsm.sql.dialect.Sql92Dialect;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Parser;
+import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectStandard;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialectDDLExtension;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLMultiWordRule;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLVariableRule;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
+import org.jkiss.dbeaver.model.stm.STMErrorListener;
 import org.jkiss.dbeaver.model.stm.STMSource;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -404,15 +404,16 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
         return false;
     }
     
-    private static final LSMAnalyzer analyzer = new Sql92Dialect.Sql92Analyzer() {
+    private static final LSMAnalyzer analyzer = new LSMDialectStandard.SQLStandardAnalyzer() {
         @Override
-        protected Sql92Parser prepareParser(STMSource source, ANTLRErrorListener errorListener) {
-            Sql92Parser parser = super.prepareParser(source, errorListener);
+        protected SQLStandardParser prepareParser(STMSource source, STMErrorListener errorListener) {
+            SQLStandardParser parser = super.prepareParser(source, errorListener);
             parser.setIsSupportSquareBracketQuotation(true);
             return parser;
         }
     };
 
+    @NotNull
     @Override
     public LSMAnalyzer getSyntaxAnalyzer() {
         return analyzer;

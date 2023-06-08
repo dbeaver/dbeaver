@@ -14,24 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm.sql.impl.syntax;
+package org.jkiss.dbeaver.model.stm;
 
-import org.jkiss.dbeaver.model.lsm.*;
-import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectStandard;
-import org.jkiss.dbeaver.model.stm.STMSource;
+import org.antlr.v4.runtime.ANTLRErrorListener;
 
-import java.io.StringReader;
+public interface STMErrorListener extends ANTLRErrorListener {
 
-
-public class TestEngine {
-
-    public static void main(String[] args) throws Exception {
-        STMSource source = STMSource.fromReader(new StringReader("SELECT a, b, c FROM t1 x, t2 y"));
-        
-        LSMAnalyzer dd = LSMDialectStandard.getAnalyzer();
-        
-        LSMElement model = dd.parseSqlQueryModel(source);
-        
-        System.out.println(model);
-    }
 }

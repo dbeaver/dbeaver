@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.stm;
 
-import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
@@ -28,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.util.BitSet;
 
 
-public class STMLoggingErrorListener implements ANTLRErrorListener {
+public class STMLoggingErrorListener implements STMErrorListener {
     
     private static final Logger log = LoggerFactory.getLogger(STMLoggingErrorListener.class);
 

@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.model.lsm.test;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModel;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Lexer;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Parser;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.lsm.sql.impl.SelectStatement;
 import org.junit.Assert;
 import org.junit.Test;
@@ -68,11 +68,11 @@ public class ParseSelectStmtTest {
         
         for (String stmtText : statementsToParse) {
             var input = CharStreams.fromString(stmtText);
-            var ll = new Sql92Lexer(input);
+            var ll = new SQLStandardLexer(input);
             var tokens = new CommonTokenStream(ll);
             tokens.fill();
             
-            var pp = new Sql92Parser(tokens);
+            var pp = new SQLStandardParser(tokens);
             pp.setBuildParseTree(true);
             
             var tree = pp.sqlQuery();

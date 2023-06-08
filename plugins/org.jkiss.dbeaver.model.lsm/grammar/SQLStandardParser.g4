@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-parser grammar Sql92Parser;
+parser grammar SQLStandardParser;
 
 options {
-    tokenVocab=Sql92Lexer;
+    tokenVocab=SQLStandardLexer;
     superClass=org.jkiss.dbeaver.model.stm.STMParserOverrides;
     contextSuperClass=org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
 }
