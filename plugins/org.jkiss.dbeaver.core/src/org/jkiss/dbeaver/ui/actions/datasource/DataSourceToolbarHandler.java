@@ -214,10 +214,11 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
             DataSourceToolbarUtils.triggerRefreshReadonlyElement();
         } else {
             IEditorInput editorInput = activeEditor.getEditorInput();
-            if (editorInput instanceof INavigatorEditorInput &&
-                ((INavigatorEditorInput) editorInput).getNavigatorNode().isChildOf(node)
-            ) {
-                updateToolbar();
+            if (editorInput instanceof INavigatorEditorInput) {
+                DBNNode navigatorNode = ((INavigatorEditorInput) editorInput).getNavigatorNode();
+                if (navigatorNode != null && navigatorNode.isChildOf(node)) {
+                    updateToolbar();
+                }
             }
         }
     }
