@@ -293,6 +293,19 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
         try {
             InetAddress localHost = InetAddress.getLocalHost();
             NetworkInterface ni = NetworkInterface.getByInetAddress(localHost);
+            if (ni == null || ni.getHardwareAddress() == null) {
+                Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces();
+                while (niEnum.hasMoreElements()) {
+                    ni = niEnum.nextElement();
+                    if (ni.getHardwareAddress() != null) {
+                        break;
+                    }
+                }
+            }
+            if (ni == null) {
+                log.debug("Cannot detect local network interface");
+                return "NOMACADDR";
+            }
             byte[] hardwareAddress = ni.getHardwareAddress();
 
             // Use MD5
