@@ -130,4 +130,9 @@ public abstract class AbstractDataSourceInfo implements DBPDataSourceInfo
     {
         return false;
     }
+
+    @Override
+    public boolean hasInheritedNodes() {
+        return false;
+    }
 }
