@@ -21,21 +21,20 @@ import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.Tree;
 import org.antlr.v4.runtime.tree.Trees;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser.SqlQueriesContext;
 import org.jkiss.dbeaver.model.stm.STMErrorListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.BitSet;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.TransformerException;
-import java.io.IOException;
-import java.util.BitSet;
 
 
 public class SyntaxParserTest {
 
-    private static final Logger log = LoggerFactory.getLogger(SyntaxParserTest.class);
+    private static final Log log = Log.getLog(SyntaxParserTest.class);
 
     public static void main(String[] args) throws IOException, XMLStreamException, FactoryConfigurationError, TransformerException {
  

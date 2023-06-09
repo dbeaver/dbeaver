@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.sqlite.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.DBPKeywordType;
@@ -25,11 +24,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
-import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectStandard;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
-import org.jkiss.dbeaver.model.stm.STMErrorListener;
-import org.jkiss.dbeaver.model.stm.STMSource;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 
@@ -123,21 +117,4 @@ public class SQLiteSQLDialect extends GenericSQLDialect {
     public boolean supportsIndexCreateAndDrop() {
         return true;
     }
-    
-    private static final LSMAnalyzer analyzer = new LSMDialectStandard.SQLStandardAnalyzer() {
-        @NotNull
-        @Override
-        protected SQLStandardParser prepareParser(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
-            SQLStandardParser parser = super.prepareParser(source, errorListener);
-            parser.setIsSupportSquareBracketQuotation(true);
-            return parser;
-        }
-    };
-
-    @NotNull
-    @Override
-    public LSMAnalyzer getSyntaxAnalyzer() {
-        return analyzer;
-    }
-
 }

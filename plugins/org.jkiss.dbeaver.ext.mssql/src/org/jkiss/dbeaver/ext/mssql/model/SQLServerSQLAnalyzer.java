@@ -14,24 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm.sql.impl.syntax;
+package org.jkiss.dbeaver.ext.mssql.model;
 
-import org.jkiss.dbeaver.model.lsm.*;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzer;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
+import org.jkiss.dbeaver.model.stm.STMErrorListener;
 import org.jkiss.dbeaver.model.stm.STMSource;
 
-import java.io.StringReader;
-
-
-public class TestEngine {
-
-    public static void main(String[] args) throws Exception {
-        STMSource source = STMSource.fromReader(new StringReader("SELECT a, b, c FROM t1 x, t2 y"));
-        
-        LSMAnalyzer dd = new SQLStandardAnalyzer();
-        
-        LSMElement model = dd.parseSqlQueryModel(source);
-        
-        System.out.println(model);
+public class SQLServerSQLAnalyzer extends SQLStandardAnalyzer {
+    @Override
+    protected SQLStandardParser prepareParser(STMSource source, STMErrorListener errorListener) {
+        SQLStandardParser parser = super.prepareParser(source, errorListener);
+        parser.setIsSupportSquareBracketQuotation(true);
+        return parser;
     }
 }

@@ -21,15 +21,14 @@ import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jkiss.dbeaver.Log;
 
 import java.util.BitSet;
 
 
 public class STMLoggingErrorListener implements STMErrorListener {
     
-    private static final Logger log = LoggerFactory.getLogger(STMLoggingErrorListener.class);
+    private static final Log log = Log.getLog(STMLoggingErrorListener.class);
 
 
     @Override

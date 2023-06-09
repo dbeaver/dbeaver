@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.lsm.sql.dialect;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzerImpl;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
@@ -27,28 +26,18 @@ import org.jkiss.dbeaver.model.stm.STMSource;
 import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
 import org.jkiss.utils.Pair;
 
-public class LSMDialectStandard {
-    
-    public static class SQLStandardAnalyzer extends LSMAnalyzerImpl<SQLStandardLexer, SQLStandardParser> {
-        @NotNull
-        @Override
-        protected Pair<SQLStandardLexer, SQLStandardParser> createParser(@NotNull STMSource source) {
-            SQLStandardLexer lexer = new SQLStandardLexer(source.getStream());
-            SQLStandardParser parser =  new SQLStandardParser(new CommonTokenStream(lexer));
-            return new Pair<>(lexer, parser);
-        }
-
-        @NotNull
-        @Override
-        protected STMTreeRuleNode parseSqlQueryImpl(@NotNull SQLStandardParser parser) {
-            return parser.sqlQuery();
-        }
-    }
-    
-    private static final LSMAnalyzer dialect = new SQLStandardAnalyzer();
-    
+public class SQLStandardAnalyzer extends LSMAnalyzerImpl<SQLStandardLexer, SQLStandardParser> {
     @NotNull
-    public static LSMAnalyzer getAnalyzer() {
-        return dialect;
+    @Override
+    protected Pair<SQLStandardLexer, SQLStandardParser> createParser(@NotNull STMSource source) {
+        SQLStandardLexer lexer = new SQLStandardLexer(source.getStream());
+        SQLStandardParser parser =  new SQLStandardParser(new CommonTokenStream(lexer));
+        return new Pair<>(lexer, parser);
+    }
+
+    @NotNull
+    @Override
+    protected STMTreeRuleNode parseSqlQueryImpl(@NotNull SQLStandardParser parser) {
+        return parser.sqlQuery();
     }
 }

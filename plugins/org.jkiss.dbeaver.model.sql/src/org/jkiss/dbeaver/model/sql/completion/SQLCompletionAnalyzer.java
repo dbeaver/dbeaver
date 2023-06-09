@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
+import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectRegistry;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -983,7 +984,9 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         List<Pair<String, String>> tableRefs = new ArrayList<>();
         try {
             STMSource querySource = STMSource.fromReader(new StringReader(activeQuery.getText()));
-            LSMAnalyzer analyzer = request.getContext().getDataSource().getSQLDialect().getSyntaxAnalyzer();
+            LSMAnalyzer analyzer = LSMDialectRegistry.getInstance().getAnalyzerForDialect(
+                request.getContext().getDataSource().getSQLDialect()
+            );
             STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
             tableRefs = getTableAndAliasFromSources(tree);
         } catch (Exception e) {

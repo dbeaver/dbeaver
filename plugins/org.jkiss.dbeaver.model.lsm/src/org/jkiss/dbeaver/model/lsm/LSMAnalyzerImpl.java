@@ -23,6 +23,7 @@ import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModel;
 import org.jkiss.dbeaver.model.lsm.mapping.SyntaxModelMappingResult;
 import org.jkiss.dbeaver.model.lsm.sql.impl.SelectStatement;
@@ -31,11 +32,9 @@ import org.jkiss.dbeaver.model.stm.STMParserOverrides;
 import org.jkiss.dbeaver.model.stm.STMSource;
 import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
 import org.jkiss.utils.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends STMParserOverrides> implements LSMAnalyzer {
-    private static final Logger log = LoggerFactory.getLogger(LSMAnalyzerImpl.class);
+
+    private static final Log log = Log.getLog(LSMAnalyzerImpl.class);
     
     private final SyntaxModel syntaxModel;
     

@@ -40,12 +40,12 @@
    <element name="toolBar">
       <complexType>
          <sequence>
-        	<element name="item" minOccurs="0" maxOccurs="unbounded">
+            <element name="item" minOccurs="0" maxOccurs="unbounded">
                <attribute name="key" type="string"/>
                <attribute name="name" type="string"/>
                <attribute name="commandId" type="string"/>
-              <attribute name="defaultVisibility" type="boolean"/>
-        	</element
+               <attribute name="defaultVisibility" type="boolean"/>
+            </element>
          </sequence>
          <attribute name="key" type="string"/>
          <attribute name="name" type="string"/>

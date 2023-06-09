@@ -26,8 +26,6 @@ import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.impl.sql.SQLDialectQueryGenerator;
-import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
-import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectStandard;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.parser.EmptyTokenPredicateSet;
 import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicateSet;
@@ -482,9 +480,4 @@ public interface SQLDialect {
      * @return a set of SQLBlockCompletions with information about blocks for autoedit
      */
     SQLBlockCompletions getBlockCompletions();
-
-    @NotNull
-    default LSMAnalyzer getSyntaxAnalyzer() {
-        return LSMDialectStandard.getAnalyzer();
-    }
 }

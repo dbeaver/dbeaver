@@ -7,7 +7,9 @@ Bundle-Release-Date: 20230605
 Bundle-SymbolicName: org.jkiss.dbeaver.model.lsm;singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.bundle.antlr4,
- org.jkiss.utils
+ org.jkiss.dbeaver.model,
+ org.jkiss.utils,
+ org.eclipse.core.runtime
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: org.jkiss.dbeaver.model.lsm,
  org.jkiss.dbeaver.model.lsm.mapping,
@@ -17,6 +19,5 @@ Export-Package: org.jkiss.dbeaver.model.lsm,
  org.jkiss.dbeaver.model.lsm.sql.impl,
  org.jkiss.dbeaver.model.lsm.sql.impl.syntax,
  org.jkiss.dbeaver.model.stm
-Import-Package: org.jkiss.code,
- org.slf4j
+Import-Package: org.jkiss.code
 Automatic-Module-Name: org.jkiss.dbeaver.model.lsm
