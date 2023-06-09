@@ -295,6 +295,12 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 } finally {
                     txnIsolationLevelReadInProgress = false;
                 }
+            } else {
+                // Wait
+                long startTime = System.currentTimeMillis();
+                while (txnIsolationLevelReadInProgress) {
+                    RuntimeUtils.pause(50);
+                }
             }
             if (transactionIsolationLevel == null) {
                 transactionIsolationLevel = Connection.TRANSACTION_NONE;
