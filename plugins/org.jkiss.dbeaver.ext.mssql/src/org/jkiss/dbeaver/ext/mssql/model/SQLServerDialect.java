@@ -398,5 +398,4 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
     public boolean needsDefaultDataTypes() {
         return false;
     }
-
 }

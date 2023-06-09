@@ -13,8 +13,7 @@ Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.bundle.antlr4
 Export-Package: org.jkiss.dbeaver.ext.sqlite,
  org.jkiss.dbeaver.ext.sqlite.model
-Import-Package: org.jkiss.code,
- org.slf4j
+Import-Package: org.jkiss.code
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: %Bundle-Vendor

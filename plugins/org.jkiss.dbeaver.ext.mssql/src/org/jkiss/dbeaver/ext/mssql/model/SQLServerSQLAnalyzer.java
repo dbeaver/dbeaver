@@ -16,14 +16,17 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.stm.STMErrorListener;
 import org.jkiss.dbeaver.model.stm.STMSource;
 
 public class SQLServerSQLAnalyzer extends SQLStandardAnalyzer {
+    @NotNull
     @Override
-    protected SQLStandardParser prepareParser(STMSource source, STMErrorListener errorListener) {
+    protected SQLStandardParser prepareParser(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
         SQLStandardParser parser = super.prepareParser(source, errorListener);
         parser.setIsSupportSquareBracketQuotation(true);
         return parser;

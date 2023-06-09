@@ -117,4 +117,5 @@ public class SQLiteSQLDialect extends GenericSQLDialect {
     public boolean supportsIndexCreateAndDrop() {
         return true;
     }
+
 }

@@ -21,29 +21,35 @@ The first argument is `STMSource`. It's responsible for providing the source tex
 The second argument is of type `STMErrorListener` and used to define the behaviour on errors while parsing.
 Use `STMLoggingErrorListener` to log errors and `STMSkippingErrorListener` to just skip them and do nothing.
 
-`SQLStandardDialect` is a singleton encapsulating `SQLStandardAnalyzer` with parser and lexer by the common grammar.
-It's used to get a `SQLStandardAnalyzer` in implementation of `SQLDialect:getSyntaxAnalyzer` method.
-```java
-    default public LSMAnalyzer getSyntaxAnalyzer() {
-        return SQLStandardDialect.getAnalyzer();
-    }
+The concrete implementation of `LSMAnalyzer` used according to `SQLDialect` implementation with `LSMDialectRegistry`. `LSMDialectRegistry` contains a map with analyzer to dialect correspondence, which comes from extension point declared in `plugin.xml`.
+`SQLStandardAnalyzer` is a common analyzer with parser and lexer by the common grammar for most SQL databases without any specific settings. It's declared via extension point in `org.jkiss.dbeaver.model.sql.plugin.xml`.
+
+```xml
+    <extension point="org.jkiss.dbeaver.lsm.dialectSyntax">
+        <lsmDialect analyzerClass="org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzer">
+            <appliesTo dialectClass="org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect"/>
+        </lsmDialect>
+    </extension>
 ```
-If we need to use a common grammar, but with a specific parser configuration,
-then this method should be overridden by the corresponding database dialect.
+If we need to use a common grammar, but with a specific parser configuration, or want to use analyzer with database-specific parser and lexer,
+then we need to describe it accordingly using extension point.
 The following listing gives an example of configuring parser for specific dialect to use square brackets quotation for identifiers.
 ```java
-
-private static final LSMAnalyzer analyzer = new SQLStandardDialect.SQLStandardAnalyzer() {
+public class SQLiteSQLAnalyzer extends SQLStandardAnalyzer {
+    @NotNull
     @Override
-    private SQLStandardParser prepareParser(LSMSource source, STMErrorListener errorListener) {
+    protected SQLStandardParser prepareParser(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
         SQLStandardParser parser = super.prepareParser(source, errorListener);
         parser.setIsSupportSquareBracketQuotation(true);
         return parser;
     }
-};
-
-@Override
-public LSMAnalyzer getSyntaxAnalyzer() {
-   return analyzer;
 }
+```
+Usage of corresponding extension point for this case is the following:
+```xml
+    <extension point="org.jkiss.dbeaver.lsm.dialectSyntax">
+        <lsmDialect analyzerClass="org.jkiss.dbeaver.ext.sqlite.model.SQLiteSQLAnalyzer">
+            <appliesTo dialectClass="org.jkiss.dbeaver.ext.sqlite.model.SQLiteSQLDialect"/>
+        </lsmDialect>
+    </extension>
 ```
