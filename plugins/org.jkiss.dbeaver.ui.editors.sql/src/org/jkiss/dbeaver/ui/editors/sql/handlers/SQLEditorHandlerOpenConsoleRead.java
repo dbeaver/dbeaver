@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.handlers;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -48,19 +45,20 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SQLEditorHandlerOpenConsoleRead extends AbstractHandler {
 
     private static final Log log = Log.getLog(SQLEditorHandlerOpenConsoleRead.class);
 
-    public SQLEditorHandlerOpenConsoleRead()
-    {
+    public SQLEditorHandlerOpenConsoleRead() {
     }
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
+    public Object execute(ExecutionEvent event) throws ExecutionException {
         try {
-        	IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
+            IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
             SQLNavigatorContext navContext = null;
             ISelection currentSelection = HandlerUtil.getCurrentSelection(event);
             List<DBSObject> selectedObjects = NavigatorUtils.getSelectedObjects(currentSelection);
@@ -73,7 +71,8 @@ public class SQLEditorHandlerOpenConsoleRead extends AbstractHandler {
                     entities.add((DBSEntity) object);
                 }
                 if (object instanceof DBNDatabaseFolder) {
-                    DBSObject parentObject = object.getParentObject(); // It can be table properties window or database navigator table folder (columns, keys etc.)
+                	// It can be table properties window or database navigator table folder (columns, keys etc.)
+                    DBSObject parentObject = object.getParentObject(); 
                     if (parentObject instanceof DBSEntity) {
                         entities.add((DBSEntity) parentObject);
                     }
@@ -88,18 +87,19 @@ public class SQLEditorHandlerOpenConsoleRead extends AbstractHandler {
                 title = DBUtils.getObjectFullName(entities.get(0), DBPEvaluationContext.DML);
             }
             DBRRunnableWithResult<String> generator = SQLGeneratorContributor.SELECT_GENERATOR(entities, true);
-            UIUtils.runInUI( generator);
+            UIUtils.runInUI(generator);
             String sql = CommonUtils.notEmpty(generator.getResult());
 
             UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
             if (serviceSQL != null) {
-                openAndExecuteSQLScript(workbenchWindow,navContext,title,!entities.isEmpty(),currentSelection,sql);
+                openAndExecuteSQLScript(workbenchWindow, navContext, title, !entities.isEmpty(), currentSelection, sql);
             }
         } catch (Exception e) {
-        	DBWorkbench.getPlatformUI().showError("Open console", "Excecute query", e);
+            DBWorkbench.getPlatformUI().showError("Open console", "Excecute query", e);
         }
         return null;
     }
+    
     /**
      * openAndExecuteSQLScript in a SQL window
      */
