@@ -178,6 +178,21 @@ public class CoreMessages extends NLS {
 	public static String dialog_project_export_wizard_start_title;
 	public static String dialog_project_export_wizard_window_title;
 
+	public static String dialog_workspace_import_wizard_window_title;
+	public static String dialog_workspace_import_wizard_name;
+	public static String dialog_workspace_import_wizard_title;
+	public static String dialog_workspace_import_wizard_file_select_name;
+	public static String dialog_workspace_import_wizard_file_select_title;
+	public static String dialog_workspace_import_wizard_start_message_configure_settings;
+	public static String dialog_workspace_export_wizard_window_title;
+	public static String dialog_workspace_export_wizard_page_title;
+	public static String dialog_workspace_export_wizard_page_name;
+	public static String dialog_workspace_export_wizard_file_name;
+	public static String dialog_workspace_export_wizard_file_path;
+	public static String dialog_workspace_export_wizard_file_path_dialog;
+	public static String dialog_workspace_export_wizard_start_message_configure_settings;
+
+
 	public static String dialog_project_import_wizard_file_checkbox_import_libraries;
 	public static String dialog_project_import_wizard_file_column_source_name;
 	public static String dialog_project_import_wizard_file_column_target_name;
@@ -619,7 +634,8 @@ public class CoreMessages extends NLS {
     public static String pref_page_logs_files_max_size_label;
     public static String pref_page_logs_files_max_count_label;
 
-    static {
+
+	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, CoreMessages.class);
 	}
