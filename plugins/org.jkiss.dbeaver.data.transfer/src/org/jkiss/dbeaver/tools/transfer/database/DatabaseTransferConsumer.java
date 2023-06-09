@@ -53,7 +53,10 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Stream transfer consumer
@@ -88,6 +91,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private boolean isPreview;
     private List<Object[]> previewRows;
     private DBDAttributeBinding[] rsAttributes;
+    private DBSObjectContainer container;
+
+    public void setContainer(DBSObjectContainer container) {
+        this.container = container;
+    }
 
     public static class ColumnMapping {
         public DBDAttributeBinding sourceAttr;
@@ -702,7 +710,15 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             // Refresh navigator
             monitor.subTask("Refresh navigator model");
             try {
-                settings.getContainerNode().refreshNode(monitor, this);
+                var containerNode = settings.getContainerNode();
+                if (containerNode != null) {
+                    containerNode.refreshNode(monitor, this);
+                } else {
+                    var container = settings.getContainer();
+                    if (container instanceof DBPRefreshableObject) {
+                        ((DBPRefreshableObject) container).refreshObject(monitor);
+                    }
+                }
             } catch (Exception e) {
                 log.debug("Error refreshing navigator model after data consumer", e);
             }
@@ -720,9 +736,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             if (targetObject != null) {
                 // Refresh node first (this will refresh table data as well)
                 try {
-                    DBNDatabaseNode objectNode = DBNUtils.getNodeByObject(targetObject);
-                    if (objectNode != null) {
-                        objectNode.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
+                    var navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
+                    if (navigatorModel != null) {
+                        DBNDatabaseNode objectNode = DBNUtils.getNodeByObject(targetObject);
+                        if (objectNode != null) {
+                            objectNode.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
+                        }
                     }
                 } catch (Exception e) {
                     log.error("Error refreshing object '" + targetObject.getName() + "'", e);
@@ -743,6 +762,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     public void setTargetObject(DBSDataManipulator targetObject) {
         this.localTargetObject = targetObject;
+    }
+
+    public DBSObjectContainer getContainer() {
+        return container;
     }
 
     @Override
@@ -883,11 +906,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     private class PreviewBatch implements DBSDataManipulator.ExecuteBatch {
+
         @Override
         public void add(@NotNull Object[] attributeValues) throws DBCException {
             previewRows.add(attributeValues);
         }
-
         @NotNull
         @Override
         public DBCStatistics execute(@NotNull DBCSession session, Map<String, Object> options) throws DBCException {

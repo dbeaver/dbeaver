@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
+import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -49,6 +51,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.dbeaver.runtime.DBServiceConnections;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -2487,6 +2490,24 @@ public final class DBUtils {
             }
         }
         return result;
+    }
+
+    public static boolean initDataSource(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer dataSource,
+        @Nullable DBRProgressListener onFinish
+    ) throws DBException {
+        if (!dataSource.isConnected()) {
+            DBServiceConnections serviceConnections = DBWorkbench.getService(DBServiceConnections.class);
+            if (serviceConnections != null) {
+                serviceConnections.initConnection(monitor, dataSource, onFinish);
+            }
+        } else {
+            if (onFinish != null) {
+                onFinish.onTaskFinished(Status.OK_STATUS);
+            }
+        }
+        return dataSource.isConnected();
     }
 
     public interface ChildExtractor<PARENT, CHILD> {

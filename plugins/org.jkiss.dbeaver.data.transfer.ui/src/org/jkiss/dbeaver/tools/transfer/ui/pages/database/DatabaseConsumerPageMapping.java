@@ -1234,7 +1234,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     protected boolean determinePageCompletion()
     {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
-        if (settings.getContainerNode() == null) {
+        if (settings.getContainer() == null) {
             setErrorMessage(DTUIMessages.database_consumer_page_mapping_error_message_set_target_container);
             return false;
         }

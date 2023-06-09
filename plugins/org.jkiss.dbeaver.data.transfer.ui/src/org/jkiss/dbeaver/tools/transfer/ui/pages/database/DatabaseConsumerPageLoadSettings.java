@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPReferentialIntegrityController;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodDescriptor;
@@ -438,12 +437,12 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
 
     private void loadInsertMethods() {
         DatabaseConsumerSettings settings = getSettings();
-        DBNDatabaseNode containerNode = settings.getContainerNode();
-        if (containerNode == null) {
+        var container = settings.getContainer();
+        if (container == null) {
             return;
         }
 
-        DBPDataSource dataSource = containerNode.getDataSource();
+        DBPDataSource dataSource = container.getDataSource();
 
         List<SQLInsertReplaceMethodDescriptor> insertMethodsDescriptors = null;
         if (dataSource != null) {
