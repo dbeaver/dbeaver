@@ -61,6 +61,7 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
     private Button moveUpButton;
     private Button moveDownButton;
     private Color enabledColor, disabledColor;
+    private Button isSnapshotRepository;
 
     @Override
     public void init(IWorkbench workbench)
@@ -191,6 +192,16 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
                     getSelectedRepository().setScopes(CommonUtils.splitString(scopeText.getText(), ','));
                 }
             });
+            isSnapshotRepository = UIUtils.createCheckbox(propsGroup,
+                UIConnectionMessages.pref_page_drivers_maven_checkbox_snapshot, false);
+            isSnapshotRepository.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (getSelectedRepository() != null) {
+                        getSelectedRepository().setIsSnapshot(isSnapshotRepository.getSelection());
+                    }
+                }
+            });
         }
 
         {
@@ -263,6 +274,9 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
             scopeText.setEditable(isEditable);
             scopeText.setText(CommonUtils.makeString(repo.getScopes(), ','));
 
+            isSnapshotRepository.setEnabled(isEditable);
+            isSnapshotRepository.setSelection(repo.isSnapshot());
+
             userNameText.setEnabled(true);
             userNameText.setText(CommonUtils.notEmpty(repo.getAuthInfo().getUserName()));
             userPasswordText.setEnabled(true);
@@ -275,6 +289,7 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
             urlText.setEnabled(false);
             scopeText.setEnabled(false);
             userNameText.setEnabled(false);
+            isSnapshotRepository.setEnabled(false);
             userPasswordText.setEnabled(false);
         }
         moveUpButton.setEnabled(mavenRepoTable.getSelectionIndex() > 0);
