@@ -25,9 +25,9 @@ import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 public class QMMTransactionInfo extends QMMObject {
 
     private final QMMConnectionInfo connection;
-    private final QMMTransactionInfo previous;
+    private final transient QMMTransactionInfo previous;
     private boolean committed;
-    private final QMMTransactionSavepointInfo savepointStack;
+    private final transient QMMTransactionSavepointInfo savepointStack;
 
     QMMTransactionInfo(QMMConnectionInfo connection, QMMTransactionInfo previous) {
         super(QMMetaObjectType.TRANSACTION_INFO);
