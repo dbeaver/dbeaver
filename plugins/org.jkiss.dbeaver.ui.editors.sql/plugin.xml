@@ -215,8 +215,7 @@
         <command id="org.jkiss.dbeaver.core.sql.editor.console" name="%command.org.jkiss.dbeaver.core.sql.editor.console.name" description="%command.org.jkiss.dbeaver.core.sql.editor.console.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.sql.editor.forSelection" name="%command.org.jkiss.dbeaver.core.sql.editor.forSelection.name" description="%command.org.jkiss.dbeaver.core.sql.editor.forSelection.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.sql.editor.forSelectionConsole" name="%command.org.jkiss.dbeaver.core.sql.editor.forSelectionConsole.name" description="%command.org.jkiss.dbeaver.core.sql.editor.forSelectionConsole.description" categoryId="org.jkiss.dbeaver.core.database">
-        <commandParameter id="console" name="Open console" optional="false">
-        </commandParameter>
+            <commandParameter id="console" name="Open console" optional="false" />
         </command>
         <command id="org.jkiss.dbeaver.core.sql.editor.defaultCommand" name="%command.org.jkiss.dbeaver.core.sql.editor.open.name" description="%command.org.jkiss.dbeaver.core.sql.editor.open.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.sql.editor.open.default" name="%command.org.jkiss.dbeaver.core.sql.editor.open.default.name" description="%command.org.jkiss.dbeaver.core.sql.editor.open.default.description" categoryId="org.jkiss.dbeaver.core.database">
