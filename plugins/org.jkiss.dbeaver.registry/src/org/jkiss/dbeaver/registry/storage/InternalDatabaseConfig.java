@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry.storage;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 public interface InternalDatabaseConfig {
 
@@ -32,4 +33,12 @@ public interface InternalDatabaseConfig {
     String getUser();
 
     String getPassword();
+
+    /**
+     * Sets prefix for sql queries params (f.e. schema names for tables)
+     */
+    @NotNull
+    static String setPrefixes(@NotNull String sql, @Nullable String prefix) {
+        return sql.replaceAll("\\{prefix}", prefix == null ? "" : prefix + ".");
+    }
 }
