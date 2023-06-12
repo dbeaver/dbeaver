@@ -22,12 +22,16 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.File;
@@ -98,6 +102,13 @@ public class ConfigurationImportWizard extends Wizard implements IImportWizard {
                 } catch (IOException exception) {
                     return Status.error("Error reading file", exception);
                 }
+                if (UIUtils.confirmAction(getShell(),
+                    NLS.bind(CoreMessages.dialog_workspace_import_wizard_window_restart_dialog_title, GeneralUtils.getProductName()),
+                    NLS.bind(CoreMessages.dialog_workspace_import_wizard_window_restart_dialog_message, GeneralUtils.getProductName())
+                )) {
+                    UIUtils.asyncExec(() -> PlatformUI.getWorkbench().restart());
+                }
+
                 return Status.OK_STATUS;
             }
         }.schedule();

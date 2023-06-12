@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
 import org.jkiss.utils.CommonUtils;
 
@@ -31,8 +32,7 @@ import java.nio.file.Path;
 
 public class ConfigurationExportWizardPage extends WizardPage {
 
-    private Text fileName;
-    private TextWithOpenFolder folder;
+    private TextWithOpenFile file;
 
     protected ConfigurationExportWizardPage() {
         super(CoreMessages.dialog_workspace_export_wizard_page_name);
@@ -43,12 +43,14 @@ public class ConfigurationExportWizardPage extends WizardPage {
     @Override
     public void createControl(@NotNull Composite parent) {
         Composite placeholder = UIUtils.createPlaceholder(parent, 2);
-        fileName = UIUtils.createLabelText(placeholder, CoreMessages.dialog_workspace_export_wizard_file_name, "");
-        UIUtils.createControlLabel(placeholder, CoreMessages.dialog_workspace_export_wizard_file_path);
-        folder = new TextWithOpenFolder(placeholder, CoreMessages.dialog_workspace_export_wizard_file_path_dialog);
-        folder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        fileName.addModifyListener(e -> updateState());
-        folder.getTextControl().addModifyListener(e -> updateState());
+        UIUtils.createControlLabel(placeholder, CoreMessages.dialog_workspace_export_wizard_file_name);
+        file = new TextWithOpenFile(placeholder, CoreMessages.dialog_workspace_export_wizard_file_path_dialog,
+            new String[]{
+                "*.zip"
+            }
+        );
+        file.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        file.getTextControl().addModifyListener(e -> updateState());
         updateState();
         setControl(placeholder);
     }
@@ -61,8 +63,8 @@ public class ConfigurationExportWizardPage extends WizardPage {
     @Override
     public boolean isPageComplete() {
         try {
-            if (!CommonUtils.isEmpty(fileName.getText()) && !CommonUtils.isEmpty(fileName.getText())) {
-                Path of = Path.of(folder.getText(), fileName.getText());
+            if (!CommonUtils.isEmpty(file.getText())) {
+                Path path = Path.of(file.getText());
                 return true;
             }
         } catch (InvalidPathException exception) {
@@ -72,6 +74,6 @@ public class ConfigurationExportWizardPage extends WizardPage {
     }
 
     public ConfigurationExportData getExportData() {
-        return new ConfigurationExportData(fileName.getText(),folder.getText());
+        return new ConfigurationExportData(file.getText());
     }
 }

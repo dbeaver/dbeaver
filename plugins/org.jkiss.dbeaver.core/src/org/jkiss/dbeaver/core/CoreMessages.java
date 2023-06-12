@@ -179,6 +179,8 @@ public class CoreMessages extends NLS {
 	public static String dialog_project_export_wizard_window_title;
 
 	public static String dialog_workspace_import_wizard_window_title;
+	public static String dialog_workspace_import_wizard_window_restart_dialog_title;
+	public static String dialog_workspace_import_wizard_window_restart_dialog_message;
 	public static String dialog_workspace_import_wizard_name;
 	public static String dialog_workspace_import_wizard_title;
 	public static String dialog_workspace_import_wizard_file_select_name;
@@ -188,7 +190,6 @@ public class CoreMessages extends NLS {
 	public static String dialog_workspace_export_wizard_page_title;
 	public static String dialog_workspace_export_wizard_page_name;
 	public static String dialog_workspace_export_wizard_file_name;
-	public static String dialog_workspace_export_wizard_file_path;
 	public static String dialog_workspace_export_wizard_file_path_dialog;
 	public static String dialog_workspace_export_wizard_start_message_configure_settings;
 

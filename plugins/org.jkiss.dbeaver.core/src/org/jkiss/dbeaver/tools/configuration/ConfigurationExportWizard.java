@@ -28,8 +28,6 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.utils.IOUtils;
 
 import java.io.File;
@@ -70,16 +68,25 @@ public class ConfigurationExportWizard extends Wizard implements IExportWizard {
             return false;
         }
         ConfigurationExportData exportData = pageMain.getExportData();
-        String folder = exportData.getFolder();
-        String fileName = exportData.getFilename();
-        Path zipFile = Path.of(folder, fileName + ".zip");
+        String path = exportData.getFile();
+        if (!exportData.getFile().endsWith(".zip")) {
+            path += ".zip";
+        }
+        Path zipFile = Path.of(path);
         new Job("Copying workspace configuration") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                try(ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile.toFile()))) {
-                    if (!zipFile.toFile().canWrite()) {
-                        return Status.error("Error, read-only export destination");
+                Path parent = zipFile.getParent();
+                if (parent != null && !parent.toFile().canWrite()) {
+                    return Status.error("Error, read-only export destination");
+                }
+                if (zipFile.toFile().exists()) {
+                    boolean delete = zipFile.toFile().delete();
+                    if (!delete) {
+                        return Status.error("Error deleting previous ZIP file contents");
                     }
+                }
+                try(ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile.toFile()))) {
                     Files.walkFileTree(workbench, new SimpleFileVisitor<>() {
                         @Override
                         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {

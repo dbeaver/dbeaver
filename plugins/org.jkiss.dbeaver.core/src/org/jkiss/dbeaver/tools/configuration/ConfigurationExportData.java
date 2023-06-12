@@ -21,18 +21,13 @@ import org.jkiss.code.NotNull;
 public class ConfigurationExportData {
 
     private final String filename;
-    private final String folder;
 
-    public ConfigurationExportData(@NotNull String filename, @NotNull String folder) {
-        this.filename = filename;
-        this.folder = folder;
+    public ConfigurationExportData(@NotNull String file) {
+        this.filename = file;
     }
 
-    public String getFilename() {
+    @NotNull
+    public String getFile() {
         return filename;
-    }
-
-    public String getFolder() {
-        return folder;
     }
 }
