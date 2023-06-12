@@ -16,27 +16,31 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.events.IHyperlinkListener;
 import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.ui.ShellUtils;
 
 public class ConnectionPageDeprecation extends ConnectionWizardPage {
-    private final DBPDataSourceContainer dataSource;
+    private final DBPDriver driver;
 
-    public ConnectionPageDeprecation(@NotNull DBPDataSourceContainer dataSource) {
+    public ConnectionPageDeprecation(@NotNull DBPDriver driver) {
         super(ConnectionPageDeprecation.class.getName());
-        this.dataSource = dataSource;
+        this.driver = driver;
 
-        setTitle("Deprecated driver");
-        setDescription("This driver is deprecated and cannot be used");
+        setTitle(CoreMessages.dialog_connection_deprecated_title);
+        setDescription(CoreMessages.dialog_connection_deprecated_description);
+        setPageComplete(false);
     }
 
     @Override
@@ -45,13 +49,14 @@ public class ConnectionPageDeprecation extends ConnectionWizardPage {
 
         final Composite composite = toolkit.createComposite(parent, SWT.BORDER);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        composite.setLayout(new FillLayout(SWT.HORIZONTAL | SWT.VERTICAL));
+        composite.setLayout(new GridLayout(1, false));
 
         final FormText text = new FormText(composite, SWT.NO_FOCUS);
         text.setFont("header", JFaceResources.getFont("org.eclipse.jface.headerfont"));
-        text.setText(dataSource.getDriver().getDeprecationReason(), true, false);
+        text.setText(driver.getDeprecationReason(), true, false);
         text.setHyperlinkSettings(toolkit.getHyperlinkGroup());
         text.addHyperlinkListener(IHyperlinkListener.linkActivatedAdapter(e -> ShellUtils.launchProgram(e.getHref().toString())));
+        text.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).hint(200, 200).create());
 
         toolkit.adapt(text, false, true);
 

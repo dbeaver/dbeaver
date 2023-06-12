@@ -1067,7 +1067,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         public void run()
         {
             getDiagram().setAttributeStyle(style, !isChecked());
-            refreshDiagram(true, false);
+            refreshEntityAndAttributes();
         }
     }
 
@@ -1116,11 +1116,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 for (ERDEntity entity : diagram.getEntities()) {
                     entity.reloadAttributes(diagram);
                 }
-                for (Object object : getGraphicalViewer().getContents().getChildren()) {
-                    if (object instanceof EntityPart) {
-                        ((EntityPart) object).refresh();
-                    }
-                }
+                refreshEntityAndAttributes();
             } else {
                 for (Object object : ((IStructuredSelection)getGraphicalViewer().getSelection()).toArray()) {
                     if (object instanceof EntityPart) {
@@ -1157,18 +1153,22 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 EntityDiagram diagram = getDiagram();
                 ERDAttributeVisibility attrVisibility = CommonUtils.valueOf(ERDAttributeVisibility.class, CommonUtils.toString(event.getNewValue()));
                 diagram.setAttributeVisibility(attrVisibility);
-                for (ERDEntity entity : diagram.getEntities()) {
-                    entity.reloadAttributes(diagram);
-                }
-                for (Object object : getGraphicalViewer().getContents().getChildren()) {
-                    if (object instanceof EntityPart) {
-                        ((EntityPart) object).refresh();
-                    }
-                }
+                refreshEntityAndAttributes();
             } else if (ERDConstants.PREF_ATTR_STYLES.equals(event.getProperty())) {
-                refreshDiagram(true, false);
+                refreshEntityAndAttributes();
             } else if (ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS.equals(event.getProperty()) || ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS.equals(event.getProperty())) {
                 refreshDiagram(true, true);
+            }
+        }
+    }
+
+    private void refreshEntityAndAttributes() {
+        for (ERDEntity entity : getDiagram().getEntities()) {
+            entity.reloadAttributes(getDiagram());
+        }
+        for (Object object : getGraphicalViewer().getContents().getChildren()) {
+            if (object instanceof EntityPart) {
+                ((EntityPart) object).refresh();
             }
         }
     }
