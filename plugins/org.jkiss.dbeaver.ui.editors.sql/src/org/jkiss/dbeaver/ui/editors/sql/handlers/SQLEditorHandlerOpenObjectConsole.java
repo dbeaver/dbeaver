@@ -94,10 +94,9 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
             log.debug("No active datasource");
             return null;
         }
-        boolean openEditor=false;
-        System.out.println(CommonUtils.isEmpty(consoleIndicator));
-        if(CommonUtils.isEmpty(consoleIndicator)) {
-            openEditor=true;
+        boolean openEditor = false;
+        if (CommonUtils.isEmpty(consoleIndicator)) {
+            openEditor = true;
         }
         DBRRunnableWithResult<String> generator = SQLGeneratorContributor.SELECT_GENERATOR(entities, true);
         String title = "Query";
@@ -133,10 +132,10 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
         boolean openEditor,
         String sql
     ) throws CoreException {
-        if(openEditor) {
+        if (openEditor) {
             openAndExecuteSQLScript(
                 workbenchWindow, navigatorContext, title, doRun, currentSelection, sql, false);
-        }else {
+        } else {
             openAndExecuteScriptSQLConsole(
                 workbenchWindow, navigatorContext, title, doRun, currentSelection, sql, false);
         }
