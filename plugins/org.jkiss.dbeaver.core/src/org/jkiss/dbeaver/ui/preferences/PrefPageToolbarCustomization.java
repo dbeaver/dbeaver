@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
@@ -31,6 +32,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandImageService;
 import org.eclipse.ui.commands.ICommandService;
@@ -53,7 +55,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 
-public class PrefPageToolbarCustomization extends AbstractPrefPage implements IWorkbenchPreferencePage {
+public class PrefPageToolbarCustomization extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     
     /**
      * Tree node with checkbox
@@ -364,5 +366,15 @@ public class PrefPageToolbarCustomization extends AbstractPrefPage implements IW
         }
         ToolBarConfigurationPropertyTester.fireVisibilityPropertyChange();
         return true;
+    }
+
+    @Override
+    public IAdaptable getElement() {
+        return null;
+    }
+
+    @Override
+    public void setElement(IAdaptable element) {
+        // do nothing
     }
 }
