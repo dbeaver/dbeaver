@@ -484,6 +484,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                                     SessionEditorMessages.viewer_session_manager_sql_title,
                                     true,
                                     new StructuredSelection(),
+                                    true,
                                     sqlScript
                                 );
                             } catch (CoreException e) {

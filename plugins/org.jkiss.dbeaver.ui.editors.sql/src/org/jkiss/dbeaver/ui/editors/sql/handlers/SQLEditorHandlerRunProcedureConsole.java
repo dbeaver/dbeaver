@@ -75,7 +75,7 @@ public class SQLEditorHandlerRunProcedureConsole extends SQLEditorHandlerOpenObj
         }
 
         try {
-            openConsole(workbenchWindow, generator, navContext, title, false, currentSelection);
+            openConsole(workbenchWindow, generator, navContext, title, false, currentSelection, true);
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Open console", "Can open SQL editor", e);
         }

@@ -58,6 +58,8 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
     private static final Log log = Log.getLog(SQLEditorHandlerOpenObjectConsole.class);
 
     private static final boolean OPEN_FILE_EDITOR = true;
+    
+    private static final String CONSOLE_INDICATOR = "console";
 
     public SQLEditorHandlerOpenObjectConsole()
     {
@@ -66,9 +68,11 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
+        String consoleIndicator = event.getParameter(CONSOLE_INDICATOR);
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         SQLNavigatorContext navContext = null;
-
+        
+        
         ISelection currentSelection = HandlerUtil.getCurrentSelection(event);
         List<DBSObject> selectedObjects = NavigatorUtils.getSelectedObjects(currentSelection);
         List<DBSEntity> entities = new ArrayList<>();
@@ -90,13 +94,18 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
             log.debug("No active datasource");
             return null;
         }
+        boolean openEditor=false;
+        System.out.println(CommonUtils.isEmpty(consoleIndicator));
+        if(CommonUtils.isEmpty(consoleIndicator)) {
+            openEditor=true;
+        }
         DBRRunnableWithResult<String> generator = SQLGeneratorContributor.SELECT_GENERATOR(entities, true);
         String title = "Query";
         if (entities.size() == 1) {
             title = DBUtils.getObjectFullName(entities.get(0), DBPEvaluationContext.DML);
         }
         try {
-            openConsole(workbenchWindow, generator, navContext, title, !entities.isEmpty(), currentSelection);
+            openConsole(workbenchWindow, generator, navContext, title, !entities.isEmpty(), currentSelection, openEditor);
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Open console", "Can open SQL editor", e);
         }
@@ -104,11 +113,12 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
     }
 
     void openConsole(IWorkbenchWindow workbenchWindow, DBRRunnableWithResult<String> generator,
-                     SQLNavigatorContext navigatorContext, String title, boolean doRun, ISelection currentSelection) throws Exception {
+                     SQLNavigatorContext navigatorContext, String title, boolean doRun, 
+                     ISelection currentSelection, boolean openEditor) throws Exception {
         UIUtils.runInUI(workbenchWindow, generator);
         String sql = CommonUtils.notEmpty(generator.getResult());
 
-        openAndExecuteSQLScript(workbenchWindow, navigatorContext, title, doRun, currentSelection, sql);
+        openAndExecuteSQLScript(workbenchWindow, navigatorContext, title, doRun, currentSelection, openEditor, sql);
     }
     
     /**
@@ -120,16 +130,16 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
         String title,
         boolean doRun,
         ISelection currentSelection,
+        boolean openEditor,
         String sql
     ) throws CoreException {
-        openAndExecuteSQLScript(
-            workbenchWindow,
-            navigatorContext,
-            title,
-            doRun,
-            currentSelection,
-            sql, 
-            false);
+        if(openEditor) {
+            openAndExecuteSQLScript(
+                workbenchWindow, navigatorContext, title, doRun, currentSelection, sql, false);
+        }else {
+            openAndExecuteScriptSQLConsole(
+                workbenchWindow, navigatorContext, title, doRun, currentSelection, sql, false);
+        }
     }
 
     /**
@@ -156,7 +166,33 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
         } else {
             editor = SQLEditorHandlerOpenEditor.openSQLConsole(workbenchWindow, navigatorContext, title, sql);
         }
+        
+        executeData(editor, doRun, forceProcessAsScript, currentSelection, sql);
 
+    }
+    
+    /**
+     * openAndExecuteSQLScript with force sqlScript executing on console 
+     */
+    public static void openAndExecuteScriptSQLConsole(
+        IWorkbenchWindow workbenchWindow,
+        SQLNavigatorContext navigatorContext,
+        String title,
+        boolean doRun,
+        ISelection currentSelection,
+        String sql,
+        boolean forceProcessAsScript
+    ) throws CoreException {
+        SQLEditor editor = SQLEditorHandlerOpenEditor.openSQLConsole(workbenchWindow, navigatorContext, title, sql);
+    
+        executeData(editor, doRun, forceProcessAsScript, currentSelection, sql);
+    }
+    
+    /**
+     * executeDate in editor or Console 
+     */
+    public static void executeData(
+            SQLEditor editor, boolean doRun, boolean forceProcessAsScript, ISelection currentSelection, String sql) throws CoreException {
         if (editor != null && editor.getDocument() != null) {
             editor.getDocument().set(sql);
             AbstractJob execJob = new AbstractJob("Execute SQL in console") {
