@@ -78,7 +78,7 @@ public class ConfigurationExportWizard extends Wizard implements IExportWizard {
             protected IStatus run(IProgressMonitor monitor) {
                 Path parent = zipFile.getParent();
                 if (parent != null && !parent.toFile().canWrite()) {
-                    return Status.error("Error, read-only export destination");
+                    return Status.error("Can't create a file, because the export destination is read-only");
                 }
                 if (zipFile.toFile().exists()) {
                     boolean delete = zipFile.toFile().delete();
@@ -86,7 +86,7 @@ public class ConfigurationExportWizard extends Wizard implements IExportWizard {
                         return Status.error("Error deleting previous ZIP file contents");
                     }
                 }
-                try(ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile.toFile()))) {
+                try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile.toFile()))) {
                     Files.walkFileTree(workbench, new SimpleFileVisitor<>() {
                         @Override
                         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
@@ -111,7 +111,7 @@ public class ConfigurationExportWizard extends Wizard implements IExportWizard {
                         }
                     });
                 } catch (IOException e) {
-                    log.error("Error copying file configuration" + e);
+                    log.error("Error copying file configuration:" + e);
                     Status.error(e.getMessage());
                 }
             return Status.OK_STATUS;
