@@ -182,4 +182,6 @@ public interface DBPDataSourceInfo
     DBSObjectType[] getSupportedObjectTypes();
 
     boolean needsTableMetaForColumnResolution();
+
+    boolean supportsStatementBinding();
 }
