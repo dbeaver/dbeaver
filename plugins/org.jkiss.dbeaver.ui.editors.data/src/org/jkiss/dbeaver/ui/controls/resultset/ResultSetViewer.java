@@ -1284,6 +1284,9 @@ public class ResultSetViewer extends Viewer
                 }
             }
         }
+        if (settings.enabledPanelIds.isEmpty() && !availablePanels.isEmpty()) {
+            settings.enabledPanelIds.add(availablePanels.get(0).getId());
+        }
         if (!settings.enabledPanelIds.contains(settings.activePanelId)) {
             settings.activePanelId = null;
         }
