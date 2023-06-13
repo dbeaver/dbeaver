@@ -22,11 +22,12 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectJDBC;
 
 /**
  * JDBC abstract column
  */
-public abstract class JDBCAttribute extends AbstractAttribute implements DBSObject, DBPImageProvider {
+public abstract class JDBCAttribute extends AbstractAttribute implements DBSObject, DBSTypedObjectJDBC, DBPImageProvider {
 
     protected JDBCAttribute()
     {

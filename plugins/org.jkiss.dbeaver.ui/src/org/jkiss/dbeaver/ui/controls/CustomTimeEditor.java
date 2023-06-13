@@ -27,6 +27,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectJDBC;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -74,9 +75,13 @@ public class CustomTimeEditor {
     }
 
     public void createDateFormat(@NotNull DBSTypedObject valueType) {
-        try {
-            jdbcType = JDBCType.valueOf(valueType.getTypeID());
-        } catch (Exception e) {
+        if (valueType instanceof DBSTypedObjectJDBC) {
+            try {
+                jdbcType = JDBCType.valueOf(valueType.getTypeID());
+            } catch (Exception e) {
+                jdbcType = JDBCType.TIMESTAMP;
+            }
+        } else {
             jdbcType = JDBCType.TIMESTAMP;
         }
         disposeNotNeededEditors();

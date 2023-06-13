@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectJDBC;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Field;
@@ -41,7 +42,7 @@ import java.sql.Types;
 /**
  * JDBCColumnMetaData
  */
-public class JDBCColumnMetaData implements DBCAttributeMetaData {
+public class JDBCColumnMetaData implements DBCAttributeMetaData, DBSTypedObjectJDBC {
     private static final Log log = Log.getLog(JDBCColumnMetaData.class);
 
     public static final String PROP_CATEGORY_COLUMN = "Column";
