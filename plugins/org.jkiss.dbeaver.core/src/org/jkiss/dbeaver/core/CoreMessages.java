@@ -20,45 +20,45 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.osgi.util.NLS;
 
 public class CoreMessages extends NLS {
-	public static final String BUNDLE_NAME = "org.jkiss.dbeaver.core.CoreResources"; //$NON-NLS-1$
+    public static final String BUNDLE_NAME = "org.jkiss.dbeaver.core.CoreResources"; //$NON-NLS-1$
 
 
-	public static String core_eula_dialog_accept;
-	public static String core_eula_dialog_title;
+    public static String core_eula_dialog_accept;
+    public static String core_eula_dialog_title;
 
-	public static String actions_menu_about;
-	public static String actions_menu_check_update;
-	public static String actions_menu_database;
-	public static String actions_menu_edit;
-	public static String actions_menu_edit_ContentFormat;
-	public static String actions_menu_file;
-	public static String actions_menu_help;
-	public static String actions_menu_navigate;
-	public static String actions_menu_window;
-	public static String actions_menu_window_showView;
-	public static String action_menu_showKeyAssist;
-	public static String action_menu_installNewSoftware;
-	public static String action_menu_installInfo;
-	public static String action_menu_enterpriseEdition;
-	public static String action_menu_marketplace_extensions;
+    public static String actions_menu_about;
+    public static String actions_menu_check_update;
+    public static String actions_menu_database;
+    public static String actions_menu_edit;
+    public static String actions_menu_edit_ContentFormat;
+    public static String actions_menu_file;
+    public static String actions_menu_help;
+    public static String actions_menu_navigate;
+    public static String actions_menu_window;
+    public static String actions_menu_window_showView;
+    public static String action_menu_showKeyAssist;
+    public static String action_menu_installNewSoftware;
+    public static String action_menu_installInfo;
+    public static String action_menu_enterpriseEdition;
+    public static String action_menu_marketplace_extensions;
 
-	public static String action_menu_transaction_manualcommit_name;
-	public static String action_menu_transaction_autocommit_name;
-	public static String action_menu_transaction_manualcommit_description;
-	public static String action_menu_transaction_autocommit_description;
-	public static String action_menu_transaction_smart_auto_commit;
-	public static String action_menu_transaction_smart_auto_commit_tip;
-	public static String action_menu_transaction_smart_auto_commit_recover;
-	public static String action_menu_transaction_smart_auto_commit_recover_tip;
-	public static String action_menu_transaction_auto_close_enabled;
-	public static String action_menu_transaction_auto_close_enabled_tip;
-	public static String action_menu_transaction_auto_close_ttl_tip;
-	public static String action_menu_tools_find_in_navigator;
+    public static String action_menu_transaction_manualcommit_name;
+    public static String action_menu_transaction_autocommit_name;
+    public static String action_menu_transaction_manualcommit_description;
+    public static String action_menu_transaction_autocommit_description;
+    public static String action_menu_transaction_smart_auto_commit;
+    public static String action_menu_transaction_smart_auto_commit_tip;
+    public static String action_menu_transaction_smart_auto_commit_recover;
+    public static String action_menu_transaction_smart_auto_commit_recover_tip;
+    public static String action_menu_transaction_auto_close_enabled;
+    public static String action_menu_transaction_auto_close_enabled_tip;
+    public static String action_menu_transaction_auto_close_ttl_tip;
+    public static String action_menu_tools_find_in_navigator;
     public static String action_menu_transaction_pref_page_link;
-	public static String action_menu_transaction_pref_page_link_extended;
+    public static String action_menu_transaction_pref_page_link_extended;
 
     public static String pref_page_connection_types_label_auto_close_enabled_tip;
-	public static String pref_page_connection_types_label_auto_close_ttl_tip;
+    public static String pref_page_connection_types_label_auto_close_ttl_tip;
 
 	public static String action_menu_transactionMonitor_totalStatement;
 	public static String action_menu_transactionMonitor_modifyStatement;
