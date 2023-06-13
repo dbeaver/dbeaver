@@ -32,15 +32,16 @@ import java.util.List;
  * ActiveWizard.
  *
  */
-public abstract class ActiveWizard extends BaseWizard
-{
-    private List<WizardPrefPage> prefPages = new ArrayList<>();
+public abstract class ActiveWizard extends BaseWizard implements IActiveWizard {
+
+    private final List<WizardPrefPage> prefPages = new ArrayList<>();
 
     protected List<WizardPrefPage> getPrefPages() {
         return prefPages;
     }
 
-    protected WizardPrefPage addPreferencePage(IPreferencePage prefPage, String title, String description)
+    @Override
+    public WizardPrefPage addPreferencePage(IPreferencePage prefPage, String title, String description)
     {
         WizardPrefPage wizardPage = createPreferencePage(prefPage, title, description);
         addPage(wizardPage);

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.actions.common;
+package org.jkiss.dbeaver.ui.controls.resultset.handler;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -28,7 +28,6 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -36,6 +35,7 @@ import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectBase;
 
 import java.util.UUID;
@@ -95,8 +95,8 @@ public class GenerateUUIDHandler extends NavigatorHandlerObjectBase {
                         new Transfer[]{textTransfer});
                     DBeaverNotifications.showNotification(
                         "uuid-generator",
-                        CoreMessages.notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy,
-                        CoreMessages.notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy_text,
+                        DataEditorsMessages.notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy,
+                        DataEditorsMessages.notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy_text,
                         DBPMessageType.INFORMATION,
                         null
                     );
