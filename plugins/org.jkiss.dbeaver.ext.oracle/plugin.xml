@@ -72,10 +72,10 @@
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePartitionBase" label="%tree.partitions.node.name" icon="#partitions" description="Table partitions">
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTablePartition" label="%tree.partitions.node.name" icon="#partitions" description="Table partitions" visibleIf="object.isPartitioned()">
                                     <items label="%tree.partition.node.name" path="partition" property="partitions" icon="#partition">
-                                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePartitionBase" label="%tree.subpartitions.node.name" icon="#partitions" description="tree.subpartitions.node.name">
-                                            <items label="%tree.subpartitions.node.name" itemLabel="%tree.subpartition.node.name" path="subpartition" property="subPartitions" navigable="false" inline="true">
+                                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTablePartition" label="%tree.subpartitions.node.name" icon="#partitions" description="tree.subpartitions.node.name">
+                                            <items label="%tree.subpartitions.node.name" itemLabel="%tree.subpartition.node.name" path="subpartition" property="subPartitions">
                                             </items>
                                         </folder>
                                     </items>
