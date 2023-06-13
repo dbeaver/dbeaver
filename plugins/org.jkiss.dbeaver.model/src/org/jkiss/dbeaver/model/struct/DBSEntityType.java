@@ -36,6 +36,7 @@ public class DBSEntityType
     public static final DBSEntityType SEQUENCE = new DBSEntityType("sequence", "Sequence", DBIcon.TREE_SEQUENCE, true);
     public static final DBSEntityType PACKAGE = new DBSEntityType("package", "Package", DBIcon.TREE_PACKAGE, true);
     public static final DBSEntityType EVENT = new DBSEntityType("event", "Event", DBIcon.TREE_EVENT, true);
+    public static final DBSEntityType FILE = new DBSEntityType("file", "File", DBIcon.TREE_FILE, true);
 
     private final String id;
     private final String name;
