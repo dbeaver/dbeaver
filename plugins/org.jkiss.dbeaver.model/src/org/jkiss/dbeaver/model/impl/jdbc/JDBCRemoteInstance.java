@@ -125,7 +125,7 @@ public class JDBCRemoteInstance implements DBSInstance {
                 isMetaConnectionSeparate = false;
                 break;
             case DEFAULT:
-            default:
+            default: 
                 isMetaConnectionSeparate = !container.getDriver().isEmbedded() && !container.isForceUseSingleConnection();
                 break;
         }
