@@ -56,6 +56,9 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
 
     @Override
     protected void persistDataSourceCreate(@NotNull DBPDataSourceContainer container) {
+        if (getProject().isInMemory()) {
+            return;
+        }
         DataSourceConfigurationManagerBuffer buffer = new DataSourceConfigurationManagerBuffer();
         saveConfigurationToManager(new VoidProgressMonitor(), buffer, dsc -> dsc.equals(container));
 
@@ -71,6 +74,9 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
 
     @Override
     protected void persistDataSourceUpdate(@NotNull DBPDataSourceContainer container) {
+        if (getProject().isInMemory()) {
+            return;
+        }
         DataSourceConfigurationManagerBuffer buffer = new DataSourceConfigurationManagerBuffer();
         saveConfigurationToManager(new VoidProgressMonitor(), buffer, dsc -> dsc.equals(container));
 
@@ -86,6 +92,9 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
 
     @Override
     protected void persistDataSourceDelete(@NotNull DBPDataSourceContainer container) {
+        if (getProject().isInMemory()) {
+            return;
+        }
         try {
             rmController.deleteProjectDataSources(getRemoteProjectId(), new String[]{container.getId()});
             lastError = null;
@@ -97,6 +106,9 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
 
     @Override
     protected void persistDataFolderDelete(@NotNull String folderPath, boolean dropContents) {
+        if (getProject().isInMemory()) {
+            return;
+        }
         try {
             rmController.deleteProjectDataSourceFolders(getRemoteProjectId(), new String[]{folderPath}, dropContents);
             lastError = null;
@@ -108,20 +120,27 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
 
     @Override
     public DataSourceFolder addFolder(DBPDataSourceFolder parent, String name) {
+        if (getProject().isInMemory()) {
+            return createFolder(parent, name);
+        }
         try {
             rmController.createProjectDataSourceFolder(getRemoteProjectId(), parent == null ? name : parent.getFolderPath() + "/" + name);
             lastError = null;
         } catch (DBException e) {
             lastError = e;
-            log.error("Error persisting remote data folder move", e);
+            log.error("Error persisting remote data folder create", e);
             return null;
         }
-        return super.addFolder(parent, name);
+        return createFolder(parent, name);
     }
 
 
     @Override
     public void moveFolder(@NotNull String oldPath, @NotNull String newPath) {
+        if (getProject().isInMemory()) {
+            super.moveFolder(oldPath, newPath);
+            return;
+        }
         try {
             rmController.moveProjectDataSourceFolder(getRemoteProjectId(), oldPath, newPath);
             lastError = null;
@@ -135,6 +154,10 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
 
     @Override
     protected void saveDataSources(DBRProgressMonitor monitor) {
+        if (getProject().isInMemory()) {
+            return;
+        }
+
         DataSourceConfigurationManagerBuffer buffer = new DataSourceConfigurationManagerBuffer();
         saveConfigurationToManager(monitor, buffer, null);
 
