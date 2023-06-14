@@ -261,9 +261,6 @@
         <configurator class="org.jkiss.dbeaver.ext.oracle.ui.config.OracleTableTriggerConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.oracle.ui.config.OracleDataFileConfigurator">
-            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataFile"/>
-        </configurator>
 
     </extension>
 
