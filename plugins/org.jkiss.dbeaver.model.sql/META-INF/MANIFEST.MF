@@ -39,6 +39,7 @@ Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.text;visibility:=reexport,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.lsm,
- org.jkiss.bundle.antlr4
+ org.jkiss.bundle.antlr4,
+ org.jkiss.dbeaver.model.jdbc
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.model.sql

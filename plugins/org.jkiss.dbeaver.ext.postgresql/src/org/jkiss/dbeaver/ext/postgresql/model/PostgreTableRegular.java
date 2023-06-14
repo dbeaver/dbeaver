@@ -21,7 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPReferentialIntegrityController;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
@@ -62,7 +62,7 @@ public class PostgreTableRegular extends PostgreTable implements DBPReferentialI
         }
         sql = sql.replace("?", getFullyQualifiedName(DBPEvaluationContext.DDL));
         try {
-            DBUtils.executeInMetaSession(monitor, this, "Changing referential integrity", sql);
+            JDBCUtils.executeInMetaSession(monitor, this, "Changing referential integrity", sql);
         } catch (SQLException e) {
             throw new DBException("Unable to change referential integrity", e);
         }
