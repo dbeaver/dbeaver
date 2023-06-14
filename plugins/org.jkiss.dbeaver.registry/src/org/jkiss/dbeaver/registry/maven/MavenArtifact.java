@@ -397,7 +397,7 @@ public class MavenArtifact implements IMavenIdentifier
                         } catch (Exception e) {
                             throw new IOException("Bad version pattern: " + regex);
                         }
-                    }     else {
+                    } else {
                         versionInfo = getVersionFromSpec(versionRef);
                     }
                     break;

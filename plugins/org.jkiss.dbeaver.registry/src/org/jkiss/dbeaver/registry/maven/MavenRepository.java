@@ -108,7 +108,6 @@ public class MavenRepository
         this.isSnapshot = source.isSnapshot;
         this.authInfo.setUserName(source.authInfo.getUserName());
         this.authInfo.setUserPassword(source.authInfo.getUserPassword());
-
     }
 
     public String getId() {

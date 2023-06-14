@@ -162,9 +162,8 @@ public class MavenArtifactReference implements IMavenIdentifier
             id.append(":").append(identifier.getClassifier());
         }
         if (identifier.getFallbackVersion() != null) {
-            id.append(":").append(identifier.getFallbackVersion());
-        } else {
-            id.append(":").append(identifier.getVersion());
+            id.append(":").append(identifier.getFallbackVersion() != null ? identifier.getFallbackVersion() :
+                                  identifier.getVersion());
         }
         return id.toString();
     }
