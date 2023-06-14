@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.registry.rm;
 
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -22,11 +22,11 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 /**
  * DataSourceRemoteStorage
  */
-class DataSourceRemoteStorage implements DBPDataSourceConfigurationStorage {
+class DataSourceRMStorage implements DBPDataSourceConfigurationStorage {
 
     private DBPProject project;
 
-    public DataSourceRemoteStorage(DBPProject project) {
+    public DataSourceRMStorage(DBPProject project) {
         this.project = project;
     }
 

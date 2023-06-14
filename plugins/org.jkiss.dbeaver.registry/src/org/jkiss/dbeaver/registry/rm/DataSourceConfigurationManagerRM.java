@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.registry.rm;
 
 import org.eclipse.core.resources.IProject;
 import org.jkiss.code.NotNull;
@@ -24,6 +24,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.rm.RMController;
+import org.jkiss.dbeaver.registry.DataSourceConfigurationManager;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -42,11 +45,11 @@ public class DataSourceConfigurationManagerRM implements DataSourceConfiguration
 
     @NotNull
     private final DBPProject project;
-    private final RMController rmClient;
+    private final RMController rmController;
 
     public DataSourceConfigurationManagerRM(@NotNull DBPProject project, @NotNull RMController client) {
         this.project = project;
-        this.rmClient = client;
+        this.rmController = client;
     }
 
     @Override
@@ -56,12 +59,12 @@ public class DataSourceConfigurationManagerRM implements DataSourceConfiguration
 
     @Override
     public boolean isSecure() {
-        return true;
+        return DBWorkbench.isDistributed();
     }
 
     @Override
     public List<DBPDataSourceConfigurationStorage> getConfigurationStorages() {
-        return Collections.singletonList(new DataSourceRemoteStorage(project));
+        return Collections.singletonList(new DataSourceRMStorage(project));
     }
 
     @Override
@@ -81,7 +84,7 @@ public class DataSourceConfigurationManagerRM implements DataSourceConfiguration
             projectId = project.getId();
         }
         try {
-            String dsContent = rmClient.getProjectsDataSources(
+            String dsContent = rmController.getProjectsDataSources(
                 projectId,
                 dataSourceIds == null ? null : dataSourceIds.toArray(new String[0]));
             if (dsContent == null) {

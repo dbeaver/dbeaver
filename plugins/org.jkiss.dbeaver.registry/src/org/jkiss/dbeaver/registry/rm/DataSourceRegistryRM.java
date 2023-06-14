@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.registry.rm;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -25,6 +25,10 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.rm.RMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.registry.DataSourceConfigurationManager;
+import org.jkiss.dbeaver.registry.DataSourceConfigurationManagerBuffer;
+import org.jkiss.dbeaver.registry.DataSourceFolder;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -32,11 +36,15 @@ import java.util.List;
 public class DataSourceRegistryRM extends DataSourceRegistry {
     private static final Log log = Log.getLog(DataSourceRegistryRM.class);
 
-    private final RMController client;
+    private final RMController rmController;
 
-    public DataSourceRegistryRM(DBPProject project, @NotNull RMController client) {
-        super(project, new DataSourceConfigurationManagerRM(project, client));
-        this.client = client;
+    public DataSourceRegistryRM(DBPProject project, @NotNull RMController rmController) {
+        this(project, rmController, new DataSourceConfigurationManagerRM(project, rmController));
+    }
+
+    public DataSourceRegistryRM(DBPProject project, @NotNull RMController rmController, @NotNull DataSourceConfigurationManager manager) {
+        super(project, manager);
+        this.rmController = rmController;
 
         // We shouldn't refresh config on update events
 //        addDataSourceListener(event -> {
@@ -52,7 +60,7 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
         saveConfigurationToManager(new VoidProgressMonitor(), buffer, dsc -> dsc.equals(container));
 
         try {
-            client.createProjectDataSources(
+            rmController.createProjectDataSources(
                 getRemoteProjectId(), new String(buffer.getData(), StandardCharsets.UTF_8), List.of(container.getId()));
             lastError = null;
         } catch (DBException e) {
@@ -67,7 +75,7 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
         saveConfigurationToManager(new VoidProgressMonitor(), buffer, dsc -> dsc.equals(container));
 
         try {
-            client.updateProjectDataSources(
+            rmController.updateProjectDataSources(
                 getRemoteProjectId(), new String(buffer.getData(), StandardCharsets.UTF_8), List.of(container.getId()));
             lastError = null;
         } catch (DBException e) {
@@ -79,7 +87,7 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
     @Override
     protected void persistDataSourceDelete(@NotNull DBPDataSourceContainer container) {
         try {
-            client.deleteProjectDataSources(getRemoteProjectId(), new String[]{container.getId()});
+            rmController.deleteProjectDataSources(getRemoteProjectId(), new String[]{container.getId()});
             lastError = null;
         } catch (DBException e) {
             lastError = e;
@@ -90,7 +98,7 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
     @Override
     protected void persistDataFolderDelete(@NotNull String folderPath, boolean dropContents) {
         try {
-            client.deleteProjectDataSourceFolders(getRemoteProjectId(), new String[]{folderPath}, dropContents);
+            rmController.deleteProjectDataSourceFolders(getRemoteProjectId(), new String[]{folderPath}, dropContents);
             lastError = null;
         } catch (DBException e) {
             lastError = e;
@@ -101,7 +109,7 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
     @Override
     public DataSourceFolder addFolder(DBPDataSourceFolder parent, String name) {
         try {
-            client.createProjectDataSourceFolder(getRemoteProjectId(), parent == null ? name : parent.getFolderPath() + "/" + name);
+            rmController.createProjectDataSourceFolder(getRemoteProjectId(), parent == null ? name : parent.getFolderPath() + "/" + name);
             lastError = null;
         } catch (DBException e) {
             lastError = e;
@@ -115,7 +123,7 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
     @Override
     public void moveFolder(@NotNull String oldPath, @NotNull String newPath) {
         try {
-            client.moveProjectDataSourceFolder(getRemoteProjectId(), oldPath, newPath);
+            rmController.moveProjectDataSourceFolder(getRemoteProjectId(), oldPath, newPath);
             lastError = null;
         } catch (DBException e) {
             lastError = e;
@@ -131,7 +139,7 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
         saveConfigurationToManager(monitor, buffer, null);
 
         try {
-            client.updateProjectDataSources(
+            rmController.updateProjectDataSources(
                 getRemoteProjectId(), new String(buffer.getData(), StandardCharsets.UTF_8), List.of());
             lastError = null;
         } catch (DBException e) {
