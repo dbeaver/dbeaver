@@ -510,7 +510,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                     if (CommonUtils.isEmpty(conConfig.getUrl()) || !CommonUtils.isEmpty(conConfig.getHostName())) {
                         conConfig.setDatabaseName(instance.getName());
                         final DBPDriver driver = getContainer().getDriver();
-                        String newURL = JDBCURL.generateUrlByTemplate(driver, conConfig);
+                        String newURL = DatabaseURL.generateUrlByTemplate(driver, conConfig);
                         if (CommonUtils.isEmpty(newURL)) {
                             newURL = driver.getDataSourceProvider().getConnectionURL(driver, conConfig);
                         }

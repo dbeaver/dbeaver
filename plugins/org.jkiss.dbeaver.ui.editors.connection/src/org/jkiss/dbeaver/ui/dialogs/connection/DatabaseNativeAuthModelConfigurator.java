@@ -196,7 +196,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
             if (!serviceSecurity.validatePassword(
                 dataSource.getProject(),
                 "Enter project password",
-                "Enter project master password to unlock connection password view",
+                "Enter project password to unlock connection password view",
                 true))
             {
                 return;

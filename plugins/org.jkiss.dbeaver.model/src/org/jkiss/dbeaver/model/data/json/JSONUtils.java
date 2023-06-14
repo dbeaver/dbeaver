@@ -41,6 +41,8 @@ import java.util.*;
  */
 public class JSONUtils {
 
+    public static final String DEFAULT_INDENT = "\t";
+    public static final String EMPTY_INDENT = "";
     private static final Log log = Log.getLog(JSONUtils.class);
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
@@ -169,17 +171,25 @@ public class JSONUtils {
     }
 
     public static void serializeStringList(@NotNull JsonWriter json, @NotNull String tagName, @Nullable Collection<String> list) throws IOException {
-        serializeStringList(json, tagName, list, false);
+        serializeStringList(json, tagName, list, true, false);
     }
 
-    public static void serializeStringList(@NotNull JsonWriter json, @NotNull String tagName, @Nullable Collection<String> list, boolean force) throws IOException {
+    public static void serializeStringList(
+        @NotNull JsonWriter json,
+        @NotNull String tagName,
+        @Nullable Collection<String> list,
+        boolean compact,
+        boolean force
+    ) throws IOException {
         if (force || !CommonUtils.isEmpty(list)) {
             json.name(tagName);
             json.beginArray();
+            if (compact) json.setIndent(EMPTY_INDENT);
             for (String include : CommonUtils.safeCollection(list)) {
                 json.value(include);
             }
             json.endArray();
+            if (compact) json.setIndent(DEFAULT_INDENT);
         }
     }
 

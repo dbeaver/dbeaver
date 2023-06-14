@@ -40,7 +40,10 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCheckConstraintContainer;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * SQLServerTable
@@ -267,7 +270,7 @@ public class SQLServerTable extends SQLServerTableBase
         String sql = getChangeReferentialIntegrityStatement(monitor, enable);
         sql = sql.replace("?", getFullyQualifiedName(DBPEvaluationContext.DDL));
         try {
-            DBUtils.executeInMetaSession(monitor, this, "Changing referential integrity", sql);
+            JDBCUtils.executeInMetaSession(monitor, this, "Changing referential integrity", sql);
         } catch (SQLException e) {
             throw new DBException("Unable to change referential integrity", e);
         }
