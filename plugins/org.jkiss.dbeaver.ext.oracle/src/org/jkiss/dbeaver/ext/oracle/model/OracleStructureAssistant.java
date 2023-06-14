@@ -305,9 +305,9 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (!session.getProgressMonitor().isCanceled() && objects.size() < params.getMaxResults() && dbResult.next()) {
-                    final String schemaName = JDBCUtils.safeGetString(dbResult, "OWNER");
-                    final String objectName = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
-                    final String objectTypeName = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
+                    final String schemaName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_OWNER);
+                    final String objectName = JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_NAME);
+                    final String objectTypeName = JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_TYPE);
                     final OracleObjectType objectType = OracleObjectType.getByType(objectTypeName);
                     if (objectType != null && objectType.isBrowsable() && oracleObjectTypes.contains(objectType)) {
                         OracleSchema objectSchema = this.dataSource.getSchema(session.getProgressMonitor(), schemaName);

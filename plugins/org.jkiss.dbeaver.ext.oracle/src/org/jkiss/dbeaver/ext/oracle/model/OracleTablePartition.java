@@ -127,7 +127,7 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
         this.position = partitionParent != null ?
             JDBCUtils.safeGetInt(dbResult, "SUBPARTITION_POSITION") :
             JDBCUtils.safeGetInt(dbResult, "PARTITION_POSITION");
-        this.usable = "USABLE".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
+        this.usable = "USABLE".equals(JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_STATUS));
         this.sampleSize = JDBCUtils.safeGetLong(dbResult, "SAMPLE_SIZE");
         this.lastAnalyzed = JDBCUtils.safeGetTimestamp(dbResult, "LAST_ANALYZED");
     }

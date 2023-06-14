@@ -454,7 +454,7 @@ public class OracleUtils {
                 dbStat.setString(3, DBObjectNameCaseTransformer.transformObjectName(object, object.getName()));
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
-                        return "VALID".equals(dbResult.getString("STATUS"));
+                        return OracleConstants.RESULT_STATUS_VALID.equals(dbResult.getString(OracleConstants.COLUMN_STATUS));
                     } else {
                         log.warn(objectType.getTypeName() + " '" + object.getName() + "' not found in system dictionary");
                         return false;
