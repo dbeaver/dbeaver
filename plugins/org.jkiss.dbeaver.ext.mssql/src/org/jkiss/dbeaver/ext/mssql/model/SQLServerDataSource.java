@@ -622,6 +622,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         protected SQLServerDatabase fetchObject(@NotNull JDBCSession session, @NotNull SQLServerDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             String databaseName = JDBCUtils.safeGetString(resultSet, "name");
             if (CommonUtils.isEmpty(databaseName)) {
+                log.debug("Empty database name fetched");
                 return null;
             }
             return new SQLServerDatabase(session, owner, resultSet, databaseName);
