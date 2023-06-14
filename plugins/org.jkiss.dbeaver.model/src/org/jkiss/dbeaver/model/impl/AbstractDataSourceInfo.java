@@ -126,6 +126,11 @@ public abstract class AbstractDataSourceInfo implements DBPDataSourceInfo
     }
 
     @Override
+    public boolean supportsStatementBinding() {
+        return false;
+    }
+
+    @Override
     public boolean supportsBatchUpdates()
     {
         return false;

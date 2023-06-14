@@ -42,7 +42,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
 
     private boolean transactional;
 
-    private QMMStatementExecuteInfo previous;
+    private transient QMMStatementExecuteInfo previous;
 
     QMMStatementExecuteInfo(
         QMMStatementInfo statement,

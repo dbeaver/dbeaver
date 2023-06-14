@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNNodeExtendable;
+import org.jkiss.dbeaver.model.navigator.DBNRoot;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -62,6 +63,9 @@ public class DBNRegistry {
         }
         List<DBNNode> extraNodes = null;
         for (DBNModelExtenderDescriptor med : modelExtenders) {
+            if (parentNode instanceof DBNRoot && !med.isRoot()) {
+                continue;
+            }
             try {
                 DBNNode[] enList = med.getInstance().getExtraNodes((DBNNode) parentNode);
                 if (enList != null) {

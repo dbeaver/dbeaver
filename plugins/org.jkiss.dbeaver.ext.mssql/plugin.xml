@@ -214,7 +214,7 @@
                     <file type="jar" path="drivers/mssql/new" bundle="drivers.mssql.new"/>
 
                     <!-- Active directory auth -->
-                    <file type="jar" path="maven:/com.microsoft.azure:msal4j[1.12.0]" optional="true" bundle="!drivers.mssql.new"/>
+                    <file type="jar" path="maven:/com.microsoft.azure:msal4j[1.13.0]" optional="true" bundle="!drivers.mssql.new"/>
                     <file type="license" path="drivers/mssql/new/LICENSE.txt" bundle="drivers.mssql.new"/>
                 </driver>
 
