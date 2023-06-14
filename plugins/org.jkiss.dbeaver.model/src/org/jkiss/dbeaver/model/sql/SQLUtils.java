@@ -45,6 +45,7 @@ import org.jkiss.utils.Pair;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.Character.UnicodeBlock;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1091,7 +1092,7 @@ public final class SQLUtils {
     public static void fillQueryParameters(SQLQuery sqlStatement, List<SQLQueryParameter> parameters) {
         // Set values for all parameters
         // Replace parameter tokens with parameter values
-        String query = sqlStatement.getText();
+        String query = sqlStatement.getOriginalText();
         for (int i = parameters.size(); i > 0; i--) {
             SQLQueryParameter parameter = parameters.get(i - 1);
             String paramValue = parameter.getValue();
@@ -1100,8 +1101,14 @@ public final class SQLUtils {
             }
             query = query.substring(0, parameter.getTokenOffset()) + paramValue + query.substring(parameter.getTokenOffset() + parameter.getTokenLength());
         }
-        sqlStatement.setText(query);
-        //sqlStatement.setOriginalText(query);
+        
+        // Line feeds are fixed in SQLScriptParser:parseQuery,
+        // but we need to fill variables in the original text
+        // as variables positions are calculated before line feeds fix
+        // (See #18982)
+        String queryWithFixedLineFeeds = SQLUtils.fixLineFeeds(query);
+        sqlStatement.setText(queryWithFixedLineFeeds);
+        // sqlStatement.setOriginalText(query);
     }
 
     public static boolean needQueryDelimiter(SQLDialect sqlDialect, String query) {
@@ -1147,5 +1154,15 @@ public final class SQLUtils {
             return scriptDelimiters[0];
         }
         return SQLConstants.DEFAULT_STATEMENT_DELIMITER;
+    }
+
+    /**
+     * Determines if a unicode code point represents a letter from LATIN-1.
+     *
+     * @param codePoint unicode code point
+     * @return {@code true} if the code point represents a letter from LATIN-1
+     */
+    public static boolean isLatinLetter(int codePoint) {
+        return Character.isLetter(codePoint) && Character.UnicodeBlock.of(codePoint) == Character.UnicodeBlock.BASIC_LATIN;
     }
 }

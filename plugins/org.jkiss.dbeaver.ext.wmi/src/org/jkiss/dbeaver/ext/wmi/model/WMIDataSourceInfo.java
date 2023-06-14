@@ -63,7 +63,7 @@ public class WMIDataSourceInfo extends AbstractDataSourceInfo {
     @Override
     public String getDriverName()
     {
-        return "JKISS WMI native driver";
+        return "WMI native driver";
     }
 
     @Override

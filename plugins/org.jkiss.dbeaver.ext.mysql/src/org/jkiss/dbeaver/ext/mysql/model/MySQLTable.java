@@ -51,6 +51,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
     private static final Log log = Log.getLog(MySQLTable.class);
 
     private static final String INNODB_COMMENT = "InnoDB free";
+    private static final String PARTITIONED_STATUS = "partitioned";
 
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
@@ -67,6 +68,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         private long dataFree;
         private long indexLength;
         private String rowFormat;
+        private boolean partitioned;
 
         @Property(viewable = true, editable = true, updatable = true, listProvider = EngineListProvider.class,
             visibleIf = PartitionedTablePropertyValidator.class, order = 3)
@@ -152,6 +154,11 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
             return checkTime;
         }
 
+        @Property(viewable = true, visibleIf = PartitionedTablePropertyValidator.class, order = 23)
+        public boolean isPartitioned() {
+            return partitioned;
+        }
+
         public void setEngine(MySQLEngine engine) { this.engine = engine; }
         public void setAutoIncrement(long autoIncrement) { this.autoIncrement = autoIncrement; }
         public void setDescription(String description) { this.description = description; }
@@ -193,6 +200,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
             additionalInfo.charset = sourceAI.charset;
             additionalInfo.collation = sourceAI.collation;
             additionalInfo.engine = sourceAI.engine;
+            additionalInfo.partitioned = sourceAI.partitioned;
 
             // Copy triggers
             for (MySQLTrigger srcTrigger : ((MySQLTable) source).getTriggers(monitor)) {
@@ -278,6 +286,11 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
     public boolean isView()
     {
         return false;
+    }
+
+    @Association
+    public boolean hasPartitions() {
+        return additionalInfo.partitioned;
     }
 
     @Override
@@ -433,6 +446,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         additionalInfo.dataFree = JDBCUtils.safeGetLong(dbResult, "Data_free");
         additionalInfo.indexLength = JDBCUtils.safeGetLong(dbResult, "Index_length");
         additionalInfo.rowFormat = JDBCUtils.safeGetString(dbResult, "Row_format");
+        additionalInfo.partitioned = PARTITIONED_STATUS.equalsIgnoreCase(JDBCUtils.safeGetString(dbResult, "Create_options"));
 
         additionalInfo.loaded = true;
     }
@@ -678,7 +692,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         String sql = getChangeReferentialIntegrityStatement(monitor, enable);
         sql = sql.replace("?", getFullyQualifiedName(DBPEvaluationContext.DDL));
         try {
-            DBUtils.executeInMetaSession(monitor, this, "Changing referential integrity", sql);
+            JDBCUtils.executeInMetaSession(monitor, this, "Changing referential integrity", sql);
         } catch (SQLException e) {
             throw new DBException("Unable to change referential integrity", e);
         }

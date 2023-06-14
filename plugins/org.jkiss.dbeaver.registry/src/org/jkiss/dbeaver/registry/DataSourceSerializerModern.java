@@ -77,7 +77,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
     private static final Gson CONFIG_GSON = new GsonBuilder()
         .setLenient()
         .serializeNulls()
-        .setPrettyPrinting()
         .create();
     private static final Gson SECURE_GSON = new GsonBuilder()
         .setLenient()
@@ -109,7 +108,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         ByteArrayOutputStream dsConfigBuffer = new ByteArrayOutputStream(10000);
         try (OutputStreamWriter osw = new OutputStreamWriter(dsConfigBuffer, StandardCharsets.UTF_8)) {
             try (JsonWriter jsonWriter = CONFIG_GSON.newJsonWriter(osw)) {
-                jsonWriter.setIndent("\t");
+                jsonWriter.setIndent(JSONUtils.DEFAULT_INDENT);
                 jsonWriter.beginObject();
 
                 // Save folders
@@ -160,10 +159,12 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         // Save virtual models
                         jsonWriter.name("virtual-models");
                         jsonWriter.beginObject();
+                        jsonWriter.setIndent(JSONUtils.EMPTY_INDENT);
                         for (DBVModel model : virtualModels.values()) {
                             model.serialize(monitor, jsonWriter);
                         }
                         jsonWriter.endObject();
+                        jsonWriter.setIndent(JSONUtils.DEFAULT_INDENT);
                     }
                     // Network profiles
                     List<DBWNetworkProfile> profiles = registry.getNetworkProfiles();
@@ -694,6 +695,23 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         bootstrap.setIgnoreErrors(JSONUtils.getBoolean(bootstrapCfg, RegistryConstants.ATTR_IGNORE_ERRORS));
                     }
                     bootstrap.setInitQueries(JSONUtils.deserializeStringList(bootstrapCfg, RegistryConstants.TAG_QUERY));
+
+                    if (originalDriver != substitutedDriver) {
+                        final DBPDataSourceProvider dataSourceProvider = substitutedDriver.getDataSourceProvider();
+                        if (dataSourceProvider instanceof DBPConnectionConfigurationMigrator) {
+                            final DBPConnectionConfigurationMigrator migrator = (DBPConnectionConfigurationMigrator) dataSourceProvider;
+                            if (migrator.migrationRequired(config)) {
+                                final DBPConnectionConfiguration migrated = new DBPConnectionConfiguration(config);
+                                try {
+                                    migrator.migrateConfiguration(config, migrated);
+                                    dataSource.setConnectionInfo(migrated);
+                                    log.debug("Connection configuration for data source '" + id + "' was migrated successfully");
+                                } catch (DBException e) {
+                                    log.error("Unable to migrate connection configuration for data source '" + id + "'", e);
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // Permissions
@@ -710,6 +728,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         dataSource.updateObjectFilter(typeName, objectID, filter);
                     }
                 }
+
+                // Properties
+                dataSource.getProperties().putAll(
+                    JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_PROPERTIES)
+                );
 
                 // Preferences
                 dataSource.getPreferenceStore().getProperties().putAll(
@@ -1076,6 +1099,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 json.endArray();
             }
         }
+
+        // Properties
+        JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, dataSource.getProperties());
 
         // Preferences
         {

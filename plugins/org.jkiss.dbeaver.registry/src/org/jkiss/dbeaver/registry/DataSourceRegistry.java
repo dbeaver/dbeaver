@@ -797,6 +797,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 }
             }
         }
+
+        updateProjectNature();
+
         return configChanged;
     }
 
@@ -816,7 +819,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 serializer = new DataSourceSerializerModern(this);
             }
             configChanged = serializer.parseDataSources(storage, manager, parseResults, dataSourceIds, refresh);
-            updateProjectNature();
+
             lastError = null;
         } catch (Exception ex) {
             lastError = ex;

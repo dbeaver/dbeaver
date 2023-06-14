@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.ext.datavirtuality.model.DataVirtualityDataSource;
 import org.jkiss.dbeaver.ext.datavirtuality.model.DataVirtualityMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;

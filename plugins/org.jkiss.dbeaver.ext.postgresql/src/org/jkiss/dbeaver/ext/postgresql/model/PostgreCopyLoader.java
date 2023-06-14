@@ -204,7 +204,7 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
 
         session.getProgressMonitor().subTask("Copy into " + tableFQN);
 
-        String queryText = "COPY " + tableFQN + " FROM STDIN (FORMAT CSV)";
+        String queryText = "COPY " + tableFQN + " FROM STDIN (FORMAT CSV, ESCAPE '\\')";
 
         try {
             Object rowCount;

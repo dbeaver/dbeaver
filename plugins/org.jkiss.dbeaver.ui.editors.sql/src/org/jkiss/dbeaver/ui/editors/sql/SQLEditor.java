@@ -155,7 +155,8 @@ public class SQLEditor extends SQLEditorBase implements
     DBPDataSourceTask,
     DBPDataSourceAcquirer,
     IResultSetProvider,
-    ISmartTransactionManager
+    ISmartTransactionManager,
+    IStatefulEditor
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
     private static final int MAX_PARALLEL_QUERIES_NO_WARN = 1;
@@ -235,6 +236,7 @@ public class SQLEditor extends SQLEditorBase implements
     private ScriptAutoSaveJob scriptAutoSavejob;
     private boolean isResultSetAutoFocusEnabled = true;
     private Boolean isDisableFetchResultSet = null;
+    private boolean datasourceChanged;
 
     private final ArrayList<SQLEditorAddIn> addIns = new ArrayList<>();
 
@@ -400,8 +402,10 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    public boolean setDataSourceContainer(@Nullable DBPDataSourceContainer container)
-    {
+    public boolean setDataSourceContainer(@Nullable DBPDataSourceContainer container) {
+        if (!datasourceChanged && curDataSource != null) {
+            datasourceChanged = true;
+        }
         if (container == dataSourceContainer) {
             return true;
         }
@@ -505,7 +509,7 @@ public class SQLEditor extends SQLEditorBase implements
                 if (executionContextProvider == null) {
                     DBPDataSourceContainer container = dataSource.getContainer();
                     if (SQLEditorUtils.isOpenSeparateConnection(container)) {
-                        initSeparateConnection(dataSource, onSuccess);
+                        initSeparateConnection(dataSource, onSuccess, true);
                     } else {
                         if (onSuccess != null) {
                             onSuccess.run();
@@ -517,7 +521,7 @@ public class SQLEditor extends SQLEditorBase implements
         UIUtils.asyncExec(() -> fireDataSourceChanged(null));
     }
 
-    private void initSeparateConnection(@NotNull DBPDataSource dataSource, Runnable onSuccess) {
+    private void initSeparateConnection(@NotNull DBPDataSource dataSource, Runnable onSuccess, boolean readDefaultsFromInstance) {
         DBSInstance dsInstance = dataSource.getDefaultInstance();
         String[] contextDefaults = isRestoreActiveSchemaFromScript() ?
             EditorUtils.getInputContextDefaults(dataSource.getContainer(), getEditorInput()) : null;
@@ -528,7 +532,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
         {
-            final OpenContextJob job = new OpenContextJob(dsInstance, onSuccess);
+            final OpenContextJob job = new OpenContextJob(dsInstance, onSuccess, readDefaultsFromInstance);
             job.schedule();
         }
     }
@@ -690,10 +694,13 @@ public class SQLEditor extends SQLEditorBase implements
         private final DBSInstance instance;
         private final Runnable onSuccess;
         private Throwable error;
-        OpenContextJob(DBSInstance instance, Runnable onSuccess) {
+        private boolean readDefaultsFromInstance;
+
+        OpenContextJob(DBSInstance instance, Runnable onSuccess, boolean readDefaultsFromInstance) {
             super("Open connection to " + instance.getDataSource().getContainer().getName());
             this.instance = instance;
             this.onSuccess = onSuccess;
+            this.readDefaultsFromInstance = readDefaultsFromInstance;
             setUser(true);
         }
 
@@ -705,8 +712,24 @@ public class SQLEditor extends SQLEditorBase implements
                 monitor.subTask("Open context " + title);
                 DBCExecutionContext newContext = instance.openIsolatedContext(monitor, title, instance.getDefaultContext(monitor, false));
                 // Set context defaults
-                String[] contextDefaultNames = isRestoreActiveSchemaFromScript() ?
-                    EditorUtils.getInputContextDefaults(instance.getDataSource().getContainer(), getEditorInput()) : null;
+                String[] contextDefaultNames = null;
+                if (readDefaultsFromInstance && datasourceChanged) {
+                    DBCExecutionContext defaultContext = DBUtils.getDefaultContext(instance, false);
+                    if (defaultContext != null) {
+                        DBCExecutionContextDefaults contextDefaultsDB = defaultContext.getContextDefaults();
+                        if (contextDefaultsDB != null) {
+                            contextDefaultNames = new String[2];
+                            contextDefaultNames[0] = contextDefaultsDB.getDefaultCatalog() != null ?
+                                contextDefaultsDB.getDefaultCatalog().getName() : null;
+                            contextDefaultNames[1] = contextDefaultsDB.getDefaultSchema() != null ?
+                                contextDefaultsDB.getDefaultSchema().getName() : null;
+                        }
+                    }
+                }
+                if (contextDefaultNames == null) {
+                    contextDefaultNames = isRestoreActiveSchemaFromScript() && instance.getDataSource() != null ?
+                        EditorUtils.getInputContextDefaults(instance.getDataSource().getContainer(), getEditorInput()) : null;
+                }
                 if (contextDefaultNames != null && contextDefaultNames.length > 1 &&
                     (!CommonUtils.isEmpty(contextDefaultNames[0]) || !CommonUtils.isEmpty(contextDefaultNames[1])))
                 {
@@ -800,8 +823,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    public boolean isDirty()
-    {
+    public boolean isDirty() {
         for (QueryProcessor queryProcessor : queryProcessors) {
             if (queryProcessor.isDirty() || queryProcessor.curJobRunning.get() > 0) {
                 return true;
@@ -2758,7 +2780,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
         DBPDataSource dataSource = ds.getDataSource();
         if (dataSource != null && executionContextProvider == null && SQLEditorUtils.isOpenSeparateConnection(ds) && executionContext == null) {
-            initSeparateConnection(dataSource, () -> onFinish.onTaskFinished(Status.OK_STATUS));
+            initSeparateConnection(dataSource, () -> onFinish.onTaskFinished(Status.OK_STATUS), false);
             return executionContext != null;
         }
         return true;
@@ -3254,7 +3276,7 @@ public class SQLEditor extends SQLEditorBase implements
                 // Restore cur data source (as it is reset in releaseExecutionContext)
                 curDataSource = dataSource;
                 if (dataSource != null && SQLEditorUtils.isOpenSeparateConnection(dataSource.getContainer())) {
-                    initSeparateConnection(dataSource, null);
+                    initSeparateConnection(dataSource, null, false);
                 }
                 return;
             }
@@ -3619,6 +3641,14 @@ public class SQLEditor extends SQLEditorBase implements
             }
             ResultSetViewer rsv = resultsProvider.getResultSetController();
             return rsv == null ? null : rsv.getDataReceiver();
+        }
+
+        @Override
+        public void releaseDataReceiver(int resultSetNumber) {
+            if (resultContainers.size() > resultSetNumber) {
+                final CTabItem tab = resultContainers.get(resultSetNumber).resultsTab;
+                UIUtils.syncExec(tab::dispose);
+            }
         }
 
         @Override
@@ -4392,6 +4422,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    @Override
     public void updateDirtyFlag() {
         firePropertyChange(IWorkbenchPartConstants.PROP_DIRTY);
     }

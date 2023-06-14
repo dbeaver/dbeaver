@@ -338,13 +338,9 @@
                     description="ODBC bridge driver"
                     supportedConfigurationTypes="MANUAL,URL"
                     supportsDistributedMode="false"
+                    deprecated="%driver.odbc.deprecation.reason"
                     categories="sql">
                     <os name="win32"/>
-                    <file type="jar" path="https://github.com/dbeaver/jdbc-odbc-bridge-jre7/raw/main/jdbc-odbc-bridge-jre7.jar" bundle="!drivers.odbc"/>
-                    <file type="lib" os="win32" arch="x86_64" path="https://github.com/dbeaver/jdbc-odbc-bridge-jre7/raw/main/x64/JdbcOdbc.dll" bundle="!drivers.odbc"/>
-
-                    <file type="jar" path="drivers/odbc" bundle="drivers.odbc"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/odbc/x64" bundle="drivers.odbc"/>
                 </driver>
                 <driver
                     id="derby"
@@ -955,6 +951,38 @@
                     iconBig="icons/machbase_icon_big.png"
                     categories="timeseries">
                     <file type="jar" path="https://www.machbase.com/dist/machbase.jar"/>
+                    <parameter name="supports-truncate" value="false"/>
+                </driver>
+
+                <!-- TDengine -->
+                <driver
+                    id="tdengine"
+                    label="TDengine"
+                    class="com.taosdata.jdbc.rs.RestfulDriver"
+                    sampleURL="jdbc:TAOS-RS://{host}:{port}/[{db}]"
+                    defaultPort="6041"
+                    description="TDengine driver"
+                    supportedConfigurationTypes="MANUAL"
+                    webURL="http://www.tdengine.com"
+                    icon="icons/tdengine_icon.png"
+                    iconBig="icons/tdengine_icon_big.png"
+                    categories="timeseries">
+                    <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE[3.2.1]"/>
+                    <parameter name="supports-truncate" value="false"/>
+                </driver>
+
+                <!-- TDengine Cloud -->
+                <driver
+                    id="tdengine_cloud"
+                    label="TDengine Cloud"
+                    icon="icons/tdengine_icon.png"
+                    iconBig="icons/tdengine_icon_big.png"
+                    class="com.taosdata.jdbc.rs.RestfulDriver"
+                    anonymous="true"
+                    webURL="http://cloud.tdengine.com"
+                    description="TDengine Cloud driver"
+                    categories="timeseries">
+                    <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE[3.2.1]"/>
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
 
@@ -1646,7 +1674,7 @@
                         description="Salesforce CDP JDBC driver"
                         webURL="https://github.com/forcedotcom/Salesforce-CDP-jdbc"
                         categories="sql">
-                    <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/release_2023.2b/Salesforce-CDP-jdbc-1.19.0.jar" bundle="!drivers.salesforce"/>
+                    <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/release_2023.01a/Salesforce-CDP-jdbc-1.16.0.jar" bundle="!drivers.salesforce"/>
                     <file type="jar" path="drivers/salesforce" bundle="drivers.salesforce"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.salesforce"/>
                     <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.salesforce"/>

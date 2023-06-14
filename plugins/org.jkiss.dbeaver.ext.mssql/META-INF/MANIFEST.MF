@@ -6,7 +6,8 @@ Bundle-Version: 1.0.201.qualifier
 Bundle-Release-Date: 20230605
 Bundle-Activator: org.jkiss.dbeaver.ext.mssql.internal.SQLServerActivator
 Require-Bundle: org.eclipse.core.runtime,
- org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model;visibility:=reexport,
+ org.jkiss.dbeaver.model.jdbc;visibility:=reexport,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.ext.generic,
  com.github.jsqlparser,
