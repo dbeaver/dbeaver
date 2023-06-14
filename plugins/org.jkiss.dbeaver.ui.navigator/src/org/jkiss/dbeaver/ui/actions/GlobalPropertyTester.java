@@ -19,6 +19,11 @@ package org.jkiss.dbeaver.ui.actions;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -31,7 +36,7 @@ import org.jkiss.utils.CommonUtils;
  * GlobalPropertyTester
  */
 public class GlobalPropertyTester extends PropertyTester {
-    //static final Log log = LogFactory.get vLog(ObjectPropertyTester.class);
+    static final Log log = Log.getLog(ObjectPropertyTester.class);
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.global";
     public static final String PROP_STANDALONE = "standalone";
@@ -47,6 +52,7 @@ public class GlobalPropertyTester extends PropertyTester {
     public static final String PROP_CURRENT_PROJECT_RESOURCE_VIEWABLE = "currentProjectResourceViewable";
     public static final String PROP_HAS_PREFERENCE = "hasPreference";
     public static final String PROP_HAS_ENV_VARIABLE = "hasEnvVariable";
+    public static final String PROP_ACTIVE_PART_IS = "activePartIs";
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
@@ -62,11 +68,10 @@ public class GlobalPropertyTester extends PropertyTester {
             case PROP_DISTRIBUTED:
                 return DBWorkbench.isDistributed();
             case PROP_BUNDLE_INSTALLED:
-                return Platform.getBundle((String)args[0]) != null;
+                return Platform.getBundle((String) args[0]) != null;
             case PROP_CAN_CREATE_PROJECT:
                 return canManageProjects();
-            case PROP_CAN_CREATE_CONNECTION:
-            {
+            case PROP_CAN_CREATE_CONNECTION: {
                 for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
                     if (project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)
                         && project.hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER)
@@ -103,6 +108,29 @@ public class GlobalPropertyTester extends PropertyTester {
                 String prefName = CommonUtils.toString(expectedValue);
                 String prefValue = System.getenv(prefName);
                 return (prefValue != null && prefValue.isEmpty()) || CommonUtils.toBoolean(prefValue);
+            }
+            case PROP_ACTIVE_PART_IS: {
+                IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+                if (workbenchWindow != null) {
+                    IWorkbenchPage activePage = workbenchWindow.getActivePage();
+                    if (activePage != null) {
+                        IWorkbenchPart activePart = activePage.getActivePart();
+                        if (activePart != null) {
+                            Class<?> type = activePart.getClass();
+                            while (type != null) {
+                                if (type.getName().equals(expectedValue)) {
+                                    return true;
+                                }
+                                for (Class<?> iface : type.getInterfaces()) {
+                                    if (iface.getName().equals(expectedValue)) {
+                                        return true;
+                                    }
+                                }
+                                type = type.getSuperclass();
+                            }
+                        }
+                    }
+                }
             }
         }
         return false;

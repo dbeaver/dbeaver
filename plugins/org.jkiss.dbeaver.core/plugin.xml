@@ -1013,7 +1013,14 @@
 
         <page id="org.jkiss.dbeaver.preferences.main.toolbar.customization"
               class="org.jkiss.dbeaver.ui.preferences.PrefPageToolbarCustomization"
-              name="%org.jkiss.dbeaver.preferences.main.toolbar.customization.name"/>
+              name="%org.jkiss.dbeaver.preferences.main.toolbar.customization.name">
+            <enabledWhen>
+                <or>
+                    <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <test property="org.jkiss.dbeaver.core.global.activePartIs" value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                </or>
+            </enabledWhen>
+        </page>
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">
