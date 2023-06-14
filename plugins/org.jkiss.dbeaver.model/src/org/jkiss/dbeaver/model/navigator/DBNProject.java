@@ -51,6 +51,9 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     public DBNProject(DBNNode parentNode, DBPProject project, DBPResourceHandler handler) {
         super(parentNode, project.getEclipseProject(), handler);
         this.project = project;
+        if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            DBNRegistry.getInstance().extendNode(this, false);
+        }
     }
 
     @NotNull
@@ -271,17 +274,21 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     @NotNull
     @Override
     public List<DBNNode> getExtraNodes() {
-        return extraNodes == null ? Collections.emptyList() : extraNodes;
+        if (extraNodes == null) {
+            return Collections.emptyList();
+        }
+        return extraNodes;
     }
 
     public <T> T getExtraNode(Class<T> nodeType) {
         if (extraNodes == null) {
-            extraNodes = new ArrayList<>();
             DBNRegistry.getInstance().extendNode(this, false);
         }
-        for (DBNNode node : extraNodes) {
-            if (nodeType.isAssignableFrom(node.getClass())) {
-                return nodeType.cast(node);
+        if (extraNodes != null) {
+            for (DBNNode node : extraNodes) {
+                if (nodeType.isAssignableFrom(node.getClass())) {
+                    return nodeType.cast(node);
+                }
             }
         }
         return null;
@@ -289,6 +296,9 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     public void addExtraNode(@NotNull DBNNode node, boolean reflect) {
+        if (extraNodes == null) {
+            extraNodes = new ArrayList<>();
+        }
         extraNodes.add(node);
         extraNodes.sort(Comparator.comparing(DBNNode::getNodeName));
         if (reflect) {
@@ -298,7 +308,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     public void removeExtraNode(@NotNull DBNNode node) {
-        if (extraNodes.remove(node)) {
+        if (extraNodes != null && extraNodes.remove(node)) {
             getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, node));
         }
     }
