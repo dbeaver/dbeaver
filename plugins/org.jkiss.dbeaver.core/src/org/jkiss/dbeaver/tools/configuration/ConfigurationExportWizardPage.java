@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.configuration;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -42,9 +43,17 @@ public class ConfigurationExportWizardPage extends WizardPage {
 
     @Override
     public void createControl(@NotNull Composite parent) {
-        Composite placeholder = UIUtils.createPlaceholder(parent, 2);
-        UIUtils.createControlLabel(placeholder, CoreMessages.dialog_workspace_export_wizard_file_name);
-        file = new TextWithOpenFile(placeholder, CoreMessages.dialog_workspace_export_wizard_file_path_dialog,
+        Composite composite = UIUtils.createComposite(parent, 1);
+        Group exportSettingsGroup = UIUtils.createControlGroup(
+            composite,
+            CoreMessages.dialog_workspace_export_wizard_group,
+            2,
+            GridData.FILL_BOTH,
+            0
+        );
+
+        UIUtils.createControlLabel(exportSettingsGroup, CoreMessages.dialog_workspace_export_wizard_file_name);
+        file = new TextWithOpenFile(exportSettingsGroup, CoreMessages.dialog_workspace_export_wizard_file_path_dialog,
             new String[]{
                 "*.zip"
             }
@@ -52,7 +61,7 @@ public class ConfigurationExportWizardPage extends WizardPage {
         file.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         file.getTextControl().addModifyListener(e -> updateState());
         updateState();
-        setControl(placeholder);
+        setControl(composite);
     }
 
     private void updateState()

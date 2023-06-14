@@ -183,6 +183,7 @@ public class CoreMessages extends NLS {
     public static String dialog_workspace_import_wizard_window_restart_dialog_message;
     public static String dialog_workspace_import_wizard_name;
     public static String dialog_workspace_import_wizard_title;
+	public static String dialog_workspace_import_wizard_group;
     public static String dialog_workspace_import_wizard_file_select_name;
     public static String dialog_workspace_import_wizard_file_select_title;
     public static String dialog_workspace_import_wizard_start_message_configure_settings;
@@ -192,6 +193,8 @@ public class CoreMessages extends NLS {
     public static String dialog_workspace_export_wizard_file_name;
     public static String dialog_workspace_export_wizard_file_path_dialog;
     public static String dialog_workspace_export_wizard_start_message_configure_settings;
+	public static String dialog_workspace_export_wizard_group;
+
 
 
 	public static String dialog_project_import_wizard_file_checkbox_import_libraries;

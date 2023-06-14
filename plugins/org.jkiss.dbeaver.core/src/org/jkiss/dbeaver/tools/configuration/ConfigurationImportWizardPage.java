@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.configuration;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
@@ -37,14 +38,20 @@ public class ConfigurationImportWizardPage extends WizardPage {
 
     @Override
     public void createControl(Composite parent) {
-
-        Composite placeholder = UIUtils.createPlaceholder(parent, 2);
-        UIUtils.createControlLabel(placeholder, CoreMessages.dialog_workspace_import_wizard_file_select_name);
-        file = new TextWithOpenFile(placeholder, CoreMessages.dialog_workspace_import_wizard_file_select_title,
+        Composite composite = UIUtils.createComposite(parent, 1);
+        Group importSettingsGroup = UIUtils.createControlGroup(
+            composite,
+            CoreMessages.dialog_workspace_import_wizard_group,
+            2,
+            GridData.FILL_BOTH,
+            0
+        );
+        UIUtils.createControlLabel(importSettingsGroup, CoreMessages.dialog_workspace_import_wizard_file_select_name);
+        file = new TextWithOpenFile(importSettingsGroup, CoreMessages.dialog_workspace_import_wizard_file_select_title,
             new String[]{"*.zip"});
         file.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         file.getTextControl().addModifyListener(e -> getContainer().updateButtons());
-        setControl(placeholder);
+        setControl(composite);
     }
 
     @Override
