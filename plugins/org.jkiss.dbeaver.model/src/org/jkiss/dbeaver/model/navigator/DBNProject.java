@@ -46,12 +46,11 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     private static final Log log = Log.getLog(DBNProject.class);
 
     private final DBPProject project;
-    private final List<DBNNode> extraNodes = new ArrayList<>();
+    private List<DBNNode> extraNodes;
 
     public DBNProject(DBNNode parentNode, DBPProject project, DBPResourceHandler handler) {
         super(parentNode, project.getEclipseProject(), handler);
         this.project = project;
-        DBNRegistry.getInstance().extendNode(this, false);
     }
 
     @NotNull
@@ -172,7 +171,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
             childrenFiltered.removeIf(node ->
                 node instanceof DBNResource && !((DBNResource) node).isResourceExists());
         }
-        if (!extraNodes.isEmpty()) {
+        if (!CommonUtils.isEmpty(extraNodes)) {
             childrenFiltered.addAll(extraNodes);
         }
         return childrenFiltered.toArray(new DBNNode[0]);
@@ -272,15 +271,17 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     @NotNull
     @Override
     public List<DBNNode> getExtraNodes() {
-        return extraNodes;
+        return extraNodes == null ? Collections.emptyList() : extraNodes;
     }
 
     public <T> T getExtraNode(Class<T> nodeType) {
-        if (extraNodes != null) {
-            for (DBNNode node : extraNodes) {
-                if (nodeType.isAssignableFrom(node.getClass())) {
-                    return nodeType.cast(node);
-                }
+        if (extraNodes == null) {
+            extraNodes = new ArrayList<>();
+            DBNRegistry.getInstance().extendNode(this, false);
+        }
+        for (DBNNode node : extraNodes) {
+            if (nodeType.isAssignableFrom(node.getClass())) {
+                return nodeType.cast(node);
             }
         }
         return null;
@@ -309,10 +310,12 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     protected void dispose(boolean reflect) {
-        for (DBNNode node : extraNodes) {
-            node.dispose(reflect);
+        if (extraNodes != null) {
+            for (DBNNode node : extraNodes) {
+                node.dispose(reflect);
+            }
+            extraNodes.clear();
         }
-        extraNodes.clear();
         super.dispose(reflect);
     }
 

@@ -155,7 +155,8 @@ public class SQLEditor extends SQLEditorBase implements
     DBPDataSourceTask,
     DBPDataSourceAcquirer,
     IResultSetProvider,
-    ISmartTransactionManager
+    ISmartTransactionManager,
+    IStatefulEditor
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
     private static final int MAX_PARALLEL_QUERIES_NO_WARN = 1;
@@ -822,8 +823,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    public boolean isDirty()
-    {
+    public boolean isDirty() {
         for (QueryProcessor queryProcessor : queryProcessors) {
             if (queryProcessor.isDirty() || queryProcessor.curJobRunning.get() > 0) {
                 return true;
@@ -4414,6 +4414,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    @Override
     public void updateDirtyFlag() {
         firePropertyChange(IWorkbenchPartConstants.PROP_DIRTY);
     }
