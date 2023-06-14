@@ -14,23 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.greenplum;
+package org.jkiss.dbeaver.model.dpi.api;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.greenplum.model.GreenplumDataSource;
-import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-public class GreenplumDataSourceProvider extends PostgreDataSourceProvider {
-    public GreenplumDataSourceProvider() {
-    }
+/**
+ * Detached data source proxy.
+ */
+public interface DPIController {
+
+    /**
+     * Opens new session
+     */
+    DPISession openSession();
 
     @NotNull
-    @Override
-    public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
-        return new GreenplumDataSource(monitor, container);
-    }
+    DBPDataSource openDataSource(@NotNull DPISession session, @NotNull DBPDataSourceContainer container)
+        throws DBException;
+
+    // Closes session and terminates detached process when last session is closed
+    void closeSession(DPISession session);
+
 }

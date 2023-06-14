@@ -14,17 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.dds;
+package org.jkiss.dbeaver.model.dpi.api;
 
-import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
+/**
+ * Detached session
+ */
+public class DPISession {
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
+    private final String sessionId;
 
-public class DDSInvocationHandler implements InvocationHandler {
-
-    @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        throw new DBCFeatureNotSupportedException();
+    public DPISession(String sessionId) {
+        this.sessionId = sessionId;
     }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
 }

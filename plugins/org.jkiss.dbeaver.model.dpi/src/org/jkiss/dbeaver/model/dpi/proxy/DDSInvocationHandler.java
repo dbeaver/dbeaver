@@ -14,13 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.dds;
+package org.jkiss.dbeaver.model.dpi.proxy;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 
-/**
- * Detached data source
- */
-public abstract class DDSDataSource implements DBPDataSource {
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 
+public class DDSInvocationHandler implements InvocationHandler {
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        throw new DBCFeatureNotSupportedException();
+    }
 }
