@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
@@ -459,5 +460,40 @@ public final class DBStructUtils {
             }
         }
         return typeName;
+    }
+
+    /**
+     * Get name of the attribute
+
+     * @param attribute to get name of
+     * @return attribute name
+     */
+    public static String getAttributeName(@NotNull DBSAttributeBase attribute) {
+        return getAttributeName(attribute, DBPAttributeReferencePurpose.UNSPECIFIED);
+    }
+
+    /**
+     * Get name of the attribute
+
+     * @param attribute to get name of
+     * @param purpose of the name usage
+     * @return attribute name
+     */
+    public static String getAttributeName(@NotNull DBSAttributeBase attribute, DBPAttributeReferencePurpose purpose) {
+        if (attribute instanceof DBDAttributeBindingMeta) {
+            // For top-level query bindings we need to use table columns name instead of alias.
+            // For nested attributes we should use aliases
+
+            // Entity attribute obtain commented because it broke complex attributes full name construction
+            // We can't use entity attr because only particular query metadata contains real structure
+            DBSEntityAttribute entityAttribute = ((DBDAttributeBindingMeta) attribute).getEntityAttribute();
+            if (entityAttribute != null) {
+                attribute = entityAttribute;
+            }
+        }
+        // Do not quote pseudo attribute name
+        return DBUtils.isPseudoAttribute(attribute)
+            ? attribute.getName()
+            : DBUtils.getObjectFullName(attribute, DBPEvaluationContext.DML);
     }
 }

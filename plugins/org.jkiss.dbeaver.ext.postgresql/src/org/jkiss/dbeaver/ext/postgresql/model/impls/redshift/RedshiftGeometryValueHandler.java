@@ -31,7 +31,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKBWriter;
 
 import java.sql.SQLException;
-import java.sql.Types;
 
 public class RedshiftGeometryValueHandler extends PostgreGeometryValueHandler {
     public static final RedshiftGeometryValueHandler INSTANCE = new RedshiftGeometryValueHandler();

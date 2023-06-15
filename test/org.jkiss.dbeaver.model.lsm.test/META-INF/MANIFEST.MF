@@ -10,5 +10,5 @@ Require-Bundle: org.jkiss.dbeaver.model.lsm,
  org.mockito.mockito-core
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-Vendor: JKISS
+Bundle-Vendor: DBeaver Corp
 Automatic-Module-Name: org.jkiss.dbeaver.model.lsm.test

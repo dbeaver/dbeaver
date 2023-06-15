@@ -33,12 +33,16 @@ import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.data.DBDAttributeContentTypeProvider;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
-import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
+import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.jdbc.*;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -223,8 +227,8 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                 throw new DBException("You can't set empty password");
             }
             Properties connectProps = getAllConnectionProperties(monitor, context, purpose, connectionInfo);
-            connectProps.setProperty(JDBCConstants.PROP_USER, passwordInfo.getUserName());
-            connectProps.setProperty(JDBCConstants.PROP_PASSWORD, passwordInfo.getOldPassword());
+            connectProps.setProperty(DBConstants.PROP_USER, passwordInfo.getUserName());
+            connectProps.setProperty(DBConstants.PROP_PASSWORD, passwordInfo.getOldPassword());
             connectProps.setProperty("oracle.jdbc.newPassword", passwordInfo.getNewPassword());
 
             final String url = getConnectionURL(connectionInfo);
@@ -543,6 +547,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         this.userCache.clearCache();
         this.profileCache.clearCache();
         this.roleCache.clearCache();
+        hasStatistics = false;
 
         this.initialize(monitor);
 
@@ -587,6 +592,8 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             return adapter.cast(new OracleQueryPlanner(this));
         } else if(adapter == DBAUserPasswordManager.class) {
             return adapter.cast(new OracleChangeUserPasswordManager(this));
+        } else if (adapter == DBDAttributeContentTypeProvider.class) {
+            return adapter.cast(OracleAttributeContentTypeProvider.INSTANCE);
         }
         return super.getAdapter(adapter);
     }
@@ -815,6 +822,10 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     @Override
     public boolean isStatisticsCollected() {
         return hasStatistics;
+    }
+
+    void resetStatistics() {
+        hasStatistics = false;
     }
 
     @Override

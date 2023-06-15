@@ -31,7 +31,7 @@ Require-Bundle: org.eclipse.ui,
  com.google.gson
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-Vendor: JKISS
+Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.mysql.ui
 Export-Package: org.jkiss.dbeaver.ext.mysql.ui.views
