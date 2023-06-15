@@ -550,17 +550,17 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         } catch (DBException e) {
             log.error("Error deleting old secrets", e);
         }
-        try {
-            this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, dataSource);
-        } finally {
-            descriptor.dispose();
-        }
     }
 
     @Override
     public void removeDataSourceFromList(@NotNull DBPDataSourceContainer dataSource) {
         synchronized (dataSources) {
             this.dataSources.remove(dataSource.getId());
+        }
+        try {
+            this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, dataSource);
+        } finally {
+            ((DataSourceDescriptor) dataSource).dispose();
         }
     }
 
