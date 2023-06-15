@@ -3,4 +3,10 @@
 
 <plugin>
 
+    <extension point="org.eclipse.core.runtime.applications" id="application" name="DPI Application">
+        <application visible="true">
+            <run class="org.jkiss.dbeaver.model.dpi.app.DPIApplication"/>
+        </application>
+    </extension>
+
 </plugin>

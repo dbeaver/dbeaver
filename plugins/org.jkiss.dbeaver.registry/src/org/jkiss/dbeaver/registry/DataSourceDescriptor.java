@@ -36,6 +36,8 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.dpi.api.DPIController;
+import org.jkiss.dbeaver.model.dpi.process.DPIProcessController;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
@@ -1206,6 +1208,8 @@ public class DataSourceDescriptor
                 monitor.done();
             }
         }
+
+        DPIController dpiController = DPIProcessController.detachDatabaseProcess(monitor, this);
 
         this.dataSource = provider.openDataSource(monitor, this);
         this.connectTime = new Date();

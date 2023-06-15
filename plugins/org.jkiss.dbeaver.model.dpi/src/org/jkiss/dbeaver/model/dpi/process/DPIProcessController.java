@@ -16,15 +16,68 @@
  */
 package org.jkiss.dbeaver.model.dpi.process;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.dpi.api.DPIController;
+import org.jkiss.dbeaver.model.dpi.api.DPISession;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.io.IOException;
 
 /**
  * Detached process controller
  */
-public class DPIProcessController {
+public class DPIProcessController implements DPIController {
 
-    public DPIController detachProcess() {
+    private static final Log log = Log.getLog(DPIProcessController.class);
+
+    public static DPIController detachDatabaseProcess(DBRProgressMonitor monitor, DBPDataSourceContainer dataSourceContainer) {
+
+        try {
+            BundleProcessConfig processConfig = BundleConfigGenerator.generateBundleConfig(monitor, dataSourceContainer);
+            if (processConfig != null) {
+                return new DPIProcessController(processConfig);
+            }
+        } catch (Exception e) {
+            log.debug("Error generating osgi process from datasource configuration", e);
+        }
+
         return null;
     }
 
+    private final BundleProcessConfig processConfig;
+    private final Process process;
+
+    public DPIProcessController(BundleProcessConfig processConfig) throws IOException {
+        this.processConfig = processConfig;
+
+        this.process = processConfig.startProcess();
+
+        try {
+            int result = this.process.waitFor();
+            System.out.println("Done");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public DPISession openSession() {
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public DBPDataSource openDataSource(@NotNull DPISession session, @NotNull DBPDataSourceContainer container) throws DBException {
+        throw new DBCFeatureNotSupportedException();
+    }
+
+    @Override
+    public void closeSession(DPISession session) {
+
+    }
 }
