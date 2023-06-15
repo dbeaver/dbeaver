@@ -8,7 +8,8 @@ Bundle-Release-Date: 20230605
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
- org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model;visibility:=reexport,
+ org.jkiss.dbeaver.model.jdbc;visibility:=reexport,
  org.jkiss.dbeaver.registry
 Export-Package: org.jkiss.dbeaver.ext.db2,
  org.jkiss.dbeaver.ext.db2.data,

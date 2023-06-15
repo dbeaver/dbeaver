@@ -77,7 +77,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
     private static final Gson CONFIG_GSON = new GsonBuilder()
         .setLenient()
         .serializeNulls()
-        .setPrettyPrinting()
         .create();
     private static final Gson SECURE_GSON = new GsonBuilder()
         .setLenient()
@@ -109,7 +108,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         ByteArrayOutputStream dsConfigBuffer = new ByteArrayOutputStream(10000);
         try (OutputStreamWriter osw = new OutputStreamWriter(dsConfigBuffer, StandardCharsets.UTF_8)) {
             try (JsonWriter jsonWriter = CONFIG_GSON.newJsonWriter(osw)) {
-                jsonWriter.setIndent("\t");
+                jsonWriter.setIndent(JSONUtils.DEFAULT_INDENT);
                 jsonWriter.beginObject();
 
                 // Save folders
@@ -160,10 +159,12 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         // Save virtual models
                         jsonWriter.name("virtual-models");
                         jsonWriter.beginObject();
+                        jsonWriter.setIndent(JSONUtils.EMPTY_INDENT);
                         for (DBVModel model : virtualModels.values()) {
                             model.serialize(monitor, jsonWriter);
                         }
                         jsonWriter.endObject();
+                        jsonWriter.setIndent(JSONUtils.DEFAULT_INDENT);
                     }
                     // Network profiles
                     List<DBWNetworkProfile> profiles = registry.getNetworkProfiles();

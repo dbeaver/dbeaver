@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLMultiWordRule;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
@@ -141,5 +142,30 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
                 return null;
         }
         return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
+    }
+
+    @Override
+    public boolean mustBeQuoted(@NotNull String str, boolean forceCaseSensitive) {
+        // Unquoted object identifiers:
+        // * Start with a letter (A-Z, a-z) or an underscore (“_”).
+        // * Contain only letters, underscores, decimal digits (0-9), and dollar signs (“$”).
+        // * Are stored and resolved as uppercase characters (e.g. id is stored and resolved as ID).
+        // https://docs.snowflake.com/en/sql-reference/identifiers-syntax
+
+        if (forceCaseSensitive || str.isBlank()) {
+            return true;
+        }
+        int firstCodePoint = str.codePointAt(0);
+        if (!SQLUtils.isLatinLetter(firstCodePoint) && firstCodePoint != '_') {
+            return true;
+        }
+        int length = str.codePointCount(0, str.length());
+        for (int i = 1; i < length; i++) {
+            int codePoint = str.codePointAt(i);
+            if (!SQLUtils.isLatinLetter(codePoint) && codePoint != '_' && !Character.isDigit(codePoint) && codePoint != '$') {
+                return true;
+            }
+        }
+        return false;
     }
 }
