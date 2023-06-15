@@ -52,6 +52,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -163,10 +167,17 @@ public abstract class BaseProjectImpl implements DBPProject {
     protected Path getMetadataPath() {
         return getAbsolutePath().resolve(METADATA_FOLDER);
     }
-
+    
     @Override
     public boolean isRegistryLoaded() {
         return dataSourceRegistry != null;
+    }
+
+    private boolean isRegistryLoading = false;
+    
+    @Override
+    public boolean isRegistryLoading() {
+        return isRegistryLoading;
     }
 
     @Override
@@ -178,17 +189,46 @@ public abstract class BaseProjectImpl implements DBPProject {
     public boolean isPrivateProject() {
         return true;
     }
+    
+    private CompletableFuture<DBPDataSourceRegistry> completableRegistry = null;
 
     @NotNull
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {
         ensureOpen();
+        /*
         synchronized (metadataSync) {
             if (dataSourceRegistry == null) {
+                if (isRegistryLoading) {
+                    throw new IllegalStateException("Unexpected concurrency violation");
+                }
+                isRegistryLoading = true;
                 dataSourceRegistry = createDataSourceRegistry();
+                isRegistryLoading = false;
             }
         }
         return dataSourceRegistry;
+        */
+        try {
+            return getDataSourceRegistryAsyncImpl().get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new IllegalStateException("Unexpected concurrency violation", e);
+        }
+    }
+    
+    @Override
+    public CompletionStage<DBPDataSourceRegistry> getDataSourceRegistryAsync() {
+        return this.getDataSourceRegistryAsyncImpl();
+    }
+    
+    private CompletableFuture<DBPDataSourceRegistry> getDataSourceRegistryAsyncImpl() {
+        ensureOpen();
+        synchronized (metadataSync) {
+            if (completableRegistry == null) {
+                completableRegistry = CompletableFuture.supplyAsync(() -> createDataSourceRegistry());
+            }
+        }
+        return completableRegistry;
     }
 
     @NotNull
