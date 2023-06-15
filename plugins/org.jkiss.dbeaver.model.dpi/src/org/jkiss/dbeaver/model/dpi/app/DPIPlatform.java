@@ -21,17 +21,16 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPExternalFileManager;
-import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.app.DBACertificateStorage;
+import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.*;
-import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
-import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
+import org.jkiss.dbeaver.registry.BaseApplicationImpl;
+import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.runtime.qm.QMRegistryImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -39,12 +38,11 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Locale;
 
 /**
  * DPIPlatform
  */
-public class DPIPlatform extends BasePlatformImpl implements DBPPlatformDesktop {
+public class DPIPlatform extends BasePlatformImpl {
 
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.model.dpi"; //$NON-NLS-1$
 
@@ -55,9 +53,8 @@ public class DPIPlatform extends BasePlatformImpl implements DBPPlatformDesktop 
     private static volatile boolean isClosing = false;
 
     private Path tempFolder;
-    private DesktopWorkspaceImpl workspace;
+    private DPIWorkspace workspace;
 
-    private static boolean disposed = false;
     private QMRegistryImpl qmController;
     private DefaultCertificateStorage defaultCertificateStorage;
 
@@ -75,14 +72,6 @@ public class DPIPlatform extends BasePlatformImpl implements DBPPlatformDesktop 
             log.error("Error initializing DPI platform", e);
             throw new IllegalStateException("Error initializing DPI platform", e);
         }
-    }
-
-    public static String getCorePluginID() {
-        return PLUGIN_ID;
-    }
-
-    public static boolean isStandalone() {
-        return BaseApplicationImpl.getInstance().isStandalone();
     }
 
     public static boolean isClosing() {
@@ -109,16 +98,12 @@ public class DPIPlatform extends BasePlatformImpl implements DBPPlatformDesktop 
             log.debug(e);
         }
 
-/*
         // Register properties adapter
-        this.workspace = new DesktopWorkspaceImpl(this, ResourcesPlugin.getWorkspace());
+        this.workspace = new DPIWorkspace(this);
         this.workspace.initializeProjects();
-*/
 
         QMUtils.initApplication(this);
         this.qmController = new QMRegistryImpl();
-
-        //super.initialize();
 
         log.debug("DPI Platform initialized (" + (System.currentTimeMillis() - startTime) + "ms)");
     }
@@ -129,7 +114,6 @@ public class DPIPlatform extends BasePlatformImpl implements DBPPlatformDesktop 
         super.dispose();
         workspace.dispose();
 
-        DataSourceProviderRegistry.getInstance().dispose();
         // Remove temp folder
         if (tempFolder != null) {
             if (!ContentUtils.deleteFileRecursive(tempFolder)) {
@@ -139,19 +123,12 @@ public class DPIPlatform extends BasePlatformImpl implements DBPPlatformDesktop 
         }
 
         DPIPlatform.instance = null;
-        DPIPlatform.disposed = true;
     }
 
     @NotNull
     @Override
-    public DBPWorkspaceDesktop getWorkspace() {
+    public DPIWorkspace getWorkspace() {
         return workspace;
-    }
-
-    @NotNull
-    @Override
-    public DBPPlatformLanguage getLanguage() {
-        return PlatformLanguageRegistry.getInstance().getLanguage(Locale.ENGLISH);
     }
 
     @NotNull
@@ -165,17 +142,6 @@ public class DPIPlatform extends BasePlatformImpl implements DBPPlatformDesktop 
         return qmController;
     }
 
-    @Override
-    public DBPGlobalEventManager getGlobalEventManager() {
-        return GlobalEventManagerImpl.getInstance();
-    }
-
-    @NotNull
-    @Override
-    public DBPDataFormatterRegistry getDataFormatterRegistry() {
-        return DataFormatterRegistry.getInstance();
-    }
-
     @NotNull
     @Override
     public DBPPreferenceStore getPreferenceStore() {
@@ -186,12 +152,6 @@ public class DPIPlatform extends BasePlatformImpl implements DBPPlatformDesktop 
     @Override
     public DBACertificateStorage getCertificateStorage() {
         return defaultCertificateStorage;
-    }
-
-    @NotNull
-    @Override
-    public DBPExternalFileManager getExternalFileManager() {
-        return workspace;
     }
 
     @NotNull

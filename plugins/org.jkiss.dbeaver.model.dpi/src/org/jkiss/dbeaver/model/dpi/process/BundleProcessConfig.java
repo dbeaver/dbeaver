@@ -42,14 +42,14 @@ import java.util.stream.Collectors;
 class BundleProcessConfig {
 
     private static final Log log = Log.getLog(BundleProcessConfig.class);
-    private static final List<String> START_BUNDLES = List.of(
-        "org.eclipse.osgi",
-        "org.eclipse.core.runtime",
-        "org.apache.felix.scr",
-        "org.eclipse.equinox.common",
-        "org.eclipse.equinox.event",
-        "org.eclipse.equinox.simpleconfigurator",
-        "org.eclipse.update.configurator"
+    private static final Map<String, Integer> START_BUNDLES = Map.of(
+        "org.eclipse.osgi", -1,
+        "org.eclipse.core.runtime", 4,
+        "org.apache.felix.scr", 2,
+        "org.eclipse.equinox.common", 2,
+        "org.eclipse.equinox.event", 2,
+        "org.eclipse.equinox.simpleconfigurator", 1,
+        "org.eclipse.update.configurator", 10
         );
 
     private final Map<String, ModuleWiring> dependencies = new LinkedHashMap<>();
@@ -84,16 +84,10 @@ class BundleProcessConfig {
             }
         }
 
-        workspaceDir = dataPath.resolve("workspace");
-        if (!Files.exists(workspaceDir)) {
-            Files.createDirectories(workspaceDir);
-        }
-
-
-//        EquinoxFwAdminImpl qa = new EquinoxFwAdminImpl();
-//        qa.activate(bundle.getBundleContext());
-//        Manipulator manipulator = qa.getManipulator();
-//        qa.launch(manipulator, )
+        workspaceDir = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath();
+//        if (!Files.exists(workspaceDir)) {
+//            Files.createDirectories(workspaceDir);
+//        }
     }
 
     private Map<String, String> generateDevProps() throws IOException {
@@ -158,8 +152,8 @@ class BundleProcessConfig {
             BundleFile bundleFile = ((BundleInfo.Generation) revisionInfo).getBundleFile();
             File baseFile = bundleFile.getBaseFile();
             String startLevel = "";
-            if (START_BUNDLES.contains(symbolicName)) {
-                startLevel = "@" + START_BUNDLES.indexOf(symbolicName) + ":start";
+            if (START_BUNDLES.containsKey(symbolicName)) {
+                startLevel = "@" + START_BUNDLES.get(symbolicName) + ":start";
             }
             String jarPath = fixWindowsPath(baseFile.getAbsoluteFile().getAbsolutePath());
             if (reference) {

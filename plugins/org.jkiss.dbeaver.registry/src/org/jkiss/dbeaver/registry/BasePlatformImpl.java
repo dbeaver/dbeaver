@@ -89,8 +89,6 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
             }
         });
 
-        this.localSystem = new OSDescriptor(Platform.getOS(), Platform.getOSArch());
-
         // Navigator model
         this.navigatorModel = new DBNModel(this, null);
         this.navigatorModel.setModelAuthContext(getWorkspace().getAuthContext());
@@ -273,7 +271,10 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     @NotNull
     @Override
     public OSDescriptor getLocalSystem() {
-        return localSystem;
+        if (this.localSystem == null) {
+            this.localSystem = new OSDescriptor(Platform.getOS(), Platform.getOSArch());
+        }
+        return this.localSystem;
     }
 
     @NotNull

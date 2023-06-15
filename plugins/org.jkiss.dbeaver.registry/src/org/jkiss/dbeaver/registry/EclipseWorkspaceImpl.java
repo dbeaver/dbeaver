@@ -53,8 +53,12 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
 
         workspaceId = readWorkspaceId();
 
-        this.projectListener = new ProjectListener();
-        this.getEclipseWorkspace().addResourceChangeListener(projectListener);
+        if (!isReadOnly()) {
+            this.projectListener = new ProjectListener();
+            this.getEclipseWorkspace().addResourceChangeListener(projectListener);
+        } else {
+            this.projectListener = null;
+        }
     }
 
     @Override
@@ -64,7 +68,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         loadWorkspaceProjects();
 
         if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects) &&
-            isDefaultProjectNeeded())
+            isDefaultProjectNeeded() && !isReadOnly())
         {
             try {
                 createDefaultProject();
@@ -72,7 +76,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
                 log.error("Can't create default project", e);
             }
         }
-        if (getActiveProject() == null && !projects.isEmpty()) {
+        if (getActiveProject() == null && !projects.isEmpty() && !isReadOnly()) {
             // Set active project
             setActiveProject(projects.values().iterator().next());
         }
@@ -92,7 +96,9 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
 
     @Override
     public void dispose() {
-        this.getEclipseWorkspace().removeResourceChangeListener(projectListener);
+        if (projectListener != null) {
+            this.getEclipseWorkspace().removeResourceChangeListener(projectListener);
+        }
 
         super.dispose();
     }

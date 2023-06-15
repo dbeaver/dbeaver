@@ -16,7 +16,12 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.application">
-        <application id="dbeaver-dpi-app" family="DB" name="DBeaver DPI Application" description="DBeaver DPI Application"/>
+        <application
+                id="dbeaver-dpi-app"
+                family="DB"
+                name="DBeaver DPI Application"
+                description="DBeaver DPI Application"
+                hidden="true"/>
     </extension>
 
 </plugin>
