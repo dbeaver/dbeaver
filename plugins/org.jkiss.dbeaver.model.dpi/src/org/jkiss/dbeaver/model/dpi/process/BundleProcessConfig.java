@@ -24,6 +24,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -55,6 +56,7 @@ class BundleProcessConfig {
     private final Path dataPath;
     private Path cfgDir;
     private Path workspaceDir;
+    private Path devPropsFile;
 
     public BundleProcessConfig(DBRProgressMonitor monitor, String processId) throws IOException {
         dataPath = DBWorkbench.getPlatform().getTempFolder(monitor, "dpi").resolve(processId);
@@ -74,6 +76,14 @@ class BundleProcessConfig {
             storeProperties(out, generateConfigIni());
         }
 
+        Map<String, String> devProps = generateDevProps();
+        if (!CommonUtils.isEmpty(devProps)) {
+            devPropsFile = cfgDir.resolve("dev.properties");
+            try (BufferedWriter out = Files.newBufferedWriter(devPropsFile, StandardOpenOption.CREATE)) {
+                storeProperties(out, devProps);
+            }
+        }
+
         workspaceDir = dataPath.resolve("workspace");
         if (!Files.exists(workspaceDir)) {
             Files.createDirectories(workspaceDir);
@@ -84,6 +94,28 @@ class BundleProcessConfig {
 //        qa.activate(bundle.getBundleContext());
 //        Manipulator manipulator = qa.getManipulator();
 //        qa.launch(manipulator, )
+    }
+
+    private Map<String, String> generateDevProps() throws IOException {
+        Map<Path, ModuleWiring> devFolders = new LinkedHashMap<>();
+        for (ModuleWiring wire : dependencies.values()) {
+            String bundleReference = getBundleReference(wire, false);
+            Path bundlePath = Path.of(bundleReference);
+            if (Files.isDirectory(bundlePath)) {
+                devFolders.put(bundlePath, wire);
+            }
+        }
+        if (devFolders.isEmpty()) {
+            return null;
+        }
+        Map<String, String> devProps = new LinkedHashMap<>();
+        for (Map.Entry<Path, ModuleWiring> devInfo : devFolders.entrySet()) {
+            String bundleId = devInfo.getValue().getBundle().getSymbolicName();
+            String bundleLibPath = "target/classes";
+            // TODO: add embedded jars
+            devProps.put(bundleId, bundleLibPath);
+        }
+        return devProps;
     }
 
     private Map<String, String> generateConfigIni() throws IOException {
@@ -98,6 +130,9 @@ class BundleProcessConfig {
         if (osgiWiring != null) {
             result.put("osgi.framework", "file:" + getBundleReference(osgiWiring, false));
         }
+
+        result.put("eclipse.noRegistryCache", "true");
+
         return result;
     }
 
@@ -184,7 +219,12 @@ class BundleProcessConfig {
         cmd.add("-application");
         cmd.add("org.jkiss.dbeaver.model.dpi.application");
         cmd.add("-configuration");
-        cmd.add(cfgDir.toString());
+        cmd.add("file:" + cfgDir.toString());
+        if (devPropsFile != null) {
+            // Dev mode
+            cmd.add("-dev");
+            cmd.add("file:" + devPropsFile.toString());
+        }
         cmd.add("-data");
         cmd.add(workspaceDir.toString());
 

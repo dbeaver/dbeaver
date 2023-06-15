@@ -9,10 +9,12 @@ Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.model.dpi,
  org.jkiss.dbeaver.model.dpi.api,
+ org.jkiss.dbeaver.model.dpi.app,
  org.jkiss.dbeaver.model.dpi.process
 Bundle-ClassPath: .
-Require-Bundle: org.eclipse.equinox.security,
- org.eclipse.core.runtime,
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.eclipse.equinox.app,
  org.eclipse.equinox.launcher,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.registry

@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.model.dpi.app;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplicationContext;
+import org.eclipse.osgi.service.datalocation.Location;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPApplication;
@@ -34,8 +36,14 @@ public class DPIApplication extends DesktopApplicationImpl {
 
     @Override
     public Object start(IApplicationContext context) {
+        Location instanceLoc = Platform.getInstanceLocation();
+        log.debug("Starting DPI application at " + instanceLoc.getURL());
+
+        DPIPlatform.createInstance();
+
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
-        System.out.println("Starting DPI application " + application.getClass().getName());
+
+        log.debug("Exiting DPI application");
 
         return EXIT_OK;
     }

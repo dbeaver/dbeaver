@@ -36,7 +36,6 @@ public class DPIProcessController implements DPIController {
     private static final Log log = Log.getLog(DPIProcessController.class);
 
     public static DPIController detachDatabaseProcess(DBRProgressMonitor monitor, DBPDataSourceContainer dataSourceContainer) {
-
         try {
             BundleProcessConfig processConfig = BundleConfigGenerator.generateBundleConfig(monitor, dataSourceContainer);
             if (processConfig != null) {
@@ -55,11 +54,11 @@ public class DPIProcessController implements DPIController {
     public DPIProcessController(BundleProcessConfig processConfig) throws IOException {
         this.processConfig = processConfig;
 
+        log.debug("Starting detached database application");
         this.process = processConfig.startProcess();
 
         try {
             int result = this.process.waitFor();
-            System.out.println("Done");
         } catch (Exception e) {
             e.printStackTrace();
         }

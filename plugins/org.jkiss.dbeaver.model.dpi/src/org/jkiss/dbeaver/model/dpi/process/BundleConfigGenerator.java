@@ -90,6 +90,10 @@ public class BundleConfigGenerator {
             ModuleWiring providerWiring = dWire.getProviderWiring();
             collectModuleWirings(providerWiring, processConfig);
         }
+        for (ModuleWire dWire : wiring.getRequiredModuleWires("osgi.wiring.package")) {
+            ModuleWiring providerWiring = dWire.getProviderWiring();
+            collectModuleWirings(providerWiring, processConfig);
+        }
     }
 
 }
