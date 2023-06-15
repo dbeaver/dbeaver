@@ -213,6 +213,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     private final Map<String, Object> defaultConnectionProperties = new HashMap<>();
     private final Map<String, Object> customConnectionProperties = new HashMap<>();
+    private final Map<String, Object> originalConnectionProperties = new HashMap<>();
 
     private final Map<DBPDriverLibrary, List<DriverFileInfo>> resolvedFiles = new HashMap<>();
 
@@ -449,6 +450,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     defaultConnectionProperties.put(paramName, paramValue);
                     if (!paramName.startsWith(DBConstants.INTERNAL_PROP_PREFIX)) {
                         customConnectionProperties.put(paramName, paramValue);
+                        originalConnectionProperties.put(paramName, paramValue);
                     }
                 }
             }
@@ -473,10 +475,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     Map<String, Object> getCustomParameters() {
         return customParameters;
-    }
-
-    Map<String, Object> getCustomConnectionProperties() {
-        return customConnectionProperties;
     }
 
     Map<DBPDriverLibrary, List<DriverFileInfo>> getResolvedFiles() {
@@ -1071,6 +1069,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return customConnectionProperties;
     }
 
+    @NotNull
+    private Map<String, Object> getOriginalConnectionProperties() {
+        return originalConnectionProperties;
+    }
+
     public void setConnectionProperty(String name, String value) {
         customConnectionProperties.put(name, value);
     }
@@ -1183,6 +1186,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             if (lib instanceof DriverLibraryLocal && !lib.isCustom()) {
                 DBPDriverLibrary libCopy = ((DriverLibraryLocal) lib).copyLibrary(this);
                 libCopy.setDisabled(false);
+                if (libCopy instanceof DriverLibraryLocal) {
+                    ((DriverLibraryLocal) libCopy).setUseOriginalJar(true);
+                }
                 driverCopy.libraries.add(libCopy);
             }
         }
@@ -1195,7 +1201,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         driverCopy.setDriverDefaultPort(this.getDefaultPort());
         driverCopy.setDriverDefaultDatabase(this.getDefaultDatabase());
         driverCopy.setDriverDefaultUser(this.getDefaultUser());
-
+        driverCopy.setConnectionProperties(this.getOriginalConnectionProperties());
         return driverCopy;
     }
 
@@ -1404,20 +1410,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 Path localFile = library.getLocalFile();
                 if (localFile != null) {
                     if (Files.isDirectory(localFile)) {
-                        try {
-                            List<Path> folderFiles = Files.list(localFile)
-                                .filter(p -> {
-                                    String fileName = p.getFileName().toString();
-                                    return fileName.endsWith(".jar") || fileName.endsWith(".zip");
-                                })
-                                .collect(Collectors.toList());
-
-                            if (!folderFiles.isEmpty()) {
-                                result.addAll(folderFiles);
-                            }
-                        } catch (IOException e) {
-                            log.error("Error reading driver directory '" + localFile + "'", e);
-                        }
+                        result.addAll(readJarsFromDir(localFile));
                     }
                     if (!result.contains(localFile)) {
                         result.add(localFile);
@@ -1428,6 +1421,21 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         // Check if local files are zip archives with jars inside
         return DriverUtils.extractZipArchives(result);
+    }
+
+    private Collection<? extends Path> readJarsFromDir(Path localFile) {
+        try {
+            List<Path> folderFiles = Files.list(localFile)
+                .filter(p -> {
+                    String fileName = p.getFileName().toString();
+                    return fileName.endsWith(".jar") || fileName.endsWith(".zip");
+                })
+                .collect(Collectors.toList());
+            return folderFiles;
+        } catch (IOException e) {
+            log.error("Error reading driver directory '" + localFile + "'", e);
+            return Collections.emptyList();
+        }
     }
 
     /**
@@ -1443,6 +1451,19 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             }
             if (library.isDisabled() || !library.matchesCurrentPlatform()) {
                 continue;
+            }
+            if (library instanceof DriverLibraryLocal) {
+                var localLib = (DriverLibraryLocal) library;
+                if (localLib.isUseOriginalJar()) {
+                    var localFile = localLib.getLocalFile();
+                    if (localFile == null) {
+                        continue;
+                    }
+                    localFilePaths.add(localFile);
+                    if (Files.isDirectory(localFile)) {
+                        localFilePaths.addAll(readJarsFromDir(localFile));
+                    }
+                }
             }
             List<DriverFileInfo> files = resolvedFiles.get(library);
             if (files != null) {

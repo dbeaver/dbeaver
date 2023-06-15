@@ -159,10 +159,10 @@ public class DriverDescriptorSerializerModern extends DriverDescriptorSerializer
             }
 
             // Properties
-            if (!CommonUtils.isEmpty(driver.getCustomConnectionProperties())) {
+            if (!CommonUtils.isEmpty(driver.getConnectionProperties())) {
                 json.name("connection-properties");
                 json.beginObject();
-                for (Map.Entry<String, Object> propEntry : driver.getCustomConnectionProperties().entrySet()) {
+                for (Map.Entry<String, Object> propEntry : driver.getConnectionProperties().entrySet()) {
                     if (!CommonUtils.equalObjects(propEntry.getValue(), driver.getDefaultConnectionProperties().get(propEntry.getKey()))) {
                         json.name(CommonUtils.toString(propEntry.getKey()));
                         json.value(CommonUtils.toString(propEntry.getValue()));
