@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.data.DBDAttributeContentTypeProvider;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
@@ -591,6 +592,8 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             return adapter.cast(new OracleQueryPlanner(this));
         } else if(adapter == DBAUserPasswordManager.class) {
             return adapter.cast(new OracleChangeUserPasswordManager(this));
+        } else if (adapter == DBDAttributeContentTypeProvider.class) {
+            return adapter.cast(OracleAttributeContentTypeProvider.INSTANCE);
         }
         return super.getAdapter(adapter);
     }

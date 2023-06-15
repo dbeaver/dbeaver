@@ -116,7 +116,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -1285,6 +1284,9 @@ public class ResultSetViewer extends Viewer
                 }
             }
         }
+        if (settings.enabledPanelIds.isEmpty() && !availablePanels.isEmpty()) {
+            settings.enabledPanelIds.add(availablePanels.get(0).getId());
+        }
         if (!settings.enabledPanelIds.contains(settings.activePanelId)) {
             settings.activePanelId = null;
         }
@@ -1560,6 +1562,9 @@ public class ResultSetViewer extends Viewer
         }
         if (adapter == IFindReplaceTarget.class) {
             return adapter.cast(findReplaceTarget);
+        }
+        if (adapter == IResultSetContext.class) {
+            return adapter.cast(new ResultSetContextImpl(this, null));
         }
         return null;
     }
