@@ -9,7 +9,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.ui,
- org.eclipse.gef3,
+ org.eclipse.gef,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.erd.ui,

@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.erd.ui.figures;
 
-import org.eclipse.draw2dl.*;
+import org.eclipse.draw2d.*;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;

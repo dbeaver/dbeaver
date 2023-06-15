@@ -19,9 +19,9 @@
  */
 package org.jkiss.dbeaver.erd.ui.layout;
 
-import org.eclipse.draw2dl.FreeformLayout;
-import org.eclipse.draw2dl.IFigure;
-import org.eclipse.draw2dl.geometry.Rectangle;
+import org.eclipse.draw2d.FreeformLayout;
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 
 

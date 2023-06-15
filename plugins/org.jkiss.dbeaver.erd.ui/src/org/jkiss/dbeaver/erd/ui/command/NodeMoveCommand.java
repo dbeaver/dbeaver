@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.erd.ui.command;
 
-import org.eclipse.draw2dl.geometry.Rectangle;
-import org.eclipse.gef3.commands.Command;
+import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.erd.ui.part.NodePart;
 
 /**

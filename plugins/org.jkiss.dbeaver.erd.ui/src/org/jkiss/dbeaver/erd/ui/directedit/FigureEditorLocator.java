@@ -19,11 +19,11 @@
  */
 package org.jkiss.dbeaver.erd.ui.directedit;
 
-import org.eclipse.draw2dl.Border;
-import org.eclipse.draw2dl.IFigure;
-import org.eclipse.draw2dl.geometry.Dimension;
-import org.eclipse.draw2dl.geometry.Rectangle;
-import org.eclipse.gef3.tools.CellEditorLocator;
+import org.eclipse.draw2d.Border;
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.gef.tools.CellEditorLocator;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.swt.widgets.Text;
 

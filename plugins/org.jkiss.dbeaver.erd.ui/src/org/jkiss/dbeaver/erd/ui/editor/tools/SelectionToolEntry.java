@@ -16,15 +16,15 @@
  */
 package org.jkiss.dbeaver.erd.ui.editor.tools;
 
-import org.eclipse.gef3.palette.ToolEntry;
-import org.eclipse.gef3.tools.SelectionTool;
+import org.eclipse.gef.palette.ToolEntry;
+import org.eclipse.gef.tools.SelectionTool;
 import org.jkiss.dbeaver.erd.ui.ERDIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 /**
  * This class is used to override default GEF icons.
  *
- * @see org.eclipse.gef3.palette.SelectionToolEntry
+ * @see org.eclipse.gef.palette.SelectionToolEntry
  */
 public class SelectionToolEntry extends ToolEntry {
     public SelectionToolEntry() {

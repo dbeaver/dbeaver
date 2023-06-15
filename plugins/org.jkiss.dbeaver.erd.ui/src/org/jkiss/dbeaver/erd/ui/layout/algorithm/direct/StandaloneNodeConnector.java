@@ -19,9 +19,9 @@
  */
 package org.jkiss.dbeaver.erd.ui.layout.algorithm.direct;
 
-import org.eclipse.draw2dl.graph.*;
-import org.eclipse.gef3.NodeEditPart;
-import org.eclipse.gef3.editparts.AbstractGraphicalEditPart;
+import org.eclipse.draw2d.graph.*;
+import org.eclipse.gef.NodeEditPart;
+import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.eclipse.swt.graphics.Point;
 
 import java.util.ArrayList;

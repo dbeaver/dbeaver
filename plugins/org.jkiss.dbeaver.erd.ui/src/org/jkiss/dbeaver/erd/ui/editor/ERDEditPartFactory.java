@@ -19,8 +19,8 @@
  */
 package org.jkiss.dbeaver.erd.ui.editor;
 
-import org.eclipse.gef3.EditPart;
-import org.eclipse.gef3.EditPartFactory;
+import org.eclipse.gef.EditPart;
+import org.eclipse.gef.EditPartFactory;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;

@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.erd.ui.router;
 
-import org.eclipse.draw2dl.Connection;
-import org.eclipse.draw2dl.geometry.Point;
-import org.eclipse.draw2dl.geometry.PointList;
+import org.eclipse.draw2d.Connection;
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.PointList;
 
 public class OrthogonalPath {
     private boolean isDirty;
