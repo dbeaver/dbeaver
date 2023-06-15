@@ -38,7 +38,7 @@ public interface InternalDatabaseConfig {
      * Sets prefix for sql queries params (f.e. schema names for tables)
      */
     @NotNull
-    static String setPrefixes(@NotNull String sql, @Nullable String prefix) {
-        return sql.replaceAll("\\{prefix}", prefix == null ? "" : prefix + ".");
+    static String prepareSql(@NotNull String sql, @Nullable String prefix) {
+        return sql.replaceAll("\\{table_prefix}", prefix == null ? "" : prefix + ".");
     }
 }
