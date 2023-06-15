@@ -144,31 +144,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         // Windows: %AppData%/DBeaverData
         // MacOS: ~/Library/DBeaverData
         // Linux: $XDG_DATA_HOME/DBeaverData
-        String osName = (System.getProperty("os.name")).toUpperCase();
-        String workingDirectory;
-        if (osName.contains("WIN")) {
-            String appData = System.getenv("AppData");
-            if (appData == null) {
-                appData = System.getProperty("user.home");
-            }
-            workingDirectory = appData + "\\" + defaultWorkspaceLocation;
-        } else if (osName.contains("MAC")) {
-            workingDirectory = System.getProperty("user.home") + "/Library/" + defaultWorkspaceLocation;
-        } else {
-            // Linux
-            String dataHome = System.getProperty("XDG_DATA_HOME");
-            if (dataHome == null) {
-                dataHome = System.getProperty("user.home") + "/.local/share";
-            }
-            String badWorkingDir = dataHome + "/." + defaultWorkspaceLocation;
-            String goodWorkingDir = dataHome + "/" + defaultWorkspaceLocation;
-            if (!new File(goodWorkingDir).exists() && new File(badWorkingDir).exists()) {
-                // Let's use bad working dir if it exists (#6316)
-                workingDirectory = badWorkingDir;
-            } else {
-                workingDirectory = goodWorkingDir;
-            }
-        }
+        String workingDirectory = IOUtils.getWorkingDirectory(defaultWorkspaceLocation);
 
         // Workspace dir
         WORKSPACE_DIR_6 = new File(workingDirectory, defaultAppWorkspaceName).getAbsolutePath();
