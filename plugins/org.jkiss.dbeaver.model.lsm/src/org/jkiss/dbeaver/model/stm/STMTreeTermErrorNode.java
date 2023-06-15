@@ -16,31 +16,33 @@
  */
 package org.jkiss.dbeaver.model.stm;
 
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.TokenStream;
-import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.ErrorNodeImpl;
 import org.jkiss.code.NotNull;
 
-public abstract class ParserOverrides extends Parser {
 
-    public ParserOverrides(@NotNull TokenStream input) {
-        super(input);
-        this.setBuildParseTree(true);
+public class STMTreeTermErrorNode extends ErrorNodeImpl implements STMTreeNode {
+    
+    public STMTreeTermErrorNode(@NotNull Token symbol) {
+        super(symbol);
     }
-
+   
+    private static final String nodeName = "error";
+    
+    @Override
+    public void fixup(@NotNull STMParserOverrides parserCtx) {
+    }
+    
     @NotNull
     @Override
-    public ErrorNode createErrorNode(@NotNull ParserRuleContext parent, @NotNull Token t) {
-        return new TreeTermErrorNode(t);
+    public String getNodeName() {
+        return nodeName;
     }
-
+    
     @NotNull
-    @Override
-    public TerminalNode createTerminalNode(@NotNull ParserRuleContext parent, @NotNull Token t) {
-        return new TreeTermNode(t);
+    public Interval getRealInterval() {
+        return new Interval(this.getSymbol().getStartIndex(), this.getSymbol().getStopIndex());
     }
 
 }

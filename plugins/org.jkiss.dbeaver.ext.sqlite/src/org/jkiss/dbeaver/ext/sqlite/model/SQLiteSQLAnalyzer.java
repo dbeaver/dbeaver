@@ -14,22 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm;
+package org.jkiss.dbeaver.ext.sqlite.model;
 
-import org.antlr.v4.runtime.CharStream;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.lsm.impl.LSMSourceImpl;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzer;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
+import org.jkiss.dbeaver.model.stm.STMErrorListener;
+import org.jkiss.dbeaver.model.stm.STMSource;
 
-import java.io.IOException;
-import java.io.Reader;
-
-
-public interface LSMSource extends LSMObject<LSMSource> {
-
-    CharStream getStream();
-
+public class SQLiteSQLAnalyzer extends SQLStandardAnalyzer {
     @NotNull
-    public static LSMSource fromReader(@NotNull Reader reader) throws IOException {
-        return new LSMSourceImpl(reader);
+    @Override
+    protected SQLStandardParser prepareParser(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
+        SQLStandardParser parser = super.prepareParser(source, errorListener);
+        parser.setIsSupportSquareBracketQuotation(true);
+        return parser;
     }
 }
