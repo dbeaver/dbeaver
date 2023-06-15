@@ -87,5 +87,11 @@
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
         </type>
     </extension>
+    
+    <extension point="org.jkiss.dbeaver.lsm.dialectSyntax">
+        <lsmDialect analyzerClass="org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzer">
+            <appliesTo dialectClass="org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect"/>
+        </lsmDialect>
+    </extension>
 
 </plugin>

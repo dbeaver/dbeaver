@@ -14,26 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm;
+package org.jkiss.dbeaver.model.stm;
 
-import org.antlr.v4.runtime.ANTLRErrorListener;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
 
-public interface LSMAnalysisCase<T extends LSMElement, M extends AbstractSyntaxNode & LSMElement> extends LSMObject<LSMAnalysisCase<T, M>> {
+import java.io.IOException;
+import java.io.Reader;
+
+
+public interface STMSource {
+
+    CharStream getStream();
+
     @NotNull
-    Class<T> getModelContractType();
-
-    @NotNull
-    Class<M> getModelRootType();
-
-
-    @Nullable
-    LSMParser createParser(@NotNull LSMSource source);
-
-    @Nullable
-    LSMParser createParser(LSMSource source, ANTLRErrorListener errorListener);
-
+    public static STMSource fromReader(@NotNull Reader reader) throws IOException {
+        return new STMSourceImpl(reader);
+    }
     
+    public static STMSource fromString(String string) {
+        return () -> CharStreams.fromString(string);
+    }
 }
