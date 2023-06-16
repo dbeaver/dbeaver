@@ -78,6 +78,14 @@ public class OracleDataFile extends OracleObject<OracleTablespace> {
         }
     }
 
+    // New created tablespace
+    public OracleDataFile(@NotNull OracleTablespace tablespace, @NotNull String name) {
+        super(tablespace, name, false);
+        this.tablespace = tablespace;
+        this.temporary = tablespace.getContents() == OracleTablespace.Contents.TEMPORARY;
+        this.bytes = BigDecimal.valueOf(1000000); // Minimum value
+    }
+
     public OracleTablespace getTablespace()
     {
         return tablespace;
@@ -103,10 +111,14 @@ public class OracleDataFile extends OracleObject<OracleTablespace> {
         return relativeNo;
     }
 
-    @Property(viewable = true, order = 4)
+    @Property(viewable = true, editable = true, order = 4)
     public BigDecimal getBytes()
     {
         return bytes;
+    }
+
+    public void setBytes(BigDecimal bytes) {
+        this.bytes = bytes;
     }
 
     @Property(viewable = true, order = 5)
@@ -115,10 +127,14 @@ public class OracleDataFile extends OracleObject<OracleTablespace> {
         return blocks;
     }
 
-    @Property(viewable = true, order = 6)
+    @Property(viewable = true, editable = true, order = 6)
     public BigDecimal getMaxBytes()
     {
         return maxBytes;
+    }
+
+    public void setMaxBytes(BigDecimal maxBytes) {
+        this.maxBytes = maxBytes;
     }
 
     @Property(viewable = true, order = 7)
@@ -151,19 +167,23 @@ public class OracleDataFile extends OracleObject<OracleTablespace> {
         return available;
     }
 
-    @Property(viewable = true, order = 12)
+    @Property(viewable = true, editable = true, order = 12)
     public boolean isAutoExtensible()
     {
         return autoExtensible;
     }
 
-    @Property(order = 13)
+    public void setAutoExtensible(boolean autoExtensible) {
+        this.autoExtensible = autoExtensible;
+    }
+
+    @Property(viewable = true, order = 13)
     public OnlineStatus getOnlineStatus()
     {
         return onlineStatus;
     }
 
-    @Property(order = 14)
+    @Property(viewable = true, order = 14)
     public boolean isTemporary()
     {
         return temporary;

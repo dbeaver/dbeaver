@@ -9,14 +9,19 @@ import org.jkiss.code.Nullable;
 
 public interface STMTreeNode extends Tree {
     
+    void fixup(@NotNull STMParserOverrides parserCtx);
+
+    @NotNull
+    String getNodeName();
+        
     @NotNull
     Interval getRealInterval();
 
     @Nullable
     default String getTextContent() {
         String result = null;
-        if (this instanceof TreeRuleNode) {
-            TreeRuleNode ruleNode = ((TreeRuleNode) this);
+        if (this instanceof STMTreeRuleNode) {
+            STMTreeRuleNode ruleNode = ((STMTreeRuleNode) this);
             Interval textRange = ruleNode.getRealInterval();
             result = ruleNode.getStart().getInputStream().getText(textRange);
         } else if (this instanceof TerminalNode) {
@@ -43,5 +48,8 @@ public interface STMTreeNode extends Tree {
         }
         return result;
     }
+
+    @NotNull
+    String getText();
     
 }

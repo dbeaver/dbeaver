@@ -18,17 +18,16 @@ package org.jkiss.dbeaver.model.lsm;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.utils.Pair;
+import org.jkiss.dbeaver.model.stm.STMErrorListener;
+import org.jkiss.dbeaver.model.stm.STMSource;
+import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
 
-import java.util.List;
-import java.util.concurrent.Future;
-
-
-public interface LSMAnalysis<T extends LSMElement> {    
+public interface LSMAnalyzer {
 
     @Nullable
-    Future<T> getModel();
+    STMTreeRuleNode parseSqlQueryTree(@NotNull STMSource source, @Nullable STMErrorListener errorListener);
 
     @Nullable
-    List<Pair<String, String>> getTableAndAliasFromSources();
+    LSMElement parseSqlQueryModel(@NotNull STMSource source);
+    
 }
