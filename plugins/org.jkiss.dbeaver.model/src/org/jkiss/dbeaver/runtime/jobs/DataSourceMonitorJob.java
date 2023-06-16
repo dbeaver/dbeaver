@@ -172,7 +172,7 @@ public class DataSourceMonitorJob extends AbstractJob {
 
         DBPPreferenceStore preferenceStore = dsDescriptor.getPreferenceStore();
         long ttlSeconds = 0;
-        if (preferenceStore.getBoolean(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED)) {
+        if (preferenceStore.contains(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED)) {
             // First check datasource settings from the Transactions preference page
             ttlSeconds = preferenceStore.getLong(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL);
         }
