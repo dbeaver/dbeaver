@@ -728,6 +728,18 @@ public class OracleSQLDialect extends JDBCSQLDialect
         return OracleConstants.TYPE_CLOB;
     }
 
+    @NotNull
+    @Override
+    public String getUuidDataType() {
+        return OracleConstants.TYPE_UUID;
+    }
+
+    @NotNull
+    @Override
+    public String getBooleanDataType() {
+        return OracleConstants.TYPE_BOOLEAN;
+    }
+
     @Override
     public boolean needsDefaultDataTypes() {
         return false;

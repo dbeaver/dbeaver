@@ -395,6 +395,18 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
         return SQLServerConstants.TYPE_VARCHAR + "(max)";
     }
 
+    @NotNull
+    @Override
+    public String getUuidDataType() {
+        return SQLServerConstants.TYPE_UNIQUEIDENTIFIER;
+    }
+
+    @NotNull
+    @Override
+    public String getBooleanDataType() {
+        return SQLServerConstants.TYPE_BIT;
+    }
+
     @Override
     public boolean needsDefaultDataTypes() {
         return false;
@@ -403,11 +415,8 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
     @NotNull
     @Override
     public String getSchemaExistQuery(@NotNull String schemaName) {
-        if (dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR, 0)) {
-            return "SELECT 1 FROM sys.schemas WHERE name = " + getQuotedString(schemaName);
-        } else {
-            return "SELECT 1 FROM sys.sysusers WHERE name = " + getQuotedString(schemaName);
-        }
+        // version is at least 2005
+        return "SELECT 1 FROM sys.schemas WHERE name = " + getQuotedString(schemaName);
     }
 
     @NotNull
