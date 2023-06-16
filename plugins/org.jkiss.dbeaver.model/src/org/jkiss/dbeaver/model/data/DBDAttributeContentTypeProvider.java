@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm;
+package org.jkiss.dbeaver.model.data;
 
-import org.antlr.v4.runtime.tree.Tree;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-public interface LSMParser extends LSMObject<LSMParser> {
-
+public interface DBDAttributeContentTypeProvider {
     @Nullable
-    Tree parse();
+    String getContentType(@NotNull DBDAttributeBinding binding);
 }

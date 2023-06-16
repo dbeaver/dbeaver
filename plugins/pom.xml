@@ -16,6 +16,7 @@
         <module>org.jkiss.dbeaver.model</module>
         <module>org.jkiss.dbeaver.model.ai</module>
         <module>org.jkiss.dbeaver.model.event</module>
+<!--        <module>org.jkiss.dbeaver.model.dpi</module>-->
         <module>org.jkiss.dbeaver.model.jdbc</module>
         <module>org.jkiss.dbeaver.model.sm</module>
         <module>org.jkiss.dbeaver.model.sql</module>
