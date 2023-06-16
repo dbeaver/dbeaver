@@ -2,12 +2,14 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver SQL Language Semantic Model
 Bundle-Vendor: DBeaver Corp
-Bundle-Version: 1.0.2.qualifier
-Bundle-Release-Date: 20230605
+Bundle-Version: 1.0.3.qualifier
+Bundle-Release-Date: 20230626
 Bundle-SymbolicName: org.jkiss.dbeaver.model.lsm;singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.bundle.antlr4,
- org.jkiss.utils
+ org.jkiss.dbeaver.model,
+ org.jkiss.utils,
+ org.eclipse.core.runtime
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: org.jkiss.dbeaver.model.lsm,
  org.jkiss.dbeaver.model.lsm.mapping,
@@ -15,7 +17,7 @@ Export-Package: org.jkiss.dbeaver.model.lsm,
  org.jkiss.dbeaver.model.lsm.sql,
  org.jkiss.dbeaver.model.lsm.sql.dialect,
  org.jkiss.dbeaver.model.lsm.sql.impl,
- org.jkiss.dbeaver.model.lsm.sql.impl.syntax
-Import-Package: org.jkiss.code,
- org.slf4j
+ org.jkiss.dbeaver.model.lsm.sql.impl.syntax,
+ org.jkiss.dbeaver.model.stm
+Import-Package: org.jkiss.code
 Automatic-Module-Name: org.jkiss.dbeaver.model.lsm

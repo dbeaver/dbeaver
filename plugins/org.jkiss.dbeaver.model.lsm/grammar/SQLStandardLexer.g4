@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-lexer grammar Sql92Lexer;
+lexer grammar SQLStandardLexer;
 
 @header {
     /*
@@ -411,7 +411,6 @@ fragment IdentifierBody: IdentifierStart ((Underscore|IdentifierPart)+)?;
 fragment IdentifierStart: SimpleLatinLetter;
 fragment IdentifierPart: (IdentifierStart|Digit);
 
-SquareBracketIdentifier: '[' (~']' | ']' ']')* ']';
 
 
 // literals
