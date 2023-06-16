@@ -14,29 +14,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.dpi.api;
+package org.jkiss.dbeaver.model.dpi.server;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.dpi.api.DPIController;
+import org.jkiss.dbeaver.model.dpi.api.DPISession;
 import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 
-/**
- * Detached data source proxy.
- */
-public interface DPIController extends AutoCloseable {
+public class DPIControllerImpl implements DPIController {
 
-    /**
-     * Opens new session
-     */
-    DPISession openSession() throws DBCFeatureNotSupportedException;
+    private static final Log log = Log.getLog(DPIControllerImpl.class);
+
+    private DPIRestServer server;
+
+    public DPIControllerImpl(DPIRestServer server) {
+        this.server = server;
+    }
+
+    @Override
+    public DPISession openSession() {
+        return null;
+    }
 
     @NotNull
-    DBPDataSource openDataSource(@NotNull DPISession session, @NotNull DBPDataSourceContainer container)
-        throws DBException;
+    @Override
+    public DBPDataSource openDataSource(@NotNull DPISession session, @NotNull DBPDataSourceContainer container) throws DBException {
+        throw new DBCFeatureNotSupportedException();
+    }
 
-    // Closes session and terminates detached process when last session is closed
-    void closeSession(DPISession session);
+    @Override
+    public void closeSession(DPISession session) {
+        server.stopServer();
+    }
 
+    @Override
+    public void close() {
+
+    }
 }

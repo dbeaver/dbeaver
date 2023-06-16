@@ -56,7 +56,7 @@ public class BundleConfigGenerator {
         BundleProcessConfig processConfig = new BundleProcessConfig(monitor, dataSourceContainer.getId());
         addBundleFromClass(dataSourceContainer.getDriver().getDataSourceProvider().getClass(), processConfig);
         if (!processConfig.isValid()) {
-            return null;
+            throw new IOException("No OSGI bundles were configured");
         }
 
         addBundleFromClass(DPIController.class, processConfig);

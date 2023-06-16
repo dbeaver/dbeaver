@@ -22,6 +22,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.equinox.simpleconfigurator,
  org.eclipse.update.configurator,
  org.jkiss.dbeaver.model;visibility:=reexport,
- org.jkiss.dbeaver.registry
+ org.jkiss.dbeaver.registry,
+ com.google.gson
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.model.dpi

@@ -22,9 +22,11 @@ import org.eclipse.osgi.storage.BundleInfo;
 import org.eclipse.osgi.storage.bundlefile.BundleFile;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.dpi.app.DPIApplication;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -54,9 +56,10 @@ class BundleProcessConfig {
 
     private final Map<String, ModuleWiring> dependencies = new LinkedHashMap<>();
     private final Path dataPath;
-    private Path cfgDir;
+    private Path configurationFolder;
     private Path workspaceDir;
     private Path devPropsFile;
+    private int serverPort;
 
     public BundleProcessConfig(DBRProgressMonitor monitor, String processId) throws IOException {
         dataPath = DBWorkbench.getPlatform().getTempFolder(monitor, "dpi").resolve(processId);
@@ -65,22 +68,38 @@ class BundleProcessConfig {
         }
     }
 
+    public Path getDataPath() {
+        return dataPath;
+    }
+
+    public Path getConfigurationFolder() {
+        return configurationFolder;
+    }
+
+    public Path getWorkspaceDir() {
+        return workspaceDir;
+    }
+
+    public int getServerPort() {
+        return serverPort;
+    }
+
     void generateApplicationConfiguration() throws IOException {
-        cfgDir = dataPath.resolve("configuration");
-        if (!Files.exists(cfgDir)) {
-            Files.createDirectories(cfgDir);
+        configurationFolder = dataPath.resolve("configuration");
+        if (!Files.exists(configurationFolder)) {
+            Files.createDirectories(configurationFolder);
         }
-        Path configIniFile = cfgDir.resolve("config.ini");
+        Path configIniFile = configurationFolder.resolve("config.ini");
 
         try (BufferedWriter out = Files.newBufferedWriter(configIniFile, StandardOpenOption.CREATE)) {
-            storeProperties(out, generateConfigIni());
+            ConfigUtils.storeProperties(out, generateConfigIni());
         }
 
         Map<String, String> devProps = generateDevProps();
         if (!CommonUtils.isEmpty(devProps)) {
-            devPropsFile = cfgDir.resolve("dev.properties");
+            devPropsFile = configurationFolder.resolve("dev.properties");
             try (BufferedWriter out = Files.newBufferedWriter(devPropsFile, StandardOpenOption.CREATE)) {
-                storeProperties(out, devProps);
+                ConfigUtils.storeProperties(out, devProps);
             }
         }
 
@@ -128,16 +147,6 @@ class BundleProcessConfig {
         result.put("eclipse.noRegistryCache", "true");
 
         return result;
-    }
-
-    public static void storeProperties(BufferedWriter bw, @NotNull Map<String, String> properties) throws IOException {
-        for (Map.Entry<String, String> e : properties.entrySet()) {
-            String key = e.getKey();
-            String val = e.getValue();
-            bw.write(key + "=" + val);
-            bw.newLine();
-        }
-        bw.flush();
     }
 
     private String getBundleReference(ModuleWiring wiring) {
@@ -213,7 +222,7 @@ class BundleProcessConfig {
         cmd.add("-application");
         cmd.add("org.jkiss.dbeaver.model.dpi.application");
         cmd.add("-configuration");
-        cmd.add("file:" + cfgDir.toString());
+        cmd.add("file:" + configurationFolder.toString());
         if (devPropsFile != null) {
             // Dev mode
             cmd.add("-dev");
@@ -221,6 +230,9 @@ class BundleProcessConfig {
         }
         cmd.add("-data");
         cmd.add(workspaceDir.toString());
+        serverPort = IOUtils.findFreePort(20000, 65000);
+        cmd.add(DPIApplication.PARAM_SERVER_PORT);
+        cmd.add(String.valueOf(serverPort));
 
         ProcessBuilder pb = new ProcessBuilder();
         pb.directory(dataPath.toFile());
