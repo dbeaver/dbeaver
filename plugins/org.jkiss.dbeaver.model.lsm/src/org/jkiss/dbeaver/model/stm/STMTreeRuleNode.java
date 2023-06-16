@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.stm;
 
-
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
@@ -24,19 +23,34 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.tree.Trees;
 import org.jkiss.code.NotNull;
 
-
-public class TreeRuleNode extends ParserRuleContext implements STMTreeNode {
+public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
     
-    public TreeRuleNode() {
+    private String nodeName = null;
+    
+    public STMTreeRuleNode() {
         super();
     }
     
-    public TreeRuleNode(@NotNull ParserRuleContext parent, int invokingStateNumber) {
+    public STMTreeRuleNode(@NotNull ParserRuleContext parent, int invokingStateNumber) {
         super(parent, invokingStateNumber);
     }
 
+    @Override
+    public void fixup(@NotNull STMParserOverrides parserCtx) {
+        nodeName = Trees.getNodeText(this, parserCtx);
+        for (int i = 0; i < getChildCount(); i++) {
+            ((STMTreeNode) getChild(i)).fixup(parserCtx);
+        }
+    }
+
+    @NotNull
+    public String getNodeName() {
+        return nodeName;
+    }
+    
     @NotNull
     public Interval getRealInterval() {
         return new Interval(this.getStart().getStartIndex(), this.getStop().getStopIndex());
@@ -55,7 +69,7 @@ public class TreeRuleNode extends ParserRuleContext implements STMTreeNode {
     @NotNull
     @Override
     public TerminalNode addChild(@NotNull Token matchedToken) {
-        return super.addChild(new TreeTermNode(matchedToken));
+        return super.addChild(new STMTreeTermNode(matchedToken));
     }
 
     @NotNull
@@ -81,7 +95,7 @@ public class TreeRuleNode extends ParserRuleContext implements STMTreeNode {
     @NotNull
     @Override
     public ErrorNode addErrorNode(@NotNull Token badToken) {
-        return super.addAnyChild(new TreeTermErrorNode(badToken));
+        return super.addAnyChild(new STMTreeTermErrorNode(badToken));
     }
 
     @NotNull
