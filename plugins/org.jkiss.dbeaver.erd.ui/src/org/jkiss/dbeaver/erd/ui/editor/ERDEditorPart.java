@@ -672,12 +672,14 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     protected FlyoutPaletteComposite createPaletteComposite(Composite parent) {
-        return new FlyoutPaletteComposite(
+        FlyoutPaletteComposite paletteComposite = new FlyoutPaletteComposite(
             parent,
             0,
             this.getSite().getPage(),
             this.getPaletteViewerProvider(),
             this.getPalettePreferences());
+        paletteComposite.setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+        return paletteComposite;
     }
 
     public boolean isLoaded()
