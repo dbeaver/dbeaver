@@ -72,11 +72,33 @@ public class DPIApplication extends DesktopApplicationImpl {
         int portNumber = IOUtils.findFreePort(20000, 65000);
         DPIRestServer server = new DPIRestServer(application, portNumber);
         saveServerInfo(appContext, application, portNumber);
-        log.debug("Started DPI Server at " + portNumber);
-        server.join();
+        try {
+            log.debug("Started DPI Server at " + portNumber);
+            server.join();
+        } finally {
+            deleteServerInfo(appContext, application);
+        }
     }
 
     private void saveServerInfo(IApplicationContext appContext, DBPApplication application, int portNumber) throws IOException {
+        Path serverIniFile = getServerIniFile();
+        try (BufferedWriter out = Files.newBufferedWriter(serverIniFile, StandardOpenOption.CREATE)) {
+            Map<String, String> props = new LinkedHashMap<>();
+            props.put(PARAM_SERVER_PORT, String.valueOf(portNumber));
+            props.put("startTime", new Date().toString());
+            ConfigUtils.storeProperties(out, props);
+        }
+    }
+
+    private void deleteServerInfo(IApplicationContext appContext, DBPApplication application) throws IOException {
+        Path serverIniFile = getServerIniFile();
+        if (Files.exists(serverIniFile)) {
+            Files.delete(serverIniFile);
+        }
+    }
+
+    @NotNull
+    private Path getServerIniFile() throws IOException {
         String configPath = System.getProperty(EquinoxLocations.PROP_CONFIG_AREA);
         if (configPath == null) {
             throw new IOException("OSGI configuration area property not set");
@@ -87,14 +109,7 @@ public class DPIApplication extends DesktopApplicationImpl {
             throw new IOException("Configuration folder '" + configFolder + "' doesn't exists");
         }
         Path serverIniFile = configFolder.resolve(SERVER_INI_FILE);
-        //log.debug("Save server config to '" + serverIniFile + "'");
-
-        try (BufferedWriter out = Files.newBufferedWriter(serverIniFile, StandardOpenOption.CREATE)) {
-            Map<String, String> props = new LinkedHashMap<>();
-            props.put(PARAM_SERVER_PORT, String.valueOf(portNumber));
-            props.put("startTime", new Date().toString());
-            ConfigUtils.storeProperties(out, props);
-        }
+        return serverIniFile;
     }
 
     @NotNull
