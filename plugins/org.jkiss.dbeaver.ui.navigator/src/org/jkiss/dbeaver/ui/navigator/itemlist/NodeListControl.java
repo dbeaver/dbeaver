@@ -275,7 +275,12 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     @Override
     protected Object getObjectValue(DBNNode item)
     {
-        return item instanceof DBSWrapper ? ((DBSWrapper)item).getObject() : item;
+        if (item instanceof DBSWrapper) {
+            return ((DBSWrapper)item).getObject();
+        } else if (item instanceof DBNObjectNode) {
+            return ((DBNObjectNode) item).getNodeObject();
+        }
+        return item;
     }
 
     @Override
@@ -345,7 +350,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
 
     private class NodeRenderer extends ViewerRenderer {
         @Override
-        public boolean isHyperlink(Object cellValue)
+        public boolean isHyperlink(Object element, Object cellValue)
         {
             Object ownerObject = null;
             if (rootNode instanceof DBNDatabaseNode) {

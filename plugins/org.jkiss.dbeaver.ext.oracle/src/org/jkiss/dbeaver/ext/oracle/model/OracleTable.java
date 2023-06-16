@@ -354,6 +354,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
             tableSize = null;
             getTableSize(monitor);
         }
+        additionalInfo.loaded = false;
         return super.refreshObject(monitor);
     }
 

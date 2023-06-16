@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.tidb.model.plan;
 
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanNode;
-import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanNodePlain;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;

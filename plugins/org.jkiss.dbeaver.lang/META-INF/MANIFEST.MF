@@ -9,6 +9,6 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.utils
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-Vendor: JKISS
+Bundle-Vendor: DBeaver Corp
 Import-Package: org.eclipse.jface.text,
  org.eclipse.jface.text.rules

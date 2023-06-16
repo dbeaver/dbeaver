@@ -29,13 +29,13 @@ import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.ProviderPropertyDescriptor;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
@@ -683,7 +683,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     public boolean isDisabled() {
-        return disabled || isDeprecated();
+        return disabled;
     }
 
     public void setDisabled(boolean disabled) {
@@ -1169,7 +1169,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             return connectionInfo.getUrl();
         } else if (isSampleURLForced()) {
             // Generate URL by template
-            return JDBCURL.generateUrlByTemplate(this, connectionInfo);
+            return DatabaseURL.generateUrlByTemplate(this, connectionInfo);
         } else {
             // It can be empty in some cases (e.g. when we create connections from command line command)
             return getDataSourceProvider().getConnectionURL(this, connectionInfo);
@@ -1243,7 +1243,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private void loadLibraries(DBRProgressMonitor monitor) throws DBException {
         this.classLoader = null;
 
-        List<Path> allLibraryFiles = validateFilesPresence(false);
+        List<Path> allLibraryFiles = validateFilesPresence(monitor, false);
 
         List<URL> libraryURLs = new ArrayList<>();
         // Load libraries
@@ -1298,12 +1298,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return rootClassLoader;
     }
 
-    public List<Path> getAllLibraryFiles() {
-        return validateFilesPresence(false);
+    public List<Path> getAllLibraryFiles(DBRProgressMonitor monitor) {
+        return validateFilesPresence(monitor, false);
     }
 
     public void updateFiles() {
-        validateFilesPresence(true);
+        validateFilesPresence(new LoggingProgressMonitor(log), true);
     }
 
     @Override
@@ -1320,10 +1320,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     @NotNull
-    private List<Path> validateFilesPresence(boolean resetVersions) {
+    private List<Path> validateFilesPresence(DBRProgressMonitor monitor, boolean resetVersions) {
         if (DBWorkbench.isDistributed()) {
             // We are in distributed mode
-            return syncDistributedDependencies();
+            return syncDistributedDependencies(monitor);
         }
 
         boolean localLibsExists = false;
@@ -1433,17 +1433,23 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     /**
      * Sync driver libs with remote server
      */
-    private List<Path> syncDistributedDependencies() {
+    private List<Path> syncDistributedDependencies(DBRProgressMonitor monitor) {
         List<Path> localFilePaths = new ArrayList<>();
 
         final Map<DBPDriverLibrary, List<DriverFileInfo>> downloadCandidates = new LinkedHashMap<>();
         for (DBPDriverLibrary library : libraries) {
+            if (monitor.isCanceled()) {
+                break;
+            }
             if (library.isDisabled() || !library.matchesCurrentPlatform()) {
                 continue;
             }
             List<DriverFileInfo> files = resolvedFiles.get(library);
             if (files != null) {
                 for (DriverFileInfo depFile : files) {
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
                     Path driverFolder = getWorkspaceDriversStorageFolder();
                     Path localDriverFile = driverFolder.resolve(depFile.getFile());
                     if (!Files.exists(localDriverFile) || depFile.getFileCRC() == 0 ||
@@ -1462,8 +1468,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         if (!downloadCandidates.isEmpty()) {
             DBFileController fileController = DBWorkbench.getPlatform().getFileController();
             for (var libEntry : downloadCandidates.entrySet()) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
                 DBPDriverLibrary library = libEntry.getKey();
-                for (DriverFileInfo fileInfo : libEntry.getValue()) {
+                List<DriverFileInfo> libFiles = libEntry.getValue();
+                monitor.beginTask("Load driver library '" + library.getDisplayName() + "'", libFiles.size());
+                for (DriverFileInfo fileInfo : libFiles) {
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
                     try {
                         Path driverFolder = getWorkspaceDriversStorageFolder();
                         Path localDriverFile = driverFolder.resolve(fileInfo.getFile());
@@ -1471,14 +1485,18 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                             Files.createDirectories(localDriverFile.getParent());
                         }
 
+                        monitor.subTask("Load driver file '" + fileInfo.id + "'");
                         byte[] fileData = fileController.loadFileData(DBFileController.TYPE_DATABASE_DRIVER, fileInfo.getFile().toString());
                         Files.write(localDriverFile, fileData, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
 
                         localFilePaths.add(localDriverFile);
                     } catch (Exception e) {
                         log.error("Error downloading driver file '" + fileInfo.getFile() + "'", e);
+                    } finally {
+                        monitor.worked(1);
                     }
                 }
+                monitor.done();
             }
         }
 
@@ -1650,8 +1668,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 if (library.isCustom()) {
                     // Resolve custom libraries directly from file
                     Path customFile = targetFileLocation
-                        .resolve(DBConstants.DEFAULT_DRIVERS_FOLDER)
-                        .resolve(getId())
                         .resolve(library.getPath());
                     if (Files.exists(customFile)) {
                         customFile = targetFileLocation.relativize(customFile);
@@ -1796,6 +1812,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return DBWorkbench.getPlatform().getWorkspace().getAbsolutePath()
             .resolve(DBFileController.DATA_FOLDER)
             .resolve(DBFileController.TYPE_DATABASE_DRIVER);
+    }
+
+    public static Path getProvidedDriversStorageFolder() {
+        return DBWorkbench.getPlatform()
+            .getWorkspace()
+            .getMetadataFolder()
+            .resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
     }
 
     public static Path getDriversContribFolder() throws IOException {

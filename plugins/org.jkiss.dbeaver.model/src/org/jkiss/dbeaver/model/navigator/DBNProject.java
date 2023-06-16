@@ -46,12 +46,14 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     private static final Log log = Log.getLog(DBNProject.class);
 
     private final DBPProject project;
-    private final List<DBNNode> extraNodes = new ArrayList<>();
+    private List<DBNNode> extraNodes;
 
     public DBNProject(DBNNode parentNode, DBPProject project, DBPResourceHandler handler) {
         super(parentNode, project.getEclipseProject(), handler);
         this.project = project;
-        DBNRegistry.getInstance().extendNode(this, false);
+        if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            DBNRegistry.getInstance().extendNode(this, false);
+        }
     }
 
     @NotNull
@@ -172,7 +174,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
             childrenFiltered.removeIf(node ->
                 node instanceof DBNResource && !((DBNResource) node).isResourceExists());
         }
-        if (!extraNodes.isEmpty()) {
+        if (!CommonUtils.isEmpty(extraNodes)) {
             childrenFiltered.addAll(extraNodes);
         }
         return childrenFiltered.toArray(new DBNNode[0]);
@@ -272,10 +274,16 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     @NotNull
     @Override
     public List<DBNNode> getExtraNodes() {
+        if (extraNodes == null) {
+            return Collections.emptyList();
+        }
         return extraNodes;
     }
 
     public <T> T getExtraNode(Class<T> nodeType) {
+        if (extraNodes == null) {
+            DBNRegistry.getInstance().extendNode(this, false);
+        }
         if (extraNodes != null) {
             for (DBNNode node : extraNodes) {
                 if (nodeType.isAssignableFrom(node.getClass())) {
@@ -288,6 +296,9 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     public void addExtraNode(@NotNull DBNNode node, boolean reflect) {
+        if (extraNodes == null) {
+            extraNodes = new ArrayList<>();
+        }
         extraNodes.add(node);
         extraNodes.sort(Comparator.comparing(DBNNode::getNodeName));
         if (reflect) {
@@ -297,7 +308,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     public void removeExtraNode(@NotNull DBNNode node) {
-        if (extraNodes.remove(node)) {
+        if (extraNodes != null && extraNodes.remove(node)) {
             getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, node));
         }
     }
@@ -309,10 +320,12 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     protected void dispose(boolean reflect) {
-        for (DBNNode node : extraNodes) {
-            node.dispose(reflect);
+        if (extraNodes != null) {
+            for (DBNNode node : extraNodes) {
+                node.dispose(reflect);
+            }
+            extraNodes.clear();
         }
-        extraNodes.clear();
         super.dispose(reflect);
     }
 

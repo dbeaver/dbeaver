@@ -217,6 +217,11 @@ public interface DBPDataSourceContainer extends
 
     void fireEvent(DBPEvent event);
 
+    @Nullable
+    String getProperty(@NotNull String name);
+
+    void setProperty(@NotNull String name, @Nullable String value);
+
     /**
      * Preference store associated with this datasource
      * @return preference store

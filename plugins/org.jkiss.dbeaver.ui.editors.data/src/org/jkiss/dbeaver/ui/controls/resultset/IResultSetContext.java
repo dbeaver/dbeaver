@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.meta.RuntimeAction;
 
@@ -38,6 +40,9 @@ public interface IResultSetContext
     boolean supportsReferences();
 
     String getDocumentContentType();
+
+    @Nullable
+    DBDAttributeBinding getDocumentAttribute();
 
     DBCResultSet getResultSet();
 
