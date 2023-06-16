@@ -235,7 +235,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException
     {
-        rootPart = new ScalableFreeformRootEditPart();
+        rootPart = new ScalableFreeformRootEditPart(false);
         editDomain = new DefaultEditDomain(this);
         setEditDomain(editDomain);
 
@@ -672,14 +672,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     protected FlyoutPaletteComposite createPaletteComposite(Composite parent) {
-        FlyoutPaletteComposite paletteComposite = new FlyoutPaletteComposite(
+        return new FlyoutPaletteComposite(
             parent,
             0,
             this.getSite().getPage(),
             this.getPaletteViewerProvider(),
             this.getPalettePreferences());
-        paletteComposite.setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
-        return paletteComposite;
     }
 
     public boolean isLoaded()
