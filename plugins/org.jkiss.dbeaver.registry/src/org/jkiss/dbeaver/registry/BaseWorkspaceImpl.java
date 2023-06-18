@@ -83,22 +83,9 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
 
     public abstract void initializeProjects();
 
-    public void initializeWorkspaceSession() {
+    public void initializeWorkspaceSession() throws DBException {
         // Acquire workspace session
-        try {
-            this.getAuthContext().addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
-        } catch (DBException e) {
-            if (!(e instanceof DBInterruptedException)) {
-                log.debug(e);
-                DBWorkbench.getPlatformUI().showMessageBox(
-                    "Authentication error",
-                    "Error authenticating application user: " +
-                        "\n" + e.getMessage(),
-                    true);
-            }
-            dispose();
-            System.exit(101);
-        }
+        this.getAuthContext().addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
     }
 
     public static Properties readWorkspaceInfo(Path metadataFolder) {

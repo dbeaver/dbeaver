@@ -313,6 +313,11 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
     protected void reloadWorkspace(DBRProgressMonitor monitor) {
         refreshWorkspaceContents(monitor);
     }
+    
+    @Override
+    public void reloadWorkspaceProjects(DBRProgressMonitor monitor) throws DBException {
+        loadWorkspaceProjects();
+    }
 
     @Override
     public Map<String, Object> getFileProperties(File file) {

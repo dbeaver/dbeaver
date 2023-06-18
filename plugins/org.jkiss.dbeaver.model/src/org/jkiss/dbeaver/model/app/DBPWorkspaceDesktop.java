@@ -44,7 +44,9 @@ public interface DBPWorkspaceDesktop extends DBPWorkspaceEclipse {
      * Reloads workspace contents. Creates missing projects, removes unexistent projects
      */
     void refreshWorkspaceContents(DBRProgressMonitor monitor) throws DBException;
-
+    
+    void reloadWorkspaceProjects(DBRProgressMonitor monitor) throws DBException;
+    
     @NotNull
     DBPProject createProject(@NotNull String name, @Nullable String description) throws DBException;
 
