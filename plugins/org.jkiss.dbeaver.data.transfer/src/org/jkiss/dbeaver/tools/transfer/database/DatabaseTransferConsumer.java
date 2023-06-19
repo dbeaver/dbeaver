@@ -560,9 +560,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private DBSObject checkTargetContainer(DBRProgressMonitor monitor) throws DBException {
         DBSDataManipulator targetObject = getTargetObject();
         if (targetObject == null) {
-            if (settings.getContainerNode() != null && settings.getContainerNode().getDataSource() == null) {
+            var container = settings.getContainer();
+            if (container instanceof DBPDataSourceContainer && container.getDataSource() == null) {
                 // Init connection
-                settings.getContainerNode().initializeNode(monitor, null);
+                DBUtils.initDataSource(monitor, (DBPDataSourceContainer) settings.getContainer(), null);
             }
             if (settings.getContainer() == null) {
                 throw new DBCException("Can't initialize database consumer. No target object and no target container");
@@ -710,13 +711,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             // Refresh navigator
             monitor.subTask("Refresh navigator model");
             try {
-                var containerNode = settings.getContainerNode();
-                if (containerNode != null) {
-                    containerNode.refreshNode(monitor, this);
-                } else {
-                    var container = settings.getContainer();
-                    if (container instanceof DBPRefreshableObject) {
-                        ((DBPRefreshableObject) container).refreshObject(monitor);
+                var navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
+                if (navigatorModel != null) {
+                    var node = DBNUtils.getNodeByObject(container);
+                    if (node != null) {
+                        node.refreshNode(monitor, this);
                     }
                 }
             } catch (Exception e) {

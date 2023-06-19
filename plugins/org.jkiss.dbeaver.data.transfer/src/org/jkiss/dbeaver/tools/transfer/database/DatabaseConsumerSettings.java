@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -49,10 +48,8 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
 
     private static final Log log = Log.getLog(DatabaseConsumerSettings.class);
 
-    @Deprecated
+    @Deprecated // entityId is used from database consumer
     private String containerNodePath;
-    @Deprecated
-    private DBNDatabaseNode containerNode;
     private DBSObjectContainer container;
     private final Map<DBSDataContainer, DatabaseMappingContainer> dataMappings = new LinkedHashMap<>();
     private boolean openNewConnections = true;
@@ -77,21 +74,11 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
 
     @Nullable
     public DBSObjectContainer getContainer() {
-        if (container != null) {
-            return container;
-        }
-        if (containerNode == null) {
-            return null;
-        }
-        return DBUtils.getAdapter(DBSObjectContainer.class, containerNode.getObject());
+        return container;
     }
 
-    public DBNDatabaseNode getContainerNode() {
-        return containerNode;
-    }
-
-    public void setContainerNode(DBNDatabaseNode containerNode) {
-        this.containerNode = containerNode;
+    public void setContainer(DBSObjectContainer container) {
+        this.container = container;
     }
 
     public Map<DBSDataContainer, DatabaseMappingContainer> getDataMappings() {
@@ -258,19 +245,18 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
             if (!dataPipes.isEmpty()) {
                 IDataTransferConsumer consumer = dataPipes.get(0).getConsumer();
                 if (consumer instanceof DatabaseTransferConsumer) {
-                    this.container = ((DatabaseTransferConsumer) consumer).getContainer();
                     final DBSDataManipulator targetObject = ((DatabaseTransferConsumer) consumer).getTargetObject();
-                    if (targetObject != null) {
-                        containerNode = DBWorkbench.getPlatform().getNavigatorModel().findNode(
-                            targetObject.getParentObject()
-                        );
+                    if (targetObject != null && targetObject.getParentObject() instanceof DBSObjectContainer) {
+                        this.container = (DBSObjectContainer) targetObject.getParentObject();
+                    } else {
+                        this.container = ((DatabaseTransferConsumer) consumer).getContainer();
                     }
                 }
             }
             checkContainerConnection(runnableContext);
         }
 
-        loadNode(runnableContext, dataTransferSettings, null);
+        loadObjectContainer(runnableContext, dataTransferSettings, null);
 
         // Load mapping for current objects
         Map<String, Object> mappings = (Map<String, Object>) settings.get("mappings");
@@ -307,9 +293,6 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
 
     @Override
     public void saveSettings(Map<String, Object> settings) {
-        if (containerNode != null) {
-            settings.put("container", containerNode.getNodeItemPath());
-        }
         settings.put("openNewConnections", openNewConnections);
         settings.put("useTransactions", useTransactions);
         settings.put("commitAfterRows", commitAfterRows);
@@ -365,20 +348,12 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     private void checkContainerConnection(DBRRunnableContext runnableContext) {
         // If container node is datasource (this may happen if datasource do not support schemas/catalogs)
         // then we need to check connection
-        DBPDataSourceContainer dataSourceContainer;
-        if (containerNode instanceof DBNDataSource) {
-            dataSourceContainer = containerNode.getDataSourceContainer();
-        } else if (container instanceof DBPDataSourceContainer) {
-            dataSourceContainer = (DBPDataSourceContainer) container;
-        } else {
-            return;
-        }
-        if (dataSourceContainer.getDataSource() == null) {
+        if (container instanceof DBPDataSourceContainer && container.getDataSource() == null) {
             try {
                 runnableContext.run(true, true,
                     monitor -> {
                         try {
-                            DBUtils.initDataSource(monitor, dataSourceContainer, null);
+                            DBUtils.initDataSource(monitor, (DBPDataSourceContainer) container, null);
                         } catch (DBException e) {
                             throw new InvocationTargetException(e);
                         }
@@ -392,11 +367,8 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         }
     }
 
-    public void loadNode(DBRRunnableContext runnableContext, DataTransferSettings settings, @Nullable DBSObjectContainer producerContainer) {
-        if (container != null) {
-            return;
-        }
-        if (containerNode == null && (!CommonUtils.isEmpty(containerNodePath) || producerContainer != null)) {
+    public void loadObjectContainer(DBRRunnableContext runnableContext, DataTransferSettings settings, @Nullable DBSObjectContainer producerContainer) {
+        if (container == null && (!CommonUtils.isEmpty(containerNodePath) || producerContainer != null)) {
             if (!CommonUtils.isEmpty(containerNodePath) || producerContainer != null) {
                 try {
                     runnableContext.run(true, true, monitor -> {
@@ -410,7 +382,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
                                 node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(producerContainer);
                             }
                             if (node instanceof DBNDatabaseNode) {
-                                containerNode = (DBNDatabaseNode) node;
+                                container = DBUtils.getAdapter(DBSObjectContainer.class, ((DBNDatabaseNode) node).getObject());
                             }
                         } catch (DBException e) {
                             throw new InvocationTargetException(e);

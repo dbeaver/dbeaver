@@ -19,11 +19,13 @@ package org.jkiss.dbeaver.tools.transfer.database;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.utils.CommonUtils;
 
@@ -47,15 +49,22 @@ public class DatabaseTransferConsumerSerializer implements DBPObjectSerializer<D
         if (container == null) {
             return;
         }
+        if (container.getDataSource() != null) {
+            state.put("projectId", container.getDataSource().getContainer().getProject().getId());
+        }
         state.put("entityId", DBUtils.getObjectFullId(container));
     }
 
     @Override
     public DatabaseTransferConsumer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) throws DBCException {
+        String projectId = CommonUtils.toString(state.get("projectId"));
+        DBPProject project = CommonUtils.isEmpty(projectId) ? null : DBWorkbench.getPlatform().getWorkspace().getProjectById(projectId);
+        if (project == null) {
+            project = objectContext.getProject();
+        }
         var consumer = new DatabaseTransferConsumer();
 
         var entityId = CommonUtils.toString(state.get("entityId"));
-        var project = objectContext.getProject();
         try {
             consumer.setContainer((DBSObjectContainer) DBUtils.findObjectById(new VoidProgressMonitor(), project, entityId));
         } catch (DBException e) {

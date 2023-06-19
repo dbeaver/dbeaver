@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.app;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
@@ -45,7 +46,7 @@ public interface DBPPlatform {
     @NotNull
     DBPWorkspace getWorkspace();
 
-    @NotNull
+    @Nullable
     DBNModel getNavigatorModel();
 
     @NotNull

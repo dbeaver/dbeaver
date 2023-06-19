@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPReferentialIntegrityController;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodDescriptor;
@@ -405,7 +404,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
         }
 
         if (buttonIsAvailable(useBulkLoadCheck)) {
-            final DBPDataSource dataSource = settings.getContainerNode() == null ? null : settings.getContainerNode().getDataSource();
+            final DBPDataSource dataSource = settings.getContainer() == null ? null : settings.getContainer().getDataSource();
             if (DBUtils.getAdapter(DBSDataBulkLoader.class, dataSource) == null) {
                 disableButton(useBulkLoadCheck);
                 settings.setUseBulkLoad(false);

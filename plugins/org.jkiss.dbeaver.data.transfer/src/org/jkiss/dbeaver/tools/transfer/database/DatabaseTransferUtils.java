@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.AbstractCommandContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -59,12 +60,13 @@ public class DatabaseTransferUtils {
 
     public static void refreshDatabaseModel(DBRProgressMonitor monitor, DatabaseConsumerSettings consumerSettings, DatabaseMappingContainer containerMapping) throws DBException {
         monitor.subTask("Refresh navigator model");
-        var containerNode = consumerSettings.getContainerNode();
-        if (containerNode != null) {
-            containerNode.refreshNode(monitor, containerMapping);
-        } else {
+        var navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
+        if (navigatorModel != null) {
             var container = consumerSettings.getContainer();
-            if (container instanceof DBPRefreshableObject) {
+            var containerNode = DBNUtils.getNodeByObject(container);
+            if (containerNode != null) {
+                containerNode.refreshNode(monitor, containerMapping);
+            } else if (container instanceof DBPRefreshableObject) {
                 ((DBPRefreshableObject) container).refreshObject(monitor);
             }
         }
