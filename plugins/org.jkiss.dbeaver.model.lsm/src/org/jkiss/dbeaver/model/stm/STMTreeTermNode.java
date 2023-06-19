@@ -22,14 +22,28 @@ import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import org.jkiss.code.NotNull;
 
 
-public class TreeTermNode extends TerminalNodeImpl implements STMTreeNode {
+public class STMTreeTermNode extends TerminalNodeImpl implements STMTreeNode {
     
-    public TreeTermNode(@NotNull Token symbol) {
+    private String nodeName = null; 
+    
+    public STMTreeTermNode(@NotNull Token symbol) {
         super(symbol);
     }
 
+    @Override
+    public void fixup(@NotNull STMParserOverrides parserCtx) {
+        this.nodeName = parserCtx.getVocabulary().getSymbolicName(this.getSymbol().getType());
+    }
+
+    @NotNull
+    @Override
+    public String getNodeName() {
+        return this.nodeName;
+    }
+    
     @NotNull
     public Interval getRealInterval() {
         return new Interval(this.getSymbol().getStartIndex(), this.getSymbol().getStopIndex());
     }
+
 }

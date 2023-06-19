@@ -120,7 +120,10 @@ public class OracleSQLDialect extends JDBCSQLDialect
         "BULK",
         "ELSIF",
         "EXIT",
-        "SUBPARTITION"
+        "SUBPARTITION",
+        "TEMPFILE",
+        "DATAFILE",
+        "TABLESPACE"
     };
 
     private static final String AUTO_INCREMENT_KEYWORD = "GENERATED ALWAYS AS IDENTITY";
