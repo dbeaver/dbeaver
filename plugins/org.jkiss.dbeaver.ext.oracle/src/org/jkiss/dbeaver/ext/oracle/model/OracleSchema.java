@@ -619,7 +619,7 @@ public class OracleSchema extends OracleGlobalObject implements
 
         TableCache()
         {
-            super("OBJECT_NAME");
+            super(OracleConstants.COLUMN_OBJECT_NAME);
             setListOrderComparator(DBUtils.nameComparator());
         }
 
@@ -659,7 +659,7 @@ public class OracleSchema extends OracleGlobalObject implements
         protected OracleTableBase fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            final String tableType = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
+            final String tableType = JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_TYPE);
             if ("TABLE".equals(tableType)) {
                 return new OracleTable(session.getProgressMonitor(), owner, dbResult);
             } else if ("MATERIALIZED VIEW".equals(tableType)) {
@@ -778,7 +778,7 @@ public class OracleSchema extends OracleGlobalObject implements
     class ConstraintCache extends JDBCCompositeCache<OracleSchema, OracleTableBase, OracleTableConstraint, OracleTableConstraintColumn> {
         ConstraintCache()
         {
-            super(tableCache, OracleTableBase.class, "TABLE_NAME", "CONSTRAINT_NAME");
+            super(tableCache, OracleTableBase.class, OracleConstants.COL_TABLE_NAME, OracleConstants.COL_CONSTRAINT_NAME);
         }
 
         @NotNull
@@ -994,7 +994,7 @@ public class OracleSchema extends OracleGlobalObject implements
                 
         ForeignKeyCache()
         {
-            super(tableCache, OracleTable.class, "TABLE_NAME", "CONSTRAINT_NAME");
+            super(tableCache, OracleTable.class, OracleConstants.COL_TABLE_NAME, OracleConstants.COL_CONSTRAINT_NAME);
            
         }
 
@@ -1355,7 +1355,8 @@ public class OracleSchema extends OracleGlobalObject implements
             throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " OBJECT_NAME, STATUS FROM " +
+                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) +
+                    " OBJECT_NAME, STATUS, CREATED, LAST_DDL_TIME, TEMPORARY FROM " +
                 OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "OBJECTS") +
                 " WHERE OBJECT_TYPE='PACKAGE' AND OWNER=? " +
                 " ORDER BY OBJECT_NAME");
