@@ -292,6 +292,17 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     }
 
+    @Nullable
+    @Override
+    public String getProperty(@NotNull String name) {
+        return null;
+    }
+
+    @Override
+    public void setProperty(@NotNull String name, @Nullable String value) {
+
+    }
+
     @NotNull
     @Override
     public DBPPreferenceStore getPreferenceStore() {

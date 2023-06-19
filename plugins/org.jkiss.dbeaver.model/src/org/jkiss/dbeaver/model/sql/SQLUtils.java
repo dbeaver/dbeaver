@@ -45,6 +45,7 @@ import org.jkiss.utils.Pair;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.Character.UnicodeBlock;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1153,5 +1154,15 @@ public final class SQLUtils {
             return scriptDelimiters[0];
         }
         return SQLConstants.DEFAULT_STATEMENT_DELIMITER;
+    }
+
+    /**
+     * Determines if a unicode code point represents a letter from LATIN-1.
+     *
+     * @param codePoint unicode code point
+     * @return {@code true} if the code point represents a letter from LATIN-1
+     */
+    public static boolean isLatinLetter(int codePoint) {
+        return Character.isLetter(codePoint) && Character.UnicodeBlock.of(codePoint) == Character.UnicodeBlock.BASIC_LATIN;
     }
 }

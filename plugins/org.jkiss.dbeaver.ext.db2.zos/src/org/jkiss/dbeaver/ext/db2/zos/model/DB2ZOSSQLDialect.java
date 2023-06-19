@@ -41,4 +41,9 @@ public class DB2ZOSSQLDialect extends GenericSQLDialect {
     public boolean supportsAliasInSelect() {
         return true;
     }
+
+    @Override
+    public boolean supportsAliasInConditions() {
+        return false;
+    }
 }

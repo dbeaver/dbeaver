@@ -89,59 +89,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
-        <provider class="org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider" id="org.jkiss.dbeaver.core.standardDataTypeProvider">
-            <type standard="BIT"/>
-            <type standard="TINYINT"/>
-            <type standard="SMALLINT"/>
-            <type standard="INTEGER"/>
-            <type standard="BIGINT"/>
-            <type standard="FLOAT"/>
-            <type standard="REAL"/>
-            <type standard="DOUBLE"/>
-            <type standard="DECIMAL"/>
-            <type standard="NUMERIC"/>
-            <type standard="CHAR"/>
-            <type standard="VARCHAR"/>
-            <type standard="LONGVARCHAR"/>
-            <type standard="DATE"/>
-            <type standard="TIME"/>
-            <type standard="TIMESTAMP"/>
-            <type standard="BINARY"/>
-            <type standard="VARBINARY"/>
-            <type standard="LONGVARBINARY"/>
-            <!--
-            <type standard="NULL"/>
-            <type standard="OTHER"/>
-            -->
-
-            <!--
-            <type standard="JAVA_OBJECT"/>
-            <type standard="DISTINCT"/>
-            -->
-
-            <type standard="STRUCT"/>
-            <type standard="ARRAY"/>
-            <type standard="REF"/>
-
-            <type standard="BLOB"/>
-            <type standard="CLOB"/>
-            <!--
-            <type standard="REF"/>
-            <type standard="DATALINK"/>
-            -->
-
-            <type standard="BOOLEAN"/>
-            <type standard="ROWID"/>
-            <type standard="NCHAR"/>
-            <type standard="NVARCHAR"/>
-            <type standard="LONGNVARCHAR"/>
-            <type standard="NCLOB"/>
-            <type standard="SQLXML"/>
-
-        </provider>
-
         <!-- Standard transformers (enabled by default) -->
-
         <transformer
                 class="org.jkiss.dbeaver.model.impl.data.transformers.ComplexTypeAttributeTransformer"
                 id="org.jkiss.dbeaver.core.ComplexTypeAttributeTransformer"
