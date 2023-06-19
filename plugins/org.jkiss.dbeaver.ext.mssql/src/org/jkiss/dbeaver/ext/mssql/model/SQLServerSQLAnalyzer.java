@@ -14,17 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm;
+package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzer;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
+import org.jkiss.dbeaver.model.stm.STMErrorListener;
+import org.jkiss.dbeaver.model.stm.STMSource;
 
-public interface LSMObject<T> {
-    @SuppressWarnings("unchecked")
-    default <T2 extends T> T2 coerce(@NotNull Class<T2> desired) {
-        if (desired.isAssignableFrom(this.getClass())) {
-            return (T2) this;
-        } else {
-            throw new UnsupportedOperationException();
-        }
+public class SQLServerSQLAnalyzer extends SQLStandardAnalyzer {
+    @NotNull
+    @Override
+    protected SQLStandardParser prepareParser(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
+        SQLStandardParser parser = super.prepareParser(source, errorListener);
+        parser.setIsSupportSquareBracketQuotation(true);
+        return parser;
     }
 }

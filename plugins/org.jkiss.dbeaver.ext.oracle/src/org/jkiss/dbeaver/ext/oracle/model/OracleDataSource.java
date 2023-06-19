@@ -431,6 +431,10 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return tablespaceCache.getAllObjects(monitor, this);
     }
 
+    public TablespaceCache getTablespaceCache() {
+        return tablespaceCache;
+    }
+
     @Association
     public Collection<OracleUser> getUsers(DBRProgressMonitor monitor) throws DBException {
         return userCache.getAllObjects(monitor, this);

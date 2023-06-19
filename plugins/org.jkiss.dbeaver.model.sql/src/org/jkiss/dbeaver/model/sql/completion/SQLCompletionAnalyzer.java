@@ -35,12 +35,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
-import org.jkiss.dbeaver.model.lsm.LSMAnalysis;
-import org.jkiss.dbeaver.model.lsm.LSMAnalysisCase;
-import org.jkiss.dbeaver.model.lsm.LSMDialect;
-import org.jkiss.dbeaver.model.lsm.LSMElement;
-import org.jkiss.dbeaver.model.lsm.LSMSource;
-import org.jkiss.dbeaver.model.lsm.sql.dialect.Sql92Dialect;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
+import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectRegistry;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -52,6 +48,7 @@ import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
+import org.jkiss.dbeaver.model.stm.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
@@ -986,16 +983,17 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
         List<Pair<String, String>> tableRefs = new ArrayList<>();
         try {
-            LSMSource querySource = LSMSource.fromReader(new StringReader(activeQuery.getText()));
-            LSMDialect dd = Sql92Dialect.getInstance();
-            LSMAnalysisCase<LSMElement, ?> selectStmtAnalysisCase = dd.findAnalysisCase(LSMElement.class);
-            LSMAnalysis<LSMElement> analysis = dd.prepareAnalysis(querySource, selectStmtAnalysisCase).get();
-            tableRefs = analysis.getTableAndAliasFromSources();
+            STMSource querySource = STMSource.fromReader(new StringReader(activeQuery.getText()));
+            LSMAnalyzer analyzer = LSMDialectRegistry.getInstance().getAnalyzerForDialect(
+                request.getContext().getDataSource().getSQLDialect()
+            );
+            STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
+            tableRefs = getTableAndAliasFromSources(tree);
         } catch (Exception e) {
             log.debug("Failed to extract table names from query", e);
             return Collections.emptyList();
         }
-        // log.debug("Extracted table names: " + tableRefs);
+        log.debug("Extracted table names: " + tableRefs);
         if (CommonUtils.isNotEmpty(tableAlias) && tableRefs != null) {
             tableRefs = tableRefs.stream().filter(r -> allowPartialMatch 
                 ? r.getSecond() != null && CommonUtils.startsWithIgnoreCase(r.getSecond(), tableAlias)
@@ -1004,6 +1002,67 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             // log.debug("Matched ("+(allowPartialMatch ? "partial" : "exact")+") table names: " + tableRefs);
         }
         return tableRefs;
+    }
+    
+    private interface TableNameExtractionUtils { 
+        public static final Set<String> expandRulesToTableRef = Set.of(
+            STMKnownRuleNames.sqlQuery, 
+            STMKnownRuleNames.directSqlStatement, 
+            STMKnownRuleNames.directSqlDataStatement, 
+            STMKnownRuleNames.selectStatement, 
+            STMKnownRuleNames.queryExpression, 
+            STMKnownRuleNames.nonJoinQueryTerm, 
+            STMKnownRuleNames.queryPrimary, 
+            STMKnownRuleNames.nonJoinQueryPrimary, 
+            STMKnownRuleNames.simpleTable, 
+            STMKnownRuleNames.joinedTable,
+            
+            STMKnownRuleNames.querySpecification,
+            STMKnownRuleNames.naturalJoinTerm,
+            STMKnownRuleNames.crossJoinTerm,
+            
+            STMKnownRuleNames.tableExpression, 
+            STMKnownRuleNames.fromClause,
+            STMKnownRuleNames.tableReference
+        );
+        public static final Set<String> extractRulesToTableRef = Set.of(STMKnownRuleNames.nonjoinedTableReference);
+   
+        public static final Set<String> expandRulesToTableName = Set.of(
+                STMKnownRuleNames.nonjoinedTableReference, 
+                STMKnownRuleNames.correlationSpecification
+        );
+        public static final Set<String> extractRulesToTableName = Set.of(STMKnownRuleNames.tableName, STMKnownRuleNames.correlationName);
+    }
+
+    @Nullable
+    public List<Pair<String, String>> getTableAndAliasFromSources(STMTreeRuleNode query) {
+        List<Pair<String, String>> result = new ArrayList<>();
+        
+        List<STMTreeNode> tableReferences = STMUtils.expandSubtree(
+            query,
+            TableNameExtractionUtils.expandRulesToTableRef,
+            TableNameExtractionUtils.extractRulesToTableRef
+        );
+                
+        for (STMTreeNode tableRef : tableReferences) {
+            List<STMTreeNode> names = STMUtils.expandSubtree(
+                tableRef,
+                TableNameExtractionUtils.expandRulesToTableName,
+                TableNameExtractionUtils.extractRulesToTableName
+            );
+            String alias = null;
+            String tableName = null;
+            for (STMTreeNode part : names) {
+                String nodeName = part.getNodeName();
+                if (nodeName.equals(STMKnownRuleNames.tableName)) { 
+                    tableName = part.getText();
+                } else if (nodeName.equals(STMKnownRuleNames.correlationName)) {
+                    alias = part.getText(); 
+                }
+            }
+            result.add(new Pair<>(tableName, alias));
+        }
+        return result;
     }
     
     @NotNull
