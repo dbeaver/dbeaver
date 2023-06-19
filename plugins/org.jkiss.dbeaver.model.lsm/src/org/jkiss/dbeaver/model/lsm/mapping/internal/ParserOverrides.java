@@ -23,7 +23,6 @@ import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.lsm.LSMParser;
 
 public abstract class ParserOverrides extends Parser {
 

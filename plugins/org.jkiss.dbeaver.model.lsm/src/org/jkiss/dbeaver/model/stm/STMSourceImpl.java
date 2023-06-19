@@ -14,22 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm.impl;
+package org.jkiss.dbeaver.model.stm;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.lsm.LSMSource;
 
 import java.io.IOException;
 import java.io.Reader;
 
 
-public class LSMSourceImpl implements LSMSource {
+public class STMSourceImpl implements STMSource {
     
     private final CharStream stream;
     
-    public LSMSourceImpl(@NotNull Reader reader) throws IOException {
+    public STMSourceImpl(@NotNull Reader reader) throws IOException {
         this.stream = CharStreams.fromReader(reader);
     }
 
