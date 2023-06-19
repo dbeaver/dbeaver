@@ -340,9 +340,14 @@ public class StandardSQLDialectQueryGenerator implements SQLDialectQueryGenerato
                     Object[] array = ((Object[]) value);
                     for (int i = 0; i < array.length; i++) {
                         if (i > 0) {
-                            conString.append(" OR");
-                            conString.append(' ').append(DBUtils.getQuotedIdentifier(dataSource,
-                                constraint.getAttributeLabel())).append(' ');
+                            conString.append(" OR ");
+                            conString.append(DBUtils.getQuotedIdentifier(
+                                dataSource,
+                                CommonUtils.isEmpty(constraint.getAttributeLabel()) ?
+                                    constraint.getAttributeName() :
+                                    constraint.getAttributeLabel()
+                            ));
+                            conString.append(' ');
                         }
                         conString.append(operator.getExpression());
                         String strValue = getStringValue(dataSource, constraint, inlineCriteria, array[i]);

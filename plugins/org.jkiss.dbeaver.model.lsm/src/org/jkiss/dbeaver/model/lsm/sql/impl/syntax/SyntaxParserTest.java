@@ -21,20 +21,20 @@ import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.Tree;
 import org.antlr.v4.runtime.tree.Trees;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.Sql92Parser.SqlQueriesContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser.SqlQueriesContext;
+import org.jkiss.dbeaver.model.stm.STMErrorListener;
 
+import java.io.IOException;
+import java.util.BitSet;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.TransformerException;
-import java.io.IOException;
-import java.util.BitSet;
 
 
 public class SyntaxParserTest {
 
-    private static final Logger log = LoggerFactory.getLogger(SyntaxParserTest.class);
+    private static final Log log = Log.getLog(SyntaxParserTest.class);
 
     public static void main(String[] args) throws IOException, XMLStreamException, FactoryConfigurationError, TransformerException {
  
@@ -44,7 +44,7 @@ public class SyntaxParserTest {
             + "    Product.ProductNumber,\r\n"
             + "    ProductCategory.Name AS ProductCategory,\r\n"
             + "    ProductSubCategory.Name AS ProductSubCategory,\r\n"
-            + "    Product.ProductModelID\r\n"
+            + "    Product.ProductModelID,\r\n"
             + "FROM Production.Product AS Prod(ProductID, Name, ProductNumber), T as A, \r\n"
             + "s -- ololo\r\n"
             + ".c -- ololo\r\n"
@@ -57,14 +57,14 @@ public class SyntaxParserTest {
             + "USING(ProductCategoryID)\r\n"
             + "GROUP BY ProductName\r\n"
             + "ORDER BY Product.ModifiedDate DESC";
-        inputText += CharStreams.fromString("\n\rSELECT column_name FROM sch.table_name WHERE id > 3");
+        inputText += "\n\rSELECT schedule[1:2][1:1] FROM sal_emp se where s;";
         var input = CharStreams.fromString(inputText);
-        var ll = new Sql92Lexer(input);
+        var ll = new SQLStandardLexer(input);
         var tokens = new CommonTokenStream(ll);
         tokens.fill();
         
-        var pp = new Sql92Parser(tokens);
-        pp.addErrorListener(new ANTLRErrorListener() {
+        var pp = new SQLStandardParser(tokens);
+        pp.addErrorListener(new STMErrorListener() {
             @Override
             public void syntaxError(Recognizer<?, ?> recognizer, 
                 Object offendingSymbol, 
@@ -77,7 +77,7 @@ public class SyntaxParserTest {
                     sourceName = String.format("%s:%d:%d: ", sourceName, line, charPositionInLine);
                 }
 
-                log.error(sourceName + " line " + line + ":" + charPositionInLine + " " + msg);
+                System.out.println(sourceName + " line " + line + ":" + charPositionInLine + " " + msg);
             }
 
             @Override
@@ -98,18 +98,19 @@ public class SyntaxParserTest {
 //                System.out.println("reportAmbiguity");
             }
         });
-
         SqlQueriesContext tree = pp.sqlQueries();
-
+        
+        //System.out.println("err: " + tree.getRuleContexts(TableExpressionContext.class).get(0).err.getText());
+        
         String str = tree.getTextContent();
 
-        log.info(str);
+        System.out.println(str);
         
         { // print simple parse tree view
             var sb = new StringBuilder();
             sb.append("\n");
             collect(tree, pp, sb, "");
-            log.info(sb.toString());
+            System.out.println(sb.toString());
         }
         
     }

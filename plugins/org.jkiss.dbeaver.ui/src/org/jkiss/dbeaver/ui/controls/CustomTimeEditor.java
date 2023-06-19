@@ -24,12 +24,10 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectJDBC;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -77,7 +75,7 @@ public class CustomTimeEditor {
     }
 
     public void createDateFormat(@NotNull DBSTypedObject valueType) {
-        if (valueType instanceof JDBCTableColumn || valueType instanceof JDBCColumnMetaData) {
+        if (valueType instanceof DBSTypedObjectJDBC) {
             try {
                 jdbcType = JDBCType.valueOf(valueType.getTypeID());
             } catch (Exception e) {

@@ -39,6 +39,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -127,9 +128,10 @@ public class DBeaverStackRenderer extends StackRenderer {
                 populateEditorMenu(menu, (IDatabaseEditorInput) editorInput);
             }
 
-            IFile localFile = EditorUtils.getFileFromInput(editorInput);
-            if (localFile != null) {
-                populateFileMenu(menu, workbenchPart, localFile);
+            IFile file = EditorUtils.getFileFromInput(editorInput);
+            File localFile = EditorUtils.getLocalFileFromInput(editorInput);
+            if (file != null || localFile != null) {
+                populateFileMenu(menu, workbenchPart, file, localFile);
             }
 
             if (localFile == null && workbenchPart instanceof SQLEditor) {
@@ -157,12 +159,17 @@ public class DBeaverStackRenderer extends StackRenderer {
         }
     }
 
-    private void populateFileMenu(@NotNull final Menu menu, @NotNull final IWorkbenchPart workbenchPart, @NotNull final IFile inputFile) {
+    private void populateFileMenu(
+        @NotNull final Menu menu,
+        @NotNull final IWorkbenchPart workbenchPart,
+        @Nullable final IFile inputFile,
+        @Nullable final File file
+    ) {
         new MenuItem(menu, SWT.SEPARATOR);
         if (workbenchPart instanceof SQLEditor) {
             addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SQL_EDITOR_NEW);
         }
-        if (inputFile.getParent() instanceof IFolder && inputFile.getParent().getLocation() != null) {
+        if (inputFile != null && inputFile.getParent() instanceof IFolder && inputFile.getParent().getLocation() != null) {
             MenuItem menuItemOpenFolder = new MenuItem(menu, SWT.NONE);
             menuItemOpenFolder.setText(CoreMessages.editor_file_open_in_explorer);
             menuItemOpenFolder.addSelectionListener(new SelectionAdapter() {
@@ -172,13 +179,24 @@ public class DBeaverStackRenderer extends StackRenderer {
                 }
             });
         }
-        if (inputFile.getLocation() != null) {
+        if (inputFile != null && (inputFile.getLocation() != null || inputFile.getLocationURI() != null) ||
+            file != null && file.getPath() != null
+        ) {
             MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
             menuItemOthers.setText(CoreMessages.editor_file_copy_path);
             menuItemOthers.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    String filePath = inputFile.getLocation().toFile().getAbsolutePath();
+                    String filePath;
+                    if (inputFile != null) {
+                        if (inputFile.getLocation() != null) {
+                            filePath = inputFile.getLocation().toFile().getAbsolutePath();
+                        } else {
+                            filePath = inputFile.getLocationURI().getPath();
+                        }
+                    } else {
+                        filePath = file.getPath();
+                    }
                     UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), filePath);
                 }
             });
@@ -186,7 +204,7 @@ public class DBeaverStackRenderer extends StackRenderer {
 
         new MenuItem(menu, SWT.SEPARATOR);
 
-        if (!inputFile.isReadOnly()) {
+        if (inputFile!= null && !inputFile.isReadOnly()) {
             if (workbenchPart instanceof SQLEditor) {
                 addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT);
             }

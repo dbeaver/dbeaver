@@ -64,7 +64,8 @@ public class GreenplumFunction extends PostgreProcedure {
     public enum FunctionExecLocation {
         a("ANY"),
         m("MASTER"),
-        s("ALL SEGMENTS");
+        s("ALL SEGMENTS"),
+        i("INITPLAN");
 
         private String execLocation;
 
