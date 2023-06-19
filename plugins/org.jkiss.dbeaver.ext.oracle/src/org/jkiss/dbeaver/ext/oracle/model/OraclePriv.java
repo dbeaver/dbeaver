@@ -31,7 +31,7 @@ public abstract class OraclePriv extends OracleObject<OracleGrantee> implements 
 
     public OraclePriv(OracleGrantee user, String name, ResultSet resultSet) {
         super(user, name, true);
-        this.adminOption = JDBCUtils.safeGetBoolean(resultSet, "ADMIN_OPTION", "Y");
+        this.adminOption = JDBCUtils.safeGetBoolean(resultSet, "ADMIN_OPTION", OracleConstants.RESULT_YES_VALUE);
     }
 
     @NotNull

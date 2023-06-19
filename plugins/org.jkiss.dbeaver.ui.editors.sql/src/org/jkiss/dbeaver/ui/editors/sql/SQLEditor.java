@@ -665,7 +665,23 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public boolean isSmartAutoCommit() {
-        return getActivePreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT);
+        DBPDataSourceContainer container = ((DBPDataSourceContainerProvider) this).getDataSourceContainer();
+        if (container == null) {
+            DBPDataSource dataSource = getDataSource();
+            if (dataSource != null) {
+                container = dataSource.getContainer();
+            }
+        }
+        if (container != null) {
+            DBPPreferenceStore preferenceStore = container.getPreferenceStore();
+            // First check current data source settings
+            if (preferenceStore.contains(ModelPreferences.TRANSACTIONS_SMART_COMMIT)) {
+                return preferenceStore.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT);
+            } else {
+                return container.getConnectionConfiguration().getConnectionType().isSmartCommit();
+            }
+        }
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT);
     }
 
     @Override

@@ -16,20 +16,8 @@
  */
 package org.jkiss.dbeaver.model.stm;
 
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.misc.Interval;
-import org.antlr.v4.runtime.tree.ErrorNodeImpl;
-import org.jkiss.code.NotNull;
+import org.antlr.v4.runtime.ANTLRErrorListener;
 
+public interface STMErrorListener extends ANTLRErrorListener {
 
-public class TreeTermErrorNode extends ErrorNodeImpl implements STMTreeNode {
-    
-    public TreeTermErrorNode(@NotNull Token symbol) {
-        super(symbol);
-    }
-
-    @NotNull
-    public Interval getRealInterval() {
-        return new Interval(this.getSymbol().getStartIndex(), this.getSymbol().getStopIndex());
-    }
 }
