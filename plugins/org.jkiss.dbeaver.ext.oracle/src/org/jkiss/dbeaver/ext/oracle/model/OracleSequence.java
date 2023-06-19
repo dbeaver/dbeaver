@@ -64,8 +64,8 @@ public class OracleSequence extends OracleSchemaObject implements DBSSequence, D
         this.incrementBy = JDBCUtils.safeGetLong(dbResult, "INCREMENT_BY");
         this.cacheSize = JDBCUtils.safeGetLong(dbResult, "CACHE_SIZE");
         this.lastValue = JDBCUtils.safeGetBigDecimal(dbResult, "LAST_NUMBER");
-        this.flagCycle = JDBCUtils.safeGetBoolean(dbResult, "CYCLE_FLAG", "Y");
-        this.flagOrder = JDBCUtils.safeGetBoolean(dbResult, "ORDER_FLAG", "Y");
+        this.flagCycle = JDBCUtils.safeGetBoolean(dbResult, "CYCLE_FLAG", OracleConstants.RESULT_YES_VALUE);
+        this.flagOrder = JDBCUtils.safeGetBoolean(dbResult, "ORDER_FLAG", OracleConstants.RESULT_YES_VALUE);
     }
 
     @NotNull

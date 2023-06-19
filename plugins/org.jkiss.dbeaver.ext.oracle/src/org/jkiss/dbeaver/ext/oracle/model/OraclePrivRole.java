@@ -35,7 +35,7 @@ public class OraclePrivRole extends OraclePriv implements DBSObjectLazy<OracleDa
 
     public OraclePrivRole(OracleGrantee user, ResultSet resultSet) {
         super(user, JDBCUtils.safeGetString(resultSet, "GRANTED_ROLE"), resultSet);
-        this.defaultRole = JDBCUtils.safeGetBoolean(resultSet, "DEFAULT_ROLE", "Y");
+        this.defaultRole = JDBCUtils.safeGetBoolean(resultSet, "DEFAULT_ROLE", OracleConstants.RESULT_YES_VALUE);
         this.role = this.name;
     }
 

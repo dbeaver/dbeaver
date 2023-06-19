@@ -42,9 +42,9 @@ public class OracleSynonym extends OracleSchemaObject implements DBSAlias {
     public OracleSynonym(OracleSchema schema, ResultSet dbResult)
     {
         super(schema, JDBCUtils.safeGetString(dbResult, "SYNONYM_NAME"), true);
-        this.objectTypeName = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
+        this.objectTypeName = JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_TYPE);
         this.objectOwner = JDBCUtils.safeGetString(dbResult, "TABLE_OWNER");
-        this.objectName = JDBCUtils.safeGetString(dbResult, "TABLE_NAME");
+        this.objectName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_NAME);
         this.dbLink = JDBCUtils.safeGetString(dbResult, "DB_LINK");
     }
 

@@ -64,10 +64,10 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
     {
         super(
             table,
-            JDBCUtils.safeGetString(dbResult, "CONSTRAINT_NAME"),
+            JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CONSTRAINT_NAME),
             DBSEntityConstraintType.FOREIGN_KEY,
             CommonUtils.notNull(
-                CommonUtils.valueOf(OracleObjectStatus.class, JDBCUtils.safeGetStringTrimmed(dbResult, "STATUS")),
+                CommonUtils.valueOf(OracleObjectStatus.class, JDBCUtils.safeGetStringTrimmed(dbResult, OracleConstants.COLUMN_STATUS)),
                 OracleObjectStatus.ENABLED),
             true);
 
