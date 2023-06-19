@@ -63,7 +63,7 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
             lastError = null;
         } catch (DBException e) {
             lastError = e;
-            log.error("Error persisting remote data source update", e);
+            log.error("Error persisting rm data source update", e);
         }
     }
 
@@ -81,7 +81,7 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
             lastError = null;
         } catch (DBException e) {
             lastError = e;
-            log.error("Error persisting remote data source update", e);
+            log.error("Error persisting rm data source update", e);
         }
     }
 
@@ -95,7 +95,7 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
             lastError = null;
         } catch (DBException e) {
             lastError = e;
-            log.error("Error persisting remote data source update", e);
+            log.error("Error persisting rm data source update", e);
         }
     }
 
@@ -109,7 +109,7 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
             lastError = null;
         } catch (DBException e) {
             lastError = e;
-            log.error("Error persisting remote data folder delete", e);
+            log.error("Error persisting rm data folder delete", e);
         }
     }
 
@@ -123,7 +123,7 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
             lastError = null;
         } catch (DBException e) {
             lastError = e;
-            log.error("Error persisting remote data folder create", e);
+            log.error("Error persisting rm data folder create", e);
             return null;
         }
         return createFolder(parent, name);
@@ -141,7 +141,7 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
             lastError = null;
         } catch (DBException e) {
             lastError = e;
-            log.error("Error persisting remote data folder move", e);
+            log.error("Error persisting rm data folder move", e);
             return;
         }
         super.moveFolder(oldPath, newPath);
