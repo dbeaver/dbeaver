@@ -235,7 +235,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
             }
             multiRowInsertBatch.addModifyListener(e -> settings.setMultiRowInsertBatch(CommonUtils.toInt(multiRowInsertBatch.getText())));
             //This settings may break import for drivers that does not support this feature, so it is disabled for non-JDBC drivers
-            if (settings.getContainer() != null && settings.getContainer().getDataSource() instanceof JDBCDataSource) {
+            if (settings.getContainer() != null && settings.getContainer().getDataSource().getInfo().supportsStatementBinding()) {
                 skipBindValues = UIUtils.createCheckbox(performanceSettings, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_skip_bind_values_label, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_skip_bind_values_description, settings.isSkipBindValues(), 4);
                 skipBindValues.addSelectionListener(new SelectionAdapter() {
                     @Override

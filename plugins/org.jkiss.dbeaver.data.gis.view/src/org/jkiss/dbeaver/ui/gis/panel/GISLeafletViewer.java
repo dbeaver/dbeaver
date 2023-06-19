@@ -30,10 +30,7 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.ImageTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.ImageLoader;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -67,6 +64,7 @@ import org.jkiss.dbeaver.ui.gis.registry.GeometryViewerRegistry;
 import org.jkiss.dbeaver.ui.gis.registry.LeafletTilesDescriptor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -494,16 +492,10 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_copy_as, DBeaverIcons.getImageDescriptor(UIIcon.PICTURE)) {
             @Override
             public void run() {
-                Image image = new Image(Display.getDefault(), browser.getBounds());
-                GC gc = new GC(image);
-                try {
-                    browser.print(gc);
-                } finally {
-                    gc.dispose();
-                }
                 ImageTransfer imageTransfer = ImageTransfer.getInstance();
+                ImageData imageData = captureBrowserImage(); 
                 Clipboard clipboard = new Clipboard(Display.getCurrent());
-                clipboard.setContents(new Object[] {image.getImageData()}, new Transfer[]{imageTransfer});
+                clipboard.setContents(new Object[] { imageData }, new Transfer[]{imageTransfer});
             }
         });
         toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_save_as, DBeaverIcons.getImageDescriptor(UIIcon.PICTURE_SAVE)) {
@@ -533,16 +525,9 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
                     }
                 }
 
-                Image image = new Image(Display.getDefault(), browser.getBounds());
-                GC gc = new GC(image);
-                try {
-                    browser.print(gc);
-                } finally {
-                    gc.dispose();
-                }
                 ImageLoader imageLoader = new ImageLoader();
                 imageLoader.data = new ImageData[1];
-                imageLoader.data[0] = image.getImageData();
+                imageLoader.data[0] = captureBrowserImage();
                 File outFile = new File(filePath);
                 try (OutputStream fos = new FileOutputStream(outFile)) {
                     imageLoader.save(fos, imageType);
@@ -700,4 +685,22 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
             return String.format("L.latLngBounds(L.latLng(%f, %f), L.latLng(%f, %f))", north, east, south, west);
         }
     }
+
+    private ImageData captureBrowserImage() {
+        ImageData imageData; 
+        if (RuntimeUtils.isWindows()) {
+            imageData = GISBrowserImageUtils.getControlScreenshotOnWindows(browser);
+        } else {
+            Image image = new Image(Display.getDefault(), browser.getBounds());
+            GC gc = new GC(image);
+            try {
+                browser.print(gc);
+            } finally {
+                gc.dispose();
+            }
+            imageData = image.getImageData();
+        }
+        return imageData;
+    }
+
 }

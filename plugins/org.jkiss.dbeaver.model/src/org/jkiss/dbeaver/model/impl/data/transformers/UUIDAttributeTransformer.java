@@ -21,13 +21,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.ProxyValueHandler;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentBytes;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -85,8 +81,11 @@ public class UUIDAttributeTransformer implements DBDAttributeTransformer {
             byte[] bytes = null;
             if (value instanceof byte[]) {
                 bytes = (byte[]) value;
-            } else if (value instanceof JDBCContentBytes) {
-                bytes = ((JDBCContentBytes) value).getRawValue();
+            } else if (value instanceof DBDContentCached) {
+                Object cachedValue = ((DBDContentCached) value).getCachedValue();
+                if (cachedValue instanceof byte[]) {
+                    bytes = (byte[]) cachedValue;
+                }
             }
             if (bytes != null) {
                 if (bytes.length < 16) {

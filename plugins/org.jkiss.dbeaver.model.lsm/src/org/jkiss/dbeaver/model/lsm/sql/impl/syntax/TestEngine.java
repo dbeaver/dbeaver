@@ -17,30 +17,21 @@
 package org.jkiss.dbeaver.model.lsm.sql.impl.syntax;
 
 import org.jkiss.dbeaver.model.lsm.*;
-import org.jkiss.dbeaver.model.lsm.sql.dialect.Sql92Dialect;
+import org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzer;
+import org.jkiss.dbeaver.model.stm.STMSource;
 
-import java.io.IOException;
 import java.io.StringReader;
-import java.util.concurrent.ExecutionException;
 
 
 public class TestEngine {
 
     public static void main(String[] args) throws Exception {
-        try {
-            LSMSource source = LSMSource.fromReader(new StringReader("SELECT a, b, c FROM t1 x, t2 y"));
-            
-            LSMDialect dd = Sql92Dialect.getInstance();
-            
-            LSMAnalysisCase<LSMElement, ?> selectStmtAnalysisCase = dd.findAnalysisCase(LSMElement.class);
-            
-            LSMAnalysis<LSMElement> analysis = dd.prepareAnalysis(source, selectStmtAnalysisCase).get();
-            
-            LSMElement model = analysis.getModel().get();
-            
-            System.out.println(model);
-        } catch (IOException | InterruptedException | ExecutionException ex) {
-            ex.printStackTrace();
-        }
+        STMSource source = STMSource.fromReader(new StringReader("SELECT a, b, c FROM t1 x, t2 y"));
+        
+        LSMAnalyzer dd = new SQLStandardAnalyzer();
+        
+        LSMElement model = dd.parseSqlQueryModel(source);
+        
+        System.out.println(model);
     }
 }

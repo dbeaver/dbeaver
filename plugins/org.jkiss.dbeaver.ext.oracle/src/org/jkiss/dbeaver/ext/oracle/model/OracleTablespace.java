@@ -284,6 +284,10 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
         return null;
     }
 
+    public FileCache getFileCache() {
+        return fileCache;
+    }
+
     @Association
     public Collection<OracleSegment<OracleTablespace>> getSegments(DBRProgressMonitor monitor) throws DBException
     {
@@ -297,6 +301,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
         usedSize = null;
         fileCache.clearCache();
         segmentCache.clearCache();
+        getDataSource().resetStatistics();
         return this;
     }
 
