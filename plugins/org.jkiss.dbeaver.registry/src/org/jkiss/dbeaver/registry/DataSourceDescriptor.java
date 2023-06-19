@@ -1162,9 +1162,8 @@ public class DataSourceDescriptor
                     false
                 );
                 if (dbpAuthInfo != null) {
-                    if (rc.equals(DBWTunnel.AuthCredentials.PASSWORD)) {
-                        tunnelConfiguration.setProperty(getJumpServerSettingsPrefix(0) + DBConstants.PROP_ID_NAME, //$NON
-                            // -NLS-1$
+                    if (rc.equals(DBWTunnel.AuthCredentials.CREDENTIALS)) {
+                        tunnelConfiguration.setProperty(getJumpServerSettingsPrefix(0) + DBConstants.PROP_ID_NAME, //$NON-NLS-1$
                             dbpAuthInfo.getUserName()
                         );
                     }
