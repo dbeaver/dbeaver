@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.rm.RMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.registry.DataSourceConfigurationManager;
 import org.jkiss.dbeaver.registry.DataSourceConfigurationManagerBuffer;
 import org.jkiss.dbeaver.registry.DataSourceFolder;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
@@ -39,11 +38,7 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
     private final RMController rmController;
 
     public DataSourceRegistryRM(DBPProject project, @NotNull RMController rmController) {
-        this(project, rmController, new DataSourceConfigurationManagerRM(project, rmController));
-    }
-
-    public DataSourceRegistryRM(DBPProject project, @NotNull RMController rmController, @NotNull DataSourceConfigurationManager manager) {
-        super(project, manager);
+        super(project, new DataSourceConfigurationManagerRM(project, rmController));
         this.rmController = rmController;
 
         // We shouldn't refresh config on update events

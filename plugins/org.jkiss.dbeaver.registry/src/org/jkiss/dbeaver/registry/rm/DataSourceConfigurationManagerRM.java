@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.rm.RMController;
 import org.jkiss.dbeaver.registry.DataSourceConfigurationManager;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -59,7 +58,7 @@ public class DataSourceConfigurationManagerRM implements DataSourceConfiguration
 
     @Override
     public boolean isSecure() {
-        return DBWorkbench.isDistributed();
+        return true;
     }
 
     @Override
