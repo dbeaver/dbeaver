@@ -106,8 +106,8 @@ public class EditorUtils {
         } else if (editorInput instanceof IPathEditorInput) {
             final IPath path = ((IPathEditorInput) editorInput).getPath();
             return path == null ? null : ResourceUtils.convertPathToWorkspaceFile(path);
-        } else if (editorInput instanceof INonPersistentEditorInput) {
-            IFile file = (IFile) ((INonPersistentEditorInput) editorInput).getProperty(PROP_INPUT_FILE);
+        } else if (editorInput instanceof IInMemoryEditorInput) {
+            IFile file = (IFile) ((IInMemoryEditorInput) editorInput).getProperty(PROP_INPUT_FILE);
             if (file != null) {
                 return file;
             }
@@ -200,15 +200,15 @@ public class EditorUtils {
     }
 
     public static DatabaseEditorContext getEditorContext(IEditorInput editorInput) {
-        if (editorInput instanceof INonPersistentEditorInput) {
-            return (DatabaseEditorContext) ((INonPersistentEditorInput) editorInput).getProperty(PROP_EDITOR_CONTEXT);
+        if (editorInput instanceof IInMemoryEditorInput) {
+            return (DatabaseEditorContext) ((IInMemoryEditorInput) editorInput).getProperty(PROP_EDITOR_CONTEXT);
         }
         return null;
     }
 
     public static DBCExecutionContext getInputExecutionContext(IEditorInput editorInput) {
-        if (editorInput instanceof INonPersistentEditorInput) {
-            return (DBCExecutionContext) ((INonPersistentEditorInput) editorInput).getProperty(PROP_EXECUTION_CONTEXT);
+        if (editorInput instanceof IInMemoryEditorInput) {
+            return (DBCExecutionContext) ((IInMemoryEditorInput) editorInput).getProperty(PROP_EXECUTION_CONTEXT);
         }
         return null;
     }
@@ -220,8 +220,8 @@ public class EditorUtils {
                 return object.getDataSource().getContainer();
             }
             return null;
-        } else if (editorInput instanceof INonPersistentEditorInput) {
-            return (DBPDataSourceContainer) ((INonPersistentEditorInput) editorInput).getProperty(PROP_SQL_DATA_SOURCE_CONTAINER);
+        } else if (editorInput instanceof IInMemoryEditorInput) {
+            return (DBPDataSourceContainer) ((IInMemoryEditorInput) editorInput).getProperty(PROP_SQL_DATA_SOURCE_CONTAINER);
         } else {
             IFile file = getFileFromInput(editorInput);
             if (file != null) {
@@ -257,10 +257,10 @@ public class EditorUtils {
         String defaultDatasource = null;
         String defaultCatalogName = null;
         String defaultSchema = null;
-        if (editorInput instanceof INonPersistentEditorInput) {
-            defaultDatasource = (String) ((INonPersistentEditorInput) editorInput).getProperty(PROP_CONTEXT_DEFAULT_DATASOURCE);
-            defaultCatalogName = (String) ((INonPersistentEditorInput) editorInput).getProperty(PROP_CONTEXT_DEFAULT_CATALOG);
-            defaultSchema= (String) ((INonPersistentEditorInput) editorInput).getProperty(PROP_CONTEXT_DEFAULT_SCHEMA);
+        if (editorInput instanceof IInMemoryEditorInput) {
+            defaultDatasource = (String) ((IInMemoryEditorInput) editorInput).getProperty(PROP_CONTEXT_DEFAULT_DATASOURCE);
+            defaultCatalogName = (String) ((IInMemoryEditorInput) editorInput).getProperty(PROP_CONTEXT_DEFAULT_CATALOG);
+            defaultSchema= (String) ((IInMemoryEditorInput) editorInput).getProperty(PROP_CONTEXT_DEFAULT_SCHEMA);
         } else {
             IFile file = getFileFromInput(editorInput);
             if (file != null) {
@@ -313,25 +313,25 @@ public class EditorUtils {
         @NotNull IEditorInput editorInput,
         @NotNull DatabaseEditorContext context)
     {
-        if (editorInput instanceof INonPersistentEditorInput) {
-            ((INonPersistentEditorInput) editorInput).setProperty(PROP_EDITOR_CONTEXT, context);
+        if (editorInput instanceof IInMemoryEditorInput) {
+            ((IInMemoryEditorInput) editorInput).setProperty(PROP_EDITOR_CONTEXT, context);
             DBCExecutionContext executionContext = context.getExecutionContext();
             if (executionContext != null) {
-                ((INonPersistentEditorInput) editorInput).setProperty(PROP_EXECUTION_CONTEXT, executionContext);
+                ((IInMemoryEditorInput) editorInput).setProperty(PROP_EXECUTION_CONTEXT, executionContext);
             }
             DBPDataSourceContainer dataSourceContainer = context.getDataSourceContainer();
             if (dataSourceContainer != null) {
-                ((INonPersistentEditorInput) editorInput).setProperty(PROP_SQL_DATA_SOURCE_CONTAINER, dataSourceContainer);
+                ((IInMemoryEditorInput) editorInput).setProperty(PROP_SQL_DATA_SOURCE_CONTAINER, dataSourceContainer);
             }
             if (!isDefaultContextSettings(context)) {
                 if (dataSourceContainer != null) {
-                    ((INonPersistentEditorInput) editorInput).setProperty(PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceContainer.getId());
+                    ((IInMemoryEditorInput) editorInput).setProperty(PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceContainer.getId());
                 }
                 String catalogName = getDefaultCatalogName(context);
-                if (catalogName != null) ((INonPersistentEditorInput) editorInput).setProperty(PROP_CONTEXT_DEFAULT_CATALOG, getDefaultCatalogName(context));
+                if (catalogName != null) ((IInMemoryEditorInput) editorInput).setProperty(PROP_CONTEXT_DEFAULT_CATALOG, getDefaultCatalogName(context));
                 String schemaName = getDefaultSchemaName(context);
                 if (schemaName != null) {
-                    ((INonPersistentEditorInput) editorInput).setProperty(PROP_CONTEXT_DEFAULT_SCHEMA, schemaName);
+                    ((IInMemoryEditorInput) editorInput).setProperty(PROP_CONTEXT_DEFAULT_SCHEMA, schemaName);
                 }
             }
             return;
@@ -351,14 +351,14 @@ public class EditorUtils {
 
     /**
      * Associated inout file with editor input.
-     * Can be used with INonPersistentEditorInput only.
+     * Can be used with IInMemoryEditorInput only.
      */
     public static void setInputInputFile(
         @NotNull IEditorInput editorInput,
         @NotNull IFile file
     ) {
-        if (editorInput instanceof INonPersistentEditorInput) {
-            ((INonPersistentEditorInput) editorInput).setProperty(PROP_INPUT_FILE, file);
+        if (editorInput instanceof IInMemoryEditorInput) {
+            ((IInMemoryEditorInput) editorInput).setProperty(PROP_INPUT_FILE, file);
         }
     }
 
