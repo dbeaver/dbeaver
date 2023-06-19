@@ -1068,6 +1068,6 @@ public class CommonUtils {
      */
     @NotNull
     public static String normalizeTableNames(@NotNull String sql, @Nullable String prefix) {
-        return sql.replaceAll("\\{table_prefix}", prefix == null ? "" : prefix + ".");
+        return sql.replaceAll("\\{table_prefix}", isEmpty(prefix) ? "" : prefix + ".");
     }
 }
