@@ -144,7 +144,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         // Windows: %AppData%/DBeaverData
         // MacOS: ~/Library/DBeaverData
         // Linux: $XDG_DATA_HOME/DBeaverData
-        String workingDirectory = IOUtils.getWorkingDirectory(defaultWorkspaceLocation);
+        String workingDirectory = RuntimeUtils.getWorkingDirectory(defaultWorkspaceLocation);
 
         // Workspace dir
         WORKSPACE_DIR_6 = new File(workingDirectory, defaultAppWorkspaceName).getAbsolutePath();
