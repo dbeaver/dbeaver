@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
@@ -49,6 +50,7 @@ import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionNameResolver;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageGeneral;
 import org.jkiss.dbeaver.ui.dialogs.connection.NavigatorSettingsStorage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -58,6 +60,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.connections";
 
     private static final String VALUE_TRUST_STRORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
+    private static final String HELP_CONNECTIONS_LINK = "Database-Connections";
     
     private CSmartCombo<DBPConnectionType> connectionTypeCombo;
     private Combo navigatorSettingsCombo;
@@ -161,6 +164,18 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
             addLinkToSettings(groupObjects, PrefPageMetaData.PAGE_ID);
             addLinkToSettings(groupObjects, PrefPageTransactions.PAGE_ID);
         }
+
+        Link urlHelpLabel = UIUtils.createLink(
+            composite,
+            "<a>" + CoreMessages.pref_page_connections_wiki_link + "</a>",
+            new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_CONNECTIONS_LINK));
+                }
+            });
+        GridData gridData = new GridData(GridData.FILL, SWT.END, true, true);
+        urlHelpLabel.setLayoutData(gridData);
 
         updateCombosAndSettings();
 
