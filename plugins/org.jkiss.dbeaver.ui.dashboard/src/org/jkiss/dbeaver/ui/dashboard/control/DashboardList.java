@@ -275,6 +275,24 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
             oldSelection.redraw();
         }
     }
+    
+    public void clear() {
+
+        DashboardList.this.setRedraw(false);
+        
+        selectedItem = null;
+        
+        for (DashboardItem item : items) {
+            item.dispose();
+        }
+        
+        items.clear();
+
+        getView().getViewConfiguration().clearDashboards();
+        
+        DashboardList.this.layout(true, true);
+        DashboardList.this.setRedraw(true);
+    }
 
     /////////////////////////////////////////////////////////////////////////////////
     // DnD

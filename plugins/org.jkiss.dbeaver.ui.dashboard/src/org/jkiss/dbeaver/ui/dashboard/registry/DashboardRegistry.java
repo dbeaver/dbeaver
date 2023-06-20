@@ -94,6 +94,8 @@ public class DashboardRegistry {
         } catch (Exception e) {
             log.error("Error loading dashboard configuration", e);
         }
+        
+        // WorkspaceConfigEventManager.addConfigChangedListener(CONFIG_FILE_NAME, o -> loadConfigFromFile());
     }
 
     private void loadConfigFromFile() throws XMLException, DBException {

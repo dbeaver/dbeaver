@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class DashboardListViewer extends StructuredViewer implements DBPDataSourceContainerProvider, DashboardViewContainer {
 
@@ -76,6 +77,8 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
             }
             isolatedContext = null;
         }
+        
+        // WorkspaceConfigEventManager.remove ConfigChangedListener(DashboardRegistry.CONFIG_FILE_NAME, dashboardsConfigChangedListener);
     }
 
     @Override
@@ -98,10 +101,16 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
         updateStatus();
 
     }
+    
+    private Consumer<Object> dashboardsConfigChangedListener = o -> {
+        dashContainer.clear();
+        dashContainer.createDefaultDashboards();
+    };
 
     public void createDashboardsFromConfiguration() {
         if (viewConfiguration.getDashboardItemConfigs().isEmpty()) {
             dashContainer.createDefaultDashboards();
+            // WorkspaceConfigEventManager.addConfigChangedListener(DashboardRegistry.CONFIG_FILE_NAME, dashboardsConfigChangedListener); 
         } else {
             dashContainer.createDashboardsFromConfiguration();
         }
