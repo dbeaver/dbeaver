@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialectDDLExtension;
+import org.jkiss.dbeaver.model.sql.SQLDialectSchemaController;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLMultiWordRule;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLVariableRule;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
@@ -43,7 +44,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
-public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, SQLDialectDDLExtension {
+public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, SQLDialectDDLExtension, SQLDialectSchemaController {
 
     private static final String[][] TSQL_BEGIN_END_BLOCK = new String[][]{
         {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END}
@@ -394,8 +395,33 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
         return SQLServerConstants.TYPE_VARCHAR + "(max)";
     }
 
+    @NotNull
+    @Override
+    public String getUuidDataType() {
+        return SQLServerConstants.TYPE_UNIQUEIDENTIFIER;
+    }
+
+    @NotNull
+    @Override
+    public String getBooleanDataType() {
+        return SQLServerConstants.TYPE_BIT;
+    }
+
     @Override
     public boolean needsDefaultDataTypes() {
         return false;
+    }
+
+    @NotNull
+    @Override
+    public String getSchemaExistQuery(@NotNull String schemaName) {
+        // version is at least 2005
+        return "SELECT 1 FROM sys.schemas WHERE name = " + getQuotedString(schemaName);
+    }
+
+    @NotNull
+    @Override
+    public String getCreateSchemaQuery(@NotNull String schemaName) {
+        return "CREATE SCHEMA " + schemaName;
     }
 }
