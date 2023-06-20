@@ -455,10 +455,7 @@ public class EditorUtils {
 
     public static IEditorPart openExternalFileEditor(File file, IWorkbenchWindow window) {
         try {
-            IEditorDescriptor desc = window.getWorkbench().getEditorRegistry().getDefaultEditor(file.getName());
-            if (desc == null) {
-                desc = window.getWorkbench().getEditorRegistry().getDefaultEditor(file.getName() + ".txt");
-            }
+            IEditorDescriptor desc = getFileEditorDescriptor(file, window);
             IFileStore fileStore = EFS.getStore(file.toURI());
             IEditorInput input = new FileStoreEditorInput(fileStore);
             return IDE.openEditor(window.getActivePage(), input, desc.getId());
@@ -466,6 +463,18 @@ public class EditorUtils {
             log.error("Can't open editor from file '" + file.getAbsolutePath(), e);
             return null;
         }
+    }
+
+    @NotNull
+    public static IEditorDescriptor getFileEditorDescriptor(@NotNull File file, @NotNull IWorkbenchWindow window) {
+        IEditorDescriptor desc = window.getWorkbench().getEditorRegistry().getDefaultEditor(file.getName());
+        if (desc == null) {
+            desc = window.getWorkbench().getEditorRegistry().getDefaultEditor(file.getName() + ".txt");
+        }
+        if (desc == null) {
+            desc = window.getWorkbench().getEditorRegistry().findEditor(IEditorRegistry.SYSTEM_EXTERNAL_EDITOR_ID);
+        }
+        return desc;
     }
 
     public static boolean isInAutoSaveJob() {
