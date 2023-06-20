@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericSynonym;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
@@ -54,6 +55,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
@@ -576,10 +578,16 @@ public class AltibaseMetaModel extends GenericMetaModel {
     @Override
     public GenericUniqueKey createConstraintImpl(GenericTableBase table, String constraintName, 
             DBSEntityConstraintType constraintType, JDBCResultSet dbResult, boolean persisted) {
-        String condition = constraintType.equals(DBSEntityConstraintType.CHECK) ? 
-                JDBCUtils.safeGetString(dbResult, "CHECK_CONDITION") : "";
-        boolean validated = JDBCUtils.safeGetString(dbResult, "VALIDATED").equals("T");
-        return new AltibaseConstraint(table, constraintName, null, constraintType, persisted, condition, validated);
+        
+        if (dbResult != null) {            
+            String condition = constraintType.equals(DBSEntityConstraintType.CHECK) ? 
+                    JDBCUtils.safeGetString(dbResult, "CHECK_CONDITION") : "";
+            boolean validated = JDBCUtils.safeGetString(dbResult, "VALIDATED").equals("T");
+            return new AltibaseConstraint(table, constraintName, null, constraintType, persisted, condition, validated);
+        }
+        else {
+            return super.createConstraintImpl(table, constraintName, constraintType, dbResult, persisted);
+        }
     }
 
     @Override
@@ -1030,4 +1038,45 @@ public class AltibaseMetaModel extends GenericMetaModel {
 
         return hasDbmsMetadataPacakge;
     }
+    
+    @Override
+    public GenericTableBase createTableImpl(
+            GenericStructContainer container,
+            @Nullable String tableName,
+            @Nullable String tableType,
+            @Nullable JDBCResultSet dbResult)
+        {
+            if (tableType != null && isView(tableType)) {
+                return new AltibaseView(
+                    container,
+                    tableName,
+                    tableType,
+                    dbResult);
+            }
+
+            return new AltibaseTable(
+                container,
+                tableName,
+                tableType,
+                dbResult);
+        }
+    
+    public AltibaseTableIndex createIndexImpl(
+            GenericTableBase table,
+            boolean nonUnique,
+            String qualifier,
+            long cardinality,
+            String indexName,
+            DBSIndexType indexType,
+            boolean persisted)
+        {
+            return new AltibaseTableIndex(
+                table,
+                nonUnique,
+                qualifier,
+                cardinality,
+                indexName,
+                indexType,
+                persisted);
+        }
 }

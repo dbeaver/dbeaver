@@ -22,53 +22,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
-public class AltibaseView extends GenericView implements AltibaseTableBase, DBSObjectWithScript, DBSView {
-
+public class AltibaseView extends GenericView implements DBSObjectWithScript, DBSView {
+    
     public AltibaseView(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
     }
-
-    /*
-    private String ownerName;
-    private Map<String, String> columnDomainTypes;
-
-    public AltibaseView(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
-        super(container, tableName, tableType, dbResult);
-
-        if (dbResult != null) {
-            ownerName = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$OWNER_NAME");
-        }
-    }
-
-    @Override
-    public boolean isView() {
-        return true;
-    }
-
-    @Property(viewable = true, order = 20)
-    public String getSchemaName() {
-        return ownerName;
-    }
-
-    @Override
-    public synchronized List<AltibaseTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        Collection<? extends GenericTableColumn> childColumns = super.getAttributes(monitor);
-        if (childColumns == null) {
-            return Collections.emptyList();
-        }
-        List<AltibaseTableColumn> columns = new ArrayList<>();
-        for (GenericTableColumn gtc : childColumns) {
-            columns.add((AltibaseTableColumn) gtc);
-        }
-        columns.sort(DBUtils.orderComparator());
-        return columns;
-    }
-
-    public String getColumnDomainType(DBRProgressMonitor monitor, AltibaseTableColumn column) throws DBException {
-        if (columnDomainTypes == null) {
-            columnDomainTypes = AltibaseUtils.readColumnDomainTypes(monitor, this);
-        }
-        return columnDomainTypes.get(column.getName());
-    }
-     */
 }

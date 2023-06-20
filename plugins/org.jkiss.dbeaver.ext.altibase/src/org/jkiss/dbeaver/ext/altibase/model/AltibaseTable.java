@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-public class AltibaseTable extends GenericTable implements AltibaseTableBase, DBPNamedObject2 {
+public class AltibaseTable extends GenericTable implements DBPNamedObject2 {
 
     private static final Log log = Log.getLog(AltibaseTable.class);
 

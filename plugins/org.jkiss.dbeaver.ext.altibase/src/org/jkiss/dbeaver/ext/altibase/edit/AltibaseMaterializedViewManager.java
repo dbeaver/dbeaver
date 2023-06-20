@@ -18,7 +18,16 @@
 package org.jkiss.dbeaver.ext.altibase.edit;
 
 import org.jkiss.dbeaver.ext.generic.edit.GenericViewManager;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 
 public class AltibaseMaterializedViewManager extends GenericViewManager {
-
+    
+    @Override
+    public boolean canCreateObject(Object container) {
+        return false;
+    }
+    
+    protected String getDropViewType(GenericTableBase table) {
+        return "MATERIALIZED VIEW";
+    }
 }

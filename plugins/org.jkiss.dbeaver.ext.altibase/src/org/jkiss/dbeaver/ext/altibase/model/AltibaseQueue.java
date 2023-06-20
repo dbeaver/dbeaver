@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
-public class AltibaseQueue extends GenericTable implements AltibaseTableBase, DBPNamedObject2 {
+public class AltibaseQueue extends GenericTable implements DBPNamedObject2 {
 
     public AltibaseQueue(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);

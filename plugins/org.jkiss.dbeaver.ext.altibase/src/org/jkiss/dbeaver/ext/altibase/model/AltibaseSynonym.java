@@ -94,4 +94,8 @@ public class AltibaseSynonym extends GenericSynonym implements DBPScriptObject {
         }
         return ddl;
     }
+    
+    public boolean isPublic() {
+        return isPublic; 
+    }
 }
