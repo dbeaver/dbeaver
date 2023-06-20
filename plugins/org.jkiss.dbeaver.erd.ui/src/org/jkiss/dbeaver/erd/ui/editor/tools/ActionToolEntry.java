@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.erd.ui.editor.tools;
 
-import org.eclipse.gef3.Tool;
-import org.eclipse.gef3.palette.PaletteEntry;
-import org.eclipse.gef3.palette.ToolEntry;
-import org.eclipse.gef3.tools.SelectionTool;
+import org.eclipse.gef.Tool;
+import org.eclipse.gef.palette.PaletteEntry;
+import org.eclipse.gef.palette.ToolEntry;
+import org.eclipse.gef.tools.SelectionTool;
 import org.eclipse.jface.action.IAction;
 
 public class ActionToolEntry extends ToolEntry {

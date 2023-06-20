@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.erd.ui.part;
 
-import org.eclipse.draw2dl.ChopboxAnchor;
-import org.eclipse.draw2dl.ConnectionAnchor;
-import org.eclipse.draw2dl.IFigure;
-import org.eclipse.gef3.*;
-import org.eclipse.gef3.tools.DragEditPartsTracker;
+import org.eclipse.draw2d.ChopboxAnchor;
+import org.eclipse.draw2d.ConnectionAnchor;
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.gef.*;
+import org.eclipse.gef.tools.DragEditPartsTracker;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.graphics.Color;
