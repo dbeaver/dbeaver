@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.erd.ui.action;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.gef3.EditDomain;
+import org.eclipse.gef.EditDomain;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.handlers.HandlerUtil;

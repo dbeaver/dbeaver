@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.erd.ui.policy;
 
-import org.eclipse.draw2dl.geometry.Point;
-import org.eclipse.gef3.commands.Command;
-import org.eclipse.gef3.editpolicies.BendpointEditPolicy;
-import org.eclipse.gef3.requests.BendpointRequest;
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.gef.commands.Command;
+import org.eclipse.gef.editpolicies.BendpointEditPolicy;
+import org.eclipse.gef.requests.BendpointRequest;
 import org.jkiss.dbeaver.erd.ui.command.BendpointCreateCommand;
 import org.jkiss.dbeaver.erd.ui.command.BendpointDeleteCommand;
 import org.jkiss.dbeaver.erd.ui.command.BendpointMoveCommand;

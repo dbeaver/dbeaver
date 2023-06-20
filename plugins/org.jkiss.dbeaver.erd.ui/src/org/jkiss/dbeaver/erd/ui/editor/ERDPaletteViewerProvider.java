@@ -19,10 +19,10 @@
  */
 package org.jkiss.dbeaver.erd.ui.editor;
 
-import org.eclipse.gef3.EditDomain;
-import org.eclipse.gef3.dnd.TemplateTransferDragSourceListener;
-import org.eclipse.gef3.ui.palette.PaletteViewer;
-import org.eclipse.gef3.ui.palette.PaletteViewerProvider;
+import org.eclipse.gef.EditDomain;
+import org.eclipse.gef.dnd.TemplateTransferDragSourceListener;
+import org.eclipse.gef.ui.palette.PaletteViewer;
+import org.eclipse.gef.ui.palette.PaletteViewerProvider;
 
 /**
  * PaletteViewerProvider subclass used for initialising drag and drop

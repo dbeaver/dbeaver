@@ -19,10 +19,10 @@ package org.jkiss.dbeaver.ext.ui.svg;
 import org.apache.batik.ext.awt.image.codec.png.PNGImageWriter;
 import org.apache.batik.ext.awt.image.spi.ImageWriterRegistry;
 import org.apache.batik.svggen.SVGGraphics2D;
-import org.eclipse.draw2dl.Graphics;
-import org.eclipse.draw2dl.*;
-import org.eclipse.draw2dl.geometry.Rectangle;
-import org.eclipse.gef3.editparts.LayerManager;
+import org.eclipse.draw2d.Graphics;
+import org.eclipse.draw2d.*;
+import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.gef.editparts.LayerManager;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.ui.export.ERDExportFormatHandler;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
@@ -64,7 +64,7 @@ public class ERDExportSVG implements ERDExportFormatHandler {
             SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
             svgGenerator.setSVGCanvasSize(new Dimension(contentBounds.width, contentBounds.height));
 
-            // We need a converter from draw2dl.Graphics (.gef3) to awt.Graphics2D (Batik)
+            // We need a converter from draw2d.Graphics (.gef) to awt.Graphics2D (Batik)
             Graphics graphics = new GraphicsToGraphics2DAdaptor(svgGenerator);
 
             // Reset origin to make it the top/left most part of the diagram
