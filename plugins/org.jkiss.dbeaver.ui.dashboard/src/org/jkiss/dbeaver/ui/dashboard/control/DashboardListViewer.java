@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
+import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Collections;
@@ -78,7 +80,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
             isolatedContext = null;
         }
         
-        // WorkspaceConfigEventManager.remove ConfigChangedListener(DashboardRegistry.CONFIG_FILE_NAME, dashboardsConfigChangedListener);
+        WorkspaceConfigEventManager.addConfigChangedListener(DashboardRegistry.CONFIG_FILE_NAME, dashboardsConfigChangedListener);
     }
 
     @Override
@@ -110,7 +112,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     public void createDashboardsFromConfiguration() {
         if (viewConfiguration.getDashboardItemConfigs().isEmpty()) {
             dashContainer.createDefaultDashboards();
-            // WorkspaceConfigEventManager.addConfigChangedListener(DashboardRegistry.CONFIG_FILE_NAME, dashboardsConfigChangedListener); 
+            WorkspaceConfigEventManager.addConfigChangedListener(DashboardRegistry.CONFIG_FILE_NAME, dashboardsConfigChangedListener); 
         } else {
             dashContainer.createDashboardsFromConfiguration();
         }

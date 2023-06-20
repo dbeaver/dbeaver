@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.rm.RMConstants;
@@ -46,7 +47,7 @@ import java.util.*;
 public class DashboardRegistry {
     private static final Log log = Log.getLog(DashboardRegistry.class);
     
-    private static final String CONFIG_FILE_NAME = "dashboards.xml";
+    public static final String CONFIG_FILE_NAME = "dashboards.xml";
 
     private static DashboardRegistry instance = null;
 
@@ -95,7 +96,14 @@ public class DashboardRegistry {
             log.error("Error loading dashboard configuration", e);
         }
         
-        // WorkspaceConfigEventManager.addConfigChangedListener(CONFIG_FILE_NAME, o -> loadConfigFromFile());
+            WorkspaceConfigEventManager.addConfigChangedListener(CONFIG_FILE_NAME, o -> {
+                try {
+                    loadConfigFromFile();
+                } catch (XMLException | DBException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            });
     }
 
     private void loadConfigFromFile() throws XMLException, DBException {
