@@ -299,6 +299,9 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 // Wait
                 long startTime = System.currentTimeMillis();
                 while (txnIsolationLevelReadInProgress) {
+                    if (System.currentTimeMillis() - startTime > TXN_INFO_READ_TIMEOUT) {
+                        break;
+                    }
                     RuntimeUtils.pause(50);
                 }
             }
