@@ -73,7 +73,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         super(schema, dbResult);
         readSpecialProperties(dbResult);
 
-        this.partitioned = JDBCUtils.safeGetBoolean(dbResult, "PARTITIONED", "Y");
+        this.partitioned = JDBCUtils.safeGetBoolean(dbResult, "PARTITIONED", OracleConstants.RESULT_YES_VALUE);
         this.partitionCache = partitioned ? new PartitionCache() : null;
     }
 

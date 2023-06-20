@@ -25,11 +25,11 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModelDescriptor;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DatabaseURL;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -77,7 +77,7 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
-        return JDBCURL.generateUrlByTemplate(driver, connectionInfo);
+        return DatabaseURL.generateUrlByTemplate(driver, connectionInfo);
     }
 
     @NotNull

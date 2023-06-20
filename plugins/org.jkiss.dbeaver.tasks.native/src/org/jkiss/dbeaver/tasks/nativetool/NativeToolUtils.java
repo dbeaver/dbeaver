@@ -19,9 +19,9 @@ package org.jkiss.dbeaver.tasks.nativetool;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DatabaseURL;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -115,7 +115,7 @@ public abstract class NativeToolUtils {
             String url = connectionInfo.getUrl();
             String sampleUrl = dataSourceContainer.getDriver().getSampleURL();
             if (sampleUrl != null) {
-                DBPConnectionConfiguration config = JDBCURL.extractConfigurationFromUrl(sampleUrl, url);
+                DBPConnectionConfiguration config = DatabaseURL.extractConfigurationFromUrl(sampleUrl, url);
                 if (config != null) {
                     hostname = config.getHostName();
                     port = config.getHostPort();
