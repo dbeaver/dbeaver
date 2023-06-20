@@ -74,7 +74,7 @@ public enum WSEventType {
     RM_PROJECT_ADDED("cb_rm_project_added", WSEventTopic.PROJECTS, WSProjectUpdateEvent.class),
     RM_PROJECT_REMOVED("cb_rm_project_removed", WSEventTopic.PROJECTS, WSProjectUpdateEvent.class),
 
-    WORKSPACE_CONFIG_CHANGED("cb_workspace_config_changed", WSEventTopic.SERVER_CONFIG, WSWorkspaceConfigurationChangedEvent.class);
+    WORKSPACE_CONFIG_CHANGED("cb_workspace_config_changed", WSEventTopic.WORKSPACE_CONFIG, WSWorkspaceConfigurationChangedEvent.class);
 
     private final String eventId;
     private final WSEventTopic topic;
