@@ -801,6 +801,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             getContainer().getDriver().getDriverClassName());
     }
 
+    public boolean isSingleStoreDB() {
+        return MySQLConstants.DRIVER_CLASS_SINGLESTORE_DB.equals(
+            getContainer().getDriver().getDriverClassName());
+    }
+
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         if (isMariaDB()) {
