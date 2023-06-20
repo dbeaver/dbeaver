@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.erd.ui.command;
 
-import org.eclipse.draw2dl.geometry.Point;
+import org.eclipse.draw2d.geometry.Point;
 import org.jkiss.dbeaver.erd.ui.part.AssociationPart;
 
 

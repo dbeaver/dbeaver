@@ -1044,6 +1044,18 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
 
     @NotNull
     @Override
+    public String getUuidDataType() {
+        return PostgreConstants.TYPE_UUID;
+    }
+
+    @NotNull
+    @Override
+    public String getBooleanDataType() {
+        return PostgreConstants.TYPE_BOOLEAN;
+    }
+
+    @NotNull
+    @Override
     public String getSchemaExistQuery(@NotNull String schemaName) {
         return "SELECT 1 FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = " + getQuotedString(schemaName);
     }

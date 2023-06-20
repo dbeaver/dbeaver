@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.erd.ui.editor.tools;
 
-import org.eclipse.gef3.commands.Command;
-import org.eclipse.gef3.ui.actions.SelectionAction;
+import org.eclipse.gef.commands.Command;
+import org.eclipse.gef.ui.actions.SelectionAction;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
