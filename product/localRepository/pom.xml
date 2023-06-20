@@ -54,7 +54,12 @@
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jfreechart:LATEST</id></artifact>
 
 								<!-- SSH and BouncyCastle -->
-								<artifact><id>com.jcraft:jsch:0.2.8</id></artifact>
+								<artifact>
+									<id>com.jcraft:jsch:0.2.8</id>
+									<transitive>false</transitive>
+									<source>false</source>
+									<override>false</override>
+								</artifact>
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:LATEST</id></artifact>
 								<!-- Ant minimized -->
 								<artifact><id>org.jkiss.bundle:org.apache.ant:1.10.0</id></artifact>
