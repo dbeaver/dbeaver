@@ -36,6 +36,11 @@ public class DPIControllerImpl implements DPIController {
     }
 
     @Override
+    public String ping() throws DBException {
+        return "pong";
+    }
+
+    @Override
     public DPISession openSession() {
         return null;
     }
@@ -47,7 +52,7 @@ public class DPIControllerImpl implements DPIController {
     }
 
     @Override
-    public void closeSession(DPISession session) {
+    public void closeSession(@NotNull DPISession session) {
         server.stopServer();
     }
 

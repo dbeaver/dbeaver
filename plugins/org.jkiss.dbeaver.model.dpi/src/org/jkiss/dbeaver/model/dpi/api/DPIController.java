@@ -20,23 +20,30 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 
 /**
  * Detached data source proxy.
  */
 public interface DPIController extends AutoCloseable {
 
+    @ApiEndpoint
+    String ping() throws DBException;
+
     /**
      * Opens new session
      */
-    DPISession openSession() throws DBCFeatureNotSupportedException;
+    @ApiEndpoint
+    DPISession openSession() throws DBException;
 
+    @ApiEndpoint
     @NotNull
-    DBPDataSource openDataSource(@NotNull DPISession session, @NotNull DBPDataSourceContainer container)
+    DBPDataSource openDataSource(
+        @ApiParameter("session") @NotNull DPISession session,
+        @ApiParameter("container") @NotNull DBPDataSourceContainer container)
         throws DBException;
 
+    @ApiEndpoint
     // Closes session and terminates detached process when last session is closed
-    void closeSession(DPISession session);
+    void closeSession(@ApiParameter("session") @NotNull DPISession session) throws DBException;
 
 }

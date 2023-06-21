@@ -19,18 +19,16 @@ package org.jkiss.dbeaver.model.dpi.process;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.dpi.api.DPIController;
-import org.jkiss.dbeaver.model.dpi.api.DPISession;
 import org.jkiss.dbeaver.model.dpi.app.DPIApplication;
-import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
+import org.jkiss.dbeaver.model.dpi.client.RestUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,14 +37,15 @@ import java.util.Map;
 /**
  * Detached process controller
  */
-public class DPIProcessController implements DPIController {
+public class DPIProcessController implements AutoCloseable {
 
     private static final Log log = Log.getLog(DPIProcessController.class);
 
     public static final int PROCESS_PAWN_TIMEOUT = 10000;
+    private final DPIController dpiRestClient;
     private int dpiServerPort;
 
-    public static DPIController detachDatabaseProcess(DBRProgressMonitor monitor, DBPDataSourceContainer dataSourceContainer) throws IOException {
+    public static DPIProcessController detachDatabaseProcess(DBRProgressMonitor monitor, DBPDataSourceContainer dataSourceContainer) throws IOException {
         try {
             BundleProcessConfig processConfig = BundleConfigGenerator.generateBundleConfig(monitor, dataSourceContainer);
             return new DPIProcessController(processConfig);
@@ -95,9 +94,11 @@ public class DPIProcessController implements DPIController {
             throw new IOException("Child DPI process start is failed (" + process.exitValue() + ")");
         }
 
+        dpiRestClient = RestUtils.createRestClient(getRemoteEndpoint(), DPIController.class);
+
         try {
-            validateResetClient();
-        } catch (IOException e) {
+            validateRestClient();
+        } catch (DBException e) {
             terminateChildProcess();
             throw new IOException("Error connecting to DPI Server", e);
         }
@@ -107,43 +108,26 @@ public class DPIProcessController implements DPIController {
         this.process.destroyForcibly();
     }
 
-    private void validateResetClient() throws IOException {
+    private void validateRestClient() throws DBException {
         RuntimeUtils.pause(50);
 
-        URL dpiServerURL = new URL("http://localhost:" + dpiServerPort + "/");
-        log.debug("Connect to DPI Server " + dpiServerURL);
-        HttpURLConnection dpiConnection = (HttpURLConnection) dpiServerURL.openConnection();
-        try {
-            dpiConnection.setRequestMethod("POST");
-            dpiConnection.setRequestProperty("content-type", "text/json");
-            dpiConnection.setDoOutput(true);
-            dpiConnection.connect();
-            dpiConnection.getOutputStream().write("{ 'test': 1 }".getBytes());
-            Object response = dpiConnection.getContent();
-            log.debug(response);
-        }
-        catch (Throwable e) {
-            throw new IOException("Error pinging DPI server", e);
-        }
-        finally {
-            dpiConnection.disconnect();
-        }
-    }
+        String pingResult = dpiRestClient.ping();
+        log.debug("Server ping succeeded: " + pingResult);
 
-    @Override
-    public DPISession openSession() throws DBCFeatureNotSupportedException {
-        throw new DBCFeatureNotSupportedException();
+//        URL dpiServerURL = getRemoteEndpoint();
+//        log.debug("Connect to DPI Server " + dpiServerURL);
+//        RestClient client = new RestClient(dpiServerURL);
+//        Map<String, Object> request = Map.of("action", "ping");
+//        Map<String, Object> response = client.sendRequest(DPIEndpoints.ENDPOINT_PING, request);
     }
 
     @NotNull
-    @Override
-    public DBPDataSource openDataSource(@NotNull DPISession session, @NotNull DBPDataSourceContainer container) throws DBException {
-        throw new DBCFeatureNotSupportedException();
+    private URL getRemoteEndpoint() throws MalformedURLException {
+        return new URL("http://localhost:" + dpiServerPort + "/");
     }
 
-    @Override
-    public void closeSession(DPISession session) {
-
+    public DPIController getClient() {
+        return dpiRestClient;
     }
 
     @Override

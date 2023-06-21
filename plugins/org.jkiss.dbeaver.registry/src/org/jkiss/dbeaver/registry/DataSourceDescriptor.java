@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.dpi.api.DPIController;
 import org.jkiss.dbeaver.model.dpi.api.DPISession;
 import org.jkiss.dbeaver.model.dpi.process.DPIProcessController;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -1210,8 +1209,11 @@ public class DataSourceDescriptor
             }
         }
 
-        try (DPIController dpiController = DPIProcessController.detachDatabaseProcess(monitor, this)) {
-            DPISession session = dpiController.openSession();
+        try (DPIProcessController dpiController = DPIProcessController.detachDatabaseProcess(monitor, this)) {
+            DPISession session = dpiController.getClient().openSession();
+            if (session == null) {
+                throw new IllegalStateException("No session");
+            }
         } catch (Exception e) {
             log.debug("Error starting DPI child process", e);
         }
