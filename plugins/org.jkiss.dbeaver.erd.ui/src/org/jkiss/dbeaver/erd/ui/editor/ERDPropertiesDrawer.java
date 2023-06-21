@@ -19,14 +19,14 @@
  */
 package org.jkiss.dbeaver.erd.ui.editor;
 
-import org.eclipse.gef3.palette.PaletteDrawer;
-import org.eclipse.gef3.palette.SelectionToolEntry;
+import org.eclipse.gef.palette.PaletteDrawer;
+import org.eclipse.gef.palette.SelectionToolEntry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 
 /**
  * Experimental drawer.
- * Unfortunately it is not possible to customize drawer look-and-feel. All UI rendering is performed by .gef3.
+ * Unfortunately it is not possible to customize drawer look-and-feel. All UI rendering is performed by .gef.
  */
 public class ERDPropertiesDrawer extends PaletteDrawer
 {

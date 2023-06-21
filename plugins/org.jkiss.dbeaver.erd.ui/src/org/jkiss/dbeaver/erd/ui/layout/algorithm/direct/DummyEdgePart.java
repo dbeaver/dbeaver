@@ -20,9 +20,9 @@
  */
 package org.jkiss.dbeaver.erd.ui.layout.algorithm.direct;
 
-import org.eclipse.draw2dl.BendpointConnectionRouter;
-import org.eclipse.draw2dl.IFigure;
-import org.eclipse.draw2dl.PolylineConnection;
+import org.eclipse.draw2d.BendpointConnectionRouter;
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.PolylineConnection;
 
 
 /**

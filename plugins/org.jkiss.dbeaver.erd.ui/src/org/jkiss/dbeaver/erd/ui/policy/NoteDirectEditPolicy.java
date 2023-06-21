@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.erd.ui.policy;
 
-import org.eclipse.gef3.commands.Command;
-import org.eclipse.gef3.editpolicies.DirectEditPolicy;
-import org.eclipse.gef3.requests.DirectEditRequest;
+import org.eclipse.gef.commands.Command;
+import org.eclipse.gef.editpolicies.DirectEditPolicy;
+import org.eclipse.gef.requests.DirectEditRequest;
 import org.eclipse.jface.viewers.CellEditor;
 import org.jkiss.dbeaver.erd.ui.command.NoteSetTextCommand;
 import org.jkiss.dbeaver.erd.ui.part.NotePart;

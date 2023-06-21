@@ -17,7 +17,7 @@
 
 package org.jkiss.dbeaver.erd.ui;
 
-import org.eclipse.draw2dl.PrintFigureOperation;
+import org.eclipse.draw2d.PrintFigureOperation;
 import org.jkiss.dbeaver.ui.UIFonts;
 
 /**

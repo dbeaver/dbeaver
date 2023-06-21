@@ -414,16 +414,21 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
         @Override
         protected SQLServerTableBase fetchObject(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @NotNull JDBCResultSet dbResult) {
+            String name = JDBCUtils.safeGetString(dbResult, "name");
+            if (CommonUtils.isEmpty(name)) {
+                log.debug("Empty table name fetched");
+                return null;
+            }
             if (owner.getDataSource().supportsExternalTables(session) && JDBCUtils.safeGetBoolean(dbResult, "is_external")) {
-                return new SQLServerExternalTable(owner, dbResult);
+                return new SQLServerExternalTable(owner, dbResult, name);
             }
             String type = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
             if (SQLServerObjectType.U.name().equals(type) || SQLServerObjectType.S.name().equals(type)) {
-                return new SQLServerTable(owner, dbResult);
+                return new SQLServerTable(owner, dbResult, name);
             } else if (SQLServerObjectType.TT.name().equals(type)) {
-                return new SQLServerTableType(owner, dbResult);
+                return new SQLServerTableType(owner, dbResult, name);
             } else {
-                return new SQLServerView(owner, dbResult);
+                return new SQLServerView(owner, dbResult, name);
             }
         }
 

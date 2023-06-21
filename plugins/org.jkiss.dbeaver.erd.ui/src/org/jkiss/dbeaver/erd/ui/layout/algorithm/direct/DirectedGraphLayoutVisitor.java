@@ -20,14 +20,14 @@
  */
 package org.jkiss.dbeaver.erd.ui.layout.algorithm.direct;
 
-import org.eclipse.draw2dl.*;
-import org.eclipse.draw2dl.geometry.Dimension;
-import org.eclipse.draw2dl.geometry.Rectangle;
-import org.eclipse.draw2dl.graph.*;
-import org.eclipse.gef3.EditPart;
-import org.eclipse.gef3.GraphicalEditPart;
-import org.eclipse.gef3.editparts.AbstractConnectionEditPart;
-import org.eclipse.gef3.editparts.AbstractGraphicalEditPart;
+import org.eclipse.draw2d.*;
+import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.draw2d.graph.*;
+import org.eclipse.gef.EditPart;
+import org.eclipse.gef.GraphicalEditPart;
+import org.eclipse.gef.editparts.AbstractConnectionEditPart;
+import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.ui.layout.GraphAnimation;
 import org.jkiss.dbeaver.erd.ui.model.ERDDecorator;

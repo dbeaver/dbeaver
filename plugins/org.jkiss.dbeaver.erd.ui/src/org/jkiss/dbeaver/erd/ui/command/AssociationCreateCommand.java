@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.erd.ui.command;
 
-import org.eclipse.gef3.commands.Command;
+import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.*;

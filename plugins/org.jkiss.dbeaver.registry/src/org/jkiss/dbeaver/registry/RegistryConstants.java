@@ -58,6 +58,7 @@ public class RegistryConstants {
     public static final String ATTR_VALUE = "value"; //$NON-NLS-1$
     public static final String ATTR_ALIAS = "alias"; //$NON-NLS-1$
     public static final String ATTR_CLASS = "class"; //$NON-NLS-1$
+    public static final String ATTR_SNAPSHOT = "snapshot"; //$NON-NLS-1$
     public static final String ATTR_URL = "url"; //$NON-NLS-1$
     public static final String ATTR_LINK = "link"; //$NON-NLS-1$
     public static final String ATTR_SCOPE = "scope"; //$NON-NLS-1$
@@ -108,12 +109,17 @@ public class RegistryConstants {
     public static final String ATTR_DEFAULT_SCHEMA = "defaultSchema"; //$NON-NLS-1$
     public static final String ATTR_CONFIRM_EXECUTE = "confirmExecute"; //$NON-NLS-1$
     public static final String ATTR_CONFIRM_DATA_CHANGE = "confirmDataChange"; //$NON-NLS-1$
+    public static final String ATTR_SMART_COMMIT = "smartCommit"; //$NON-NLS-1$
+    public static final String ATTR_SMART_COMMIT_RECOVER = "smartCommitRecover"; //$NON-NLS-1$
     public static final String ATTR_AUTO_CLOSE_TRANSACTIONS = "autoCloseTransactions"; //$NON-NLS-1$
+    public static final String ATTR_CLOSE_TRANSACTIONS_PERIOD = "closeTransactionsPeriod"; //$NON-NLS-1$
     public static final String ATTR_PARENT = "parent"; //$NON-NLS-1$
     public static final String ATTR_GROUP = "group"; //$NON-NLS-1$
     public static final String ATTR_SINGLETON = "singleton"; //$NON-NLS-1$
     public static final String ATTR_IGNORE_ERRORS = "ignoreErrors"; //$NON-NLS-1$
     public static final String ATTR_DIALECT = "dialect"; //$NON-NLS-1$
+
+    public static final long DEFAULT_IDLE_TRANSACTION_PERIOD = 1800;
 
     public static final String ATTR_TARGET_ID = "targetID"; //$NON-NLS-1$
     public static final String ATTR_TYPE = "type"; //$NON-NLS-1$

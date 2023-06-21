@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.erd.ui.part;
 
-import org.eclipse.gef3.EditPart;
-import org.eclipse.gef3.GraphicalEditPart;
-import org.eclipse.gef3.RootEditPart;
-import org.eclipse.gef3.editparts.AbstractConnectionEditPart;
+import org.eclipse.gef.EditPart;
+import org.eclipse.gef.GraphicalEditPart;
+import org.eclipse.gef.RootEditPart;
+import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.erd.model.ERDObject;
 import org.jkiss.dbeaver.model.DBPNamedObject;

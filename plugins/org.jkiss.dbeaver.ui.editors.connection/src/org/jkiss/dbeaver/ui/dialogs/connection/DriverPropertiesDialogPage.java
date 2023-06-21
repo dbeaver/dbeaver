@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Link;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -79,6 +80,7 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
 
             hostPage.saveSettings(tempDataSource);
             tmpConnectionInfo.getProperties().putAll(activeDataSource.getConnectionConfiguration().getProperties());
+            DBPDriverSubstitutionDescriptor driverSubstitution = activeDataSource.getDriverSubstitution();
 
             try {
                 getSite().getRunnableContext().run(true, true, monitor -> {
@@ -87,7 +89,8 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
                         propertySource = propsControl.makeProperties(
                             monitor,
                             getSite().getDriver(),
-                            tmpConnectionInfo);
+                            tmpConnectionInfo,
+                            driverSubstitution);
                     } finally {
                         monitor.done();
                     }
