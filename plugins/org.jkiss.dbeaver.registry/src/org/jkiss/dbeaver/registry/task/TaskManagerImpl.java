@@ -296,6 +296,12 @@ public class TaskManagerImpl implements DBTTaskManager {
         return statisticsFolder;
     }
 
+    @NotNull
+    @Override
+    public Path getStatisticsFolder(@NotNull DBTTask task) {
+        return statisticsFolder.resolve(task.getId());
+    }
+
     @Override
     public Job runTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener, @NotNull Map<String, Object> options) {
         TaskRunJob runJob = new TaskRunJob((TaskImpl) task, Locale.getDefault(), listener);
