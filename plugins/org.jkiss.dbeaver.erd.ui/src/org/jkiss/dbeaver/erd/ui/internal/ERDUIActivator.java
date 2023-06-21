@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.erd.ui.internal;
 
-import org.eclipse.draw2dl.ColorProvider;
-import org.eclipse.gef3.internal.InternalImages;
+import org.eclipse.draw2d.ColorProvider;
+import org.eclipse.gef.internal.InternalImages;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
@@ -66,8 +66,6 @@ public class ERDUIActivator extends AbstractUIPlugin {
         // See http://www.jgraph.com/forum/viewtopic.php?t=4066
         System.setProperty("sun.java2d.d3d", Boolean.FALSE.toString()); //$NON-NLS-1$
 
-		// Set new E4 color provider
-		ColorProvider.SystemColorFactory.setColorProvider(new ERDDraw2dColorProvider());
 		// Overload GEF images
 		InternalImages.set(InternalImages.IMG_PALETTE, DBeaverIcons.getImage(UIIcon.PALETTE));
 		//InternalImages.set(InternalImages.IMG_PINNED, DBeaverIcons.getImage(UIIcon.PI));

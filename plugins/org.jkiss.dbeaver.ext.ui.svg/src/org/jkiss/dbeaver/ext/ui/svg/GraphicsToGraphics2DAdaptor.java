@@ -11,19 +11,19 @@
  *    		   uses GraphitiUiInternal.getWorkbenchService() instead of 
  *    		   GMF's DisplayUtils, does not implement the interface
  *    		   DrawableRenderedImage, since it is not needed.
- *    RaM - Remove/hide initial viewport/clipping area, so all .gef3 diagrams fit
+ *    RaM - Remove/hide initial viewport/clipping area, so all .gef diagrams fit
  *    			
  ****************************************************************************/
 
 package org.jkiss.dbeaver.ext.ui.svg;
 
-import org.eclipse.draw2dl.Graphics;
-import org.eclipse.draw2dl.SWTGraphics;
-import org.eclipse.draw2dl.TextUtilities;
-import org.eclipse.draw2dl.geometry.Dimension;
-import org.eclipse.draw2dl.geometry.Point;
-import org.eclipse.draw2dl.geometry.PointList;
-import org.eclipse.draw2dl.geometry.Rectangle;
+import org.eclipse.draw2d.Graphics;
+import org.eclipse.draw2d.SWTGraphics;
+import org.eclipse.draw2d.TextUtilities;
+import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.PointList;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
@@ -38,7 +38,7 @@ import java.awt.image.BufferedImage;
 import java.util.Stack;
 
 /**
- * Objects of this class can be used with draw2dl to render to a Graphics2D object.
+ * Objects of this class can be used with draw2d to render to a Graphics2D object.
  * 
  * @author jschofie / sshaw
  * 
@@ -312,7 +312,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#clipRect(org.eclipse.draw2dl.geometry.Rectangle )
+     * @see org.eclipse.draw2d.Graphics#clipRect(org.eclipse.draw2d.geometry.Rectangle )
      */
     @Override
     public void clipRect(Rectangle rect)
@@ -331,7 +331,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#dispose()
+     * @see org.eclipse.draw2d.Graphics#dispose()
      */
     @Override
     public void dispose()
@@ -359,7 +359,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#drawArc(int, int, int, int, int, int)
+     * @see org.eclipse.draw2d.Graphics#drawArc(int, int, int, int, int, int)
      */
     @Override
     public void drawArc(int x, int y, int width, int height, int startAngle, int endAngle)
@@ -374,7 +374,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#fillArc(int, int, int, int, int, int)
+     * @see org.eclipse.draw2d.Graphics#fillArc(int, int, int, int, int, int)
      */
     @Override
     public void fillArc(int x, int y, int w, int h, int offset, int length)
@@ -388,7 +388,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#drawFocus(int, int, int, int)
+     * @see org.eclipse.draw2d.Graphics#drawFocus(int, int, int, int)
      */
     @Override
     public void drawFocus(int x, int y, int w, int h)
@@ -454,7 +454,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#drawImage(org.eclipse.swt.graphics.Image, int, int)
+     * @see org.eclipse.draw2d.Graphics#drawImage(org.eclipse.swt.graphics.Image, int, int)
      */
     @Override
     public void drawImage(Image srcImage, int xpos, int ypos)
@@ -472,7 +472,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#drawImage(org.eclipse.swt.graphics.Image, int, int, int, int, int, int, int,
+     * @see org.eclipse.draw2d.Graphics#drawImage(org.eclipse.swt.graphics.Image, int, int, int, int, int, int, int,
      * int)
      */
     @Override
@@ -488,7 +488,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#drawLine(int, int, int, int)
+     * @see org.eclipse.draw2d.Graphics#drawLine(int, int, int, int)
      */
     @Override
     public void drawLine(int x1, int y1, int x2, int y2)
@@ -503,7 +503,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#drawOval(int, int, int, int)
+     * @see org.eclipse.draw2d.Graphics#drawOval(int, int, int, int)
      */
     @Override
     public void drawOval(int x, int y, int w, int h)
@@ -518,7 +518,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#fillOval(int, int, int, int)
+     * @see org.eclipse.draw2d.Graphics#fillOval(int, int, int, int)
      */
     @Override
     public void fillOval(int x, int y, int w, int h)
@@ -546,7 +546,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#drawPolygon(org.eclipse.draw2dl.geometry.PointList )
+     * @see org.eclipse.draw2d.Graphics#drawPolygon(org.eclipse.draw2d.geometry.PointList )
      */
     @Override
     public void drawPolygon(PointList pointList)
@@ -559,7 +559,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#fillPolygon(org.eclipse.draw2dl.geometry.PointList )
+     * @see org.eclipse.draw2d.Graphics#fillPolygon(org.eclipse.draw2d.geometry.PointList )
      */
     @Override
     public void fillPolygon(PointList pointList)
@@ -571,7 +571,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#drawPolyline(org.eclipse.draw2dl.geometry. PointList)
+     * @see org.eclipse.draw2d.Graphics#drawPolyline(org.eclipse.draw2d.geometry. PointList)
      */
     @Override
     public void drawPolyline(PointList pointList)
@@ -589,7 +589,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#drawRectangle(int, int, int, int)
+     * @see org.eclipse.draw2d.Graphics#drawRectangle(int, int, int, int)
      */
     @Override
     public void drawRectangle(int x, int y, int w, int h)
@@ -604,7 +604,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#fillRectangle(int, int, int, int)
+     * @see org.eclipse.draw2d.Graphics#fillRectangle(int, int, int, int)
      */
     @Override
     public void fillRectangle(int x, int y, int width, int height)
@@ -618,7 +618,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#drawRoundRectangle(org.eclipse.draw2dl.geometry .Rectangle, int, int)
+     * @see org.eclipse.draw2d.Graphics#drawRoundRectangle(org.eclipse.draw2d.geometry .Rectangle, int, int)
      */
     @Override
     public void drawRoundRectangle(Rectangle rect, int arcWidth, int arcHeight)
@@ -634,7 +634,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#fillRoundRectangle(org.eclipse.draw2dl.geometry .Rectangle, int, int)
+     * @see org.eclipse.draw2d.Graphics#fillRoundRectangle(org.eclipse.draw2d.geometry .Rectangle, int, int)
      */
     @Override
     public void fillRoundRectangle(Rectangle rect, int arcWidth, int arcHeight)
@@ -649,7 +649,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#drawText(java.lang.String, int, int)
+     * @see org.eclipse.draw2d.Graphics#drawText(java.lang.String, int, int)
      */
     @Override
     public void drawText(String s, int x, int y)
@@ -659,7 +659,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#drawString(java.lang.String, int, int)
+     * @see org.eclipse.draw2d.Graphics#drawString(java.lang.String, int, int)
      */
     @Override
     public void drawString(String s, int x, int y)
@@ -741,7 +741,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#fillString(java.lang.String, int, int)
+     * @see org.eclipse.draw2d.Graphics#fillString(java.lang.String, int, int)
      */
     @Override
     public void fillString(String s, int x, int y)
@@ -751,7 +751,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#fillText(java.lang.String, int, int)
+     * @see org.eclipse.draw2d.Graphics#fillText(java.lang.String, int, int)
      */
     @Override
     public void fillText(String s, int x, int y)
@@ -761,7 +761,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#getBackgroundColor()
+     * @see org.eclipse.draw2d.Graphics#getBackgroundColor()
      */
     @Override
     public Color getBackgroundColor()
@@ -771,7 +771,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#getClip(org.eclipse.draw2dl.geometry.Rectangle )
+     * @see org.eclipse.draw2d.Graphics#getClip(org.eclipse.draw2d.geometry.Rectangle )
      */
     @Override
     public Rectangle getClip(Rectangle rect)
@@ -789,7 +789,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#getFont()
+     * @see org.eclipse.draw2d.Graphics#getFont()
      */
     @Override
     public Font getFont()
@@ -799,7 +799,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#getFontMetrics()
+     * @see org.eclipse.draw2d.Graphics#getFontMetrics()
      */
     @Override
     public FontMetrics getFontMetrics()
@@ -809,7 +809,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#getForegroundColor()
+     * @see org.eclipse.draw2d.Graphics#getForegroundColor()
      */
     @Override
     public Color getForegroundColor()
@@ -819,7 +819,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#getLineStyle()
+     * @see org.eclipse.draw2d.Graphics#getLineStyle()
      */
     @Override
     public int getLineStyle()
@@ -829,7 +829,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#getLineWidth()
+     * @see org.eclipse.draw2d.Graphics#getLineWidth()
      */
     @Override
     public int getLineWidth()
@@ -845,7 +845,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#getXORMode()
+     * @see org.eclipse.draw2d.Graphics#getXORMode()
      */
     @Override
     public boolean getXORMode()
@@ -855,7 +855,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#popState()
+     * @see org.eclipse.draw2d.Graphics#popState()
      */
     @Override
     public void popState()
@@ -867,7 +867,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#pushState()
+     * @see org.eclipse.draw2d.Graphics#pushState()
      */
     @Override
     public void pushState()
@@ -882,7 +882,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#restoreState()
+     * @see org.eclipse.draw2d.Graphics#restoreState()
      */
     @Override
     public void restoreState()
@@ -928,7 +928,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#scale(double)
+     * @see org.eclipse.draw2d.Graphics#scale(double)
      */
     @Override
     public void scale(double amount)
@@ -938,7 +938,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#setBackgroundColor(org.eclipse.swt.graphics .Color)
+     * @see org.eclipse.draw2d.Graphics#setBackgroundColor(org.eclipse.swt.graphics .Color)
      */
     @Override
     public void setBackgroundColor(Color rgb)
@@ -949,7 +949,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#setClip(org.eclipse.draw2dl.geometry.Rectangle )
+     * @see org.eclipse.draw2d.Graphics#setClip(org.eclipse.draw2d.geometry.Rectangle )
      */
     @Override
     public void setClip(Rectangle rect)
@@ -999,7 +999,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#setFont(org.eclipse.swt.graphics.Font)
+     * @see org.eclipse.draw2d.Graphics#setFont(org.eclipse.swt.graphics.Font)
      */
     @Override
     public void setFont(Font f)
@@ -1035,7 +1035,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#setForegroundColor(org.eclipse.swt.graphics .Color)
+     * @see org.eclipse.draw2d.Graphics#setForegroundColor(org.eclipse.swt.graphics .Color)
      */
     @Override
     public void setForegroundColor(Color rgb)
@@ -1072,7 +1072,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#setLineStyle(int)
+     * @see org.eclipse.draw2d.Graphics#setLineStyle(int)
      */
     @Override
     public void setLineStyle(int style)
@@ -1110,7 +1110,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#setLineWidth(int)
+     * @see org.eclipse.draw2d.Graphics#setLineWidth(int)
      */
     @Override
     public void setLineWidth(int width)
@@ -1134,7 +1134,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#setXORMode(boolean)
+     * @see org.eclipse.draw2d.Graphics#setXORMode(boolean)
      */
     @Override
     public void setXORMode(boolean xorMode)
@@ -1157,7 +1157,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#translate(int, int)
+     * @see org.eclipse.draw2d.Graphics#translate(int, int)
      */
     @Override
     public void translate(int dx, int dy)
@@ -1190,7 +1190,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#fillGradient(int, int, int, int, boolean)
+     * @see org.eclipse.draw2d.Graphics#fillGradient(int, int, int, int, boolean)
      */
     @Override
     public void fillGradient(int x, int y, int w, int h, boolean vertical)
@@ -1221,7 +1221,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#drawPath(org.eclipse.swt.graphics.Path)
+     * @see org.eclipse.draw2d.Graphics#drawPath(org.eclipse.swt.graphics.Path)
      */
     @Override
     public void drawPath(Path path)
@@ -1234,7 +1234,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#fillPath(org.eclipse.swt.graphics.Path)
+     * @see org.eclipse.draw2d.Graphics#fillPath(org.eclipse.swt.graphics.Path)
      */
     @Override
     public void fillPath(Path path)
@@ -1246,7 +1246,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#setClip(org.eclipse.swt.graphics.Path)
+     * @see org.eclipse.draw2d.Graphics#setClip(org.eclipse.swt.graphics.Path)
      */
     @Override
     public void setClip(Path path)
@@ -1269,7 +1269,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#getFillRule()
+     * @see org.eclipse.draw2d.Graphics#getFillRule()
      */
     @Override
     public int getFillRule()
@@ -1279,7 +1279,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#setFillRule(int)
+     * @see org.eclipse.draw2d.Graphics#setFillRule(int)
      */
     @Override
     public void setFillRule(int rule)
@@ -1338,7 +1338,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.gmf.runtime.draw2dl.ui.render.awt.internal.DrawableRenderedImage #allowDelayRender()
+     * @see org.eclipse.gmf.runtime.draw2d.ui.render.awt.internal.DrawableRenderedImage #allowDelayRender()
      */
     public boolean shouldAllowDelayRender()
     {
@@ -1347,7 +1347,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.gmf.runtime.draw2dl.ui.render.awt.internal.DrawableRenderedImage #getMaximumRenderSize()
+     * @see org.eclipse.gmf.runtime.draw2d.ui.render.awt.internal.DrawableRenderedImage #getMaximumRenderSize()
      */
     public Dimension getMaximumRenderSize()
     {
@@ -1366,7 +1366,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#getAntialias()
+     * @see org.eclipse.draw2d.Graphics#getAntialias()
      */
     @Override
     public int getAntialias()
@@ -1387,7 +1387,7 @@ public class GraphicsToGraphics2DAdaptor extends Graphics
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.draw2dl.Graphics#setAntialias(int)
+     * @see org.eclipse.draw2d.Graphics#setAntialias(int)
      */
     @Override
     public void setAntialias(int value)

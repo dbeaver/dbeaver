@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.erd.ui.dnd;
 
-import org.eclipse.gef3.requests.CreationFactory;
+import org.eclipse.gef.requests.CreationFactory;
 
 /**
  * Simple object creation factory

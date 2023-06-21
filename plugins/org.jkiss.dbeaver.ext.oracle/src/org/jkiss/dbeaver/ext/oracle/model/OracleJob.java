@@ -65,7 +65,7 @@ public class OracleJob extends OracleSchemaObject implements OracleSourceObject 
         this.instance = JDBCUtils.safeGetLong(resultSet, "INSTANCE");
         this.nlsEnv = JDBCUtils.safeGetString(resultSet, "NLS_ENV");
         this.action = JDBCUtils.safeGetString(resultSet, "WHAT");
-        this.broken = JDBCUtils.safeGetBoolean(resultSet, "BROKEN", "Y");
+        this.broken = JDBCUtils.safeGetBoolean(resultSet, "BROKEN", OracleConstants.RESULT_YES_VALUE);
     }
 
     public long getJob() {

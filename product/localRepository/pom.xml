@@ -44,10 +44,6 @@
 								<!-- ANTLR -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.antlr4:LATEST</id></artifact>
 
-								<!-- GEF3 -->
-								<artifact><id>org.eclipse.draw2dl.plugins:org.eclipse.draw2dl:3.12.100-SNAPSHOT</id></artifact>
-								<artifact><id>org.eclipse.gef3.plugins:org.eclipse.gef3:3.12.100-SNAPSHOT</id></artifact>
-
 								<!-- POI and dependencies -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.poi:LATEST</id></artifact>
 
@@ -58,7 +54,12 @@
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jfreechart:LATEST</id></artifact>
 
 								<!-- SSH and BouncyCastle -->
-								<artifact><id>com.jcraft:jsch:0.2.8</id></artifact>
+								<artifact>
+									<id>com.jcraft:jsch:0.2.8</id>
+									<transitive>false</transitive>
+									<source>false</source>
+									<override>false</override>
+								</artifact>
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:LATEST</id></artifact>
 								<!-- Ant minimized -->
 								<artifact><id>org.jkiss.bundle:org.apache.ant:1.10.0</id></artifact>
