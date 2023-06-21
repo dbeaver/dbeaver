@@ -17,11 +17,12 @@
 package org.jkiss.dbeaver.ext.altibase.model;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
-import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -50,25 +51,30 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
     private static final String[] ALTIBASE_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
             BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
             new String[]{
-                "CREATE", "ALTER", "DROP",
-                "ANALYZE", "VALIDATE",
+                "CREATE", "ALTER", "DROP", "ANALYZE", "VALIDATE",
             }
         );
     
     private static final String[] ALTIBASE_BLOCK_HEADERS = new String[] {
-            "DECLARE",
-            "PACKAGE"
+            "DECLARE", "PACKAGE"
     };
 
     private static final String[][] ALTIBASE_BEGIN_END_BLOCK = new String[][]{
         {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
         {"LOOP", SQLConstants.BLOCK_END + " LOOP"},
         {SQLConstants.KEYWORD_CASE, SQLConstants.BLOCK_END + " " + SQLConstants.KEYWORD_CASE},
+        {"AS", SQLConstants.BLOCK_END}, 
+        /* AS ... END;
+         * CREATE TYPESET type1
+            AS
+                TYPE rec1 IS RECORD (c1 INT, c2 INT);
+                TYPE arr1 IS TABLE OF rec1 INDEX BY INT;
+            END;
+         */
     };
     
     private static final String[] ALTIBASE_INNER_BLOCK_PREFIXES = new String[]{
-            "AS",
-            "IS"
+            "AS", "IS"
         };
 
     private static final String[] DDL_KEYWORDS = new String[] {
@@ -106,7 +112,6 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
             "BULK",
             "ELSIF",
             "EXIT",
-            "COMMENT",
     };
     
     public AltibaseSQLDialect() {
@@ -215,7 +220,15 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
         
         cachedDialectSkipTokenPredicates = makeDialectSkipTokenPredicates(dataSource);
     }
-
+    
+    @Override
+    protected void loadDataTypesFromDatabase(JDBCDataSource dataSource) {
+        super.loadDataTypesFromDatabase(dataSource);
+        addDataTypes(Stream.of(AltibaseDataTypeDomain.values())
+                .map(AltibaseDataTypeDomain::name)
+                .collect(Collectors.toList()));
+    }
+    
     @Nullable
     @Override
     public String getDualTableName() {

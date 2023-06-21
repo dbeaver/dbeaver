@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 
 import java.sql.Types;
+import java.util.List;
 
 public enum AltibaseDataTypeDomain {
     // char types
