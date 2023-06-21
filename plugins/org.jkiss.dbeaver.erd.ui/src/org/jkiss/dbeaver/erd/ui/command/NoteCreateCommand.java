@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.erd.ui.command;
 
-import org.eclipse.draw2dl.geometry.Dimension;
-import org.eclipse.draw2dl.geometry.Point;
-import org.eclipse.draw2dl.geometry.Rectangle;
-import org.eclipse.gef3.commands.Command;
+import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.erd.model.ERDNote;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.erd.ui.part.NotePart;

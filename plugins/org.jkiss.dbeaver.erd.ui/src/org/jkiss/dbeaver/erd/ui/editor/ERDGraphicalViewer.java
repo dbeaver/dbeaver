@@ -19,17 +19,17 @@
  */
 package org.jkiss.dbeaver.erd.ui.editor;
 
-import org.eclipse.draw2dl.FigureCanvas;
-import org.eclipse.draw2dl.geometry.Dimension;
-import org.eclipse.draw2dl.geometry.Rectangle;
-import org.eclipse.gef3.*;
-import org.eclipse.gef3.palette.PaletteContainer;
-import org.eclipse.gef3.palette.PaletteDrawer;
-import org.eclipse.gef3.palette.PaletteRoot;
-import org.eclipse.gef3.palette.ToolEntry;
-import org.eclipse.gef3.tools.SelectionTool;
-import org.eclipse.gef3.ui.parts.AbstractEditPartViewer;
-import org.eclipse.gef3.ui.parts.ScrollingGraphicalViewer;
+import org.eclipse.draw2d.FigureCanvas;
+import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.gef.*;
+import org.eclipse.gef.palette.PaletteContainer;
+import org.eclipse.gef.palette.PaletteDrawer;
+import org.eclipse.gef.palette.PaletteRoot;
+import org.eclipse.gef.palette.ToolEntry;
+import org.eclipse.gef.tools.SelectionTool;
+import org.eclipse.gef.ui.parts.AbstractEditPartViewer;
+import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
@@ -592,10 +592,10 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
     /**
      * Handler that provides horizontal scrolling using mouse wheel.
      *
-     * Copied from {@link org.eclipse.graphiti.ui.internal.util.gef3.MouseWheelHorizontalScrollHandler}
+     * Copied from {@link org.eclipse.graphiti.ui.internal.util.gef.MouseWheelHorizontalScrollHandler}
      *
      * @implNote this implementation differs from the source, since scrolling direction is inverted.
-     * @see org.eclipse.graphiti.ui.internal.util.gef3.MouseWheelHorizontalScrollHandler
+     * @see org.eclipse.graphiti.ui.internal.util.gef.MouseWheelHorizontalScrollHandler
      */
     private static class MouseWheelHorizontalScrollHandler implements MouseWheelHandler {
         public static final MouseWheelHandler SINGLETON = new MouseWheelHorizontalScrollHandler();
