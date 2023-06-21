@@ -83,7 +83,7 @@ public class ConfigurationImportWizard extends Wizard implements IImportWizard {
                     while (nextEntry != null) {
                         String name = nextEntry.getName();
                         Path configFilePath = workbench.resolve(name);
-                        if (!configFilePath.toFile().canWrite()) {
+                        if (!configFilePath.toFile().getParentFile().canWrite()) {
                             throw new IOException("Workspace directory is read-only");
                         }
                         if (configFilePath.toFile().exists()) {
