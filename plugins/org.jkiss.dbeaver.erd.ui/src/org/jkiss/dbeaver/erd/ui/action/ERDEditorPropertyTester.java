@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.erd.ui.action;
 
 import org.eclipse.core.expressions.PropertyTester;
-import org.eclipse.gef3.ui.actions.DeleteAction;
+import org.eclipse.gef.ui.actions.DeleteAction;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
 import org.jkiss.dbeaver.model.rm.RMConstants;

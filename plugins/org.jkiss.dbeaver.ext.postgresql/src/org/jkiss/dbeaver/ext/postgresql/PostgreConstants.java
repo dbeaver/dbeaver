@@ -117,6 +117,7 @@ public class PostgreConstants {
     public static final String TYPE_TIMETZ = "timetz";
     public static final String TYPE_TIMESTAMPTZ = "timestamptz";
     public static final String TYPE_XML = "xml";
+    public static final String TYPE_BOOLEAN = "boolean";
 
     public static final String HANDLER_SSL = "postgre_ssl";
 

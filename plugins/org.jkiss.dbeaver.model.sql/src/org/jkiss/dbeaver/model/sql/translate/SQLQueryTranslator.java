@@ -164,6 +164,16 @@ public class SQLQueryTranslator implements SQLTranslator {
                             newDataType = extendedDialect.getBigIntegerType();
                         }
                         break;
+                    case "UUID":
+                        if (extendedDialect != null) {
+                            newDataType = extendedDialect.getUuidDataType();
+                        }
+                        break;
+                    case "BOOLEAN":
+                        if (extendedDialect != null) {
+                            newDataType = extendedDialect.getBooleanDataType();
+                        }
+                        break;
                     default:
                         //no action
                         break;

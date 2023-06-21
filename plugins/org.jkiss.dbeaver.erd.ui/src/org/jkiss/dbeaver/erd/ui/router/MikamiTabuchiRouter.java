@@ -17,12 +17,12 @@
 package org.jkiss.dbeaver.erd.ui.router;
 
 
-import org.eclipse.draw2dl.Connection;
-import org.eclipse.draw2dl.IFigure;
-import org.eclipse.draw2dl.geometry.Point;
-import org.eclipse.draw2dl.geometry.PointList;
-import org.eclipse.draw2dl.geometry.PrecisionPoint;
-import org.eclipse.draw2dl.geometry.Rectangle;
+import org.eclipse.draw2d.Connection;
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.PointList;
+import org.eclipse.draw2d.geometry.PrecisionPoint;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;

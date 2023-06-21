@@ -19,14 +19,14 @@
  */
 package org.jkiss.dbeaver.erd.ui.directedit;
 
-import org.eclipse.draw2dl.IFigure;
-import org.eclipse.draw2dl.Label;
-import org.eclipse.gef3.EditPolicy;
-import org.eclipse.gef3.GraphicalEditPart;
-import org.eclipse.gef3.commands.Command;
-import org.eclipse.gef3.commands.CommandStack;
-import org.eclipse.gef3.tools.CellEditorLocator;
-import org.eclipse.gef3.tools.DirectEditManager;
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.Label;
+import org.eclipse.gef.EditPolicy;
+import org.eclipse.gef.GraphicalEditPart;
+import org.eclipse.gef.commands.Command;
+import org.eclipse.gef.commands.CommandStack;
+import org.eclipse.gef.tools.CellEditorLocator;
+import org.eclipse.gef.tools.DirectEditManager;
 import org.eclipse.jface.viewers.ICellEditorValidator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.VerifyEvent;
