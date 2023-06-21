@@ -201,7 +201,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             JSONUtils.field(jsonWriter, "auto-commit", ct.isAutocommit());
                             JSONUtils.field(jsonWriter, "confirm-execute", ct.isConfirmExecute());
                             JSONUtils.field(jsonWriter, "confirm-data-change", ct.isConfirmDataChange());
+                            JSONUtils.field(jsonWriter, "smart-commit", ct.isSmartCommit());
+                            JSONUtils.field(jsonWriter, "smart-commit-recover", ct.isSmartCommitRecover());
                             JSONUtils.field(jsonWriter, "auto-close-transactions", ct.isAutoCloseTransactions());
+                            JSONUtils.field(jsonWriter, "close-transactions-period", ct.getCloseIdleConnectionPeriod());
                             serializeModifyPermissions(jsonWriter, ct);
                             jsonWriter.endObject();
                         }
@@ -423,7 +426,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 Boolean autoCommit = JSONUtils.getObjectProperty(ctConfig, "auto-commit");
                 Boolean confirmExecute = JSONUtils.getObjectProperty(ctConfig, "confirm-execute");
                 Boolean confirmDataChange = JSONUtils.getObjectProperty(ctConfig, "confirm-data-change");
+                Boolean smartCommit = JSONUtils.getObjectProperty(ctConfig, "smart-commit");
+                Boolean smartCommitRecover = JSONUtils.getObjectProperty(ctConfig, "smart-commit-recover");
                 Boolean autoCloseTransactions = JSONUtils.getObjectProperty(ctConfig, "auto-close-transactions");
+                Object closeTransactionsPeriod = JSONUtils.getObjectProperty(ctConfig, "close-transactions-period");
                 DBPConnectionType ct = DBWorkbench.getPlatform().getDataSourceProviderRegistry().getConnectionType(id, null);
                 if (ct == null) {
                     ct = new DBPConnectionType(
@@ -434,7 +440,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         CommonUtils.toBoolean(autoCommit),
                         CommonUtils.toBoolean(confirmExecute),
                         CommonUtils.toBoolean(confirmDataChange),
-                        CommonUtils.toBoolean(autoCloseTransactions));
+                        CommonUtils.toBoolean(smartCommit),
+                        CommonUtils.toBoolean(smartCommitRecover),
+                        CommonUtils.toBoolean(autoCloseTransactions),
+                        CommonUtils.toLong(closeTransactionsPeriod, RegistryConstants.DEFAULT_IDLE_TRANSACTION_PERIOD));
                     DBWorkbench.getPlatform().getDataSourceProviderRegistry().addConnectionType(ct);
                 }
                 deserializeModifyPermissions(ctConfig, ct);

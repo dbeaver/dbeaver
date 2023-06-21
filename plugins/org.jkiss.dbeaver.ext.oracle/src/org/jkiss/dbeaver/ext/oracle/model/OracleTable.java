@@ -159,9 +159,9 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         }
         this.iotType = JDBCUtils.safeGetString(dbResult, "IOT_TYPE");
         this.iotName = JDBCUtils.safeGetString(dbResult, "IOT_NAME");
-        this.temporary = JDBCUtils.safeGetBoolean(dbResult, "TEMPORARY", "Y");
-        this.secondary = JDBCUtils.safeGetBoolean(dbResult, "SECONDARY", "Y");
-        this.nested = JDBCUtils.safeGetBoolean(dbResult, "NESTED", "Y");
+        this.temporary = JDBCUtils.safeGetBoolean(dbResult, OracleConstants.COLUMN_TEMPORARY, OracleConstants.RESULT_YES_VALUE);
+        this.secondary = JDBCUtils.safeGetBoolean(dbResult, "SECONDARY", OracleConstants.RESULT_YES_VALUE);
+        this.nested = JDBCUtils.safeGetBoolean(dbResult, "NESTED", OracleConstants.RESULT_YES_VALUE);
         if (!CommonUtils.isEmpty(iotName)) {
             //this.setName(iotName);
         }

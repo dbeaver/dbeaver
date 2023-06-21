@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.erd.ui.policy;
 
-import org.eclipse.draw2dl.geometry.Rectangle;
-import org.eclipse.gef3.commands.Command;
-import org.eclipse.gef3.editpolicies.ComponentEditPolicy;
-import org.eclipse.gef3.requests.GroupRequest;
+import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.gef.commands.Command;
+import org.eclipse.gef.editpolicies.ComponentEditPolicy;
+import org.eclipse.gef.requests.GroupRequest;
 import org.jkiss.dbeaver.erd.ui.command.NoteDeleteCommand;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.NotePart;

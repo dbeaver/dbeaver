@@ -17,9 +17,9 @@
 
 package org.jkiss.dbeaver.erd.ui.part;
 
-import org.eclipse.draw2dl.*;
-import org.eclipse.draw2dl.geometry.Rectangle;
-import org.eclipse.gef3.NodeEditPart;
+import org.eclipse.draw2d.*;
+import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.gef.NodeEditPart;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;

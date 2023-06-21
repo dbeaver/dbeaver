@@ -19,7 +19,7 @@
  */
 package org.jkiss.dbeaver.erd.ui.dnd;
 
-import org.eclipse.gef3.requests.CreationFactory;
+import org.eclipse.gef.requests.CreationFactory;
 
 /**
  * Factory for creating instances of new objects from a palette
@@ -42,7 +42,7 @@ public class DataElementFactory implements CreationFactory
 	}
 
 	/**
-	 * @see org.eclipse.gef3.requests.CreationFactory#getNewObject()
+	 * @see org.eclipse.gef.requests.CreationFactory#getNewObject()
 	 */
 	@Override
     public Object getNewObject()
@@ -58,7 +58,7 @@ public class DataElementFactory implements CreationFactory
 	}
 
 	/**
-	 * @see org.eclipse.gef3.requests.CreationFactory#getObjectType()
+	 * @see org.eclipse.gef.requests.CreationFactory#getObjectType()
 	 */
 	@Override
     public Object getObjectType()

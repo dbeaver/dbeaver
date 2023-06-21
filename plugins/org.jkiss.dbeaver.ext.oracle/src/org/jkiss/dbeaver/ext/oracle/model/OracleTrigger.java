@@ -96,7 +96,9 @@ public abstract class OracleTrigger<PARENT extends DBSObject> extends OracleObje
         this.columnName = JDBCUtils.safeGetString(dbResult, "COLUMN_NAME");
         this.refNames = JDBCUtils.safeGetString(dbResult, "REFERENCING_NAMES");
         this.whenClause = JDBCUtils.safeGetString(dbResult, "WHEN_CLAUSE");
-        this.status = CommonUtils.valueOf(OracleObjectStatus.class, JDBCUtils.safeGetStringTrimmed(dbResult, "STATUS"));
+        this.status = CommonUtils.valueOf(
+            OracleObjectStatus.class,
+            JDBCUtils.safeGetStringTrimmed(dbResult, OracleConstants.COLUMN_STATUS));
         this.description = JDBCUtils.safeGetString(dbResult, "DESCRIPTION");
         this.actionType = "CALL".equals(JDBCUtils.safeGetString(dbResult, "ACTION_TYPE")) ? ActionType.CALL : ActionType.PLSQL;
     }

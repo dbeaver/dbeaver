@@ -71,8 +71,8 @@ public class OracleDataFile extends OracleObject<OracleTablespace> {
         this.incrementBy = JDBCUtils.safeGetLong(dbResult, "INCREMENT_BY");
         this.userBytes = JDBCUtils.safeGetBigDecimal(dbResult, "USER_BYTES");
         this.userBlocks = JDBCUtils.safeGetBigDecimal(dbResult, "USER_BLOCKS");
-        this.autoExtensible = JDBCUtils.safeGetBoolean(dbResult, "AUTOEXTENSIBLE", "Y");
-        this.available = "AVAILABLE".equals(JDBCUtils.safeGetStringTrimmed(dbResult, "STATUS"));
+        this.autoExtensible = JDBCUtils.safeGetBoolean(dbResult, "AUTOEXTENSIBLE", OracleConstants.RESULT_YES_VALUE);
+        this.available = "AVAILABLE".equals(JDBCUtils.safeGetStringTrimmed(dbResult, OracleConstants.COLUMN_STATUS));
         if (!this.temporary) {
             this.onlineStatus = CommonUtils.valueOf(OnlineStatus.class, JDBCUtils.safeGetStringTrimmed(dbResult, "ONLINE_STATUS"));
         }

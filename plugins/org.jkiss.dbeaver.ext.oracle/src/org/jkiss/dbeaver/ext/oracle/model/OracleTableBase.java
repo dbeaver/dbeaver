@@ -94,10 +94,10 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     protected OracleTableBase(OracleSchema oracleSchema, ResultSet dbResult)
     {
         super(oracleSchema, true);
-        setName(JDBCUtils.safeGetString(dbResult, "OBJECT_NAME"));
-        this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
-        this.created = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
-        this.lastDDLTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_DDL_TIME");
+        setName(JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_NAME));
+        this.valid = OracleConstants.RESULT_STATUS_VALID.equals(JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_STATUS));
+        this.created = JDBCUtils.safeGetTimestamp(dbResult, OracleConstants.COLUMN_CREATED);
+        this.lastDDLTime = JDBCUtils.safeGetTimestamp(dbResult, OracleConstants.COLUMN_LAST_DDL_TIME);
         //this.comment = JDBCUtils.safeGetString(dbResult, "COMMENTS");
     }
 

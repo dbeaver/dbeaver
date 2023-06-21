@@ -66,7 +66,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     public static final String CONFIG_FOLDER = ".config";
     public static final String FILES_FOLDER = ".files";
 
-    private OSDescriptor localSystem;
+    protected OSDescriptor localSystem;
 
     private DBNModel navigatorModel;
 

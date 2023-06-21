@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.erd.ui.model;
 
 import org.eclipse.core.runtime.IAdapterFactory;
-import org.eclipse.gef3.EditPart;
+import org.eclipse.gef.EditPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.erd.model.ERDObject;

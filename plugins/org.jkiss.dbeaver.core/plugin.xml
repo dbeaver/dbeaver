@@ -1013,7 +1013,11 @@
 
         <page id="org.jkiss.dbeaver.preferences.main.toolbar.customization"
               class="org.jkiss.dbeaver.ui.preferences.PrefPageToolbarCustomization"
-              name="%org.jkiss.dbeaver.preferences.main.toolbar.customization.name"/>
+              name="%org.jkiss.dbeaver.preferences.main.toolbar.customization.name">
+            <enabledWhen>
+                <reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/>
+            </enabledWhen>
+        </page>
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">

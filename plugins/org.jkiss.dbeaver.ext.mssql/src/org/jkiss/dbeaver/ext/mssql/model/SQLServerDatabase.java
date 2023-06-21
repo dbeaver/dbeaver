@@ -72,10 +72,15 @@ public class SQLServerDatabase
 
     private Long databaseTotalSize;
 
-    SQLServerDatabase(JDBCSession session, SQLServerDataSource dataSource, JDBCResultSet resultSet) {
+    SQLServerDatabase(
+        @NotNull JDBCSession session,
+        @NotNull SQLServerDataSource dataSource,
+        @NotNull JDBCResultSet resultSet,
+        @NotNull String name
+    ) {
         this.dataSource = dataSource;
         this.databaseId = JDBCUtils.safeGetLong(resultSet, "database_id");
-        this.name = JDBCUtils.safeGetString(resultSet, "name");
+        this.name = name;
         //this.description = JDBCUtils.safeGetString(resultSet, "description");
 
         this.persisted = true;

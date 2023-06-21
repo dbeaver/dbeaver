@@ -1062,4 +1062,12 @@ public class CommonUtils {
             return string;
         }
     }
+
+    /**
+     * Sets prefix for sql queries params (f.e. schema names for tables)
+     */
+    @NotNull
+    public static String normalizeTableNames(@NotNull String sql, @Nullable String prefix) {
+        return sql.replaceAll("\\{table_prefix}", isEmpty(prefix) ? "" : prefix + ".");
+    }
 }
