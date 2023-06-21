@@ -12,7 +12,7 @@
         <dbeaver-version>23.1.1</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
         <tycho-version>3.0.1</tycho-version>
-        <eclipse-version>2023-03</eclipse-version>
+        <eclipse-version>2023-06</eclipse-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 

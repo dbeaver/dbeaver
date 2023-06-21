@@ -19,9 +19,9 @@
  */
 package org.jkiss.dbeaver.erd.ui.layout.algorithm.direct;
 
-import org.eclipse.draw2dl.graph.DirectedGraph;
-import org.eclipse.draw2dl.graph.DirectedGraphLayout;
-import org.eclipse.gef3.editparts.AbstractGraphicalEditPart;
+import org.eclipse.draw2d.graph.DirectedGraph;
+import org.eclipse.draw2d.graph.DirectedGraphLayout;
+import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 
 /**
  * Extended version of DirectedGraphLayout which allows DirectedGraphLayout

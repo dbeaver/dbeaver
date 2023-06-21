@@ -14,23 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry.storage;
+package org.jkiss.dbeaver.model.app;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
-public interface InternalDatabaseConfig {
+/**
+ * Data source registry cache.
+ * Provides actions without applying changes in storage.
+ */
+public interface DBPDataSourceRegistryCache {
 
-    String getDriver();
+    /**
+     * Adds new data source to registry cache.
+     */
+    void addDataSourceToList(@NotNull DBPDataSourceContainer dataSource);
 
-    void setDriver(String driver);
-
-    @NotNull
-    String getUrl();
-
-    void setUrl(String url);
-
-    String getUser();
-
-    String getPassword();
-
+    /**
+     * Removes data source from registry cache.
+     */
+    void removeDataSourceFromList(@NotNull DBPDataSourceContainer dataSource);
 }

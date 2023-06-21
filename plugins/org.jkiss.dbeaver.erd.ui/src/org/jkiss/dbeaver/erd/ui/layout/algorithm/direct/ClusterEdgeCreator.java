@@ -20,7 +20,7 @@
  */
 package org.jkiss.dbeaver.erd.ui.layout.algorithm.direct;
 
-import org.eclipse.draw2dl.graph.*;
+import org.eclipse.draw2d.graph.*;
 
 import java.util.ArrayList;
 import java.util.Iterator;

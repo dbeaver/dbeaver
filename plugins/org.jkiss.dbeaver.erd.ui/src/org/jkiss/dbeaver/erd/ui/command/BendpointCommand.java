@@ -17,7 +17,7 @@
 
 package org.jkiss.dbeaver.erd.ui.command;
 
-import org.eclipse.gef3.commands.Command;
+import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.erd.ui.part.AssociationPart;
 
 

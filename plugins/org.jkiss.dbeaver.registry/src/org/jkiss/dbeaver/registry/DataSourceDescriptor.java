@@ -523,10 +523,11 @@ public class DataSourceDescriptor
 
     @Override
     public boolean isAutoCloseTransactions() {
-        if (getPreferenceStore().isDefault(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED)) {
-            return connectionInfo.getConnectionType().isAutoCloseTransactions();
+        if (getPreferenceStore().contains(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED)) {
+            // First check data source settings
+            return getPreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED);
         }
-        return getPreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED);
+        return connectionInfo.getConnectionType().isAutoCloseTransactions();
     }
 
     @Nullable
@@ -1162,9 +1163,8 @@ public class DataSourceDescriptor
                     false
                 );
                 if (dbpAuthInfo != null) {
-                    if (rc.equals(DBWTunnel.AuthCredentials.PASSWORD)) {
-                        tunnelConfiguration.setProperty(getJumpServerSettingsPrefix(0) + DBConstants.PROP_ID_NAME, //$NON
-                            // -NLS-1$
+                    if (rc.equals(DBWTunnel.AuthCredentials.CREDENTIALS)) {
+                        tunnelConfiguration.setProperty(getJumpServerSettingsPrefix(0) + DBConstants.PROP_ID_NAME, //$NON-NLS-1$
                             dbpAuthInfo.getUserName()
                         );
                     }

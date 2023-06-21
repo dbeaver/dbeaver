@@ -50,10 +50,10 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
     {
         super(
             schema,
-            JDBCUtils.safeGetString(dbResult, "OBJECT_NAME"),
+            JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_NAME),
             JDBCUtils.safeGetLong(dbResult, "OBJECT_ID"),
-            DBSProcedureType.valueOf(JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE")));
-        this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
+            DBSProcedureType.valueOf(JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_TYPE)));
+        this.valid = OracleConstants.RESULT_STATUS_VALID.equals(JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_STATUS));
     }
 
     public OracleProcedureStandalone(OracleSchema oracleSchema, String name, DBSProcedureType procedureType)

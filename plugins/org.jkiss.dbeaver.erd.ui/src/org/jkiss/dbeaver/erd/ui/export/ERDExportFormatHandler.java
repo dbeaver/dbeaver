@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.erd.ui.export;
 
-import org.eclipse.draw2dl.IFigure;
+import org.eclipse.draw2d.IFigure;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
