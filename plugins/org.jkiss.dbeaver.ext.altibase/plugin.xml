@@ -279,6 +279,12 @@
         </provider>
     </extension>
     
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.ext.altibase.model.AltibaseSQLDialect" class="org.jkiss.dbeaver.ext.altibase.sql.AltibaseDialectAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.text.parser.TPRuleProvider"/>
+        </factory>
+    </extension>
+    
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="altibase" parent="basic" class="org.jkiss.dbeaver.ext.altibase.model.AltibaseSQLDialect" label="Altibase" description="Altibase SQL dialect." icon="icons/altibase_icon.png">
         </dialect>

@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -37,6 +38,7 @@ import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserActionKind;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicateSet;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateFactory;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateSet;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicatesCondition;
@@ -63,7 +65,7 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
         {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
         {"LOOP", SQLConstants.BLOCK_END + " LOOP"},
         {SQLConstants.KEYWORD_CASE, SQLConstants.BLOCK_END + " " + SQLConstants.KEYWORD_CASE},
-        {"AS", SQLConstants.BLOCK_END}, 
+        //{"AS", SQLConstants.BLOCK_END}, 
         /* AS ... END;
          * CREATE TYPESET type1
             AS
@@ -116,7 +118,7 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
     
     public AltibaseSQLDialect() {
         super("Altibase", "altibase");
-        //setUnquotedIdentCase(DBPIdentifierCase.UPPER);
+        setUnquotedIdentCase(DBPIdentifierCase.UPPER);
     }
 
     @NotNull
@@ -129,6 +131,7 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
     public String[] getBlockHeaderStrings() {
         return ALTIBASE_BLOCK_HEADERS;
     }
+    
 
     @Nullable
     @Override
@@ -143,10 +146,7 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
 
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
-        
         preferenceStore = dataSource.getContainer().getPreferenceStore();
-        
-        //turnFunctionIntoKeyword("TRUNCATE");
         
         addFunctions(
                 Arrays.asList(
@@ -217,6 +217,7 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
         }
         
         addKeywords(Arrays.asList(OTHER_TYPES_FUNCTIONS), DBPKeywordType.OTHER);
+        turnFunctionIntoKeyword("TRUNCATE");
         
         cachedDialectSkipTokenPredicates = makeDialectSkipTokenPredicates(dataSource);
     }
@@ -244,7 +245,8 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
     @NotNull
     @Override
     public String[] getScriptDelimiters() {
-        return super.getScriptDelimiters();
+        //return super.getScriptDelimiters();
+        return new String[]{";", "/"};
     }
 
     @Override
@@ -272,7 +274,7 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
     public SQLTokenPredicateSet getSkipTokenPredicates() {
         return cachedDialectSkipTokenPredicates == null ? super.getSkipTokenPredicates() : cachedDialectSkipTokenPredicates;
     }
-    
+
     @NotNull
     private SQLTokenPredicateSet makeDialectSkipTokenPredicates(JDBCDataSource dataSource) {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
@@ -292,6 +294,7 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
                         tt.sequence(
                                 "CREATE",
                                 tt.optional("OR", "REPLACE"),
+                                tt.optional(tt.alternative("EDITIONABLE", "NONEDITIONABLE")),
                                 "PACKAGE", "BODY"
                         ),
                         tt.sequence()
@@ -304,9 +307,16 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
                         tt.sequence(
                                 "CREATE",
                                 tt.optional("OR", "REPLACE"),
+                                tt.optional(tt.alternative("EDITIONABLE", "NONEDITIONABLE")),
                                 tt.alternative("FUNCTION", "PROCEDURE")
                         ),
-                        tt.sequence()
+                        tt.sequence(tt.alternative(
+                                tt.sequence("RETURN", SQLTokenType.T_TYPE),
+                                "deterministor", "pipelined", "parallel_enable", "result_cache",
+                                ")",
+                                tt.sequence("procedure", SQLTokenType.T_OTHER),
+                                tt.sequence(SQLTokenType.T_OTHER, SQLTokenType.T_TYPE)
+                        ), ";")
                 ),
                 new TokenPredicatesCondition(
                     SQLParserActionKind.BEGIN_BLOCK,
@@ -317,7 +327,12 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
 
         return conditions;
     }
-
+    
+    @Override
+    public boolean isDisableScriptEscapeProcessing() {
+        return false;
+    }
+    
     /*
      * Implements SQLDialectDDLExtension
      */
