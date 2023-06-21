@@ -39,6 +39,8 @@ import java.util.Map;
 public class DatabaseTransferConsumerSerializer implements DBPObjectSerializer<DBTTask, DatabaseTransferConsumer> {
 
     private static final Log log = Log.getLog(DatabaseTransferConsumerSerializer.class);
+    private static final String PARAM_ENTITY_ID = "entityId";
+    private static final String PARAM_PROJECT_ID = "projectId";
 
     @Override
     public void serializeObject(DBRRunnableContext runnableContext, DBTTask context, DatabaseTransferConsumer object, Map<String, Object> state) {
@@ -50,21 +52,22 @@ public class DatabaseTransferConsumerSerializer implements DBPObjectSerializer<D
             return;
         }
         if (container.getDataSource() != null) {
-            state.put("projectId", container.getDataSource().getContainer().getProject().getId());
+            state.put(PARAM_PROJECT_ID, container.getDataSource().getContainer().getProject().getId());
         }
-        state.put("entityId", DBUtils.getObjectFullId(container));
+        state.put(PARAM_ENTITY_ID, DBUtils.getObjectFullId(container));
     }
 
     @Override
     public DatabaseTransferConsumer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) throws DBCException {
-        String projectId = CommonUtils.toString(state.get("projectId"));
-        DBPProject project = CommonUtils.isEmpty(projectId) ? null : DBWorkbench.getPlatform().getWorkspace().getProjectById(projectId);
+        String projectId = CommonUtils.toString(state.get(PARAM_PROJECT_ID));
+        DBPProject project = CommonUtils.isEmpty(projectId) ? null :
+                DBWorkbench.getPlatform().getWorkspace().getProjectById(projectId);
         if (project == null) {
             project = objectContext.getProject();
         }
         var consumer = new DatabaseTransferConsumer();
 
-        var entityId = CommonUtils.toString(state.get("entityId"));
+        var entityId = CommonUtils.toString(state.get(PARAM_ENTITY_ID));
         try {
             consumer.setContainer((DBSObjectContainer) DBUtils.findObjectById(new VoidProgressMonitor(), project, entityId));
         } catch (DBException e) {
