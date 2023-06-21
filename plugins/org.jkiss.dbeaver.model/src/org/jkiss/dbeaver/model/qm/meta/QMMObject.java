@@ -27,7 +27,7 @@ public abstract class QMMObject {
     static final Log log = Log.getLog(QMMObject.class);
 
     private static int globalObjectId = 0;
-    private final int id;
+    private final QMMetaObjectType type;
 
     private final long objectId;
 
@@ -38,13 +38,13 @@ public abstract class QMMObject {
     private boolean updated;
 
     public QMMObject(QMMetaObjectType type) {
-        this.id = type.getId();
+        this.type = type;
         this.objectId = generateObjectId();
         this.openTime = getTimeStamp();
     }
 
     protected QMMObject(QMMetaObjectType type, long openTime, long closeTime) {
-        this.id = type.getId();
+        this.type = type;
         this.objectId = generateObjectId();
         this.openTime = openTime;
         this.closeTime = closeTime;
@@ -86,8 +86,10 @@ public abstract class QMMObject {
 
     public abstract String getText();
 
-    // fore serialization
-    public abstract QMMetaObjectType getObjectType();
+    // for serialization
+    public QMMetaObjectType getObjectType() {
+        return type;
+    }
 
     protected synchronized void update() {
         this.updated = true;
@@ -112,10 +114,6 @@ public abstract class QMMObject {
             return -1L;
         }
         return getCloseTime() - getOpenTime();
-    }
-
-    public int getId() {
-        return id;
     }
 
     public abstract QMMConnectionInfo getConnection();

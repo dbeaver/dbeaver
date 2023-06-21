@@ -130,11 +130,6 @@ public class QMMConnectionInfo extends QMMObject {
     }
 
     @Override
-    public QMMetaObjectType getObjectType() {
-        return QMMetaObjectType.CONNECTION_INFO;
-    }
-
-    @Override
     public QMMConnectionInfo getConnection() {
         return this;
     }

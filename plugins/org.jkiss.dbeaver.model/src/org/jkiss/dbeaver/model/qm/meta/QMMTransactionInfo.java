@@ -36,18 +36,6 @@ public class QMMTransactionInfo extends QMMObject {
         this.savepointStack = new QMMTransactionSavepointInfo(this, null, null, null);
     }
 
-    private QMMTransactionInfo(Builder builder) {
-        super(QMMetaObjectType.TRANSACTION_INFO, builder.openTime, builder.closeTime);
-        connection = builder.connection;
-        previous = builder.previous;
-        committed = builder.committed;
-        savepointStack = builder.savepointStack;
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
     void commit() {
         this.committed = true;
         for (QMMTransactionSavepointInfo sp = savepointStack; sp != null; sp = sp.getPrevious()) {
@@ -109,54 +97,4 @@ public class QMMTransactionInfo extends QMMObject {
         return connection.getText();
     }
 
-    @Override
-    public QMMetaObjectType getObjectType() {
-        return QMMetaObjectType.TRANSACTION_INFO;
-    }
-
-    public static final class Builder {
-        private QMMConnectionInfo connection;
-        private QMMTransactionInfo previous;
-        private boolean committed;
-        private QMMTransactionSavepointInfo savepointStack;
-        private long openTime;
-        private long closeTime;
-
-        private Builder() {
-        }
-
-        public Builder setConnection(QMMConnectionInfo connection) {
-            this.connection = connection;
-            return this;
-        }
-
-        public Builder setPrevious(QMMTransactionInfo previous) {
-            this.previous = previous;
-            return this;
-        }
-
-        public Builder setCommitted(boolean committed) {
-            this.committed = committed;
-            return this;
-        }
-
-        public Builder setSavepointStack(QMMTransactionSavepointInfo savepointStack) {
-            this.savepointStack = savepointStack;
-            return this;
-        }
-
-        public Builder setOpenTime(long openTime) {
-            this.openTime = openTime;
-            return this;
-        }
-
-        public Builder setCloseTime(long closeTime) {
-            this.closeTime = closeTime;
-            return this;
-        }
-
-        public QMMTransactionInfo build() {
-            return new QMMTransactionInfo(this);
-        }
-    }
 }
