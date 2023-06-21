@@ -16,12 +16,12 @@
  */
 package org.jkiss.dbeaver.erd.ui.model;
 
-import org.eclipse.draw2dl.geometry.Dimension;
-import org.eclipse.draw2dl.geometry.Insets;
-import org.eclipse.gef3.EditPartFactory;
-import org.eclipse.gef3.RequestConstants;
-import org.eclipse.gef3.palette.*;
-import org.eclipse.gef3.requests.CreationFactory;
+import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Insets;
+import org.eclipse.gef.EditPartFactory;
+import org.eclipse.gef.RequestConstants;
+import org.eclipse.gef.palette.*;
+import org.eclipse.gef.requests.CreationFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;

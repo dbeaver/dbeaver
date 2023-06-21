@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.ui.locks.graph;
 
-import org.eclipse.draw2dl.AbstractConnectionAnchor;
-import org.eclipse.draw2dl.IFigure;
-import org.eclipse.draw2dl.geometry.Point;
+import org.eclipse.draw2d.AbstractConnectionAnchor;
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.geometry.Point;
 
 public class LockGraphConnectionAnchor extends AbstractConnectionAnchor {
 

@@ -256,6 +256,7 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_drivers_maven_group_properties;
     public static String pref_page_drivers_maven_label_name;
     public static String pref_page_drivers_maven_label_scope;
+    public static String pref_page_drivers_maven_checkbox_snapshot;
     public static String pref_page_drivers_maven_group_authentication;
     public static String pref_page_drivers_maven_label_user;
     public static String pref_page_drivers_maven_label_password;

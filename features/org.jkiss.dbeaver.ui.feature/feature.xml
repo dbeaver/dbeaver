@@ -18,6 +18,8 @@
          version="0.0.0"/>
 
    <requires>
+      <import plugin="org.eclipse.gef" version="0.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.draw2d" version="0.0.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.core.expressions" version="0.0.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.ui" version="0.0.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.ui.workbench" version="0.0.0" match="greaterOrEqual"/>
@@ -147,20 +149,6 @@
          install-size="0"
          version="0.0.0"
          unpack="false"/>
-
-   <plugin
-          id="org.eclipse.draw2dl"
-          download-size="0"
-          install-size="0"
-          version="0.0.0"
-          unpack="false"/>
-
-   <plugin
-          id="org.eclipse.gef3"
-          download-size="0"
-          install-size="0"
-          version="0.0.0"
-          unpack="false"/>
 
    <plugin
          id="org.jkiss.dbeaver.erd.ui"

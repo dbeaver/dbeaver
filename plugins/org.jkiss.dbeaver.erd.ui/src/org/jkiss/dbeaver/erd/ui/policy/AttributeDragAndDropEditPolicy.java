@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.erd.ui.policy;
 
-import org.eclipse.gef3.Request;
-import org.eclipse.gef3.RequestConstants;
-import org.eclipse.gef3.commands.Command;
-import org.eclipse.gef3.editpolicies.GraphicalEditPolicy;
+import org.eclipse.gef.Request;
+import org.eclipse.gef.RequestConstants;
+import org.eclipse.gef.commands.Command;
+import org.eclipse.gef.editpolicies.GraphicalEditPolicy;
 import org.jkiss.dbeaver.erd.ui.part.AttributePart;
 
 /**

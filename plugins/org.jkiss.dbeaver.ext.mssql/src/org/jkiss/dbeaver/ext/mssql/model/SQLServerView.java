@@ -47,8 +47,8 @@ public class SQLServerView extends SQLServerTableBase implements DBSView {
         super(schema);
     }
 
-    public SQLServerView(SQLServerSchema catalog, ResultSet dbResult) {
-        super(catalog, dbResult);
+    public SQLServerView(@NotNull SQLServerSchema catalog, @NotNull ResultSet dbResult, @NotNull String name) {
+        super(catalog, dbResult, name);
     }
 
     @Override

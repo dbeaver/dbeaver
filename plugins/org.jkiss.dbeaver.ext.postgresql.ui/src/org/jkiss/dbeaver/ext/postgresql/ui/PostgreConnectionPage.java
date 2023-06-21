@@ -279,7 +279,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         if (homesSelector != null) {
             connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
         }
-        if (typeURLRadio.getSelection()) {
+        if (typeURLRadio != null && typeURLRadio.getSelection()) {
             connectionInfo.setUrl(urlText.getText());
         }
 

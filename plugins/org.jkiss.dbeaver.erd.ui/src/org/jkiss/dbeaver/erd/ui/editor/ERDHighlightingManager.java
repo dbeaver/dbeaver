@@ -17,8 +17,8 @@
 
 package org.jkiss.dbeaver.erd.ui.editor;
 
-import org.eclipse.draw2dl.Connection;
-import org.eclipse.draw2dl.IFigure;
+import org.eclipse.draw2d.Connection;
+import org.eclipse.draw2d.IFigure;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
