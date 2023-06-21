@@ -80,7 +80,7 @@ public class AltibaseDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
 
                             AltibaseDataTypeDomain fieldType = AltibaseDataTypeDomain.getByDbTypeId(dataTypeId);
                             if (fieldType == null) {
-                                log.error("Field type '" + fieldType + "' not found");
+                                // Internal type
                                 continue;
                             }
 

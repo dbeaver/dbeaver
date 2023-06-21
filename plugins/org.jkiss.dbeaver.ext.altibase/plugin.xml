@@ -31,7 +31,7 @@
                 parent="generic"
                 label="Altibase"
                 icon="icons/altibase_icon.png"
-                dialect="AltibaseSQLDialect">
+                dialect="altibase">
             <drivers managable="true">
                <driver
                      categories="sql"
@@ -277,6 +277,11 @@
             <type name="VARBIT"/>
             <type name="GEOMETRY"/>
         </provider>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="altibase" parent="basic" class="org.jkiss.dbeaver.ext.altibase.model.AltibaseSQLDialect" label="Altibase" description="Altibase SQL dialect." icon="icons/altibase_icon.png">
+        </dialect>
     </extension>
 <!--
     <extension point="org.jkiss.dbeaver.sqlInsertMethod">

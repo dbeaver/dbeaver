@@ -32,7 +32,8 @@ public class AltibaseDataType extends GenericDataType {
     public AltibaseDataType(GenericStructContainer owner, AltibaseDataTypeDomain fieldType,
             String name, String remarks, boolean unsigned, boolean searchable,
             int precision, int minScale, int maxScale) {
-        super(owner, fieldType.getValueType(), name, remarks, unsigned, searchable, precision, minScale, maxScale);
+        super(owner, fieldType.getValueType(), name, remarks, unsigned, searchable, precision, 
+                minScale, maxScale);
 
         this.dataTypeDomin = fieldType;
     }

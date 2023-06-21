@@ -52,5 +52,7 @@ public class AltibaseConstants {
     public static final int TYPE_VARCHAR = 12;
 
     public static final String TYPE_NAME_GEOMETRY = "GEOMETRY";
+    public static final String TYPE_NAME_CLOB = "CLOB";
+    public static final String TYPE_NAME_DATE = "DATE";
 
 }
