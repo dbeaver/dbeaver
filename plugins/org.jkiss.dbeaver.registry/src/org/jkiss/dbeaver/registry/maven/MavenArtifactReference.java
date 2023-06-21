@@ -133,7 +133,7 @@ public class MavenArtifactReference implements IMavenIdentifier
     }
 
     public String getPath() {
-        return id + ":" + version;
+        return id;
     }
 
     public boolean isResolveOptionalDependencies() {
@@ -162,7 +162,8 @@ public class MavenArtifactReference implements IMavenIdentifier
             id.append(":").append(identifier.getClassifier());
         }
         if (identifier.getFallbackVersion() != null) {
-            id.append(":").append(identifier.getFallbackVersion());
+            id.append(":").append(identifier.getFallbackVersion() != null ? identifier.getFallbackVersion() :
+                                  identifier.getVersion());
         }
         return id.toString();
     }
