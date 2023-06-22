@@ -46,6 +46,7 @@ public interface DBPPlatform {
     @NotNull
     DBPWorkspace getWorkspace();
 
+    @Deprecated // use navigator model from DBPProject
     @Nullable
     DBNModel getNavigatorModel();
 

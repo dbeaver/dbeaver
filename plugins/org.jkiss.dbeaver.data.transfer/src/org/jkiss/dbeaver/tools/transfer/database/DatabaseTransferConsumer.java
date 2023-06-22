@@ -709,17 +709,20 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     public void finishTransfer(DBRProgressMonitor monitor, boolean last) {
         if (last) {
             // Refresh navigator
-            monitor.subTask("Refresh navigator model");
+            monitor.subTask("Refresh database model");
             try {
-                var navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
+                var container = settings.getContainer();
+                var navigatorModel = DBUtils.getObjectOwnerProject(container).getNavigatorModel();
                 if (navigatorModel != null) {
                     var node = DBNUtils.getNodeByObject(container);
                     if (node != null) {
                         node.refreshNode(monitor, this);
                     }
+                } else if (container instanceof DBPRefreshableObject) {
+                    ((DBPRefreshableObject) container).refreshObject(monitor);
                 }
             } catch (Exception e) {
-                log.debug("Error refreshing navigator model after data consumer", e);
+                log.debug("Error refreshing database model after data consumer", e);
             }
         }
 
@@ -735,12 +738,14 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             if (targetObject != null) {
                 // Refresh node first (this will refresh table data as well)
                 try {
-                    var navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
+                    var navigatorModel = DBUtils.getObjectOwnerProject(targetObject).getNavigatorModel();
                     if (navigatorModel != null) {
                         DBNDatabaseNode objectNode = DBNUtils.getNodeByObject(targetObject);
                         if (objectNode != null) {
                             objectNode.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
                         }
+                    } else if (targetObject instanceof DBPRefreshableObject) {
+                        ((DBPRefreshableObject) targetObject).refreshObject(monitor);
                     }
                 } catch (Exception e) {
                     log.error("Error refreshing object '" + targetObject.getName() + "'", e);

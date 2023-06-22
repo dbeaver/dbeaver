@@ -59,16 +59,16 @@ public class DatabaseTransferUtils {
     private static final Pair<DBPDataKind, String> DATA_TYPE_STRING = new Pair<>(DBPDataKind.STRING, "VARCHAR");
 
     public static void refreshDatabaseModel(DBRProgressMonitor monitor, DatabaseConsumerSettings consumerSettings, DatabaseMappingContainer containerMapping) throws DBException {
-        monitor.subTask("Refresh navigator model");
-        var navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
+        monitor.subTask("Refresh database model");
+        var container = consumerSettings.getContainer();
+        var navigatorModel = DBUtils.getObjectOwnerProject(container).getNavigatorModel();
         if (navigatorModel != null) {
-            var container = consumerSettings.getContainer();
             var containerNode = DBNUtils.getNodeByObject(container);
             if (containerNode != null) {
                 containerNode.refreshNode(monitor, containerMapping);
-            } else if (container instanceof DBPRefreshableObject) {
-                ((DBPRefreshableObject) container).refreshObject(monitor);
             }
+        } else if (container instanceof DBPRefreshableObject) {
+            ((DBPRefreshableObject) container).refreshObject(monitor);
         }
         refreshDatabaseMappings(monitor, consumerSettings, containerMapping, false);
     }
