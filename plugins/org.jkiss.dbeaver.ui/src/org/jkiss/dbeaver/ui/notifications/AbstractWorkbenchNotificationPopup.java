@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.jkiss.dbeaver.ui.notifications;
 
+import org.eclipse.jface.notifications.AbstractNotificationPopup;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
