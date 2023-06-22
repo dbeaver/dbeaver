@@ -20,7 +20,6 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -50,11 +49,7 @@ class QueryTransformerFetchAll implements DBCQueryTransformer {
     public void transformStatement(DBCStatement statement, int parameterIndex) throws DBCException {
         // Set fetch size to Integer.MIN_VALUE to enable result set streaming
         try {
-            var supportsFetchTransform = CommonUtils.getBoolean(
-                dataSource.getContainer().getDriver().getDriverParameter("supports-mysql-fetch-transform"),
-                true
-            );
-            if (!dataSource.isMariaDB() && supportsFetchTransform) {
+            if (!dataSource.isMariaDB() && dataSource.supportsFetchTransform()) {
                 ((Statement) statement).setFetchSize(Integer.MIN_VALUE);
             }
         } catch (SQLException e) {

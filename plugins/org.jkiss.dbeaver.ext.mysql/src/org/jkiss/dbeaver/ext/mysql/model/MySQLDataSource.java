@@ -895,4 +895,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             MySQLConstants.MYSQL_SCHEMA_NAME.equalsIgnoreCase(name);
     }
 
+    /**
+     * Checks if it is possible to fetch transform
+     */
+    public boolean supportsFetchTransform() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-mysql-fetch-transform"), true);
+    }
+
 }
