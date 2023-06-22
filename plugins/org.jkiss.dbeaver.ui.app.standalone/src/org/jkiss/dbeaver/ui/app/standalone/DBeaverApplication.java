@@ -172,12 +172,12 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         Location instanceLoc = Platform.getInstanceLocation();
 
         CommandLine commandLine = DBeaverCommandLine.getCommandLine();
-        {
-            String defaultHomePath = getDefaultInstanceLocation();
-            if (DBeaverCommandLine.handleCommandLine(commandLine, defaultHomePath)) {
+        String defaultHomePath = getDefaultInstanceLocation();
+        if (DBeaverCommandLine.handleCommandLine(commandLine, defaultHomePath)) {
+            if (!commandLine.hasOption(DBeaverCommandLine.PARAM_QUIET)) {
                 System.err.println("Commands processed. Exit " + GeneralUtils.getProductName() + ".");
-                return IApplication.EXIT_OK;
             }
+            return IApplication.EXIT_OK;
         }
 
         boolean ideWorkspaceSet = setIDEWorkspace(instanceLoc);

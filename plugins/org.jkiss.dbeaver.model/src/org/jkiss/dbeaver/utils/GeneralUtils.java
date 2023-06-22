@@ -287,6 +287,11 @@ public class GeneralUtils {
     }
 
     @NotNull
+    public static String getLongProductTitle() {
+        return getProductName() + " " + getProductVersion();
+    }
+
+    @NotNull
     public static String getProductName() {
         ApplicationDescriptor application = ApplicationRegistry.getInstance().getApplication();
         if (application != null) {
