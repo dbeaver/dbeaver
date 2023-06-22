@@ -51,7 +51,7 @@ public class DPIRestHandler implements HttpHandler {
         String uri = exchange.getRequestURI().toString();
         uri = CommonUtils.removeTrailingSlash(CommonUtils.removeLeadingSlash(uri));
 
-        log.debug("Income DPI request " + uri);
+        log.debug(">> DPI: " + uri);
         try (InputStream requestBody = exchange.getRequestBody()) {
             Map<String, Object> parameters;
             if (requestBody != null) {

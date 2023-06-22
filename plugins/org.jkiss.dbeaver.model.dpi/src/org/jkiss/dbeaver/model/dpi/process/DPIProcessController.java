@@ -111,14 +111,7 @@ public class DPIProcessController implements AutoCloseable {
     private void validateRestClient() throws DBException {
         RuntimeUtils.pause(50);
 
-        String pingResult = dpiRestClient.ping();
-        log.debug("Server ping succeeded: " + pingResult);
-
-//        URL dpiServerURL = getRemoteEndpoint();
-//        log.debug("Connect to DPI Server " + dpiServerURL);
-//        RestClient client = new RestClient(dpiServerURL);
-//        Map<String, Object> request = Map.of("action", "ping");
-//        Map<String, Object> response = client.sendRequest(DPIEndpoints.ENDPOINT_PING, request);
+        dpiRestClient.ping();
     }
 
     @NotNull

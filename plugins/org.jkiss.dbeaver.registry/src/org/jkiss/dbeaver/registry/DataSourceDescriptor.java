@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.dpi.api.DPIController;
 import org.jkiss.dbeaver.model.dpi.api.DPISession;
 import org.jkiss.dbeaver.model.dpi.process.DPIProcessController;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -923,8 +924,7 @@ public class DataSourceDescriptor
         return lastConnectionError;
     }
 
-    public boolean connect(DBRProgressMonitor monitor, boolean initialize, boolean reflect)
-        throws DBException {
+    public boolean connect(DBRProgressMonitor monitor, boolean initialize, boolean reflect) throws DBException {
         if (connecting) {
             log.debug("Can't connect - connect/disconnect is in progress");
             return false;
@@ -933,6 +933,38 @@ public class DataSourceDescriptor
             log.debug("Can't connect - already connected");
             return false;
         }
+
+        connecting = true;
+        try {
+            try (DPIProcessController dpiController = DPIProcessController.detachDatabaseProcess(monitor, this)) {
+                DPIController dpiClient = dpiController.getClient();
+                DPISession session = dpiClient.openSession(getProject().getId());
+                if (session == null) {
+                    throw new IllegalStateException("No session");
+                }
+                try {
+                    log.debug("New DPI session: " + session.getSessionId());
+                    DBPDataSource dataSource = dpiClient.openDataSource(session.getSessionId(), getId());
+                    log.debug("Opened data source: " + dataSource);
+                } finally {
+                    dpiClient.closeSession(session.getSessionId());
+                }
+            } catch (Exception e) {
+                log.debug("Error starting DPI child process", e);
+            }
+
+            boolean succeeded = connect0(monitor, initialize, reflect);
+            if (!succeeded) {
+                updateDataSourceObject(this);
+            }
+            return succeeded;
+        }
+        finally {
+            connecting = false;
+        }
+    }
+
+    private boolean connect0(DBRProgressMonitor monitor, boolean initialize, boolean reflect) throws DBException {
         DBSSecretController secretController = null;
 
         log.debug("Connect with '" + getName() + "' (" + getId() + ")");
@@ -945,8 +977,6 @@ public class DataSourceDescriptor
         resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
 
         // Update auth properties if possible
-
-        connecting = true;
         lastConnectionError = null;
         try {
             processEvents(monitor, DBPConnectionEventType.BEFORE_CONNECT);
@@ -968,7 +998,7 @@ public class DataSourceDescriptor
             if (authProvider != null) {
                 authProvided = authProvider.provideAuthParameters(monitor, this, resolvedConnectionInfo);
             } else {
-                // 3. USe legacy password provider
+                // 3. Use legacy password provider
                 if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
                     // Ask for password
                     authProvided = askForPassword(this, null, DBWTunnel.AuthCredentials.CREDENTIALS);
@@ -976,7 +1006,6 @@ public class DataSourceDescriptor
             }
             if (!authProvided) {
                 // Auth parameters were canceled
-                updateDataSourceObject(this);
                 return false;
             }
 
@@ -1049,13 +1078,11 @@ public class DataSourceDescriptor
                             DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration);
                             if (rc != DBWTunnel.AuthCredentials.NONE) {
                                 if (!askForPassword(this, tunnelConfiguration, rc)) {
-                                    updateDataSourceObject(this);
                                     tunnelHandler = null;
                                     return false;
                                 }
                             }
                             if (!askForSSHJumpServerPassword(tunnelConfiguration)) {
-                                updateDataSourceObject(this);
                                 tunnelHandler = null;
                                 return false;
                             }
@@ -1134,7 +1161,6 @@ public class DataSourceDescriptor
             }
         } finally {
             monitor.done();
-            connecting = false;
         }
     }
 
@@ -1188,9 +1214,9 @@ public class DataSourceDescriptor
         return true;
     }
 
-    public void openDataSource(DBRProgressMonitor monitor, boolean initialize) throws DBException {
-        final var provider = driver.getDataSourceProvider();
-        final var providerSynchronizable = GeneralUtils.adapt(provider, DBPDataSourceProviderSynchronizable.class);
+    private void openDataSource(DBRProgressMonitor monitor, boolean initialize) throws DBException {
+        final DBPDataSourceProvider provider = driver.getDataSourceProvider();
+        final DBPDataSourceProviderSynchronizable providerSynchronizable = GeneralUtils.adapt(provider, DBPDataSourceProviderSynchronizable.class);
 
         if (providerSynchronizable != null && providerSynchronizable.isSynchronizationEnabled(this)) {
             try {
@@ -1207,15 +1233,6 @@ public class DataSourceDescriptor
             } finally {
                 monitor.done();
             }
-        }
-
-        try (DPIProcessController dpiController = DPIProcessController.detachDatabaseProcess(monitor, this)) {
-            DPISession session = dpiController.getClient().openSession();
-            if (session == null) {
-                throw new IllegalStateException("No session");
-            }
-        } catch (Exception e) {
-            log.debug("Error starting DPI child process", e);
         }
 
         this.dataSource = provider.openDataSource(monitor, this);

@@ -20,16 +20,20 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.dpi.api.DPIController;
 import org.jkiss.dbeaver.model.dpi.api.DPISession;
 import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class DPIControllerImpl implements DPIController {
 
     private static final Log log = Log.getLog(DPIControllerImpl.class);
 
-    private DPIRestServer server;
+    private final DPIRestServer server;
+    private final Map<String, DPISession> sessions = new LinkedHashMap<>();
 
     public DPIControllerImpl(DPIRestServer server) {
         this.server = server;
@@ -41,19 +45,27 @@ public class DPIControllerImpl implements DPIController {
     }
 
     @Override
-    public DPISession openSession() {
-        return null;
+    public DPISession openSession(String projectId) {
+        DPISession session = new DPISession(UUID.randomUUID().toString());
+        this.sessions.put(session.getSessionId(), session);
+        return session;
     }
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(@NotNull DPISession session, @NotNull DBPDataSourceContainer container) throws DBException {
+    public DBPDataSource openDataSource(@NotNull String session, @NotNull String container) throws DBException {
         throw new DBCFeatureNotSupportedException();
     }
 
     @Override
-    public void closeSession(@NotNull DPISession session) {
-        server.stopServer();
+    public void closeSession(@NotNull String sessionId) throws DBException {
+        DPISession session = sessions.remove(sessionId);
+        if (session == null) {
+            throw new DBException("Session '" + sessionId + "' not found");
+        }
+        if (sessions.isEmpty()) {
+            server.stopServer();
+        }
     }
 
     @Override
