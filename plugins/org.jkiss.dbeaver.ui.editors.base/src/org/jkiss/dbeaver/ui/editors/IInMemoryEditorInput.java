@@ -14,20 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.ui.IEditorInput;
-import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 /**
- * StringEditorInput
+ * In-memory editor input
  */
-public class StringEditorInput extends AbstractStorageEditorInput implements INonPersistentEditorInput {
+public interface IInMemoryEditorInput extends IEditorInput {
 
-    public static final IEditorInput EMPTY_INPUT = new StringEditorInput("<empty>", "", true, GeneralUtils.getDefaultFileEncoding());
+    @Nullable
+    Object getProperty(String name);
 
-    public StringEditorInput(String name, CharSequence value, boolean readOnly, String charset) {
-        super(name, value, readOnly, charset);
-    }
+    void setProperty(@NotNull String name, @Nullable Object value);
 
 }
