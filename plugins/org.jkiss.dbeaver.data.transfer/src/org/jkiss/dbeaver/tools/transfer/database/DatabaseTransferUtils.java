@@ -61,8 +61,8 @@ public class DatabaseTransferUtils {
     public static void refreshDatabaseModel(DBRProgressMonitor monitor, DatabaseConsumerSettings consumerSettings, DatabaseMappingContainer containerMapping) throws DBException {
         monitor.subTask("Refresh database model");
         var container = consumerSettings.getContainer();
-        var navigatorModel = DBUtils.getObjectOwnerProject(container).getNavigatorModel();
-        if (navigatorModel != null) {
+        var project = DBUtils.getObjectOwnerProject(container);
+        if (project != null && project.getNavigatorModel() != null) {
             var containerNode = DBNUtils.getNodeByObject(container);
             if (containerNode != null) {
                 containerNode.refreshNode(monitor, containerMapping);

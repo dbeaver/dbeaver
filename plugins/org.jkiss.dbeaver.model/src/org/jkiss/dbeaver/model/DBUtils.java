@@ -1630,7 +1630,7 @@ public final class DBUtils {
         return dataSource == null ? null : dataSource.getContainer();
     }
 
-    @NotNull
+    @Nullable
     public static DBPDataSourceRegistry getObjectRegistry(@NotNull DBSObject object)
     {
         DBPDataSourceContainer container;
@@ -1638,15 +1638,19 @@ public final class DBUtils {
             container = (DBPDataSourceContainer) object;
         } else {
             DBPDataSource dataSource = object.getDataSource();
+            if (dataSource == null) {
+                return null;
+            }
             container = dataSource.getContainer();
         }
         return container.getRegistry();
     }
 
 
-    @NotNull
+    @Nullable
     public static DBPProject getObjectOwnerProject(DBSObject object) {
-        return getObjectRegistry(object).getProject();
+        var registry = getObjectRegistry(object);
+        return registry == null ? null : registry.getProject();
     }
 
     @NotNull

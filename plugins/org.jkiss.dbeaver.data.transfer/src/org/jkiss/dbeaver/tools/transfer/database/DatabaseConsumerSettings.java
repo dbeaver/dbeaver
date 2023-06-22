@@ -368,6 +368,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     }
 
     public void loadObjectContainer(DBRRunnableContext runnableContext, DataTransferSettings settings, @Nullable DBSObjectContainer producerContainer) {
+        // is used only for old tasks
         if (container == null && (!CommonUtils.isEmpty(containerNodePath) || producerContainer != null)) {
             if (!CommonUtils.isEmpty(containerNodePath) || producerContainer != null) {
                 try {
