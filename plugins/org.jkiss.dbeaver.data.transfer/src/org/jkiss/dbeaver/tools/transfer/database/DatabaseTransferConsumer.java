@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -560,7 +561,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private DBSObject checkTargetContainer(DBRProgressMonitor monitor) throws DBException {
         DBSDataManipulator targetObject = getTargetObject();
         if (targetObject == null) {
-            var container = settings.getContainer();
+            DBSObjectContainer container = settings.getContainer();
             if (container instanceof DBPDataSourceContainer && container.getDataSource() == null) {
                 // Init connection
                 DBUtils.initDataSource(monitor, (DBPDataSourceContainer) settings.getContainer(), null);
@@ -711,8 +712,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             // Refresh navigator
             monitor.subTask("Refresh database model");
             try {
-                var container = settings.getContainer();
-                var navigatorModel = DBUtils.getObjectOwnerProject(container).getNavigatorModel();
+                DBSObjectContainer container = settings.getContainer();
+                DBNModel navigatorModel = DBNUtils.getNavigatorModel(container);
                 if (navigatorModel != null) {
                     var node = DBNUtils.getNodeByObject(container);
                     if (node != null) {
@@ -738,7 +739,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             if (targetObject != null) {
                 // Refresh node first (this will refresh table data as well)
                 try {
-                    var navigatorModel = DBUtils.getObjectOwnerProject(targetObject).getNavigatorModel();
+                    DBNModel navigatorModel = DBNUtils.getNavigatorModel(targetObject);
                     if (navigatorModel != null) {
                         DBNDatabaseNode objectNode = DBNUtils.getNodeByObject(targetObject);
                         if (objectNode != null) {

@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSDataBulkLoader;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
@@ -436,7 +437,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
 
     private void loadInsertMethods() {
         DatabaseConsumerSettings settings = getSettings();
-        var container = settings.getContainer();
+        DBSObjectContainer container = settings.getContainer();
         if (container == null) {
             return;
         }

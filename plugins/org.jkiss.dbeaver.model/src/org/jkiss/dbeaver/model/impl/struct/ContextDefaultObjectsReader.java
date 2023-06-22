@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -88,12 +89,7 @@ public class ContextDefaultObjectsReader implements DBRRunnableWithProgress {
             return;
         }
 
-        DBPProject project = DBUtils.getObjectOwnerProject(objectContainer);
-        if (project == null) {
-            return;
-        }
-
-        DBNModel navigatorModel = project.getNavigatorModel();
+        DBNModel navigatorModel = DBNUtils.getNavigatorModel(objectContainer);
 
         DBCExecutionContextDefaults contextDefaults = null;
         if (executionContext != null) {

@@ -50,13 +50,13 @@ public class DBNUtils {
     private static final Log log = Log.getLog(DBNUtils.class);
 
     public static DBNDatabaseNode getNodeByObject(DBSObject object) {
-        var model = getNavigatorModel(object);
+        DBNModel model = getNavigatorModel(object);
         return model == null ? null : model.getNodeByObject(object);
     }
 
     @Nullable
     public static DBNModel getNavigatorModel(DBSObject object) {
-        var project = DBUtils.getObjectOwnerProject(object);
+        DBPProject project = DBUtils.getObjectOwnerProject(object);
         if (project == null) {
             return null;
         }
@@ -64,7 +64,7 @@ public class DBNUtils {
     }
 
     public static DBNDatabaseNode getNodeByObject(DBRProgressMonitor monitor, DBSObject object, boolean addFiltered) {
-        var model = getNavigatorModel(object);
+        DBNModel model = getNavigatorModel(object);
         return model == null ? null : model.getNodeByObject(monitor, object, addFiltered);
     }
 
@@ -179,7 +179,7 @@ public class DBNUtils {
     }
 
     public static void refreshNavigatorResource(@NotNull DBPProject project, @NotNull IResource resource, Object source) {
-        var navigatorModel = project.getNavigatorModel();
+        DBNModel navigatorModel = project.getNavigatorModel();
         if (navigatorModel == null) {
             return;
         }

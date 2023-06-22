@@ -152,7 +152,6 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
         return DBUtils.initDataSource(monitor, dataSource, onFinish);
     }
 
-
     @Override
     public DBPImage getNodeIcon() {
         DBPImage image = super.getNodeIcon();
