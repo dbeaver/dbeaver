@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class DashboardList extends Composite implements DashboardGroupContainer {
@@ -277,21 +278,15 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
     }
     
     public void clear() {
-
-        DashboardList.this.setRedraw(false);
-        
         selectedItem = null;
-        
-        for (DashboardItem item : items) {
+                
+        for (DashboardItem item : List.copyOf(items)) {
             item.dispose();
         }
         
         items.clear();
 
         getView().getViewConfiguration().clearDashboards();
-        
-        DashboardList.this.layout(true, true);
-        DashboardList.this.setRedraw(true);
     }
 
     /////////////////////////////////////////////////////////////////////////////////

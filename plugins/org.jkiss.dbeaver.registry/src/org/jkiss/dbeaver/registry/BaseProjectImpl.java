@@ -196,19 +196,6 @@ public abstract class BaseProjectImpl implements DBPProject {
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {
         ensureOpen();
-        /*
-        synchronized (metadataSync) {
-            if (dataSourceRegistry == null) {
-                if (isRegistryLoading) {
-                    throw new IllegalStateException("Unexpected concurrency violation");
-                }
-                isRegistryLoading = true;
-                dataSourceRegistry = createDataSourceRegistry();
-                isRegistryLoading = false;
-            }
-        }
-        return dataSourceRegistry;
-        */
         try {
             return getDataSourceRegistryAsyncImpl().get();
         } catch (InterruptedException | ExecutionException e) {
@@ -216,6 +203,7 @@ public abstract class BaseProjectImpl implements DBPProject {
         }
     }
     
+    @NotNull
     @Override
     public CompletionStage<DBPDataSourceRegistry> getDataSourceRegistryAsync() {
         return this.getDataSourceRegistryAsyncImpl();
@@ -225,7 +213,7 @@ public abstract class BaseProjectImpl implements DBPProject {
         ensureOpen();
         synchronized (metadataSync) {
             if (completableRegistry == null) {
-                completableRegistry = CompletableFuture.supplyAsync(() -> createDataSourceRegistry());
+                completableRegistry = CompletableFuture.supplyAsync(this::createDataSourceRegistry);
             }
         }
         return completableRegistry;

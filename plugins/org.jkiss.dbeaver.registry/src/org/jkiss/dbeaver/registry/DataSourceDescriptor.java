@@ -269,8 +269,10 @@ public class DataSourceDescriptor
 
         this.properties = new LinkedHashMap<>(source.properties);
         this.preferenceStore = new DataSourcePreferenceStore(this);
-        this.preferenceStore.setProperties(source.preferenceStore.getProperties());
-        this.preferenceStore.setDefaultProperties(source.preferenceStore.getDefaultProperties());
+        source.preferenceStore.execWithLock(false, m -> {
+            this.preferenceStore.setProperties(m.getProperties());
+            this.preferenceStore.setDefaultProperties(m.getDefaultProperties());
+        });
 
         if (source.formatterProfile == null || source.formatterProfile.getProfileName().equals(source.getId())) {
             this.formatterProfile = null;

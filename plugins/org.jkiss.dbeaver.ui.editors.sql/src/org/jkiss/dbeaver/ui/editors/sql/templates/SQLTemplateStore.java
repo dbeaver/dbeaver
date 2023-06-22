@@ -22,6 +22,7 @@ import org.eclipse.jface.text.templates.persistence.TemplateStore;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.XMLException;
 import org.osgi.framework.Bundle;
 
 import java.io.*;
@@ -47,6 +49,7 @@ import java.util.stream.Stream;
  * </p>
  */
 public class SQLTemplateStore extends TemplateStore {
+    public static final String TEMPLATES_CONFIG_XML = "templates.xml";
 
     private static final Log log = Log.getLog(SQLTemplateStore.class);
     public static final String PREF_STORE_KEY = "org.jkiss.dbeaver.core.sql_templates";
@@ -83,6 +86,11 @@ public class SQLTemplateStore extends TemplateStore {
     @NotNull
     public static SQLTemplateStore createInstance(@NotNull ContextTypeRegistry registry) {
         return new SQLTemplateStore(registry, new CustomTemplatesStore());
+    }
+    
+    public void reload() throws IOException {
+        customTemplatesStore.loadTemplatesConfig();
+        super.load();
     }
 
     /**
@@ -203,15 +211,21 @@ public class SQLTemplateStore extends TemplateStore {
     }
 
     private static class CustomTemplatesStore extends SimplePreferenceStore {
-        private static final String TEMPLATES_CONFIG_XML = "templates.xml";
-
+        
         private CustomTemplatesStore() {
-            super(DBWorkbench.getPlatform().getPreferenceStore());
+            super(DBWorkbench.getPlatform().getPreferenceStore());            
+            loadTemplatesConfig();
+        }
+        
+        public void loadTemplatesConfig() {
             try {
                 String content = DBWorkbench.getPlatform().getProductConfigurationController().loadConfigurationFile(TEMPLATES_CONFIG_XML);
-                if (CommonUtils.isNotEmpty(content)) {
-                    setValue(PREF_STORE_KEY, content);
-                }
+                super.execWithLock(true, m -> {
+                    clear();
+                    if (CommonUtils.isNotEmpty(content)) {
+                        setValue(PREF_STORE_KEY, content);
+                    }
+                });
             } catch (DBException e) {
                 log.error(e);
             }
@@ -225,7 +239,6 @@ public class SQLTemplateStore extends TemplateStore {
             }
             // Save templates
             String templatesConfig = getString(PREF_STORE_KEY);
-
             try {
                 DBWorkbench.getPlatform()
                     .getProductConfigurationController()

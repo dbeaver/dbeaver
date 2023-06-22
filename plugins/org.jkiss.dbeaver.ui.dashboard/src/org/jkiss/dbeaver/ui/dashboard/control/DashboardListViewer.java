@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
@@ -73,14 +74,14 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     }
 
     public void dispose() {
+        WorkspaceConfigEventManager.removeConfigChangedListener(DashboardRegistry.CONFIG_FILE_NAME, dashboardsConfigChangedListener);
+        
         if (isolatedContext != null) {
             if (isolatedContext.isConnected()) {
                 isolatedContext.close();
             }
             isolatedContext = null;
         }
-        
-        WorkspaceConfigEventManager.addConfigChangedListener(DashboardRegistry.CONFIG_FILE_NAME, dashboardsConfigChangedListener);
     }
 
     @Override
@@ -104,10 +105,15 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
 
     }
     
-    private Consumer<Object> dashboardsConfigChangedListener = o -> {
+    private Consumer<Object> dashboardsConfigChangedListener = a -> UIUtils.asyncExec(() ->{
+        dashContainer.setRedraw(false);
+
         dashContainer.clear();
         dashContainer.createDefaultDashboards();
-    };
+
+        dashContainer.layout(true, true);
+        dashContainer.setRedraw(true);
+    });
 
     public void createDashboardsFromConfiguration() {
         if (viewConfiguration.getDashboardItemConfigs().isEmpty()) {

@@ -22,6 +22,10 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Preference store which can be stored/loaded in any way.
@@ -30,10 +34,23 @@ import java.util.Map;
  * Originally copied from standard PreferenceStore class
  */
 public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
+    public interface Mutable {
+        DBPPreferenceStore getParentStore();
+        Map<String, String> getProperties();
+        Map<String, String> getDefaultProperties();
+    }
+    
+    private ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
     private DBPPreferenceStore parentStore;
     private Map<String, String> properties;
     private Map<String, String> defaultProperties;
     private boolean dirty = false;
+    
+    private final Mutable mutator = new Mutable() {
+        public DBPPreferenceStore getParentStore() { return parentStore; }
+        public Map<String, String> getProperties() { return properties; }
+        public Map<String, String> getDefaultProperties() { return defaultProperties; }
+    };
 
     public SimplePreferenceStore()
     {
@@ -52,35 +69,40 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
             //parentStore.addPropertyChangeListener(this);
         }
     }
-
-    public DBPPreferenceStore getParentStore()
-    {
-        return parentStore;
+    
+    public <T> T computeWithLock(boolean forWrite, Function<Mutable, T> action) {
+        Lock lock = forWrite ? rwLock.writeLock() : rwLock.readLock();
+        lock.lock();
+        try {
+            return action.apply(mutator);
+        } finally {
+            lock.unlock();
+        }
     }
 
-    public Map<String, String> getProperties()
-    {
-        return properties;
+    public void execWithLock(boolean forWrite, Consumer<Mutable> action) {
+        this.computeWithLock(forWrite, m -> { action.accept(m); return null; });
     }
 
     public void setProperties(Map<String, String> properties)
     {
-        this.properties = new HashMap<>(properties);
-    }
-
-    public Map<String, String> getDefaultProperties()
-    {
-        return defaultProperties;
+        this.execWithLock(true, m -> { 
+            this.properties = new HashMap<>(properties);
+        });
     }
 
     public void setDefaultProperties(Map<String, String> defaultProperties)
     {
-        this.defaultProperties = new HashMap<>(defaultProperties);
+        this.execWithLock(true, m -> { 
+            this.defaultProperties = new HashMap<>(defaultProperties);
+        });
     }
 
     public void clear()
     {
-        properties.clear();
+        this.execWithLock(true, m -> { 
+            properties.clear();
+        });
     }
 
     @Override
@@ -98,7 +120,7 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     @Override
     public boolean contains(String name)
     {
-        return properties.containsKey(name);
+        return this.computeWithLock(false, m -> properties.containsKey(name));
     }
 
     @Override
@@ -221,168 +243,188 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     @Override
     public String getString(String name)
     {
-        String value = properties.get(name);
-        if (value == null && parentStore != null) {
-            if (parentStore.isDefault(name)) {
-                value = defaultProperties.get(name);
+        return this.computeWithLock(false, m -> {
+            String value = properties.get(name);
+            if (value == null && parentStore != null) {
+                if (parentStore.isDefault(name)) {
+                    value = defaultProperties.get(name);
+                }
+                if (value == null) {
+                    value = parentStore.getString(name);
+                }
             }
-            if (value == null) {
-                value = parentStore.getString(name);
-            }
-        }
-        return value;
+            return value;
+        });
     }
 
     @Override
     public String getDefaultString(String name)
     {
-        String value = defaultProperties.get(name);
-        if (value == null && parentStore != null) {
-            if (parentStore.isDefault(name)) {
-                return parentStore.getDefaultString(name);
-            } else {
-                return "";
+        return this.computeWithLock(false, m -> { 
+            String value = defaultProperties.get(name);
+            if (value == null && parentStore != null) {
+                if (parentStore.isDefault(name)) {
+                    return parentStore.getDefaultString(name);
+                } else {
+                    return "";
+                }
             }
-        }
-        return value;
+            return value;
+        });
     }
 
     @Override
     public boolean isDefault(String name)
     {
-        return (!properties.containsKey(name) && (defaultProperties.containsKey(name) || (parentStore != null && parentStore.isDefault(name))));
+        return this.computeWithLock(false, 
+            m -> (!properties.containsKey(name) && (defaultProperties.containsKey(name) || (parentStore != null && parentStore.isDefault(name))))
+        );
     }
 
     public boolean isSet(String name)
     {
-        return properties.containsKey(name);
+        return this.computeWithLock(false, m -> properties.containsKey(name));
     }
 
     @Override
     public boolean needsSaving()
     {
-        return dirty;
+        return this.computeWithLock(false, m -> dirty);
     }
 
     public String[] preferenceNames()
     {
-        return properties.keySet().toArray(new String[0]);
+        return this.computeWithLock(false, m -> properties.keySet().toArray(new String[0]));
     }
 
     @Override
     public void setDefault(String name, double value)
     {
-        defaultProperties.put(name, String.valueOf(value));
+        this.computeWithLock(true, m -> defaultProperties.put(name, String.valueOf(value)));
     }
 
     @Override
     public void setDefault(String name, float value)
     {
-        defaultProperties.put(name, String.valueOf(value));
+        this.computeWithLock(true, m -> defaultProperties.put(name, String.valueOf(value)));
     }
 
     @Override
     public void setDefault(String name, int value)
     {
-        defaultProperties.put(name, String.valueOf(value));
+        this.computeWithLock(true, m -> defaultProperties.put(name, String.valueOf(value)));
     }
 
     @Override
     public void setDefault(String name, long value)
     {
-        defaultProperties.put(name, String.valueOf(value));
+        this.computeWithLock(true, m -> defaultProperties.put(name, String.valueOf(value)));
     }
 
     @Override
     public void setDefault(String name, String value)
     {
-        defaultProperties.put(name, String.valueOf(value));
+        this.computeWithLock(true, m -> defaultProperties.put(name, String.valueOf(value)));
     }
 
     @Override
     public void setDefault(String name, boolean value)
     {
-        defaultProperties.put(name, String.valueOf(value));
+        this.computeWithLock(true, m -> defaultProperties.put(name, String.valueOf(value)));
     }
 
     @Override
     public void setToDefault(String name)
     {
-        Object oldValue = properties.get(name);
-        properties.remove(name);
-        dirty = true;
-        Object newValue = null;
-        if (defaultProperties != null) {
-            newValue = defaultProperties.get(name);
-        }
-        firePropertyChangeEvent(name, oldValue, newValue);
+        this.execWithLock(true, m -> {
+            Object oldValue = properties.get(name);
+            properties.remove(name);
+            dirty = true;
+            Object newValue = null;
+            if (defaultProperties != null) {
+                newValue = defaultProperties.get(name);
+            }
+            firePropertyChangeEvent(name, oldValue, newValue);
+        });
     }
 
     @Override
     public void setValue(String name, double value)
     {
-        double oldValue = getDouble(name);
-        if (oldValue != value || !isSet(name)) {
-            properties.put(name, String.valueOf(value));
-            dirty = true;
-            firePropertyChangeEvent(name, oldValue, value);
-        }
+        this.execWithLock(true, m -> {
+            double oldValue = getDouble(name);
+            if (oldValue != value || !isSet(name)) {
+                properties.put(name, String.valueOf(value));
+                dirty = true;
+                firePropertyChangeEvent(name, oldValue, value);
+            }
+        });
     }
 
     @Override
     public void setValue(String name, float value)
     {
-        float oldValue = getFloat(name);
-        if (oldValue != value || !isSet(name)) {
-            properties.put(name, String.valueOf(value));
-            dirty = true;
-            firePropertyChangeEvent(name, oldValue, value);
-        }
+        this.execWithLock(true, m -> {
+            float oldValue = getFloat(name);
+            if (oldValue != value || !isSet(name)) {
+                properties.put(name, String.valueOf(value));
+                dirty = true;
+                firePropertyChangeEvent(name, oldValue, value);
+            }
+        });
     }
 
     @Override
     public void setValue(String name, int value)
     {
-        int oldValue = getInt(name);
-        if (oldValue != value || !isSet(name)) {
-            properties.put(name, String.valueOf(value));
-            dirty = true;
-            firePropertyChangeEvent(name, oldValue, value);
-        }
+        this.execWithLock(true, m -> {
+            int oldValue = getInt(name);
+            if (oldValue != value || !isSet(name)) {
+                properties.put(name, String.valueOf(value));
+                dirty = true;
+                firePropertyChangeEvent(name, oldValue, value);
+            }
+        });
     }
 
     @Override
     public void setValue(String name, long value)
     {
-        long oldValue = getLong(name);
-        if (oldValue != value || !isSet(name)) {
-            properties.put(name, String.valueOf(value));
-            dirty = true;
-            firePropertyChangeEvent(name, oldValue, value);
-        }
+        this.execWithLock(true, m -> {
+            long oldValue = getLong(name);
+            if (oldValue != value || !isSet(name)) {
+                properties.put(name, String.valueOf(value));
+                dirty = true;
+                firePropertyChangeEvent(name, oldValue, value);
+            }
+        });
     }
 
     @Override
     public void setValue(String name, String value)
     {
-        String oldValue = getString(name);
-        if (oldValue == null || !oldValue.equals(value) || !isSet(name)) {
-            properties.put(name, value);
-            dirty = true;
-            firePropertyChangeEvent(name, oldValue, value);
-        }
+        this.execWithLock(true, m -> {
+            String oldValue = getString(name);
+            if (oldValue == null || !oldValue.equals(value) || !isSet(name)) {
+                properties.put(name, value);
+                dirty = true;
+                firePropertyChangeEvent(name, oldValue, value);
+            }
+        });
     }
 
     @Override
     public void setValue(String name, boolean value)
     {
-        boolean oldValue = getBoolean(name);
-        if (oldValue != value || !isSet(name)) {
-            properties.put(name, String.valueOf(value));
-            dirty = true;
-            firePropertyChangeEvent(name, oldValue ? Boolean.TRUE
-                : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
-        }
+        this.execWithLock(true, m -> {
+            boolean oldValue = getBoolean(name);
+            if (oldValue != value || !isSet(name)) {
+                properties.put(name, String.valueOf(value));
+                dirty = true;
+                firePropertyChangeEvent(name, oldValue ? Boolean.TRUE
+                    : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
+            }
+        });
     }
 
     @Override
