@@ -284,7 +284,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         return createFolder(parent, name);
     }
 
-    DataSourceFolder createFolder(DBPDataSourceFolder parent, String name) {
+    protected DataSourceFolder createFolder(DBPDataSourceFolder parent, String name) {
         DataSourceFolder folder = new DataSourceFolder(this, (DataSourceFolder) parent, name, null);
         dataSourceFolders.add(folder);
         return folder;

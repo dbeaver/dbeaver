@@ -166,9 +166,28 @@ public class DialogUtils {
     }
 
     @NotNull
-    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable String value, @Nullable ModifyListener changeListener)
-    {
+    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable String value, @Nullable ModifyListener changeListener) {
         return createOutputFolderChooser(parent, label, null, value, changeListener);
+    }
+
+    @Nullable
+    public static String openDirectoryDialog(@NotNull Shell shell, @NotNull String message, @Nullable String directory) {
+        final DirectoryDialog dialog = new DirectoryDialog(shell);
+        dialog.setMessage("Choose target directory");
+        dialog.setText(message);
+
+        if (CommonUtils.isEmpty(directory)) {
+            directory = curDialogFolder;
+        }
+        if (!CommonUtils.isEmpty(directory)) {
+            dialog.setFilterPath(directory);
+        }
+        directory = dialog.open();
+        if (directory != null) {
+            setCurDialogFolder(directory);
+        }
+
+        return directory;
     }
 
     @NotNull
@@ -184,20 +203,9 @@ public class DialogUtils {
         final TextWithOpen directoryText = new TextWithOpen(parent) {
             @Override
             protected void openBrowser() {
-                DirectoryDialog dialog = new DirectoryDialog(parent.getShell(), SWT.NONE);
-                dialog.setMessage("Choose target directory");
-                dialog.setText(message);
-                String directory = getText();
-                if (CommonUtils.isEmpty(directory)) {
-                    directory = curDialogFolder;
-                }
-                if (!CommonUtils.isEmpty(directory)) {
-                    dialog.setFilterPath(directory);
-                }
-                directory = dialog.open();
-                if (directory != null) {
-                    setText(directory);
-                    setCurDialogFolder(directory);
+                final String text = openDirectoryDialog(parent.getShell(), message, getText());
+                if (text != null) {
+                    setText(text);
                 }
             }
         };
