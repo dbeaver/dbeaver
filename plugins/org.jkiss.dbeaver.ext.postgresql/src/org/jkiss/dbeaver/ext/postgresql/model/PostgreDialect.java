@@ -760,6 +760,12 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         setUnquotedIdentCase(DBPIdentifierCase.LOWER);
     }
 
+    @NotNull
+    @Override
+    protected DBPIdentifierCase getDefaultIdentifiersCase() {
+        return DBPIdentifierCase.LOWER;
+    }
+
     @Override
     public void addKeywords(Collection<String> set, DBPKeywordType type) {
         super.addKeywords(set, type);
