@@ -185,7 +185,7 @@ public class PostgreTableBaseTest {
 
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
-        String expectedDDL = "COMMENT ON FOREIGN TABLE test_schema.testForeignTable IS 'Test comment';" + lineBreak;
+        String expectedDDL = "COMMENT ON FOREIGN TABLE test_schema.\"testForeignTable\" IS 'Test comment';" + lineBreak;
         Assert.assertEquals(expectedDDL, script);
     }
 
@@ -201,7 +201,7 @@ public class PostgreTableBaseTest {
 
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
-        String expectedDDL = "COMMENT ON VIEW test_schema.testView IS 'Test comment';" + lineBreak;
+        String expectedDDL = "COMMENT ON VIEW test_schema.\"testView\" IS 'Test comment';" + lineBreak;
         Assert.assertEquals(expectedDDL, script);
     }
 
