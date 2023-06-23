@@ -174,7 +174,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         CommandLine commandLine = DBeaverCommandLine.getCommandLine();
         String defaultHomePath = getDefaultInstanceLocation();
         if (DBeaverCommandLine.handleCommandLine(commandLine, defaultHomePath)) {
-            if (!commandLine.hasOption(DBeaverCommandLine.PARAM_QUIET)) {
+            if (!Log.isQuietMode()) {
                 System.err.println("Commands processed. Exit " + GeneralUtils.getProductName() + ".");
             }
             return IApplication.EXIT_OK;
