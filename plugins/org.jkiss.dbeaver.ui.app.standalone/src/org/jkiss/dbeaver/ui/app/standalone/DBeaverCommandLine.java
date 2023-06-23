@@ -266,8 +266,7 @@ public class DBeaverCommandLine
             HelpFormatter helpFormatter = new HelpFormatter();
             helpFormatter.setWidth(120);
             helpFormatter.setOptionComparator((o1, o2) -> 0);
-            System.out.println(GeneralUtils.getProductTitle());
-            helpFormatter.printHelp("dbeaver", GeneralUtils.getProductTitle(), ALL_OPTIONS, "(C) 2020-2023 DBeaver Corp", true);
+            helpFormatter.printHelp("dbeaver", GeneralUtils.getProductTitle(), ALL_OPTIONS, "(C) 2010-2023 DBeaver Corp", true);
             return true;
         }
 
