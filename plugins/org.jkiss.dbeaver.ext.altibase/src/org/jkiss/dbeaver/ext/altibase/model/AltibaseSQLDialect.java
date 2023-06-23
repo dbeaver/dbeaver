@@ -17,9 +17,7 @@
 package org.jkiss.dbeaver.ext.altibase.model;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.OptionalInt;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -250,34 +248,32 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
         ruleManager.loadRules(dataSource, false);
         TokenPredicateFactory tt = TokenPredicateFactory.makeDialectSpecificFactory(ruleManager);
 
-        /* Borrowed from OracleSQLDialect */
         TokenPredicateSet conditions = TokenPredicateSet.of(
+                /* Oracle grammar */
                 new TokenPredicatesCondition(
                         SQLParserActionKind.BEGIN_BLOCK,
                         tt.sequence(
                                 "CREATE",
                                 tt.optional("OR", "REPLACE"),
-                                tt.optional(tt.alternative("EDITIONABLE", "NONEDITIONABLE")),
                                 "PACKAGE", "BODY"
                         ),
                         tt.sequence()
                 ),
-                // not fully described, only some cases partially discovered
                 new TokenPredicatesCondition(
                         SQLParserActionKind.SKIP_SUFFIX_TERM,
                         tt.sequence(
                                 "CREATE",
                                 tt.optional("OR", "REPLACE"),
-                                tt.optional(tt.alternative("EDITIONABLE", "NONEDITIONABLE")),
                                 tt.alternative("FUNCTION", "PROCEDURE")
                         ),
-                        tt.sequence(tt.alternative(
-                                tt.sequence("RETURN", SQLTokenType.T_TYPE),
-                                "deterministor", "pipelined", "parallel_enable", "result_cache",
-                                ")",
-                                tt.sequence("procedure", SQLTokenType.T_OTHER),
-                                tt.sequence(SQLTokenType.T_OTHER, SQLTokenType.T_TYPE)
-                        ), ";")
+                        tt.sequence(
+                                tt.alternative(
+                                        tt.sequence("RETURN", SQLTokenType.T_TYPE),
+                                        "deterministor", "pipelined", "parallel_enable", "result_cache",
+                                        ")",
+                                        tt.sequence("procedure", SQLTokenType.T_OTHER),
+                                        tt.sequence(SQLTokenType.T_OTHER, SQLTokenType.T_TYPE)
+                                        ), ";")
                 ),
                 new TokenPredicatesCondition(
                     SQLParserActionKind.BEGIN_BLOCK,
@@ -301,13 +297,8 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
                 ),
                 new TokenPredicatesCondition(
                         SQLParserActionKind.SKIP_SUFFIX_TERM,
-                        tt.sequence(tt.alternative("AS", "IS")),
-                        tt.sequence()
-                ),
-                new TokenPredicatesCondition(
-                        SQLParserActionKind.SKIP_SUFFIX_TERM,
                         tt.token("END"),
-                        tt.sequence(";")
+                        tt.sequence(";", "/")
                 )
         );
 

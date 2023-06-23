@@ -129,7 +129,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBCQueryPla
     public boolean splitProceduresAndFunctions() {
         return true;
     }
-
+    
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.initialize(monitor);
