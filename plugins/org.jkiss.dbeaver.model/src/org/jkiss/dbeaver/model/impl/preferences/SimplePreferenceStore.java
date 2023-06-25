@@ -22,10 +22,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * Preference store which can be stored/loaded in any way.
@@ -40,26 +36,30 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
         Map<String, String> getDefaultProperties();
     }
     
-    private ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
     private DBPPreferenceStore parentStore;
     private Map<String, String> properties;
     private Map<String, String> defaultProperties;
     private boolean dirty = false;
     
     private final Mutable mutator = new Mutable() {
-        public DBPPreferenceStore getParentStore() { return parentStore; }
-        public Map<String, String> getProperties() { return properties; }
-        public Map<String, String> getDefaultProperties() { return defaultProperties; }
+        public DBPPreferenceStore getParentStore() {
+            return parentStore;
+        }
+        public Map<String, String> getProperties() {
+            return properties;
+        }
+        public Map<String, String> getDefaultProperties() {
+            return defaultProperties;
+        }
     };
-
-    public SimplePreferenceStore()
-    {
+    private final ReaderWriterLock<Mutable> rwLock = new ReaderWriterLock<>(() -> mutator);
+    
+    public SimplePreferenceStore() {
         defaultProperties = new HashMap<>();
         properties = new HashMap<>();
     }
 
-    protected SimplePreferenceStore(DBPPreferenceStore parentStore)
-    {
+    protected SimplePreferenceStore(DBPPreferenceStore parentStore) {
         this();
         this.parentStore = parentStore;
         if (parentStore != null) {
@@ -70,90 +70,68 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
         }
     }
     
-    public <T> T computeWithLock(boolean forWrite, Function<Mutable, T> action) {
-        Lock lock = forWrite ? rwLock.writeLock() : rwLock.readLock();
-        lock.lock();
-        try {
-            return action.apply(mutator);
-        } finally {
-            lock.unlock();
-        }
+    public ReaderWriterLock<Mutable> lock() {
+        return rwLock;
     }
 
-    public void execWithLock(boolean forWrite, Consumer<Mutable> action) {
-        this.computeWithLock(forWrite, m -> { action.accept(m); return null; });
-    }
-
-    public void setProperties(Map<String, String> properties)
-    {
-        this.execWithLock(true, m -> { 
+    public void setProperties(Map<String, String> properties) {
+        this.lock().execWriting(m -> {
             this.properties = new HashMap<>(properties);
         });
     }
 
-    public void setDefaultProperties(Map<String, String> defaultProperties)
-    {
-        this.execWithLock(true, m -> { 
+    public void setDefaultProperties(Map<String, String> defaultProperties) {
+        this.lock().execWriting(m -> {
             this.defaultProperties = new HashMap<>(defaultProperties);
         });
     }
 
-    public void clear()
-    {
-        this.execWithLock(true, m -> { 
+    public void clear() {
+        this.lock().execWriting(m -> {
             properties.clear();
         });
     }
 
     @Override
-    public void addPropertyChangeListener(DBPPreferenceListener listener)
-    {
+    public void addPropertyChangeListener(DBPPreferenceListener listener) {
         addListenerObject(listener);
     }
 
     @Override
-    public void removePropertyChangeListener(DBPPreferenceListener listener)
-    {
+    public void removePropertyChangeListener(DBPPreferenceListener listener) {
         removeListenerObject(listener);
     }
 
     @Override
-    public boolean contains(String name)
-    {
-        return this.computeWithLock(false, m -> properties.containsKey(name));
+    public boolean contains(String name) {
+        return this.lock().computeReading(m -> properties.containsKey(name));
     }
 
     @Override
-    public boolean getBoolean(String name)
-    {
+    public boolean getBoolean(String name) {
         return toBoolean(getString(name));
     }
 
     @Override
-    public boolean getDefaultBoolean(String name)
-    {
+    public boolean getDefaultBoolean(String name) {
         return toBoolean(getDefaultString(name));
     }
 
-    private boolean toBoolean(String value)
-    {
+    private boolean toBoolean(String value) {
         return value != null && value.equals(AbstractPreferenceStore.TRUE);
     }
 
     @Override
-    public double getDouble(String name)
-    {
+    public double getDouble(String name) {
         return toDouble(getString(name));
     }
 
     @Override
-    public double getDefaultDouble(String name)
-    {
+    public double getDefaultDouble(String name) {
         return toDouble(getDefaultString(name));
     }
 
-    private double toDouble(String value)
-    {
+    private double toDouble(String value) {
         double ival = DOUBLE_DEFAULT_DEFAULT;
         if (!CommonUtils.isEmpty(value)) {
             try {
@@ -166,19 +144,16 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public float getFloat(String name)
-    {
+    public float getFloat(String name) {
         return toFloat(getString(name));
     }
 
     @Override
-    public float getDefaultFloat(String name)
-    {
+    public float getDefaultFloat(String name) {
         return toFloat(getDefaultString(name));
     }
 
-    private float toFloat(String value)
-    {
+    private float toFloat(String value) {
         float ival = FLOAT_DEFAULT_DEFAULT;
         if (!CommonUtils.isEmpty(value)) {
             try {
@@ -191,19 +166,16 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public int getInt(String name)
-    {
+    public int getInt(String name) {
         return toInt(getString(name));
     }
 
     @Override
-    public int getDefaultInt(String name)
-    {
+    public int getDefaultInt(String name) {
         return toInt(getDefaultString(name));
     }
 
-    private int toInt(String value)
-    {
+    private int toInt(String value) {
         int ival = INT_DEFAULT_DEFAULT;
         if (!CommonUtils.isEmpty(value)) {
             try {
@@ -216,19 +188,16 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public long getLong(String name)
-    {
+    public long getLong(String name) {
         return toLong(getString(name));
     }
 
     @Override
-    public long getDefaultLong(String name)
-    {
+    public long getDefaultLong(String name) {
         return toLong(getDefaultString(name));
     }
 
-    private long toLong(String value)
-    {
+    private long toLong(String value) {
         long ival = LONG_DEFAULT_DEFAULT;
         if (!CommonUtils.isEmpty(value)) {
             try {
@@ -241,9 +210,8 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public String getString(String name)
-    {
-        return this.computeWithLock(false, m -> {
+    public String getString(String name) {
+        return this.lock().computeReading(m -> {
             String value = properties.get(name);
             if (value == null && parentStore != null) {
                 if (parentStore.isDefault(name)) {
@@ -258,9 +226,8 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public String getDefaultString(String name)
-    {
-        return this.computeWithLock(false, m -> { 
+    public String getDefaultString(String name) {
+        return this.lock().computeReading(m -> {
             String value = defaultProperties.get(name);
             if (value == null && parentStore != null) {
                 if (parentStore.isDefault(name)) {
@@ -274,72 +241,61 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public boolean isDefault(String name)
-    {
-        return this.computeWithLock(false, 
+    public boolean isDefault(String name) {
+        return this.lock().computeReading(
             m -> (!properties.containsKey(name) && (defaultProperties.containsKey(name) || (parentStore != null && parentStore.isDefault(name))))
         );
     }
 
-    public boolean isSet(String name)
-    {
-        return this.computeWithLock(false, m -> properties.containsKey(name));
+    public boolean isSet(String name) {
+        return this.lock().computeReading(m -> properties.containsKey(name));
     }
 
     @Override
-    public boolean needsSaving()
-    {
-        return this.computeWithLock(false, m -> dirty);
+    public boolean needsSaving() {
+        return this.lock().computeReading(m -> dirty);
     }
 
-    public String[] preferenceNames()
-    {
-        return this.computeWithLock(false, m -> properties.keySet().toArray(new String[0]));
-    }
-
-    @Override
-    public void setDefault(String name, double value)
-    {
-        this.computeWithLock(true, m -> defaultProperties.put(name, String.valueOf(value)));
+    public String[] preferenceNames() {
+        return this.lock().computeReading(m -> properties.keySet().toArray(new String[0]));
     }
 
     @Override
-    public void setDefault(String name, float value)
-    {
-        this.computeWithLock(true, m -> defaultProperties.put(name, String.valueOf(value)));
+    public void setDefault(String name, double value) {
+        this.lock().computeWriting(m -> defaultProperties.put(name, String.valueOf(value)));
     }
 
     @Override
-    public void setDefault(String name, int value)
-    {
-        this.computeWithLock(true, m -> defaultProperties.put(name, String.valueOf(value)));
+    public void setDefault(String name, float value) {
+        this.lock().computeWriting(m -> defaultProperties.put(name, String.valueOf(value)));
     }
 
     @Override
-    public void setDefault(String name, long value)
-    {
-        this.computeWithLock(true, m -> defaultProperties.put(name, String.valueOf(value)));
+    public void setDefault(String name, int value) {
+        this.lock().computeWriting(m -> defaultProperties.put(name, String.valueOf(value)));
     }
 
     @Override
-    public void setDefault(String name, String value)
-    {
-        this.computeWithLock(true, m -> defaultProperties.put(name, String.valueOf(value)));
+    public void setDefault(String name, long value) {
+        this.lock().computeWriting(m -> defaultProperties.put(name, String.valueOf(value)));
     }
 
     @Override
-    public void setDefault(String name, boolean value)
-    {
-        this.computeWithLock(true, m -> defaultProperties.put(name, String.valueOf(value)));
+    public void setDefault(String name, String value) {
+        this.lock().computeWriting(m -> defaultProperties.put(name, String.valueOf(value)));
     }
 
     @Override
-    public void setToDefault(String name)
-    {
-        this.execWithLock(true, m -> {
+    public void setDefault(String name, boolean value) {
+        this.lock().computeWriting(m -> defaultProperties.put(name, String.valueOf(value)));
+    }
+
+    @Override
+    public void setToDefault(String name) {
+        this.lock().execWriting(m -> {
+            dirty = true;
             Object oldValue = properties.get(name);
             properties.remove(name);
-            dirty = true;
             Object newValue = null;
             if (defaultProperties != null) {
                 newValue = defaultProperties.get(name);
@@ -349,9 +305,8 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public void setValue(String name, double value)
-    {
-        this.execWithLock(true, m -> {
+    public void setValue(String name, double value) {
+        this.lock().execWriting(m -> {
             double oldValue = getDouble(name);
             if (oldValue != value || !isSet(name)) {
                 properties.put(name, String.valueOf(value));
@@ -362,9 +317,8 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public void setValue(String name, float value)
-    {
-        this.execWithLock(true, m -> {
+    public void setValue(String name, float value) {
+        this.lock().execWriting(m -> {
             float oldValue = getFloat(name);
             if (oldValue != value || !isSet(name)) {
                 properties.put(name, String.valueOf(value));
@@ -375,9 +329,8 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public void setValue(String name, int value)
-    {
-        this.execWithLock(true, m -> {
+    public void setValue(String name, int value) {
+        this.lock().execWriting(m -> {
             int oldValue = getInt(name);
             if (oldValue != value || !isSet(name)) {
                 properties.put(name, String.valueOf(value));
@@ -388,9 +341,8 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public void setValue(String name, long value)
-    {
-        this.execWithLock(true, m -> {
+    public void setValue(String name, long value) {
+        this.lock().execWriting(m -> {
             long oldValue = getLong(name);
             if (oldValue != value || !isSet(name)) {
                 properties.put(name, String.valueOf(value));
@@ -401,9 +353,8 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public void setValue(String name, String value)
-    {
-        this.execWithLock(true, m -> {
+    public void setValue(String name, String value) {
+        this.lock().execWriting(m -> {
             String oldValue = getString(name);
             if (oldValue == null || !oldValue.equals(value) || !isSet(name)) {
                 properties.put(name, value);
@@ -414,15 +365,13 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public void setValue(String name, boolean value)
-    {
-        this.execWithLock(true, m -> {
+    public void setValue(String name, boolean value) {
+        this.lock().execWriting(m -> {
             boolean oldValue = getBoolean(name);
             if (oldValue != value || !isSet(name)) {
                 properties.put(name, String.valueOf(value));
                 dirty = true;
-                firePropertyChangeEvent(name, oldValue ? Boolean.TRUE
-                    : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
+                firePropertyChangeEvent(name, oldValue ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
             }
         });
     }
@@ -432,7 +381,7 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
         if (!(obj instanceof SimplePreferenceStore)) {
             return false;
         }
-        SimplePreferenceStore copy = (SimplePreferenceStore)obj;
+        SimplePreferenceStore copy = (SimplePreferenceStore) obj;
         return
             CommonUtils.equalObjects(parentStore, copy.parentStore) &&
             CommonUtils.equalObjects(properties, copy.properties) &&

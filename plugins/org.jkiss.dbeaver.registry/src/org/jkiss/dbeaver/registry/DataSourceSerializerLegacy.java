@@ -341,7 +341,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                                 }
                                 break;
                             default:
-                                curDataSource.getPreferenceStore().execWithLock(true, m -> m.getProperties().put(propName, propValue));
+                                curDataSource.getPreferenceStore().lock().execWriting(m -> m.getProperties().put(propName, propValue));
                                 break;
                         }
                     }

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry.formatter;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -38,7 +39,6 @@ import org.xml.sax.Attributes;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -120,6 +120,7 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
         return null;
     }
 
+    @NotNull
     @Override
     public synchronized List<DBDDataFormatterProfile> getCustomProfiles() {
         return List.copyOf(getCustomProfilesInternal());
@@ -173,7 +174,7 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
                 xml.addAttribute("name", profile.getProfileName());
                 SimplePreferenceStore store = (SimplePreferenceStore) profile.getPreferenceStore();
                 
-                List<Map.Entry<String, String>> props = store.computeWithLock(false, m -> List.copyOf(m.getProperties().entrySet()));
+                List<Map.Entry<String, String>> props = store.lock().computeReading(m -> List.copyOf(m.getProperties().entrySet()));
                 if (props != null) {
                     for (Map.Entry<String,String> entry : props) {
                         xml.startElement("property");
@@ -190,13 +191,13 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
             out.flush();
             DBWorkbench.getPlatform().getProductConfigurationController()
                 .saveConfigurationFile(CONFIG_FILE_NAME, out.getBuffer().toString());
+            System.out.println("format saved");
         } catch (Throwable ex) {
             log.warn("Failed to save data formatter profiles to " + CONFIG_FILE_NAME, ex);
         }
     }
 
-    public synchronized DBDDataFormatterProfile createCustomProfile(String profileName)
-    {
+    public synchronized DBDDataFormatterProfile createCustomProfile(String profileName) {
         getCustomProfilesInternal();
         DBDDataFormatterProfile profile = new DataFormatterProfile(profileName, new CustomProfileStore());
         customProfiles.add(profile);
@@ -204,8 +205,7 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
         return profile;
     }
 
-    public synchronized void deleteCustomProfile(DBDDataFormatterProfile profile)
-    {
+    public synchronized void deleteCustomProfile(DBDDataFormatterProfile profile) {
         getCustomProfilesInternal();
         if (customProfiles.remove(profile)) {
             saveProfiles();

@@ -24,8 +24,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 public class WorkspaceConfigEventManager {
-    private static Object syncRoot = new Object();
-    private static Map<String, Set<Consumer<Object>>> listenersByConfigFile = new HashMap<>();
+    private static final Object syncRoot = new Object();
+    private static final Map<String, Set<Consumer<Object>>> listenersByConfigFile = new HashMap<>();
     
     public static void addConfigChangedListener(String configFileName, Consumer<Object> listener) {
         synchronized (syncRoot) {
@@ -54,7 +54,7 @@ public class WorkspaceConfigEventManager {
             }
         }
         if (listenersList != null) {
-            for (Consumer<Object> listener: listenersList) {
+            for (Consumer<Object> listener : listenersList) {
                 listener.accept(null);
             }
         }

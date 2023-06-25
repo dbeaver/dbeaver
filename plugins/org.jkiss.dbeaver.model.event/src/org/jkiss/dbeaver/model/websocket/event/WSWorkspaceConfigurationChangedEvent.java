@@ -16,17 +16,19 @@
  */
 package org.jkiss.dbeaver.model.websocket.event;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 public class WSWorkspaceConfigurationChangedEvent extends WSAbstractEvent {
 
     private final String configFilePath;
 
-    public WSWorkspaceConfigurationChangedEvent(String configFilePath, @Nullable String sessionId, @Nullable String userId) {
+    public WSWorkspaceConfigurationChangedEvent(@NotNull String configFilePath, @Nullable String sessionId, @Nullable String userId) {
         super(WSEventType.WORKSPACE_CONFIG_CHANGED, sessionId, userId);
         this.configFilePath = configFilePath;
     }
 
+    @NotNull
     public String getConfigFilePath() {
         return configFilePath;
     }

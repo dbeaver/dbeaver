@@ -55,7 +55,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
-
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -96,6 +95,9 @@ public abstract class BaseProjectImpl implements DBPProject {
     private ProjectSyncJob metadataSyncJob;
 
     private boolean inMemory;
+
+    private boolean isRegistryLoading = false;
+    private CompletableFuture<DBPDataSourceRegistry> completableRegistry = null;
 
     public BaseProjectImpl(@NotNull DBPWorkspace workspace, @Nullable SMSessionContext sessionContext) {
         this.workspace = workspace;
@@ -172,8 +174,6 @@ public abstract class BaseProjectImpl implements DBPProject {
     public boolean isRegistryLoaded() {
         return dataSourceRegistry != null;
     }
-
-    private boolean isRegistryLoading = false;
     
     @Override
     public boolean isRegistryLoading() {
@@ -189,8 +189,6 @@ public abstract class BaseProjectImpl implements DBPProject {
     public boolean isPrivateProject() {
         return true;
     }
-    
-    private CompletableFuture<DBPDataSourceRegistry> completableRegistry = null;
 
     @NotNull
     @Override

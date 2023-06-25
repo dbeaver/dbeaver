@@ -42,7 +42,7 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
         this.dataSourceDescriptor = dataSourceDescriptor;
         // Init default properties from driver overrides
         Map<String,Object> defaultConnectionProperties = dataSourceDescriptor.getDriver().getDefaultConnectionProperties();
-        execWithLock(true, m -> {
+        lock().execWriting(m -> {
             for (Map.Entry<String, Object> prop : defaultConnectionProperties.entrySet()) {
                 String propName = prop.getKey();
                 if (propName.startsWith(DBConstants.DEFAULT_DRIVER_PROP_PREFIX)) {

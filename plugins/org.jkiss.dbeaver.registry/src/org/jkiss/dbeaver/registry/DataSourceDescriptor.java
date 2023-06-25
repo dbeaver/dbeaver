@@ -269,7 +269,7 @@ public class DataSourceDescriptor
 
         this.properties = new LinkedHashMap<>(source.properties);
         this.preferenceStore = new DataSourcePreferenceStore(this);
-        source.preferenceStore.execWithLock(false, m -> {
+        source.preferenceStore.lock().execReading(m -> {
             this.preferenceStore.setProperties(m.getProperties());
             this.preferenceStore.setDefaultProperties(m.getDefaultProperties());
         });

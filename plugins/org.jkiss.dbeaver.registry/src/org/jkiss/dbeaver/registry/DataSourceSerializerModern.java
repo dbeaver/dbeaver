@@ -744,7 +744,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 );
 
                 // Preferences
-                dataSource.getPreferenceStore().execWithLock(true, m -> m.getProperties().putAll(
+                dataSource.getPreferenceStore().lock().execWriting(m -> m.getProperties().putAll(
                     JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES)
                 ));
 
