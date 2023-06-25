@@ -30,16 +30,16 @@ import java.util.Map;
  * Originally copied from standard PreferenceStore class
  */
 public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
+    private DBPPreferenceStore parentStore;
+    private Map<String, String> properties;
+    private Map<String, String> defaultProperties;
+    private boolean dirty = false;
+
     public interface Mutable {
         DBPPreferenceStore getParentStore();
         Map<String, String> getProperties();
         Map<String, String> getDefaultProperties();
     }
-    
-    private DBPPreferenceStore parentStore;
-    private Map<String, String> properties;
-    private Map<String, String> defaultProperties;
-    private boolean dirty = false;
     
     private final Mutable mutator = new Mutable() {
         public DBPPreferenceStore getParentStore() {

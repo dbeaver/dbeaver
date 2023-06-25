@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.dashboard.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -35,7 +34,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
-import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -51,6 +49,8 @@ public class DashboardRegistry {
 
     private static DashboardRegistry instance = null;
 
+    private final Object syncRoot = new Object();
+
     public synchronized static DashboardRegistry getInstance() {
         if (instance == null) {
             instance = new DashboardRegistry(Platform.getExtensionRegistry());
@@ -58,7 +58,6 @@ public class DashboardRegistry {
         return instance;
     }
 
-    private final Object syncRoot = new Object();
     private final List<DashboardViewTypeDescriptor> viewTypeList = new ArrayList<>();
     private final Map<String, DashboardMapQueryDescriptor> mapQueries = new LinkedHashMap<>();
     private final Map<String, DashboardDescriptor> dashboardList = new LinkedHashMap<>();

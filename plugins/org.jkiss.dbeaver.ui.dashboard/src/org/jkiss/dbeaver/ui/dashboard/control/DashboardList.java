@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class DashboardList extends Composite implements DashboardGroupContainer {

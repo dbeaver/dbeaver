@@ -60,6 +60,16 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     private boolean singleChartMode;
     //private CLabel statusLabel;
 
+    private final Consumer<Object> dashboardsConfigChangedListener = a -> UIUtils.asyncExec(() -> {
+        dashContainer.setRedraw(false);
+
+        dashContainer.clear();
+        dashContainer.createDefaultDashboards();
+
+        dashContainer.layout(true, true);
+        dashContainer.setRedraw(true);
+    });
+
     public DashboardListViewer(IWorkbenchSite site, DBPDataSourceContainer dataSourceContainer, DashboardViewConfiguration viewConfiguration) {
         this.site = site;
         this.dataSourceContainer = dataSourceContainer;
@@ -104,16 +114,6 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
         updateStatus();
 
     }
-    
-    private Consumer<Object> dashboardsConfigChangedListener = a -> UIUtils.asyncExec(() ->{
-        dashContainer.setRedraw(false);
-
-        dashContainer.clear();
-        dashContainer.createDefaultDashboards();
-
-        dashContainer.layout(true, true);
-        dashContainer.setRedraw(true);
-    });
 
     public void createDashboardsFromConfiguration() {
         if (viewConfiguration.getDashboardItemConfigs().isEmpty()) {

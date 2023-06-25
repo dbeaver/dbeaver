@@ -176,7 +176,7 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
                 
                 List<Map.Entry<String, String>> props = store.lock().computeReading(m -> List.copyOf(m.getProperties().entrySet()));
                 if (props != null) {
-                    for (Map.Entry<String,String> entry : props) {
+                    for (Map.Entry<String, String> entry : props) {
                         xml.startElement("property");
                         xml.addAttribute("name", entry.getKey());
                         xml.addAttribute("value", entry.getValue());

@@ -22,6 +22,13 @@ import java.util.function.Supplier;
 
 public class ReaderWriterLock<TMutator> {
 
+    private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
+    private final Supplier<TMutator> mutatorSupplier;
+
+    public ReaderWriterLock(Supplier<TMutator> mutatorSupplier) {
+        this.mutatorSupplier = mutatorSupplier;
+    }
+
     public interface ExceptableConsumer<T, TEx extends Throwable> {
         void accept(T t) throws TEx;
     }
@@ -30,12 +37,6 @@ public class ReaderWriterLock<TMutator> {
         TResult apply(T t) throws TEx;
     }
 
-    private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
-    private final Supplier<TMutator> mutatorSupplier;
-    
-    public ReaderWriterLock(Supplier<TMutator> mutatorSupplier) {
-        this.mutatorSupplier = mutatorSupplier;
-    }
 
     public <TResult, TEx extends Throwable> TResult compute(boolean writing, ExceptableFunction<TMutator, TResult, TEx> action) throws TEx {
         Lock lock = writing ? rwLock.writeLock() : rwLock.readLock();

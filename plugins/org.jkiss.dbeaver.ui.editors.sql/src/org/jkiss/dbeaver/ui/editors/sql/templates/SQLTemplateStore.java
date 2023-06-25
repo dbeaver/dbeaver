@@ -36,7 +36,6 @@ import org.osgi.framework.Bundle;
 import java.io.*;
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
