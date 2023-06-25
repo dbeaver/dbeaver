@@ -449,6 +449,10 @@ public class MySQLCatalog implements
         if (hasStatistics && !forceRefresh) {
             return;
         }
+        if (isSystem()) {
+            hasStatistics = true;
+            return;
+        }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
             try (JDBCStatement dbStat = session.createStatement()) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery("SHOW TABLE STATUS FROM " + DBUtils.getQuotedIdentifier(this))) {

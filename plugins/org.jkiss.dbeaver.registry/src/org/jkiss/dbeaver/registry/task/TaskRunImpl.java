@@ -27,20 +27,24 @@ import java.util.Date;
  * TaskRunImpl
  */
 public class TaskRunImpl implements DBTTaskRun {
-    private String id;
-    private Date startTime;
-    private String startUser;
-    private String startedBy;
+    private final String id;
+    private final Date startTime;
+    private final String startUser;
+    private final String startedBy;
     private long duration;
     private String errorMessage;
     private String errorStackTrace;
     private String extraMessage;
 
-    TaskRunImpl() {
-        this.id = "void";
-    }
-
-    TaskRunImpl(String id, Date startTime, String startUser, String startedBy, long duration, String errorMessage, String errorStackTrace) {
+    protected TaskRunImpl(
+        @NotNull String id,
+        @NotNull Date startTime,
+        @NotNull String startUser,
+        @NotNull String startedBy,
+        long duration,
+        @Nullable String errorMessage,
+        @Nullable String errorStackTrace
+    ) {
         this.id = id;
         this.startTime = startTime;
         this.startUser = startUser;

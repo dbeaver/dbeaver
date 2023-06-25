@@ -34,7 +34,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.data.gis.leaflet.tiles">
-        <tiles id="osm" label="OpenStreetMap" layersDefinition="'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        <tiles id="osm" label="OpenStreetMap" layersDefinition="'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 18,
             attribution: '&amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/copyright&quot;>OpenStreetMap&lt;/a> contributors',
             id: 'osm.streets'}"/>

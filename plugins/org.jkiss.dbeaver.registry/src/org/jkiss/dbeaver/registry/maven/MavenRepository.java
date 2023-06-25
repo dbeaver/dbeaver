@@ -63,6 +63,7 @@ public class MavenRepository
     private int order;
     private boolean enabled = true;
     private String description;
+    private boolean isSnapshot = false;
     private final DBPAuthInfo authInfo = new DBPAuthInfo();
 
     private final transient Map<String, MavenArtifact> cachedArtifacts = new LinkedHashMap<>();
@@ -76,7 +77,7 @@ public class MavenRepository
         if (!urlString.endsWith("/")) urlString += "/";
         this.url = urlString;
         this.type = RepositoryType.GLOBAL;
-
+        this.isSnapshot = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_SNAPSHOT));
         for (IConfigurationElement scope : config.getChildren("scope")) {
             final String group = scope.getAttribute("group");
             if (!CommonUtils.isEmpty(group)) {
@@ -104,6 +105,7 @@ public class MavenRepository
         this.order = source.order;
         this.enabled = source.enabled;
         this.description = source.description;
+        this.isSnapshot = source.isSnapshot;
         this.authInfo.setUserName(source.authInfo.getUserName());
         this.authInfo.setUserPassword(source.authInfo.getUserPassword());
     }
@@ -114,6 +116,14 @@ public class MavenRepository
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public boolean isSnapshot() {
+        return isSnapshot;
+    }
+
+    public void setIsSnapshot(boolean snapshot) {
+        isSnapshot = snapshot;
     }
 
     public String getName() {

@@ -74,10 +74,11 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
     }
 
     protected SQLServerTableBase(
-        SQLServerSchema catalog,
-        ResultSet dbResult)
+        @NotNull SQLServerSchema catalog,
+        @NotNull ResultSet dbResult,
+        @NotNull String name)
     {
-        super(catalog, JDBCUtils.safeGetString(dbResult, "name"), true);
+        super(catalog, name, true);
 
         this.objectId = JDBCUtils.safeGetLong(dbResult, "object_id");
         this.description = JDBCUtils.safeGetString(dbResult, "description");
