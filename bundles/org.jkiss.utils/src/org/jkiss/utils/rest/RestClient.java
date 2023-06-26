@@ -99,7 +99,7 @@ public class RestClient {
         }
 
         @Override
-        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        public Object invoke(Object proxy, Method method, Object[] args) throws RestException {
             if (method.getDeclaringClass() == Object.class) {
                 return BeanUtils.handleObjectMethod(proxy, method, args);
             }
@@ -130,24 +130,38 @@ public class RestClient {
                 }
             }
 
-            final HttpResponse<?> response = client.send(
-                HttpRequest.newBuilder()
-                    .uri(uri.resolve(mapping.value()))
-                    .header("Content-Type", "application/json")
-                    .POST(BodyPublishers.ofString(gson.toJson(values)))
-                    .build(),
-                info -> BodySubscribers.mapping(
-                    BodySubscribers.ofInputStream(),
-                    is -> gson.fromJson(new InputStreamReader(is), method.getReturnType())
-                )
-            );
+            final HttpResponse<JsonElement> response;
 
-            return response.body();
+            try {
+                response = client.send(
+                    HttpRequest.newBuilder()
+                        .uri(uri.resolve(mapping.value()))
+                        .header("Content-Type", "application/json")
+                        .POST(BodyPublishers.ofString(gson.toJson(values)))
+                        .build(),
+                    info -> BodySubscribers.mapping(
+                        BodySubscribers.ofInputStream(),
+                        is -> gson.fromJson(new InputStreamReader(is), JsonElement.class)
+                    )
+                );
+            } catch (Exception e) {
+                throw new RestException(e);
+            }
+
+            if (response.statusCode() != 200) {
+                throw new RestException(response.body().getAsString());
+            }
+
+            if (method.getReturnType() == void.class) {
+                return null;
+            }
+
+            return gson.fromJson(response.body(), method.getReturnType());
         }
 
         @NotNull
-        private static Exception createException(@NotNull Method method, @NotNull String reason) {
-            return new IllegalStateException("Unable to invoke the method " + method + " because " + reason);
+        private static RestException createException(@NotNull Method method, @NotNull String reason) {
+            return new RestException("Unable to invoke the method " + method + " because " + reason);
         }
     }
 }

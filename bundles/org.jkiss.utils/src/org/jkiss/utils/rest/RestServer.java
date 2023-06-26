@@ -24,6 +24,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
@@ -117,11 +118,33 @@ public class RestServer<T> {
 
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            Response<?> response;
+
+            try {
+                response = createResponse(exchange);
+            } catch (IOException e) {
+                response = new Response<>(e.getMessage(), String.class, 500);
+            }
+
+            exchange.sendResponseHeaders(response.code, 0);
+
+            if (response.type != void.class) {
+                try (Writer writer = new BufferedWriter(new OutputStreamWriter(exchange.getResponseBody()))) {
+                    gson.toJson(response.object, response.type, writer);
+                }
+            }
+
+            exchange.close();
+        }
+
+        @NotNull
+        protected Response<?> createResponse(@NotNull HttpExchange exchange) throws IOException {
             if (!filter.test(exchange.getRemoteAddress())) {
-                log.info("Rejecting remote connection for " + exchange.getRemoteAddress());
-                exchange.sendResponseHeaders(403, 0);
-                exchange.close();
-                return;
+                return new Response<>("Access is forbidden", String.class, 403);
+            }
+
+            if (!exchange.getRequestMethod().equalsIgnoreCase("POST")) {
+                return new Response<>("Unsupported method", String.class, 405);
             }
 
             final URI uri = exchange.getRequestURI();
@@ -129,18 +152,13 @@ public class RestServer<T> {
             final Method method = mappings.get(path);
 
             if (method == null) {
-                log.severe("No mapping for path " + path);
-                exchange.sendResponseHeaders(404, 0);
-                exchange.close();
-                return;
+                return new Response<>("Mapping " + path + " not found", String.class, 404);
             }
 
             final Map<String, JsonElement> request;
 
             try (Reader reader = new BufferedReader(new InputStreamReader(exchange.getRequestBody()))) {
                 request = gson.fromJson(reader, REQUEST_TYPE);
-            } catch (Exception e) {
-                throw new IOException("Error reading request", e);
             }
 
             final Parameter[] parameters = method.getParameters();
@@ -153,30 +171,14 @@ public class RestServer<T> {
                 values[i] = gson.fromJson(element, p.getParameterizedType());
             }
 
-            final String response;
-
             try {
                 final Object result = method.invoke(object, values);
                 final Type type = method.getGenericReturnType();
-
-                if (type != void.class) {
-                    response = gson.toJson(result, type);
-                } else {
-                    response = "";
-                }
+                return new Response<>(result, type, 200);
             } catch (Throwable e) {
-                throw new IOException("Error invoking target method " + method, e);
+                return new Response<>(e.getMessage(), String.class, 500);
             }
-
-            exchange.sendResponseHeaders(200, response.length());
-
-            try (Writer writer = new BufferedWriter(new OutputStreamWriter(exchange.getResponseBody()))) {
-                writer.write(response);
-            }
-
-            exchange.close();
         }
-
 
         @NotNull
         protected Map<String, Method> createMappings(@NotNull Class<T> cls) {
@@ -260,6 +262,18 @@ public class RestServer<T> {
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
+        }
+    }
+
+    private static class Response<T> {
+        private final T object;
+        private final Type type;
+        private final int code;
+
+        public Response(@Nullable T object, @NotNull Type type, int code) {
+            this.object = object;
+            this.type = type;
+            this.code = code;
         }
     }
 }
