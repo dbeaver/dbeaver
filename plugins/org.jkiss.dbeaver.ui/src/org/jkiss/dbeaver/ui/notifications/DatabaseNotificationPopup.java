@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.notifications;
 
 import org.eclipse.swt.widgets.Shell;
 
-public class DatabaseNotificationPopup extends NotificationPopup {
+class DatabaseNotificationPopup extends DBeaverNotificationPopup {
 
 
     public DatabaseNotificationPopup(Shell parent) {

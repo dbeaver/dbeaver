@@ -17,8 +17,7 @@
 
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.core.expressions.*;
-import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.expressions.Expression;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.preference.IPreferencePage;
 import org.jkiss.dbeaver.Log;
@@ -33,6 +32,7 @@ public class DataSourcePageDescriptor extends AbstractDescriptor {
 
     private final String id;
     private final String parentId;
+    private final String afterPageId;
     private final String title;
     private final String description;
     private final ObjectType pageClass;
@@ -42,24 +42,11 @@ public class DataSourcePageDescriptor extends AbstractDescriptor {
         super(config.getContributor().getName());
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.parentId = config.getAttribute(RegistryConstants.ATTR_PARENT);
+        this.afterPageId = config.getAttribute("after");
         this.title = config.getAttribute("title");
         this.description = config.getAttribute("description");
         this.pageClass = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
-
-        {
-            IConfigurationElement[] elements = config.getChildren("enabledWhen");
-            if (elements.length > 0) {
-                try {
-                    IConfigurationElement[] enablement = elements[0].getChildren();
-                    if (enablement.length > 0) {
-                        enablementExpression = ExpressionConverter.getDefault().perform(enablement[0]);
-                    }
-                } catch (Exception e) {
-                    log.debug(e);
-                }
-            }
-        }
-
+        this.enablementExpression = getEnablementExpression(config);
     }
 
     public String getId() {
@@ -68,6 +55,10 @@ public class DataSourcePageDescriptor extends AbstractDescriptor {
 
     public String getParentId() {
         return parentId;
+    }
+
+    public String getAfterPageId() {
+        return afterPageId;
     }
 
     public String getTitle() {
@@ -91,19 +82,7 @@ public class DataSourcePageDescriptor extends AbstractDescriptor {
     }
 
     public boolean appliesTo(DBPDataSourceContainer dataSource) {
-        if (enablementExpression != null) {
-            try {
-                IEvaluationContext context = new EvaluationContext(null, dataSource);
-                EvaluationResult result = enablementExpression.evaluate(context);
-                if (result != EvaluationResult.TRUE) {
-                    return false;
-                }
-            } catch (CoreException e) {
-                log.debug(e);
-                return false;
-            }
-        }
-        return true;
+        return isExpressionTrue(enablementExpression, dataSource);
     }
 
     @Override

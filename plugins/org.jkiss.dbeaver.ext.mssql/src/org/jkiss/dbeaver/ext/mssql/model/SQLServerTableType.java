@@ -39,8 +39,8 @@ import java.util.Map;
 public class SQLServerTableType extends SQLServerTableBase {
     private transient volatile List<SQLServerTableForeignKey> references;
 
-    public SQLServerTableType(SQLServerSchema catalog, ResultSet dbResult) {
-        super(catalog, dbResult);
+    public SQLServerTableType(@NotNull SQLServerSchema catalog, @NotNull ResultSet dbResult, @NotNull String name) {
+        super(catalog, dbResult, name);
     }
 
     @Override

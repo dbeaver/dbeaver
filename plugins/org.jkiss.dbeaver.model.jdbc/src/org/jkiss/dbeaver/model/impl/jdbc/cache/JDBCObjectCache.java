@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.AbstractObjectCache;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -152,7 +153,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         addCustomObjects(tmpObjectList);
 
         Comparator<OBJECT> comparator = getListOrderComparator();
-        if (comparator != null) {
+        if (comparator != null && !CommonUtils.isEmpty(tmpObjectList)) {
             tmpObjectList.sort(comparator);
         }
 
