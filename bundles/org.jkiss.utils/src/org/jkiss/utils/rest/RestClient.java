@@ -23,7 +23,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -83,7 +82,7 @@ public class RestClient {
         }
 
         @NotNull
-        public T create() throws IOException {
+        public T create() {
             return RestClient.create(uri, cls, gson);
         }
     }

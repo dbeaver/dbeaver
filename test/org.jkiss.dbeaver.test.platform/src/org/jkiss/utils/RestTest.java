@@ -25,15 +25,15 @@ import org.jkiss.utils.rest.RestServer;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 
 public class RestTest {
     @Test
-    public void restClientServerTest() throws IOException {
+    public void restClientServerTest() {
         final RestServer<Controller> server = RestServer
             .builder(Controller.class, new ControllerImpl())
+            .setFilter(address -> address.getAddress().isLoopbackAddress())
             .create();
 
         final Controller client = RestClient
@@ -41,7 +41,7 @@ public class RestTest {
             .create();
 
         Assert.assertEquals("1.0", client.getVersion());
-        Assert.assertEquals(Map.of("version", "1.0", "name", "rest"), client.getSettings());
+        Assert.assertEquals(Map.of("version", "1.0", "name", "dbeaver"), client.getSettings());
         Assert.assertEquals("1.0", client.getSetting("version"));
         Assert.assertEquals("dbeaver", client.getSetting("name"));
         Assert.assertEquals("cool", client.getSetting("something", "cool"));

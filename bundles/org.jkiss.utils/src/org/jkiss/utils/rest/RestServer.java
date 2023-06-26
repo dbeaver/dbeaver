@@ -36,15 +36,23 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 public class RestServer<T> {
     private static final Logger log = Logger.getLogger(RestServer.class.getName());
     private final HttpServer server;
 
-    public RestServer(@NotNull Class<T> cls, @NotNull T object, @NotNull Gson gson, int port, int backlog) throws IOException {
+    public RestServer(
+        @NotNull Class<T> cls,
+        @NotNull T object,
+        @NotNull Gson gson,
+        @NotNull Predicate<InetSocketAddress> filter,
+        int port,
+        int backlog
+    ) throws IOException {
         server = HttpServer.create(new InetSocketAddress(port), backlog);
-        server.createContext("/", createHandler(cls, object, gson));
+        server.createContext("/", createHandler(cls, object, gson, filter));
         server.setExecutor(createExecutor());
         server.start();
     }
@@ -78,8 +86,13 @@ public class RestServer<T> {
     }
 
     @NotNull
-    protected RequestHandler<T> createHandler(@NotNull Class<T> cls, @NotNull T object, @NotNull Gson gson) {
-        return new RequestHandler<>(cls, object, gson);
+    protected RequestHandler<T> createHandler(
+        @NotNull Class<T> cls,
+        @NotNull T object,
+        @NotNull Gson gson,
+        @NotNull Predicate<InetSocketAddress> filter
+    ) {
+        return new RequestHandler<>(cls, object, gson, filter);
     }
 
     protected static class RequestHandler<T> implements HttpHandler {
@@ -88,15 +101,29 @@ public class RestServer<T> {
         private final T object;
         private final Gson gson;
         private final Map<String, Method> mappings;
+        private final Predicate<InetSocketAddress> filter;
 
-        protected RequestHandler(@NotNull Class<T> cls, @NotNull T object, @NotNull Gson gson) {
+        protected RequestHandler(
+            @NotNull Class<T> cls,
+            @NotNull T object,
+            @NotNull Gson gson,
+            @NotNull Predicate<InetSocketAddress> filter
+        ) {
             this.object = object;
             this.gson = gson;
             this.mappings = createMappings(cls);
+            this.filter = filter;
         }
 
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            if (!filter.test(exchange.getRemoteAddress())) {
+                log.info("Rejecting remote connection for " + exchange.getRemoteAddress());
+                exchange.sendResponseHeaders(403, 0);
+                exchange.close();
+                return;
+            }
+
             final URI uri = exchange.getRequestURI();
             final String path = uri.getPath().replaceAll("^/+", "");
             final Method method = mappings.get(path);
@@ -176,6 +203,7 @@ public class RestServer<T> {
                     continue;
                 }
 
+                method.setAccessible(true);
                 mappings.put(mapping.value(), method);
             }
 
@@ -184,11 +212,14 @@ public class RestServer<T> {
     }
 
     public static final class Builder<T> {
+        private static final Predicate<InetSocketAddress> DEFAULT_PREDICATE = address -> true;
+
         private final T object;
         private final Class<T> cls;
         private Gson gson;
         private int port;
         private int backlog;
+        private Predicate<InetSocketAddress> filter = DEFAULT_PREDICATE;
 
         private Builder(@NotNull T object, @NotNull Class<T> cls) {
             this.object = object;
@@ -217,8 +248,18 @@ public class RestServer<T> {
         }
 
         @NotNull
-        public RestServer<T> create() throws IOException {
-            return new RestServer<>(cls, object, gson, port, backlog);
+        public Builder<T> setFilter(@NotNull Predicate<InetSocketAddress> filter) {
+            this.filter = filter;
+            return this;
+        }
+
+        @NotNull
+        public RestServer<T> create() {
+            try {
+                return new RestServer<>(cls, object, gson, filter, port, backlog);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
         }
     }
 }
