@@ -76,6 +76,7 @@ public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode
                 break;
             }
         }
+        EditorUtils.appendProjectToolTip(toolTip, getNavigatorNode().getOwnerProject());
 
         return toolTip.toString();
     }
