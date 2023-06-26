@@ -27,13 +27,18 @@ public class QMMTransactionInfo extends QMMObject {
     private final QMMConnectionInfo connection;
     private final transient QMMTransactionInfo previous;
     private boolean committed;
-    private final transient QMMTransactionSavepointInfo savepointStack;
+    private final transient QMMTransactionSavepointInfo savepointStack = new QMMTransactionSavepointInfo(this, null, null, null);
 
     QMMTransactionInfo(QMMConnectionInfo connection, QMMTransactionInfo previous) {
         super(QMMetaObjectType.TRANSACTION_INFO);
         this.connection = connection;
         this.previous = previous;
-        this.savepointStack = new QMMTransactionSavepointInfo(this, null, null, null);
+    }
+
+    public QMMTransactionInfo(QMMConnectionInfo connection, long openTime) {
+        super(QMMetaObjectType.TRANSACTION_INFO, openTime, openTime);
+        this.connection = connection;
+        this.previous = null;
     }
 
     void commit() {
