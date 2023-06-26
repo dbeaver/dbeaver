@@ -16,7 +16,6 @@
  */
 package org.jkiss.utils.rest;
 
-import com.google.gson.Gson;
 import org.jkiss.code.NotNull;
 
 import java.io.IOException;
@@ -25,9 +24,13 @@ import java.util.Map;
 
 public class RestTest {
     public static void main(String[] args) throws IOException {
-        final Gson gson = new Gson();
-        final RestServer<Controller> server = new RestServer<>(new ControllerImpl(), Controller.class, gson, 5432);
-        final Controller client = RestClient.create(URI.create("http://localhost:5432"), Controller.class, gson);
+        final RestServer<Controller> server = RestServer
+            .builder(Controller.class, new ControllerImpl())
+            .create();
+
+        final Controller client = RestClient
+            .builder(URI.create("http://localhost:" + server.getAddress().getPort()), Controller.class)
+            .create();
 
         System.out.println("client.getVersion() = " + client.getVersion());
         System.out.println("client.getSettings() = " + client.getSettings());
@@ -35,7 +38,7 @@ public class RestTest {
         client.log("Hello");
         client.log("Hello %s", "DBeaver");
 
-        server.stop(0);
+        server.stop(5);
     }
 
     public interface Controller {

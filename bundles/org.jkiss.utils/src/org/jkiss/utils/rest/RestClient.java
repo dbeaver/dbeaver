@@ -17,11 +17,13 @@
 package org.jkiss.utils.rest;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import com.sun.istack.NotNull;
+import org.jkiss.code.NotNull;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -37,6 +39,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class RestClient {
+    static final Gson gson = new GsonBuilder()
+        .setLenient()
+        .disableHtmlEscaping()
+        .serializeNulls()
+        .create();
+
     private RestClient() {
         // prevents instantiation
     }
@@ -52,6 +60,33 @@ public class RestClient {
         return cls.cast(proxy);
     }
 
+    @NotNull
+    public static <T> Builder<T> builder(@NotNull URI uri, @NotNull Class<T> cls) {
+        return new Builder<>(uri, cls);
+    }
+
+    public static final class Builder<T> {
+        private final URI uri;
+        private final Class<T> cls;
+        private Gson gson;
+
+        private Builder(@NotNull URI uri, @NotNull Class<T> cls) {
+            this.uri = uri;
+            this.cls = cls;
+            this.gson = RestClient.gson;
+        }
+
+        @NotNull
+        public Builder<T> setGson(@NotNull Gson gson) {
+            this.gson = gson;
+            return this;
+        }
+
+        @NotNull
+        public T create() throws IOException {
+            return RestClient.create(uri, cls, gson);
+        }
+    }
 
     private static class ClientInvocationHandler implements InvocationHandler {
         private final URI uri;

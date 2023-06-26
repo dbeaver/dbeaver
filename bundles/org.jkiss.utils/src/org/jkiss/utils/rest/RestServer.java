@@ -35,25 +35,32 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.logging.Logger;
 
 public class RestServer<T> {
     private static final Logger log = Logger.getLogger(RestServer.class.getName());
     private final HttpServer server;
 
-    public RestServer(@NotNull T object, @NotNull Class<T> cls, @NotNull Gson gson, int port) throws IOException {
-        server = HttpServer.create(new InetSocketAddress(port), 0);
-        server.createContext("/", createHandler(object, cls, gson));
+    public RestServer(@NotNull Class<T> cls, @NotNull T object, @NotNull Gson gson, int port, int backlog) throws IOException {
+        server = HttpServer.create(new InetSocketAddress(port), backlog);
+        server.createContext("/", createHandler(cls, object, gson));
         server.setExecutor(createExecutor());
         server.start();
     }
 
+    @NotNull
+    public static <T> Builder<T> builder(@NotNull Class<T> cls, @NotNull T object) {
+        return new Builder<>(object, cls);
+    }
+
     public void stop(int delay) {
         server.stop(delay);
+
+        final Executor executor = server.getExecutor();
+        if (executor instanceof ExecutorService) {
+            ((ExecutorService) executor).shutdown();
+        }
     }
 
     @NotNull
@@ -67,8 +74,8 @@ public class RestServer<T> {
     }
 
     @NotNull
-    protected RequestHandler<T> createHandler(@NotNull T object, @NotNull Class<T> cls, @NotNull Gson gson) {
-        return new RequestHandler<>(object, cls, gson);
+    protected RequestHandler<T> createHandler(@NotNull Class<T> cls, @NotNull T object, @NotNull Gson gson) {
+        return new RequestHandler<>(cls, object, gson);
     }
 
     protected static class RequestHandler<T> implements HttpHandler {
@@ -78,7 +85,7 @@ public class RestServer<T> {
         private final Gson gson;
         private final Map<String, Method> mappings;
 
-        protected RequestHandler(@NotNull T object, @NotNull Class<T> cls, @NotNull Gson gson) {
+        protected RequestHandler(@NotNull Class<T> cls, @NotNull T object, @NotNull Gson gson) {
             this.object = object;
             this.gson = gson;
             this.mappings = createMappings(cls);
@@ -169,6 +176,45 @@ public class RestServer<T> {
             }
 
             return Collections.unmodifiableMap(mappings);
+        }
+    }
+
+    public static final class Builder<T> {
+        private final T object;
+        private final Class<T> cls;
+        private Gson gson;
+        private int port;
+        private int backlog;
+
+        private Builder(@NotNull T object, @NotNull Class<T> cls) {
+            this.object = object;
+            this.cls = cls;
+            this.gson = RestClient.gson;
+            this.port = 0;
+            this.backlog = 0;
+        }
+
+        @NotNull
+        public Builder<T> setGson(@NotNull Gson gson) {
+            this.gson = gson;
+            return this;
+        }
+
+        @NotNull
+        public Builder<T> setPort(int port) {
+            this.port = port;
+            return this;
+        }
+
+        @NotNull
+        public Builder<T> setBacklog(int backlog) {
+            this.backlog = backlog;
+            return this;
+        }
+
+        @NotNull
+        public RestServer<T> create() throws IOException {
+            return new RestServer<>(cls, object, gson, port, backlog);
         }
     }
 }
