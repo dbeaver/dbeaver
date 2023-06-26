@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.preferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ReaderWriterLock;
 
 import java.util.HashMap;
 import java.util.Map;

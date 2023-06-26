@@ -23,7 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
-import org.jkiss.dbeaver.model.impl.preferences.ReaderWriterLock;
+import org.jkiss.utils.ReaderWriterLock;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
