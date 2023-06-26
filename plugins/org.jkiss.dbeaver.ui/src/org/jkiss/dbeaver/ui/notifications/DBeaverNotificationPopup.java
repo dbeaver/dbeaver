@@ -32,7 +32,7 @@ import java.util.List;
  * @author Rob Elves
  * @author Mik Kersten
  */
-public class NotificationPopup extends AbstractWorkbenchNotificationPopup {
+public class DBeaverNotificationPopup extends AbstractWorkbenchNotificationPopup {
 
     private static final int NUM_NOTIFICATIONS_TO_DISPLAY = 4;
 
@@ -40,7 +40,7 @@ public class NotificationPopup extends AbstractWorkbenchNotificationPopup {
 
     private List<AbstractNotification> notifications;
 
-    public NotificationPopup(Shell parent) {
+    DBeaverNotificationPopup(Shell parent) {
         super(parent.getDisplay());
     }
 
