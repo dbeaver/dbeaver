@@ -14,16 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.utils.rest;
+package org.jkiss.utils;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.utils.rest.RequestMapping;
+import org.jkiss.utils.rest.RequestParameter;
+import org.jkiss.utils.rest.RestClient;
+import org.jkiss.utils.rest.RestServer;
+import org.junit.Assert;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 
 public class RestTest {
-    public static void main(String[] args) throws IOException {
+    @Test
+    public void restClientServerTest() throws IOException {
         final RestServer<Controller> server = RestServer
             .builder(Controller.class, new ControllerImpl())
             .create();
@@ -32,16 +40,17 @@ public class RestTest {
             .builder(URI.create("http://localhost:" + server.getAddress().getPort()), Controller.class)
             .create();
 
-        System.out.println("client.getVersion() = " + client.getVersion());
-        System.out.println("client.getSettings() = " + client.getSettings());
+        Assert.assertEquals("1.0", client.getVersion());
+        Assert.assertEquals(Map.of("version", "1.0", "name", "rest"), client.getSettings());
+        Assert.assertEquals("1.0", client.getSetting("version"));
+        Assert.assertEquals("dbeaver", client.getSetting("name"));
+        Assert.assertEquals("cool", client.getSetting("something", "cool"));
+        Assert.assertNull(client.getSetting("something"));
 
-        client.log("Hello");
-        client.log("Hello %s", "DBeaver");
-
-        server.stop(5);
+        server.stop();
     }
 
-    public interface Controller {
+    private interface Controller {
         @NotNull
         @RequestMapping("version")
         String getVersion();
@@ -50,14 +59,16 @@ public class RestTest {
         @RequestMapping("settings")
         Map<String, Object> getSettings();
 
-        @RequestMapping("log")
-        void log(@RequestParameter("message") @NotNull String message);
+        @Nullable
+        @RequestMapping("setting")
+        Object getSetting(@RequestParameter("key") @NotNull String key);
 
-        @RequestMapping("log/formatted")
-        void log(@RequestParameter("format") @NotNull String format, @RequestParameter("args") @NotNull Object... args);
+        @Nullable
+        @RequestMapping("setting/default")
+        Object getSetting(@RequestParameter("key") @NotNull String key, @RequestParameter("default") @Nullable Object def);
     }
 
-    public static class ControllerImpl implements Controller {
+    private static class ControllerImpl implements Controller {
         @NotNull
         @Override
         public String getVersion() {
@@ -67,17 +78,19 @@ public class RestTest {
         @NotNull
         @Override
         public Map<String, Object> getSettings() {
-            return Map.of("version", "1.0", "name", "rest");
+            return Map.of("version", "1.0", "name", "dbeaver");
         }
 
+        @Nullable
         @Override
-        public void log(@NotNull String message) {
-            System.out.println(message);
+        public Object getSetting(@NotNull String key) {
+            return getSettings().get(key);
         }
 
+        @Nullable
         @Override
-        public void log(@NotNull String format, @NotNull Object... args) {
-            System.out.printf(format + "%n", args);
+        public Object getSetting(@NotNull String key, @Nullable Object def) {
+            return getSettings().getOrDefault(key, def);
         }
     }
 }

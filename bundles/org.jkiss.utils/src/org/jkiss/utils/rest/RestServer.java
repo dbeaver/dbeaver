@@ -54,6 +54,10 @@ public class RestServer<T> {
         return new Builder<>(object, cls);
     }
 
+    public void stop() {
+        stop(0);
+    }
+
     public void stop(int delay) {
         server.stop(delay);
 
