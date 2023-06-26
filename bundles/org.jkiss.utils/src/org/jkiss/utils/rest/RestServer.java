@@ -63,7 +63,7 @@ public class RestServer<T> {
     }
 
     public void stop() {
-        stop(0);
+        stop(1);
     }
 
     public void stop(int delay) {
