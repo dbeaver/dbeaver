@@ -211,7 +211,11 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         final String fullTypeName = type != null ? DBUtils.getObjectFullName(type, DBPEvaluationContext.DDL) : column.getFullTypeName();
         String typeClause = fullTypeName;
         if (column.getDataSource().getServerType().supportsAlterTableColumnWithUSING()) {
-            typeClause += " USING " + DBUtils.getQuotedIdentifier(column) + "::" + fullTypeName;
+            typeClause += " USING " + DBUtils.getQuotedIdentifier(column);
+            if (type.getTypeCategory() == PostgreTypeCategory.E) {
+                typeClause += "::text";
+            }
+            typeClause += "::" + fullTypeName;
         }
         if (command.hasProperty("fullTypeName") || command.hasProperty("maxLength") || command.hasProperty("precision") || command.hasProperty("scale")) {
             actionList.add(new SQLDatabasePersistActionAtomic("Set column type", prefix + "TYPE " + typeClause, isAtomic));
