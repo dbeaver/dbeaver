@@ -23,6 +23,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -33,7 +36,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodySubscribers;
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -130,38 +132,37 @@ public class RestClient {
                 }
             }
 
-            final HttpResponse<JsonElement> response;
-
             try {
-                System.out.println("CLIENT: Sending request to " + uri.resolve(mapping.value()) + " with payload: " + gson.toJson(values));
-
-                response = client.send(
+                final HttpResponse<Reader> response = client.send(
                     HttpRequest.newBuilder()
                         .uri(URI.create(uri.toString() + '/' + mapping.value()))
                         .header("Content-Type", "application/json")
                         .POST(BodyPublishers.ofString(gson.toJson(values)))
                         .build(),
                     info -> BodySubscribers.mapping(
-                        BodySubscribers.ofString(StandardCharsets.UTF_8),
-                        json -> {
-                            System.out.println("CLIENT: Received response: " + json);
-                            return gson.fromJson(json, JsonElement.class);
-                        }
+                        BodySubscribers.ofInputStream(),
+                        InputStreamReader::new
                     )
                 );
+
+                try (Reader reader = response.body()) {
+                    if (response.statusCode() != 200) {
+                        final StringWriter writer = new StringWriter();
+                        reader.transferTo(writer);
+                        throw new RestException(writer.toString());
+                    }
+
+                    if (method.getReturnType() == void.class) {
+                        return null;
+                    }
+
+                    return gson.fromJson(response.body(), method.getReturnType());
+                }
+            } catch (RuntimeException e) {
+                throw e;
             } catch (Exception e) {
                 throw new RestException(e);
             }
-
-            if (response.statusCode() != 200) {
-                throw new RestException(response.body().getAsString());
-            }
-
-            if (method.getReturnType() == void.class) {
-                return null;
-            }
-
-            return gson.fromJson(response.body(), method.getReturnType());
         }
 
         @NotNull
