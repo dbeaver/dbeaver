@@ -131,7 +131,7 @@ public class RestServer<T> {
                 exchange.sendResponseHeaders(response.code, 0);
 
                 if (response.type != void.class) {
-                    try (Writer writer = new BufferedWriter(new OutputStreamWriter(exchange.getResponseBody()))) {
+                    try (Writer writer = new OutputStreamWriter(exchange.getResponseBody())) {
                         gson.toJson(response.object, response.type, writer);
                     }
                 }
