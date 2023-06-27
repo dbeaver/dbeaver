@@ -35,7 +35,6 @@ import javax.crypto.SecretKey;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CompletionStage;
 
 /**
  * Project meta information.
@@ -109,7 +108,7 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
 
     @NotNull
     DBPDataSourceRegistry getDataSourceRegistry();
-    
+
     @NotNull
     DBTTaskManager getTaskManager();
 

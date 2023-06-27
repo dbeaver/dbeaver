@@ -26,14 +26,20 @@ import java.util.function.Consumer;
 public class WorkspaceConfigEventManager {
     private static final Object syncRoot = new Object();
     private static final Map<String, Set<Consumer<Object>>> listenersByConfigFile = new HashMap<>();
-    
+
+    /**
+     * Subscribe for the event of the workspace configuration file being changed.
+     */
     public static void addConfigChangedListener(String configFileName, Consumer<Object> listener) {
         synchronized (syncRoot) {
             // using LinkedHashSet to guarantee listeners invocation order
             listenersByConfigFile.computeIfAbsent(configFileName, x -> new LinkedHashSet<>()).add(listener);
         }
     }
-    
+
+    /**
+     * Remove the listener of the workspace configuration file changed event.
+     */
     public static void removeConfigChangedListener(String configFileName, Consumer<Object> listener) {
         synchronized (syncRoot) {
             Set<Consumer<Object>> listeners = listenersByConfigFile.get(configFileName);
@@ -42,7 +48,10 @@ public class WorkspaceConfigEventManager {
             }
         }
     }
-    
+
+    /**
+     * Raise workspace configuration file changed event.
+     */
     public static void fireConfigChangedEvent(String configFileName) {
         List<Consumer<Object>> listenersList;
         synchronized (syncRoot) {

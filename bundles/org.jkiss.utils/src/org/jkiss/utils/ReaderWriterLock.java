@@ -20,25 +20,42 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
-public class ReaderWriterLock<TMutator> {
+public class ReaderWriterLock<MUTATOR> {
 
     private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
-    private final Supplier<TMutator> mutatorSupplier;
+    private final Supplier<MUTATOR> mutatorSupplier;
 
-    public ReaderWriterLock(Supplier<TMutator> mutatorSupplier) {
+    public ReaderWriterLock(Supplier<MUTATOR> mutatorSupplier) {
         this.mutatorSupplier = mutatorSupplier;
     }
 
-    public interface ExceptableConsumer<T, TEx extends Throwable> {
-        void accept(T t) throws TEx;
+    /**
+     * Represents an operation that accepts a single input argument and returns no result possibly throwing an exception.
+     */
+    public interface ExceptableConsumer<T, EXCEPTION extends Throwable> {
+        /**
+         * Performs the operation on the given argument.
+         */
+        void accept(T t) throws EXCEPTION;
     }
 
-    public interface ExceptableFunction<T, TResult, TEx extends Throwable> {
-        TResult apply(T t) throws TEx;
+    /**
+     * Represents an operation that accepts a single input argument and produces a result possibly throwing an exception.
+     */
+    public interface ExceptableFunction<T, RESULT, EXCEPTION extends Throwable> {
+        /**
+         * Performs the operation on the given argument and returns the result.
+         */
+        RESULT apply(T t) throws EXCEPTION;
     }
 
-
-    public <TResult, TEx extends Throwable> TResult compute(boolean writing, ExceptableFunction<TMutator, TResult, TEx> action) throws TEx {
+    /**
+     * Acquires the reader or writer lock, executes given operation and releases the lock returning the operation result.
+     */
+    public <RESULT, EXCEPTION extends Throwable> RESULT compute(
+        boolean writing,
+        ExceptableFunction<MUTATOR, RESULT, EXCEPTION> action
+    ) throws EXCEPTION {
         Lock lock = writing ? rwLock.writeLock() : rwLock.readLock();
         lock.lock();
         try {
@@ -47,24 +64,49 @@ public class ReaderWriterLock<TMutator> {
             lock.unlock();
         }
     }
-    
-    public <TResult, TEx extends Throwable> TResult computeReading(ExceptableFunction<TMutator, TResult, TEx> action) throws TEx {
+
+    /**
+     * Acquires the reader lock, executes given operation and releases the lock returning the operation result.
+     */
+    public <RESULT, EXCEPTION extends Throwable> RESULT computeReading(
+        ExceptableFunction<MUTATOR, RESULT, EXCEPTION> action
+    ) throws EXCEPTION {
         return this.compute(false, action);
-    } 
-    
-    public <TResult, TEx extends Throwable> TResult computeWriting(ExceptableFunction<TMutator, TResult, TEx> action) throws TEx {
+    }
+
+    /**
+     * Acquires the writer lock, executes given operation and releases the lock returning the operation result.
+     */
+    public <RESULT, EXCEPTION extends Throwable> RESULT computeWriting(
+        ExceptableFunction<MUTATOR, RESULT, EXCEPTION> action
+    ) throws EXCEPTION {
         return this.compute(true, action);
     }
 
-    public <TEx extends Throwable> void exec(boolean writing, ExceptableConsumer<TMutator, TEx> action) throws TEx {
-        this.compute(writing, m -> { action.accept(m); return null; });
+    /**
+     * Acquires the reader or writer lock, executes given operation and releases the lock.
+     */
+    public <EXCEPTION extends Throwable> void exec(
+        boolean writing,
+        ExceptableConsumer<MUTATOR, EXCEPTION> action
+    ) throws EXCEPTION {
+        this.compute(writing, m -> {
+            action.accept(m);
+            return null;
+        });
     }
-    
-    public <TEx extends Throwable> void execReading(ExceptableConsumer<TMutator, TEx> action) throws TEx {
+
+    /**
+     * Acquires the reader lock, executes given operation and releases the lock.
+     */
+    public <EXCEPTION extends Throwable> void execReading(ExceptableConsumer<MUTATOR, EXCEPTION> action) throws EXCEPTION {
         this.exec(false, action);
-    } 
-    
-    public <TEx extends Throwable> void execWriting(ExceptableConsumer<TMutator, TEx> action) throws TEx {
+    }
+
+    /**
+     * Acquires the writer lock, executes given operation and releases the lock.
+     */
+    public <EXCEPTION extends Throwable> void execWriting(ExceptableConsumer<MUTATOR, EXCEPTION> action) throws EXCEPTION {
         this.exec(true, action);
     }
 }
