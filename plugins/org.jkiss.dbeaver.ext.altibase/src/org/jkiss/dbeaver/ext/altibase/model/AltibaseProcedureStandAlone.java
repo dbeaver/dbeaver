@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericFunctionResultType;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -43,9 +44,18 @@ public class AltibaseProcedureStandAlone extends AltibaseProcedureBase {
     public String getProcedureTypeName() {
         DBSProcedureType procedureType = getProcedureType();
         if (procedureType == DBSProcedureType.UNKNOWN) {
-            return "TYPESET";
+            return AltibaseConstants.OBJ_TYPE_TYPESET;
         } else {
             return procedureType.name();
         }
+    }
+    
+    public void setObjectDefinitionText(String source)
+    {
+        this.source = source;
+    }
+    
+    public void setProcedureType(DBSProcedureType procedureType) {
+        //this.procedureType = procedureType;
     }
 }

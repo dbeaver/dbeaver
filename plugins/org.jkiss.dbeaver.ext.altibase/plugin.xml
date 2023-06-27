@@ -259,6 +259,7 @@
         <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseMaterializedViewManager" 	objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseMaterializedView"/>
         <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseTableColumnManager" 		objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableColumn"/>
         <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseSequenceManager" 			objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseSequence"/>
+        <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseProcedureManager" 			objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone"/>
         <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibasePackageManager" 			objectType="org.jkiss.dbeaver.ext.altibase.model.AltibasePackage"/>
         <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseTypesetManager" 			objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseTypeset"/>
         <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseSynonymManager" 			objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseSynonym"/>

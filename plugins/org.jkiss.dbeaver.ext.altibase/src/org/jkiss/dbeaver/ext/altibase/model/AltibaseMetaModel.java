@@ -1047,11 +1047,20 @@ public class AltibaseMetaModel extends GenericMetaModel {
             @Nullable JDBCResultSet dbResult)
         {
             if (tableType != null && isView(tableType)) {
-                return new AltibaseView(
-                    container,
-                    tableName,
-                    tableType,
-                    dbResult);
+                
+                if (tableType.equalsIgnoreCase(AltibaseConstants.OBJ_TYPE_MATERIALIZED_VIEW)) {
+                    return new AltibaseMaterializedView(
+                            container,
+                            tableName,
+                            tableType,
+                            dbResult);
+                } else {
+                    return new AltibaseView(
+                            container,
+                            tableName,
+                            tableType,
+                            dbResult);
+                }
             }
 
             return new AltibaseTable(

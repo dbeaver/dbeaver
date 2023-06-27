@@ -122,6 +122,5 @@ public class AltibaseProcedurePackaged extends AltibaseProcedureBase {
         } catch (SQLException e) {
             throw new DBException(e, getDataSource());
         }
-
     }
 }

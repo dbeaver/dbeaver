@@ -39,6 +39,11 @@ public abstract class AltibaseProcedureBase extends GenericProcedure implements 
     protected String source;
     protected List<GenericProcedureParameter> columns;
 
+    public AltibaseProcedureBase(GenericStructContainer container, String procedureName, 
+            DBSProcedureType procedureType) {
+        super(container, procedureName, null, null, procedureType, GenericFunctionResultType.UNKNOWN);
+    }
+    
     public AltibaseProcedureBase(GenericStructContainer container, String procedureName, String specificName,
             String description, DBSProcedureType procedureType, GenericFunctionResultType functionResultType) {
         super(container, procedureName, specificName, description, procedureType, functionResultType);

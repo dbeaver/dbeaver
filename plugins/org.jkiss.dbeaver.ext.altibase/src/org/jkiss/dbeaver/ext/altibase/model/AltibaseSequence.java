@@ -51,9 +51,6 @@ public class AltibaseSequence extends GenericSequence implements DBPScriptObject
     public AltibaseSequence(GenericStructContainer container, JDBCResultSet dbResult) {
         super(container, JDBCUtils.safeGetString(dbResult, "TABLE_NAME"), "", 0, 0, 0, 0);
 
-        //this.container    = container;
-        //this.name         = JDBCUtils.safeGetString(dbResult, "TABLE_NAME");
-        //this.description  = "";
         this.lastValue      = JDBCUtils.safeGetBigDecimal(dbResult, "CURRENT_SEQ");
         this.startWith      = JDBCUtils.safeGetBigDecimal(dbResult, "START_SEQ");
         this.minValue       = JDBCUtils.safeGetBigDecimal(dbResult, "MIN_SEQ");
@@ -126,8 +123,6 @@ public class AltibaseSequence extends GenericSequence implements DBPScriptObject
     public boolean isCycle() { 
         return flagCycle; 
     }
-
-    //public GenericSchema getSchema() { return container.getSchema(); }
 
     public String buildStatement(boolean forUpdate) {
         StringBuilder sb = new StringBuilder();

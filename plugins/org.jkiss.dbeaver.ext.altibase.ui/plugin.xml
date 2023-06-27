@@ -88,6 +88,14 @@
         <configurator class="org.jkiss.dbeaver.ext.generic.views.GenericTablePrimaryKeyConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseUniqueKey"/>
         </configurator>-->
+	    <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseProcedureConfigurator">
+	        <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone"/>
+	    </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibasePackageConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibasePackage"/>
+        </configurator>
     </extension>
 
+
+        
 </plugin>
