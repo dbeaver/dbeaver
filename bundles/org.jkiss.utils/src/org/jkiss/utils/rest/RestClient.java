@@ -137,7 +137,7 @@ public class RestClient {
 
                 response = client.send(
                     HttpRequest.newBuilder()
-                        .uri(uri.resolve(mapping.value()))
+                        .uri(URI.create(uri.toString() + '/' + mapping.value()))
                         .header("Content-Type", "application/json")
                         .POST(BodyPublishers.ofString(gson.toJson(values)))
                         .build(),
