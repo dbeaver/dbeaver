@@ -2243,6 +2243,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (scriptNameResolver.get(SQLPreferenceConstants.VAR_ACTIVE_SCHEMA) != null) {
             tip.append("\n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_schema, scriptNameResolver.get(SQLPreferenceConstants.VAR_ACTIVE_SCHEMA)));
         }
+        EditorUtils.appendProjectToolTip(tip, getProject());
 
         if (dataSourceContainer.getConnectionError() != null) {
             tip.append("\n\nConnection error:\n").append(dataSourceContainer.getConnectionError());
