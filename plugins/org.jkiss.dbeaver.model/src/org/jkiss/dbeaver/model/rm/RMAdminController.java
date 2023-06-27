@@ -32,4 +32,16 @@ public interface RMAdminController {
 
     @Nullable
     String readProjectConfiguration(@NotNull String projectId, @NotNull String configurationPath) throws DBException;
+
+    /**
+     * Move all project resources to a backup folder
+     *
+     * @return - backup id
+     */
+    String backupProject(@NotNull String projectId) throws DBException;
+
+    /**
+     * Copy all project resources from a backup to project folder
+     */
+    void restoreBackup(@NotNull String projectId, @NotNull String backupId) throws DBException;
 }
