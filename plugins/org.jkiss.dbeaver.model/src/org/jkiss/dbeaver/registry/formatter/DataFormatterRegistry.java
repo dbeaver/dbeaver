@@ -195,6 +195,9 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
         }
     }
 
+    /**
+     * Create custom data formatter profile with specified name and default settings
+     */
     public synchronized DBDDataFormatterProfile createCustomProfile(String profileName) {
         getCustomProfilesInternal();
         DBDDataFormatterProfile profile = new DataFormatterProfile(profileName, new CustomProfileStore());
@@ -203,6 +206,9 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
         return profile;
     }
 
+    /**
+     * Delete custom data formatter profile
+     */
     public synchronized void deleteCustomProfile(DBDDataFormatterProfile profile) {
         getCustomProfilesInternal();
         if (customProfiles.remove(profile)) {

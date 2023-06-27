@@ -275,7 +275,10 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
             oldSelection.redraw();
         }
     }
-    
+
+    /**
+     * Clear dashboards view
+     */
     public void clear() {
         selectedItem = null;
                 

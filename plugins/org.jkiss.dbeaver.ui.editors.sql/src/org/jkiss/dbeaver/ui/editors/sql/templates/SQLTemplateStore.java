@@ -93,7 +93,10 @@ public class SQLTemplateStore extends TemplateStore {
         
         return new SQLTemplateStore(registry, new CustomTemplatesStore());
     }
-    
+
+    /**
+     * Reload templates configuration
+     */
     public void reload() throws IOException {
         lock().execWriting(o -> {
             customTemplatesStore.loadTemplatesConfig();
@@ -277,12 +280,27 @@ public class SQLTemplateStore extends TemplateStore {
     }
 
     @Override
+    public void restoreDefaults() {
+        lock().execWriting(o -> super.restoreDefaults());
+    }
+
+    @Override
     public void add(TemplatePersistenceData data) {
         lock().execWriting(o -> super.add(data));
     }
 
     @Override
+    public void add(org.eclipse.text.templates.TemplatePersistenceData data) {
+        lock().execWriting(o -> super.add(data));
+    }
+
+    @Override
     public void delete(TemplatePersistenceData data) {
+        lock().execWriting(o -> super.delete(data));
+    }
+
+    @Override
+    public void delete(org.eclipse.text.templates.TemplatePersistenceData data) {
         lock().execWriting(o -> super.delete(data));
     }
 
@@ -307,23 +325,8 @@ public class SQLTemplateStore extends TemplateStore {
     }
 
     @Override
-    public void add(org.eclipse.text.templates.TemplatePersistenceData data) {
-        lock().execWriting(o -> super.add(data));
-    }
-
-    @Override
-    public void delete(org.eclipse.text.templates.TemplatePersistenceData data) {
-        lock().execWriting(o -> super.delete(data));
-    }
-
-    @Override
     public void restoreDeleted() {
         lock().execWriting(o -> super.restoreDeleted());
-    }
-
-    @Override
-    public void restoreDefaults() {
-        lock().execWriting(o -> super.restoreDefaults());
     }
 
     @Override

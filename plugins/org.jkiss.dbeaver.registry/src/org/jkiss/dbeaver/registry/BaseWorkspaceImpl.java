@@ -91,10 +91,10 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
             if (!(e instanceof DBInterruptedException)) {
                 log.debug(e);
                 DBWorkbench.getPlatformUI().showMessageBox(
-                        "Authentication error",
-                        "Error authenticating application user: " +
-                                "\n" + e.getMessage(),
-                        true);
+                    "Authentication error",
+                    "Error authenticating application user: " +
+                        "\n" + e.getMessage(),
+                    true);
             }
             dispose();
             System.exit(101);
