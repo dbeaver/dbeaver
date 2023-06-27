@@ -33,6 +33,7 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -127,6 +128,8 @@ public class RestServer<T> {
                 response = new Response<>(e.getMessage(), String.class, 500);
             }
 
+            System.out.println("SERVER: Sending response with code " + response.code + ", type " + response.type + ", data " + gson.toJson(response.object, response.type));
+
             try {
                 exchange.sendResponseHeaders(response.code, 0);
 
@@ -142,6 +145,8 @@ public class RestServer<T> {
 
         @NotNull
         protected Response<?> createResponse(@NotNull HttpExchange exchange) throws IOException {
+            System.out.println("SERVER: Received a request from " + exchange.getRemoteAddress());
+
             if (!filter.test(exchange.getRemoteAddress())) {
                 return new Response<>("Access is forbidden", String.class, 403);
             }
@@ -154,14 +159,18 @@ public class RestServer<T> {
             final String path = uri.getPath().replaceAll("^/+", "");
             final Method method = mappings.get(path);
 
+            System.out.println("SERVER: Accessing mapping " + path + " (" + method + ")");
+
             if (method == null) {
                 return new Response<>("Mapping " + path + " not found", String.class, 404);
             }
 
             final Map<String, JsonElement> request;
 
-            try (Reader reader = new BufferedReader(new InputStreamReader(exchange.getRequestBody()))) {
-                request = gson.fromJson(reader, REQUEST_TYPE);
+            try (InputStream is = exchange.getRequestBody()) {
+                final String json = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+                System.out.println("SERVER: Received request payload: " + json);
+                request = gson.fromJson(json, REQUEST_TYPE);
             }
 
             final Parameter[] parameters = method.getParameters();

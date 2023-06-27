@@ -23,7 +23,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.InputStreamReader;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -34,6 +33,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodySubscribers;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -133,6 +133,8 @@ public class RestClient {
             final HttpResponse<JsonElement> response;
 
             try {
+                System.out.println("CLIENT: Sending request to " + uri.resolve(mapping.value()) + " with payload: " + gson.toJson(values));
+
                 response = client.send(
                     HttpRequest.newBuilder()
                         .uri(uri.resolve(mapping.value()))
@@ -140,8 +142,11 @@ public class RestClient {
                         .POST(BodyPublishers.ofString(gson.toJson(values)))
                         .build(),
                     info -> BodySubscribers.mapping(
-                        BodySubscribers.ofInputStream(),
-                        is -> gson.fromJson(new InputStreamReader(is), JsonElement.class)
+                        BodySubscribers.ofString(StandardCharsets.UTF_8),
+                        json -> {
+                            System.out.println("CLIENT: Received response: " + json);
+                            return gson.fromJson(json, JsonElement.class);
+                        }
                     )
                 );
             } catch (Exception e) {
