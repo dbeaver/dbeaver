@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.runtime.serialize;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 
@@ -27,8 +28,15 @@ import java.util.Map;
  */
 public interface DBPObjectSerializer<CONTEXT_TYPE, OBJECT_TYPE> {
 
-    void serializeObject(DBRRunnableContext runnableContext, CONTEXT_TYPE context, OBJECT_TYPE object, Map<String, Object> state);
+    void serializeObject(
+        @NotNull DBRRunnableContext runnableContext,
+        @NotNull CONTEXT_TYPE context,
+        @NotNull OBJECT_TYPE object,
+        @NotNull Map<String, Object> state);
 
-    OBJECT_TYPE deserializeObject(DBRRunnableContext runnableContext, CONTEXT_TYPE objectContext, Map<String, Object> state) throws DBCException;
+    OBJECT_TYPE deserializeObject(
+        @NotNull DBRRunnableContext runnableContext,
+        @NotNull CONTEXT_TYPE objectContext,
+        @NotNull Map<String, Object> state) throws DBCException;
 
 }

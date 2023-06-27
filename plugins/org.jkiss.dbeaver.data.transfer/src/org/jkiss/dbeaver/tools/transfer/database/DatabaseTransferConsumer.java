@@ -53,7 +53,10 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Stream transfer consumer
@@ -826,7 +829,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             (containerMapping.getTarget() != null || !CommonUtils.isEmpty(containerMapping.getTargetName()));
     }
 
-    DBPDataSourceContainer getDataSourceContainer() {
+    @Override
+    public DBPDataSourceContainer getDataSourceContainer() {
         if (targetObjectContainer != null) {
             return targetObjectContainer.getDataSource().getContainer();
         }

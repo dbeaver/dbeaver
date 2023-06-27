@@ -53,6 +53,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -65,7 +66,9 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
     private final DBCStatistics producerStatistics = new DBCStatistics();
 
+    private DBPDataSourceContainer dataSourceContainer;
     private DBSDataContainer dataContainer;
+    private String objectId;
     @Nullable
     private DBDDataFilter dataFilter;
     @Nullable
@@ -103,7 +106,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         if (queryContainer != null) {
             return CommonUtils.getSingleLineString(queryContainer.getQuery().toString());
         }
-        return dataContainer == null ? "?" : DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.DML);
+        return dataContainer == null ? objectId : DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.DML);
     }
 
     @Override
@@ -117,7 +120,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
     @Override
     public String getObjectContainerName() {
         DBPDataSourceContainer container = getDataSourceContainer();
-        return container != null ? container.getName() : "?";
+        return container != null ? container.getName() : objectId;
     }
 
     @Override
@@ -131,11 +134,12 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         return dataContainer != null;
     }
 
-    private DBPDataSourceContainer getDataSourceContainer() {
+    @Override
+    public DBPDataSourceContainer getDataSourceContainer() {
         if (dataContainer != null) {
             return dataContainer.getDataSource().getContainer();
         }
-        return null;
+        return dataSourceContainer;
     }
 
     @Nullable
@@ -318,7 +322,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
     public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, DatabaseTransferProducer> {
 
         @Override
-        public void serializeObject(DBRRunnableContext runnableContext, DBTTask context, DatabaseTransferProducer object, Map<String, Object> state) {
+        public void serializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull DBTTask context, @NotNull DatabaseTransferProducer object, @NotNull Map<String, Object> state) {
             DBSDataContainer dataContainer = object.dataContainer;
             if (dataContainer instanceof IAdaptable) {
                 DBSDataContainer nestedDataContainer = ((IAdaptable) dataContainer).getAdapter(DBSDataContainer.class);
@@ -360,7 +364,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         }
 
         @Override
-        public DatabaseTransferProducer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) throws DBCException {
+        public DatabaseTransferProducer deserializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull DBTTask objectContext, @NotNull Map<String, Object> state) throws DBCException {
             DatabaseTransferProducer producer = new DatabaseTransferProducer();
             try {
                 runnableContext.run(true, true, monitor -> {
@@ -374,9 +378,18 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                         switch (selType) {
                             case "entity": {
                                 String id = CommonUtils.toString(state.get("entityId"));
-                                producer.dataContainer = (DBSDataContainer) DBUtils.findObjectById(monitor, project, id);
-                                if (producer.dataContainer == null) {
-                                    throw new DBException("Can't find database object '" + id + "'");
+                                String[] pathItems = id.split("/");
+                                if (pathItems.length > 2) {
+                                    producer.objectId =String.join("/", List.of(pathItems).subList(2, pathItems.length));
+                                } else {
+                                    producer.objectId = id;
+                                }
+                                producer.dataSourceContainer = DBUtils.findDataSourceByObjectId(project, id);
+                                try {
+                                    producer.dataContainer = (DBSDataContainer) DBUtils.findObjectById(monitor, project, id);
+                                } catch (DBException e) {
+                                    log.error(e);
+                                    //throw new DBException("Can't find database object '" + id + "'");
                                 }
                                 break;
                             }

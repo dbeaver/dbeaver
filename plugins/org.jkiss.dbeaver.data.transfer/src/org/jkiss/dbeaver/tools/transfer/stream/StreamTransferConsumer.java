@@ -902,6 +902,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return null;
     }
 
+    @Override
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return null;
+    }
+
     public static Object[] fetchRow(DBCSession session, DBCResultSet resultSet, DBDAttributeBinding[] attributes) throws DBCException {
         int columnCount = attributes.length; // Column count without virtual columns
 
@@ -1085,11 +1090,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, StreamTransferConsumer> {
 
         @Override
-        public void serializeObject(DBRRunnableContext runnableContext, DBTTask context, StreamTransferConsumer object, Map<String, Object> state) {
+        public void serializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull DBTTask context, @NotNull StreamTransferConsumer object, @NotNull Map<String, Object> state) {
         }
 
         @Override
-        public StreamTransferConsumer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) {
+        public StreamTransferConsumer deserializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull DBTTask objectContext, @NotNull Map<String, Object> state) {
             return new StreamTransferConsumer();
         }
     }

@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -77,6 +78,11 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
     public StreamEntityMapping getDatabaseObject()
     {
         return entityMapping;
+    }
+
+    @Override
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return entityMapping.getDataSource().getContainer();
     }
 
     @Override
@@ -159,7 +165,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
     public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, StreamTransferProducer> {
 
         @Override
-        public void serializeObject(DBRRunnableContext runnableContext, DBTTask context, StreamTransferProducer object, Map<String, Object> state) {
+        public void serializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull DBTTask context, @NotNull StreamTransferProducer object, @NotNull Map<String, Object> state) {
             state.put("file", object.getInputFile().getAbsolutePath());
             if (object.defaultProcessor != null) {
                 state.put("node", object.defaultProcessor.getNode().getId());
@@ -168,7 +174,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         }
 
         @Override
-        public StreamTransferProducer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) {
+        public StreamTransferProducer deserializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull DBTTask objectContext, @NotNull Map<String, Object> state) {
             File inputFile = new File(CommonUtils.toString(state.get("file")));
             String nodeId = CommonUtils.toString(state.get("node"));
             String processorId = CommonUtils.toString(state.get("processor"));

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -34,11 +35,11 @@ public class DatabaseTransferConsumerSerializer implements DBPObjectSerializer<D
     private static final Log log = Log.getLog(DatabaseTransferConsumerSerializer.class);
 
     @Override
-    public void serializeObject(DBRRunnableContext runnableContext, DBTTask context, DatabaseTransferConsumer object, Map<String, Object> state) {
+    public void serializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull DBTTask context, @NotNull DatabaseTransferConsumer object, @NotNull Map<String, Object> state) {
     }
 
     @Override
-    public DatabaseTransferConsumer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) throws DBCException {
+    public DatabaseTransferConsumer deserializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull DBTTask objectContext, @NotNull Map<String, Object> state) throws DBCException {
         return new DatabaseTransferConsumer();
     }
 }

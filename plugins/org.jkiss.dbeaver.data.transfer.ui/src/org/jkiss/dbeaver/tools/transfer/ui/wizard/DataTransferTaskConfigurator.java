@@ -26,10 +26,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -373,9 +370,12 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
             item.setImage(0, DBeaverIcons.getImage(node.getObjectIcon()));
             item.setText(0, CommonUtils.getSingleLineString(CommonUtils.toString(node.getObjectName(), "?")));
 
-            DBSObject object = node.getDatabaseObject();
-            if (object != null && object.getDataSource() != null) {
-                item.setText(1, object.getDataSource().getContainer().getName());
+            if (node.getDataSourceContainer() != null) {
+                item.setText(1, node.getDataSourceContainer().getName());
+                DBPImage dsIcon = node.getObjectContainerIcon();
+                if (dsIcon != null) {
+                    item.setImage(1, DBeaverIcons.getImage(dsIcon));
+                }
             }
         }
 
