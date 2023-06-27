@@ -96,7 +96,6 @@ public abstract class BaseProjectImpl implements DBPProject {
 
     private boolean inMemory;
 
-    private boolean isRegistryLoading = false;
     private CompletableFuture<DBPDataSourceRegistry> completableRegistry = null;
 
     public BaseProjectImpl(@NotNull DBPWorkspace workspace, @Nullable SMSessionContext sessionContext) {
@@ -173,11 +172,6 @@ public abstract class BaseProjectImpl implements DBPProject {
     @Override
     public boolean isRegistryLoaded() {
         return dataSourceRegistry != null;
-    }
-    
-    @Override
-    public boolean isRegistryLoading() {
-        return isRegistryLoading;
     }
 
     @Override

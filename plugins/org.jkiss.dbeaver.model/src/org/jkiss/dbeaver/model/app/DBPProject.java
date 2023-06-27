@@ -89,8 +89,6 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
 
     boolean isRegistryLoaded();
 
-    boolean isRegistryLoading();
-
     /**
      * Encrypted project configuration files are stored in encrypted form
      */
