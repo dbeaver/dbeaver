@@ -60,20 +60,11 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
 
     @Override
     public final void initializeProjects() {
+        initializeWorkspaceSession();
         try {
-            initializeWorkspaceSession();
-    
             loadWorkspaceProjects();
-        } catch (DBException e) {
-            if (!(e instanceof DBInterruptedException)) {
-                log.debug(e);
-                DBWorkbench.getPlatformUI().showMessageBox(
-                    "Authentication error",
-                    "Error authenticating application user: \n" + e.getMessage(),
-                    true);
-            }
-            dispose();
-            System.exit(101);
+        } catch (DBException ex) {
+            log.error("Can't load workspace projects", ex);
         }
         
         if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects) &&

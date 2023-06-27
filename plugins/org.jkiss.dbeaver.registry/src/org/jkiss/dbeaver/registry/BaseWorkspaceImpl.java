@@ -34,6 +34,8 @@ import org.jkiss.dbeaver.model.impl.auth.SessionContextImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
+import org.jkiss.dbeaver.runtime.DBInterruptedException;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
@@ -81,9 +83,22 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
 
     public abstract void initializeProjects();
 
-    public void initializeWorkspaceSession() throws DBException {
+    public void initializeWorkspaceSession() {
         // Acquire workspace session
-        this.getAuthContext().addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
+        try {
+            this.getAuthContext().addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
+        } catch (DBException e) {
+            if (!(e instanceof DBInterruptedException)) {
+                log.debug(e);
+                DBWorkbench.getPlatformUI().showMessageBox(
+                        "Authentication error",
+                        "Error authenticating application user: " +
+                                "\n" + e.getMessage(),
+                        true);
+            }
+            dispose();
+            System.exit(101);
+        }
     }
 
     public static Properties readWorkspaceInfo(Path metadataFolder) {

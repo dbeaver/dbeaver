@@ -107,8 +107,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
 //        EditorUtils.trackControlContext(getSite(), this.tree.getViewer().getControl(), INavigatorModelView.NAVIGATOR_CONTEXT_ID);
 //        EditorUtils.trackControlContext(getSite(), this.tree.getViewer().getControl(), INavigatorModelView.NAVIGATOR_VIEW_CONTEXT_ID);
 
-        DBWorkbench.getPlatform().getWorkspace().getActiveProject().getDataSourceRegistryAsync()
-            .thenRun(() -> UIExecutionQueue.queueExec(() -> tree.setInput(getRootNode())));
+        UIExecutionQueue.queueExec(() -> tree.setInput(getRootNode()));
     }
 
     private DatabaseNavigatorTree createNavigatorTree(Composite parent, DBNNode rootNode)

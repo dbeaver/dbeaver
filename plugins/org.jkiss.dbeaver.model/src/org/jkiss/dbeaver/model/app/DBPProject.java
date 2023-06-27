@@ -111,9 +111,6 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     DBPDataSourceRegistry getDataSourceRegistry();
     
     @NotNull
-    CompletionStage<DBPDataSourceRegistry> getDataSourceRegistryAsync();
-    
-    @NotNull
     DBTTaskManager getTaskManager();
 
     /**

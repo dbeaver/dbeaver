@@ -744,9 +744,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 );
 
                 // Preferences
-                dataSource.getPreferenceStore().lock().execWriting(m -> m.getProperties().putAll(
+                dataSource.getPreferenceStore().getProperties().putAll(
                     JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES)
-                ));
+                );
 
                 // Virtual model
                 String vmID = CommonUtils.toString(conObject.get("virtual-model-id"), id);

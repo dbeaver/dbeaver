@@ -230,12 +230,10 @@ public class SQLTemplateStore extends TemplateStore {
         public void loadTemplatesConfig() {
             try {
                 String content = DBWorkbench.getPlatform().getProductConfigurationController().loadConfigurationFile(TEMPLATES_CONFIG_XML);
-                lock().execWriting(m -> {
-                    clear();
-                    if (CommonUtils.isNotEmpty(content)) {
-                        setValue(PREF_STORE_KEY, content);
-                    }
-                });
+                clear();
+                if (CommonUtils.isNotEmpty(content)) {
+                    setValue(PREF_STORE_KEY, content);
+                }
             } catch (DBException e) {
                 log.error(e);
             }

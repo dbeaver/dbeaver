@@ -173,10 +173,9 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
                 xml.startElement("profile");
                 xml.addAttribute("name", profile.getProfileName());
                 SimplePreferenceStore store = (SimplePreferenceStore) profile.getPreferenceStore();
-                
-                List<Map.Entry<String, String>> props = store.lock().computeReading(m -> List.copyOf(m.getProperties().entrySet()));
+                Map<String, String> props = store.getProperties();
                 if (props != null) {
-                    for (Map.Entry<String, String> entry : props) {
+                    for (Map.Entry<String, String> entry : props.entrySet()) {
                         xml.startElement("property");
                         xml.addAttribute("name", entry.getKey());
                         xml.addAttribute("value", entry.getValue());
@@ -191,7 +190,6 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
             out.flush();
             DBWorkbench.getPlatform().getProductConfigurationController()
                 .saveConfigurationFile(CONFIG_FILE_NAME, out.getBuffer().toString());
-            System.out.println("format saved");
         } catch (Throwable ex) {
             log.warn("Failed to save data formatter profiles to " + CONFIG_FILE_NAME, ex);
         }
