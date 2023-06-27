@@ -217,10 +217,10 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
                 objects = new ArrayList<>(objects);
                 for (int i = 0; i < objects.size(); i++) {
                     OBJECT newObject = objects.get(i);
-                    String newObjectName = getObjectName(newObject);
+                    String newObjectName = newObject.getName();
                     for (int k = 0; k < objectList.size(); k++) {
                         OBJECT oldObject = objectList.get(k);
-                        String oldObjectName = getObjectName(oldObject);
+                        String oldObjectName = oldObject.getName();
                         if (newObjectName.equals(oldObjectName)) {
                             objects.set(i, oldObject);
                             break;
