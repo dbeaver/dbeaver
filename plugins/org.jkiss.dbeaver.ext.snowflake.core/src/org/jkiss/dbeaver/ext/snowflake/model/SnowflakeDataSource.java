@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.snowflake.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
@@ -26,15 +27,21 @@ import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 public class SnowflakeDataSource extends GenericDataSource {
+
+    private static final String APPLICATION_PROPERTY = "application";
 
     public SnowflakeDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, SnowflakeMetaModel metaModel)
         throws DBException
@@ -68,6 +75,22 @@ public class SnowflakeDataSource extends GenericDataSource {
     @Override
     protected boolean isPopulateClientAppName() {
         return false;
+    }
+
+    @Override
+    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+        Properties props = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
+        DBPPreferenceStore prefStore = getContainer().getPreferenceStore();
+        if (!prefStore.getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
+            String appName;
+            if (prefStore.getBoolean(ModelPreferences.META_CLIENT_NAME_OVERRIDE)) {
+                appName = prefStore.getString(ModelPreferences.META_CLIENT_NAME_VALUE);
+            } else {
+                appName = GeneralUtils.getProductName();
+            }
+            props.put(APPLICATION_PROPERTY, appName);
+        }
+        return props;
     }
 
     @NotNull
