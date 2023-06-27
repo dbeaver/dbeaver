@@ -16,9 +16,20 @@
  */
 package org.jkiss.dbeaver.model.rm;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+
 /**
  * Resource manager administration API.
  */
-public interface RMAdminController extends RMController {
-    void saveProjectConfiguration(String projectId);
+public interface RMAdminController {
+    void saveProjectConfiguration(
+        @NotNull String projectId,
+        @NotNull String configurationPath,
+        @NotNull String configuration
+    ) throws DBException;
+
+    @Nullable
+    String readProjectConfiguration(@NotNull String projectId, @NotNull String configurationPath) throws DBException;
 }
