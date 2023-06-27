@@ -116,6 +116,7 @@ public class RestServer<T> {
             this.filter = filter;
         }
 
+        @SuppressWarnings("TryFinallyCanBeTryWithResources")
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             Response<?> response;
@@ -126,15 +127,17 @@ public class RestServer<T> {
                 response = new Response<>(e.getMessage(), String.class, 500);
             }
 
-            exchange.sendResponseHeaders(response.code, 0);
+            try {
+                exchange.sendResponseHeaders(response.code, 0);
 
-            if (response.type != void.class) {
-                try (Writer writer = new BufferedWriter(new OutputStreamWriter(exchange.getResponseBody()))) {
-                    gson.toJson(response.object, response.type, writer);
+                if (response.type != void.class) {
+                    try (Writer writer = new BufferedWriter(new OutputStreamWriter(exchange.getResponseBody()))) {
+                        gson.toJson(response.object, response.type, writer);
+                    }
                 }
+            } finally {
+                exchange.close();
             }
-
-            exchange.close();
         }
 
         @NotNull
