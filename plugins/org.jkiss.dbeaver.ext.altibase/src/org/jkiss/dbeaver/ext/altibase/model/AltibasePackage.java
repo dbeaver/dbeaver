@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.altibase.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.altibase.AltibaseUtils;
+import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericPackage;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -73,5 +74,12 @@ public class AltibasePackage extends GenericPackage {
     @Property(viewable = true, order = 5)
     public boolean isValid() {
         return status;
+    }
+    
+    @Override
+    @Property(viewable = false, hidden = true, order = 3)
+    public GenericCatalog getCatalog()
+    {
+        return super.getCatalog();
     }
 }

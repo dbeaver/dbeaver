@@ -46,7 +46,7 @@
                      label="Altibase"
                      sampleURL="jdbc:Altibase://{host}:{port}/{database}">
                      
-                    <!-- At the moment HTTPS link doesn't work. But we can't keep HTTP anyway. 
+                    <!-- Altibase requires JDBC files that match the version.
                     <file type="jar" path="https://ftp.altibase.com/JDBC_Driver/Altibase-7.1.0.jar"/>
                     webURL="http://support.altibase.com/kr/product"-->
                     

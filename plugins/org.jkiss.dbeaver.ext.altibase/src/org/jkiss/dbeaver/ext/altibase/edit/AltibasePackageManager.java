@@ -39,7 +39,7 @@ public class AltibasePackageManager extends SQLObjectEditor<GenericPackage, Gene
     
     @Override
     public boolean canCreateObject(Object container) {
-        return true;
+        return false;
     }
 
     @Override

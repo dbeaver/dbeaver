@@ -59,12 +59,15 @@ public class AltibaseProcedureManager extends GenericProcedureManager  {
             List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options){
         createOrReplaceProcedureQuery(actions, command.getObject());
     }
-    
+
     @Override
     protected GenericProcedure createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
-        Object from, Map<String, Object> options) {
-        throw new IllegalStateException("Not implemented");
+            DBRProgressMonitor monitor, DBECommandContext context, final Object container,
+            Object from, Map<String, Object> options) {
+        return new AltibaseProcedureStandAlone(
+                (GenericStructContainer)container,
+                "NEW_PROCEDURE",
+                DBSProcedureType.PROCEDURE);
     }
 
     @Override

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericFunctionResultType;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 public class AltibaseTypeset extends AltibaseProcedureStandAlone {
@@ -27,5 +28,18 @@ public class AltibaseTypeset extends AltibaseProcedureStandAlone {
     public AltibaseTypeset(GenericStructContainer container, String procedureName) {
         super(container, procedureName, procedureName, "", DBSProcedureType.UNKNOWN, GenericFunctionResultType.NO_TABLE);
         //this.isValid = isValid;
+    }
+    
+    @Override
+    @Property(viewable = false, hidden = true, order = 6)
+    public DBSProcedureType getProcedureType()
+    {
+        return super.getProcedureType();
+    }
+    
+    @Override
+    @Property(viewable = false, hidden = true, order = 7)
+    public GenericFunctionResultType getFunctionResultType() {
+        return super.getFunctionResultType();
     }
 }

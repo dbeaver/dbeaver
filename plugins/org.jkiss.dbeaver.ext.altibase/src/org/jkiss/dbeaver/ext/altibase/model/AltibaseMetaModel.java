@@ -16,6 +16,14 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -36,7 +44,6 @@ import org.jkiss.dbeaver.ext.generic.model.GenericSynonym;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
@@ -58,14 +65,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
-
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Altibase DataSource
