@@ -66,8 +66,10 @@ public class DBeaverCommandLine
     public static final String PARAM_BRING_TO_FRONT = "bringToFront";
     public static final String PARAM_QUIET = "q";
 
+    private static final String PARAM_VERSION = "version";
+
     public final static Options ALL_OPTIONS = new Options()
-        .addOption(PARAM_HELP, false, "Help")
+        .addOption(PARAM_HELP, PARAM_HELP, false, "Help")
         .addOption(PARAM_CONFIG, "variablesFile", true, "Uses a specified configuration file for variable resolving")
         .addOption(PARAM_FILE, "file", true, "Open a file")
         .addOption(PARAM_STOP, "quit", false, "Stop DBeaver running instance")
@@ -79,6 +81,12 @@ public class DBeaverCommandLine
         .addOption(PARAM_NEW_INSTANCE, PARAM_NEW_INSTANCE, false, "Force creating new application instance (do not try to activate already running)")
         .addOption(PARAM_BRING_TO_FRONT, PARAM_BRING_TO_FRONT, false, "Bring DBeaver window on top of other applications")
         .addOption(PARAM_QUIET, PARAM_QUIET, false, "Run quietly (do not print logs)")
+        .addOption(
+            PARAM_VERSION,
+            PARAM_VERSION,
+            false,
+            "Displays the app name, edition, and version in Major.Minor.Micro.Timestamp format"
+        )
 
         // Eclipse options
         .addOption("product", true, "Product id")
@@ -253,7 +261,12 @@ public class DBeaverCommandLine
             HelpFormatter helpFormatter = new HelpFormatter();
             helpFormatter.setWidth(120);
             helpFormatter.setOptionComparator((o1, o2) -> 0);
-            helpFormatter.printHelp("dbeaver", GeneralUtils.getProductTitle(), ALL_OPTIONS, "(C) 2020-2023 DBeaver Corp", true);
+            helpFormatter.printHelp("dbeaver", GeneralUtils.getProductTitle(), ALL_OPTIONS, "(C) 2010-2023 DBeaver Corp", true);
+            return true;
+        }
+
+        if (commandLine.hasOption(PARAM_VERSION)) {
+            System.out.println(GeneralUtils.getLongProductTitle());
             return true;
         }
 
