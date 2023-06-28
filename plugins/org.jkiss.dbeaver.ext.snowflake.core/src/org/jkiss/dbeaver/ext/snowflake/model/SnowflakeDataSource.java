@@ -83,13 +83,8 @@ public class SnowflakeDataSource extends GenericDataSource {
         DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
         Properties props = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
-        String clientAppName = DBUtils.getClientApplicationName(container, context, null, false);
-        String appName = "DBeaver_";
-        if (clientAppName.contains("Team")) {
-            appName += "Team";
-        } else {
-            appName += clientAppName.replace(" ", "");
-        }
+        final String clientAppName = DBUtils.getClientApplicationName(container, context, null, false);
+        final String appName = "DBeaver_" + clientAppName.replace(" ", "");
         props.put(APPLICATION_PROPERTY, appName);
         return props;
     }
