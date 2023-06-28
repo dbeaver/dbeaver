@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingCustom;
 import org.jkiss.dbeaver.model.data.DBDInsertReplaceMethod;
@@ -142,6 +143,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             return targetObjectContainer;
         }
         return containerMapping == null ? localTargetObject : containerMapping.getTarget();
+    }
+
+    @Override
+    @Nullable
+    public DBPProject getProject() {
+        return getDataSourceContainer() == null ? null : getDataSourceContainer().getProject();
     }
 
     protected boolean isPreview() {

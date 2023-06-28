@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -77,6 +78,12 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
     public StreamEntityMapping getDatabaseObject()
     {
         return entityMapping;
+    }
+
+    @Nullable
+    @Override
+    public DBPProject getProject() {
+        return null;
     }
 
     @Override
