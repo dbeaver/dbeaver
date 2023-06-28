@@ -78,7 +78,12 @@ public class SnowflakeDataSource extends GenericDataSource {
     }
 
     @Override
-    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Properties getAllConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        JDBCExecutionContext context,
+        String purpose,
+        DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
         Properties props = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
         DBPPreferenceStore prefStore = getContainer().getPreferenceStore();
         if (!prefStore.getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
@@ -86,11 +91,53 @@ public class SnowflakeDataSource extends GenericDataSource {
             if (prefStore.getBoolean(ModelPreferences.META_CLIENT_NAME_OVERRIDE)) {
                 appName = prefStore.getString(ModelPreferences.META_CLIENT_NAME_VALUE);
             } else {
-                appName = GeneralUtils.getProductName();
+                appName = getPartnerApplicationIdentifier(GeneralUtils.getProductName());
             }
             props.put(APPLICATION_PROPERTY, appName);
         }
         return props;
+    }
+
+    /**
+     * Converts product name to the application identifier <br/>
+     * <br/>
+     * DBeaver <br/>
+     *     CE = DBeaver_Community <br/>
+     *     EE = DBeaver_Enterprise <br/>
+     *     UE = DBeaver_Ultimate <br/>
+     *     LE = DBeaver_Lite <br/>
+     *     TE = DBeaver_Team <br/>
+     * <br/>
+     * CloudBeaver<br/>
+     *     EE = DBeaver_CloudBeaverEnterprise <br/>
+     *     TE = DBeaver_Team <br/>
+     *     CB AWS = DBeaver_CloudBeaverAWS <br/>
+     * <br/>
+     */
+    private String getPartnerApplicationIdentifier(String productName) {
+        String toolName = "DBeaver_";
+        if (productName.contains("Team")) {
+            return toolName + "Team";
+        }
+        if (productName.contains("CloudBeaver")) {
+            toolName = "CloudBeaver";
+        }
+        if (productName.contains("Enterprise")) {
+            toolName += "Enterprise";
+        } else if (productName.contains("Ultimate")) {
+            toolName += "Ultimate";
+        } else if (productName.contains("Lite")) {
+            toolName += "Lite";
+        } else if (productName.contains("Community") || productName.contains("CE") ||
+            productName.equals("DBeaver") || productName.equals("CloudBeaver")
+        ) {
+            toolName += "Community";
+        } else if (productName.contains("AWS")) {
+            toolName += "AWS";
+        } else {
+            toolName = productName.replace(" ", "");
+        }
+        return toolName;
     }
 
     @NotNull
