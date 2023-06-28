@@ -118,22 +118,6 @@ public class SnowflakeDataSource extends GenericDataSource {
         String toolName = "DBeaver_";
         if (productName.contains("Team")) {
             return toolName + "Team";
-        }
-        if (productName.contains("CloudBeaver")) {
-            toolName = "CloudBeaver";
-        }
-        if (productName.contains("Enterprise")) {
-            toolName += "Enterprise";
-        } else if (productName.contains("Ultimate")) {
-            toolName += "Ultimate";
-        } else if (productName.contains("Lite")) {
-            toolName += "Lite";
-        } else if (productName.contains("Community") || productName.contains("CE") ||
-            productName.equals("DBeaver") || productName.equals("CloudBeaver")
-        ) {
-            toolName += "Community";
-        } else if (productName.contains("AWS")) {
-            toolName += "AWS";
         } else {
             toolName = productName.replace(" ", "");
         }
