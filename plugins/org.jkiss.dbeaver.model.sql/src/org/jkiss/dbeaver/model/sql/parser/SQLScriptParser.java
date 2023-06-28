@@ -309,6 +309,7 @@ public class SQLScriptParser {
                             // Quite dirty workaround needed for Oracle and SQL Server.
                             // TODO: move this transformation into SQLDialect
                             queryText += delimiterText;
+                            originalQueryText += delimiterText;
                         }
                     }
                     int queryEndPos = tokenOffset;
