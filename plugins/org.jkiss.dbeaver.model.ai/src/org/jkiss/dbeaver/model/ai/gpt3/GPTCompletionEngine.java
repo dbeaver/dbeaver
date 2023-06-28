@@ -21,7 +21,6 @@ import com.theokanning.openai.completion.CompletionChoice;
 import com.theokanning.openai.completion.CompletionRequest;
 import com.theokanning.openai.completion.chat.ChatCompletionChoice;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
-import com.theokanning.openai.completion.chat.ChatCompletionResult;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.service.OpenAiService;
 import okhttp3.ResponseBody;
@@ -70,7 +69,7 @@ public class GPTCompletionEngine implements DAICompletionEngine {
     private static final int MAX_REQUEST_ATTEMPTS = 3;
 
     private static final Map<String, OpenAiService> clientInstances = new HashMap<>();
-    private static final int GPT_MODEL_MAX_TOKENS = 2048;
+    private static final int GPT_MODEL_MAX_RESPONSE_TOKENS = 1500;
     private static final int MAX_PROMPT_LENGTH = 7500; // 8000 -
     private static final boolean SUPPORTS_ATTRS = true;
 
@@ -175,7 +174,8 @@ public class GPTCompletionEngine implements DAICompletionEngine {
             service = initGPTApiClientInstance();
             clientInstances.put(container.getId(), service);
         }
-        String modifiedRequest = addDBMetadataToRequest(monitor, request, executionContext, mainObject);
+        String modifiedRequest = addDBMetadataToRequest(monitor, request, executionContext, mainObject,
+            GPTModel.getByName(getModelName()));
         if (monitor.isCanceled()) {
             return "";
         }
@@ -288,13 +288,13 @@ public class GPTCompletionEngine implements DAICompletionEngine {
     }
 
     private static Object createCompletionRequest(@NotNull String request) throws DBException {
-        int maxTokens = GPT_MODEL_MAX_TOKENS;
         Double temperature = getPreferenceStore().getDouble(GPTConstants.GPT_MODEL_TEMPERATURE);
         String modelId = getPreferenceStore().getString(GPTConstants.GPT_MODEL);
         GPTModel model = CommonUtils.isEmpty(modelId) ? null : GPTModel.getByName(modelId);
         if (model == null) {
-            model = GPTModel.GPT_TURBO;
+            model = GPTModel.GPT_TURBO16;
         }
+        int maxTokens = model.getMaxTokens();
         if (model.isChatAPI()) {
             return buildChatRequest(request, maxTokens, temperature, modelId);
         } else {
@@ -312,8 +312,9 @@ public class GPTCompletionEngine implements DAICompletionEngine {
             CompletionRequest.builder().prompt(request);
         return builder
             .temperature(temperature)
-            .maxTokens(maxTokens)
+            .maxTokens(GPT_MODEL_MAX_RESPONSE_TOKENS)
             .frequencyPenalty(0.0)
+            .n(1)
             .presencePenalty(0.0)
             .stop(List.of("#", ";"))
             .model(modelId)
@@ -333,9 +334,10 @@ public class GPTCompletionEngine implements DAICompletionEngine {
 
         return builder
             .temperature(temperature)
-            .maxTokens(maxTokens)
+            .maxTokens(GPT_MODEL_MAX_RESPONSE_TOKENS)
             .frequencyPenalty(0.0)
             .presencePenalty(0.0)
+            .n(1)
             .stop(List.of("#", ";"))
             .model(modelId)
             //.echo(true)
@@ -356,7 +358,8 @@ public class GPTCompletionEngine implements DAICompletionEngine {
         DBRProgressMonitor monitor,
         DAICompletionRequest request,
         DBCExecutionContext executionContext,
-        DBSObjectContainer mainObject
+        DBSObjectContainer mainObject,
+        GPTModel model
     ) throws DBException {
         if (mainObject == null || mainObject.getDataSource() == null || CommonUtils.isEmptyTrimmed(request.getPromptText())) {
             throw new DBException("Invalid completion request");
@@ -373,7 +376,7 @@ public class GPTCompletionEngine implements DAICompletionEngine {
                 tail += "#\n# Current schema is " + defaultSchema.getName() + "\n";
             }
         }
-        int maxRequestLength = MAX_PROMPT_LENGTH - additionalMetadata.length() - tail.length() - 20;
+        int maxRequestLength = model.getMaxTokens() - additionalMetadata.length() - tail.length() - 20 - GPT_MODEL_MAX_RESPONSE_TOKENS;
 
         if (request.getScope() != DAICompletionScope.CUSTOM) {
             additionalMetadata.append(generateObjectDescription(
@@ -456,7 +459,7 @@ public class GPTCompletionEngine implements DAICompletionEngine {
                     maxRequestLength,
                     isRequiresFullyQualifiedName(child, context)
                 );
-                if (description.length() + childText.length() > maxRequestLength) {
+                if (description.length() + childText.length() > maxRequestLength * 3) {
                     log.debug("Trim GPT metadata prompt  at table '" + child.getName() + "' - too long request");
                     break;
                 }
