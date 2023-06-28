@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -85,43 +86,15 @@ public class SnowflakeDataSource extends GenericDataSource {
         DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
         Properties props = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
-        DBPPreferenceStore prefStore = getContainer().getPreferenceStore();
-        if (!prefStore.getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
-            String appName;
-            if (prefStore.getBoolean(ModelPreferences.META_CLIENT_NAME_OVERRIDE)) {
-                appName = prefStore.getString(ModelPreferences.META_CLIENT_NAME_VALUE);
-            } else {
-                appName = getPartnerApplicationIdentifier(GeneralUtils.getProductName());
-            }
-            props.put(APPLICATION_PROPERTY, appName);
-        }
-        return props;
-    }
-
-    /**
-     * Converts product name to the application identifier <br/>
-     * <br/>
-     * DBeaver <br/>
-     *     CE = DBeaver_Community <br/>
-     *     EE = DBeaver_Enterprise <br/>
-     *     UE = DBeaver_Ultimate <br/>
-     *     LE = DBeaver_Lite <br/>
-     *     TE = DBeaver_Team <br/>
-     * <br/>
-     * CloudBeaver<br/>
-     *     EE = DBeaver_CloudBeaverEnterprise <br/>
-     *     TE = DBeaver_Team <br/>
-     *     CB AWS = DBeaver_CloudBeaverAWS <br/>
-     * <br/>
-     */
-    private String getPartnerApplicationIdentifier(String productName) {
-        String toolName = "DBeaver_";
-        if (productName.contains("Team")) {
-            return toolName + "Team";
+        String clientAppName = DBUtils.getClientApplicationName(container, context, null, false);
+        String appName = "DBeaver_";
+        if (clientAppName.contains("Team")) {
+            appName += "Team";
         } else {
-            toolName = productName.replace(" ", "");
+            appName += clientAppName.replace(" ", "");
         }
-        return toolName;
+        props.put(APPLICATION_PROPERTY, appName);
+        return props;
     }
 
     @NotNull
