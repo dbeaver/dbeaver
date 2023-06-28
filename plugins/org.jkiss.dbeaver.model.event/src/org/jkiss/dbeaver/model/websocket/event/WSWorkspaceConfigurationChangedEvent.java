@@ -16,26 +16,20 @@
  */
 package org.jkiss.dbeaver.model.websocket.event;
 
-//TODO: implement event registry and describe possible events in plugin.xml
-public enum WSEventTopic {
-    SERVER_CONFIG("cb_config"),
-    WORKSPACE_CONFIG("cb_workspace_configuration"),
-    SESSION_LOG("cb_session_log"),
-    SESSION("cb_session"),
-    DATASOURCE("cb_datasource"),
-    DATASOURCE_FOLDER("cb_datasource_folder"),
-    USER_SECRET("cb_user_secret"),
-    RM_SCRIPTS("cb_scripts"),
-    PROJECTS("cb_projects"),
-    PERMISSIONS("cb_permissions");
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
-    private final String topicId;
+public class WSWorkspaceConfigurationChangedEvent extends WSAbstractEvent {
 
-    WSEventTopic(String topicId) {
-        this.topicId = topicId;
+    private final String configFilePath;
+
+    public WSWorkspaceConfigurationChangedEvent(@NotNull String configFilePath, @Nullable String sessionId, @Nullable String userId) {
+        super(WSEventType.WORKSPACE_CONFIG_CHANGED, sessionId, userId);
+        this.configFilePath = configFilePath;
     }
 
-    public String getTopicId() {
-        return topicId;
+    @NotNull
+    public String getConfigFilePath() {
+        return configFilePath;
     }
 }
