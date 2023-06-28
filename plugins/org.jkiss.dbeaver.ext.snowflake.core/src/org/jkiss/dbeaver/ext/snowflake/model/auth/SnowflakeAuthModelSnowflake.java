@@ -33,12 +33,19 @@ import java.util.Properties;
 /**
  * Oracle database native auth model.
  */
-public class SnowflakeAuthModelSnowflake extends AuthModelDatabaseNative<AuthModelDatabaseNativeCredentials> {
+public class SnowflakeAuthModelSnowflake<CREDENTIALS extends AuthModelDatabaseNativeCredentials>
+    extends AuthModelDatabaseNative<CREDENTIALS> {
 
     public static final String ID = "snowflake_snowflake";
 
     @Override
-    public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull AuthModelDatabaseNativeCredentials credentials, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
+    public Object initAuthentication(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull CREDENTIALS credentials,
+        @NotNull DBPConnectionConfiguration configuration,
+        @NotNull Properties connProperties
+    ) throws DBException {
         if (connProperties.getProperty("authenticator") == null) {
             // If "authenticator" is already set by user then do not change it
             String authenticator = getAuthenticator(dataSource, credentials, configuration);
@@ -55,11 +62,19 @@ public class SnowflakeAuthModelSnowflake extends AuthModelDatabaseNative<AuthMod
     }
 
     @Override
-    public void endAuthentication(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties) {
+    public void endAuthentication(
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull DBPConnectionConfiguration configuration,
+        @NotNull Properties connProperties
+    ) {
         super.endAuthentication(dataSource, configuration, connProperties);
     }
 
-    protected String getAuthenticator(DBPDataSource dataSource, AuthModelDatabaseNativeCredentials credentials, DBPConnectionConfiguration configuration) {
+    protected String getAuthenticator(
+        DBPDataSource dataSource,
+        AuthModelDatabaseNativeCredentials credentials,
+        DBPConnectionConfiguration configuration
+    ) {
         return configuration.getAuthProperty(SnowflakeConstants.PROP_AUTHENTICATOR);
     }
 
