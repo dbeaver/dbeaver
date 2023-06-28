@@ -70,7 +70,6 @@ public class GPTCompletionEngine implements DAICompletionEngine {
 
     private static final Map<String, OpenAiService> clientInstances = new HashMap<>();
     private static final int GPT_MODEL_MAX_RESPONSE_TOKENS = 1500;
-    private static final int MAX_PROMPT_LENGTH = 7500; // 8000 -
     private static final boolean SUPPORTS_ATTRS = true;
 
     public GPTCompletionEngine() {
