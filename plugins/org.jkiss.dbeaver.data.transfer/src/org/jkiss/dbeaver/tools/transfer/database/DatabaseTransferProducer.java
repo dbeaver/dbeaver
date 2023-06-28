@@ -380,7 +380,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                                 String id = CommonUtils.toString(state.get("entityId"));
                                 String[] pathItems = id.split("/");
                                 if (pathItems.length > 2) {
-                                    producer.objectId =String.join("/", List.of(pathItems).subList(2, pathItems.length));
+                                    producer.objectId = String.join("/", List.of(pathItems).subList(2, pathItems.length));
                                 } else {
                                     producer.objectId = id;
                                 }

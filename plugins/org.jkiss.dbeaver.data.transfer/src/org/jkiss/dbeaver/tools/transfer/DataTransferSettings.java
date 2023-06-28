@@ -654,7 +654,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         if (nodes != null) {
             List<Map<String, Object>> inputObjects = new ArrayList<>();
             for (Object inputObject : nodes) {
-                inputObjects.add(JSONUtils.serializeObject(runnableContext, task, inputObject));
+                inputObjects.add(DTUtils.serializeObject(runnableContext, task, inputObject));
             }
             state.put(nodeType, inputObjects);
         }
@@ -669,7 +669,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
             for (Object nodeObj : (Collection<?>)nodeList) {
                 if (nodeObj instanceof Map) {
                     try {
-                        Object node = JSONUtils.deserializeObject(runnableContext, task, (Map<String, Object>) nodeObj);
+                        Object node = DTUtils.deserializeObject(runnableContext, task, (Map<String, Object>) nodeObj);
                         if (nodeClass.isInstance(node)) {
                             result.add(nodeClass.cast(node));
                         }
