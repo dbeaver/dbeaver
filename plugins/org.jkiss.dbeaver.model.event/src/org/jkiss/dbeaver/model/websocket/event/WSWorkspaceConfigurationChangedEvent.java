@@ -14,31 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer;
+package org.jkiss.dbeaver.model.websocket.event;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
-/**
- * Abstract node
- */
-public interface IDataTransferNode<SETTINGS extends IDataTransferSettings> {
+public class WSWorkspaceConfigurationChangedEvent extends WSAbstractEvent {
 
-    DBSObject getDatabaseObject();
+    private final String configFilePath;
 
-    String getObjectName();
+    public WSWorkspaceConfigurationChangedEvent(@NotNull String configFilePath, @Nullable String sessionId, @Nullable String userId) {
+        super(WSEventType.WORKSPACE_CONFIG_CHANGED, sessionId, userId);
+        this.configFilePath = configFilePath;
+    }
 
-    DBPImage getObjectIcon();
-
-    String getObjectContainerName();
-
-    DBPImage getObjectContainerIcon();
-
-    boolean isConfigurationComplete();
-
-    @Nullable
-    DBPProject getProject();
-
+    @NotNull
+    public String getConfigFilePath() {
+        return configFilePath;
+    }
 }

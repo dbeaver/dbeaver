@@ -31,6 +31,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.IOUtils;
 
@@ -139,6 +140,12 @@ public class LocalProjectImpl extends BaseProjectImpl {
     @Override
     public boolean isUseSecretStorage() {
         return false;
+    }
+
+    @Nullable
+    @Override
+    public DBNModel getNavigatorModel() {
+        return getWorkspace().getPlatform().getNavigatorModel();
     }
 
     /**
