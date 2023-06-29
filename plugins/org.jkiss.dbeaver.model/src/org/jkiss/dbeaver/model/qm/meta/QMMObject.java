@@ -29,13 +29,12 @@ public abstract class QMMObject {
     private static int globalObjectId = 0;
     private final QMMetaObjectType type;
 
-    private final long objectId;
+    private final transient long objectId;
 
     private final long openTime;
     private long closeTime;
 
-    private boolean synced;
-    private boolean updated;
+    private transient boolean updated;
 
     public QMMObject(QMMetaObjectType type) {
         this.type = type;
@@ -64,10 +63,6 @@ public abstract class QMMObject {
         return objectId;
     }
 
-    public boolean isSynced() {
-        return synced;
-    }
-
     public boolean isUpdated() {
         return updated;
     }
@@ -93,11 +88,6 @@ public abstract class QMMObject {
 
     protected synchronized void update() {
         this.updated = true;
-    }
-
-    protected synchronized void sync() {
-        this.synced = true;
-        this.updated = false;
     }
 
     private static synchronized long generateObjectId() {
