@@ -714,12 +714,12 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         List<T> result = new ArrayList<>();
         Object nodeList = config.get(nodeType);
 
+        SerializerContext serializeContext = new SerializerContext();
+
         if (nodeList instanceof Collection) {
             MonitorRunnableContext runnableContext = new MonitorRunnableContext(monitor);
             for (Object nodeObj : (Collection<?>)nodeList) {
                 if (nodeObj instanceof Map) {
-                    SerializerContext serializeContext = new SerializerContext();
-
                     try {
                         Object node = DTUtils.deserializeObject(runnableContext, serializeContext, task, (Map<String, Object>) nodeObj);
                         if (nodeClass.isInstance(node)) {
@@ -729,7 +729,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
                         state.addError(e);
                         taskLog.error(e);
                     } finally {
-                        for (Throwable e : serializeContext.getErrors()) {
+                        for (Throwable e : serializeContext.resetErrors()) {
                             state.addError(e);
                             taskLog.error(e);
                         }

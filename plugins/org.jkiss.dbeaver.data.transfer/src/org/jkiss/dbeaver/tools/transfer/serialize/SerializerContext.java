@@ -40,6 +40,12 @@ public class SerializerContext {
         errors.add(error);
     }
 
+    public List<Throwable> resetErrors() {
+        List<Throwable> res = new ArrayList<>(this.errors);
+        this.errors.clear();
+        return res;
+    }
+
     public boolean isDataSourceFailed(DBPDataSourceContainer dataSourceContainer) {
         return failedDataSources.contains(dataSourceContainer.getId());
     }
