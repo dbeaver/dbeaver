@@ -83,7 +83,7 @@ public abstract class BaseProjectImpl implements DBPProject {
 
     private volatile ProjectFormat format = ProjectFormat.UNKNOWN;
     private volatile DBPDataSourceRegistry dataSourceRegistry;
-    private volatile TaskManagerImpl taskManager;
+    protected volatile TaskManagerImpl taskManager;
     private volatile Map<String, Object> properties;
     protected volatile Map<String, Map<String, Object>> resourceProperties;
     private UUID projectID;
@@ -163,7 +163,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     protected Path getMetadataPath() {
         return getAbsolutePath().resolve(METADATA_FOLDER);
     }
-
+    
     @Override
     public boolean isRegistryLoaded() {
         return dataSourceRegistry != null;

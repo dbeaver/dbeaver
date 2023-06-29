@@ -32,4 +32,5 @@ public interface InternalDatabaseConfig {
     String getUser();
 
     String getPassword();
+
 }

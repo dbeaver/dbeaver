@@ -40,7 +40,7 @@
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">
-        <factory adaptableType="org.eclipse.gef3.EditPart" class="org.jkiss.dbeaver.erd.ui.model.ERDObjectAdapter">
+        <factory adaptableType="org.eclipse.gef.EditPart" class="org.jkiss.dbeaver.erd.ui.model.ERDObjectAdapter">
             <adapter type="org.jkiss.dbeaver.model.DBPNamedObject"/>
             <adapter type="org.jkiss.dbeaver.model.DBPQualifiedObject"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
@@ -410,13 +410,13 @@
     <extension point="org.eclipse.ui.commands">
         <command id="org.jkiss.dbeaver.erd.diagram.view" name="%command.org.jkiss.dbeaver.erd.diagram.view.name" description="%command.org.jkiss.dbeaver.erd.diagram.view.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.erd.diagram.create" name="%command.org.jkiss.dbeaver.erd.diagram.create.name" description="%command.org.jkiss.dbeaver.erd.diagram.create.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
-        <command id="org.jkiss.dbeaver.erd.diagram.saveAs" name="%command.org.jkiss.dbeaver.erd.diagram.saveAs.name" description="%command.org.jkiss.dbeaver.erd.diagram.saveAs.description" categoryId="org.eclipse.gef3.category.view"/>
-        <command id="org.jkiss.dbeaver.erd.toggleHand" name="%command.org.jkiss.dbeaver.erd.toggleHand.name" description="%command.org.jkiss.dbeaver.erd.toggleHand.description" categoryId="org.eclipse.gef3.category.view"/>
+        <command id="org.jkiss.dbeaver.erd.diagram.saveAs" name="%command.org.jkiss.dbeaver.erd.diagram.saveAs.name" description="%command.org.jkiss.dbeaver.erd.diagram.saveAs.description" categoryId="org.eclipse.gef.category.view"/>
+        <command id="org.jkiss.dbeaver.erd.toggleHand" name="%command.org.jkiss.dbeaver.erd.toggleHand.name" description="%command.org.jkiss.dbeaver.erd.toggleHand.description" categoryId="org.eclipse.gef.category.view"/>
 
-        <command id="org.jkiss.dbeaver.erd.focus.diagram" name="%command.org.jkiss.dbeaver.erd.focus.diagram.name" description="%command.org.jkiss.dbeaver.erd.focus.diagram.description" categoryId="org.eclipse.gef3.category.view"/>
-        <command id="org.jkiss.dbeaver.erd.focus.palette" name="%command.org.jkiss.dbeaver.erd.focus.palette.name" description="%command.org.jkiss.dbeaver.erd.focus.palette.description" categoryId="org.eclipse.gef3.category.view"/>
-        <command id="org.jkiss.dbeaver.erd.focus.outline" name="%command.org.jkiss.dbeaver.erd.focus.outline.name" description="%command.org.jkiss.dbeaver.erd.focus.outline.description" categoryId="org.eclipse.gef3.category.view"/>
-        <command id="org.jkiss.dbeaver.erd.focus.parameter" name="%command.org.jkiss.dbeaver.erd.focus.parameters.name" description="%command.org.jkiss.dbeaver.erd.focus.parameters.description" categoryId="org.eclipse.gef3.category.view"/>
+        <command id="org.jkiss.dbeaver.erd.focus.diagram" name="%command.org.jkiss.dbeaver.erd.focus.diagram.name" description="%command.org.jkiss.dbeaver.erd.focus.diagram.description" categoryId="org.eclipse.gef.category.view"/>
+        <command id="org.jkiss.dbeaver.erd.focus.palette" name="%command.org.jkiss.dbeaver.erd.focus.palette.name" description="%command.org.jkiss.dbeaver.erd.focus.palette.description" categoryId="org.eclipse.gef.category.view"/>
+        <command id="org.jkiss.dbeaver.erd.focus.outline" name="%command.org.jkiss.dbeaver.erd.focus.outline.name" description="%command.org.jkiss.dbeaver.erd.focus.outline.description" categoryId="org.eclipse.gef.category.view"/>
+        <command id="org.jkiss.dbeaver.erd.focus.parameter" name="%command.org.jkiss.dbeaver.erd.focus.parameters.name" description="%command.org.jkiss.dbeaver.erd.focus.parameters.description" categoryId="org.eclipse.gef.category.view"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">

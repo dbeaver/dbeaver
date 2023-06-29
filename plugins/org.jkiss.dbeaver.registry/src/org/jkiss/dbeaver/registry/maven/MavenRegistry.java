@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.runtime.encode.SimpleStringEncrypter;
@@ -142,6 +143,8 @@ public class MavenRegistry {
                         repoName,
                         repoURL,
                         MavenRepository.RepositoryType.CUSTOM);
+                    boolean snapshot = CommonUtils.toBoolean(repoElement.getAttribute("snapshot"));
+                    repo.setIsSnapshot(snapshot);
                     List<String> scopes = new ArrayList<>();
                     for (Element scopeElement : XMLUtils.getChildElementList(repoElement, "scope")) {
                         scopes.add(scopeElement.getAttribute("group"));
@@ -283,6 +286,7 @@ public class MavenRegistry {
                                     xml.addAttribute("group", scope);
                                 }
                             }
+                            xml.addAttribute(RegistryConstants.ATTR_SNAPSHOT, repository.isSnapshot());
                             final DBPAuthInfo authInfo = repository.getAuthInfo();
                             if (!CommonUtils.isEmpty(authInfo.getUserName())) {
                                 xml.addAttribute("auth-user", authInfo.getUserName());

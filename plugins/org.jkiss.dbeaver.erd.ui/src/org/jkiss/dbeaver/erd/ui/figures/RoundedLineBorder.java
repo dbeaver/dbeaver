@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.erd.ui.figures;
 
-import org.eclipse.draw2dl.Graphics;
-import org.eclipse.draw2dl.IFigure;
-import org.eclipse.draw2dl.LineBorder;
-import org.eclipse.draw2dl.geometry.Insets;
+import org.eclipse.draw2d.Graphics;
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.LineBorder;
+import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.swt.graphics.Color;
 
 public class RoundedLineBorder extends LineBorder {

@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.erd.ui.policy;
 
-import org.eclipse.gef3.commands.Command;
-import org.eclipse.gef3.requests.ChangeBoundsRequest;
-import org.eclipse.gef3.requests.CreateRequest;
-import org.eclipse.gef3.requests.GroupRequest;
+import org.eclipse.gef.commands.Command;
+import org.eclipse.gef.requests.ChangeBoundsRequest;
+import org.eclipse.gef.requests.CreateRequest;
+import org.eclipse.gef.requests.GroupRequest;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.erd.ui.command.AssociationCreateCommand;
 import org.jkiss.dbeaver.erd.ui.part.AttributePart;

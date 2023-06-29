@@ -203,13 +203,13 @@ class ReferencesResultsContainer implements IResultSetContainer {
         return mainComposite;
     }
 
-    void refreshReferences() {
+    void refreshReferences(boolean force) {
         dataViewer.resetHistory();
         DBSDataContainer newParentContainer = parentController.getDataContainer();
         if (newParentContainer != parentDataContainer || !Objects.equals(getDataContainerFullName(newParentContainer), parentContainerFullName)) {
             refreshReferenceKeyList();
         } else if (dataContainer != null) {
-            refreshKeyValues(false);
+            refreshKeyValues(force);
         }
     }
 

@@ -73,7 +73,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         super(schema, dbResult);
         readSpecialProperties(dbResult);
 
-        this.partitioned = JDBCUtils.safeGetBoolean(dbResult, "PARTITIONED", "Y");
+        this.partitioned = JDBCUtils.safeGetBoolean(dbResult, "PARTITIONED", OracleConstants.RESULT_YES_VALUE);
         this.partitionCache = partitioned ? new PartitionCache() : null;
     }
 
@@ -194,8 +194,10 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         this.getContainer().indexCache.clearObjectCache(this);
-        partitionCache.clearCache();
-        partitionInfo = null;
+        if (partitionCache != null) {
+            partitionCache.clearCache();
+            partitionInfo = null;
+        }
         return super.refreshObject(monitor);
     }
 
