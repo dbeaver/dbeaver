@@ -16,12 +16,12 @@
  */
 package org.jkiss.dbeaver.erd.ui.figures;
 
-import org.eclipse.draw2dl.Figure;
-import org.eclipse.draw2dl.IFigure;
-import org.eclipse.draw2dl.Label;
-import org.eclipse.draw2dl.ToolbarLayout;
-import org.eclipse.draw2dl.geometry.Insets;
-import org.eclipse.draw2dl.geometry.Rectangle;
+import org.eclipse.draw2d.Figure;
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.Label;
+import org.eclipse.draw2d.ToolbarLayout;
+import org.eclipse.draw2d.geometry.Insets;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.jkiss.code.NotNull;
@@ -168,8 +168,8 @@ public class AttributeItemFigure extends Figure
         if (parent != null && parent.getBorder() != null) {
             // Extend bounds to the parent's width. This is required for navigation to work correctly:
             // If there's two attributes whose names have different length (e.g. 'id' and 'description'),
-            // descending direction between them would be 'east', not 'south', since that's what .gef3 thinks.
-            // See org.eclipse.gef3.ui.parts.GraphicalViewerKeyHandler.getNavigationPoint
+            // descending direction between them would be 'east', not 'south', since that's what .gef thinks.
+            // See org.eclipse.gef.ui.parts.GraphicalViewerKeyHandler.getNavigationPoint
             final Insets insets = parent.getBorder().getInsets(this);
             final Rectangle bounds = parent.getBounds();
             return super.getBounds().getCopy()

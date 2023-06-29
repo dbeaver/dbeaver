@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.erd.ui.part;
 
-import org.eclipse.gef3.GraphicalViewer;
-import org.eclipse.gef3.ui.parts.GraphicalViewerKeyHandler;
+import org.eclipse.gef.GraphicalViewer;
+import org.eclipse.gef.ui.parts.GraphicalViewerKeyHandler;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 

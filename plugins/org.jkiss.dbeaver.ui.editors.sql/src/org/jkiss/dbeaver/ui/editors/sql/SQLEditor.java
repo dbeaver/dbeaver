@@ -155,7 +155,8 @@ public class SQLEditor extends SQLEditorBase implements
     DBPDataSourceTask,
     DBPDataSourceAcquirer,
     IResultSetProvider,
-    ISmartTransactionManager
+    ISmartTransactionManager,
+    IStatefulEditor
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
     private static final int MAX_PARALLEL_QUERIES_NO_WARN = 1;
@@ -435,7 +436,7 @@ public class SQLEditor extends SQLEditorBase implements
 
             IFile file = EditorUtils.getFileFromInput(input);
             if (file != null) {
-                DBNUtils.refreshNavigatorResource(file, container);
+                DBNUtils.refreshNavigatorResource(dataSourceContainer.getProject(), file, container);
             } else {
                 // FIXME: this is a hack. We can't fire event on resource change so editor's state won't be updated in UI.
                 // FIXME: To update main toolbar and other controls we hade and show this editor
@@ -664,7 +665,23 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public boolean isSmartAutoCommit() {
-        return getActivePreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT);
+        DBPDataSourceContainer container = ((DBPDataSourceContainerProvider) this).getDataSourceContainer();
+        if (container == null) {
+            DBPDataSource dataSource = getDataSource();
+            if (dataSource != null) {
+                container = dataSource.getContainer();
+            }
+        }
+        if (container != null) {
+            DBPPreferenceStore preferenceStore = container.getPreferenceStore();
+            // First check current data source settings
+            if (preferenceStore.contains(ModelPreferences.TRANSACTIONS_SMART_COMMIT)) {
+                return preferenceStore.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT);
+            } else {
+                return container.getConnectionConfiguration().getConnectionType().isSmartCommit();
+            }
+        }
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT);
     }
 
     @Override
@@ -822,8 +839,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    public boolean isDirty()
-    {
+    public boolean isDirty() {
         for (QueryProcessor queryProcessor : queryProcessors) {
             if (queryProcessor.isDirty() || queryProcessor.curJobRunning.get() > 0) {
                 return true;
@@ -2139,6 +2155,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
         syntaxLoaded = false;
 
+        IEditorInput finalEditorInput = editorInput;
         Runnable inputinitializer = () -> {
             DBPDataSourceContainer oldDataSource = SQLEditor.this.getDataSourceContainer();
             DBPDataSourceContainer newDataSource = EditorUtils.getInputDataSource(SQLEditor.this.getEditorInput());
@@ -2148,6 +2165,13 @@ public class SQLEditor extends SQLEditorBase implements
                 SQLEditor.this.updateDataSourceContainer();
             } else {
                 SQLEditor.this.reloadSyntaxRules();
+            }
+
+            {
+                DBPDataSourceContainer dataSource = EditorUtils.getInputDataSource(finalEditorInput);
+                SQLEditorFeatures.SQL_EDITOR_OPEN.use(Map.of(
+                    "driver", dataSource == null ? "" : dataSource.getDriver().getPreconfiguredId()
+                ));
             }
         };
         if (isNonPersistentEditor()) {
@@ -2163,13 +2187,6 @@ public class SQLEditor extends SQLEditorBase implements
         }
         baseEditorImage = getTitleImage();
         editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
-
-        {
-            DBPDataSourceContainer dataSource = EditorUtils.getInputDataSource(editorInput);
-            SQLEditorFeatures.SQL_EDITOR_OPEN.use(Map.of(
-                "driver", dataSource == null ? "" : dataSource.getDriver().getPreconfiguredId()
-            ));
-        }
     }
 
     protected boolean isDetectTitleImageFromInput() {
@@ -2227,6 +2244,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (scriptNameResolver.get(SQLPreferenceConstants.VAR_ACTIVE_SCHEMA) != null) {
             tip.append("\n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_schema, scriptNameResolver.get(SQLPreferenceConstants.VAR_ACTIVE_SCHEMA)));
         }
+        EditorUtils.appendProjectToolTip(tip, getProject());
 
         if (dataSourceContainer.getConnectionError() != null) {
             tip.append("\n\nConnection error:\n").append(dataSourceContainer.getConnectionError());
@@ -3644,6 +3662,14 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
+        public void releaseDataReceiver(int resultSetNumber) {
+            if (resultContainers.size() > resultSetNumber) {
+                final CTabItem tab = resultContainers.get(resultSetNumber).resultsTab;
+                UIUtils.syncExec(tab::dispose);
+            }
+        }
+
+        @Override
         public boolean isSmartAutoCommit() {
             return SQLEditor.this.isSmartAutoCommit();
         }
@@ -4414,6 +4440,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    @Override
     public void updateDirtyFlag() {
         firePropertyChange(IWorkbenchPartConstants.PROP_DIRTY);
     }

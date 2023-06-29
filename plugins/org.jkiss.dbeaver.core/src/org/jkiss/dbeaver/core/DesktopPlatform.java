@@ -226,7 +226,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
 
         // Remove temp folder
         if (tempFolder != null) {
-
             if (!ContentUtils.deleteFileRecursive(tempFolder)) {
                 log.warn("Can not delete temp folder '" + tempFolder + "'");
             }
@@ -394,14 +393,15 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
                 }
             }
         }
-        if (!Files.exists(tempFolder)) {
+        Path localTemp = name == null ? tempFolder : tempFolder.resolve(name);
+        if (!Files.exists(localTemp)) {
             try {
-                Files.createDirectories(tempFolder);
+                Files.createDirectories(localTemp);
             } catch (IOException e) {
-                log.error("Can't create temp directory " + tempFolder, e);
+                log.error("Can't create temp directory " + localTemp, e);
             }
         }
-        return tempFolder;
+        return localTemp;
     }
 
     @Override

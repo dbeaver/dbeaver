@@ -43,8 +43,8 @@ import java.util.Map;
 public class SQLServerExternalTable extends SQLServerTableBase {
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
 
-    public SQLServerExternalTable(@NotNull SQLServerSchema catalog, @NotNull ResultSet dbResult) {
-        super(catalog, dbResult);
+    public SQLServerExternalTable(@NotNull SQLServerSchema catalog, @NotNull ResultSet dbResult, @NotNull String name) {
+        super(catalog, dbResult, name);
     }
 
     public SQLServerExternalTable(@NotNull SQLServerSchema schema) {

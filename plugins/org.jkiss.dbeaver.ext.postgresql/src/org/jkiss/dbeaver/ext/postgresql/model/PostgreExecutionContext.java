@@ -45,6 +45,7 @@ import java.util.List;
  * PostgreExecutionContext
  */
 public class PostgreExecutionContext extends JDBCExecutionContext implements DBCExecutionContextDefaults<PostgreDatabase, PostgreSchema> {
+
     private final List<String> searchPath = new ArrayList<>();
     private List<String> defaultSearchPath = new ArrayList<>();
     private String activeUser;

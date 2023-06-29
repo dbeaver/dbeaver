@@ -94,11 +94,18 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     protected OracleTableBase(OracleSchema oracleSchema, ResultSet dbResult)
     {
         super(oracleSchema, true);
-        setName(JDBCUtils.safeGetString(dbResult, "OBJECT_NAME"));
-        this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
-        this.created = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
-        this.lastDDLTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_DDL_TIME");
+        setName(JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_NAME));
+        this.valid = OracleConstants.RESULT_STATUS_VALID.equals(JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_STATUS));
+        this.created = JDBCUtils.safeGetTimestamp(dbResult, OracleConstants.COLUMN_CREATED);
+        this.lastDDLTime = JDBCUtils.safeGetTimestamp(dbResult, OracleConstants.COLUMN_LAST_DDL_TIME);
         //this.comment = JDBCUtils.safeGetString(dbResult, "COMMENTS");
+    }
+
+    protected OracleTableBase(@NotNull OracleSchema oracleSchema, @NotNull String name) {
+        // Table partition
+        super(oracleSchema, true);
+        setName(name);
+        this.valid = true;
     }
 
     @Override
@@ -129,12 +136,12 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return getComment();
     }
 
-    @Property(viewable = true, order = 13)
+    @Property(viewable = true, order = 13, visibleIf = OracleTableNotPartitionPropertyValidator.class)
     public Date getCreated() {
         return created;
     }
 
-    @Property(viewable = true, order = 14)
+    @Property(viewable = true, order = 14, visibleIf = OracleTableNotPartitionPropertyValidator.class)
     public Date getLastDDLTime() {
         return lastDDLTime;
     }
@@ -148,7 +155,8 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
             this);
     }
 
-    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
+    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100,
+        visibleIf = OracleTableNotPartitionPropertyValidator.class)
     @LazyProperty(cacheValidator = CommentsValidator.class)
     public String getComment(DBRProgressMonitor monitor) {
         if (comment == null) {

@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Test Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.test;singleton:=true
-Bundle-Version: 1.0.211.qualifier
-Bundle-Release-Date: 20230605
+Bundle-Version: 1.0.212.qualifier
+Bundle-Release-Date: 20230626
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.jkiss.dbeaver.core,
@@ -13,5 +13,5 @@ Require-Bundle: org.eclipse.ui,
  com.sun.jna.platform
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-Vendor: JKISS
+Bundle-Vendor: DBeaver Corp
 Automatic-Module-Name: org.jkiss.dbeaver.ext.test

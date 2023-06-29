@@ -311,7 +311,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         
         connectionInfo.setConfigurationType(
-            typeURLRadio.getSelection() ? DBPDriverConfigurationType.URL : DBPDriverConfigurationType.MANUAL);
+            typeURLRadio != null && typeURLRadio.getSelection() ? DBPDriverConfigurationType.URL : DBPDriverConfigurationType.MANUAL);
         
         if (hostText != null) {
             connectionInfo.setHostName(hostText.getText().trim());
@@ -341,7 +341,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             connectionInfo.setProviderProperty(SQLServerConstants.PROP_ENCRYPT_PASSWORD,
                 String.valueOf(encryptPassword.getSelection()));
         }
-        if (typeURLRadio.getSelection()) {
+        if (typeURLRadio != null && typeURLRadio.getSelection()) {
             connectionInfo.setUrl(urlText.getText());
         }
 
@@ -356,7 +356,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
     private void updateUrl() {
         DBPDataSourceContainer dataSourceContainer = site.getActiveDataSource();
         saveSettings(dataSourceContainer);
-        if (typeURLRadio.getSelection()) {
+        if (typeURLRadio != null && typeURLRadio.getSelection()) {
             urlText.setText(dataSourceContainer.getConnectionConfiguration().getUrl());
         } else {
             urlText.setText(dataSourceContainer.getDriver().getConnectionURL(site.getActiveDataSource().getConnectionConfiguration()));

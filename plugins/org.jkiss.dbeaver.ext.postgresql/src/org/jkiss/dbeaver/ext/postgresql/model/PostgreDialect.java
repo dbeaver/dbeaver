@@ -760,6 +760,12 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         setUnquotedIdentCase(DBPIdentifierCase.LOWER);
     }
 
+    @NotNull
+    @Override
+    protected DBPIdentifierCase getDefaultIdentifiersCase() {
+        return DBPIdentifierCase.LOWER;
+    }
+
     @Override
     public void addKeywords(Collection<String> set, DBPKeywordType type) {
         super.addKeywords(set, type);
@@ -1040,6 +1046,18 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     @Override
     public String getClobDataType() {
         return PostgreConstants.TYPE_TEXT;
+    }
+
+    @NotNull
+    @Override
+    public String getUuidDataType() {
+        return PostgreConstants.TYPE_UUID;
+    }
+
+    @NotNull
+    @Override
+    public String getBooleanDataType() {
+        return PostgreConstants.TYPE_BOOLEAN;
     }
 
     @NotNull

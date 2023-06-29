@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.erd.ui.policy;
 
-import org.eclipse.gef3.commands.Command;
-import org.eclipse.gef3.editpolicies.GraphicalNodeEditPolicy;
-import org.eclipse.gef3.requests.CreateConnectionRequest;
-import org.eclipse.gef3.requests.ReconnectRequest;
+import org.eclipse.gef.commands.Command;
+import org.eclipse.gef.editpolicies.GraphicalNodeEditPolicy;
+import org.eclipse.gef.requests.CreateConnectionRequest;
+import org.eclipse.gef.requests.ReconnectRequest;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.erd.ui.command.AssociationCreateCommand;
 import org.jkiss.dbeaver.erd.ui.command.AssociationReconnectSourceCommand;

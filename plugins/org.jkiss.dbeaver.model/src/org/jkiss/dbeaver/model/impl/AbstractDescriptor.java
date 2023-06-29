@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.apache.commons.jexl3.*;
+import org.eclipse.core.expressions.*;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IContributor;
 import org.eclipse.core.runtime.Platform;
@@ -310,6 +312,22 @@ public abstract class AbstractDescriptor {
         return getObjectClass(getContributorBundle(), className, type);
     }
 
+    protected boolean isExpressionTrue(Expression expression, Object exprContext) {
+        if (expression != null) {
+            try {
+                IEvaluationContext context = new EvaluationContext(null, exprContext);
+                EvaluationResult result = expression.evaluate(context);
+                if (result != EvaluationResult.TRUE) {
+                    return false;
+                }
+            } catch (CoreException e) {
+                log.debug(e);
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static <T> Class<T> getObjectClass(@NotNull Bundle fromBundle, @NotNull String className, Class<T> type)
     {
         Class<?> objectClass;
@@ -325,6 +343,21 @@ public abstract class AbstractDescriptor {
             return null;
         }
         return (Class<T>) objectClass;
+    }
+
+    protected static Expression getEnablementExpression(IConfigurationElement config) {
+        IConfigurationElement[] elements = config.getChildren("enabledWhen");
+        if (elements.length > 0) {
+            try {
+                IConfigurationElement[] enablement = elements[0].getChildren();
+                if (enablement.length > 0) {
+                    return ExpressionConverter.getDefault().perform(enablement[0]);
+                }
+            } catch (Exception e) {
+                log.debug(e);
+            }
+        }
+        return null;
     }
 
 }

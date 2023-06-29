@@ -82,4 +82,9 @@
         </dialect>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.lsm.dialectSyntax">
+        <lsmDialect analyzerClass="org.jkiss.dbeaver.ext.sqlite.model.SQLiteSQLAnalyzer">
+            <appliesTo dialectClass="org.jkiss.dbeaver.ext.sqlite.model.SQLiteSQLDialect"/>
+        </lsmDialect>
+    </extension>
 </plugin>

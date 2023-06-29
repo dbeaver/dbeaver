@@ -19,9 +19,9 @@
  */
 package org.jkiss.dbeaver.erd.ui.dnd;
 
-import org.eclipse.gef3.EditPartViewer;
-import org.eclipse.gef3.dnd.TemplateTransferDropTargetListener;
-import org.eclipse.gef3.requests.CreationFactory;
+import org.eclipse.gef.EditPartViewer;
+import org.eclipse.gef.dnd.TemplateTransferDropTargetListener;
+import org.eclipse.gef.requests.CreationFactory;
 
 /**
  * Provides a listener for dropping templates onto the editor drawing

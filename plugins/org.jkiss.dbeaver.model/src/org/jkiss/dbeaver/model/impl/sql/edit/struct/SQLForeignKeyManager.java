@@ -25,9 +25,9 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -45,7 +45,7 @@ import java.util.Map;
 /**
  * JDBC foreign key manager
  */
-public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstraint<TABLE_TYPE> & DBSTableForeignKey, TABLE_TYPE extends JDBCTable>
+public abstract class SQLForeignKeyManager<OBJECT_TYPE extends AbstractTableConstraint & DBSTableForeignKey, TABLE_TYPE extends AbstractTable>
     extends SQLObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
 
@@ -63,7 +63,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBException
     {
-        final TABLE_TYPE table = command.getObject().getTable();
+        final TABLE_TYPE table = (TABLE_TYPE) command.getObject().getTable();
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_create_new_foreign_key,
@@ -173,7 +173,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
         DBSEntityConstraint uniqueKey = foreignKey.getReferencedConstraint();
         DBSEntity targetTable = uniqueKey == null ? null : uniqueKey.getParentObject();
 
-        TABLE_TYPE table = foreignKey.getParentObject();
+        TABLE_TYPE table = (TABLE_TYPE) foreignKey.getParentObject();
         String baseName = CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
             (uniqueKey == null ? "" : CommonUtils.escapeIdentifier(targetTable.getName()) + "_") + "FK"; //$NON-NLS-1$
 

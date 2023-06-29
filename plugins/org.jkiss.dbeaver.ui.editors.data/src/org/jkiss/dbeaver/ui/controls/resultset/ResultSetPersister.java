@@ -202,7 +202,10 @@ class ResultSetPersister {
             return false;
         }
 
-        if (rowIdentifier.getEntity() instanceof DBSDocumentContainer) {
+        DBSEntity entity = rowIdentifier.getEntity();
+        if (entity != null && entity.getDataSource() != null &&
+            (entity instanceof DBSDocumentContainer || entity.getDataSource().getInfo().isDynamicMetadata())
+        ) {
             // FIXME: do not refresh documents for now. Can be solved by extracting document ID attributes
             // FIXME: but it will require to provide dynamic document metadata.
             return false;

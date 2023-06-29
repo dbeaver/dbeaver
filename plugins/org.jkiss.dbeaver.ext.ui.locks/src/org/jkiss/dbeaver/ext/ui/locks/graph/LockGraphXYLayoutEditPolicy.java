@@ -17,10 +17,10 @@
 package org.jkiss.dbeaver.ext.ui.locks.graph;
 
 
-import org.eclipse.gef3.EditPart;
-import org.eclipse.gef3.commands.Command;
-import org.eclipse.gef3.editpolicies.XYLayoutEditPolicy;
-import org.eclipse.gef3.requests.CreateRequest;
+import org.eclipse.gef.EditPart;
+import org.eclipse.gef.commands.Command;
+import org.eclipse.gef.editpolicies.XYLayoutEditPolicy;
+import org.eclipse.gef.requests.CreateRequest;
 
 public class LockGraphXYLayoutEditPolicy extends XYLayoutEditPolicy {
 

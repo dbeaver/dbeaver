@@ -799,6 +799,10 @@ public abstract class LightGrid extends Canvas {
     }
 
     public Object getRowElement(int row) {
+        if (row < 0 || row >= gridRows.length) {
+            log.debug("Row index out of range (" + row + ")" );
+            return null;
+        }
         return gridRows[row].getElement();
     }
 

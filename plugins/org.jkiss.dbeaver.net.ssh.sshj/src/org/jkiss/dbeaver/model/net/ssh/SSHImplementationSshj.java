@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.net.ssh;
 
 import com.jcraft.jsch.Identity;
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.connection.channel.direct.DirectConnection;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.connection.channel.direct.Parameters;
 import net.schmizz.sshj.sftp.SFTPClient;
@@ -86,14 +87,17 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
 
             try {
                 if (index > 0) {
-                    final int port = setPortForwarding(clients[index - 1], host.getHostname(), host.getPort());
+                    final SSHClient prevClient = clients[index - 1];
 
                     monitor.subTask(String.format(
-                        "Instantiate tunnel %s:%d -> %s:%d",
-                        hosts[index - 1].getHostname(), port,
-                        host.getHostname(), host.getPort()));
+                        "Instantiate tunnel to %s:%d via %s:%d",
+                        host.getHostname(), host.getPort(),
+                        prevClient.getRemoteHostname(), prevClient.getRemotePort()));
 
-                    client.connect("localhost", port);
+                    final DirectConnection tunnel = prevClient.newDirectConnection(
+                        host.getHostname(), host.getPort()
+                    );
+                    client.connectVia(tunnel);
                 } else {
                     monitor.subTask(String.format(
                         "Instantiate tunnel to %s:%d",
@@ -161,6 +165,7 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
             configuration.getBooleanProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION)
         ) {
             client.addHostKeyVerifier(new PromiscuousVerifier());
+            client.getTransport().getConfig().setVerifyHostKeyCertificates(false);
         } else {
             client.addHostKeyVerifier(new KnownHostsVerifier(SSHUtils.getKnownSshHostsFileOrDefault(), actualHostConfiguration));
         }

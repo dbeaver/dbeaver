@@ -84,7 +84,7 @@ public class OracleSQLDialect extends JDBCSQLDialect
         "IS",
     };
 
-    public static final String[] OTHER_TYPES_FUNCTIONS = {
+    private static final String[] OTHER_TYPES_FUNCTIONS = {
         //functions without parentheses #8710
         "CURRENT_DATE",
         "CURRENT_TIMESTAMP",
@@ -94,7 +94,7 @@ public class OracleSQLDialect extends JDBCSQLDialect
         "SYSTIMESTAMP"
     };
 
-    public static final String[] ADVANCED_KEYWORDS = {
+    private static final String[] ADVANCED_KEYWORDS = {
         "REPLACE",
         "PACKAGE",
         "FUNCTION",
@@ -120,8 +120,13 @@ public class OracleSQLDialect extends JDBCSQLDialect
         "BULK",
         "ELSIF",
         "EXIT",
+        "SUBPARTITION",
+        "TEMPFILE",
+        "DATAFILE",
+        "TABLESPACE"
     };
-    public static final String AUTO_INCREMENT_KEYWORD = "GENERATED ALWAYS AS IDENTITY";
+
+    private static final String AUTO_INCREMENT_KEYWORD = "GENERATED ALWAYS AS IDENTITY";
     private boolean crlfBroken;
     private DBPPreferenceStore preferenceStore;
 
@@ -724,6 +729,18 @@ public class OracleSQLDialect extends JDBCSQLDialect
     @Override
     public String getClobDataType() {
         return OracleConstants.TYPE_CLOB;
+    }
+
+    @NotNull
+    @Override
+    public String getUuidDataType() {
+        return OracleConstants.TYPE_UUID;
+    }
+
+    @NotNull
+    @Override
+    public String getBooleanDataType() {
+        return OracleConstants.TYPE_BOOLEAN;
     }
 
     @Override

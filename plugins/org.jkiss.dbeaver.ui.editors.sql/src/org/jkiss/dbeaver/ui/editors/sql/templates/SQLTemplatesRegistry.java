@@ -20,6 +20,7 @@ import org.eclipse.jface.text.templates.ContextTypeRegistry;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 
 import java.io.IOException;
 
@@ -68,6 +69,14 @@ public class SQLTemplatesRegistry {
                 log.error("Can't load template store", e);
             }
             templateStore.startListeningForPreferenceChanges();
+            
+            WorkspaceConfigEventManager.addConfigChangedListener(SQLTemplateStore.TEMPLATES_CONFIG_XML, o -> {
+                try {
+                    templateStore.reload();
+                } catch (IOException e) {
+                    log.error("Can't reload template store", e);
+                }
+            });
         }
 
         return templateStore;

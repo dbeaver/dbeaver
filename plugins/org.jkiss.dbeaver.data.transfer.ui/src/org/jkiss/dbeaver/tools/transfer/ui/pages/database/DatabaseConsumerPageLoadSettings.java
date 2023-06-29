@@ -28,13 +28,12 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPReferentialIntegrityController;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSDataBulkLoader;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
@@ -236,7 +235,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
             }
             multiRowInsertBatch.addModifyListener(e -> settings.setMultiRowInsertBatch(CommonUtils.toInt(multiRowInsertBatch.getText())));
             //This settings may break import for drivers that does not support this feature, so it is disabled for non-JDBC drivers
-            if (settings.getContainer() != null && settings.getContainer().getDataSource() instanceof JDBCDataSource) {
+            if (settings.getContainer() != null && settings.getContainer().getDataSource().getInfo().supportsStatementBinding()) {
                 skipBindValues = UIUtils.createCheckbox(performanceSettings, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_skip_bind_values_label, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_skip_bind_values_description, settings.isSkipBindValues(), 4);
                 skipBindValues.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -406,7 +405,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
         }
 
         if (buttonIsAvailable(useBulkLoadCheck)) {
-            final DBPDataSource dataSource = settings.getContainerNode() == null ? null : settings.getContainerNode().getDataSource();
+            final DBPDataSource dataSource = settings.getContainer() == null ? null : settings.getContainer().getDataSource();
             if (DBUtils.getAdapter(DBSDataBulkLoader.class, dataSource) == null) {
                 disableButton(useBulkLoadCheck);
                 settings.setUseBulkLoad(false);
@@ -438,12 +437,12 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
 
     private void loadInsertMethods() {
         DatabaseConsumerSettings settings = getSettings();
-        DBNDatabaseNode containerNode = settings.getContainerNode();
-        if (containerNode == null) {
+        DBSObjectContainer container = settings.getContainer();
+        if (container == null) {
             return;
         }
 
-        DBPDataSource dataSource = containerNode.getDataSource();
+        DBPDataSource dataSource = container.getDataSource();
 
         List<SQLInsertReplaceMethodDescriptor> insertMethodsDescriptors = null;
         if (dataSource != null) {
