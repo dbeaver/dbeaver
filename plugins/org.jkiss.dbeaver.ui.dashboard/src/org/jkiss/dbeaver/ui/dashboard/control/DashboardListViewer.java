@@ -28,20 +28,24 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
+import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class DashboardListViewer extends StructuredViewer implements DBPDataSourceContainerProvider, DashboardViewContainer {
 
@@ -55,6 +59,16 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     private DashboardList dashContainer;
     private boolean singleChartMode;
     //private CLabel statusLabel;
+
+    private final Consumer<Object> dashboardsConfigChangedListener = a -> UIUtils.asyncExec(() -> {
+        dashContainer.setRedraw(false);
+
+        dashContainer.clear();
+        dashContainer.createDefaultDashboards();
+
+        dashContainer.layout(true, true);
+        dashContainer.setRedraw(true);
+    });
 
     public DashboardListViewer(IWorkbenchSite site, DBPDataSourceContainer dataSourceContainer, DashboardViewConfiguration viewConfiguration) {
         this.site = site;
@@ -70,6 +84,8 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     }
 
     public void dispose() {
+        WorkspaceConfigEventManager.removeConfigChangedListener(DashboardRegistry.CONFIG_FILE_NAME, dashboardsConfigChangedListener);
+        
         if (isolatedContext != null) {
             if (isolatedContext.isConnected()) {
                 isolatedContext.close();
@@ -102,6 +118,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     public void createDashboardsFromConfiguration() {
         if (viewConfiguration.getDashboardItemConfigs().isEmpty()) {
             dashContainer.createDefaultDashboards();
+            WorkspaceConfigEventManager.addConfigChangedListener(DashboardRegistry.CONFIG_FILE_NAME, dashboardsConfigChangedListener); 
         } else {
             dashContainer.createDashboardsFromConfiguration();
         }

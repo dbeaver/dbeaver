@@ -153,7 +153,10 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         if (activated) {
             DBSEntity dbObject = getDatabaseObject();
             if (dbObject != null) {
-                DBUtils.getObjectRegistry(dbObject).removeDataSourceListener(this);
+                var registry = DBUtils.getObjectRegistry(dbObject);
+                if (registry != null) {
+                    registry.removeDataSourceListener(this);
+                }
             }
         }
         super.dispose();
@@ -179,7 +182,10 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
 
         DBSEntity dbObject = getDatabaseObject();
         if (dbObject != null) {
-            DBUtils.getObjectRegistry(dbObject).addDataSourceListener(this);
+            var registry = DBUtils.getObjectRegistry(dbObject);
+            if (registry != null) {
+                registry.addDataSourceListener(this);
+            }
         }
     }
 

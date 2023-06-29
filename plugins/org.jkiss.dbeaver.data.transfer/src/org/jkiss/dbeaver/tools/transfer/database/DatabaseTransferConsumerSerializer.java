@@ -35,7 +35,8 @@ public class DatabaseTransferConsumerSerializer implements DBPObjectSerializer<D
     private static final Log log = Log.getLog(DatabaseTransferConsumerSerializer.class);
 
     @Override
-    public void serializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull DBTTask context, @NotNull DatabaseTransferConsumer object, @NotNull Map<String, Object> state) {
+    public void serializeObject(DBRRunnableContext runnableContext, DBTTask context, DatabaseTransferConsumer object, Map<String, Object> state) {
+
     }
 
     @Override

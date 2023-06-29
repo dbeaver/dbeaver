@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingCustom;
 import org.jkiss.dbeaver.model.data.DBDInsertReplaceMethod;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -91,6 +93,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private boolean isPreview;
     private List<Object[]> previewRows;
     private DBDAttributeBinding[] rsAttributes;
+    private DBSObjectContainer container;
+
+    public void setContainer(DBSObjectContainer container) {
+        this.container = container;
+    }
 
     public static class ColumnMapping {
         public DBDAttributeBinding sourceAttr;
@@ -136,6 +143,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             return targetObjectContainer;
         }
         return containerMapping == null ? localTargetObject : containerMapping.getTarget();
+    }
+
+    @Override
+    @Nullable
+    public DBPProject getProject() {
+        return getDataSourceContainer() == null ? null : getDataSourceContainer().getProject();
     }
 
     protected boolean isPreview() {
@@ -555,9 +568,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private DBSObject checkTargetContainer(DBRProgressMonitor monitor) throws DBException {
         DBSDataManipulator targetObject = getTargetObject();
         if (targetObject == null) {
-            if (settings.getContainerNode() != null && settings.getContainerNode().getDataSource() == null) {
+            DBSObjectContainer container = settings.getContainer();
+            if (container instanceof DBPDataSourceContainer && container.getDataSource() == null) {
                 // Init connection
-                settings.getContainerNode().initializeNode(monitor, null);
+                DBUtils.initDataSource(monitor, (DBPDataSourceContainer) settings.getContainer(), null);
             }
             if (settings.getContainer() == null) {
                 throw new DBCException("Can't initialize database consumer. No target object and no target container");
@@ -703,11 +717,20 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     public void finishTransfer(DBRProgressMonitor monitor, boolean last) {
         if (last) {
             // Refresh navigator
-            monitor.subTask("Refresh navigator model");
+            monitor.subTask("Refresh database model");
             try {
-                settings.getContainerNode().refreshNode(monitor, this);
+                DBSObjectContainer container = settings.getContainer();
+                DBNModel navigatorModel = DBNUtils.getNavigatorModel(container);
+                if (navigatorModel != null) {
+                    var node = DBNUtils.getNodeByObject(container);
+                    if (node != null) {
+                        node.refreshNode(monitor, this);
+                    }
+                } else if (container instanceof DBPRefreshableObject) {
+                    ((DBPRefreshableObject) container).refreshObject(monitor);
+                }
             } catch (Exception e) {
-                log.debug("Error refreshing navigator model after data consumer", e);
+                log.debug("Error refreshing database model after data consumer", e);
             }
         }
 
@@ -723,9 +746,14 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             if (targetObject != null) {
                 // Refresh node first (this will refresh table data as well)
                 try {
-                    DBNDatabaseNode objectNode = DBNUtils.getNodeByObject(targetObject);
-                    if (objectNode != null) {
-                        objectNode.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
+                    DBNModel navigatorModel = DBNUtils.getNavigatorModel(targetObject);
+                    if (navigatorModel != null) {
+                        DBNDatabaseNode objectNode = DBNUtils.getNodeByObject(targetObject);
+                        if (objectNode != null) {
+                            objectNode.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
+                        }
+                    } else if (targetObject instanceof DBPRefreshableObject) {
+                        ((DBPRefreshableObject) targetObject).refreshObject(monitor);
                     }
                 } catch (Exception e) {
                     log.error("Error refreshing object '" + targetObject.getName() + "'", e);
@@ -746,6 +774,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     public void setTargetObject(DBSDataManipulator targetObject) {
         this.localTargetObject = targetObject;
+    }
+
+    public DBSObjectContainer getContainer() {
+        return container;
     }
 
     @Override
@@ -887,11 +919,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     private class PreviewBatch implements DBSDataManipulator.ExecuteBatch {
+
         @Override
         public void add(@NotNull Object[] attributeValues) throws DBCException {
             previewRows.add(attributeValues);
         }
-
         @NotNull
         @Override
         public DBCStatistics execute(@NotNull DBCSession session, Map<String, Object> options) throws DBCException {

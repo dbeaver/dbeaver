@@ -81,7 +81,7 @@ public class ReferencesPanel implements IResultSetPanel {
                         return;
                     }
                     this.prevSelection = selectedItems;
-                    getResultsContainer().refreshReferences();
+                    getResultsContainer().refreshReferences(false);
                 }
             };
             ((ISelectionProvider) presentation).addSelectionChangedListener(selectionListener);
@@ -138,7 +138,7 @@ public class ReferencesPanel implements IResultSetPanel {
     @Override
     public void refresh(boolean force) {
         if (presentation.getController().getVisiblePanel() == this) {
-            getResultsContainer().refreshReferences();
+            getResultsContainer().refreshReferences(force);
         }
     }
 

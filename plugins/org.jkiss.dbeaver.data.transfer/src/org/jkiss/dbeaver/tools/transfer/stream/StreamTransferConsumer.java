@@ -907,6 +907,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return null;
     }
 
+    @Nullable
+    @Override
+    public DBPProject getProject() {
+        return null;
+    }
+
     public static Object[] fetchRow(DBCSession session, DBCResultSet resultSet, DBDAttributeBinding[] attributes) throws DBCException {
         int columnCount = attributes.length; // Column count without virtual columns
 

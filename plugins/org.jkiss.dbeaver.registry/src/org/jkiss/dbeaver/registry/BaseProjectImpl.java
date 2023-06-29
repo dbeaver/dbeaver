@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.impl.app.DefaultValueEncryptor;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -45,8 +46,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -54,6 +53,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 public abstract class BaseProjectImpl implements DBPProject {
 
@@ -163,7 +164,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     protected Path getMetadataPath() {
         return getAbsolutePath().resolve(METADATA_FOLDER);
     }
-
+    
     @Override
     public boolean isRegistryLoaded() {
         return dataSourceRegistry != null;
@@ -629,5 +630,11 @@ public abstract class BaseProjectImpl implements DBPProject {
 
             return Status.OK_STATUS;
         }
+    }
+
+    @Nullable
+    @Override
+    public DBNModel getNavigatorModel() {
+        return null;
     }
 }
