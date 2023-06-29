@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.runtime.serialize;
+package org.jkiss.dbeaver.tools.transfer.serialize;
 
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 

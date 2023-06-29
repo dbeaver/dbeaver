@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.runtime.serialize;
+package org.jkiss.dbeaver.tools.transfer.serialize;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -26,7 +26,7 @@ import java.util.Map;
 /**
  * Object serializer
  */
-public interface DBPObjectSerializer<CONTEXT_TYPE, OBJECT_TYPE> {
+public interface DTObjectSerializer<CONTEXT_TYPE, OBJECT_TYPE> {
 
     void serializeObject(
         @NotNull DBRRunnableContext runnableContext,
@@ -36,6 +36,7 @@ public interface DBPObjectSerializer<CONTEXT_TYPE, OBJECT_TYPE> {
 
     OBJECT_TYPE deserializeObject(
         @NotNull DBRRunnableContext runnableContext,
+        @NotNull SerializerContext serializeContext,
         @NotNull CONTEXT_TYPE objectContext,
         @NotNull Map<String, Object> state) throws DBCException;
 

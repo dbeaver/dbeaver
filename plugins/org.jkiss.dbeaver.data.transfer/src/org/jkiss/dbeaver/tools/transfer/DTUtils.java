@@ -36,10 +36,11 @@ import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
-import org.jkiss.dbeaver.runtime.serialize.SerializerRegistry;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.serialize.DTObjectSerializer;
+import org.jkiss.dbeaver.tools.transfer.serialize.SerializerContext;
+import org.jkiss.dbeaver.tools.transfer.serialize.SerializerRegistry;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -234,16 +235,16 @@ public class DTUtils {
 
     public static <OBJECT_CONTEXT, OBJECT_TYPE> Object deserializeObject(
         @NotNull DBRRunnableContext runnableContext,
-        OBJECT_CONTEXT objectContext,
+        SerializerContext serializeContext, OBJECT_CONTEXT objectContext,
         @NotNull Map<String, Object> objectConfig
     ) throws DBCException {
         String typeID = CommonUtils.toString(objectConfig.get("type"));
-        DBPObjectSerializer<OBJECT_CONTEXT, OBJECT_TYPE> serializer = SerializerRegistry.getInstance().createSerializerByType(typeID);
+        DTObjectSerializer<OBJECT_CONTEXT, OBJECT_TYPE> serializer = SerializerRegistry.getInstance().createSerializerByType(typeID);
         if (serializer == null) {
             return null;
         }
         Map<String, Object> location = JSONUtils.getObject(objectConfig, "location");
-        return serializer.deserializeObject(runnableContext, objectContext, location);
+        return serializer.deserializeObject(runnableContext, serializeContext, objectContext, location);
     }
 
     public static <OBJECT_CONTEXT, OBJECT_TYPE> Map<String, Object> serializeObject(
@@ -251,7 +252,7 @@ public class DTUtils {
         OBJECT_CONTEXT context,
         @NotNull OBJECT_TYPE object
     ) {
-        DBPObjectSerializer<OBJECT_CONTEXT, OBJECT_TYPE> serializer = SerializerRegistry.getInstance().createSerializer(object);
+        DTObjectSerializer<OBJECT_CONTEXT, OBJECT_TYPE> serializer = SerializerRegistry.getInstance().createSerializer(object);
         if (serializer == null) {
             return null;
         }

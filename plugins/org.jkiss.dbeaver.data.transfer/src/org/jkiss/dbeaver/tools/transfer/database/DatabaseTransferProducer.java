@@ -41,12 +41,13 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNodePrimary;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.serialize.DTObjectSerializer;
+import org.jkiss.dbeaver.tools.transfer.serialize.SerializerContext;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -325,7 +326,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         return producerStatistics;
     }
 
-    public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, DatabaseTransferProducer> {
+    public static class ObjectSerializer implements DTObjectSerializer<DBTTask, DatabaseTransferProducer> {
 
         @Override
         public void serializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull DBTTask context, @NotNull DatabaseTransferProducer object, @NotNull Map<String, Object> state) {
@@ -370,7 +371,12 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         }
 
         @Override
-        public DatabaseTransferProducer deserializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull DBTTask objectContext, @NotNull Map<String, Object> state) throws DBCException {
+        public DatabaseTransferProducer deserializeObject(
+            @NotNull DBRRunnableContext runnableContext,
+            @NotNull SerializerContext serializeContext,
+            @NotNull DBTTask objectContext,
+            @NotNull Map<String, Object> state
+        ) throws DBCException {
             DatabaseTransferProducer producer = new DatabaseTransferProducer();
             try {
                 runnableContext.run(true, true, monitor -> {
@@ -391,11 +397,13 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                                     producer.objectId = id;
                                 }
                                 producer.dataSourceContainer = DBUtils.findDataSourceByObjectId(project, id);
-                                try {
-                                    producer.dataContainer = (DBSDataContainer) DBUtils.findObjectById(monitor, project, id);
-                                } catch (DBException e) {
-                                    log.error(e);
-                                    //throw new DBException("Can't find database object '" + id + "'");
+                                if (producer.dataSourceContainer != null && !serializeContext.isDataSourceFailed(producer.dataSourceContainer)) {
+                                    try {
+                                        producer.dataContainer = (DBSDataContainer) DBUtils.findObjectById(monitor, project, id);
+                                    } catch (DBException e) {
+                                        serializeContext.addError(e);
+                                        serializeContext.addDataSourceFail(producer.dataSourceContainer);
+                                    }
                                 }
                                 break;
                             }
@@ -425,7 +433,8 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                                 break;
                             }
                             default:
-                                log.warn("Unsupported selector type: " + selType);
+                                serializeContext.addError(new DBException("Unsupported selector type: " + selType));
+                                break;
                         }
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
