@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.LocalFileStorage;
 import org.jkiss.dbeaver.ui.IDataSourceContainerUpdate;
+import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -549,4 +550,13 @@ public class EditorUtils {
         }
     }
 
+    public static void appendProjectToolTip(@NotNull StringBuilder tip, @Nullable DBPProject project) {
+        if (project == null || project.getWorkspace().getProjects().size() < 2) {
+            return;
+        }
+        if (tip.length() > 0 && tip.charAt(tip.length() - 1) != '\n') {
+            tip.append('\n');
+        }
+        tip.append(EditorsMessages.database_editor_project).append(": ").append(project.getName());
+    }
 }

@@ -107,7 +107,12 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
                     }
                     if (element instanceof DBNProject || element instanceof DBNProjectDatabases ||
                         element instanceof DBNDataSource ||
-                        (element instanceof DBSWrapper && matchesType(((DBSWrapper) element).getObject().getClass(), false))) {
+                        (element instanceof DBSWrapper && matchesType(((DBSWrapper) element).getObject().getClass(), false))
+                    ) {
+                        return true;
+                    }
+                    if (!(element instanceof DBNDatabaseNode) && !((DBNNode) element).isPersisted()) {
+                        // Show non-database nodes
                         return true;
                     }
                 }
@@ -117,7 +122,7 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
     }
 
     @Override
-    protected boolean matchesType(DBSObject object, boolean result) {
+    protected boolean matchesType(Object object, boolean result) {
         for (Class<?> ot : result ? resultTypes : allowedTypes) {
             if (ot.isAssignableFrom(object.getClass())) {
                 return true;

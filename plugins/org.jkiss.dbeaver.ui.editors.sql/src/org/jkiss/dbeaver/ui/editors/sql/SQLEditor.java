@@ -2155,6 +2155,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
         syntaxLoaded = false;
 
+        IEditorInput finalEditorInput = editorInput;
         Runnable inputinitializer = () -> {
             DBPDataSourceContainer oldDataSource = SQLEditor.this.getDataSourceContainer();
             DBPDataSourceContainer newDataSource = EditorUtils.getInputDataSource(SQLEditor.this.getEditorInput());
@@ -2164,6 +2165,13 @@ public class SQLEditor extends SQLEditorBase implements
                 SQLEditor.this.updateDataSourceContainer();
             } else {
                 SQLEditor.this.reloadSyntaxRules();
+            }
+
+            {
+                DBPDataSourceContainer dataSource = EditorUtils.getInputDataSource(finalEditorInput);
+                SQLEditorFeatures.SQL_EDITOR_OPEN.use(Map.of(
+                    "driver", dataSource == null ? "" : dataSource.getDriver().getPreconfiguredId()
+                ));
             }
         };
         if (isNonPersistentEditor()) {
@@ -2179,13 +2187,6 @@ public class SQLEditor extends SQLEditorBase implements
         }
         baseEditorImage = getTitleImage();
         editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
-
-        {
-            DBPDataSourceContainer dataSource = EditorUtils.getInputDataSource(editorInput);
-            SQLEditorFeatures.SQL_EDITOR_OPEN.use(Map.of(
-                "driver", dataSource == null ? "" : dataSource.getDriver().getPreconfiguredId()
-            ));
-        }
     }
 
     protected boolean isDetectTitleImageFromInput() {
@@ -2243,6 +2244,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (scriptNameResolver.get(SQLPreferenceConstants.VAR_ACTIVE_SCHEMA) != null) {
             tip.append("\n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_schema, scriptNameResolver.get(SQLPreferenceConstants.VAR_ACTIVE_SCHEMA)));
         }
+        EditorUtils.appendProjectToolTip(tip, getProject());
 
         if (dataSourceContainer.getConnectionError() != null) {
             tip.append("\n\nConnection error:\n").append(dataSourceContainer.getConnectionError());
