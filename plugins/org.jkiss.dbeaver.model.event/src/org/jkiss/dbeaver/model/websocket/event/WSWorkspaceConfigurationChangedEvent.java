@@ -14,15 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.notifications;
+package org.jkiss.dbeaver.model.websocket.event;
 
-import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
-class DatabaseNotificationPopup extends DBeaverNotificationPopup {
+public class WSWorkspaceConfigurationChangedEvent extends WSAbstractEvent {
 
+    private final String configFilePath;
 
-    public DatabaseNotificationPopup(Shell parent) {
-        super(parent);
-        setDelayClose(3000);
+    public WSWorkspaceConfigurationChangedEvent(@NotNull String configFilePath, @Nullable String sessionId, @Nullable String userId) {
+        super(WSEventType.WORKSPACE_CONFIG_CHANGED, sessionId, userId);
+        this.configFilePath = configFilePath;
+    }
+
+    @NotNull
+    public String getConfigFilePath() {
+        return configFilePath;
     }
 }

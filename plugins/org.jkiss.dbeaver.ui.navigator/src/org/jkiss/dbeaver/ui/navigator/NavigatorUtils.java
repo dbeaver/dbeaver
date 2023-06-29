@@ -940,6 +940,33 @@ public class NavigatorUtils {
         return activeProject;
     }
 
+    public static void showNodeInNavigator(DBNDatabaseNode dsNode) {
+        IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+        NavigatorViewBase nodeView;
+        try {
+            if (dsNode.getOwnerProject() == DBWorkbench.getPlatform().getWorkspace().getActiveProject()) {
+                nodeView = UIUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
+                if (nodeView == null) {
+                    nodeView = (NavigatorViewBase) workbenchWindow.getActivePage().showView(DatabaseNavigatorView.VIEW_ID);
+                }
+            } else {
+                nodeView = UIUtils.findView(workbenchWindow, ProjectNavigatorView.class);
+                if (nodeView == null) {
+                    nodeView = (NavigatorViewBase) workbenchWindow.getActivePage().showView(ProjectNavigatorView.VIEW_ID);
+                }
+            }
+        } catch (PartInitException e) {
+            DBWorkbench.getPlatformUI().showError("Can't open view", "Error opening navigator view", e);
+            return;
+        }
+        if (nodeView != null) {
+            if (!workbenchWindow.getActivePage().isPartVisible(nodeView)) {
+                workbenchWindow.getActivePage().bringToTop(nodeView);
+            }
+            nodeView.showNode(dsNode);
+        }
+    }
+
     private static class TransferInfo {
         private final String name;
         private final DBNNode node;
