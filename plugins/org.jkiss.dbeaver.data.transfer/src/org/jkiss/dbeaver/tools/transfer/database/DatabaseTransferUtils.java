@@ -64,7 +64,7 @@ public class DatabaseTransferUtils {
         DBSObjectContainer container = consumerSettings.getContainer();
         DBNModel navigatorModel = DBNUtils.getNavigatorModel(container);
         if (navigatorModel != null) {
-            var containerNode = DBNUtils.getNodeByObject(container);
+            var containerNode = navigatorModel.getNodeByObject(monitor, container, false);
             if (containerNode != null) {
                 containerNode.refreshNode(monitor, containerMapping);
             }

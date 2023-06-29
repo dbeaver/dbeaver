@@ -372,33 +372,31 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     public void loadObjectContainer(DBRRunnableContext runnableContext, DataTransferSettings settings, @Nullable DBSObjectContainer producerContainer) {
         // is used only for old tasks
         if (container == null && (!CommonUtils.isEmpty(containerNodePath) || !CommonUtils.isEmpty(entityId) || producerContainer != null)) {
-            if (!CommonUtils.isEmpty(entityId) || producerContainer != null) {
-                try {
-                    runnableContext.run(true, true, monitor -> {
-                        try {
-                            if (!CommonUtils.isEmpty(entityId)) {
-                                container = DBUtils.getAdapter(DBSObjectContainer.class,
-                                    DBUtils.findObjectById(monitor, settings.getProject(), entityId));
-                            } else if (!CommonUtils.isEmpty(containerNodePath)) {
-                                DBNNode node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByPath(monitor, containerNodePath);
-                                if (node instanceof DBNDatabaseNode) {
-                                    container = DBUtils.getAdapter(DBSObjectContainer.class, ((DBNDatabaseNode) node).getObject());
-                                }
+            try {
+                runnableContext.run(true, true, monitor -> {
+                    try {
+                        if (!CommonUtils.isEmpty(entityId)) {
+                            container = DBUtils.getAdapter(DBSObjectContainer.class,
+                                DBUtils.findObjectById(monitor, settings.getProject(), entityId));
+                        } else if (!CommonUtils.isEmpty(containerNodePath)) {
+                            DBNNode node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByPath(monitor, containerNodePath);
+                            if (node instanceof DBNDatabaseNode) {
+                                container = DBUtils.getAdapter(DBSObjectContainer.class, ((DBNDatabaseNode) node).getObject());
                             }
-                            else {
-                                container = producerContainer;
-                            }
-                        } catch (DBException e) {
-                            throw new InvocationTargetException(e);
                         }
-                    });
-                    checkContainerConnection(runnableContext);
-                } catch (InvocationTargetException e) {
-                    settings.getState().addError(e.getTargetException());
-                    log.error("Error getting container node", e.getTargetException());
-                } catch (InterruptedException e) {
-                    // ignore
-                }
+                        if (container == null) {
+                            container = producerContainer;
+                        }
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+                checkContainerConnection(runnableContext);
+            } catch (InvocationTargetException e) {
+                settings.getState().addError(e.getTargetException());
+                log.error("Error getting container node", e.getTargetException());
+            } catch (InterruptedException e) {
+                // ignore
             }
         }
     }
