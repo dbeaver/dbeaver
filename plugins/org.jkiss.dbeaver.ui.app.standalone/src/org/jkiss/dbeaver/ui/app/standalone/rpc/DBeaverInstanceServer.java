@@ -30,6 +30,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -75,7 +76,7 @@ public class DBeaverInstanceServer implements IInstanceController {
         }
 
         if (createClient() != null) {
-            throw new IOException("Can't start RMI server because other instance is already running");
+            throw new IOException("Can't start instance server because other instance is already running");
         }
 
         server = RestServer
@@ -95,12 +96,17 @@ public class DBeaverInstanceServer implements IInstanceController {
             configFileChannel.write(ByteBuffer.wrap(os.toByteArray()));
         }
 
-        log.debug("Starting RMI server at " + server.getAddress().getPort());
+        log.debug("Starting instance server at http://localhost:" + server.getAddress().getPort());
     }
 
     @Nullable
     public static IInstanceController createClient() {
-        final Path path = getConfigPath();
+        return createClient(null);
+    }
+
+    @Nullable
+    public static IInstanceController createClient(@Nullable String workspacePath) {
+        final Path path = getConfigPath(workspacePath);
 
         if (Files.notExists(path)) {
             log.trace("No instance controller is available");
@@ -278,7 +284,7 @@ public class DBeaverInstanceServer implements IInstanceController {
 
     public void stopInstanceServer() {
         try {
-            log.debug("Stop RMI server");
+            log.debug("Stop instance server");
 
             server.stop();
 
@@ -287,15 +293,24 @@ public class DBeaverInstanceServer implements IInstanceController {
                 Files.delete(getConfigPath());
             }
 
-            log.debug("RMI controller has been stopped");
+            log.debug("Instance server has been stopped");
         } catch (Exception e) {
-            log.error("Can't stop RMI server", e);
+            log.error("Can't stop instance server", e);
         }
     }
 
     @NotNull
     private static Path getConfigPath() {
-        return GeneralUtils.getMetadataFolder().resolve(CONFIG_PROP_FILE);
+        return getConfigPath(null);
+    }
+
+    @NotNull
+    private static Path getConfigPath(@Nullable String workspacePath) {
+        if (workspacePath != null) {
+            return Path.of(workspacePath).resolve(DBPWorkspace.METADATA_FOLDER).resolve(CONFIG_PROP_FILE);
+        } else {
+            return GeneralUtils.getMetadataFolder().resolve(CONFIG_PROP_FILE);
+        }
     }
 
     private static class InstanceConnectionParameters implements GeneralUtils.IParameterHandler {

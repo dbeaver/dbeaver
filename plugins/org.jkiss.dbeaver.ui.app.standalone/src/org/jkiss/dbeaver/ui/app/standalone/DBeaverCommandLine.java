@@ -41,7 +41,7 @@ import java.util.*;
  * Command line processing.
  * Note:
  * there are two modes of command line processing:
- * 1. On DBeaver start. It tries to find already running DBeaver instance (thru RMI) and make it execute passed commands
+ * 1. On DBeaver start. It tries to find already running DBeaver instance (thru REST API) and make it execute passed commands
  *    If DBeaver will execute at least one command using remote invocation then application won't start.
  *    Otherwise it will start normally (and then will try to process commands in UI)
  * 2. After DBeaver UI start. It will execute commands directly
@@ -286,7 +286,7 @@ public class DBeaverCommandLine
         }
 
         try {
-            return executeCommandLineCommands(commandLine, DBeaverInstanceServer.createClient(), false);
+            return executeCommandLineCommands(commandLine, DBeaverInstanceServer.createClient(instanceLoc), false);
         } catch (Throwable e) {
             log.error("Error while calling remote server", e);
         }

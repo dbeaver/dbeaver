@@ -256,7 +256,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         try {
             instanceServer = new DBeaverInstanceServer(commandLine);
         } catch (Exception e) {
-            log.error("Can't start RMI server", e);
+            log.error("Can't start instance server", e);
         }
 
         if (RuntimeUtils.isWindows() && isStandalone()) {
@@ -656,7 +656,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             DBeaverInstanceServer server = instanceServer;
             if (server != null) {
                 instanceServer = null;
-                RuntimeUtils.runTask(monitor -> server.stopInstanceServer(), "Stop RMI", 1000);
+                RuntimeUtils.runTask(monitor -> server.stopInstanceServer(), "Stop instance server", 1000);
             }
         } catch (Throwable e) {
             log.error(e);
@@ -708,7 +708,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     @Nullable
     public IInstanceController createInstanceClient() {
-        return DBeaverInstanceServer.createClient();
+        return DBeaverInstanceServer.createClient(getDefaultInstanceLocation());
     }
 
     @Override
