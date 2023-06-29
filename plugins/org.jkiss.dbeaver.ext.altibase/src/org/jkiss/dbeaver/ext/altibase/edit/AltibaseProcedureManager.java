@@ -23,22 +23,15 @@ import java.util.Map;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone;
-import org.jkiss.dbeaver.ext.altibase.model.AltibaseSchema;
 import org.jkiss.dbeaver.ext.generic.edit.GenericProcedureManager;
-import org.jkiss.dbeaver.ext.generic.model.GenericPackage;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor.ObjectCreateCommand;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
@@ -105,29 +98,4 @@ public class AltibaseProcedureManager extends GenericProcedureManager  {
         actions.add(
                 new SQLDatabasePersistAction("Create procedure", procedure.getSource()));
     }
-    
-    /*
-     * 
-     *     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
-        return FEATURE_EDITOR_ON_CREATE;
-    }
-    
-    @Override
-    protected AltibaseProcedureStandAlone createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
-            Object container, Object copyFrom, Map<String, Object> options) throws DBException {
-
-        return null;
-    }
-
-    @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
-            List<DBEPersistAction> actions,
-            SQLObjectEditor<GenericProcedure, GenericStructContainer>.ObjectCreateCommand command,
-            Map<String, Object> options) throws DBException {
-        // TODO Auto-generated method stub
-        
-    }
-
-    */
 }

@@ -16,15 +16,18 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
+import org.jkiss.dbeaver.ext.altibase.AltibaseUtils;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
-import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
-public class AltibaseView extends GenericView implements DBSObjectWithScript, DBSView {
+public class AltibaseView extends GenericView {
     
     public AltibaseView(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
+    }
+    
+    public String getDDL() {
+        return AltibaseUtils.getEffectiveSql(super.getDDL());
     }
 }

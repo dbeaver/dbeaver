@@ -52,15 +52,20 @@ public class AltibaseMaterializedViewManager extends GenericViewManager {
     }
     
     @Override
-    protected GenericTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
+    protected GenericTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, 
+            Object container, Object copyFrom, Map<String, Object> options)
     {
         GenericStructContainer structContainer = (GenericStructContainer) container;
         String tableName = getNewChildName(monitor, structContainer, SQLTableManager.BASE_MATERIALIZED_VIEW_NAME);
-        GenericTableBase viewImpl = structContainer.getDataSource().getMetaModel().createTableImpl(structContainer, tableName,
+        GenericTableBase viewImpl = structContainer.getDataSource().getMetaModel().createTableImpl(
+                structContainer, tableName,
                 AltibaseConstants.OBJ_TYPE_MATERIALIZED_VIEW,
                 null);
         if (viewImpl instanceof AltibaseMaterializedView) {
-            ((AltibaseMaterializedView) viewImpl).setObjectDefinitionText("CREATE MATERIALIZED VIEW " + viewImpl.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS SELECT 1 as A\n");
+            ((AltibaseMaterializedView) viewImpl).setObjectDefinitionText(
+                    "CREATE MATERIALIZED VIEW " 
+                            + viewImpl.getFullyQualifiedName(DBPEvaluationContext.DDL) 
+                            + " AS SELECT 1 as A\n");
         }
         return viewImpl;
     }
@@ -71,15 +76,19 @@ public class AltibaseMaterializedViewManager extends GenericViewManager {
     }
     
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
+            List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         actions.add(
-            new SQLDatabasePersistAction("Drop view", "DROP " + AltibaseConstants.OBJ_TYPE_MATERIALIZED_VIEW + " " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
+            new SQLDatabasePersistAction("Drop view", 
+                    "DROP " + AltibaseConstants.OBJ_TYPE_MATERIALIZED_VIEW + " " 
+                            + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL))
         );
     }
     
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
+            List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
         final AltibaseMaterializedView view = (AltibaseMaterializedView)command.getObject();
         actions.add(new SQLDatabasePersistAction("Create " + AltibaseConstants.OBJ_TYPE_MATERIALIZED_VIEW.toLowerCase(), view.getDDL()));

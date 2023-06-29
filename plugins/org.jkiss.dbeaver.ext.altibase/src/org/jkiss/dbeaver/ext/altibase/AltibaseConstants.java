@@ -17,9 +17,15 @@
 
 package org.jkiss.dbeaver.ext.altibase;
 
-public class AltibaseConstants {
-    public static final String PUBLIC_USER = "PUBLIC";
+import org.jkiss.utils.StandardConstants;
 
+public class AltibaseConstants {
+    
+    public static final String NEW_LINE = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
+    public static final String PSM_POSTFIX = ";" + AltibaseConstants.NEW_LINE + "/";
+
+    public static final String PUBLIC_USER = "PUBLIC";
+    
     public static final int PACKAGE_SPEC = 6;
     public static final int PACKAGE_BODY = 7;
 
@@ -57,5 +63,9 @@ public class AltibaseConstants {
     
     public static final String OBJ_TYPE_MATERIALIZED_VIEW = "MATERIALIZED VIEW";
     public static final String OBJ_TYPE_TYPESET = "TYPESET";
+    
+    public static final String NO_DBMS_METADATA = 
+    "-- [WARNING] Without DBMS_METADATA package, the generated DDL may not be correct." + NEW_LINE;
+    
 
 }

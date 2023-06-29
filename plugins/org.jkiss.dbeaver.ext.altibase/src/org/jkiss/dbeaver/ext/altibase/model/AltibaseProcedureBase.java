@@ -17,6 +17,12 @@
 
 package org.jkiss.dbeaver.ext.altibase.model;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -24,20 +30,14 @@ import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericFunctionResultType;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedureParameter;
-import org.jkiss.dbeaver.ext.generic.model.GenericScriptObject;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.model.DBPUniqueObject;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-public abstract class AltibaseProcedureBase extends GenericProcedure implements GenericScriptObject, DBPUniqueObject {
+public abstract class AltibaseProcedureBase extends GenericProcedure implements DBSObjectWithScript {
 
     protected List<GenericProcedureParameter> columns;
     protected static final Log log = Log.getLog(AltibaseProcedureBase.class);
@@ -103,5 +103,17 @@ public abstract class AltibaseProcedureBase extends GenericProcedure implements 
             log.error(e.getMessage());
         }
     }
+    
+    @Override
+    @Property(hidden = true, editable = true, updatable = true)
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        return super.getObjectDefinitionText(monitor, options);
+    }
 
+    @Override
+    public void setObjectDefinitionText(String source)
+    {
+        super.setSource(source);
+    }
+    
 }

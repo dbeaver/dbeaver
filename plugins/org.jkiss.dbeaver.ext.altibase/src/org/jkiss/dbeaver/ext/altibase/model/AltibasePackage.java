@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
-import org.jkiss.dbeaver.ext.altibase.AltibaseUtils;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericPackage;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -54,12 +53,12 @@ public class AltibasePackage extends GenericPackage {
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         if (source == null) {
             source = "-- Package specification " 
-                    + AltibaseUtils.NEW_LINE 
+                    + AltibaseConstants.NEW_LINE 
                     + ((AltibaseMetaModel) getDataSource().getMetaModel())
                         .getPackageDDL(monitor, this, AltibaseConstants.PACKAGE_SPEC)
-                    + AltibaseUtils.NEW_LINE 
+                    + AltibaseConstants.NEW_LINE 
                     + "-- Package body " 
-                    + AltibaseUtils.NEW_LINE;
+                    + AltibaseConstants.NEW_LINE;
 
             if (hasBody == true) {
                 source += ((AltibaseMetaModel) getDataSource().getMetaModel())

@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model.plan;
 
-import org.jkiss.dbeaver.ext.altibase.AltibaseUtils;
+import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 
@@ -83,7 +83,7 @@ public class AltibasePlanNode extends AbstractExecutionPlanNode {
             sb.append("-");
         }
 
-        sb.append(plan).append(AltibaseUtils.NEW_LINE);
+        sb.append(plan).append(AltibaseConstants.NEW_LINE);
         for (AltibasePlanNode node : nested) {
             sb.append(node.toString4Debug());
         }

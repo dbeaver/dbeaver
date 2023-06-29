@@ -24,7 +24,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
 public class AltibaseMaterializedView extends GenericView implements DBSObjectWithScript, DBSView {
 
-    public AltibaseMaterializedView(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
+    public AltibaseMaterializedView(GenericStructContainer container, String tableName, String tableType, 
+            JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
     }
 }

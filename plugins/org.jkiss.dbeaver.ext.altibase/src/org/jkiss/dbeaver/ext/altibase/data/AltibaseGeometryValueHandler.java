@@ -21,7 +21,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.data.gis.handlers.GISGeometryValueHandler;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
-import org.jkiss.dbeaver.ext.altibase.AltibaseUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueBinder;
@@ -110,7 +109,7 @@ public class AltibaseGeometryValueHandler extends GISGeometryValueHandler implem
         } catch (ParseException e) {
             log.warn("Failed to parse objedt: " 
                     + ((object != null) ? object.toString() : "NULL") 
-                    + AltibaseUtils.NEW_LINE 
+                    + AltibaseConstants.NEW_LINE 
                     + e.getLocalizedMessage());
         }
 

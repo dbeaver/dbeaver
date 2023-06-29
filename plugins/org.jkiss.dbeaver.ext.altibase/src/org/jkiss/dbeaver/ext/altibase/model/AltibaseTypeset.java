@@ -23,11 +23,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 public class AltibaseTypeset extends AltibaseProcedureStandAlone {
 
-    //private boolean isValid;
-
     public AltibaseTypeset(GenericStructContainer container, String procedureName) {
         super(container, procedureName, procedureName, "", DBSProcedureType.UNKNOWN, GenericFunctionResultType.NO_TABLE);
-        //this.isValid = isValid;
     }
     
     @Override

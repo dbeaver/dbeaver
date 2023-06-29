@@ -29,7 +29,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
-import org.jkiss.dbeaver.ext.altibase.AltibaseMessages;
 import org.jkiss.dbeaver.ext.altibase.AltibaseUtils;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
@@ -157,7 +156,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
         }
 
         if (!DBMS_METADATA || AltibaseUtils.isEmpty(ddl)) {
-            ddl = AltibaseMessages.NO_DBMS_METADATA + super.getTableDDL(monitor, sourceObject, options);
+            ddl = AltibaseConstants.NO_DBMS_METADATA + super.getTableDDL(monitor, sourceObject, options);
         }
 
         return ddl;
@@ -172,7 +171,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
         }
 
         if (!DBMS_METADATA || AltibaseUtils.isEmpty(ddl)) {
-            ddl = AltibaseMessages.NO_DBMS_METADATA + sourceObject.getDdlLocal();
+            ddl = AltibaseConstants.NO_DBMS_METADATA + sourceObject.getDdlLocal();
         }
 
         if (!AltibaseUtils.isEmpty(ddl)) {
@@ -238,7 +237,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
         if (ddl.length() < 1) {
             ddl = "-- Source code not available";
         } else {
-            ddl += ";" + AltibaseUtils.NEW_LINE + "/";
+            //ddl += ";" + AltibaseUtils.NEW_LINE + "/";
         }
 
         return ddl;
@@ -295,7 +294,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
             ddl = "-- Source code not available";
         }
         else {
-            ddl += ";" + AltibaseUtils.NEW_LINE + "/";
+            //ddl += AltibaseConstants.PSM_POSTFIX;
         }
 
         return ddl;
@@ -512,7 +511,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
         if (ddl.length() < 1) {
             ddl = "-- Source code not available";
         } else {
-            ddl += ";" + AltibaseUtils.NEW_LINE + "/";
+            //ddl += AltibaseConstants.PSM_POSTFIX;
         }
 
         return ddl.toString();
@@ -544,6 +543,45 @@ public class AltibaseMetaModel extends GenericMetaModel {
     @Override
     public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session, 
             @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent) throws SQLException {
+        /*
+        boolean hasParent = (forParent != null);
+        StringBuilder qry = new StringBuilder("SELECT"
+                + " (SELECT db_name FROM v$database) AS TABLE_CAT,"
+                + " u.user_name AS TABLE_SCHEME,"
+                + " t.table_name AS TABLE_NAME,"
+                + " col.column_name AS COLUMN_NAME, "
+                + " (ccol.constraint_col_order + 1) AS KEY_SEQ,"
+                + " c.constraint_name AS PK_NAME, "
+                + " c.constraint_type, "
+                + " c.check_condition, "
+                + " c.validated"
+                + " FROM"
+                + " system_.sys_users_ u, system_.sys_tables_ t, system_.sys_columns_ col,"
+                + " system_.sys_constraints_ c, system_.sys_constraint_columns_ ccol"
+                + " WHERE"
+                + " u.user_name = ?"
+
+                + " AND u.user_id = c.user_id"
+                + " AND u.user_id = t.user_id"
+                + " AND t.table_id = c.table_id"
+                + " AND c.constraint_type != 0"
+                + " AND c.constraint_id = ccol.constraint_id"
+                + " AND ccol.column_id = col.column_id");
+        
+        if (hasParent == true) {
+            qry.append(" AND t.table_name = ?");
+        }
+
+        final JDBCPreparedStatement dbStat = session.prepareStatement(qry.toString());
+
+        dbStat.setString(1, owner.getName());
+        
+        if (hasParent == true) {
+            dbStat.setString(2, forParent.getName());
+        }
+        
+        return dbStat;
+        */
         final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT"
                         + " (SELECT db_name FROM v$database) AS TABLE_CAT,"
@@ -937,7 +975,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
     }
 
     private String geDDLFromCatalog(DBRProgressMonitor monitor, DBSObject sourceObject, String schemaName, String sql, String colname) {
-        StringBuilder ddl = new StringBuilder(AltibaseMessages.NO_DBMS_METADATA);
+        StringBuilder ddl = new StringBuilder(AltibaseConstants.NO_DBMS_METADATA);
         String content = null;
         //boolean hasDDL = false;
         JDBCPreparedStatement jpstmt = null;
@@ -973,7 +1011,9 @@ public class AltibaseMetaModel extends GenericMetaModel {
     private String getDDLFromDbmsMetadata(DBRProgressMonitor monitor, DBSObject sourceObject, String schemaName, String objectType) {
         String ddl = "";
         CallableStatement cstmt = null;
-        /* Need to use native CallableStatement
+        
+        /* Reference:
+         * Need to use native CallableStatement
         jcstmt = session.prepareCall("exec ? := dbms_metadata.get_ddl(?, ?, ?)");
             java.lang.NullPointerException
             at Altibase.jdbc.driver.AltibaseParameterMetaData.getParameterMode(AltibaseParameterMetaData.java:31)
