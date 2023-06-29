@@ -278,7 +278,18 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
                         return "";
                     }
                 });
-        UIUtils.asyncExec(() -> columnController.createColumns(true));
+        
+        final var closure = new Object() {
+            public Runnable createColumnsWhenNotBusy;
+        };
+        closure.createColumnsWhenNotBusy = () -> {
+            if (viewer.isBusy()) {
+                UIUtils.asyncExec(closure.createColumnsWhenNotBusy);
+            } else {
+                columnController.createColumns(true);
+            }
+        };
+        UIUtils.asyncExec(closure.createColumnsWhenNotBusy);
     }
 
     @Override

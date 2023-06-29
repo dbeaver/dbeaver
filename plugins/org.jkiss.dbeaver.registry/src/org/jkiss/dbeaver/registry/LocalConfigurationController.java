@@ -31,7 +31,7 @@ import java.nio.file.Path;
  */
 public class LocalConfigurationController implements DBConfigurationController {
 
-    private final Path configFolder;
+    protected final Path configFolder;
     private Path legacyConfigFolder;
 
     public LocalConfigurationController(Path configFolder) {

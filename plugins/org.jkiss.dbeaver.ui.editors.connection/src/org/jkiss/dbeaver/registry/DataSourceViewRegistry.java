@@ -93,7 +93,7 @@ public class DataSourceViewRegistry {
         for (DataSourceConfiguratorDescriptor configurator : getConfigurators(dataSource)) {
             roots.addAll(configurator.getRootPages(dataSource));
         }
-        return roots;
+        return sortPages(roots);
     }
 
     public List<DataSourcePageDescriptor> getChildDataSourcePages(DBPDataSourceContainer dataSource, String parentId) {
@@ -101,6 +101,20 @@ public class DataSourceViewRegistry {
         for (DataSourceConfiguratorDescriptor configurator : getConfigurators(dataSource)) {
             children.addAll(configurator.getChildPages(dataSource, parentId));
         }
-        return children;
+        return sortPages(children);
     }
+
+    private List<DataSourcePageDescriptor> sortPages(List<DataSourcePageDescriptor> pages) {
+        pages.sort((o1, o2) -> {
+            if (o1.getId().equals(o2.getAfterPageId())) {
+                return -1;
+            } else if (o2.getId().equals(o1.getAfterPageId())) {
+                return 1;
+            } else {
+                return 0;
+            }
+        });
+        return pages;
+    }
+
 }

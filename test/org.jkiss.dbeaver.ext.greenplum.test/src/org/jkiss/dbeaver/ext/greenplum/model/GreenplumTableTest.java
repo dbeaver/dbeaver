@@ -130,7 +130,7 @@ public class GreenplumTableTest {
 
         table.appendTableModifiers(mockMonitor, ddl);
 
-        Assert.assertEquals("\nDISTRIBUTED BY (Column_Name)", ddl.toString());
+        Assert.assertEquals("\nDISTRIBUTED BY (\"Column_Name\")", ddl.toString());
     }
 
     @Test
@@ -152,7 +152,7 @@ public class GreenplumTableTest {
 
         table.appendTableModifiers(mockMonitor, ddl);
 
-        Assert.assertEquals("\nDISTRIBUTED BY (Column_1, Column_2)", ddl.toString());
+        Assert.assertEquals("\nDISTRIBUTED BY (\"Column_1\", \"Column_2\")", ddl.toString());
     }
 
 

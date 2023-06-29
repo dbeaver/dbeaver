@@ -31,9 +31,11 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Comparator;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Some IO helper functions
@@ -344,6 +346,32 @@ public final class IOUtils {
         }
     }
 
+
+    public static void zipFolder(final File folder, final OutputStream outputStream) throws IOException {
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
+            processFolder(folder, zipOutputStream, folder.getPath().length() + 1);
+        }
+    }
+
+    private static void processFolder(final File folder, final ZipOutputStream zipOutputStream, final int prefixLength) throws IOException {
+        File[] folderFiles = folder.listFiles();
+        if (folderFiles == null) {
+            return;
+        }
+        for (File file : folderFiles) {
+            BasicFileAttributes fAttrs = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
+            if (fAttrs.isRegularFile()) {
+                final ZipEntry zipEntry = new ZipEntry(file.getPath().substring(prefixLength));
+                zipOutputStream.putNextEntry(zipEntry);
+                try (FileInputStream inputStream = new FileInputStream(file)) {
+                    IOUtils.copyStream(inputStream, zipOutputStream);
+                }
+                zipOutputStream.closeEntry();
+            } else if (fAttrs.isDirectory()) {
+                processFolder(file, zipOutputStream, prefixLength);
+            }
+        }
+    }
     public static void deleteDirectory(@NotNull Path path) throws IOException {
         Files.walk(path)
             .sorted(Comparator.reverseOrder())
@@ -389,4 +417,5 @@ public final class IOUtils {
         }
         return null;
     }
+
 }

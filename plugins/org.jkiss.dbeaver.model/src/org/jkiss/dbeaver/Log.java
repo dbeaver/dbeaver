@@ -81,7 +81,9 @@ public class Log {
             eclipseLog = null;
         }
 
-        quietMode = ArrayUtils.contains(Platform.getApplicationArgs(), "-q");
+        quietMode = ArrayUtils.containsAny(
+            Platform.getApplicationArgs(),
+            "-q", "--q", "-help", "--help", "-version", "--version");
     }
 
     private static final ThreadLocal<Context> activeContext = new ThreadLocal<>();
