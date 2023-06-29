@@ -28,12 +28,12 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPReferentialIntegrityController;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSDataBulkLoader;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
@@ -405,7 +405,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
         }
 
         if (buttonIsAvailable(useBulkLoadCheck)) {
-            final DBPDataSource dataSource = settings.getContainerNode() == null ? null : settings.getContainerNode().getDataSource();
+            final DBPDataSource dataSource = settings.getContainer() == null ? null : settings.getContainer().getDataSource();
             if (DBUtils.getAdapter(DBSDataBulkLoader.class, dataSource) == null) {
                 disableButton(useBulkLoadCheck);
                 settings.setUseBulkLoad(false);
@@ -437,12 +437,12 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
 
     private void loadInsertMethods() {
         DatabaseConsumerSettings settings = getSettings();
-        DBNDatabaseNode containerNode = settings.getContainerNode();
-        if (containerNode == null) {
+        DBSObjectContainer container = settings.getContainer();
+        if (container == null) {
             return;
         }
 
-        DBPDataSource dataSource = containerNode.getDataSource();
+        DBPDataSource dataSource = container.getDataSource();
 
         List<SQLInsertReplaceMethodDescriptor> insertMethodsDescriptors = null;
         if (dataSource != null) {
