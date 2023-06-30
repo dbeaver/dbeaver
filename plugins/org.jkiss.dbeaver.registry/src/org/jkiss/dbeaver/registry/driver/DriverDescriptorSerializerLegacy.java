@@ -209,7 +209,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
             }
 
             // Properties
-            for (Map.Entry<String, Object> propEntry : driver.getCustomConnectionProperties().entrySet()) {
+            for (Map.Entry<String, Object> propEntry : driver.getConnectionProperties().entrySet()) {
                 if (!CommonUtils.equalObjects(propEntry.getValue(), driver.getDefaultConnectionProperties().get(propEntry.getKey()))) {
                     try (XMLBuilder.Element e1 = xml.startElement(RegistryConstants.TAG_PROPERTY)) {
                         xml.addAttribute(RegistryConstants.ATTR_NAME, propEntry.getKey());
