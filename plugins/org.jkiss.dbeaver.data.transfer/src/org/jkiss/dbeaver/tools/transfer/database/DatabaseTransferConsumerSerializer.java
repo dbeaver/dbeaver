@@ -35,6 +35,7 @@ public class DatabaseTransferConsumerSerializer implements DBPObjectSerializer<D
 
     @Override
     public void serializeObject(DBRRunnableContext runnableContext, DBTTask context, DatabaseTransferConsumer object, Map<String, Object> state) {
+
     }
 
     @Override

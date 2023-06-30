@@ -43,6 +43,7 @@ import java.util.List;
  */
 public class DriverLibraryLocal extends DriverLibraryAbstract {
     private static final Log log = Log.getLog(DriverLibraryLocal.class);
+    private boolean useOriginalJar;
 
     public DriverLibraryLocal(DriverDescriptor driver, FileType type, String path) {
         super(driver, type, path);
@@ -155,6 +156,9 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
     }
 
     private Path resolveCacheDir() {
+        if (isUseOriginalJar()) {
+            return DriverDescriptor.getProvidedDriversStorageFolder();
+        }
         if (DBWorkbench.isDistributed() || isCustom()) {
             // we do not have any provided drivers in distributed mode
             // and custom drivers stored in the workspace
@@ -216,4 +220,14 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
         }
     }
 
+    /**
+     * Use original jar files and ignore all user changes
+     */
+    public boolean isUseOriginalJar() {
+        return useOriginalJar;
+    }
+
+    public void setUseOriginalJar(boolean useOriginalJar) {
+        this.useOriginalJar = useOriginalJar;
+    }
 }

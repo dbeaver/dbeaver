@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
@@ -49,11 +50,22 @@ public class DBNUtils {
     private static final Log log = Log.getLog(DBNUtils.class);
 
     public static DBNDatabaseNode getNodeByObject(DBSObject object) {
-        return DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(object);
+        DBNModel model = getNavigatorModel(object);
+        return model == null ? null : model.getNodeByObject(object);
+    }
+
+    @Nullable
+    public static DBNModel getNavigatorModel(DBSObject object) {
+        DBPProject project = DBUtils.getObjectOwnerProject(object);
+        if (project == null) {
+            return null;
+        }
+        return project.getNavigatorModel();
     }
 
     public static DBNDatabaseNode getNodeByObject(DBRProgressMonitor monitor, DBSObject object, boolean addFiltered) {
-        return DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(monitor, object, addFiltered);
+        DBNModel model = getNavigatorModel(object);
+        return model == null ? null : model.getNodeByObject(monitor, object, addFiltered);
     }
 
     public static DBNDatabaseNode getChildFolder(DBRProgressMonitor monitor, DBNDatabaseNode node, Class<?> folderType) {
@@ -166,8 +178,12 @@ public class DBNUtils {
         return false;
     }
 
-    public static void refreshNavigatorResource(@NotNull IResource resource, Object source) {
-        final DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(resource.getProject());
+    public static void refreshNavigatorResource(@NotNull DBPProject project, @NotNull IResource resource, Object source) {
+        DBNModel navigatorModel = project.getNavigatorModel();
+        if (navigatorModel == null) {
+            return;
+        }
+        final DBNProject projectNode = navigatorModel.getRoot().getProjectNode(resource.getProject());
         if (projectNode != null) {
             final DBNResource fileNode = projectNode.findResource(resource);
             if (fileNode != null) {
