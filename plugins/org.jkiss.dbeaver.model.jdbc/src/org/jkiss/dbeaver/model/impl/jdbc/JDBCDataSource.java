@@ -150,7 +150,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
                     final Properties substitutedProperties = substitution.getConnectionProperties(monitor, container, connectionInfo);
                     final String substitutedUrl = substitution.getConnectionURL(container, connectionInfo);
 
-                    if (substitutedProperties != null&& connectProps != null) {
+                    if (substitutedProperties != null && connectProps != null) {
                         connectProps.putAll(substitutedProperties);
                     }
 
