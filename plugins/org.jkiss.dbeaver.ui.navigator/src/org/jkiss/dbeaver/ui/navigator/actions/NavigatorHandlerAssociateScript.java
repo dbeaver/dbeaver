@@ -74,7 +74,7 @@ public class NavigatorHandlerAssociateScript extends NavigatorHandlerObjectBase 
             for (IFile script : selectedScripts) {
                 EditorUtils.setFileDataSource(script, new SimpleDatabaseEditorContext(dataSource));
                 setEditorDataSource(script, dataSource);
-                DBNUtils.refreshNavigatorResource(script, dataSource);
+                DBNUtils.refreshNavigatorResource(dataSource.getProject(), script, dataSource);
             }
         }
         return null;

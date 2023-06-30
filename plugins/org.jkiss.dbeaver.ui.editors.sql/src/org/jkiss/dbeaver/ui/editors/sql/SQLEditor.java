@@ -436,7 +436,7 @@ public class SQLEditor extends SQLEditorBase implements
 
             IFile file = EditorUtils.getFileFromInput(input);
             if (file != null) {
-                DBNUtils.refreshNavigatorResource(file, container);
+                DBNUtils.refreshNavigatorResource(dataSourceContainer.getProject(), file, container);
             } else {
                 // FIXME: this is a hack. We can't fire event on resource change so editor's state won't be updated in UI.
                 // FIXME: To update main toolbar and other controls we hade and show this editor
@@ -2155,6 +2155,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
         syntaxLoaded = false;
 
+        IEditorInput finalEditorInput = editorInput;
         Runnable inputinitializer = () -> {
             DBPDataSourceContainer oldDataSource = SQLEditor.this.getDataSourceContainer();
             DBPDataSourceContainer newDataSource = EditorUtils.getInputDataSource(SQLEditor.this.getEditorInput());
@@ -2164,6 +2165,13 @@ public class SQLEditor extends SQLEditorBase implements
                 SQLEditor.this.updateDataSourceContainer();
             } else {
                 SQLEditor.this.reloadSyntaxRules();
+            }
+
+            {
+                DBPDataSourceContainer dataSource = EditorUtils.getInputDataSource(finalEditorInput);
+                SQLEditorFeatures.SQL_EDITOR_OPEN.use(Map.of(
+                    "driver", dataSource == null ? "" : dataSource.getDriver().getPreconfiguredId()
+                ));
             }
         };
         if (isNonPersistentEditor()) {
@@ -2179,13 +2187,6 @@ public class SQLEditor extends SQLEditorBase implements
         }
         baseEditorImage = getTitleImage();
         editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
-
-        {
-            DBPDataSourceContainer dataSource = EditorUtils.getInputDataSource(editorInput);
-            SQLEditorFeatures.SQL_EDITOR_OPEN.use(Map.of(
-                "driver", dataSource == null ? "" : dataSource.getDriver().getPreconfiguredId()
-            ));
-        }
     }
 
     protected boolean isDetectTitleImageFromInput() {

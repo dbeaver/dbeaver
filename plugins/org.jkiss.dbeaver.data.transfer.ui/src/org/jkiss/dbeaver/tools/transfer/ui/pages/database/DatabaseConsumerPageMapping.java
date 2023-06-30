@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -119,7 +120,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 @Nullable
                 @Override
                 protected DBNNode getSelectedNode() {
-                    DBNNode selectedNode = settings.getContainerNode();
+                    DBSObjectContainer container = settings.getContainer();
+                    DBNNode selectedNode = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(container);
                     if (selectedNode == null && !settings.getDataMappings().isEmpty()) {
                         // Use first source object as cur selection (it's better than nothing)
                         DBSDataContainer firstSource = settings.getDataMappings().keySet().iterator().next();
@@ -137,7 +139,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
                 @Override
                 protected void setSelectedNode(DBNDatabaseNode node) {
-                    settings.setContainerNode(node);
+                    settings.setContainer(DBUtils.getAdapter(DBSObjectContainer.class, node.getObject()));
                     setContainerInfo(node);
                     getWizard().runWithProgress(monitor -> {
                         // Reset mappings
@@ -207,7 +209,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     @Override
                     public void widgetSelected(SelectionEvent e)
                     {
-                        DBPDataSourceContainer dataSourceContainer = getDatabaseConsumerSettings().getContainerNode().getDataSourceContainer();
+                        DBPDataSourceContainer dataSourceContainer = getDatabaseConsumerSettings().getContainer().getDataSource().getContainer();
                         if (!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA)) {
                             UIUtils.showMessageBox(getShell(), DTMessages.data_transfer_wizard_restricted_title, NLS.bind(DTMessages.data_transfer_wizard_restricted_description, dataSourceContainer.getName()), SWT.ICON_WARNING);
                             return;
@@ -347,7 +349,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 DatabaseMappingObject mapping = getSelectedMapping();
                 mapTableButton.setEnabled(mapping instanceof DatabaseMappingContainer);
                 //createNewButton.setEnabled(mapping instanceof DatabaseMappingContainer && settings.getContainerNode() != null);
-                final boolean hasMappings = settings.getContainerNode() != null &&
+                final boolean hasMappings = settings.getContainer() != null &&
                     ((mapping instanceof DatabaseMappingContainer && mapping.getMappingType() != DatabaseMappingType.unspecified) ||
                     (mapping instanceof DatabaseMappingAttribute && ((DatabaseMappingAttribute) mapping).getParent().getMappingType() != DatabaseMappingType.unspecified));
                 configureButton.setEnabled(hasMappings);
@@ -747,7 +749,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         boolean allowsCreate = true;
         List<String> items = new ArrayList<>();
         if (element instanceof DatabaseMappingContainer) {
-            if (settings.getContainerNode() == null) {
+            if (settings.getContainer() == null) {
                 allowsCreate = false;
             }
             if (settings.getContainer() != null) {
@@ -956,7 +958,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         if (activeProject != null) {
-            DBNNode rootNode = settings.getContainerNode();
+            DBNNode rootNode = DBNUtils.getNodeByObject(settings.getContainer());
             if (rootNode == null) {
                 rootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(
                     activeProject).getDatabases();
@@ -1135,8 +1137,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 }
             }
         }
-        settings.loadNode(getWizard().getRunnableContext(), getWizard().getSettings(), producerContainer);
-        DBNDatabaseNode containerNode = settings.getContainerNode();
+        settings.loadObjectContainer(getWizard().getRunnableContext(), getWizard().getSettings(), producerContainer);
+        DBNDatabaseNode containerNode = DBNUtils.getNodeByObject(settings.getContainer());
         if (containerNode != null) {
             try {
                 containerPanel.checkValidContainerNode(containerNode);
@@ -1234,7 +1236,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     protected boolean determinePageCompletion()
     {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
-        if (settings.getContainerNode() == null) {
+        if (settings.getContainer() == null) {
             setErrorMessage(DTUIMessages.database_consumer_page_mapping_error_message_set_target_container);
             return false;
         }

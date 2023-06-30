@@ -97,6 +97,12 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         return dataContainer;
     }
 
+    @Nullable
+    @Override
+    public DBPProject getProject() {
+        return DBUtils.getObjectOwnerProject(dataContainer);
+    }
+
     @Override
     public String getObjectName() {
         final SQLQueryContainer queryContainer = GeneralUtils.adapt(dataContainer, SQLQueryContainer.class);
