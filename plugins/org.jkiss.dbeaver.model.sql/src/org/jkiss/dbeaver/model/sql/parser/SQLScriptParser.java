@@ -295,8 +295,8 @@ public class SQLScriptParser {
                         statementStart = tokenOffset + tokenLength;
                         continue;
                     }
-                    String originalQueryText = document.get(statementStart, tokenOffset - statementStart);
-                    String queryText = SQLUtils.fixLineFeeds(originalQueryText);
+                    String queryText = document.get(statementStart, tokenOffset - statementStart);
+                    queryText = SQLUtils.fixLineFeeds(queryText);
 
                     if (isDelimiter &&
                         (keepDelimiters ||
@@ -323,7 +323,6 @@ public class SQLScriptParser {
                     return new SQLQuery(
                         context.getDataSource(),
                         queryText,
-                        originalQueryText,
                         statementStart,
                         queryEndPos - statementStart);
                 }
@@ -696,8 +695,8 @@ public class SQLScriptParser {
                 element = parsedElement;
             } else {
                 // Use selected query as is
-                String fixedSelText = SQLUtils.fixLineFeeds(selText);
-                element = new SQLQuery(context.getDataSource(), fixedSelText, selText, region.getOffset(), region.getLength());
+                selText = SQLUtils.fixLineFeeds(selText);
+                element = new SQLQuery(context.getDataSource(), selText, region.getOffset(), region.getLength());
             }
         } else if (region.getOffset() >= 0) {
             element = extractQueryAtPos(context, region.getOffset());
