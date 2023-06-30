@@ -709,9 +709,19 @@ public class SQLScriptParser {
         }
         if (element instanceof SQLQuery) {
             SQLQuery query = (SQLQuery) element;
-            query.setParameters(parseParametersAndVariables(context, query.getOffset(), query.getLength()));
+            query.setParameters(parseParametersAndVariables(context, query.getText()));
         }
         return element;
+    }
+
+    public static List<SQLQueryParameter> parseParametersAndVariables(SQLParserContext context, String selectedQueryText) {
+        SQLParserContext ctx = new SQLParserContext(
+                context.getDataSource(),
+                context.getSyntaxManager(),
+                context.getRuleManager(),
+                new Document(selectedQueryText)
+        );
+        return  parseParametersAndVariables(ctx, 0, selectedQueryText.length());
     }
 
     public static List<SQLQueryParameter> parseParametersAndVariables(SQLParserContext context, int queryOffset, int queryLength) {
@@ -762,7 +772,6 @@ public class SQLScriptParser {
                     }
                     firstKeyword = false;
                 }
-
 
                 if (tokenType == SQLTokenType.T_BLOCK_TOGGLE) {
                     insideDollarQuote = !insideDollarQuote;
