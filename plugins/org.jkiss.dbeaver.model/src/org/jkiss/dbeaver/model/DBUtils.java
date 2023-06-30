@@ -653,6 +653,10 @@ public final class DBUtils {
         return null;
     }
 
+    public static DBPDataSourceContainer findDataSourceByObjectId(@NotNull DBPProject project, @NotNull String objectId) {
+        return project.getDataSourceRegistry().getDataSource(objectId.split("/")[0]);
+    }
+
     public static boolean isNullValue(@Nullable Object value)
     {
         return (value == null || (value instanceof DBDValue && ((DBDValue) value).isNull()));

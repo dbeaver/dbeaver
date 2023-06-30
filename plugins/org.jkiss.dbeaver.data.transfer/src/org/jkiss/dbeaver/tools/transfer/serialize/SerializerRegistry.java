@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.runtime.serialize;
+package org.jkiss.dbeaver.tools.transfer.serialize;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
@@ -68,7 +68,7 @@ public class SerializerRegistry {
     }
 
     @Nullable
-    public DBPObjectSerializer createSerializer(Object object) {
+    public DTObjectSerializer createSerializer(Object object) {
         DBSerializable dbSerializable = object.getClass().getAnnotation(DBSerializable.class);
         if (dbSerializable != null) {
             return createSerializerByType(dbSerializable.value());
@@ -77,7 +77,7 @@ public class SerializerRegistry {
     }
 
     @Nullable
-    public <OBJECT_CONTEXT, OBJECT_TYPE> DBPObjectSerializer<OBJECT_CONTEXT, OBJECT_TYPE> createSerializerByType(String typeID) {
+    public <OBJECT_CONTEXT, OBJECT_TYPE> DTObjectSerializer<OBJECT_CONTEXT, OBJECT_TYPE> createSerializerByType(String typeID) {
         SerializerDescriptor sd = serializers.get(typeID);
         if (sd == null) {
             log.error("Serializer '" + typeID + "' not found");
