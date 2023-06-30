@@ -339,6 +339,18 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
     }
 
     @Override
+    public String getUuidDataType() {
+        // Not supported data type
+        return "";
+    }
+
+    @Override
+    public String getBooleanDataType() {
+        // Not supported data type
+        return "";
+    }
+    
+    @Override
     public String getSchemaExistQuery(String schemaName) {
         return "SELECT 1 FROM SYSTEM_.SYS_USERS_ WHERE USER_NAME='" + schemaName + "'";
     }
@@ -505,4 +517,6 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
         
         System.out.println();
     }
+
+
 }

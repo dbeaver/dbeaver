@@ -543,7 +543,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
     @Override
     public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session, 
             @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent) throws SQLException {
-        /*
+
         boolean hasParent = (forParent != null);
         StringBuilder qry = new StringBuilder("SELECT"
                 + " (SELECT db_name FROM v$database) AS TABLE_CAT,"
@@ -581,7 +581,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
         }
         
         return dbStat;
-        */
+        /*
         final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT"
                         + " (SELECT db_name FROM v$database) AS TABLE_CAT,"
@@ -610,6 +610,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
         dbStat.setString(1, owner.getName());
         dbStat.setString(2, forParent.getName());
         return dbStat;
+        */
     }
 
     @Override
