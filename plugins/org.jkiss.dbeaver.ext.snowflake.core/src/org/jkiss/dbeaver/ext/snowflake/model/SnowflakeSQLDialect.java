@@ -143,7 +143,18 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
         }
         return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
+    
+    @Override
+    public boolean validIdentifierStart(char c) {
+        return SQLUtils.isLatinLetter(c) || c == '_';
+    }
+    
+    @Override
+    public boolean validIdentifierPart(char c, boolean quoted) {
+        return SQLUtils.isLatinLetter(c) || Character.isDigit(c) || c == '_' || (quoted && validCharacters.indexOf(c) != -1) || c == '$';
+    }
 
+    
     @Override
     public boolean mustBeQuoted(@NotNull String str, boolean forceCaseSensitive) {
         // Unquoted object identifiers:
@@ -152,20 +163,9 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
         // * Are stored and resolved as uppercase characters (e.g. id is stored and resolved as ID).
         // https://docs.snowflake.com/en/sql-reference/identifiers-syntax
 
-        if (forceCaseSensitive || str.isBlank()) {
+        if (str.isBlank()) {
             return true;
         }
-        int firstCodePoint = str.codePointAt(0);
-        if (!SQLUtils.isLatinLetter(firstCodePoint) && firstCodePoint != '_') {
-            return true;
-        }
-        int length = str.codePointCount(0, str.length());
-        for (int i = 1; i < length; i++) {
-            int codePoint = str.codePointAt(i);
-            if (!SQLUtils.isLatinLetter(codePoint) && codePoint != '_' && !Character.isDigit(codePoint) && codePoint != '$') {
-                return true;
-            }
-        }
-        return false;
+        return super.mustBeQuoted(str, forceCaseSensitive);
     }
 }
