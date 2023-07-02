@@ -264,8 +264,8 @@ public class OracleUtils {
                 return null;
             }
             java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(
-                object.getSourceType() + (body ? "\\s+BODY" : "") +
-                "\\s(\\s*)([\\w$\\.]+)[\\s\\(]+", java.util.regex.Pattern.CASE_INSENSITIVE);
+                "\\b" + object.getSourceType() + "\\b"+ (body ? "\\s+BODY" : "") +
+                "\\s(\\s*)([\\w$\\.\\\"]+)[\\s\\(]+", java.util.regex.Pattern.CASE_INSENSITIVE);
             final Matcher matcher = pattern.matcher(source);
             if (matcher.find()) {
                 String objectName = matcher.group(2);
