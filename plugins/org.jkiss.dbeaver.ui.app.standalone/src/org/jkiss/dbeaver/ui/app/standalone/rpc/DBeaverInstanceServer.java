@@ -118,7 +118,7 @@ public class DBeaverInstanceServer implements IInstanceController {
         try (Reader reader = Files.newBufferedReader(path)) {
             properties.load(reader);
         } catch (IOException e) {
-            log.error("Error reading instance controller configuration", e);
+            log.error("Error reading instance controller configuration: " + e.getMessage());
             return null;
         }
 
@@ -141,7 +141,7 @@ public class DBeaverInstanceServer implements IInstanceController {
                 throw new IllegalStateException("Invalid ping response: " + response + ", was expecting " + payload);
             }
         } catch (Throwable e) {
-            log.error("Error accessing instance server", e);
+            log.error("Error accessing instance server: " + e.getMessage());
             return null;
         }
 
