@@ -22,9 +22,12 @@ import org.eclipse.ui.internal.ide.IDEInternalPreferences;
 import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * Utilities for interacting with the OS shell
@@ -38,6 +41,35 @@ public final class ShellUtils {
 
     public static boolean launchProgram(@NotNull String path) {
         return Program.launch(path);
+    }
+
+    /**
+     * Opens a file under the given {@code path} using preferred for the current platform application.
+     *
+     * @param path path to a file to open
+     * @return {@code true} on success, {@code false} on failure if the file can't be opened
+     */
+    public static boolean openExternalFile(@NotNull Path path) {
+        try {
+            if (RuntimeUtils.isMacOS()) {
+                Runtime.getRuntime().exec(new String[]{"open", "-a", "Finder.app", path.toAbsolutePath().toString()});
+                return true;
+            } else if (RuntimeUtils.isLinux()) {
+                Runtime.getRuntime().exec(new String[]{"xdg-open", path.toAbsolutePath().toString()});
+                return true;
+            }
+        } catch (IOException e) {
+            log.debug("Unable to open external program in a platform-specific way: " + e.getMessage());
+            return false;
+        }
+
+        try {
+            Desktop.getDesktop().open(path.toFile());
+            return true;
+        } catch (IOException e) {
+            log.error("Unable to open external file", e);
+            return false;
+        }
     }
 
     public static void showInSystemExplorer(@NotNull String path) {
