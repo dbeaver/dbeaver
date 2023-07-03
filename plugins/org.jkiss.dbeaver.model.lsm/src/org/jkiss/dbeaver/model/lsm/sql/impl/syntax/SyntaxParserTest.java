@@ -44,7 +44,7 @@ public class SyntaxParserTest {
             + "    Product.ProductNumber,\r\n"
             + "    ProductCategory.Name AS ProductCategory,\r\n"
             + "    ProductSubCategory.Name AS ProductSubCategory,\r\n"
-            + "    Product.ProductModelID,\r\n"
+            + "    Product.ProductModelID\r\n"
             + "FROM Production.Product AS Prod(ProductID, Name, ProductNumber), T as A, \r\n"
             + "s -- ololo\r\n"
             + ".c -- ololo\r\n"
@@ -57,7 +57,9 @@ public class SyntaxParserTest {
             + "USING(ProductCategoryID)\r\n"
             + "GROUP BY ProductName\r\n"
             + "ORDER BY Product.ModifiedDate DESC";
-        inputText += "\n\rSELECT schedule[1:2][1:1] FROM sal_emp se where s;";
+//        inputText = "\n\rSELECT schedule[1:2][1:1] FROM sal_emp se where s;";
+
+        inputText = "create table test(ts TIMESTAMP x DEFAULT CURRENT_TIMESTAMP);\r\n";
         var input = CharStreams.fromString(inputText);
         var ll = new SQLStandardLexer(input);
         var tokens = new CommonTokenStream(ll);
