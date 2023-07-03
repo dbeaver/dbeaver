@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai.gpt3;
 
 import com.google.gson.Gson;
+import com.theokanning.openai.OpenAiHttpException;
 import com.theokanning.openai.completion.CompletionChoice;
 import com.theokanning.openai.completion.CompletionRequest;
 import com.theokanning.openai.completion.chat.ChatCompletionChoice;
@@ -69,7 +70,7 @@ public class GPTCompletionEngine implements DAICompletionEngine {
     private static final int MAX_REQUEST_ATTEMPTS = 3;
 
     private static final Map<String, OpenAiService> clientInstances = new HashMap<>();
-    private static final int GPT_MODEL_MAX_RESPONSE_TOKENS = 1500;
+    private static final int GPT_MODEL_MAX_RESPONSE_TOKENS = 2000;
     private static final boolean SUPPORTS_ATTRS = true;
 
     public GPTCompletionEngine() {
@@ -195,13 +196,20 @@ public class GPTCompletionEngine implements DAICompletionEngine {
 
             try {
                 List<?> choices;
+                int responseSize = GPT_MODEL_MAX_RESPONSE_TOKENS;
                 for (int i = 0; ; i++) {
                     try {
                         choices = getCompletionChoices(service, completionRequest);
                         break;
                     } catch (Exception e) {
-                        if (e instanceof HttpException && ((HttpException) e).code() == 429) {
-                            RuntimeUtils.pause(1000);
+                        if ((e instanceof HttpException && ((HttpException) e).code() == 429)
+                            || (e instanceof OpenAiHttpException && e.getMessage().contains("This model's maximum"))) {
+                            if (e instanceof HttpException) {
+                                RuntimeUtils.pause(1000);
+                            } else {
+                                responseSize /= 2;
+                                completionRequest = createCompletionRequest(modifiedRequest, responseSize);
+                            }
                             if (i >= MAX_REQUEST_ATTEMPTS - 1) {
                                 throw e;
                             } else {
@@ -287,17 +295,20 @@ public class GPTCompletionEngine implements DAICompletionEngine {
     }
 
     private static Object createCompletionRequest(@NotNull String request) throws DBException {
+        return createCompletionRequest(request, GPT_MODEL_MAX_RESPONSE_TOKENS);
+    }
+
+    private static Object createCompletionRequest(@NotNull String request, int responseSize) {
         Double temperature = getPreferenceStore().getDouble(GPTConstants.GPT_MODEL_TEMPERATURE);
         String modelId = getPreferenceStore().getString(GPTConstants.GPT_MODEL);
         GPTModel model = CommonUtils.isEmpty(modelId) ? null : GPTModel.getByName(modelId);
         if (model == null) {
             model = GPTModel.GPT_TURBO16;
         }
-        int maxTokens = model.getMaxTokens();
         if (model.isChatAPI()) {
-            return buildChatRequest(request, maxTokens, temperature, modelId);
+            return buildChatRequest(request, responseSize, temperature, modelId);
         } else {
-            return buildLegacyAPIRequest(request, maxTokens, temperature, modelId);
+            return buildLegacyAPIRequest(request, responseSize, temperature, modelId);
         }
     }
 
@@ -311,7 +322,7 @@ public class GPTCompletionEngine implements DAICompletionEngine {
             CompletionRequest.builder().prompt(request);
         return builder
             .temperature(temperature)
-            .maxTokens(GPT_MODEL_MAX_RESPONSE_TOKENS)
+            .maxTokens(maxTokens)
             .frequencyPenalty(0.0)
             .n(1)
             .presencePenalty(0.0)
@@ -333,7 +344,7 @@ public class GPTCompletionEngine implements DAICompletionEngine {
 
         return builder
             .temperature(temperature)
-            .maxTokens(GPT_MODEL_MAX_RESPONSE_TOKENS)
+            .maxTokens(maxTokens)
             .frequencyPenalty(0.0)
             .presencePenalty(0.0)
             .n(1)
