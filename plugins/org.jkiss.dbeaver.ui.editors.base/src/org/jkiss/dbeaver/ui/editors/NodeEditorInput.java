@@ -26,11 +26,10 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 /**
  * NodeEditorInput
  */
-public class NodeEditorInput implements INavigatorEditorInput, IPersistableElement
-{
+public class NodeEditorInput implements INavigatorEditorInput, IPersistableElement {
     private DBNNode node;
-    public NodeEditorInput(DBNNode node)
-    {
+
+    public NodeEditorInput(DBNNode node) {
         this.node = node;
     }
 
@@ -60,7 +59,7 @@ public class NodeEditorInput implements INavigatorEditorInput, IPersistableEleme
 
     @Override
     public IPersistableElement getPersistable() {
-        return node.isDisposed() ? null : this;
+        return node.isDisposed() || !node.isPersisted() ? null : this;
     }
 
     @Override
@@ -77,15 +76,13 @@ public class NodeEditorInput implements INavigatorEditorInput, IPersistableEleme
     }
 
     @Override
-    public String getFactoryId()
-    {
+    public String getFactoryId() {
         return NodeEditorInputFactory.ID_FACTORY;
     }
 
     @Override
-    public void saveState(IMemento memento)
-    {
-        if (node.isDisposed()) {
+    public void saveState(IMemento memento) {
+        if (node.isDisposed() || !node.isPersisted()) {
             return;
         }
         NodeEditorInputFactory.saveState(memento, this);

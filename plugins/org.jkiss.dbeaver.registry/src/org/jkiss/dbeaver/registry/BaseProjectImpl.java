@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.impl.app.DefaultValueEncryptor;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -83,7 +84,7 @@ public abstract class BaseProjectImpl implements DBPProject {
 
     private volatile ProjectFormat format = ProjectFormat.UNKNOWN;
     private volatile DBPDataSourceRegistry dataSourceRegistry;
-    private volatile TaskManagerImpl taskManager;
+    protected volatile TaskManagerImpl taskManager;
     private volatile Map<String, Object> properties;
     protected volatile Map<String, Map<String, Object>> resourceProperties;
     private UUID projectID;
@@ -163,7 +164,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     protected Path getMetadataPath() {
         return getAbsolutePath().resolve(METADATA_FOLDER);
     }
-
+    
     @Override
     public boolean isRegistryLoaded() {
         return dataSourceRegistry != null;
@@ -629,5 +630,11 @@ public abstract class BaseProjectImpl implements DBPProject {
 
             return Status.OK_STATUS;
         }
+    }
+
+    @Nullable
+    @Override
+    public DBNModel getNavigatorModel() {
+        return null;
     }
 }

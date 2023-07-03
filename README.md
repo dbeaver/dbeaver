@@ -2,8 +2,6 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/fa0bb9cf5a904c7d87424f8f6351ba92)](https://www.codacy.com/gh/dbeaver/dbeaver/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dbeaver/dbeaver&amp;utm_campaign=Badge_Grade)
 [![Apache 2.0](https://img.shields.io/github/license/cronn-de/jira-sync.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Java CI](https://github.com/dbeaver/dbeaver/workflows/Java%20CI/badge.svg)](https://github.com/dbeaver/dbeaver/actions?query=workflow%3A%22Java+CI%22)
-<!--[![paypal](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KFGAGZ24YZE3C)-->
-
 
 <img src="https://github.com/dbeaver/dbeaver/wiki/images/dbeaver-icon-64x64.png" align="right"/>
 
@@ -28,13 +26,13 @@ You can find the list of all databases supported in commercial versions
 ## Download
 
 You can download prebuilt binaries from <a href="https://dbeaver.io/download" target="_blank">official website</a> or directly from <a href="https://github.com/dbeaver/dbeaver/releases">GitHub releases</a>.  
-You can also download <a href="https://dbeaver.io/files/ea" target="_blank">Early Access</a> version. We publish it 1-2 times per week.  
+You can also download <a href="https://dbeaver.io/files/ea" target="_blank">Early Access</a> version. We publish daily.  
 
 ## Running
 
 Just run an installer (or unzip an archive) and run `dbeaver`.  
 
-Note: DBeaver needs Java to run. <a href="https://adoptopenjdk.net/" target="_blank">Open JDK 11</a> is included in all DBeaver distributions. (since version 7.3.1).  
+Note: DBeaver needs Java to run. <a href="https://adoptium.net/" target="_blank">Open JDK 17</a> is included in all DBeaver distributions.
 You can change default JDK version by replacing directory `jre` in dbeaver installation folder.
 
 ## Documentation
@@ -52,12 +50,12 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 - If you have any questions, ideas, etc - please <a href="https://github.com/dbeaver/dbeaver/discussions">start a discussion</a>.
 - Pull requests are welcome.
 - Visit https://dbeaver.io or https://dbeaver.com for more information.
-- Follow us on Twitter: https://twitter.com/dbeaver_news/
+- Follow us on [Twitter](https://twitter.com/dbeaver_news/) and [Facebook](https://www.facebook.com/DBeaverCorporation)
 - Thanks for using DBeaver! Star if you like it.
 
 ## Contribution: help the Beaver!
 
-Hooray, we have reached 28k+ stars on GitHub and continue to grow!  
+Hooray, we have reached 30k+ stars on GitHub and continue to grow!  
 That's really cool, and we are glad that you like DBeaver.
 
 - We are actively looking for new source code contributors. We have added labels “Good first issue” and “Help wanted” to some tickets. If you want to be a part of our development team, just be brave and take a ticket.

@@ -276,6 +276,21 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
         }
     }
 
+    /**
+     * Clear dashboards view
+     */
+    public void clear() {
+        selectedItem = null;
+                
+        for (DashboardItem item : List.copyOf(items)) {
+            item.dispose();
+        }
+        
+        items.clear();
+
+        getView().getViewConfiguration().clearDashboards();
+    }
+
     /////////////////////////////////////////////////////////////////////////////////
     // DnD
     /////////////////////////////////////////////////////////////////////////////////

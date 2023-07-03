@@ -1100,6 +1100,17 @@
                %wizard.org.jkiss.dbeaver.core.wizard.export.scripts.description
            </description>
         </wizard>
+        <wizard
+                category="org.jkiss.dbeaver.core.export.resources"
+                class="org.jkiss.dbeaver.tools.configuration.ConfigurationExportWizard"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.png"
+                id="org.jkiss.dbeaver.core.wizard.export.workspace"
+                name="%wizard.org.jkiss.dbeaver.core.wizard.export.workspace.name">
+            <description>
+                %wizard.org.jkiss.dbeaver.core.wizard.export.workspace.description
+            </description>
+        </wizard>
+
     </extension>
 
     <extension point="org.eclipse.ui.importWizards">
@@ -1124,6 +1135,17 @@
                 %wizard.org.jkiss.dbeaver.core.wizard.import.scripts.description
             </description>
         </wizard>
+        <wizard
+                category="org.jkiss.dbeaver.core.import.resources"
+                class="org.jkiss.dbeaver.tools.configuration.ConfigurationImportWizard"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.png"
+                id="org.jkiss.dbeaver.core.wizard.import.workspace"
+                name="%wizard.org.jkiss.dbeaver.core.wizard.import.workspace.name">
+            <description>
+                %wizard.org.jkiss.dbeaver.core.wizard.import.workspace.description
+            </description>
+        </wizard>
+
     </extension>
 
     <extension point="org.eclipse.ui.newWizards">

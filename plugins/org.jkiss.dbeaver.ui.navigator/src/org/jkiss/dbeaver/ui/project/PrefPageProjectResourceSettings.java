@@ -240,7 +240,7 @@ public class PrefPageProjectResourceSettings extends AbstractPrefPage implements
             }
             if (!refreshedResources.isEmpty()) {
                 for (IResource resource : refreshedResources) {
-                    DBNUtils.refreshNavigatorResource(resource, this);
+                    DBNUtils.refreshNavigatorResource(projectMeta, resource, this);
                 }
             }
         }

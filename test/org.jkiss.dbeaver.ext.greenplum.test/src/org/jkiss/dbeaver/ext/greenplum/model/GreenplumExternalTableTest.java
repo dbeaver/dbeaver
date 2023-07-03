@@ -621,7 +621,7 @@ public class GreenplumExternalTableTest {
     @Test
     public void generateChangeOwnerQuery_whenProvidedAValidOwner_thenShouldGenerateQuerySuccessfully() {
         GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
-        Assert.assertEquals("ALTER EXTERNAL TABLE sampleSchema.sampleTable OWNER TO someOwner",
+        Assert.assertEquals("ALTER EXTERNAL TABLE \"sampleSchema\".\"sampleTable\" OWNER TO someOwner",
                 table.generateChangeOwnerQuery("someOwner"));
     }
 
