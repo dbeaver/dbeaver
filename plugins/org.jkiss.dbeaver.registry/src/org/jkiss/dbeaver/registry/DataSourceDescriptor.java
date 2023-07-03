@@ -2013,10 +2013,13 @@ public class DataSourceDescriptor
 
     private void loadFromSecret(@Nullable String secretValue) {
         if (secretValue == null) {
-            connectionInfo.getHandlers().forEach(handler ->
-                handler.setSavePassword(false)
-            );
-            setSavePassword(false);
+            if (DBWorkbench.isDistributed()) {
+                // In distributed mode we reset saved password in case of null secret
+                connectionInfo.getHandlers().forEach(handler ->
+                    handler.setSavePassword(false)
+                );
+                savePassword = false;
+            }
             return;
         }
 
@@ -2044,7 +2047,10 @@ public class DataSourceDescriptor
             || emptyDatabaseCredsSaved;
 
         if (this.secretsContainsDatabaseCreds) {
-            this.savePassword = props.containsKey(RegistryConstants.ATTR_PASSWORD);
+            if (DBWorkbench.isDistributed()) {
+                // In distributed mode we detect saved password dynamically
+                this.savePassword = props.containsKey(RegistryConstants.ATTR_PASSWORD);
+            }
         }
 
         // Handlers

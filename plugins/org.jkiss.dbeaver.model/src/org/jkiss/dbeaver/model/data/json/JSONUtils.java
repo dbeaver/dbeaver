@@ -23,9 +23,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
-import org.jkiss.dbeaver.runtime.serialize.SerializerRegistry;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -276,33 +273,6 @@ public class JSONUtils {
             }
         }
         json.endObject();
-    }
-
-    public static <OBJECT_CONTEXT, OBJECT_TYPE> Map<String, Object> serializeObject(DBRRunnableContext runnableContext, OBJECT_CONTEXT context, @NotNull OBJECT_TYPE object) {
-        DBPObjectSerializer<OBJECT_CONTEXT, OBJECT_TYPE> serializer = SerializerRegistry.getInstance().createSerializer(object);
-        if (serializer == null) {
-            log.error("No serializer found for object " + object.getClass().getName());
-            return null;
-        }
-        Map<String, Object> state = new LinkedHashMap<>();
-
-        Map<String, Object> location = new LinkedHashMap<>();
-        serializer.serializeObject(runnableContext, context, object, location);
-        state.put("type", SerializerRegistry.getInstance().getObjectType(object));
-        state.put("location", location);
-
-        return state;
-    }
-
-    public static <OBJECT_CONTEXT, OBJECT_TYPE> Object deserializeObject(@NotNull DBRRunnableContext runnableContext,  OBJECT_CONTEXT objectContext, @NotNull Map<String, Object> objectConfig) throws DBCException {
-        String typeID = CommonUtils.toString(objectConfig.get("type"));
-        DBPObjectSerializer<OBJECT_CONTEXT, OBJECT_TYPE> serializer = SerializerRegistry.getInstance().createSerializerByType(typeID);
-        if (serializer == null) {
-            log.error("No deserializer found for type " + typeID);
-            return null;
-        }
-        Map<String, Object> location = getObject(objectConfig, "location");
-        return serializer.deserializeObject(runnableContext, objectContext, location);
     }
 
     public static <OBJECT_TYPE> OBJECT_TYPE deserializeObject(Map<String, Object> map, @NotNull Class<OBJECT_TYPE> type) throws DBCException {

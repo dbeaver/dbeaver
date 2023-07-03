@@ -138,8 +138,7 @@ public class ClearHistoryHandler extends AbstractHandler {
 
         @Override
         protected void createButtonsForButtonBar(Composite parent) {
-            createButton(parent, IDialogConstants.OK_ID, CoreApplicationMessages.clear_history_dialog_apply_and_restart, true)
-                .setEnabled(false);
+            createButton(parent, IDialogConstants.OK_ID, CoreApplicationMessages.button_apply_and_restart, true).setEnabled(false);
             createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
         }
     }

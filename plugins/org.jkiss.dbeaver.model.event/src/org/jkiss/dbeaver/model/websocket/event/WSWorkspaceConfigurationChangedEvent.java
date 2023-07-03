@@ -14,21 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.websocket.event;
 
-package org.jkiss.dbeaver.runtime.serialize;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+public class WSWorkspaceConfigurationChangedEvent extends WSAbstractEvent {
 
-import java.util.Map;
+    private final String configFilePath;
 
-/**
- * Object serializer
- */
-public interface DBPObjectSerializer<CONTEXT_TYPE, OBJECT_TYPE> {
+    public WSWorkspaceConfigurationChangedEvent(@NotNull String configFilePath, @Nullable String sessionId, @Nullable String userId) {
+        super(WSEventType.WORKSPACE_CONFIG_CHANGED, sessionId, userId);
+        this.configFilePath = configFilePath;
+    }
 
-    void serializeObject(DBRRunnableContext runnableContext, CONTEXT_TYPE context, OBJECT_TYPE object, Map<String, Object> state);
-
-    OBJECT_TYPE deserializeObject(DBRRunnableContext runnableContext, CONTEXT_TYPE objectContext, Map<String, Object> state) throws DBCException;
-
+    @NotNull
+    public String getConfigFilePath() {
+        return configFilePath;
+    }
 }
