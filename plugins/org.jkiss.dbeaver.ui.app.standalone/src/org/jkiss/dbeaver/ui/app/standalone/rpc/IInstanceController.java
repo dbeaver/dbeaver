@@ -17,33 +17,51 @@
 
 package org.jkiss.dbeaver.ui.app.standalone.rpc;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
+import org.jkiss.code.NotNull;
+import org.jkiss.utils.rest.RequestMapping;
+import org.jkiss.utils.rest.RequestParameter;
+
 import java.util.Map;
 
 /**
  * DBeaver instance controller.
  */
-public interface IInstanceController extends Remote {
+public interface IInstanceController {
 
-    String CONTROLLER_ID = "DBeaver.InstanceController";
-    String RMI_PROP_FILE = "dbeaver-instance.properties";
+    String CONFIG_PROP_FILE = "dbeaver-instance.properties";
 
-    String getVersion() throws RemoteException;
+    @RequestMapping("ping")
+    long ping(@RequestParameter("payload") long payload);
 
-    void openExternalFiles(String[] fileNames) throws RemoteException;
+    @RequestMapping("version")
+    String getVersion();
 
-    void openDatabaseConnection(String connectionSpec) throws RemoteException;
+    @RequestMapping("threadDump")
+    String getThreadDump();
 
-    String getThreadDump() throws RemoteException;
+    @RequestMapping("openFiles")
+    void openExternalFiles(
+        @RequestParameter("files") @NotNull String[] fileNames);
 
-    void quit() throws RemoteException;
+    @RequestMapping("openConnection")
+    void openDatabaseConnection(
+        @RequestParameter("spec") @NotNull String connectionSpec);
 
-    void closeAllEditors() throws RemoteException;
+    @RequestMapping("quit")
+    void quit();
 
-    void executeWorkbenchCommand(String commandID) throws RemoteException;
+    @RequestMapping("closeEditors")
+    void closeAllEditors();
 
-    void fireGlobalEvent(String eventId, Map<String, Object> properties) throws RemoteException;
+    @RequestMapping("executeCommand")
+    void executeWorkbenchCommand(
+        @RequestParameter("id") @NotNull String commandID);
 
-    void bringToFront() throws RemoteException;
+    @RequestMapping("fireEvent")
+    void fireGlobalEvent(
+        @RequestParameter("id") @NotNull String eventId,
+        @RequestParameter("properties") @NotNull Map<String, Object> properties);
+
+    @RequestMapping("bringToFront")
+    void bringToFront();
 }
