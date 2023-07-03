@@ -109,7 +109,7 @@ public class DBeaverInstanceServer implements IInstanceController {
         final Path path = getConfigPath(workspacePath);
 
         if (Files.notExists(path)) {
-            log.debug("No instance controller is available");
+            log.trace("No instance controller is available");
             return null;
         }
 
