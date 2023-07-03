@@ -653,6 +653,10 @@ public final class DBUtils {
         return null;
     }
 
+    public static DBPDataSourceContainer findDataSourceByObjectId(@NotNull DBPProject project, @NotNull String objectId) {
+        return project.getDataSourceRegistry().getDataSource(objectId.split("/")[0]);
+    }
+
     public static boolean isNullValue(@Nullable Object value)
     {
         return (value == null || (value instanceof DBDValue && ((DBDValue) value).isNull()));
@@ -2066,7 +2070,38 @@ public final class DBUtils {
         });
     }
 
-    public static String getClientApplicationName(DBPDataSourceContainer container, DBCExecutionContext context, String purpose) {
+    /**
+     * Returns client application identifier that contains application name, version and current connection purpose
+     *
+     * @param container data source container
+     * @param context execution context
+     * @param purpose if null, purpose will not be included
+     * @return the client application name built according to passed arguments
+     */
+    public static String getClientApplicationName(
+            @NotNull DBPDataSourceContainer container,
+            @Nullable DBCExecutionContext context,
+            @Nullable String purpose
+    ) {
+        return getClientApplicationName(container, context, purpose, true);
+    }
+
+    /**
+     * Returns client application identifier that contains application name and
+     * optionally version and current connection purpose
+     *
+     * @param container data source container
+     * @param context execution context
+     * @param purpose if null, purpose will not be included
+     * @param addVersion if false version will not be included
+     * @return the client application name built according to passed arguments
+     */
+    public static String getClientApplicationName(
+        @NotNull DBPDataSourceContainer container,
+        @Nullable DBCExecutionContext context,
+        @Nullable String purpose,
+        boolean addVersion
+    ) {
         if (container.getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_OVERRIDE)) {
             String appName = container.getPreferenceStore().getString(ModelPreferences.META_CLIENT_NAME_VALUE);
             IVariableResolver cVarResolver = container.getVariablesResolver(false);
@@ -2081,7 +2116,7 @@ public final class DBUtils {
                 }
             });
         }
-        final String productTitle = GeneralUtils.getProductTitle();
+        final String productTitle = addVersion ? GeneralUtils.getProductTitle() : GeneralUtils.getProductName();
         return purpose == null ? productTitle : productTitle + " - " + purpose;
     }
 

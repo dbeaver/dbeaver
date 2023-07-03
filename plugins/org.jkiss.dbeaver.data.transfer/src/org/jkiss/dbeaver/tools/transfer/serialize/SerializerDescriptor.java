@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.runtime.serialize;
+package org.jkiss.dbeaver.tools.transfer.serialize;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
@@ -48,8 +48,8 @@ public class SerializerDescriptor extends AbstractDescriptor
         return id;
     }
 
-    public DBPObjectSerializer createSerializer() throws DBException {
-        return serializerType.createInstance(DBPObjectSerializer.class);
+    public DTObjectSerializer createSerializer() throws DBException {
+        return serializerType.createInstance(DTObjectSerializer.class);
     }
 
     public boolean isDistributed() {
