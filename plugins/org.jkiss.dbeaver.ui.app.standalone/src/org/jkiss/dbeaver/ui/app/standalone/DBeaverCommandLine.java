@@ -24,8 +24,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
+import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
-import org.jkiss.dbeaver.ui.app.standalone.rpc.InstanceClient;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.ArrayUtils;
@@ -35,14 +35,13 @@ import org.osgi.framework.Bundle;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.rmi.Remote;
-import java.rmi.RemoteException;
 import java.util.*;
 
 /**
  * Command line processing.
  * Note:
  * there are two modes of command line processing:
- * 1. On DBeaver start. It tries to find already running DBeaver instance (thru RMI) and make it execute passed commands
+ * 1. On DBeaver start. It tries to find already running DBeaver instance (thru REST API) and make it execute passed commands
  *    If DBeaver will execute at least one command using remote invocation then application won't start.
  *    Otherwise it will start normally (and then will try to process commands in UI)
  * 2. After DBeaver UI start. It will execute commands directly
@@ -189,11 +188,7 @@ public class DBeaverCommandLine
         if (!uiActivated) {
             // These command can't be executed locally
             if (commandLine.hasOption(PARAM_STOP)) {
-                try {
-                    controller.quit();
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+                controller.quit();
                 return true;
             }
             if (commandLine.hasOption(PARAM_THREAD_DUMP)) {
@@ -290,11 +285,8 @@ public class DBeaverCommandLine
             return false;
         }
 
-        final IInstanceController controller = InstanceClient.createClient(instanceLoc);
         try {
-            return executeCommandLineCommands(commandLine, controller, false);
-        } catch (RemoteException e) {
-            log.error("Error calling remote server", e);
+            return executeCommandLineCommands(commandLine, DBeaverInstanceServer.createClient(instanceLoc), false);
         } catch (Throwable e) {
             log.error("Error while calling remote server", e);
         }
