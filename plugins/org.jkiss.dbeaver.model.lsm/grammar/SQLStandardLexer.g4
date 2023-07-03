@@ -379,9 +379,6 @@ BitStringLiteral: 'B' SingleQuote ((Bit)+)? SingleQuote (((Separator)+ SingleQuo
 HexStringLiteral: 'X' SingleQuote ((Hexit)+)? SingleQuote (((Separator)+ SingleQuote ((Hexit)+)? SingleQuote)+)?;
 StringLiteralContent: SingleQuote ((CharacterRepresentation)+)? SingleQuote (((Separator)+ SingleQuote ((CharacterRepresentation)+)? SingleQuote)+)?;
 
-// keyword and value
-Keyword: (SimpleLatinLetter|Digit|Underscore)+;
-Value: (UnsignedInteger|StringLiteralContent)+;
 
 C_: C;
 WS: Separator;

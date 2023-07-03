@@ -50,8 +50,9 @@ public void setIsSupportSquareBracketQuotation(boolean value) { isSupportSquareB
 
 
 // unknown keyword, data type or function name
-anyWord: Keyword;
-anyProperty: LeftParen Value+ RightParen;
+anyWord: Identifier;
+anyValue: literal;
+anyProperty: LeftParen anyValue+ RightParen;
 anyWordWithProperty: anyWord anyProperty;
 anyWordsWithProperty: anyWord+ anyProperty;
 anyWordsWithPropertyAndWords: anyWord+ anyProperty anyWord+;
@@ -77,7 +78,7 @@ qualifiedName: (schemaName Period)? identifier;
 catalogName: identifier;
 identifier: (Introducer characterSetSpecification)? actualIdentifier;
 actualIdentifier: (Identifier|DelimitedIdentifier|squareBracketIdentifier|nonReserved);
-squareBracketIdentifier: {isSupportSquareBracketQuotation()}? LeftBracket (~RightBracket | RightBracket RightBracket)* RightBracket;
+squareBracketIdentifier: {isSupportSquareBracketQuotation()}? LeftBracket (~RightBracket|(RightBracket RightBracket))* RightBracket;
 
 // data types
 dataType: (datetimeType|intervalType|anyWordsWithProperty (CHARACTER SET characterSetSpecification)?);
@@ -98,7 +99,7 @@ columnName: identifier;
 // default
 defaultClause: DEFAULT (anyWordWithProperty|USER|CURRENT_USER|SESSION_USER|SYSTEM_USER|NULL);
 
-// column constraints TODO: ?
+// column constraints
 columnConstraintDefinition: (constraintNameDefinition)? columnConstraint (constraintAttributes)?;
 constraintNameDefinition: CONSTRAINT constraintName;
 constraintName: qualifiedName;
@@ -223,7 +224,6 @@ characterFactor: characterPrimary (collateClause)?;
 characterPrimary: (valueExpressionPrimary|stringValueFunction);
 
 // functions and operators
-// TODO: simplify
 stringValueFunction: (characterValueFunction|bitValueFunction);
 characterValueFunction: (characterSubstringFunction|fold|formOfUseConversion|characterTranslation|trimFunction);
 characterSubstringFunction: SUBSTRING LeftParen characterValueExpression FROM startPosition (FOR stringLength)? RightParen;
@@ -317,11 +317,11 @@ statementName: identifier;
 
 // procedure
 // TODO: procedure and function crud
-procedure: PROCEDURE procedureName parameterDeclarationList Semicolon sqlProcedureStatement Semicolon;
-procedureName: identifier;
-parameterDeclarationList: LeftParen parameterDeclaration ((Comma parameterDeclaration)+)? RightParen;
-parameterDeclaration: (parameterName dataType|statusParameter);
-statusParameter: (SQLCODE|SQLSTATE);
+// procedure: PROCEDURE procedureName parameterDeclarationList Semicolon sqlProcedureStatement Semicolon;
+// procedureName: identifier;
+// parameterDeclarationList: LeftParen parameterDeclaration ((Comma parameterDeclaration)+)? RightParen;
+// parameterDeclaration: (parameterName dataType|statusParameter);
+// statusParameter: (SQLCODE|SQLSTATE);
 sqlProcedureStatement: (sqlSchemaStatement|sqlDataStatement|sqlTransactionStatement|sqlConnectionStatement|sqlSessionStatement|sqlDynamicStatement);
 
 // schema definition
@@ -400,12 +400,12 @@ selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetLi
 selectTargetList: targetSpecification ((Comma targetSpecification)+)?;
 
 // data change statements
-sqlDataChangeStatement: (deleteStatement||insertStatement|updateStatement);
-deleteStatement: DELETE FROM tableName (WHERE CURRENT OF cursorName)|(WHERE searchCondition)?;
+sqlDataChangeStatement: (deleteStatement|insertStatement|updateStatement);
+deleteStatement: DELETE FROM tableName ((WHERE CURRENT OF cursorName)|(WHERE searchCondition))?;
 insertStatement: INSERT INTO tableName insertColumnsAndSource;
 insertColumnsAndSource: ((LeftParen insertColumnList RightParen)? queryExpression|DEFAULT VALUES);
 insertColumnList: columnNameList;
-updateStatement: UPDATE tableName SET setClauseList (WHERE CURRENT OF cursorName)|(WHERE searchCondition)?;
+updateStatement: UPDATE tableName SET setClauseList ((WHERE CURRENT OF cursorName)|(WHERE searchCondition))?;
 setClauseList: setClause ((Comma setClause)+)?;
 setClause: objectColumn EqualsOperator updateSource;
 objectColumn: columnName;
@@ -511,8 +511,8 @@ directSqlDataStatement: (deleteStatement|selectStatement|insertStatement|updateS
 selectStatement: queryExpression (orderByClause)?;
 
 // root rule for script
-sqlQueries: (sqlQuery Semicolon?)+ EOF; // EOF - don't stop early. must match all input
 sqlQuery: directSqlStatement|preparableStatement|statementOrDeclaration;
+sqlQueries: (sqlQuery Semicolon?)* EOF; // EOF - don't stop early. must match all input
 
 
 nonReserved: CHARACTER_SET_CATALOG | CHARACTER_SET_NAME | CHARACTER_SET_SCHEMA | COLLATION_CATALOG | COLLATION_NAME | COLLATION_SCHEMA
