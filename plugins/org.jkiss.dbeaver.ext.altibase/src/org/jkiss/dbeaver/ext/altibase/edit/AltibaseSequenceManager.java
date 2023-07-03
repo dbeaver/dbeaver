@@ -17,9 +17,13 @@
 
 package org.jkiss.dbeaver.ext.altibase.edit;
 
+import java.util.List;
+import java.util.Map;
+
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataSource;
+import org.jkiss.dbeaver.ext.altibase.model.AltibaseSequence;
 import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -32,33 +36,57 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-
-import java.util.List;
-import java.util.Map;
+import org.jkiss.utils.CommonUtils;
 
 public class AltibaseSequenceManager extends SQLObjectEditor<GenericSequence, AltibaseDataSource> {
 
     @Override
+    public long getMakerOptions(DBPDataSource dataSource) {
+        return FEATURE_EDITOR_ON_CREATE;
+    }
+    
+    @Override
     public boolean canCreateObject(Object container) {
-        return false;
+        return true;
     }
 
     @Override
     public boolean canDeleteObject(GenericSequence object) {
         return true;
     }
-
+    
     @Override
-    protected GenericSequence createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, 
-            Object container, Object copyFrom, Map<String, Object> options) throws DBException {
-        return null;
+    public boolean canEditObject(GenericSequence object) {
+        return true;
     }
 
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
             List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBException {
+        actions.add(
+                new SQLDatabasePersistAction("Create sequence", 
+                        ((AltibaseSequence)(command.getObject())).buildStatement(false))
+                );
     }
 
+    @Override
+    protected AltibaseSequence createDatabaseObject(
+            DBRProgressMonitor monitor, DBECommandContext context, final Object container,
+            Object from, Map<String, Object> options) {
+        return new AltibaseSequence (
+                (GenericStructContainer)container,
+                "NEW_SEQUENCE");
+    }
+    
+    @Override
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
+            List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+        actionList.add(
+                new SQLDatabasePersistAction("Alter sequence", 
+                        ((AltibaseSequence)(command.getObject())).buildStatement(true))
+                );
+    }
+    
     @Override
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
             List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) throws DBException {
@@ -67,10 +95,6 @@ public class AltibaseSequenceManager extends SQLObjectEditor<GenericSequence, Al
         );
     }
 
-    @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
-        return FEATURE_SAVE_IMMEDIATELY;
-    }
 
     @Nullable
     @Override
@@ -80,5 +104,12 @@ public class AltibaseSequenceManager extends SQLObjectEditor<GenericSequence, Al
             return ((GenericStructContainer) parentObject).getSequenceCache();
         }
         return null;
+    }
+
+    @Override
+    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+        if (CommonUtils.isEmpty(command.getObject().getName())) {
+            throw new DBException("Sequence name cannot be empty");
+        }
     }
 }

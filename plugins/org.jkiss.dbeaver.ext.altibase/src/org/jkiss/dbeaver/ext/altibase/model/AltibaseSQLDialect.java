@@ -108,6 +108,7 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
             "UNCOMPRESSED",     "UNLOCK",           "UNPIVOT",          "UNTIL",            "VARIABLE",             //115
             "VARIABLE_LARGE",   "VC2COLL",          "VOLATILE",         "WAIT",             "WHILE",                //120
             "WRAPPED",          "_PROWID",          
+            "CACHE",            "NOCACHE" 
     };
     
     public static final String[] ALTIBASE_ONLY_FUNCTIONS = new String[] {

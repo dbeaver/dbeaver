@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
+import java.math.BigDecimal;
+import java.util.Map;
+
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -26,17 +29,11 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.math.BigDecimal;
-import java.util.Map;
-
 /**
  * FireBirdDataSource
  */
 public class AltibaseSequence extends GenericSequence implements DBPScriptObject {
 
-    //private GenericStructContainer container;
-    //private String name;
-    //private String description;
     private BigDecimal lastValue;
     private BigDecimal minValue;
     private BigDecimal maxValue;
@@ -48,6 +45,18 @@ public class AltibaseSequence extends GenericSequence implements DBPScriptObject
 
     private String source;
 
+    public AltibaseSequence(GenericStructContainer container, String name) {
+        super(container, name, "", 0, 0, 0, 0);
+        
+        // Default sequence
+        this.startWith      = new BigDecimal(1);
+        this.minValue       = new BigDecimal(1);
+        this.maxValue       = new BigDecimal(9223372036854775806L);
+        this.incrementBy    = new BigDecimal(1);
+        this.cacheSize      = new BigDecimal(20);
+        this.flagCycle      = true;
+    }
+    
     public AltibaseSequence(GenericStructContainer container, JDBCResultSet dbResult) {
         super(container, JDBCUtils.safeGetString(dbResult, "TABLE_NAME"), "", 0, 0, 0, 0);
 
@@ -75,13 +84,13 @@ public class AltibaseSequence extends GenericSequence implements DBPScriptObject
         this.lastValue = lastValue;
     }
 
-    @Property(viewable = true, order = 3)
+    @Property(viewable = true, editable = true, updatable = true, order = 3)
     public BigDecimal getStartWith() {
         return startWith;
     }
 
     @Override
-    @Property(viewable = true, order = 4)
+    @Property(viewable = true, editable = true, updatable = true, order = 4)
     public BigDecimal getIncrementBy() {
         return incrementBy;
     }
@@ -91,7 +100,7 @@ public class AltibaseSequence extends GenericSequence implements DBPScriptObject
     }
 
     @Override
-    @Property(viewable = true, order = 5)
+    @Property(viewable = true, editable = true, updatable = true, order = 5)
     public BigDecimal getMinValue() {
         return minValue;
     }
@@ -101,7 +110,7 @@ public class AltibaseSequence extends GenericSequence implements DBPScriptObject
     }
 
     @Override
-    @Property(viewable = true, order = 6)
+    @Property(viewable = true, editable = true, updatable = true, order = 6)
     public BigDecimal getMaxValue() {
         return maxValue;
     }
@@ -110,51 +119,71 @@ public class AltibaseSequence extends GenericSequence implements DBPScriptObject
         this.maxValue = maxValue;
     }
 
-    @Property(viewable = true, order = 7)
+    @Property(viewable = true, editable = true, updatable = true, order = 7)
     public BigDecimal getCacheSize() {
         return cacheSize;
     }
+    
+    public void setCacheSize(BigDecimal cacheSize) {
+        this.cacheSize = cacheSize;
+    }
 
-    @Property(viewable = true, order = 8)
+    @Property(viewable = true, editable = true, updatable = true, order = 8)
     public boolean getCycle() {
         return flagCycle;
+    }
+    
+    public void setCycle(boolean flagCycle) {
+        this.flagCycle = flagCycle;
     }
 
     public boolean isCycle() { 
         return flagCycle; 
     }
+    
+    @Override
+    @Property(viewable = false, hidden = true, order = 10)
+    public String getDescription() {
+        return null;
+    }
 
     public String buildStatement(boolean forUpdate) {
         StringBuilder sb = new StringBuilder();
+        
         if (forUpdate) {
             sb.append("ALTER SEQUENCE ");
         } else {
             sb.append("CREATE SEQUENCE ");
         }
-        sb.append(getFullyQualifiedName(DBPEvaluationContext.DDL));
+        
+        sb.append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" ");
 
-        if (getStartWith() != null) {
-            sb.append(" START WITH ").append(getStartWith());
+        if ( (forUpdate == false) && (getStartWith() != null)) {
+            sb.append("START WITH ").append(getStartWith()).append(" ");
         }
 
         if (getIncrementBy() != null) {
-            sb.append(" INCREMENT BY ").append(getIncrementBy());
+            sb.append("INCREMENT BY ").append(getIncrementBy()).append(" ");
         }
         
         if (getMinValue() != null) {
-            sb.append(" MINVALUE ").append(getMinValue());
+            sb.append("MINVALUE ").append(getMinValue()).append(" ");
         }
         
         if (getMaxValue() != null) {
-            sb.append(" MAXVALUE ").append(getMaxValue());
+            sb.append("MAXVALUE ").append(getMaxValue()).append(" ");
         }
 
         if (getCacheSize().compareTo(BigDecimal.ZERO) > 0) {
-            sb.append(" CACHE ").append(getCacheSize());
+            sb.append("CACHE ").append(getCacheSize()).append(" ");
+        } else {
+            sb.append("NOCACHE ");
         }
 
         if (isCycle()) {
-            sb.append(" CYCLE");
+            sb.append("CYCLE");
+        } else {
+            sb.append("NOCYCLE");
         }
 
         sb.append(";");

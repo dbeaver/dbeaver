@@ -22,6 +22,7 @@ import org.jkiss.utils.StandardConstants;
 public class AltibaseConstants {
     
     public static final String NEW_LINE = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
+    public static final String SPACE4 = "    ";
     public static final String PSM_POSTFIX = ";" + AltibaseConstants.NEW_LINE + "/";
 
     public static final String PUBLIC_USER = "PUBLIC";

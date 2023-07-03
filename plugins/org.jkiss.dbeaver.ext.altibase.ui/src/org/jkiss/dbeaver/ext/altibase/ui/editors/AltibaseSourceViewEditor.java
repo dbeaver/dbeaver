@@ -27,10 +27,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
  * GenericSourceViewEditor
  */
 public class AltibaseSourceViewEditor<T extends DBPScriptObject & DBSObject> extends SQLSourceViewer<T> {
-
-    public AltibaseSourceViewEditor() {
-    }
-
+    
     @Override
     protected boolean isReadOnly() {
         return !(getSourceObject() instanceof DBSObjectWithScript);
