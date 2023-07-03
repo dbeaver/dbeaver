@@ -38,6 +38,12 @@ public class SnowflakeAuthModelSnowflake<CREDENTIALS extends AuthModelSnowflakeC
 
     public static final String ID = "snowflake_snowflake";
 
+    @NotNull
+    @Override
+    public CREDENTIALS createCredentials() {
+        return (CREDENTIALS) new AuthModelSnowflakeCredentials();
+    }
+
     @Override
     public Object initAuthentication(
         @NotNull DBRProgressMonitor monitor,
