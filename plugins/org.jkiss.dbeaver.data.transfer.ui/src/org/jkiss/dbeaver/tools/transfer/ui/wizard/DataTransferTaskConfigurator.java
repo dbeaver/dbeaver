@@ -424,17 +424,19 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
         @Override
         public String getErrorMessage() {
             if (objectsTable.getItemCount() == 0) {
-                return "No objects selected";
+                return DTUIMessages.data_transfer_error_no_objects_selected;
             }
             for (DataTransferPipe pipe : dtWizard.getSettings().getDataPipes()) {
                 if (!dtWizard.getSettings().isProducerOptional()) {
                     if (pipe.getProducer() == null || !pipe.getProducer().isConfigurationComplete()) {
-                        return "Source not specified for " + (pipe.getConsumer() == null ? "?" : pipe.getConsumer().getObjectName());
+						return NLS.bind(DTUIMessages.data_transfer_error_source_not_specified,
+								(pipe.getConsumer() == null ? "?" : pipe.getConsumer().getObjectName()));
                     }
                 }
                 if (!dtWizard.getSettings().isConsumerOptional()) {
                     if (pipe.getConsumer() == null || !pipe.getConsumer().isConfigurationComplete()) {
-                        return "Target not specified for " + (pipe.getProducer() == null ? "?" : pipe.getProducer().getObjectName());
+						return NLS.bind(DTUIMessages.data_transfer_error_target_not_specified,
+								(pipe.getProducer() == null ? "?" : pipe.getProducer().getObjectName()));
                     }
                 }
             }

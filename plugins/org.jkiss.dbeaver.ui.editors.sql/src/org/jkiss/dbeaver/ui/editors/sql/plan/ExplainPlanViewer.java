@@ -423,7 +423,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
     private class RefreshPlanAction extends Action {
         private RefreshPlanAction()
         {
-            super("Reevaluate", DBeaverIcons.getImageDescriptor(UIIcon.REFRESH));
+            super(SQLEditorMessages.editors_sql_explain_refresh_plan_action_text, DBeaverIcons.getImageDescriptor(UIIcon.REFRESH));
         }
 
         @Override

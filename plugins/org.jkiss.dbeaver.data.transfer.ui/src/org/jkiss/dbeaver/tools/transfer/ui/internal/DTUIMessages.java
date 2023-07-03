@@ -172,6 +172,9 @@ public class DTUIMessages extends NLS {
 	public static String database_producer_page_input_objects_title_assign_error;
 	public static String database_producer_page_input_objects_message_error_reading_container_objects;
 	public static String database_producer_page_input_objects_error_message_auto_assign_failed;
+	public static String stream_producer_column_mapping_error_title;
+	public static String stream_producer_column_mapping_error_message;
+	public static String stream_producer_select_input_file;
 	public static String stream_producer_page_preview_title_load_entity_meta;
 	public static String stream_producer_page_preview_message_entity_attributes;
 	public static String stream_producer_page_preview_title_preview_data;
@@ -181,6 +184,9 @@ public class DTUIMessages extends NLS {
 	public static String data_transfer_task_configurator_title_error_opening_data_source;
 	public static String data_transfer_task_configurator_message_error_while_opening_data_source;
 	public static String data_transfer_wizard_message_init_data_transfer;
+	public static String data_transfer_error_source_not_specified;
+	public static String data_transfer_error_target_not_specified;
+	public static String data_transfer_error_no_objects_selected;
 
 	public static String stream_producer_page_preview_error_message_no_entities_specified;
 	public static String stream_producer_page_preview_error_message_wrong_input_object;

@@ -1142,7 +1142,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         if (inline) {
             String readOnlyStatus = controller.getAttributeReadOnlyStatus(attr);
             if (readOnlyStatus != null) {
-                controller.setStatus("Column " + DBUtils.getObjectFullName(attr, DBPEvaluationContext.UI) + " is read-only: " + readOnlyStatus, DBPMessageType.ERROR);
+                controller.setStatus(NLS.bind(ResultSetMessages.controls_resultset_viewer_action_open_value_editor_column_readonly, DBUtils.getObjectFullName(attr, DBPEvaluationContext.UI), readOnlyStatus), DBPMessageType.ERROR);
             }
             spreadsheet.cancelInlineEditor();
             activeInlineEditor = null;

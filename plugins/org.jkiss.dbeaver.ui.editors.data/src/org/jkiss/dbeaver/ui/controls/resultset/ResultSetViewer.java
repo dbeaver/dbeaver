@@ -278,9 +278,9 @@ public class ResultSetViewer extends Viewer
                 if (txnManager != null) {
                     try {
                         if (txnManager.isAutoCommit()) {
-                            return "Hint: frequent refresh may cause high server load";
+                            return ResultSetMessages.controls_resultset_viewer_frequent_refresh_hint;
                         } else {
-                            return "Hint: switch to auto-commit to see external changes";
+                        	return ResultSetMessages.controls_resultset_viewer_switch_autocommit_hint;
                         }
                     } catch (DBCException e) {
                         log.debug(e);
@@ -2955,9 +2955,9 @@ public class ResultSetViewer extends Viewer
         viewMenu.add(new Separator());
         viewMenu.add(new DataFormatsPreferencesAction());
         viewMenu.add(new Separator());
-        viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS, "Show selected row count"));
-        viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS, "Show selected column count"));
-        viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS, "Show selected cell count"));
+        viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS, ResultSetMessages.controls_resultset_viewer_action_show_selected_row_count));
+        viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS, ResultSetMessages.controls_resultset_viewer_action_show_selected_column_count));
+        viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS, ResultSetMessages.controls_resultset_viewer_action_show_selected_cell_count));
 
         viewMenu.add(new Separator());
         viewMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ZOOM_IN));

@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.generic.GenericMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -436,9 +437,9 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
         return this;
     }
 
-    public String toString() {
-        return getName() == null ? "<NONE>" : getName();
-    }
+	public String toString() {
+		return getName() == null ? GenericMessages.generic_object_container_none : getName();
+	}
 
     private synchronized void loadProcedures(DBRProgressMonitor monitor)
         throws DBException {

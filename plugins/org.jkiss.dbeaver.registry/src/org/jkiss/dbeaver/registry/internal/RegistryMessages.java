@@ -39,6 +39,7 @@ public class RegistryMessages extends NLS {
     public static String navigator_settings_preset_advanced_view_description;
     public static String navigator_settings_preset_custom_view_name;
     public static String navigator_settings_preset_custom_view_description;
+    public static String project_description_comment;
 
 
     static {
