@@ -59,6 +59,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     public static final String PATTERN_ITEM_TABLE = "%TABLE%"; //$NON-NLS-1$
     public static final String PATTERN_ITEM_INDEX_SHORT = "%INDEX_SHORT%"; //$NON-NLS-1$
     public static final String PATTERN_ITEM_CONSTRAINT = "%CONSTRAINT%"; //$NON-NLS-1$
+    private static final int MAX_NAME_GEN_ATTEMPTS = 100;
 
     @Override
     public boolean canEditObject(OBJECT_TYPE object) {
@@ -180,13 +181,15 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
     protected String getNewChildName(DBRProgressMonitor monitor, CONTAINER_TYPE container, String baseName) {
         try {
-            for (int i = 0; ; i++) {
+            for (int i = 0; i < MAX_NAME_GEN_ATTEMPTS; i++) {
                 String tableName = DBObjectNameCaseTransformer.transformName(container.getDataSource(), i == 0 ? baseName : (baseName + "_" + i));
                 DBSObject child = container instanceof DBSObjectContainer ? ((DBSObjectContainer)container).getChild(monitor, tableName) : null;
                 if (child == null) {
                     return tableName;
                 }
             }
+            log.error("Error generating child object name: max attempts reached");
+            return baseName;
         } catch (DBException e) {
             log.error("Error generating child object name", e);
             return DBObjectNameCaseTransformer.transformName(container.getDataSource(), baseName);

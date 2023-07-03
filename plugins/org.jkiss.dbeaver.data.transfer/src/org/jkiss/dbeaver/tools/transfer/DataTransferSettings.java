@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.serialize.SerializerContext;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -702,7 +703,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         if (nodes != null) {
             List<Map<String, Object>> inputObjects = new ArrayList<>();
             for (Object inputObject : nodes) {
-                inputObjects.add(JSONUtils.serializeObject(runnableContext, task, inputObject));
+                inputObjects.add(DTUtils.serializeObject(runnableContext, task, inputObject));
             }
             state.put(nodeType, inputObjects);
         }
@@ -712,18 +713,26 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         Map<String, Object> config = task.getProperties();
         List<T> result = new ArrayList<>();
         Object nodeList = config.get(nodeType);
+
+        SerializerContext serializeContext = new SerializerContext();
+
         if (nodeList instanceof Collection) {
             MonitorRunnableContext runnableContext = new MonitorRunnableContext(monitor);
             for (Object nodeObj : (Collection<?>)nodeList) {
                 if (nodeObj instanceof Map) {
                     try {
-                        Object node = JSONUtils.deserializeObject(runnableContext, task, (Map<String, Object>) nodeObj);
+                        Object node = DTUtils.deserializeObject(runnableContext, serializeContext, task, (Map<String, Object>) nodeObj);
                         if (nodeClass.isInstance(node)) {
                             result.add(nodeClass.cast(node));
                         }
                     } catch (DBCException e) {
                         state.addError(e);
                         taskLog.error(e);
+                    } finally {
+                        for (Throwable e : serializeContext.resetErrors()) {
+                            state.addError(e);
+                            taskLog.error(e);
+                        }
                     }
                 }
             }

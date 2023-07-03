@@ -25,10 +25,12 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
@@ -36,13 +38,13 @@ import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.serialize.DTObjectSerializer;
+import org.jkiss.dbeaver.tools.transfer.serialize.SerializerContext;
+import org.jkiss.dbeaver.tools.transfer.serialize.SerializerRegistry;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
+import java.util.*;
 
 /**
  * Abstract node
@@ -229,6 +231,39 @@ public class DTUtils {
         }
 
         return attributes;
+    }
+
+    public static <OBJECT_CONTEXT, OBJECT_TYPE> Object deserializeObject(
+        @NotNull DBRRunnableContext runnableContext,
+        SerializerContext serializeContext, OBJECT_CONTEXT objectContext,
+        @NotNull Map<String, Object> objectConfig
+    ) throws DBCException {
+        String typeID = CommonUtils.toString(objectConfig.get("type"));
+        DTObjectSerializer<OBJECT_CONTEXT, OBJECT_TYPE> serializer = SerializerRegistry.getInstance().createSerializerByType(typeID);
+        if (serializer == null) {
+            return null;
+        }
+        Map<String, Object> location = JSONUtils.getObject(objectConfig, "location");
+        return serializer.deserializeObject(runnableContext, serializeContext, objectContext, location);
+    }
+
+    public static <OBJECT_CONTEXT, OBJECT_TYPE> Map<String, Object> serializeObject(
+        DBRRunnableContext runnableContext,
+        OBJECT_CONTEXT context,
+        @NotNull OBJECT_TYPE object
+    ) {
+        DTObjectSerializer<OBJECT_CONTEXT, OBJECT_TYPE> serializer = SerializerRegistry.getInstance().createSerializer(object);
+        if (serializer == null) {
+            return null;
+        }
+        Map<String, Object> state = new LinkedHashMap<>();
+
+        Map<String, Object> location = new LinkedHashMap<>();
+        serializer.serializeObject(runnableContext, context, object, location);
+        state.put("type", SerializerRegistry.getInstance().getObjectType(object));
+        state.put("location", location);
+
+        return state;
     }
 
     private static class MetadataReceiver implements DBDDataReceiver {
