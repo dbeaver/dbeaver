@@ -33,7 +33,7 @@ import java.util.Properties;
 /**
  * Oracle database native auth model.
  */
-public class SnowflakeAuthModelSnowflake<CREDENTIALS extends AuthModelDatabaseNativeCredentials>
+public class SnowflakeAuthModelSnowflake<CREDENTIALS extends AuthModelSnowflakeCredentials>
     extends AuthModelDatabaseNative<CREDENTIALS> {
 
     public static final String ID = "snowflake_snowflake";
@@ -59,6 +59,20 @@ public class SnowflakeAuthModelSnowflake<CREDENTIALS extends AuthModelDatabaseNa
         }
 
         return super.initAuthentication(monitor, dataSource, credentials, configuration, connProperties);
+    }
+
+    @NotNull
+    @Override
+    public CREDENTIALS loadCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration) {
+        CREDENTIALS credentials = super.loadCredentials(dataSource, configuration);
+        credentials.setRole(configuration.getAuthProperty(SnowflakeConstants.PROP_AUTH_ROLE));
+        return credentials;
+    }
+
+    @Override
+    public void saveCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull CREDENTIALS credentials) {
+        configuration.setAuthProperty(SnowflakeConstants.PROP_AUTH_ROLE, credentials.getRole());
+        super.saveCredentials(dataSource, configuration, credentials);
     }
 
     @Override
