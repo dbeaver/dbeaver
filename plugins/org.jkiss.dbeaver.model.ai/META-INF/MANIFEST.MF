@@ -8,6 +8,7 @@ Export-Package: org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.model.ai.completion,
  org.jkiss.dbeaver.model.ai.gpt3,
  org.jkiss.dbeaver.model.ai.internal,
+ org.jkiss.dbeaver.model.ai.service,
  org.jkiss.dbeaver.model.ai.translator
 Bundle-Release-Date: 20230626
 Bundle-RequiredExecutionEnvironment: JavaSE-11

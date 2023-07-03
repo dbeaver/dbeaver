@@ -21,9 +21,7 @@ import com.theokanning.openai.completion.CompletionChoice;
 import com.theokanning.openai.completion.CompletionRequest;
 import com.theokanning.openai.completion.chat.ChatCompletionChoice;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
-import com.theokanning.openai.completion.chat.ChatCompletionResult;
 import com.theokanning.openai.completion.chat.ChatMessage;
-import com.theokanning.openai.service.OpenAiService;
 import okhttp3.ResponseBody;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -39,6 +37,8 @@ import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionRequest;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionResponse;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
+import org.jkiss.dbeaver.model.ai.service.AdaptedOpenAiService;
+import org.jkiss.dbeaver.model.ai.service.GPTCompletionAdapter;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -69,7 +69,7 @@ public class GPTCompletionEngine implements DAICompletionEngine {
     //How many retries may be done if code 429 happens
     private static final int MAX_REQUEST_ATTEMPTS = 3;
 
-    private static final Map<String, OpenAiService> clientInstances = new HashMap<>();
+    private static final Map<String, GPTCompletionAdapter> clientInstances = new HashMap<>();
     private static final int GPT_MODEL_MAX_TOKENS = 2048;
     private static final int MAX_PROMPT_LENGTH = 7500; // 8000 -
     private static final boolean SUPPORTS_ATTRS = true;
@@ -116,12 +116,12 @@ public class GPTCompletionEngine implements DAICompletionEngine {
     /**
      * Initializes OpenAiService instance using token provided by {@link GPTConstants} GTP_TOKEN_PATH
      */
-    protected OpenAiService initGPTApiClientInstance() throws DBException {
+    protected GPTCompletionAdapter initGPTApiClientInstance() throws DBException {
         String token = acquireToken();
         if (CommonUtils.isEmpty(token)) {
             throw new DBException("Empty API token value");
         }
-        return new OpenAiService(token, Duration.ofSeconds(30));
+        return new AdaptedOpenAiService(token, Duration.ofSeconds(30));
     }
 
     protected String acquireToken() {
@@ -170,7 +170,7 @@ public class GPTCompletionEngine implements DAICompletionEngine {
         }
 
         DBPDataSourceContainer container = executionContext.getDataSource().getContainer();
-        OpenAiService service = clientInstances.get(container.getId());
+        GPTCompletionAdapter service = clientInstances.get(container.getId());
         if (service == null) {
             service = initGPTApiClientInstance();
             clientInstances.put(container.getId(), service);
@@ -275,7 +275,7 @@ public class GPTCompletionEngine implements DAICompletionEngine {
         }
     }
 
-    private List<?> getCompletionChoices(OpenAiService service, Object completionRequest) {
+    private List<?> getCompletionChoices(GPTCompletionAdapter service, Object completionRequest) {
         if (completionRequest instanceof CompletionRequest) {
             return service.createCompletion((CompletionRequest) completionRequest).getChoices();
         } else {
