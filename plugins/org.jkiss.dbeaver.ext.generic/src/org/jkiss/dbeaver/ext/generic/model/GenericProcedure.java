@@ -71,6 +71,19 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         this.specificName = specificName;
     }
 
+    public GenericProcedure(
+        GenericStructContainer container,
+        String name,
+        String description,
+        DBSProcedureType procedureType,
+        String source,
+        boolean persisted
+    ) {
+        super(container, persisted, name, description);
+        this.procedureType = procedureType;
+        this.source = source;
+    }
+
     @Property(viewable = true, order = 3)
     public GenericCatalog getCatalog()
     {
