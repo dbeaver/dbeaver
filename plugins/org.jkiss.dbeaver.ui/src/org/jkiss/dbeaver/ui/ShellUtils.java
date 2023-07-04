@@ -23,10 +23,10 @@ import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 
 /**
@@ -52,13 +52,13 @@ public final class ShellUtils {
     public static boolean openExternalFile(@NotNull Path path) {
         try {
             if (RuntimeUtils.isMacOS()) {
-                Runtime.getRuntime().exec(new String[]{"open", "-a", "Finder.app", path.toAbsolutePath().toString()});
+                executeWithReturnCodeCheck("open", "-a", "Finder.app", path.toAbsolutePath().toString());
                 return true;
             } else if (RuntimeUtils.isLinux()) {
-                Runtime.getRuntime().exec(new String[]{"xdg-open", path.toAbsolutePath().toString()});
+                executeWithReturnCodeCheck("xdg-open", path.toAbsolutePath().toString());
                 return true;
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             log.debug("Unable to open external program in a platform-specific way: " + e.getMessage());
             return false;
         }
@@ -98,6 +98,19 @@ public final class ShellUtils {
             } else {
                 launchProgram(file.getParent());
             }
+        }
+    }
+
+    private static void executeWithReturnCodeCheck(@NotNull String... cmd) throws IOException, InterruptedException {
+        final Process process = Runtime.getRuntime().exec(cmd);
+        final int code = process.waitFor();
+
+        if (code != 0) {
+            final Reader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            final Writer writer = new StringWriter();
+            IOUtils.copyText(reader, writer);
+
+            throw new IOException("Process ended with code " + code + ": " + writer);
         }
     }
 
