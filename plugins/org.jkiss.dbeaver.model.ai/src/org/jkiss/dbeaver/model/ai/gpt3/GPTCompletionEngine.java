@@ -62,6 +62,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.time.Duration;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class GPTCompletionEngine implements DAICompletionEngine {
     private static final Log log = Log.getLog(GPTCompletionEngine.class);
@@ -207,13 +209,29 @@ public class GPTCompletionEngine implements DAICompletionEngine {
                             if (e instanceof HttpException) {
                                 RuntimeUtils.pause(1000);
                             } else {
-                                responseSize /= 2;
+                                // Extracts resulted prompt size from the error message and resizes max response to
+                                // value lower that (maxTokens - prompt size)
+                                Matcher matcher = Pattern.compile("([0-9]+)").matcher(e.getMessage());
+                                ArrayList<Integer> numbers = new ArrayList<>();
+                                while (matcher.find()) {
+                                    String numberStr = matcher.group();
+                                    int number = Integer.parseInt(numberStr);
+                                    numbers.add(number);
+                                }
+                                if (numbers.size() < 4) {
+                                    throw e;
+                                }
+                                Integer promptSize = numbers.get(2);
+                                responseSize = Math.min(responseSize,
+                                    GPTModel.getByName(getModelName()).getMaxTokens() - promptSize - 1);
                                 completionRequest = createCompletionRequest(modifiedRequest, responseSize);
                             }
                             if (i >= MAX_REQUEST_ATTEMPTS - 1) {
                                 throw e;
                             } else {
-                                log.debug("AI service failed. Retry (" + e.getMessage() + ")");
+                                if (e instanceof HttpException) {
+                                    log.debug("AI service failed. Retry (" + e.getMessage() + ")");
+                                }
                                 continue;
                             }
                         }
