@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ui.app.standalone.rpc;
 
-import org.apache.commons.cli.CommandLine;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -36,7 +35,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
-import org.jkiss.dbeaver.ui.app.standalone.DBeaverCommandLine;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
@@ -70,15 +68,7 @@ public class DBeaverInstanceServer implements IInstanceController {
     private final FileChannel configFileChannel;
     private final List<File> filesToConnect = new ArrayList<>();
 
-    public DBeaverInstanceServer(@Nullable CommandLine commandLine) throws IOException {
-        if (commandLine != null) {
-            DBeaverCommandLine.getRemoteParameterHandlers(commandLine);
-        }
-
-        if (createClient() != null) {
-            throw new IOException("Can't start instance server because other instance is already running");
-        }
-
+    private DBeaverInstanceServer() throws IOException {
         server = RestServer
             .builder(IInstanceController.class, this)
             .setFilter(address -> address.getAddress().isLoopbackAddress())
@@ -100,6 +90,16 @@ public class DBeaverInstanceServer implements IInstanceController {
     }
 
     @Nullable
+    public static DBeaverInstanceServer createServer() throws IOException {
+        if (createClient() != null) {
+            log.debug("Can't start instance server because other instance is already running");
+            return null;
+        }
+
+        return new DBeaverInstanceServer();
+    }
+
+    @Nullable
     public static IInstanceController createClient() {
         return createClient(null);
     }
@@ -118,7 +118,7 @@ public class DBeaverInstanceServer implements IInstanceController {
         try (Reader reader = Files.newBufferedReader(path)) {
             properties.load(reader);
         } catch (IOException e) {
-            log.error("Error reading instance controller configuration", e);
+            log.error("Error reading instance controller configuration: " + e.getMessage());
             return null;
         }
 
@@ -141,7 +141,7 @@ public class DBeaverInstanceServer implements IInstanceController {
                 throw new IllegalStateException("Invalid ping response: " + response + ", was expecting " + payload);
             }
         } catch (Throwable e) {
-            log.error("Error accessing instance server", e);
+            log.error("Error accessing instance server: " + e.getMessage());
             return null;
         }
 

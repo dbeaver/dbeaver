@@ -254,7 +254,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         // Run instance server
         try {
-            instanceServer = new DBeaverInstanceServer(commandLine);
+            instanceServer = DBeaverInstanceServer.createServer();
         } catch (Exception e) {
             log.error("Can't start instance server", e);
         }
