@@ -161,7 +161,14 @@ public class SQLGroupingQueryGenerator {
         boolean isDefaultGrouping = groupFunctions.size() == 1 && groupFunctions.get(0).equals(DEFAULT_FUNCTION);
 
         if (isDefaultGrouping && showDuplicatesOnly) {
-            sql.append("\nHAVING ").append(funcAliases[0]).append(" > 1");
+            sql.append("\nHAVING ");
+            if (dataSource.getSQLDialect().supportsAliasForHavingSyntax()) {
+                sql.append(funcAliases[0]);
+            } else {
+                // very special case
+                sql.append(DEFAULT_FUNCTION);
+            }
+            sql.append(" > 1");
         }
         return sql.toString();
     }

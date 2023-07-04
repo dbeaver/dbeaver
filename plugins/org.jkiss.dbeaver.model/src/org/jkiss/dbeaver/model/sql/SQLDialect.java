@@ -270,6 +270,10 @@ public interface SQLDialect {
         return true;
     }
 
+    default boolean supportsAliasForHavingSyntax() {
+        return true;
+    }
+
     boolean supportsTableDropCascade();
 
     boolean supportsOrderByIndex();
