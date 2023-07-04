@@ -53,7 +53,6 @@ import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
-import org.jkiss.dbeaver.ui.app.standalone.rpc.InstanceClient;
 import org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -118,7 +117,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private boolean headlessMode = false;
     private boolean ignoreRecentWorkspaces = false;
 
-    private IInstanceController instanceServer;
+    private DBeaverInstanceServer instanceServer;
 
     private OutputStream debugWriter;
     private PrintStream oldSystemOut;
@@ -144,31 +143,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         // Windows: %AppData%/DBeaverData
         // MacOS: ~/Library/DBeaverData
         // Linux: $XDG_DATA_HOME/DBeaverData
-        String osName = (System.getProperty("os.name")).toUpperCase();
-        String workingDirectory;
-        if (osName.contains("WIN")) {
-            String appData = System.getenv("AppData");
-            if (appData == null) {
-                appData = System.getProperty("user.home");
-            }
-            workingDirectory = appData + "\\" + defaultWorkspaceLocation;
-        } else if (osName.contains("MAC")) {
-            workingDirectory = System.getProperty("user.home") + "/Library/" + defaultWorkspaceLocation;
-        } else {
-            // Linux
-            String dataHome = System.getProperty("XDG_DATA_HOME");
-            if (dataHome == null) {
-                dataHome = System.getProperty("user.home") + "/.local/share";
-            }
-            String badWorkingDir = dataHome + "/." + defaultWorkspaceLocation;
-            String goodWorkingDir = dataHome + "/" + defaultWorkspaceLocation;
-            if (!new File(goodWorkingDir).exists() && new File(badWorkingDir).exists()) {
-                // Let's use bad working dir if it exists (#6316)
-                workingDirectory = badWorkingDir;
-            } else {
-                workingDirectory = goodWorkingDir;
-            }
-        }
+        String workingDirectory = RuntimeUtils.getWorkingDirectory(defaultWorkspaceLocation);
 
         // Workspace dir
         WORKSPACE_DIR_6 = new File(workingDirectory, defaultAppWorkspaceName).getAbsolutePath();
@@ -196,12 +171,12 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         Location instanceLoc = Platform.getInstanceLocation();
 
         CommandLine commandLine = DBeaverCommandLine.getCommandLine();
-        {
-            String defaultHomePath = getDefaultInstanceLocation();
-            if (DBeaverCommandLine.handleCommandLine(commandLine, defaultHomePath)) {
+        String defaultHomePath = getDefaultInstanceLocation();
+        if (DBeaverCommandLine.handleCommandLine(commandLine, defaultHomePath)) {
+            if (!Log.isQuietMode()) {
                 System.err.println("Commands processed. Exit " + GeneralUtils.getProductName() + ".");
-                return IApplication.EXIT_OK;
             }
+            return IApplication.EXIT_OK;
         }
 
         boolean ideWorkspaceSet = setIDEWorkspace(instanceLoc);
@@ -278,7 +253,11 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         initializeApplication();
 
         // Run instance server
-        instanceServer = DBeaverInstanceServer.startInstanceServer(commandLine, createInstanceController());
+        try {
+            instanceServer = DBeaverInstanceServer.createServer();
+        } catch (Exception e) {
+            log.error("Can't start instance server", e);
+        }
 
         if (RuntimeUtils.isWindows() && isStandalone()) {
             SWTBrowserRegistry.overrideBrowser();
@@ -501,10 +480,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     }
 
-    protected IInstanceController createInstanceController() {
-        return new DBeaverInstanceServer();
-    }
-
     private void resetUISettings(Location instanceLoc) {
         try {
             File instanceDir = new File(instanceLoc.getURL().toURI());
@@ -678,10 +653,11 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private void shutdown() {
         log.debug("DBeaver is stopping"); //$NON-NLS-1$
         try {
-            instanceServer = null;
-            RuntimeUtils.runTask(monitor -> {
-                DBeaverInstanceServer.stopInstanceServer();
-            }, "Stop RMI", 1000);
+            DBeaverInstanceServer server = instanceServer;
+            if (server != null) {
+                instanceServer = null;
+                RuntimeUtils.runTask(monitor -> server.stopInstanceServer(), "Stop instance server", 1000);
+            }
         } catch (Throwable e) {
             log.error(e);
         } finally {
@@ -725,18 +701,14 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
     }
 
+    @Nullable
     public IInstanceController getInstanceServer() {
         return instanceServer;
     }
 
+    @Nullable
     public IInstanceController createInstanceClient() {
-        return InstanceClient.createClient(getDefaultInstanceLocation());
-    }
-
-    private static File getDefaultWorkspaceLocation(String path) {
-        return new File(
-            System.getProperty(StandardConstants.ENV_USER_HOME),
-            path);
+        return DBeaverInstanceServer.createClient(getDefaultInstanceLocation());
     }
 
     @Override

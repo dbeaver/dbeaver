@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -34,7 +35,9 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.menus.UIElement;
+import org.eclipse.ui.part.EditorInputTransfer;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.code.NotNull;
@@ -67,10 +70,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
-import org.jkiss.dbeaver.ui.editors.DatabaseEditorContext;
-import org.jkiss.dbeaver.ui.editors.DatabaseEditorContextBase;
-import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
+import org.jkiss.dbeaver.ui.editors.*;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorContent;
@@ -83,6 +84,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -373,6 +375,7 @@ public class NavigatorUtils {
                 TextTransfer.getInstance(),
                 TreeNodeTransfer.getInstance(),
                 DatabaseObjectTransfer.getInstance(),
+                EditorInputTransfer.getInstance(),
                 FileTransfer.getInstance()
             };
             
@@ -396,33 +399,32 @@ public class NavigatorUtils {
                 @Override
                 public void dragSetData(DragSourceEvent event) {
                     if (!selection.isEmpty()) {
-                        List<DBNNode> nodes = new ArrayList<>();
-                        List<DBPNamedObject> objects = new ArrayList<>();
-                        List<String> names = new ArrayList<>();
-                        String lineSeparator = CommonUtils.getLineSeparator();
-                        StringBuilder buf = new StringBuilder();
+                        final Map<DBNNode, TransferInfo> info = new LinkedHashMap<>();
 
                         for (Object nextSelected : selection) {
                             if (!(nextSelected instanceof DBNNode)) {
                                 continue;
                             }
                             DBNNode node = (DBNNode) nextSelected;
-                            nodes.add(node);
+
                             String nodeName;
+                            DBPNamedObject nodeObject = null;
+
                             if (nextSelected instanceof DBNDatabaseNode && !(nextSelected instanceof DBNDataSource)) {
                                 DBSObject object = ((DBNDatabaseNode) nextSelected).getObject();
                                 if (object == null) {
                                     continue;
                                 }
                                 nodeName = DBUtils.getObjectFullName(object, DBPEvaluationContext.UI);
-                                objects.add(object);
+                                nodeObject = object;
                             } else if (nextSelected instanceof DBNDataSource) {
                                 DBPDataSourceContainer object = ((DBNDataSource) nextSelected).getDataSourceContainer();
                                 nodeName = object.getName();
-                                objects.add(object);
-                            } else if (FileTransfer.getInstance().isSupportedType(event.dataType) &&
-                                nextSelected instanceof DBNStreamData &&
-                                ((DBNStreamData) nextSelected).supportsStreamData())
+                                nodeObject = object;
+                            } else if (nextSelected instanceof DBNStreamData
+                                && ((DBNStreamData) nextSelected).supportsStreamData()
+                                && (EditorInputTransfer.getInstance().isSupportedType(event.dataType)
+                                    || FileTransfer.getInstance().isSupportedType(event.dataType)))
                             {
                                 String fileName = node.getNodeName();
                                 try {
@@ -460,21 +462,30 @@ public class NavigatorUtils {
                             } else {
                                 nodeName = node.getNodeTargetName();
                             }
-                            if (buf.length() > 0) {
-                                buf.append(lineSeparator);
-                            }
-                            buf.append(nodeName);
-                            names.add(nodeName);
+
+                            info.put(node, new TransferInfo(nodeName, node, nodeObject));
                         }
                         if (TreeNodeTransfer.getInstance().isSupportedType(event.dataType)) {
-                            event.data = nodes;
+                            event.data = info.keySet();
                         } else if (DatabaseObjectTransfer.getInstance().isSupportedType(event.dataType)) {
-                            event.data = objects;
+                            event.data = info.values().stream()
+                                .map(TransferInfo::getObject)
+                                .filter(Objects::nonNull)
+                                .collect(Collectors.toList());
                         } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
-                            event.data = buf.toString();
+                            event.data = info.values().stream()
+                                .map(TransferInfo::getName)
+                                .collect(Collectors.joining(CommonUtils.getLineSeparator()));
+                        } else if (EditorInputTransfer.getInstance().isSupportedType(event.dataType)) {
+                            event.data = info.values().stream()
+                                .map(TransferInfo::createEditorInputData)
+                                .filter(Objects::nonNull)
+                                .toArray(EditorInputTransfer.EditorInputData[]::new);
                         } else if (FileTransfer.getInstance().isSupportedType(event.dataType)) {
-                            names.removeIf(s -> !Files.exists(Path.of(s)));
-                            event.data = names.toArray(new String[0]);
+                            event.data = info.values().stream()
+                                .map(TransferInfo::getName)
+                                .filter(name -> Files.exists(Path.of(name)))
+                                .toArray(String[]::new);
                         }
                     } else {
                         if (TreeNodeTransfer.getInstance().isSupportedType(event.dataType)) {
@@ -483,6 +494,8 @@ public class NavigatorUtils {
                             event.data = Collections.emptyList();
                         } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
                             event.data = "";
+                        } else if (EditorInputTransfer.getInstance().isSupportedType(event.dataType)) {
+                            event.data = new EditorInputTransfer.EditorInputData[0];
                         } else if (FileTransfer.getInstance().isSupportedType(event.dataType)) {
                             event.data = new String[0];
                         }
@@ -925,5 +938,77 @@ public class NavigatorUtils {
             activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         }
         return activeProject;
+    }
+
+    public static void showNodeInNavigator(DBNDatabaseNode dsNode) {
+        IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+        NavigatorViewBase nodeView;
+        try {
+            if (dsNode.getOwnerProject() == DBWorkbench.getPlatform().getWorkspace().getActiveProject()) {
+                nodeView = UIUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
+                if (nodeView == null) {
+                    nodeView = (NavigatorViewBase) workbenchWindow.getActivePage().showView(DatabaseNavigatorView.VIEW_ID);
+                }
+            } else {
+                nodeView = UIUtils.findView(workbenchWindow, ProjectNavigatorView.class);
+                if (nodeView == null) {
+                    nodeView = (NavigatorViewBase) workbenchWindow.getActivePage().showView(ProjectNavigatorView.VIEW_ID);
+                }
+            }
+        } catch (PartInitException e) {
+            DBWorkbench.getPlatformUI().showError("Can't open view", "Error opening navigator view", e);
+            return;
+        }
+        if (nodeView != null) {
+            if (!workbenchWindow.getActivePage().isPartVisible(nodeView)) {
+                workbenchWindow.getActivePage().bringToTop(nodeView);
+            }
+            nodeView.showNode(dsNode);
+        }
+    }
+
+    private static class TransferInfo {
+        private final String name;
+        private final DBNNode node;
+        private final DBPNamedObject object;
+
+        public TransferInfo(@NotNull String name, @NotNull DBNNode node, @Nullable DBPNamedObject object) {
+            this.node = node;
+            this.object = object;
+            this.name = name;
+        }
+
+        @NotNull
+        public String getName() {
+            return name;
+        }
+
+        @Nullable
+        public DBPNamedObject getObject() {
+            return object;
+        }
+
+        @Nullable
+        public EditorInputTransfer.EditorInputData createEditorInputData() {
+            if (node instanceof DBNDatabaseNode) {
+                final DatabaseNodeEditorInput input = new DatabaseNodeEditorInput((DBNDatabaseNode) node);
+                return EditorInputTransfer.createEditorInputData(EntityEditor.ID, input);
+            }
+
+            final File file = new File(name);
+
+            if (file.exists()) {
+                try {
+                    final IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
+                    final IEditorDescriptor editor = EditorUtils.getFileEditorDescriptor(file, window);
+                    final IEditorInput input = new FileStoreEditorInput(EFS.getStore(file.toURI()));
+                    return EditorInputTransfer.createEditorInputData(editor.getId(), input);
+                } catch (Exception e) {
+                    log.warn("Error creating editor input for file '" + file + "'", e);
+                }
+            }
+
+            return null;
+        }
     }
 }

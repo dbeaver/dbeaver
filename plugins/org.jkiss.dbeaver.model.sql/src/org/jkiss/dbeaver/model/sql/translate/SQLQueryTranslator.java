@@ -164,6 +164,16 @@ public class SQLQueryTranslator implements SQLTranslator {
                             newDataType = extendedDialect.getBigIntegerType();
                         }
                         break;
+                    case "UUID":
+                        if (extendedDialect != null) {
+                            newDataType = extendedDialect.getUuidDataType();
+                        }
+                        break;
+                    case "BOOLEAN":
+                        if (extendedDialect != null) {
+                            newDataType = extendedDialect.getBooleanDataType();
+                        }
+                        break;
                     default:
                         //no action
                         break;
@@ -179,8 +189,11 @@ public class SQLQueryTranslator implements SQLTranslator {
                             case "AUTO_INCREMENT":
                             case "IDENTITY":
                                 if (!targetDialect.supportsColumnAutoIncrement()) {
-                                    String sequenceName = CommonUtils.escapeIdentifier(createTable.getTable().getName()) +
+                                    String schemaName = createTable.getTable().getSchemaName();
+                                    String sequenceWithoutSchemaName = CommonUtils.escapeIdentifier(createTable.getTable().getName()) +
                                         "_" + CommonUtils.escapeIdentifier(cd.getColumnName());
+                                    String sequenceName = schemaName == null ? sequenceWithoutSchemaName :
+                                        schemaName + "." + sequenceWithoutSchemaName;
 
                                     cd.getColumnSpecs().remove(columnSpec);
                                     cd.getColumnSpecs().add("DEFAULT");

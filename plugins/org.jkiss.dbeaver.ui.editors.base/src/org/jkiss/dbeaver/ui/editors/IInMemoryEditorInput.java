@@ -15,20 +15,20 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.runtime.serialize;
+package org.jkiss.dbeaver.ui.editors;
 
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-
-import java.util.Map;
+import org.eclipse.ui.IEditorInput;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 /**
- * Object serializer
+ * In-memory editor input
  */
-public interface DBPObjectSerializer<CONTEXT_TYPE, OBJECT_TYPE> {
+public interface IInMemoryEditorInput extends IEditorInput {
 
-    void serializeObject(DBRRunnableContext runnableContext, CONTEXT_TYPE context, OBJECT_TYPE object, Map<String, Object> state);
+    @Nullable
+    Object getProperty(String name);
 
-    OBJECT_TYPE deserializeObject(DBRRunnableContext runnableContext, CONTEXT_TYPE objectContext, Map<String, Object> state) throws DBCException;
+    void setProperty(@NotNull String name, @Nullable Object value);
 
 }

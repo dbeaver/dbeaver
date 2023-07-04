@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ui.internal.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -55,12 +54,8 @@ public class NavigatorExtensionsRegistry {
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(NavigatorNodeActionDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
             if ("nodeAction".equals(ext.getName())) {
-                try {
-                    NavigatorNodeActionDescriptor descriptor = new NavigatorNodeActionDescriptor(ext);
-                    nodeActions.add(descriptor);
-                } catch (DBException e) {
-                    log.error(e);
-                }
+                NavigatorNodeActionDescriptor descriptor = new NavigatorNodeActionDescriptor(ext);
+                nodeActions.add(descriptor);
             }
         }
         nodeActions.sort(Comparator.comparingInt(NavigatorNodeActionDescriptor::getOrder));

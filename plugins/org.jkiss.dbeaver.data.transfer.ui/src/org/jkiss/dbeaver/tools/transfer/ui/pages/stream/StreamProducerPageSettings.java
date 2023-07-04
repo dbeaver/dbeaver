@@ -28,13 +28,12 @@ import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.tools.transfer.*;
@@ -176,9 +175,9 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             DatabaseMappingContainer mapping = new DatabaseMappingContainer(settings, newProducer.getDatabaseObject());
             if (pipe.getConsumer() != null && pipe.getConsumer().getDatabaseObject() instanceof DBSDataManipulator) {
                 DBSDataManipulator databaseObject = (DBSDataManipulator) pipe.getConsumer().getDatabaseObject();
-                DBNDatabaseNode databaseNode = DBNUtils.getNodeByObject(monitor, databaseObject.getParentObject(), false);
-                if (databaseNode != null) {
-                    settings.setContainerNode(databaseNode);
+                DBSObject container = databaseObject.getParentObject();
+                if (container instanceof DBSObjectContainer) {
+                    settings.setContainer((DBSObjectContainer) container);
                 }
                 mapping.setTarget(databaseObject);
             } else {
@@ -235,12 +234,8 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             IDataTransferSettings consumerSettings = dtSettings.getNodeSettings(dtSettings.getConsumer());
             if (consumerSettings instanceof DatabaseConsumerSettings) {
                 DatabaseConsumerSettings dcs = (DatabaseConsumerSettings) consumerSettings;
-                if (originalConsumer != null && originalConsumer.getTargetObjectContainer() instanceof DBSObject) {
-                    DBNDatabaseNode containerNode = DBNUtils.getNodeByObject(
-                        monitor, (DBSObject)originalConsumer.getTargetObjectContainer(), false);
-                    if (containerNode != null) {
-                        dcs.setContainerNode(containerNode);
-                    }
+                if (originalConsumer != null && originalConsumer.getTargetObjectContainer() instanceof DBSObjectContainer) {
+                    dcs.setContainer((DBSObjectContainer) originalConsumer.getTargetObjectContainer());
                 }
                 DatabaseMappingContainer mapping = new DatabaseMappingContainer(dcs, producer.getDatabaseObject());
                 //mapping.setTarget(null);

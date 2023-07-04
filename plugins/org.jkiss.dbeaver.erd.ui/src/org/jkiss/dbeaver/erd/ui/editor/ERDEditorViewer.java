@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.erd.ui.editor;
 
-import org.eclipse.gef3.GraphicalViewer;
+import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;

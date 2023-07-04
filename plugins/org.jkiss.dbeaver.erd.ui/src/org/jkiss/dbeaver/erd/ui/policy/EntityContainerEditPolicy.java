@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.erd.ui.policy;
 
-import org.eclipse.gef3.commands.Command;
-import org.eclipse.gef3.editpolicies.ContainerEditPolicy;
-import org.eclipse.gef3.requests.CreateRequest;
+import org.eclipse.gef.commands.Command;
+import org.eclipse.gef.editpolicies.ContainerEditPolicy;
+import org.eclipse.gef.requests.CreateRequest;
 
 /**
  * Edit policy for Table as a container, handling functionality for dropping new columns into tables

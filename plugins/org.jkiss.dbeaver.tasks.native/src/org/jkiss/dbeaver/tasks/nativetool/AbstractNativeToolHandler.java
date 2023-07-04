@@ -267,10 +267,11 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
             }
 
             boolean refreshObjects = isSuccess && !monitor.isCanceled();
-            if (refreshObjects && needsModelRefresh()) {
+            var navigatorModel = task.getProject().getNavigatorModel();
+            if (navigatorModel != null && refreshObjects && needsModelRefresh()) {
                 // Refresh navigator node (script execution can change everything inside)
                 for (BASE_OBJECT object : settings.getDatabaseObjects()) {
-                    final DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().findNode(object);
+                    final DBNDatabaseNode node = navigatorModel.findNode(object);
                     if (node != null) {
                         node.refreshNode(monitor, this);
                     }

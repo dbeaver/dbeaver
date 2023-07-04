@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.serialize.SerializerContext;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -55,6 +57,8 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
     public static final int DEFAULT_THREADS_NUM = 1;
 
     private final DataTransferState state;
+    @NotNull
+    private final DBPProject project;
     private final Map<String, Object> configurationMap;
     private List<DataTransferPipe> dataPipes;
 
@@ -99,12 +103,35 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         boolean isExitingTask,
         boolean isTaskRunning)
     {
+        this(producers,
+            consumers,
+            null,
+            configuration,
+            state,
+            selectDefaultNodes,
+            isExport,
+            isExitingTask,
+            isTaskRunning);
+    }
+
+    public DataTransferSettings(
+        @Nullable Collection<? extends IDataTransferProducer> producers,
+        @Nullable Collection<? extends IDataTransferConsumer> consumers,
+        @Nullable DBPProject project,
+        @NotNull Map<String, Object> configuration,
+        @NotNull DataTransferState state,
+        boolean selectDefaultNodes,
+        boolean isExport,
+        boolean isExitingTask,
+        boolean isTaskRunning)
+    {
         this.state = state;
         this.nodeUpdateRestricted = isExitingTask;
         this.configurationMap = configuration;
         this.isTaskRunning = isTaskRunning;
         initializePipes(producers, consumers, isExport);
         loadSettings(configuration);
+        this.project = project != null ? project : getProjectFromPipes();
 
         if (!selectDefaultNodes) {
             // Now cleanup all nodes. We needed them only to load default producer/consumer settings
@@ -124,6 +151,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         this(
             getNodesFromLocation(monitor, task, state, taskLog, "producers", IDataTransferProducer.class),
             getNodesFromLocation(monitor, task, state, taskLog, "consumers", IDataTransferConsumer.class),
+            task.getProject(),
             getTaskOrSavedSettings(task, configuration),
             state,
             !task.getProperties().isEmpty(),
@@ -131,6 +159,27 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
             DBTaskUtils.isTaskExists(task),
             isTaskRunning
         );
+    }
+
+    @NotNull
+    private DBPProject getProjectFromPipes() {
+        if (initProducers != null) {
+            for (IDataTransferNode<?> initProducer : initProducers) {
+                DBPProject project = initProducer.getProject();
+                if (project != null) {
+                    return project;
+                }
+            }
+        }
+        if (initConsumers != null) {
+            for (IDataTransferNode<?> initConsumer : initConsumers) {
+                DBPProject project = initConsumer.getProject();
+                if (project != null) {
+                    return project;
+                }
+            }
+        }
+        return DBWorkbench.getPlatform().getWorkspace().getActiveProject();
     }
 
     public DataTransferState getState() {
@@ -654,7 +703,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         if (nodes != null) {
             List<Map<String, Object>> inputObjects = new ArrayList<>();
             for (Object inputObject : nodes) {
-                inputObjects.add(JSONUtils.serializeObject(runnableContext, task, inputObject));
+                inputObjects.add(DTUtils.serializeObject(runnableContext, task, inputObject));
             }
             state.put(nodeType, inputObjects);
         }
@@ -664,18 +713,26 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         Map<String, Object> config = task.getProperties();
         List<T> result = new ArrayList<>();
         Object nodeList = config.get(nodeType);
+
+        SerializerContext serializeContext = new SerializerContext();
+
         if (nodeList instanceof Collection) {
             MonitorRunnableContext runnableContext = new MonitorRunnableContext(monitor);
             for (Object nodeObj : (Collection<?>)nodeList) {
                 if (nodeObj instanceof Map) {
                     try {
-                        Object node = JSONUtils.deserializeObject(runnableContext, task, (Map<String, Object>) nodeObj);
+                        Object node = DTUtils.deserializeObject(runnableContext, serializeContext, task, (Map<String, Object>) nodeObj);
                         if (nodeClass.isInstance(node)) {
                             result.add(nodeClass.cast(node));
                         }
                     } catch (DBCException e) {
                         state.addError(e);
                         taskLog.error(e);
+                    } finally {
+                        for (Throwable e : serializeContext.resetErrors()) {
+                            state.addError(e);
+                            taskLog.error(e);
+                        }
                     }
                 }
             }
@@ -726,5 +783,10 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
                 initObjects.add(object);
             }
         }
+    }
+
+    @NotNull
+    public DBPProject getProject() {
+        return project;
     }
 }

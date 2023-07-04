@@ -5,8 +5,8 @@
 
 package org.jkiss.dbeaver.erd.ui.figures;
 
-import org.eclipse.draw2dl.Label;
-import org.eclipse.draw2dl.Toggle;
+import org.eclipse.draw2d.Label;
+import org.eclipse.draw2d.Toggle;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;

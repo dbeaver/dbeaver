@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.erd.ui;
 
-import org.eclipse.gef3.palette.PaletteContainer;
-import org.eclipse.gef3.palette.PaletteEntry;
+import org.eclipse.gef.palette.PaletteContainer;
+import org.eclipse.gef.palette.PaletteEntry;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IViewPart;

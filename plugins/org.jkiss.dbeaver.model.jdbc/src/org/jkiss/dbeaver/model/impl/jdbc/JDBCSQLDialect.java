@@ -67,9 +67,9 @@ public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConver
     private boolean supportsUnquotedMixedCase;
     private boolean supportsQuotedMixedCase;
     @NotNull
-    private DBPIdentifierCase unquotedIdentCase = DBPIdentifierCase.MIXED;
+    private DBPIdentifierCase unquotedIdentCase = getDefaultIdentifiersCase();
     @NotNull
-    private DBPIdentifierCase quotedIdentCase = DBPIdentifierCase.MIXED;
+    private DBPIdentifierCase quotedIdentCase = getDefaultIdentifiersCase();
     private boolean supportsSubqueries = false;
 
     private transient boolean typesLoaded = false;
@@ -221,6 +221,12 @@ public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConver
         }
 
         loadDriverKeywords(session, dataSource, metaData);
+    }
+
+
+    @NotNull
+    protected DBPIdentifierCase getDefaultIdentifiersCase() {
+        return DBPIdentifierCase.MIXED;
     }
 
     @NotNull

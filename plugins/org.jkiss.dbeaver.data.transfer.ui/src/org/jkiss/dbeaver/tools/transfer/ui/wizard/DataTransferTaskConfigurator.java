@@ -23,13 +23,11 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -118,7 +116,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                 1,
                 GridData.FILL_BOTH,
                 0);
-            objectsTable = new Table(group, SWT.BORDER | SWT.SINGLE);
+            objectsTable = new Table(group, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
             objectsTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             objectsTable.setHeaderVisible(true);
             UIUtils.createTableColumn(objectsTable, SWT.NONE, DTUIMessages.data_transfer_task_configurator_table_column_text_object);
@@ -130,7 +128,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     Class<?> tableClass = isExport ? DBSDataContainer.class : DBSDataManipulator.class;
-                    DBNProjectDatabases rootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(currentProject).getDatabases();
+                    DBNProjectDatabases rootNode = currentProject.getNavigatorModel().getRoot().getProjectNode(currentProject).getDatabases();
                     DBNNode selNode = null;
                     if (objectsTable.getItemCount() > 0) {
                         DBPDataSource lastDataSource = getLastDataSource();
@@ -167,7 +165,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                         DBSObject dataSourceObject = null;
                         DBPDataSource dataSource = null;
 
-                        DBNProjectDatabases rootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(currentProject).getDatabases();
+                        DBNProjectDatabases rootNode = currentProject.getNavigatorModel().getRoot().getProjectNode(currentProject).getDatabases();
                         DBNNode selNode = null;
                         if (objectsTable.getItemCount() > 0) {
                             DBPDataSource lastDataSource = getLastDataSource();
@@ -373,9 +371,17 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
             item.setImage(0, DBeaverIcons.getImage(node.getObjectIcon()));
             item.setText(0, CommonUtils.getSingleLineString(CommonUtils.toString(node.getObjectName(), "?")));
 
-            DBSObject object = node.getDatabaseObject();
-            if (object != null && object.getDataSource() != null) {
-                item.setText(1, object.getDataSource().getContainer().getName());
+            if (node.getDataSourceContainer() != null) {
+                item.setText(1, node.getDataSourceContainer().getName());
+                DBPImage dsIcon = node.getObjectContainerIcon();
+                if (dsIcon != null) {
+                    item.setImage(1, DBeaverIcons.getImage(dsIcon));
+                }
+            }
+            if (node.getDatabaseObject() == null) {
+                item.setBackground(
+                    PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().get("org.jkiss.dbeaver.txn.color.reverted.background")
+                );
             }
         }
 
