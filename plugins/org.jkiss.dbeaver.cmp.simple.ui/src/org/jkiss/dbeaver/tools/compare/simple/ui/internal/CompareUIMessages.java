@@ -39,7 +39,7 @@ public class CompareUIMessages extends NLS {
     public static String compare_objects_page_settings_checkbox_scripts;
     public static String compare_objects_page_checkbox_show_only_differences;
     public static String compare_objects_page_report_settings;
-    
+
     public static String compare_objects_wizard_title;
     public static String compare_objects_wizard_error_title;
     public static String compare_objects_wizard_finish_report_title;

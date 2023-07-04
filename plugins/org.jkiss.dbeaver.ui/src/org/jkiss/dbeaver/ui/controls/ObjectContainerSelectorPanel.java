@@ -152,7 +152,8 @@ public abstract class ObjectContainerSelectorPanel extends Composite
                         addNodeToHistory((DBNDatabaseNode) node);
                         saveHistory();
                     } catch (DBException e) {
-                        DBWorkbench.getPlatformUI().showError(UIMessages.bad_container_node, NLS.bind(UIMessages.bad_container_node_message, node.getName()), e);
+                        DBWorkbench.getPlatformUI().showError(UIMessages.bad_container_node,
+                                NLS.bind(UIMessages.bad_container_node_message, node.getName()), e);
                     }
                 }
             }

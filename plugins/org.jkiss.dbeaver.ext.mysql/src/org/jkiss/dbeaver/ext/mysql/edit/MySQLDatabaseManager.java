@@ -98,7 +98,7 @@ public class MySQLDatabaseManager extends SQLObjectEditor<MySQLCatalog, MySQLDat
     @Override
     public void renameObject(@NotNull DBECommandContext commandContext, @NotNull MySQLCatalog catalog, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException
     {
-    	throw new DBException(MySQLMessages.exception_direct_database_rename);
+        throw new DBException(MySQLMessages.exception_direct_database_rename);
     }
     
 }

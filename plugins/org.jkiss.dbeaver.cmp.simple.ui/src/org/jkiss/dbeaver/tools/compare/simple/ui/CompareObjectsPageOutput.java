@@ -63,9 +63,9 @@ class CompareObjectsPageOutput extends ActiveWizardPage<CompareObjectsWizard> {
             reportSettings.setLayout(gl);
             reportSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-			showOnlyDifference = UIUtils.createCheckbox(reportSettings,
-					CompareUIMessages.compare_objects_page_checkbox_show_only_differences,
-					settings.isShowOnlyDifferences());
+            showOnlyDifference = UIUtils.createCheckbox(reportSettings,
+                    CompareUIMessages.compare_objects_page_checkbox_show_only_differences,
+                    settings.isShowOnlyDifferences());
             showOnlyDifference.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -82,7 +82,8 @@ class CompareObjectsPageOutput extends ActiveWizardPage<CompareObjectsWizard> {
             outputSettings.setLayout(gl);
             outputSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            UIUtils.createControlLabel(outputSettings, CompareUIMessages.compare_objects_page_settings_configuration_output_type);
+            UIUtils.createControlLabel(outputSettings,
+                    CompareUIMessages.compare_objects_page_settings_configuration_output_type);
             reportTypeCombo = new Combo(outputSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
             for (CompareObjectsSettings.OutputType outputType : CompareObjectsSettings.OutputType.values()) {
                 reportTypeCombo.add(outputType.getTitle());

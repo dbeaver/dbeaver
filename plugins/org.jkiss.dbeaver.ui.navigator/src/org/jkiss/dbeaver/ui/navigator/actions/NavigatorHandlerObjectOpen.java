@@ -77,11 +77,12 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         if (selection instanceof IStructuredSelection) {
             final IStructuredSelection structSelection = (IStructuredSelection)selection;
             if (structSelection.size() > MAX_OBJECT_SIZE_NO_CONFIRM) {
-				if (!UIUtils.confirmAction(HandlerUtil.getActiveShell(event),
-						NLS.bind(UINavigatorMessages.actions_navigator_open_editors_title, structSelection.size()),
-						NLS.bind(UINavigatorMessages.actions_navigator_open_editors_question, structSelection.size()))) {
-					return null;
-				}
+                if (!UIUtils.confirmAction(HandlerUtil.getActiveShell(event),
+                        NLS.bind(UINavigatorMessages.actions_navigator_open_editors_title, structSelection.size()),
+                        NLS.bind(UINavigatorMessages.actions_navigator_open_editors_question,
+                                structSelection.size()))) {
+                    return null;
+                }
             }
             for (Object element : structSelection) {
                 DBNNode node = null;

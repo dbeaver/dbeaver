@@ -486,7 +486,8 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
             try {
                 logWriter.print(cmdString.toString());
 
-                logWriter.print(NLS.bind(NativeToolMessages.native_tool_handler_log_task, task.getName(), new Date() + lf));
+                logWriter.print(
+                        NLS.bind(NativeToolMessages.native_tool_handler_log_task, task.getName(), new Date() + lf));
                 logWriter.flush();
 
 
@@ -518,7 +519,8 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 // just skip
                 logWriter.println(e.getMessage() + lf);
             } finally {
-                logWriter.print(NLS.bind(NativeToolMessages.native_tool_handler_log_finished_task, task.getName(), new Date() + lf));
+                logWriter.print(NLS.bind(NativeToolMessages.native_tool_handler_log_finished_task, task.getName(),
+                        new Date() + lf));
                 logWriter.flush();
             }
         }

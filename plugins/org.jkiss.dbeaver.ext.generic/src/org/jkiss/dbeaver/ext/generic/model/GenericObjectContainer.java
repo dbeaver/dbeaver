@@ -437,9 +437,9 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
         return this;
     }
 
-	public String toString() {
-		return getName() == null ? GenericMessages.generic_object_container_none : getName();
-	}
+    public String toString() {
+        return getName() == null ? GenericMessages.generic_object_container_none : getName();
+    }
 
     private synchronized void loadProcedures(DBRProgressMonitor monitor)
         throws DBException {

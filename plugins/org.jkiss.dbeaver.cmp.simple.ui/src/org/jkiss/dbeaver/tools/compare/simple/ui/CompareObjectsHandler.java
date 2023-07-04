@@ -47,9 +47,9 @@ public class CompareObjectsHandler extends AbstractHandler {
         }
         IStructuredSelection ss = (IStructuredSelection)selection;
         if (ss.size() < 2) {
-        	DBWorkbench.getPlatformUI().showError(
-					CompareUIMessages.compare_objects_error_just_one_object_selected_title,
-					CompareUIMessages.compare_objects_error_just_one_object_selected_message);
+            DBWorkbench.getPlatformUI().showError(
+                    CompareUIMessages.compare_objects_error_just_one_object_selected_title,
+                    CompareUIMessages.compare_objects_error_just_one_object_selected_message);
             return null;
         }
         List<DBNDatabaseNode> nodes = new ArrayList<>();
@@ -73,9 +73,9 @@ public class CompareObjectsHandler extends AbstractHandler {
                 firstType = itemType;
             } else {
                 if (firstType != itemType || firstMeta != meta) {
-					DBWorkbench.getPlatformUI().showError(
-							CompareUIMessages.compare_objects_error_different_object_types_title,
-							CompareUIMessages.compare_objects_error_different_object_types_message);
+                    DBWorkbench.getPlatformUI().showError(
+                            CompareUIMessages.compare_objects_error_different_object_types_title,
+                            CompareUIMessages.compare_objects_error_different_object_types_message);
                     return null;
                 }
             }

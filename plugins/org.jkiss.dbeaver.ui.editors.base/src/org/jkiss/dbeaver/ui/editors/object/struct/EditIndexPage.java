@@ -136,7 +136,8 @@ public class EditIndexPage extends AttributesSelectorPage {
     protected void createAttributeColumns(Table columnsTable) {
         super.createAttributeColumns(columnsTable);
 
-        TableColumn colDesc = UIUtils.createTableColumn(columnsTable, SWT.NONE, EditorsMessages.dialog_struct_create_column_order);
+        TableColumn colDesc = UIUtils.createTableColumn(columnsTable, SWT.NONE,
+                EditorsMessages.dialog_struct_create_column_order);
         colDesc.setToolTipText(EditorsMessages.dialog_struct_create_column_order_tooltip);
     }
 
