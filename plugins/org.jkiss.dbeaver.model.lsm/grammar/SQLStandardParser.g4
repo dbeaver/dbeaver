@@ -53,8 +53,8 @@ public void setIsSupportSquareBracketQuotation(boolean value) { isSupportSquareB
 anyWord: Identifier;
 anyValue: literal;
 anyProperty: LeftParen anyValue+ RightParen;
-anyWordWithProperty: anyWord anyProperty;
-anyWordsWithProperty: anyWord+ anyProperty;
+anyWordWithProperty: anyWord anyProperty?;
+anyWordsWithProperty: anyWord+ anyProperty?;
 anyWordsWithPropertyAndWords: anyWord+ anyProperty anyWord+;
 
 // data type literals
@@ -316,12 +316,6 @@ dynamicDeclareCursor: DECLARE cursorName (INSENSITIVE)? (SCROLL)? CURSOR FOR sta
 statementName: identifier;
 
 // procedure
-// TODO: procedure and function crud
-// procedure: PROCEDURE procedureName parameterDeclarationList Semicolon sqlProcedureStatement Semicolon;
-// procedureName: identifier;
-// parameterDeclarationList: LeftParen parameterDeclaration ((Comma parameterDeclaration)+)? RightParen;
-// parameterDeclaration: (parameterName dataType|statusParameter);
-// statusParameter: (SQLCODE|SQLSTATE);
 sqlProcedureStatement: (sqlSchemaStatement|sqlDataStatement|sqlTransactionStatement|sqlConnectionStatement|sqlSessionStatement|sqlDynamicStatement);
 
 // schema definition
@@ -446,30 +440,8 @@ setNamesStatement: SET NAMES valueSpecification;
 setSessionAuthorizationIdentifierStatement: SET SESSION AUTHORIZATION valueSpecification;
 setLocalTimeZoneStatement: SET TIME ZONE setTimeZoneValue;
 setTimeZoneValue: (intervalValueExpression|LOCAL);
-sqlDynamicStatement: (systemDescriptorStatement|prepareStatement|deallocatePreparedStatement|describeStatement|executeStatement|executeImmediateStatement);
-systemDescriptorStatement: (allocateDescriptorStatement|deallocateDescriptorStatement|getDescriptorStatement|setDescriptorStatement);
-allocateDescriptorStatement: ALLOCATE DESCRIPTOR descriptorName (WITH MAX occurrences)?;
-descriptorName: (scopeOption)? simpleValueSpecification;
+sqlDynamicStatement: (prepareStatement|deallocatePreparedStatement|describeStatement|executeStatement|executeImmediateStatement);
 scopeOption: (GLOBAL|LOCAL);
-occurrences: simpleValueSpecification;
-deallocateDescriptorStatement: DEALLOCATE DESCRIPTOR descriptorName;
-
-// descriptor
-setDescriptorStatement: SET DESCRIPTOR descriptorName setDescriptorInformation;
-setDescriptorInformation: (setCount|VALUE itemNumber setItemInformation ((Comma setItemInformation)+)?);
-setCount: COUNT EqualsOperator simpleValueSpecification1;
-simpleValueSpecification1: simpleValueSpecification;
-itemNumber: simpleValueSpecification;
-setItemInformation: descriptorItemName EqualsOperator simpleValueSpecification2;
-descriptorItemName: (TYPE|LENGTH|OCTET_LENGTH|RETURNED_LENGTH|RETURNED_OCTET_LENGTH|PRECISION|SCALE|DATETIME_INTERVAL_CODE|DATETIME_INTERVAL_PRECISION|NULLABLE|INDICATOR|DATA|NAME|UNNAMED|COLLATION_CATALOG|COLLATION_SCHEMA|COLLATION_NAME|CHARACTER_SET_CATALOG|CHARACTER_SET_SCHEMA|CHARACTER_SET_NAME);
-simpleValueSpecification2: simpleValueSpecification;
-getDescriptorStatement: GET DESCRIPTOR descriptorName getDescriptorInformation;
-getDescriptorInformation: (getCount|VALUE itemNumber getItemInformation ((Comma getItemInformation)+)?);
-getCount: simpleTargetSpecification1 EqualsOperator COUNT;
-simpleTargetSpecification1: simpleTargetSpecification;
-simpleTargetSpecification: (parameterName);
-getItemInformation: simpleTargetSpecification2 EqualsOperator descriptorItemName;
-simpleTargetSpecification2: simpleTargetSpecification;
 
 // prepare statement
 prepareStatement: PREPARE sqlStatementName FROM sqlStatementVariable;
@@ -478,14 +450,13 @@ extendedStatementName: (scopeOption)? simpleValueSpecification;
 sqlStatementVariable: simpleValueSpecification;
 deallocatePreparedStatement: DEALLOCATE PREPARE sqlStatementName;
 describeStatement: (describeInputStatement|describeOutputStatement);
-describeInputStatement: DESCRIBE INPUT sqlStatementName usingDescriptor;
-usingDescriptor: (USING|INTO) SQL DESCRIPTOR descriptorName;
-describeOutputStatement: DESCRIBE (OUTPUT)? sqlStatementName usingDescriptor;
+describeInputStatement: DESCRIBE INPUT sqlStatementName;
+describeOutputStatement: DESCRIBE (OUTPUT)? sqlStatementName;
 
 // execute statement
 executeStatement: EXECUTE sqlStatementName (resultUsingClause)? (parameterUsingClause)?;
 resultUsingClause: usingClause;
-usingClause: (usingArguments|usingDescriptor);
+usingClause: usingArguments;
 usingArguments: (USING|INTO) argument ((Comma argument)+)?;
 argument: targetSpecification;
 parameterUsingClause: usingClause;
@@ -496,11 +467,11 @@ statementOrDeclaration: (declareCursor|dynamicDeclareCursor|sqlProcedureStatemen
 
 // preparable statement - base rule
 preparableStatement: (preparableSqlDataStatement|preparableSqlSchemaStatement|preparableSqlTransactionStatement|preparableSqlSessionStatement);
-preparableSqlDataStatement: (deleteStatement|dynamicSingleRowSelectStatement|insertStatement|dynamicSelectStatement|updateStatement|preparableDynamicDeleteStatementPositioned|preparableDynamicUpdateStatementPositioned);
+preparableSqlDataStatement: (deleteStatement|dynamicSingleRowSelectStatement|insertStatement|dynamicSelectStatement|updateStatement|preparableDynamicDeleteStatement|preparableDynamicUpdateStatement);
 dynamicSingleRowSelectStatement: querySpecification;
 dynamicSelectStatement: cursorSpecification;
-preparableDynamicDeleteStatementPositioned: DELETE (FROM tableName)? WHERE CURRENT OF cursorName;
-preparableDynamicUpdateStatementPositioned: UPDATE (tableName)? SET setClause WHERE CURRENT OF cursorName;
+preparableDynamicDeleteStatement: DELETE (FROM tableName)? WHERE CURRENT OF cursorName;
+preparableDynamicUpdateStatement: UPDATE (tableName)? SET setClause WHERE CURRENT OF cursorName;
 preparableSqlSchemaStatement: sqlSchemaStatement;
 preparableSqlTransactionStatement: sqlTransactionStatement;
 preparableSqlSessionStatement: sqlSessionStatement;
