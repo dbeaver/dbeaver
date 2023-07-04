@@ -59,7 +59,7 @@ public class SyntaxParserTest {
             + "ORDER BY Product.ModifiedDate DESC";
 //        inputText = "\n\rSELECT schedule[1:2][1:1] FROM sal_emp se where s;";
 
-        inputText = "create table test(ts TIMESTAMP x DEFAULT CURRENT_TIMESTAMP);\r\n";
+        //inputText = "create table test(ts TIMESTAMP x DEFAULT CURRENT_TIMESTAMP);\r\n";
         var input = CharStreams.fromString(inputText);
         var ll = new SQLStandardLexer(input);
         var tokens = new CommonTokenStream(ll);

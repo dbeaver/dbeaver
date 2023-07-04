@@ -51,11 +51,9 @@ public void setIsSupportSquareBracketQuotation(boolean value) { isSupportSquareB
 
 // unknown keyword, data type or function name
 anyWord: Identifier;
-anyValue: literal;
+anyValue: qualifiedName|literal|valueExpression|Comma;
 anyProperty: LeftParen anyValue+ RightParen;
-anyWordWithProperty: anyWord anyProperty?;
 anyWordsWithProperty: anyWord+ anyProperty?;
-anyWordsWithPropertyAndWords: anyWord+ anyProperty anyWord+;
 
 // data type literals
 literal: (signedNumericLiteral|generalLiteral);
@@ -97,7 +95,7 @@ columnDefinition: columnName dataType (defaultClause)? ((columnConstraintDefinit
 columnName: identifier;
 
 // default
-defaultClause: DEFAULT (anyWordWithProperty|USER|CURRENT_USER|SESSION_USER|SYSTEM_USER|NULL);
+defaultClause: DEFAULT anyWordsWithProperty;
 
 // column constraints
 columnConstraintDefinition: (constraintNameDefinition)? columnConstraint (constraintAttributes)?;
@@ -129,6 +127,7 @@ comparisonPredicate: rowValueConstructor compOp rowValueConstructor;
 rowValueConstructor: (rowValueConstructorElement|LeftParen rowValueConstructorList RightParen|rowSubquery);
 rowValueConstructorElement: (valueExpression|nullSpecification|defaultSpecification);
 valueExpression: (numericValueExpression|stringValueExpression|datetimeValueExpression|intervalValueExpression);
+stringValueExpression: (characterValueExpression|bitValueExpression);
 numericValueExpression: term ((PlusSign term)|(MinusSign term))*;
 term: factor ((Asterisk factor)|(Solidus factor))*;
 factor: (Sign)? numericPrimary;
@@ -144,10 +143,7 @@ dynamicParameterSpecification: QuestionMark;
 columnReference: (qualifier Period)? columnName;
 qualifier: (tableName|correlationName);
 correlationName: identifier;
-setFunctionSpecification: (COUNT LeftParen Asterisk RightParen|generalSetFunction);
-generalSetFunction: setFunctionType LeftParen (setQuantifier)? valueExpression RightParen;
-setFunctionType: (AVG|MAX|MIN|SUM|COUNT);
-setQuantifier: (DISTINCT|ALL);
+setFunctionSpecification: (COUNT LeftParen Asterisk RightParen|anyWordsWithProperty);
 
 // select, subquery
 scalarSubquery: subquery;
@@ -160,6 +156,7 @@ intersectTerm: (INTERSECT (ALL)? (correspondingSpec)? queryPrimary);
 nonJoinQueryPrimary: (simpleTable|LeftParen nonJoinQueryExpression RightParen);
 simpleTable: (querySpecification|tableValueConstructor|explicitTable);
 querySpecification: SELECT (setQuantifier)? selectList tableExpression?;
+setQuantifier: (DISTINCT|ALL);
 selectList: (Asterisk|selectSublist) (Comma selectSublist)*; // (Comma selectSublist)* contains any quantifier for error recovery;
 selectSublist: (qualifier Period Asterisk | derivedColumn)*; // * for whole rule to handle select fields autocompletion when from immediately after select
 derivedColumn: valueExpression (asClause)?;
@@ -181,7 +178,7 @@ tableSubquery: subquery;
 
 //joins
 crossJoinTerm: CROSS JOIN tableReference;
-naturalJoinTerm: (NATURAL)? (joinType)? JOIN tableReference (joinSpecification|(.*?))?; // (.*?) - for error recovery
+naturalJoinTerm: (NATURAL)? (joinType)? JOIN tableReference (joinSpecification)? (.*?); // (.*?) - for error recovery
 joinType: (INNER|outerJoinType (OUTER)?|UNION);
 outerJoinType: (LEFT|RIGHT|FULL);
 joinSpecification: (joinCondition|namedColumnsJoin);
@@ -216,31 +213,15 @@ searchedCase: CASE (searchedWhenClause)+ (elseClause)? END;
 searchedWhenClause: WHEN searchCondition THEN result;
 castSpecification: CAST LeftParen castOperand AS dataType RightParen;
 castOperand: (valueExpression|NULL);
-numericValueFunction: (positionExpression|extractExpression|lengthExpression);
-positionExpression: POSITION LeftParen characterValueExpression IN characterValueExpression RightParen;
+numericValueFunction: (extractExpression|anyWordsWithProperty);
 characterValueExpression: (concatenation|characterFactor);
 concatenation: characterFactor (ConcatenationOperator characterFactor)+;
 characterFactor: characterPrimary (collateClause)?;
 characterPrimary: (valueExpressionPrimary|stringValueFunction);
 
 // functions and operators
-stringValueFunction: (characterValueFunction|bitValueFunction);
-characterValueFunction: (characterSubstringFunction|fold|formOfUseConversion|characterTranslation|trimFunction);
-characterSubstringFunction: SUBSTRING LeftParen characterValueExpression FROM startPosition (FOR stringLength)? RightParen;
-startPosition: numericValueExpression;
-stringLength: numericValueExpression;
-fold: (UPPER|LOWER) LeftParen characterValueExpression RightParen;
-formOfUseConversion: CONVERT LeftParen characterValueExpression USING formOfUseConversionName RightParen;
-formOfUseConversionName: qualifiedName;
-characterTranslation: TRANSLATE LeftParen characterValueExpression USING translationName RightParen;
+stringValueFunction: anyWordsWithProperty;
 translationName: qualifiedName;
-trimFunction: TRIM LeftParen trimOperands RightParen;
-trimOperands: ((trimSpecification)? (trimCharacter)? FROM)? trimSource;
-trimSpecification: (LEADING|TRAILING|BOTH);
-trimCharacter: characterValueExpression;
-trimSource: characterValueExpression;
-bitValueFunction: bitSubstringFunction;
-bitSubstringFunction: SUBSTRING LeftParen bitValueExpression FROM startPosition (FOR stringLength)? RightParen;
 bitValueExpression: (bitConcatenation|bitFactor);
 bitConcatenation: bitFactor (ConcatenationOperator bitFactor)+;
 bitFactor: bitPrimary;
@@ -255,16 +236,7 @@ intervalTerm: ((intervalFactor)|(term Asterisk intervalFactor)) ((Asterisk facto
 intervalFactor: (Sign)? intervalPrimary;
 intervalPrimary: valueExpressionPrimary (intervalQualifier)?;
 intervalValueExpression: ((intervalTerm)|(LeftParen datetimeValueExpression MinusSign datetimeTerm RightParen intervalQualifier)) ((PlusSign intervalTerm)|(MinusSign intervalTerm))*;
-datetimeTerm: datetimeFactor;
-datetimeFactor: datetimePrimary (timeZone)?;
-datetimePrimary: (valueExpressionPrimary|anyWordsWithProperty);
-timeZone: AT timeZoneSpecifier;
-timeZoneSpecifier: (LOCAL|TIME ZONE intervalValueExpression);
-lengthExpression: (charLengthExpression|octetLengthExpression|bitLengthExpression);
-charLengthExpression: (CHAR_LENGTH|CHARACTER_LENGTH) LeftParen stringValueExpression RightParen;
-stringValueExpression: (characterValueExpression|bitValueExpression);
-octetLengthExpression: OCTET_LENGTH LeftParen stringValueExpression RightParen;
-bitLengthExpression: BIT_LENGTH LeftParen stringValueExpression RightParen;
+datetimeTerm: anyWordsWithProperty;
 nullSpecification: NULL;
 defaultSpecification: DEFAULT;
 rowValueConstructorList: rowValueConstructorElement ((Comma rowValueConstructorElement)+)?;

@@ -155,8 +155,6 @@ public class STMKnownRuleNames {
     public static final String qualifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_qualifier];
     public static final String correlationName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_correlationName];
     public static final String setFunctionSpecification = SQLStandardParser.ruleNames[SQLStandardParser.RULE_setFunctionSpecification];
-    public static final String generalSetFunction = SQLStandardParser.ruleNames[SQLStandardParser.RULE_generalSetFunction];
-    public static final String setFunctionType = SQLStandardParser.ruleNames[SQLStandardParser.RULE_setFunctionType];
     public static final String setQuantifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_setQuantifier];
     
     public static final String scalarSubquery = SQLStandardParser.ruleNames[SQLStandardParser.RULE_scalarSubquery];
@@ -224,29 +222,13 @@ public class STMKnownRuleNames {
     public static final String castOperand = SQLStandardParser.ruleNames[SQLStandardParser.RULE_castOperand];
 //    public static final String castTarget = SQLStandardParser.ruleNames[SQLStandardParser.RULE_castTarget];
     public static final String numericValueFunction = SQLStandardParser.ruleNames[SQLStandardParser.RULE_numericValueFunction];
-    public static final String positionExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_positionExpression];
     public static final String characterValueExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_characterValueExpression];
     public static final String concatenation = SQLStandardParser.ruleNames[SQLStandardParser.RULE_concatenation];
     public static final String characterFactor = SQLStandardParser.ruleNames[SQLStandardParser.RULE_characterFactor];
     public static final String characterPrimary = SQLStandardParser.ruleNames[SQLStandardParser.RULE_characterPrimary];
     
     public static final String stringValueFunction = SQLStandardParser.ruleNames[SQLStandardParser.RULE_stringValueFunction];
-    public static final String characterValueFunction = SQLStandardParser.ruleNames[SQLStandardParser.RULE_characterValueFunction];
-    public static final String characterSubstringFunction = SQLStandardParser.ruleNames[SQLStandardParser.RULE_characterSubstringFunction];
-    public static final String startPosition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_startPosition];
-    public static final String stringLength = SQLStandardParser.ruleNames[SQLStandardParser.RULE_stringLength];
-    public static final String fold = SQLStandardParser.ruleNames[SQLStandardParser.RULE_fold];
-    public static final String formOfUseConversion = SQLStandardParser.ruleNames[SQLStandardParser.RULE_formOfUseConversion];
-    public static final String formOfUseConversionName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_formOfUseConversionName];
-    public static final String characterTranslation = SQLStandardParser.ruleNames[SQLStandardParser.RULE_characterTranslation];
     public static final String translationName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_translationName];
-    public static final String trimFunction = SQLStandardParser.ruleNames[SQLStandardParser.RULE_trimFunction];
-    public static final String trimOperands = SQLStandardParser.ruleNames[SQLStandardParser.RULE_trimOperands];
-    public static final String trimSpecification = SQLStandardParser.ruleNames[SQLStandardParser.RULE_trimSpecification];
-    public static final String trimCharacter = SQLStandardParser.ruleNames[SQLStandardParser.RULE_trimCharacter];
-    public static final String trimSource = SQLStandardParser.ruleNames[SQLStandardParser.RULE_trimSource];
-    public static final String bitValueFunction = SQLStandardParser.ruleNames[SQLStandardParser.RULE_bitValueFunction];
-    public static final String bitSubstringFunction = SQLStandardParser.ruleNames[SQLStandardParser.RULE_bitSubstringFunction];
     public static final String bitValueExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_bitValueExpression];
     public static final String bitConcatenation = SQLStandardParser.ruleNames[SQLStandardParser.RULE_bitConcatenation];
     public static final String bitFactor = SQLStandardParser.ruleNames[SQLStandardParser.RULE_bitFactor];
@@ -262,15 +244,7 @@ public class STMKnownRuleNames {
     public static final String intervalPrimary = SQLStandardParser.ruleNames[SQLStandardParser.RULE_intervalPrimary];
     public static final String intervalValueExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_intervalValueExpression];
     public static final String datetimeTerm = SQLStandardParser.ruleNames[SQLStandardParser.RULE_datetimeTerm];
-    public static final String datetimeFactor = SQLStandardParser.ruleNames[SQLStandardParser.RULE_datetimeFactor];
-    public static final String datetimePrimary = SQLStandardParser.ruleNames[SQLStandardParser.RULE_datetimePrimary];
-    public static final String timeZone = SQLStandardParser.ruleNames[SQLStandardParser.RULE_timeZone];
-    public static final String timeZoneSpecifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_timeZoneSpecifier];
-    public static final String lengthExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_lengthExpression];
-    public static final String charLengthExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_charLengthExpression];
     public static final String stringValueExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_stringValueExpression];
-    public static final String octetLengthExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_octetLengthExpression];
-    public static final String bitLengthExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_bitLengthExpression];
     public static final String nullSpecification = SQLStandardParser.ruleNames[SQLStandardParser.RULE_nullSpecification];
     public static final String defaultSpecification = SQLStandardParser.ruleNames[SQLStandardParser.RULE_defaultSpecification];
     public static final String rowValueConstructorList = SQLStandardParser.ruleNames[SQLStandardParser.RULE_rowValueConstructorList];
@@ -311,8 +285,6 @@ public class STMKnownRuleNames {
     public static final String sortKey = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sortKey];
     public static final String orderingSpecification = SQLStandardParser.ruleNames[SQLStandardParser.RULE_orderingSpecification];
     
-    
-//    public static final String moduleContents = SQLStandardParser.ruleNames[SQLStandardParser.RULE_moduleContents];
     public static final String declareCursor = SQLStandardParser.ruleNames[SQLStandardParser.RULE_declareCursor];
     public static final String cursorName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_cursorName];
     public static final String cursorSpecification = SQLStandardParser.ruleNames[SQLStandardParser.RULE_cursorSpecification];
@@ -320,11 +292,6 @@ public class STMKnownRuleNames {
     public static final String dynamicDeclareCursor = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dynamicDeclareCursor];
     public static final String statementName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_statementName];
     
-    public static final String procedure = SQLStandardParser.ruleNames[SQLStandardParser.RULE_procedure];
-    public static final String procedureName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_procedureName];
-    public static final String parameterDeclarationList = SQLStandardParser.ruleNames[SQLStandardParser.RULE_parameterDeclarationList];
-    public static final String parameterDeclaration = SQLStandardParser.ruleNames[SQLStandardParser.RULE_parameterDeclaration];
-    public static final String statusParameter = SQLStandardParser.ruleNames[SQLStandardParser.RULE_statusParameter];
     public static final String sqlProcedureStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlProcedureStatement];
     
     public static final String sqlSchemaStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlSchemaStatement];
@@ -335,8 +302,6 @@ public class STMKnownRuleNames {
     public static final String schemaCharacterSetSpecification = SQLStandardParser.ruleNames[SQLStandardParser.RULE_schemaCharacterSetSpecification];
     public static final String schemaElement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_schemaElement];
     
-//    public static final String domainDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_domainDefinition];
-//    public static final String domainConstraint = SQLStandardParser.ruleNames[SQLStandardParser.RULE_domainConstraint];
     public static final String tableDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_tableDefinition];
     public static final String viewDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_viewDefinition];
     public static final String viewColumnList = SQLStandardParser.ruleNames[SQLStandardParser.RULE_viewColumnList];
@@ -350,14 +315,6 @@ public class STMKnownRuleNames {
     public static final String objectName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_objectName];
     public static final String grantee = SQLStandardParser.ruleNames[SQLStandardParser.RULE_grantee];
     
-//    public static final String assertionDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_assertionDefinition];
-//    public static final String assertionCheck = SQLStandardParser.ruleNames[SQLStandardParser.RULE_assertionCheck];
-//    public static final String characterSetDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_characterSetDefinition];
-//    public static final String characterSetSource = SQLStandardParser.ruleNames[SQLStandardParser.RULE_characterSetSource];
-//    public static final String existingCharacterSetName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_existingCharacterSetName];
-//    public static final String schemaCharacterSetName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_schemaCharacterSetName];
-//    
-//    public static final String limitedCollationDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_limitedCollationDefinition];
     public static final String collationSource = SQLStandardParser.ruleNames[SQLStandardParser.RULE_collationSource];
     public static final String collatingSequenceDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_collatingSequenceDefinition];
     public static final String externalCollation = SQLStandardParser.ruleNames[SQLStandardParser.RULE_externalCollation];
@@ -387,13 +344,7 @@ public class STMKnownRuleNames {
     public static final String dropTableStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropTableStatement];
     public static final String dropViewStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropViewStatement];
     public static final String revokeStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_revokeStatement];
-//    public static final String alterDomainStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_alterDomainStatement];
-//    public static final String alterDomainAction = SQLStandardParser.ruleNames[SQLStandardParser.RULE_alterDomainAction];
-//    public static final String setDomainDefaultClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_setDomainDefaultClause];
-//    public static final String dropDomainDefaultClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropDomainDefaultClause];
-//    public static final String addDomainConstraintDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_addDomainConstraintDefinition];
-//    public static final String dropDomainConstraintDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropDomainConstraintDefinition];
-//    public static final String dropDomainStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropDomainStatement];
+    
     public static final String dropCharacterSetStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropCharacterSetStatement];
     public static final String dropCollationStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropCollationStatement];
     public static final String dropTranslationStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropTranslationStatement];
@@ -454,28 +405,7 @@ public class STMKnownRuleNames {
     public static final String setLocalTimeZoneStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_setLocalTimeZoneStatement];
     public static final String setTimeZoneValue = SQLStandardParser.ruleNames[SQLStandardParser.RULE_setTimeZoneValue];
     public static final String sqlDynamicStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlDynamicStatement];
-    public static final String systemDescriptorStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_systemDescriptorStatement];
-    public static final String allocateDescriptorStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_allocateDescriptorStatement];
-    public static final String descriptorName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_descriptorName];
     public static final String scopeOption = SQLStandardParser.ruleNames[SQLStandardParser.RULE_scopeOption];
-    public static final String occurrences = SQLStandardParser.ruleNames[SQLStandardParser.RULE_occurrences];
-    public static final String deallocateDescriptorStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_deallocateDescriptorStatement];
-    
-    public static final String setDescriptorStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_setDescriptorStatement];
-    public static final String setDescriptorInformation = SQLStandardParser.ruleNames[SQLStandardParser.RULE_setDescriptorInformation];
-    public static final String setCount = SQLStandardParser.ruleNames[SQLStandardParser.RULE_setCount];
-    public static final String simpleValueSpecification1 = SQLStandardParser.ruleNames[SQLStandardParser.RULE_simpleValueSpecification1];
-    public static final String itemNumber = SQLStandardParser.ruleNames[SQLStandardParser.RULE_itemNumber];
-    public static final String setItemInformation = SQLStandardParser.ruleNames[SQLStandardParser.RULE_setItemInformation];
-    public static final String descriptorItemName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_descriptorItemName];
-    public static final String simpleValueSpecification2 = SQLStandardParser.ruleNames[SQLStandardParser.RULE_simpleValueSpecification2];
-    public static final String getDescriptorStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_getDescriptorStatement];
-    public static final String getDescriptorInformation = SQLStandardParser.ruleNames[SQLStandardParser.RULE_getDescriptorInformation];
-    public static final String getCount = SQLStandardParser.ruleNames[SQLStandardParser.RULE_getCount];
-    public static final String simpleTargetSpecification1 = SQLStandardParser.ruleNames[SQLStandardParser.RULE_simpleTargetSpecification1];
-    public static final String simpleTargetSpecification = SQLStandardParser.ruleNames[SQLStandardParser.RULE_simpleTargetSpecification];
-    public static final String getItemInformation = SQLStandardParser.ruleNames[SQLStandardParser.RULE_getItemInformation];
-    public static final String simpleTargetSpecification2 = SQLStandardParser.ruleNames[SQLStandardParser.RULE_simpleTargetSpecification2];
     
     public static final String prepareStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_prepareStatement];
     public static final String sqlStatementName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlStatementName];
@@ -484,7 +414,6 @@ public class STMKnownRuleNames {
     public static final String deallocatePreparedStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_deallocatePreparedStatement];
     public static final String describeStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_describeStatement];
     public static final String describeInputStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_describeInputStatement];
-    public static final String usingDescriptor = SQLStandardParser.ruleNames[SQLStandardParser.RULE_usingDescriptor];
     public static final String describeOutputStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_describeOutputStatement];
     
     public static final String executeStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_executeStatement];
@@ -495,35 +424,12 @@ public class STMKnownRuleNames {
     public static final String parameterUsingClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_parameterUsingClause];
     public static final String executeImmediateStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_executeImmediateStatement];
     
-//    public static final String sqlDynamicDataStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlDynamicDataStatement];
-//    public static final String allocateCursorStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_allocateCursorStatement];
-//    public static final String extendedCursorName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_extendedCursorName];
-//    public static final String dynamicOpenStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dynamicOpenStatement];
-//    public static final String dynamicCursorName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dynamicCursorName];
-//    public static final String dynamicCloseStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dynamicCloseStatement];
-//    public static final String dynamicFetchStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dynamicFetchStatement];
-//    public static final String dynamicDeleteStatementPositioned = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dynamicDeleteStatementPositioned];
-//    public static final String dynamicUpdateStatementPositioned = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dynamicUpdateStatementPositioned];
-//    
-//    public static final String sqlDiagnosticsStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlDiagnosticsStatement];
-//    public static final String getDiagnosticsStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_getDiagnosticsStatement];
-//    public static final String sqlDiagnosticsInformation = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlDiagnosticsInformation];
-//    public static final String statementInformation = SQLStandardParser.ruleNames[SQLStandardParser.RULE_statementInformation];
-//    public static final String statementInformationItem = SQLStandardParser.ruleNames[SQLStandardParser.RULE_statementInformationItem];
-//    public static final String statementInformationItemName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_statementInformationItemName];
-//    public static final String conditionInformation = SQLStandardParser.ruleNames[SQLStandardParser.RULE_conditionInformation];
-//    public static final String conditionNumber = SQLStandardParser.ruleNames[SQLStandardParser.RULE_conditionNumber];
-//    public static final String conditionInformationItem = SQLStandardParser.ruleNames[SQLStandardParser.RULE_conditionInformationItem];
-//    public static final String conditionInformationItemName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_conditionInformationItemName];
-//    
     public static final String statementOrDeclaration = SQLStandardParser.ruleNames[SQLStandardParser.RULE_statementOrDeclaration];
     
     public static final String preparableStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_preparableStatement];
     public static final String preparableSqlDataStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_preparableSqlDataStatement];
     public static final String dynamicSingleRowSelectStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dynamicSingleRowSelectStatement];
     public static final String dynamicSelectStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dynamicSelectStatement];
-    public static final String preparableDynamicDeleteStatementPositioned = SQLStandardParser.ruleNames[SQLStandardParser.RULE_preparableDynamicDeleteStatementPositioned];
-    public static final String preparableDynamicUpdateStatementPositioned = SQLStandardParser.ruleNames[SQLStandardParser.RULE_preparableDynamicUpdateStatementPositioned];
     public static final String preparableSqlSchemaStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_preparableSqlSchemaStatement];
     public static final String preparableSqlTransactionStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_preparableSqlTransactionStatement];
     public static final String preparableSqlSessionStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_preparableSqlSessionStatement];
