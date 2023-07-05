@@ -75,6 +75,11 @@ public class GPTCompletionEngine implements DAICompletionEngine {
     private static final int GPT_MODEL_MAX_RESPONSE_TOKENS = 2000;
     private static final boolean SUPPORTS_ATTRS = true;
 
+    private static final Pattern sizeErrorPattern = Pattern.compile(
+        "This model's maximum context length is [0-9]+ tokens, "
+            + "however you requested [0-9]+ tokens \\(([0-9]+) in your prompt; [0-9]+ "
+            + "for the completion\\)\\. Please reduce your prompt; or completion length");
+
     public GPTCompletionEngine() {
     }
 
@@ -211,17 +216,14 @@ public class GPTCompletionEngine implements DAICompletionEngine {
                             } else {
                                 // Extracts resulted prompt size from the error message and resizes max response to
                                 // value lower that (maxTokens - prompt size)
-                                Matcher matcher = Pattern.compile("([0-9]+)").matcher(e.getMessage());
-                                ArrayList<Integer> numbers = new ArrayList<>();
-                                while (matcher.find()) {
-                                    String numberStr = matcher.group();
-                                    int number = Integer.parseInt(numberStr);
-                                    numbers.add(number);
+                                Matcher matcher = sizeErrorPattern.matcher(e.getMessage());
+                                int promptSize;
+                                if (matcher.find()) {
+                                    String numberStr = matcher.group(1);
+                                    promptSize = Integer.parseInt(numberStr);
+                                } else {
+                                    continue;
                                 }
-                                if (numbers.size() < 4) {
-                                    throw e;
-                                }
-                                Integer promptSize = numbers.get(2);
                                 responseSize = Math.min(responseSize,
                                     GPTModel.getByName(getModelName()).getMaxTokens() - promptSize - 1);
                                 completionRequest = createCompletionRequest(modifiedRequest, responseSize);
