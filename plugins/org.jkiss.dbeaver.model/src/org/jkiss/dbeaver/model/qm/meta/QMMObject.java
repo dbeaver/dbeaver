@@ -29,7 +29,7 @@ public abstract class QMMObject {
     private static int globalObjectId = 0;
     private final QMMetaObjectType type;
 
-    private final transient long objectId;
+    private final long objectId;
 
     private final long openTime;
     private long closeTime;
