@@ -270,7 +270,10 @@ public interface SQLDialect {
         return true;
     }
 
-    default boolean supportsAliasForHavingSyntax() {
+    /**
+     * Checks whether dialect supports alias for queries with HAVING syntax.
+     */
+    default boolean supportsAliasInHaving() {
         return true;
     }
 

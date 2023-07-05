@@ -162,7 +162,7 @@ public class SQLGroupingQueryGenerator {
 
         if (isDefaultGrouping && showDuplicatesOnly) {
             sql.append("\nHAVING ");
-            if (dataSource.getSQLDialect().supportsAliasForHavingSyntax()) {
+            if (dataSource.getSQLDialect().supportsAliasInHaving()) {
                 sql.append(funcAliases[0]);
             } else {
                 // very special case

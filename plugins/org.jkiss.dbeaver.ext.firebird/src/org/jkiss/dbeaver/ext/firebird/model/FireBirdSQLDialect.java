@@ -83,7 +83,7 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     }
 
     @Override
-    public boolean supportsAliasForHavingSyntax() {
+    public boolean supportsAliasInHaving() {
         return false;
     }
 
