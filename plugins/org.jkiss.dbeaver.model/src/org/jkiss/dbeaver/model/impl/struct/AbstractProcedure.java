@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 public abstract class AbstractProcedure<
     DATASOURCE extends DBPDataSource,
     CONTAINER extends DBSObjectContainer>
-    implements DBSProcedure, DBPSaveableObject, DBPImageProvider
+    implements DBSProcedure, DBPSaveableObject, DBPImageProvider, DBPNamedObject2
 {
     protected CONTAINER container;
     protected String name;
@@ -66,6 +66,7 @@ public abstract class AbstractProcedure<
         return name;
     }
 
+    @Override
     public void setName(String name)
     {
         this.name = name;
