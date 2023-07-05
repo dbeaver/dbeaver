@@ -220,9 +220,9 @@ public class GPTCompletionEngine implements DAICompletionEngine {
                                 int promptSize;
                                 if (matcher.find()) {
                                     String numberStr = matcher.group(1);
-                                    promptSize = Integer.parseInt(numberStr);
+                                    promptSize = CommonUtils.toInt(numberStr);
                                 } else {
-                                    continue;
+                                    throw e;
                                 }
                                 responseSize = Math.min(responseSize,
                                     GPTModel.getByName(getModelName()).getMaxTokens() - promptSize - 1);
