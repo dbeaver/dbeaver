@@ -135,7 +135,10 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
 
         DBRRunnableWithProgress initializer = null;
         if (pipe.getConsumer() != null && pipe.getConsumer().getTargetObjectContainer() != null) {
-            File[] files = DialogUtils.openFileList(getShell(), DTUIMessages.stream_producer_select_input_file, extensions.toArray(new String[0]));
+            File[] files = DialogUtils.openFileList(
+                getShell(),
+                DTUIMessages.stream_producer_select_input_file,
+                extensions.toArray(new String[0]));
             if (files != null && files.length > 0) {
                 initializer = monitor -> updateMultiConsumers(monitor, pipe, files);
             }
