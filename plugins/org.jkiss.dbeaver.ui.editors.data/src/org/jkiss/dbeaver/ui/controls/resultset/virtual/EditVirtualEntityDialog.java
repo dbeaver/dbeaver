@@ -275,7 +275,11 @@ public class EditVirtualEntityDialog extends BaseDialog {
                 }
             });
 
-            Button btnRemove = createButton(buttonsPanel, ID_REMOVE_FOREIGN_KEY, ResultSetMessages.controls_resultset_virtual_foreignkey_page_remove, false);
+            Button btnRemove = createButton(
+                buttonsPanel,
+                ID_REMOVE_FOREIGN_KEY,
+                ResultSetMessages.controls_resultset_virtual_foreignkey_page_remove,
+                false);
             btnRemove.setEnabled(false);
             btnRemove.addSelectionListener(new SelectionAdapter() {
                 @Override
