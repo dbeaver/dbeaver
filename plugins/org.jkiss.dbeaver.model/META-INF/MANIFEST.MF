@@ -82,7 +82,6 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.runtime.resource,
  org.jkiss.dbeaver.runtime.ui,
  org.jkiss.dbeaver.runtime.ui.console,
- org.jkiss.dbeaver.runtime.serialize,
  org.jkiss.dbeaver.utils
 Import-Package: org.bouncycastle.asn1,
  org.bouncycastle.asn1.x500,
