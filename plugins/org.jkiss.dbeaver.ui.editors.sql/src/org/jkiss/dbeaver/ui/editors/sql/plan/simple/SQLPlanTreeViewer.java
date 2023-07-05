@@ -209,7 +209,8 @@ public class SQLPlanTreeViewer extends Viewer
     private class ToggleViewAction extends Action {
         private ToggleViewAction()
         {
-            super(SQLEditorMessages.editors_sql_explain_refresh_tree_viewer_plan_toggle_view_text, DBeaverIcons.getImageDescriptor(UIIcon.SQL_TEXT));
+            super(SQLEditorMessages.editors_sql_explain_refresh_tree_viewer_plan_toggle_view_text, 
+                DBeaverIcons.getImageDescriptor(UIIcon.SQL_TEXT));
         }
 
         @Override
