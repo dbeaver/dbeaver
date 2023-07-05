@@ -20,7 +20,7 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
-        <meta id="alti" class="org.jkiss.dbeaver.ext.altibase.model.AltibaseMetaModel" driverClass="Altibase.jdbc.driver.AltibaseDriver"/>
+        <meta id="alti" class="org.jkiss.dbeaver.ext.altibase.model.AltibaseMetaModel" driverClass="Altibase.jdbc.driver.AltibaseDriver,Altibase7_1.jdbc.driver.AltibaseDriver,Altibase7_3.jdbc.driver.AltibaseDriver"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
@@ -229,6 +229,7 @@
         <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibasePackageManager" 			objectType="org.jkiss.dbeaver.ext.altibase.model.AltibasePackage"/>
         <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseTypesetManager" 			objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseTypeset"/>
         <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseSynonymManager" 			objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseSynonym"/>
+        <manager class="org.jkiss.dbeaver.ext.altibase.edit.AltibaseTriggerManager" 			objectType="org.jkiss.dbeaver.ext.altibase.model.AltibaseTrigger"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">

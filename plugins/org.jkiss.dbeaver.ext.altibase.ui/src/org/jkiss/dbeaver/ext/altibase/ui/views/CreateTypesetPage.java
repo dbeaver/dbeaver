@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ext.altibase.ui.editors;
+package org.jkiss.dbeaver.ext.altibase.ui.views;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;

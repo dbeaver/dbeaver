@@ -61,6 +61,7 @@ public class AltibaseConstants {
     public static final String TYPE_NAME_GEOMETRY = "GEOMETRY";
     public static final String TYPE_NAME_CLOB = "CLOB";
     public static final String TYPE_NAME_DATE = "DATE";
+    public static final String TYPE_NAME_BYTE_LC = "byte"; // for reflection
     
     public static final String OBJ_TYPE_MATERIALIZED_VIEW = "MATERIALIZED VIEW";
     public static final String OBJ_TYPE_TYPESET = "TYPESET";
@@ -68,5 +69,7 @@ public class AltibaseConstants {
     public static final String NO_DBMS_METADATA = 
     "-- [WARNING] Without DBMS_METADATA package, the generated DDL may not be correct." + NEW_LINE;
     
-
+    public static final byte EXPLAIN_PLAN_OFF  = 0;
+    public static final byte EXPLAIN_PLAN_ON   = 1;
+    public static final byte EXPLAIN_PLAN_ONLY = 2;
 }

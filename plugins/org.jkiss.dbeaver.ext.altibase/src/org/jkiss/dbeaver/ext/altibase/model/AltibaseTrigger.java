@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
@@ -104,5 +105,10 @@ public abstract class AltibaseTrigger<OWNER extends DBSObject>
     @Property(viewable = false, hidden = true, order = 100)
     public String getDescription() {
         return null;
+    }
+    
+    @Nullable
+    public String getSource() {
+        return source;
     }
 }

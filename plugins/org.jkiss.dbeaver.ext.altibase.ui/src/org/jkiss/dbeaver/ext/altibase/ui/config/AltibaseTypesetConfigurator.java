@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.altibase.ui.config;
 import java.util.Map;
 
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseTypeset;
-import org.jkiss.dbeaver.ext.altibase.ui.editors.CreateTypesetPage;
+import org.jkiss.dbeaver.ext.altibase.ui.views.CreateTypesetPage;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
