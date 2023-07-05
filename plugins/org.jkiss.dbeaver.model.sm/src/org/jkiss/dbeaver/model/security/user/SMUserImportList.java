@@ -17,29 +17,28 @@
 package org.jkiss.dbeaver.model.security.user;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
-import java.util.Map;
+import java.util.List;
 
-public class SMUserInfo {
+public class SMUserImportList {
     @NotNull
-    private final String userId;
+    private final List<SMUserProvisioning> users;
+    @Nullable
+    private final String authRole;
 
-    @NotNull
-    private final Map<String, String> metaParameters;
-
-    public SMUserInfo(@NotNull String userId, @NotNull Map<String, String> metaParameters) {
-        this.userId = userId;
-        this.metaParameters = metaParameters;
+    public SMUserImportList(@NotNull List<SMUserProvisioning> users, @Nullable String authRole) {
+        this.users = users;
+        this.authRole = authRole;
     }
 
     @NotNull
-    public String getUserId() {
-        return userId;
+    public List<SMUserProvisioning> getUsers() {
+        return users;
     }
 
-    @NotNull
-    public Map<String, String> getMetaParameters() {
-        return metaParameters;
+    @Nullable
+    public String getAuthRole() {
+        return authRole;
     }
-
 }
