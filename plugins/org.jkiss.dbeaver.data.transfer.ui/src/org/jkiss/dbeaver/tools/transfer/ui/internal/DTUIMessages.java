@@ -172,7 +172,7 @@ public class DTUIMessages extends NLS {
 	public static String database_producer_page_input_objects_title_assign_error;
 	public static String database_producer_page_input_objects_message_error_reading_container_objects;
 	public static String database_producer_page_input_objects_error_message_auto_assign_failed;
-	public static String stream_producer_column_mapping_error_title;
+    public static String stream_producer_column_mapping_error_title;
 	public static String stream_producer_column_mapping_error_message;
 	public static String stream_producer_select_input_file;
 	public static String stream_producer_page_preview_title_load_entity_meta;
