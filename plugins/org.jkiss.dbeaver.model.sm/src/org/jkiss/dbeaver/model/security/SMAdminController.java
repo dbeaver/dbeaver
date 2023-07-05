@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.security;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.security.user.SMUserInfo;
 import org.jkiss.dbeaver.model.security.user.SMTeam;
 import org.jkiss.dbeaver.model.security.user.SMUser;
 
@@ -59,6 +60,8 @@ public interface SMAdminController extends SMController {
         boolean enabled,
         @Nullable String defaultAuthRole
     ) throws DBException;
+
+    void createUsers(@NotNull List<SMUserInfo> users, @Nullable String defaultAuthRole) throws DBException;
 
     void deleteUser(String userId) throws DBException;
 
