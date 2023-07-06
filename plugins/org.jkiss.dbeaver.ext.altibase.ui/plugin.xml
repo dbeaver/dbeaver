@@ -54,6 +54,23 @@
 	    </configurator>
     </extension>
 
+    <extension point="org.eclipse.ui.preferencePages">
+        <page category="org.jkiss.dbeaver.preferences.drivers" id="org.jkiss.dbeaver.preferences.altibase.general" 
+        class="org.jkiss.dbeaver.ext.altibase.ui.views.PrefPageAltibase" name="Altibase">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+        </page>
+    </extension>
+    
+    <extension point="org.eclipse.ui.propertyPages">
+        <page id="org.jkiss.dbeaver.preferences.altibase.main" class="org.jkiss.dbeaver.ext.altibase.ui.views.PrefPageAltibase" 
+        name="%page.org.jkiss.dbeaver.preferences.altibase.main.name">
+            <enabledWhen>
+                <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer">
+                    <test property="org.jkiss.dbeaver.core.datasourceContainer.driverId" value="Altibase"/>
+                </adapt>
+            </enabledWhen>
+        </page>
+    </extension>
 
         
 </plugin>

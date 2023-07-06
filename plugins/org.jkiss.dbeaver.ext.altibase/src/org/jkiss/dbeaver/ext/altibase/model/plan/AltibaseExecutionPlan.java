@@ -94,10 +94,23 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
             }
 
             // sConn.setExplainPlan(AltibaseConnection.EXPLAIN_PLAN_ONLY);
-            method.invoke(conn, Byte.valueOf(AltibaseConstants.EXPLAIN_PLAN_ONLY));
+            byte planType = AltibaseConstants.EXPLAIN_PLAN_OPTION_VALUES[
+                           dataSource.getContainer().getPreferenceStore().getInt(AltibaseConstants.PREF_EXPLAIN_PLAN_TYPE)];
+            method.invoke(conn, planType);
 
-            // sStmt.getExplainPlan()
+
             stmt = conn.prepareStatement(query);
+            
+            // If EXPLAIN_PLAN_ON, then need to execute query
+            if (planType == AltibaseConstants.EXPLAIN_PLAN_ON) {
+                if (query.trim().toUpperCase().startsWith("SELECT")) {
+                    stmt.getClass().getMethod("executeQuery").invoke(stmt);
+                } else {
+                    stmt.getClass().getMethod("execute").invoke(stmt);
+                }
+            }
+            
+            // sStmt.getExplainPlan()            
             plan = (String) stmt.getClass().getMethod("getExplainPlan").invoke(stmt);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
                 | SecurityException | SQLException e) {

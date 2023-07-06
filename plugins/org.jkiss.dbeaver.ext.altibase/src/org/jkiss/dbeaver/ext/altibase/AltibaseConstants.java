@@ -69,7 +69,13 @@ public class AltibaseConstants {
     public static final String NO_DBMS_METADATA = 
     "-- [WARNING] Without DBMS_METADATA package, the generated DDL may not be correct." + NEW_LINE;
     
+
     public static final byte EXPLAIN_PLAN_OFF  = 0;
     public static final byte EXPLAIN_PLAN_ON   = 1;
     public static final byte EXPLAIN_PLAN_ONLY = 2;
+
+    public static final byte[] EXPLAIN_PLAN_OPTION_VALUES = new byte[] { EXPLAIN_PLAN_ON, EXPLAIN_PLAN_ONLY };
+    public static final String[] EXPLAIN_PLAN_OPTION_TITLES = new String[] {"EXPLAIN_PLAN = ON", "EXPLAIN PLAN = ONLY"};
+    
+    public static final String PREF_EXPLAIN_PLAN_TYPE = "altibase.explain.plan.type";
 }

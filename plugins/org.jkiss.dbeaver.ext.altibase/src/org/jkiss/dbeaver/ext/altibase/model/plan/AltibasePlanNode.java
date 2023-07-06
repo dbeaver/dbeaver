@@ -70,6 +70,10 @@ public class AltibasePlanNode extends AbstractExecutionPlanNode {
         return depth; 
     }
 
+    public void appendPlan(String addPlan) {
+        plan += " " + addPlan;
+    }
+    
     public String toString() {
         return plan;
     }

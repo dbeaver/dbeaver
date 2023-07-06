@@ -32,12 +32,12 @@ public class AltibasePlanBuilder {
         // Altibase plan string is a depth-first traversal
         for (String plan : plans) {
             // The last condition is to skip the first and last line of the plan
-            if (plan == null || plan.length() < 1 || plan.startsWith("---")) {
+            if (plan == null || plan.trim().length() < 1 || plan.startsWith("---")) {
                 continue;
             }
 
             // No need after "* SIMPLE QUERY PLAN"
-            if (plan.trim().startsWith("*")) {
+            if (plan.trim().startsWith("* SIMPLE")) {
                 break;
             }
 
@@ -55,10 +55,11 @@ public class AltibasePlanBuilder {
                 // sibling
                 if (prevNode.getDepth() == depth) {
                     node = new AltibasePlanNode(depth, plan, (AltibasePlanNode) prevNode.getParent());
-                    // prevNode is parent
+                    //prevNode.appendPlan(plan);
+                // prevNode is parent
                 } else if (prevNode.getDepth() < depth) {
                     node = new AltibasePlanNode(depth, plan, prevNode);
-                    // prevNode.getDepth() > depth
+                // prevNode.getDepth() > depth
                 } else {
                     node = new AltibasePlanNode(depth, plan, prevNode.getParentNodeAtDepth(depth));
                 }
