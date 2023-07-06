@@ -141,11 +141,6 @@ public class QMMTransactionSavepointInfo extends QMMObject {
     }
 
     @Override
-    public QMMetaObjectType getObjectType() {
-        return QMMetaObjectType.TRANSACTION_SAVEPOINT_INFO;
-    }
-
-    @Override
     public QMMConnectionInfo getConnection() {
         return getTransaction().getConnection();
     }
