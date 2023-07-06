@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import java.util.UUID;
 
 public class QMMProjectInfo {
-
+    @Include
     private final String id;
     private final String name;
     private final String path;

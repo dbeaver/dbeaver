@@ -270,6 +270,13 @@ public interface SQLDialect {
         return true;
     }
 
+    /**
+     * Checks whether dialect supports alias for queries with HAVING syntax.
+     */
+    default boolean supportsAliasInHaving() {
+        return true;
+    }
+
     boolean supportsTableDropCascade();
 
     boolean supportsOrderByIndex();
