@@ -60,7 +60,6 @@ public final class ShellUtils {
             }
         } catch (IOException | InterruptedException e) {
             log.debug("Unable to open external program in a platform-specific way: " + e.getMessage());
-            return false;
         }
 
         try {
