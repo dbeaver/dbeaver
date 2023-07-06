@@ -1634,9 +1634,16 @@ public class SQLEditor extends SQLEditorBase implements
         return null;
     }
 
+    // Additional check added to prevent activeResultsTab from
+    // getting out of sync with resultTabs.getSelection() in case
+    // user clicks tab with mouse, then switches focus to editor
+    // and back with keyboard shortcuts
     private CTabItem getActiveResultsTab() {
         return activeResultsTab == null || activeResultsTab.isDisposed() ?
-            (resultTabs == null ? null : resultTabs.getSelection()) : activeResultsTab;
+            (resultTabs == null ? null : resultTabs.getSelection()) :
+            activeResultsTab == resultTabs.getSelection() ?
+            activeResultsTab :
+            resultTabs.getSelection();
     }
 
     public void closeActiveTab() {
