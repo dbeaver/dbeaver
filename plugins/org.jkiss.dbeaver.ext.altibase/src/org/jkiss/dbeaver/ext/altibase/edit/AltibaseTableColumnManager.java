@@ -17,15 +17,21 @@
 
 package org.jkiss.dbeaver.ext.altibase.edit;
 
+import java.util.List;
 import java.util.Map;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class AltibaseTableColumnManager extends GenericTableColumnManager 
@@ -38,10 +44,17 @@ public class AltibaseTableColumnManager extends GenericTableColumnManager
     }
 
     @Override
-    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, GenericTableBase owner, 
-            DBECommandAbstract<GenericTableColumn> command, Map<String, Object> options) {
-        return new StringBuilder("( ")
-                .append(super.getNestedDeclaration(monitor, owner, command, options))
-                .append(" )");
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
+    {
+        final GenericTableBase table = command.getObject().getParentObject();
+        StringBuilder sql = new StringBuilder();
+        sql
+        .append("ALTER TABLE ").append(DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL))
+        .append(" ADD ").append("COLUMN ")
+        .append("( ").append(getNestedDeclaration(monitor, table, command, options)).append(" )");
+        actions.add(
+            new SQLDatabasePersistAction(
+                ModelMessages.model_jdbc_create_new_table_column,
+                sql.toString()) );
     }
 }
