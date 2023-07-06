@@ -191,7 +191,6 @@ whereClause: WHERE searchCondition;
 groupByClause: GROUP BY groupingColumnReferenceList;
 groupingColumnReferenceList: groupingColumnReference ((Comma groupingColumnReference)+)?;
 groupingColumnReference: columnReference;
-collationName: qualifiedName;
 havingClause: HAVING searchCondition;
 tableValueConstructor: VALUES tableValueConstructorList;
 tableValueConstructorList: rowValueConstructor ((Comma rowValueConstructor)+)?;
@@ -218,7 +217,6 @@ concatenation: (valueExpressionPrimary|stringValueFunction) (ConcatenationOperat
 
 // functions and operators
 stringValueFunction: anyWordsWithProperty;
-translationName: qualifiedName;
 bitValueExpression: (bitConcatenation|bitFactor);
 bitConcatenation: bitFactor (ConcatenationOperator bitFactor)+;
 bitFactor: bitPrimary;
