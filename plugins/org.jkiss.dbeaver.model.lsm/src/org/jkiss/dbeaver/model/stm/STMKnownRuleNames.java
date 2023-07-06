@@ -144,7 +144,6 @@ public class STMKnownRuleNames {
     public static final String groupByClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_groupByClause];
     public static final String groupingColumnReferenceList = SQLStandardParser.ruleNames[SQLStandardParser.RULE_groupingColumnReferenceList];
     public static final String groupingColumnReference = SQLStandardParser.ruleNames[SQLStandardParser.RULE_groupingColumnReference];
-    public static final String collationName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_collationName];
     public static final String havingClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_havingClause];
     public static final String tableValueConstructor = SQLStandardParser.ruleNames[SQLStandardParser.RULE_tableValueConstructor];
     public static final String tableValueConstructorList = SQLStandardParser.ruleNames[SQLStandardParser.RULE_tableValueConstructorList];
@@ -170,7 +169,6 @@ public class STMKnownRuleNames {
     public static final String concatenation = SQLStandardParser.ruleNames[SQLStandardParser.RULE_concatenation];
     
     public static final String stringValueFunction = SQLStandardParser.ruleNames[SQLStandardParser.RULE_stringValueFunction];
-    public static final String translationName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_translationName];
     public static final String bitValueExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_bitValueExpression];
     public static final String bitConcatenation = SQLStandardParser.ruleNames[SQLStandardParser.RULE_bitConcatenation];
     public static final String bitFactor = SQLStandardParser.ruleNames[SQLStandardParser.RULE_bitFactor];

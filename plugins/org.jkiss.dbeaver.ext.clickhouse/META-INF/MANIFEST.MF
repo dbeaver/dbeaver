@@ -6,7 +6,6 @@ Bundle-Version: 1.0.113.qualifier
 Bundle-Release-Date: 20230626
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.parser.common,
  org.jkiss.dbeaver.ext.generic;visibility:=reexport,
  com.google.guava;resolution:=optional
 Export-Package: org.jkiss.dbeaver.ext.clickhouse,
