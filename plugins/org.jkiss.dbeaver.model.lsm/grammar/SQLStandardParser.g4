@@ -48,12 +48,12 @@ public boolean isSupportSquareBracketQuotation() { return isSupportSquareBracket
 public void setIsSupportSquareBracketQuotation(boolean value) { isSupportSquareBracketQuotation = value; }
 }
 
+// root rule for script
+sqlQueries: (sqlQuery Semicolon?)* EOF; // EOF - don't stop early. must match all input
+sqlQuery: directSqlDataStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|sqlDataStatement;
 
-// unknown keyword, data type or function name
-anyWord: Identifier;
-anyValue: qualifiedName|literal|valueExpression|Comma;
-anyProperty: LeftParen anyValue+ RightParen;
-anyWordsWithProperty: anyWord+ anyProperty?;
+directSqlDataStatement: (deleteStatement|selectStatement|insertStatement|updateStatement);
+selectStatement: queryExpression (orderByClause)?;
 
 // data type literals
 literal: (signedNumericLiteral|generalLiteral);
@@ -91,7 +91,7 @@ intervalFractionalSecondsPrecision: UnsignedInteger;
 singleDatetimeField: (nonSecondDatetimeField (LeftParen intervalLeadingFieldPrecision RightParen)?|SECOND (LeftParen intervalLeadingFieldPrecision (Comma intervalFractionalSecondsPrecision)? RightParen)?);
 
 // column definition
-columnDefinition: columnName dataType (defaultClause)? ((columnConstraintDefinition)+)? (collateClause)?;
+columnDefinition: columnName dataType (defaultClause)? ((columnConstraintDefinition)+)? (anyWordWithAnyValue)?;
 columnName: identifier;
 
 // default
@@ -190,8 +190,7 @@ joinColumnList: columnNameList;
 whereClause: WHERE searchCondition;
 groupByClause: GROUP BY groupingColumnReferenceList;
 groupingColumnReferenceList: groupingColumnReference ((Comma groupingColumnReference)+)?;
-groupingColumnReference: columnReference (collateClause)?;
-collateClause: COLLATE collationName;
+groupingColumnReference: columnReference;
 collationName: qualifiedName;
 havingClause: HAVING searchCondition;
 tableValueConstructor: VALUES tableValueConstructorList;
@@ -214,10 +213,8 @@ searchedWhenClause: WHEN searchCondition THEN result;
 castSpecification: CAST LeftParen castOperand AS dataType RightParen;
 castOperand: (valueExpression|NULL);
 numericValueFunction: (extractExpression|anyWordsWithProperty);
-characterValueExpression: (concatenation|characterFactor);
-concatenation: characterFactor (ConcatenationOperator characterFactor)+;
-characterFactor: characterPrimary (collateClause)?;
-characterPrimary: (valueExpressionPrimary|stringValueFunction);
+characterValueExpression: (concatenation|(valueExpressionPrimary|stringValueFunction));
+concatenation: (valueExpressionPrimary|stringValueFunction) (ConcatenationOperator (valueExpressionPrimary|stringValueFunction))+;
 
 // functions and operators
 stringValueFunction: anyWordsWithProperty;
@@ -275,30 +272,19 @@ referencingColumns: referenceColumnList;
 // order by
 orderByClause: ORDER BY sortSpecificationList;
 sortSpecificationList: sortSpecification ((Comma sortSpecification)+)?;
-sortSpecification: sortKey (collateClause)? (orderingSpecification)?;
+sortSpecification: sortKey (orderingSpecification)?;
 sortKey: (columnReference|UnsignedInteger);
 orderingSpecification: (ASC|DESC);
 
-// cursor and procedure
-declareCursor: DECLARE cursorName (INSENSITIVE)? (SCROLL)? CURSOR FOR cursorSpecification;
-cursorName: identifier;
-cursorSpecification: queryExpression (orderByClause)? (updatabilityClause)?;
-updatabilityClause: FOR (READ ONLY|UPDATE (OF columnNameList)?);
-dynamicDeclareCursor: DECLARE cursorName (INSENSITIVE)? (SCROLL)? CURSOR FOR statementName;
-statementName: identifier;
-
-// procedure
-sqlProcedureStatement: (sqlSchemaStatement|sqlDataStatement|sqlTransactionStatement|sqlConnectionStatement|sqlSessionStatement|sqlDynamicStatement);
-
 // schema definition
 sqlSchemaStatement: (sqlSchemaDefinitionStatement|sqlSchemaManipulationStatement);
-sqlSchemaDefinitionStatement: (schemaDefinition|tableDefinition|viewDefinition|grantStatement|collationDefinition|translationDefinition);
+sqlSchemaDefinitionStatement: (schemaDefinition|tableDefinition|viewDefinition);
 schemaDefinition: CREATE SCHEMA schemaNameClause (schemaCharacterSetSpecification)? ((schemaElement)+)?;
 schemaNameClause: (schemaName|AUTHORIZATION schemaAuthorizationIdentifier|schemaName AUTHORIZATION schemaAuthorizationIdentifier);
 schemaAuthorizationIdentifier: authorizationIdentifier;
 authorizationIdentifier: identifier;
 schemaCharacterSetSpecification: DEFAULT CHARACTER SET characterSetSpecification;
-schemaElement: (tableDefinition|viewDefinition|grantStatement|collationDefinition|translationDefinition);
+schemaElement: (tableDefinition|viewDefinition);
 
 // table definition
 tableDefinition: CREATE ((GLOBAL|LOCAL) TEMPORARY)? TABLE tableName tableElementList (ON COMMIT (DELETE|PRESERVE) ROWS)?;
@@ -308,31 +294,8 @@ levelsClause: (CASCADED|LOCAL);
 tableElementList: LeftParen tableElement ((Comma tableElement)+)? RightParen;
 tableElement: (columnDefinition|tableConstraintDefinition);
 
-// privileges
-grantStatement: GRANT privileges ON objectName TO grantee ((Comma grantee)+)? (WITH GRANT OPTION)?;
-privileges: (ALL PRIVILEGES|actionList);
-actionList: action ((Comma action)+)?;
-action: (SELECT|DELETE|INSERT (LeftParen privilegeColumnList RightParen)?|UPDATE (LeftParen privilegeColumnList RightParen)?|REFERENCES (LeftParen privilegeColumnList RightParen)?|USAGE);
-privilegeColumnList: columnNameList;
-objectName: ((TABLE)? tableName|COLLATION collationName|CHARACTER SET characterSetName|TRANSLATION translationName);
-grantee: (PUBLIC|authorizationIdentifier);
-
-// collation
-collationSource: (collatingSequenceDefinition|translationCollation);
-collatingSequenceDefinition: (externalCollation|collationName|DESC LeftParen collationName RightParen|DEFAULT);
-externalCollation: EXTERNAL LeftParen SingleQuote collationName SingleQuote RightParen;
-translationCollation: TRANSLATION translationName (THEN COLLATION collationName)?;
-collationDefinition: CREATE COLLATION collationName FOR characterSetSpecification FROM collationSource (padAttribute)?;
-padAttribute: (NO PAD|PAD SPACE);
-translationDefinition: CREATE TRANSLATION translationName FOR sourceCharacterSetSpecification TO targetCharacterSetSpecification FROM translationSource;
-sourceCharacterSetSpecification: characterSetSpecification;
-targetCharacterSetSpecification: characterSetSpecification;
-translationSource: translationSpecification;
-translationSpecification: (externalTranslation|IDENTITY|translationName);
-externalTranslation: EXTERNAL LeftParen SingleQuote translationName SingleQuote RightParen;
-
 // schema ddl
-sqlSchemaManipulationStatement: (dropSchemaStatement|alterTableStatement|dropTableStatement|dropViewStatement|revokeStatement|dropCharacterSetStatement|dropCollationStatement|dropTranslationStatement|dropAssertionStatement);
+sqlSchemaManipulationStatement: (dropSchemaStatement|alterTableStatement|dropTableStatement|dropViewStatement|dropCharacterSetStatement);
 dropSchemaStatement: DROP SCHEMA schemaName dropBehaviour;
 dropBehaviour: (CASCADE|RESTRICT);
 alterTableStatement: ALTER TABLE tableName alterTableAction;
@@ -347,31 +310,18 @@ addTableConstraintDefinition: ADD tableConstraintDefinition;
 dropTableConstraintDefinition: DROP CONSTRAINT constraintName dropBehaviour;
 dropTableStatement: DROP TABLE tableName dropBehaviour;
 dropViewStatement: DROP VIEW tableName dropBehaviour;
-revokeStatement: REVOKE (GRANT OPTION FOR)? privileges ON objectName FROM grantee ((Comma grantee)+)? dropBehaviour;
 dropCharacterSetStatement: DROP CHARACTER SET characterSetName;
-dropCollationStatement: DROP COLLATION collationName;
-dropTranslationStatement: DROP TRANSLATION translationName;
-dropAssertionStatement: DROP ASSERTION constraintName;
 
-// cursor
-sqlDataStatement: (openStatement|fetchStatement|closeStatement|selectStatementSingleRow|sqlDataChangeStatement);
-openStatement: OPEN cursorName;
-fetchStatement: FETCH ((fetchOrientation)? FROM)? cursorName INTO fetchTargetList;
-fetchOrientation: (NEXT|PRIOR|FIRST|LAST|(ABSOLUTE|RELATIVE) simpleValueSpecification);
-simpleValueSpecification: (parameterName|literal);
-fetchTargetList: targetSpecification ((Comma targetSpecification)+)?;
-targetSpecification: (parameterSpecification);
-closeStatement: CLOSE cursorName;
+// data statements
+sqlDataStatement: (selectStatementSingleRow|sqlDataChangeStatement);
 selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetList tableExpression;
-selectTargetList: targetSpecification ((Comma targetSpecification)+)?;
-
-// data change statements
+selectTargetList: parameterSpecification ((Comma parameterSpecification)+)?;
 sqlDataChangeStatement: (deleteStatement|insertStatement|updateStatement);
-deleteStatement: DELETE FROM tableName ((WHERE CURRENT OF cursorName)|(WHERE searchCondition))?;
+deleteStatement: DELETE FROM tableName (WHERE searchCondition)?;
 insertStatement: INSERT INTO tableName insertColumnsAndSource;
 insertColumnsAndSource: ((LeftParen insertColumnList RightParen)? queryExpression|DEFAULT VALUES);
 insertColumnList: columnNameList;
-updateStatement: UPDATE tableName SET setClauseList ((WHERE CURRENT OF cursorName)|(WHERE searchCondition))?;
+updateStatement: UPDATE tableName SET setClauseList (WHERE searchCondition)?;
 setClauseList: setClause ((Comma setClause)+)?;
 setClause: objectColumn EqualsOperator updateSource;
 objectColumn: columnName;
@@ -380,28 +330,14 @@ updateSource: (valueExpression|nullSpecification|DEFAULT);
 // transactions
 sqlTransactionStatement: (setTransactionStatement|setConstraintsModeStatement|commitStatement|rollbackStatement);
 setTransactionStatement: SET TRANSACTION transactionMode ((Comma transactionMode)+)?;
-transactionMode: (isolationLevel|transactionAccessMode|diagnosticsSize);
+transactionMode: (isolationLevel|transactionAccessMode);
 isolationLevel: ISOLATION LEVEL levelOfIsolation;
 levelOfIsolation: (READ UNCOMMITTED|READ COMMITTED|REPEATABLE READ|SERIALIZABLE);
 transactionAccessMode: (READ ONLY|READ WRITE);
-diagnosticsSize: DIAGNOSTICS SIZE numberOfConditions;
-numberOfConditions: simpleValueSpecification;
 setConstraintsModeStatement: SET CONSTRAINTS constraintNameList (DEFERRED|IMMEDIATE);
 constraintNameList: (ALL|constraintName ((Comma constraintName)+)?);
 commitStatement: COMMIT (WORK)?;
 rollbackStatement: ROLLBACK (WORK)?;
-
-// connection
-sqlConnectionStatement: (connectStatement|setConnectionStatement|disconnectStatement);
-connectStatement: CONNECT TO connectionTarget;
-connectionTarget: (sqlServerName (AS connectionName)? (USER userName)?|DEFAULT);
-sqlServerName: simpleValueSpecification;
-connectionName: simpleValueSpecification;
-userName: simpleValueSpecification;
-setConnectionStatement: SET CONNECTION connectionObject;
-connectionObject: (DEFAULT|connectionName);
-disconnectStatement: DISCONNECT disconnectObject;
-disconnectObject: (connectionObject|ALL|CURRENT);
 
 // session
 sqlSessionStatement: (setCatalogStatement|setSchemaStatement|setNamesStatement|setSessionAuthorizationIdentifierStatement|setLocalTimeZoneStatement);
@@ -412,52 +348,12 @@ setNamesStatement: SET NAMES valueSpecification;
 setSessionAuthorizationIdentifierStatement: SET SESSION AUTHORIZATION valueSpecification;
 setLocalTimeZoneStatement: SET TIME ZONE setTimeZoneValue;
 setTimeZoneValue: (intervalValueExpression|LOCAL);
-sqlDynamicStatement: (prepareStatement|deallocatePreparedStatement|describeStatement|executeStatement|executeImmediateStatement);
-scopeOption: (GLOBAL|LOCAL);
 
-// prepare statement
-prepareStatement: PREPARE sqlStatementName FROM sqlStatementVariable;
-sqlStatementName: (statementName|extendedStatementName);
-extendedStatementName: (scopeOption)? simpleValueSpecification;
-sqlStatementVariable: simpleValueSpecification;
-deallocatePreparedStatement: DEALLOCATE PREPARE sqlStatementName;
-describeStatement: (describeInputStatement|describeOutputStatement);
-describeInputStatement: DESCRIBE INPUT sqlStatementName;
-describeOutputStatement: DESCRIBE (OUTPUT)? sqlStatementName;
+// unknown keyword, data type or function name
+anyWord: Identifier;
+anyValue: qualifiedName|literal|valueExpression|Comma;
+anyWordWithAnyValue: anyWord anyValue;
+anyProperty: LeftParen anyValue+ RightParen;
+anyWordsWithProperty: anyWord+ anyProperty?;
 
-// execute statement
-executeStatement: EXECUTE sqlStatementName (resultUsingClause)? (parameterUsingClause)?;
-resultUsingClause: usingClause;
-usingClause: usingArguments;
-usingArguments: (USING|INTO) argument ((Comma argument)+)?;
-argument: targetSpecification;
-parameterUsingClause: usingClause;
-executeImmediateStatement: EXECUTE IMMEDIATE sqlStatementVariable;
-
-// statement or declaration - base rule
-statementOrDeclaration: (declareCursor|dynamicDeclareCursor|sqlProcedureStatement);
-
-// preparable statement - base rule
-preparableStatement: (preparableSqlDataStatement|preparableSqlSchemaStatement|preparableSqlTransactionStatement|preparableSqlSessionStatement);
-preparableSqlDataStatement: (deleteStatement|dynamicSingleRowSelectStatement|insertStatement|dynamicSelectStatement|updateStatement|preparableDynamicDeleteStatement|preparableDynamicUpdateStatement);
-dynamicSingleRowSelectStatement: querySpecification;
-dynamicSelectStatement: cursorSpecification;
-preparableDynamicDeleteStatement: DELETE (FROM tableName)? WHERE CURRENT OF cursorName;
-preparableDynamicUpdateStatement: UPDATE (tableName)? SET setClause WHERE CURRENT OF cursorName;
-preparableSqlSchemaStatement: sqlSchemaStatement;
-preparableSqlTransactionStatement: sqlTransactionStatement;
-preparableSqlSessionStatement: sqlSessionStatement;
-
-// direct statement - base rule
-directSqlStatement: (directSqlDataStatement|sqlSchemaStatement|sqlTransactionStatement|sqlConnectionStatement|sqlSessionStatement);
-directSqlDataStatement: (deleteStatement|selectStatement|insertStatement|updateStatement);
-selectStatement: queryExpression (orderByClause)?;
-
-// root rule for script
-sqlQuery: directSqlStatement|preparableStatement|statementOrDeclaration;
-sqlQueries: (sqlQuery Semicolon?)* EOF; // EOF - don't stop early. must match all input
-
-
-nonReserved: CHARACTER_SET_CATALOG | CHARACTER_SET_NAME | CHARACTER_SET_SCHEMA | COLLATION_CATALOG | COLLATION_NAME | COLLATION_SCHEMA
-    | COMMITTED | DATA | DATETIME_INTERVAL_CODE | DATETIME_INTERVAL_PRECISION | LENGTH | NAME | NULLABLE | PUBLIC | REPEATABLE
-    | RETURNED_LENGTH | RETURNED_OCTET_LENGTH | SCALE | SERIALIZABLE | TYPE | UNCOMMITTED | UNNAMED;
+nonReserved: COMMITTED | DATA | NAME | NULLABLE | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED;
