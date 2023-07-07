@@ -169,7 +169,7 @@ public class DatabaseTasksTree {
             protected String getCellText(Object element) {
                 if (element instanceof DBTTask) {
                     DBTTaskRun lastRun = ((DBTTask) element).getLastRun();
-                    if (lastRun == null) {
+                    if (lastRun == null || !lastRun.isFinished()) {
                         return "N/A";
                     } else {
                         return RuntimeUtils.formatExecutionTime(lastRun.getRunDuration());
