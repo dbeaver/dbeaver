@@ -17,7 +17,9 @@
 package org.jkiss.dbeaver.ext.altibase.model.plan;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
+import org.jkiss.dbeaver.ext.altibase.AltibaseConstants.EXPLAIN_PLAN;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -35,10 +37,13 @@ import java.util.Map;
 
 public class AltibaseExecutionPlan extends AbstractExecutionPlan {
 
-    AltibaseDataSource dataSource;
+    static final Log log = Log.getLog(AltibaseExecutionPlan.class);
+    
+    private AltibaseDataSource dataSource;
     private JDBCSession session;
     private String query;
     private List<AltibasePlanNode> rootNodes;
+    private String planQuery;
 
     private static final String setExplainPlan = "setExplainPlan";
 
@@ -46,6 +51,7 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
         this.dataSource = dataSource;
         this.session = session;
         this.query = query;
+        this.planQuery = "";
     }
 
     public void explain() throws DBException {
@@ -70,7 +76,7 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
 
     @Override
     public String getPlanQueryString() throws DBException {
-        return null;
+        return planQuery;
     }
 
     @Override
@@ -80,29 +86,34 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
 
     private String getExplainPlan(JDBCSession session, String query) {
         Statement stmt = null;
-        String plan = "";
 
+        Connection conn = null;
+        Class<? extends Connection> clazz = null;
+        Method method = null;
+        EXPLAIN_PLAN expPlan = null;
+        
         try {
-            Connection conn = session.getOriginal();
-            Class<? extends Connection> clazz = conn.getClass();
-            Method method = getMethod4setExplainByteArg(clazz, setExplainPlan, AltibaseConstants.TYPE_NAME_BYTE_LC);
+            conn = session.getOriginal();
+            clazz = conn.getClass();
+            
+            /* 
+             * There are two setExplain methods in Connction class: 
+             * The first one's argument is boolean, the second one's argument is byte.
+             * Here, the second method is required.
+             */
+            method = getMethod4setExplainWithByteArgType(clazz, 
+                    setExplainPlan, AltibaseConstants.TYPE_NAME_BYTE.toLowerCase());
 
-            if (method == null) {
-                throw new InvocationTargetException(null, 
-                        String.format("Unable to find the target method: [class] %s, [method] %s, [argument type] %s", 
-                                clazz.toString(), setExplainPlan, AltibaseConstants.TYPE_NAME_BYTE_LC));
-            }
+            expPlan = AltibaseConstants.EXPLAIN_PLAN.getByIndex(
+                    dataSource.getContainer().getPreferenceStore().getInt(
+                            AltibaseConstants.PREF_EXPLAIN_PLAN_TYPE));
 
             // sConn.setExplainPlan(AltibaseConnection.EXPLAIN_PLAN_ONLY);
-            byte planType = AltibaseConstants.EXPLAIN_PLAN_OPTION_VALUES[
-                           dataSource.getContainer().getPreferenceStore().getInt(AltibaseConstants.PREF_EXPLAIN_PLAN_TYPE)];
-            method.invoke(conn, planType);
-
-
+            method.invoke(conn, expPlan.getArgValue());
             stmt = conn.prepareStatement(query);
             
-            // If EXPLAIN_PLAN_ON, then need to execute query
-            if (planType == AltibaseConstants.EXPLAIN_PLAN_ON) {
+            // In case of EXPLAIN_PLAN_ON, need to execute query
+            if (expPlan == AltibaseConstants.EXPLAIN_PLAN.ON) {
                 if (query.trim().toUpperCase().startsWith("SELECT")) {
                     stmt.getClass().getMethod("executeQuery").invoke(stmt);
                 } else {
@@ -111,10 +122,11 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
             }
             
             // sStmt.getExplainPlan()            
-            plan = (String) stmt.getClass().getMethod("getExplainPlan").invoke(stmt);
+            planQuery = (String) stmt.getClass().getMethod("getExplainPlan").invoke(stmt);
+            
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
-                | SecurityException | SQLException e) {
-            e.printStackTrace();
+                | SecurityException | SQLException | ArrayIndexOutOfBoundsException e) {
+            log.error("Failed to execute explain plan: " + e.getMessage());
         } finally {
             if (stmt != null) {
                 try {
@@ -125,13 +137,13 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
             }
         }
 
-        return plan;
+        return planQuery;
     }
 
-    // There are two setExplain in Connction class: the first one's argument is boolean, the second one's argument is byte.
-    // Return the second one.
+
     @SuppressWarnings("rawtypes")
-    private Method getMethod4setExplainByteArg(Class class1, String methodName, String argName) {
+    private Method getMethod4setExplainWithByteArgType(Class class1, String methodName, String argName) 
+    throws InvocationTargetException {
         for (Method method : class1.getMethods()) {
             if (method.getName().equals(methodName)) {
                 for (Class paramType : method.getParameterTypes()) {
@@ -142,6 +154,8 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
             }
         }
 
-        return null;
+        throw new InvocationTargetException(new Throwable(), 
+                String.format("Unable to find the target method: [class] %s, [method] %s, [argument type] %s", 
+                        class1.getName(), setExplainPlan, AltibaseConstants.TYPE_NAME_BYTE.toLowerCase()));
     }
 }

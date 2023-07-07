@@ -61,7 +61,7 @@ public class AltibaseConstants {
     public static final String TYPE_NAME_GEOMETRY = "GEOMETRY";
     public static final String TYPE_NAME_CLOB = "CLOB";
     public static final String TYPE_NAME_DATE = "DATE";
-    public static final String TYPE_NAME_BYTE_LC = "byte"; // for reflection
+    public static final String TYPE_NAME_BYTE = "BYTE"; // for reflection
     
     public static final String OBJ_TYPE_MATERIALIZED_VIEW = "MATERIALIZED VIEW";
     public static final String OBJ_TYPE_TYPESET = "TYPESET";
@@ -70,12 +70,39 @@ public class AltibaseConstants {
     "-- [WARNING] Without DBMS_METADATA package, the generated DDL may not be correct." + NEW_LINE;
     
 
-    public static final byte EXPLAIN_PLAN_OFF  = 0;
-    public static final byte EXPLAIN_PLAN_ON   = 1;
-    public static final byte EXPLAIN_PLAN_ONLY = 2;
-
-    public static final byte[] EXPLAIN_PLAN_OPTION_VALUES = new byte[] { EXPLAIN_PLAN_ON, EXPLAIN_PLAN_ONLY };
-    public static final String[] EXPLAIN_PLAN_OPTION_TITLES = new String[] {"EXPLAIN_PLAN = ON", "EXPLAIN PLAN = ONLY"};
-    
+    /*
+     * Preference page
+     */
     public static final String PREF_EXPLAIN_PLAN_TYPE = "altibase.explain.plan.type";
+    
+    public enum EXPLAIN_PLAN {
+        ONLY ("EXPLAIN PLAN = ONLY", (byte) 2),
+        ON ("EXPLAIN PLAN = ON", (byte) 1);
+        
+        private String title;
+        private byte value;
+        
+        EXPLAIN_PLAN(String title, byte value) {
+            this.title = title;
+            this.value = value;
+        }
+        
+        public String getTitle() {
+            return this.title;
+        }
+        
+        public byte getArgValue() {
+            return this.value;
+        }
+        
+        public static EXPLAIN_PLAN getByIndex(int idx) throws ArrayIndexOutOfBoundsException {
+            for(EXPLAIN_PLAN expPlan:EXPLAIN_PLAN.values()) {
+                if (expPlan.ordinal() == idx) {
+                    return expPlan;
+                }
+            }
+            
+            throw new ArrayIndexOutOfBoundsException("No such index value in EXPLAIN_PLAN: " + idx);
+        }
+    }
 }

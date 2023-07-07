@@ -48,8 +48,8 @@ public class AltibaseUIMessages extends NLS {
     public static String dialog_connection_test_connection_button;
     public static String dialog_connection_user_name_label;
 
-    public static String pref_page_altibase_execution_plan_legend;
-    public static String pref_page_altibase_execution_plan_content;
+    public static String pref_page_altibase_explain_plan_legend;
+    public static String pref_page_altibase_explain_plan_content;
     
     private AltibaseUIMessages() {
     }

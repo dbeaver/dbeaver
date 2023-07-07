@@ -11,6 +11,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.altibase.ui.internal.AltibaseUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -19,9 +20,11 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
+import org.jkiss.dbeaver.utils.PrefUtils;
 
 public class PrefPageAltibase extends TargetPrefPage {
 
+    static final Log log = Log.getLog(PrefPageAltibase.class);
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.altibase.general";
     
     private int planTypeIdx;
@@ -43,22 +46,23 @@ public class PrefPageAltibase extends TargetPrefPage {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
         Group planGroup = UIUtils.createControlGroup(composite, 
-                AltibaseUIMessages.pref_page_altibase_execution_plan_legend, 1, GridData.FILL_HORIZONTAL, 0);
+                AltibaseUIMessages.pref_page_altibase_explain_plan_legend, 1, GridData.FILL_HORIZONTAL, 0);
 
+        /* Description */
         Label descLabel = new Label(planGroup, SWT.WRAP);
-        descLabel.setText(AltibaseUIMessages.pref_page_altibase_execution_plan_content);
+        descLabel.setText(AltibaseUIMessages.pref_page_altibase_explain_plan_content);
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        //gd.horizontalSpan = 2;
         descLabel.setLayoutData(gd);
         
         /* Buttons */
         int i = 0;
-        planTypeBtns = new Button[AltibaseConstants.EXPLAIN_PLAN_OPTION_TITLES.length];
+        int size = AltibaseConstants.EXPLAIN_PLAN.values().length;
+        planTypeBtns = new Button[size];
         SelectionListener selectionListener = new SelectionAdapter(){
             @Override
             public void widgetSelected(final SelectionEvent e){
                 super.widgetSelected(e);
-                for(int i = 0; i < AltibaseConstants.EXPLAIN_PLAN_OPTION_TITLES.length; i++) {
+                for(int i = 0; i < size; i++) {
                     if (planTypeBtns[i] != null && planTypeBtns[i].getSelection()) {
                         planTypeIdx = i;
                     }
@@ -66,8 +70,9 @@ public class PrefPageAltibase extends TargetPrefPage {
             }
         };
 
-        for(String name:AltibaseConstants.EXPLAIN_PLAN_OPTION_TITLES) {
-            planTypeBtns[i++] = UIUtils.createRadioButton(planGroup, name, selectionListener, selectionListener);
+        for(AltibaseConstants.EXPLAIN_PLAN explainplan:AltibaseConstants.EXPLAIN_PLAN.values()) {
+            planTypeBtns[i++] = UIUtils.createRadioButton(
+                    planGroup, explainplan.getTitle(), null, selectionListener);
         }
         
         return composite;
@@ -77,14 +82,15 @@ public class PrefPageAltibase extends TargetPrefPage {
     protected void loadPreferences(DBPPreferenceStore store) {
         planTypeIdx = store.getInt(AltibaseConstants.PREF_EXPLAIN_PLAN_TYPE);
         if (planTypeBtns[planTypeIdx] != null) {
-            planTypeBtns[planTypeIdx].setSelection(true);
-            planTypeBtns[planTypeIdx].notifyListeners(SWT.Selection, new Event());
+            selectButtonEvent(planTypeIdx);
         }
     }
 
     @Override
     protected void savePreferences(DBPPreferenceStore store) {
         store.setValue(AltibaseConstants.PREF_EXPLAIN_PLAN_TYPE, planTypeIdx);
+        
+        PrefUtils.savePreferenceStore(store);
     }
 
     @Override
@@ -100,5 +106,12 @@ public class PrefPageAltibase extends TargetPrefPage {
     @Override
     protected String getPropertyPageID() {
         return PAGE_ID;
+    }
+    
+    private void selectButtonEvent(int idx) {
+        if (planTypeBtns[planTypeIdx] != null) {
+            planTypeBtns[idx].setSelection(true);
+            planTypeBtns[idx].notifyListeners(SWT.Selection, new Event());
+        }
     }
 }
