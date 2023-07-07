@@ -27,11 +27,12 @@
                 icon="icons/altibase_icon.png">
         </view>
         <view
-                class="org.jkiss.dbeaver.ext.altibase.ui.views.AltibaseConnectionPage"
-                id="org.jkiss.dbeaver.ext.altibase.dataSourceEditorView"
-                dataSource="Altibase"
-                label="%altibase.dialog.connection.header"
-                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+              class="org.jkiss.dbeaver.ext.altibase.ui.views.AltibaseConnectionPage"
+              dataSource="Altibase"
+              icon="icons/altibase_icon.png"
+              id="org.jkiss.dbeaver.ext.altibase.dataSourceEditorView"
+              label="%altibase.dialog.connection.header"
+              targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
         </view>
     </extension>
 

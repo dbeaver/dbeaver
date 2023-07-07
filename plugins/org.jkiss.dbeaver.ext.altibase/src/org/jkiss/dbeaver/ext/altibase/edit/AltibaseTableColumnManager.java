@@ -48,10 +48,12 @@ public class AltibaseTableColumnManager extends GenericTableColumnManager
     {
         final GenericTableBase table = command.getObject().getParentObject();
         StringBuilder sql = new StringBuilder();
+        
         sql
         .append("ALTER TABLE ").append(DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL))
         .append(" ADD ").append("COLUMN ")
         .append("( ").append(getNestedDeclaration(monitor, table, command, options)).append(" )");
+        
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_create_new_table_column,
