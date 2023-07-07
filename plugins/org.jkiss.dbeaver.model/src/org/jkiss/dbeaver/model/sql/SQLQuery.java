@@ -117,11 +117,6 @@ public class SQLQuery implements SQLScriptElement {
             queryTitle = matcher.group(1).trim();
         }
     }
-    
-    public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String text, @NotNull String originalText, int offset, int length) {
-        this(dataSource, text, offset, length);
-        this.originalText = originalText;
-    }
 
     public DBPDataSource getDataSource() {
         return dataSource;

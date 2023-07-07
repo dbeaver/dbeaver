@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.data.aggregate;
 import org.jkiss.dbeaver.Log;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -44,7 +43,7 @@ public class FunctionMedian implements IAggregateFunction {
     @Override
     public Object getResult(int valueCount) {
         try {
-            Collections.sort(cache);
+            cache.sort(AggregateUtils::compareValues);
         } catch (Exception e) {
             log.debug("Can't sort value collection", e);
             return null;

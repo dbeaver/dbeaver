@@ -157,7 +157,13 @@ public class StandardSQLDialectQueryGenerator implements SQLDialectQueryGenerato
                         );
                     } else {
                         // Most likely it is an expression so we don't want to quote it
-                        attrName = binding.getMetaAttribute().getName();
+                        String metaName = binding.getMetaAttribute().getName();
+                        if (CommonUtils.isNotEmpty(metaName)) {
+                            attrName = binding.getMetaAttribute().getName();
+                        } else {
+                            // Second option for some databases (like Firebird)
+                            attrName = binding.getMetaAttribute().getLabel();
+                        }
                     }
                 }
             } else if (cAttr != null) {
