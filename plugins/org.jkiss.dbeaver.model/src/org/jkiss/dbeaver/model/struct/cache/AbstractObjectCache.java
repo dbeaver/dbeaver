@@ -118,8 +118,9 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
             this.objectList.add(object);
             if (this.objectMap != null) {
                 String name = getObjectName(object);
-                checkDuplicateName(name, object);
-                this.objectMap.put(name, object);
+                if (checkDuplicateName(name, object)) {
+                    this.objectMap.put(name, object);
+                }
             }
         }
     }
@@ -243,18 +244,25 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
 
                 for (OBJECT object : objectList) {
                     String name = getObjectName(object);
-                    checkDuplicateName(name, object);
-                    this.objectMap.put(name, object);
+                    if (checkDuplicateName(name, object)) {
+                        this.objectMap.put(name, object);
+                    }
                 }
             }
             return this.objectMap;
         }
     }
 
-    private void checkDuplicateName(String name, OBJECT object) {
+    private boolean checkDuplicateName(String name, OBJECT object) {
         if (this.objectMap.containsKey(name)) {
             log.debug("Duplicate object name '" + name + "' in cache " + this.getClass().getSimpleName() + ". Last value: " + DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL));
+            return isValidDuplicateObject(object);
         }
+        return true;
+    }
+
+    protected boolean isValidDuplicateObject(OBJECT object) {
+        return false;
     }
 
     protected void detectCaseSensitivity(DBSObject object) {
