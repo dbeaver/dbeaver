@@ -66,7 +66,7 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite composite = UIUtils.createComposite(parent, 1);
+        Composite composite = UIUtils.createPlaceholder(parent, 1);
 
         tableViewer = new TableViewer(
             composite,
@@ -226,6 +226,7 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
                 return super.getText(element);
             }
         });
+
         columnsController.createColumns(false);
         tableViewer.setContentProvider(new ListContentProvider());
         new DefaultViewerToolTipSupport(tableViewer);
