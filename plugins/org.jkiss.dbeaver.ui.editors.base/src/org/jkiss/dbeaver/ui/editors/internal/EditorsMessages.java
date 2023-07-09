@@ -32,8 +32,8 @@ public class EditorsMessages extends NLS {
 	public static String dialog_struct_columns_select_title;
 	public static String dialog_struct_create_entity_group_name;
 	public static String dialog_struct_create_entity_title;
-	public static String dialog_struct_create_column_order;
-	public static String dialog_struct_create_column_order_tooltip;
+    public static String dialog_struct_create_column_order;
+    public static String dialog_struct_create_column_order_tooltip;
 	public static String dialog_struct_create_procedure_combo_type;
 	public static String dialog_struct_create_procedure_label_name;
 	public static String dialog_struct_create_procedure_title;
@@ -102,11 +102,11 @@ public class EditorsMessages extends NLS {
 	public static String edit_constraints_use_all_columns_text;
 	public static String edit_constraints_use_all_columns_tip;
 	public static String edit_constraints_expression_text;
-	public static String edit_foreign_key_page_create_schema_container;
-	public static String edit_foreign_key_page_create_container_reference_table_container;
-	public static String edit_foreign_key_page_create_container_select_reference_table_container;
-	public static String edit_foreign_key_page_error_loading_table_title;
-	public static String edit_foreign_key_page_error_loading_table_message;
+    public static String edit_foreign_key_page_create_schema_container;
+    public static String edit_foreign_key_page_create_container_reference_table_container;
+    public static String edit_foreign_key_page_create_container_select_reference_table_container;
+    public static String edit_foreign_key_page_error_loading_table_title;
+    public static String edit_foreign_key_page_error_loading_table_message;
 	public static String selector_select_all_text;
 	public static String selector_clear_all_text;
 
