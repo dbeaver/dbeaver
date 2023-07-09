@@ -305,14 +305,17 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
                     }
                     tunnel.initializeHandler(monitor, configuration, connectionConfig);
-                    monitor.worked(1);
-                    // Get info
-                    tunnelVersions[0] = tunnel.getImplementation().getClientVersion();
-                    tunnelVersions[1] = tunnel.getImplementation().getServerVersion();
+                    try {
+                        monitor.worked(1);
+                        // Get info
+                        tunnelVersions[0] = tunnel.getImplementation().getClientVersion();
+                        tunnelVersions[1] = tunnel.getImplementation().getServerVersion();
 
-                    // Close it
-                    monitor.subTask("Close tunnel");
-                    tunnel.closeTunnel(monitor);
+                    } finally {
+                        // Close it
+                        monitor.subTask("Close tunnel");
+                        tunnel.closeTunnel(monitor);
+                    }
                     monitor.worked(1);
                 } finally {
                     monitor.done();
