@@ -3650,9 +3650,10 @@ public class SQLEditor extends SQLEditorBase implements
                 String processedQueryText = CommonUtils.isEmpty(queryText) ? notAvaliable : queryText;
                 
                 String toolTip =
-                    NLS.bind(SQLEditorMessages.sql_editor_data_receiver_result_name_tooltip_connection,dataSourceContainerName) + 
+                    NLS.bind(SQLEditorMessages.sql_editor_data_receiver_result_name_tooltip_connection, dataSourceContainerName) + 
                     GeneralUtils.getDefaultLineSeparator() +
-                    NLS.bind(SQLEditorMessages.sql_editor_data_receiver_result_name_tooltip_time, new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date())) +
+                    NLS.bind(SQLEditorMessages.sql_editor_data_receiver_result_name_tooltip_time, 
+                            new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date())) +
                     GeneralUtils.getDefaultLineSeparator() +
                     NLS.bind(SQLEditorMessages.sql_editor_data_receiver_result_name_tooltip_query, processedQueryText);
                 // Special statements (not real statements) have their name in data
