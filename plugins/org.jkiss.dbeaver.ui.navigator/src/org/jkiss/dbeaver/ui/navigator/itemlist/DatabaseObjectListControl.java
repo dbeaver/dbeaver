@@ -41,7 +41,7 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 public abstract class DatabaseObjectListControl<OBJECT_TYPE extends DBPObject> extends ObjectListControl<OBJECT_TYPE> {
 
     @Nullable
-    private IWorkbenchSite site;
+    private final IWorkbenchSite site;
 
     protected DatabaseObjectListControl(
         @NotNull Composite parent,
