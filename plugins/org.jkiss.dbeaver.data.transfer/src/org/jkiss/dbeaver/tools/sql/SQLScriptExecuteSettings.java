@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskSettings;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -99,10 +100,11 @@ public class SQLScriptExecuteSettings implements DBTTaskSettings<IResource> {
         this.transactionIsolation = transactionIsolation;
     }
 
-    public void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config) {
+    public void loadConfiguration(DBRRunnableContext runnableContext, DBTTask task) {
+        Map<String, Object> config = task.getProperties();
         // Legacy config support (single datasource
         String projectName = JSONUtils.getString(config, "project");
-        DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
+        DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProjectById(projectName);
         if (project != null) {
             String dataSourceContainerId = JSONUtils.getString(config, "dataSourceContainer");
             if (!CommonUtils.isEmpty(dataSourceContainerId)) {
@@ -116,7 +118,10 @@ public class SQLScriptExecuteSettings implements DBTTaskSettings<IResource> {
             List<Map<String, Object>> dsConfig = JSONUtils.getObjectList(config, "dataSources");
             for (Map<String, Object> dsInfo : dsConfig) {
                 projectName = JSONUtils.getString(dsInfo, "project");
-                project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
+                project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProjectById(projectName);
+                if (project == null) {
+                    project = task.getProject();
+                }
                 if (project != null) {
                     String dataSourceContainerId = JSONUtils.getString(dsInfo, "dataSource");
                     if (!CommonUtils.isEmpty(dataSourceContainerId)) {
@@ -142,7 +147,7 @@ public class SQLScriptExecuteSettings implements DBTTaskSettings<IResource> {
         config.put("dataSources", dsConfig);
         for (DBPDataSourceContainer ds : dataSources) {
             Map<String, Object> dsInfo = new LinkedHashMap<>();
-            dsInfo.put("project", ds.getProject().getName());
+            dsInfo.put("project", ds.getProject().getId());
             dsInfo.put("dataSource", ds.getId());
             dsConfig.add(dsInfo);
         }

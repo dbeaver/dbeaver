@@ -69,6 +69,10 @@ public class TaskRegistry implements DBTTaskRegistry
             for (IConfigurationElement ext : extElements) {
                 if ("task".equals(ext.getName())) {
                     String typeId = ext.getAttribute("type");
+                    boolean multiuser = CommonUtils.getBoolean(ext.getAttribute("multiuser"), true);
+                    if (DBWorkbench.getPlatform().getApplication().isMultiuser() && !multiuser) {
+                        continue;
+                    }
                     TaskCategoryDescriptor taskType = getTaskCategory(typeId);
                     TaskTypeDescriptor taskDescriptor = new TaskTypeDescriptor(taskType, ext);
                     taskDescriptors.put(taskDescriptor.getId(), taskDescriptor);

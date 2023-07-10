@@ -9,6 +9,7 @@ Bundle-Activator: org.jkiss.dbeaver.tools.transfer.internal.DTActivator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: org.jkiss.dbeaver.tools.sql,
+ org.jkiss.dbeaver.tools.sql.task,
  org.jkiss.dbeaver.tools.transfer,
  org.jkiss.dbeaver.tools.transfer.database,
  org.jkiss.dbeaver.tools.transfer.processor,
