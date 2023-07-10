@@ -75,8 +75,8 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
 
         DB2DataSource db2DataSource = table.getDataSource();
 
-        this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
-        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
+        this.owner = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER);
+        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_CREATE_TIME);
         this.qualifier = JDBCUtils.safeGetString(dbResult, "QUALIFIER");
         this.type = CommonUtils.valueOf(DB2TableCheckConstraintType.class, JDBCUtils.safeGetString(dbResult, "TYPE"));
         this.fumcPath = JDBCUtils.safeGetString(dbResult, "FUNC_PATH");
@@ -88,7 +88,7 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
         this.collationNameOrderBy = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME_ORDERBY");
 
         if (db2DataSource.isAtLeastV9_5()) {
-            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER_TYPE));
         }
 
     }
