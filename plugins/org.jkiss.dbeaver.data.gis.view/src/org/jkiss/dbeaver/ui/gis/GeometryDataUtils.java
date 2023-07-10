@@ -22,22 +22,23 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.dbeaver.model.gis.GisConstants;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.UIColors;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * GeometryDataUtils.
@@ -86,7 +87,7 @@ public class GeometryDataUtils {
 
     public static void setGeometryProperties(@NotNull IResultSetController controller, @NotNull GeomAttrs geomAttrs, @NotNull DBGeometry geometry, @NotNull RGB geometryColor, @NotNull ResultSetRow row) {
         final ResultSetModel model = controller.getModel();
-        final Map<String, Object> info = new LinkedHashMap<>();
+        final Map<String, String> info = new LinkedHashMap<>();
         for (DBDAttributeBinding binding : geomAttrs.descAttrs) {
             final Object description = model.getCellValue(binding, row);
             if (!DBUtils.isNullValue(description)) {
@@ -98,6 +99,38 @@ public class GeometryDataUtils {
         properties.put("color", String.format("#%02x%02x%02x", geometryColor.red, geometryColor.green, geometryColor.blue));
         properties.put("info", info);
         geometry.setProperties(properties);
+
+        setGeometryDisplayName(controller, row, geomAttrs, geometry);
+    }
+
+    public static void setGeometryDisplayName(
+        @NotNull IResultSetController controller,
+        @NotNull ResultSetRow row,
+        @NotNull GeomAttrs geomAttrs,
+        @NotNull DBGeometry geometry
+    ) {
+        final ResultSetModel model = controller.getModel();
+        final DBSEntityAttribute entityAttribute = geomAttrs.getGeomAttr().getEntityAttribute();
+        final DBVEntity entity = entityAttribute != null ? DBVUtils.getVirtualEntity(entityAttribute.getParentObject(), false) : null;
+
+        if (entity != null) {
+            final Collection<DBDAttributeBinding> attributes = entity.getDescriptionColumns(geomAttrs.descAttrs);
+
+            if (!attributes.isEmpty()) {
+                final String divider = entity.getDataSource().getContainer()
+                    .getPreferenceStore().getString(ModelPreferences.DICTIONARY_COLUMN_DIVIDER);
+                final StringJoiner name = new StringJoiner(divider);
+
+                for (DBDAttributeBinding attribute : attributes) {
+                    final Object description = model.getCellValue(attribute, row);
+                    if (!DBUtils.isNullValue(description)) {
+                        name.add(attribute.getValueHandler().getValueDisplayString(attribute, description, DBDDisplayFormat.NATIVE));
+                    }
+                }
+
+                geometry.putProperties(Map.of("name", name.toString()));
+            }
+        }
     }
 
     @NotNull

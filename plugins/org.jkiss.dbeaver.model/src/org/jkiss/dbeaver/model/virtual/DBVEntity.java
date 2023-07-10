@@ -483,18 +483,37 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return getDescriptionColumns(monitor, entity, descriptionColumnNames);
     }
 
+    @NotNull
+    public <T extends DBSAttributeBase> Collection<T> getDescriptionColumns(@NotNull Collection<? extends T> attributes) {
+        return getDescriptionColumns(attributes, descriptionColumnNames);
+    }
+
     public static Collection<DBSEntityAttribute> getDescriptionColumns(DBRProgressMonitor monitor, DBSEntity entity, String descColumns)
         throws DBException {
         if (CommonUtils.isEmpty(descColumns)) {
             return Collections.emptyList();
         }
-        List<DBSEntityAttribute> result = new ArrayList<>();
         Collection<? extends DBSEntityAttribute> attributes = entity.getAttributes(monitor);
+        if (CommonUtils.isEmpty(attributes)) {
+            return Collections.emptyList();
+        }
+        return getDescriptionColumns(attributes, descColumns);
+    }
+
+    @NotNull
+    public static <T extends DBSAttributeBase> Collection<T> getDescriptionColumns(
+        @NotNull Collection<? extends T> attributes,
+        @NotNull String descColumns
+    ) {
+        if (CommonUtils.isEmpty(descColumns)) {
+            return Collections.emptyList();
+        }
+        List<T> result = new ArrayList<>();
         if (!CommonUtils.isEmpty(attributes)) {
             StringTokenizer st = new StringTokenizer(descColumns, ",");
             while (st.hasMoreTokens()) {
                 String colName = st.nextToken();
-                for (DBSEntityAttribute attr : attributes) {
+                for (T attr : attributes) {
                     if (colName.equalsIgnoreCase(attr.getName())) {
                         result.add(attr);
                     }
