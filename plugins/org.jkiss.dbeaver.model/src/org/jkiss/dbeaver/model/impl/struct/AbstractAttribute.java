@@ -26,7 +26,10 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt2;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt3;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -93,6 +96,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBSTypedObj
         return name;
     }
 
+    @Override
     public void setName(String columnName)
     {
         this.name = columnName;

@@ -299,7 +299,6 @@
         <setEntry value="org.jkiss.dbeaver.ext.sqlite@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.teradata@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.trino@default:default"/>
-        <setEntry value="org.jkiss.dbeaver.ext.ui.colortheme@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.ui.locks@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.ui.svg@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.ui.tipoftheday@default:default"/>
