@@ -1138,13 +1138,15 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             }
         }
         settings.loadObjectContainer(getWizard().getRunnableContext(), getWizard().getSettings(), producerContainer);
-        DBNDatabaseNode containerNode = DBNUtils.getNodeByObject(settings.getContainer());
-        if (containerNode != null) {
-            try {
-                containerPanel.checkValidContainerNode(containerNode);
-                containerPanel.setContainerInfo(containerNode);
-            } catch (DBException e) {
-                setErrorMessage(e.getMessage());
+        if (settings.getContainer() != null) {
+            DBNDatabaseNode containerNode = DBNUtils.getNodeByObject(settings.getContainer());
+            if (containerNode != null) {
+                try {
+                    containerPanel.checkValidContainerNode(containerNode);
+                    containerPanel.setContainerInfo(containerNode);
+                } catch (DBException e) {
+                    setErrorMessage(e.getMessage());
+                }
             }
         }
 

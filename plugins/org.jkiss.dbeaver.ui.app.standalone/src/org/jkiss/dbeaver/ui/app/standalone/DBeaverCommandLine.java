@@ -20,7 +20,6 @@ import org.apache.commons.cli.*;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
@@ -34,7 +33,6 @@ import org.osgi.framework.Bundle;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.rmi.Remote;
 import java.util.*;
 
 /**
@@ -141,15 +139,6 @@ public class DBeaverCommandLine
         }
     }
 
-    public static List<CommandLineParameterHandler> getRemoteParameterHandlers(@NotNull CommandLine commandLine) {
-        List<CommandLineParameterHandler> handlers = new ArrayList<>();
-        for (ParameterDescriptor param : customParameters.values()) {
-            if (commandLine.hasOption(param.name) && !(param.handler instanceof Remote)) {
-                handlers.add(param.handler);
-            }
-        }
-        return handlers;
-    }
     /**
      * @return true if called should exit after CLI processing
      */
