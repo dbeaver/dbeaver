@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * GeometryDataUtils.
@@ -100,16 +101,6 @@ public class GeometryDataUtils {
         properties.put("info", info);
         geometry.setProperties(properties);
 
-        setGeometryDisplayName(controller, row, geomAttrs, geometry);
-    }
-
-    public static void setGeometryDisplayName(
-        @NotNull IResultSetController controller,
-        @NotNull ResultSetRow row,
-        @NotNull GeomAttrs geomAttrs,
-        @NotNull DBGeometry geometry
-    ) {
-        final ResultSetModel model = controller.getModel();
         final DBSEntityAttribute entityAttribute = geomAttrs.getGeomAttr().getEntityAttribute();
         final DBVEntity entity = entityAttribute != null ? DBVUtils.getVirtualEntity(entityAttribute.getParentObject(), false) : null;
 
@@ -119,16 +110,13 @@ public class GeometryDataUtils {
             if (!attributes.isEmpty()) {
                 final String divider = entity.getDataSource().getContainer()
                     .getPreferenceStore().getString(ModelPreferences.DICTIONARY_COLUMN_DIVIDER);
-                final StringJoiner name = new StringJoiner(divider);
+                final String name = attributes.stream()
+                    .map(DBDAttributeBinding::getName)
+                    .map(info::get)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.joining(divider));
 
-                for (DBDAttributeBinding attribute : attributes) {
-                    final Object description = model.getCellValue(attribute, row);
-                    if (!DBUtils.isNullValue(description)) {
-                        name.add(attribute.getValueHandler().getValueDisplayString(attribute, description, DBDDisplayFormat.NATIVE));
-                    }
-                }
-
-                geometry.putProperties(Map.of("name", name.toString()));
+                properties.put("name", name);
             }
         }
     }
