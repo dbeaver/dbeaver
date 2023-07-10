@@ -105,4 +105,12 @@ public class AltibaseConstants {
             throw new ArrayIndexOutOfBoundsException("No such index value in EXPLAIN_PLAN: " + idx);
         }
     }
+    
+    /*
+     * Password grace time
+     */
+    public static final String SQL_WARNING_TITILE = "SQL Warning";
+    public static final String PASSWORD_WILL_EXPIRE_WARN_DESCRIPTION = "Change the password or contact the DBA.";
+    
+    public static final int EC_PASSWORD_WILL_EXPIRE = 0x51A79;
 }

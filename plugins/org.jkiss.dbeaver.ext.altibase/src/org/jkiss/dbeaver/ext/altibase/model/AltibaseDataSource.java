@@ -16,6 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.util.Collection;
+import java.util.Properties;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -24,22 +31,29 @@ import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.altibase.model.plan.AltibaseExecutionPlan;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-
-import java.util.Collection;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 public class AltibaseDataSource extends GenericDataSource implements DBCQueryPlanner {
+    
     private static final Log log = Log.getLog(AltibaseDataSource.class);
-    private GenericSchema publicSchema;
 
+    private GenericSchema publicSchema;
+    private boolean isPasswordExpireWarningShown;
+    
     public AltibaseDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, AltibaseMetaModel metaModel)
             throws DBException {
         super(monitor, container, metaModel, new AltibaseSQLDialect());
@@ -139,6 +153,43 @@ public class AltibaseDataSource extends GenericDataSource implements DBCQueryPla
         publicSchema.setVirtual(true);
     }
 
+    @Override
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, 
+            @NotNull String purpose) throws DBCException {
+        try {
+            Connection connection = super.openConnection(monitor, context, purpose);
+            try {
+                for (SQLWarning warninig = connection.getWarnings();
+                    warninig != null && !isPasswordExpireWarningShown;
+                    warninig = warninig.getNextWarning()
+                ) {
+                    if (checkForPasswordWillExpireWarning(warninig)) {
+                        isPasswordExpireWarningShown = true;
+                    }
+                }
+            } catch (SQLException e) {
+                log.debug("Can't get connection warnings", e);
+            }
+            return connection;
+        } catch (DBCException e) {
+            /* Refer OracleDataSource.changeExpiredPassword if required */
+            throw e;
+        }
+    }
+    
+    private boolean checkForPasswordWillExpireWarning(@NotNull SQLWarning warning) {
+        if (warning != null && warning.getErrorCode() == AltibaseConstants.EC_PASSWORD_WILL_EXPIRE) {
+            DBWorkbench.getPlatformUI().showWarningMessageBox(
+                    AltibaseConstants.SQL_WARNING_TITILE,
+                    warning.getMessage() + 
+                    AltibaseConstants.NEW_LINE + 
+                    AltibaseConstants.PASSWORD_WILL_EXPIRE_WARN_DESCRIPTION
+                    );
+            return true;
+        }
+        return false;
+    }
+        
     @NotNull
     @Override
     public AltibaseDataSource getDataSource() {
