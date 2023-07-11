@@ -34,7 +34,7 @@ public class AIPreferencesInitializer extends AbstractPreferenceInitializer {
         PrefUtils.setDefaultPreferenceValue(store, AICompletionConstants.AI_COMPLETION_MAX_CHOICES, 1);
         PrefUtils.setDefaultPreferenceValue(store, AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT, true);
 
-        PrefUtils.setDefaultPreferenceValue(store, GPTConstants.GPT_MODEL, GPTModel.GPT_TURBO.getName());
+        PrefUtils.setDefaultPreferenceValue(store, GPTConstants.GPT_MODEL, GPTModel.GPT_TURBO16.getName());
         PrefUtils.setDefaultPreferenceValue(store, GPTConstants.GPT_MODEL_TEMPERATURE, 0.0f);
         PrefUtils.setDefaultPreferenceValue(store, GPTConstants.GPT_LOG_QUERY, false);
     }
