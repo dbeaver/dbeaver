@@ -31,7 +31,7 @@ public class TaskRunImpl implements DBTTaskRun {
     private final Date startTime;
     private final String startUser;
     private final String startedBy;
-    private long duration;
+    private long duration = -1;
     private String errorMessage;
     private String errorStackTrace;
     private String extraMessage;
@@ -41,7 +41,6 @@ public class TaskRunImpl implements DBTTaskRun {
         @NotNull Date startTime,
         @NotNull String startUser,
         @NotNull String startedBy,
-        long duration,
         @Nullable String errorMessage,
         @Nullable String errorStackTrace
     ) {
@@ -49,7 +48,6 @@ public class TaskRunImpl implements DBTTaskRun {
         this.startTime = startTime;
         this.startUser = startUser;
         this.startedBy = startedBy;
-        this.duration = duration;
         this.errorMessage = errorMessage;
         this.errorStackTrace = errorStackTrace;
     }
@@ -89,6 +87,11 @@ public class TaskRunImpl implements DBTTaskRun {
     @Override
     public boolean isRunSuccess() {
         return errorMessage == null;
+    }
+
+    @Override
+    public boolean isFinished() {
+        return duration >= 0;
     }
 
     @Nullable

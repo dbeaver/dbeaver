@@ -129,7 +129,7 @@ public class AIConfiguratorDefault implements IObjectPropertyConfigurator<GPTCom
             for (GPTModel model : GPTModel.values()) {
                 modelCombo.add(model.getName());
             }
-            UIUtils.createInfoLabel(modelGroup, "gpt-3.5-turbo model suits the best for SQL code completion",
+            UIUtils.createInfoLabel(modelGroup, "gpt-3.5-turbo-16k model suits the best for SQL code completion",
                 GridData.FILL_HORIZONTAL, 2);
             {
                 Group modelAdvancedGroup = UIUtils.createControlGroup(placeholder,

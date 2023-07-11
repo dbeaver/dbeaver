@@ -146,11 +146,7 @@
 
         function showTools(toolsVisible) {
             var elementsVisibility = toolsVisible ? 'visible' : 'hidden';
-            document.getElementsByClassName('leaflet-control-zoom')[0].style.visibility=elementsVisibility;
-            if (${showMap}) {
-                document.getElementsByClassName('leaflet-control-layers')[0].style.visibility=elementsVisibility;
-            }
-            document.getElementsByClassName('leaflet-control-attribution')[0].style.visibility=elementsVisibility;
+            document.getElementsByClassName('leaflet-control-container')[0].style.visibility=elementsVisibility;
         }
 
         if (typeof setPresentationSelection !== 'undefined') {
