@@ -324,11 +324,6 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             CommonUtils.toString(settings.get(BLOB_FILE_CONFLICT_BEHAVIOR)),
             BlobFileConflictBehavior.PATCHNAME
         );
-        if (dataTransferSettings.getDataPipes().size() > 1) {
-            useSingleFile = CommonUtils.getBoolean(settings.get("useSingleFile"), useSingleFile);
-        } else {
-            useSingleFile = false;
-        }
 
         compressResults = CommonUtils.getBoolean(settings.get("compressResults"), compressResults);
         splitOutFiles = CommonUtils.getBoolean(settings.get("splitOutFiles"), splitOutFiles);
@@ -391,6 +386,10 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             config.put(ExecuteCommandEventProcessor.PROP_WORKING_DIRECTORY, null);
             eventProcessors.put(ExecuteCommandEventProcessor.ID, config);
         }
+
+        useSingleFile = CommonUtils.getBoolean(settings.get("useSingleFile"), useSingleFile)
+            && dataTransferSettings.getDataPipes().size() > 1
+            && dataTransferSettings.getProcessor().isAppendable();
     }
 
     @Override
