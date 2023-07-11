@@ -188,7 +188,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBCQueryPla
         
         @Override
         public boolean isServerOutputEnabled() {
-            return true;
+            return getContainer().getPreferenceStore().getBoolean(AltibaseConstants.PREF_DBMS_OUTPUT);
         }
 
         @Override

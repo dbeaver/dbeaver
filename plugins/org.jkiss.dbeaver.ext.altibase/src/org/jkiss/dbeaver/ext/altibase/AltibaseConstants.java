@@ -71,6 +71,7 @@ public class AltibaseConstants {
      * Preference page
      */
     public static final String PREF_EXPLAIN_PLAN_TYPE = "altibase.explain.plan.type";
+    public static final String PREF_DBMS_OUTPUT = "altibase.dbms.output";
     
     public enum EXPLAIN_PLAN {
         ONLY ("EXPLAIN PLAN = ONLY", (byte) 2),
