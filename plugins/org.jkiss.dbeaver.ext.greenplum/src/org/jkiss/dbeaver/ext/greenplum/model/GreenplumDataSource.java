@@ -71,6 +71,10 @@ public class GreenplumDataSource extends PostgreDataSource {
     }
 
     boolean isGreenplumVersionAtLeast(int major, int minor) {
+        if (gpVersion == null) {
+            log.debug("Can't read Greenplum server version");
+            return false;
+        }
         if (gpVersion.getMajor() < major) {
             return false;
         } else return gpVersion.getMajor() != major || gpVersion.getMinor() >= minor;
