@@ -16,12 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.clickhouse;
 
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.parser.common.ParseResult;
-import org.jkiss.dbeaver.parser.common.Parser;
-import org.jkiss.dbeaver.parser.common.ParserFactory;
-import org.jkiss.dbeaver.parser.common.grammar.ExpressionFactory.E;
-import org.jkiss.dbeaver.parser.common.grammar.GrammarInfoBuilder;
+import org.jkiss.dbeaver.ext.clickhouse.ClickhouseDataTypesParser.EnumEntryContext;
+import org.jkiss.dbeaver.ext.clickhouse.ClickhouseDataTypesParser.EnumTypeContext;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
@@ -30,29 +29,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ClickhouseTypeParser {
-    private static final Parser TYPE_PARSER;
-
-    static {
-        final var builder = new GrammarInfoBuilder("EnumType");
-
-        builder.setRule("sp", E.regex("[\\s]*"));
-        builder.setSkipRuleName("sp");
-        builder.setUseSkipRule(true);
-
-        // FIXME: string does not support escape sequences
-        builder.setRule("string", E.regex("'[^'\\\\\\r\\n]*'"));
-        builder.setRule("number", E.regex("[-]?[0-9]+"));
-
-        builder.setRule("enum_entry", E.seq(E.call("string"), "=", E.call("number")));
-        builder.setRule("enum_entry_list", E.seq(E.call("enum_entry"), E.zeroOrMore(",", E.call("enum_entry"))));
-        builder.setRule("enum", E.seq(E.regex("enum(8|16)"), "(", E.call("enum_entry_list"), ")"));
-
-        builder.setStartRuleName("enum");
-
-        TYPE_PARSER = ParserFactory
-            .getFactory(builder.buildGrammarInfo())
-            .createParser();
-    }
 
     private ClickhouseTypeParser() {
         // prevents instantiation
@@ -63,25 +39,25 @@ public class ClickhouseTypeParser {
         if (!isEnum(type)) {
             return Collections.emptyMap();
         }
+        var input = CharStreams.fromString(type);
+        var ll = new ClickhouseDataTypesLexer(input);
+        var tokens = new CommonTokenStream(ll);
+        var pp = new ClickhouseDataTypesParser(tokens);
+        var tree = pp.enumType();
 
-        final ParseResult result = TYPE_PARSER.parse(type);
-
-        if (!result.isSuccess()) {
-            return Collections.emptyMap();
+        if (tree instanceof EnumTypeContext && tree.enumEntryList() != null && tree.enumEntryList().enumEntry() != null) {
+            return tree.enumEntryList().enumEntry().stream()
+                .filter(node -> node instanceof EnumEntryContext && node.String() != null && node.Number() != null)
+                .map(node -> {
+                    final var stringValue = node.String().getText();
+                    final var key = stringValue.substring(1, stringValue.length() - 1);
+                    final var val = CommonUtils.toInt(node.Number().getText());
+                    return new Pair<>(key, val);
+                })
+                .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
         }
 
-        return result.getTrees(false).get(0).stream()
-            .filter(node -> node.getRule() != null && node.getRule().getName().equals("enum_entry"))
-            .map(node -> {
-                final var keyNode = node.getChildren().get(0).getChildren().get(0);
-                final var valNode = node.getChildren().get(2).getChildren().get(0);
-
-                final var key = type.substring(keyNode.getPosition() + 1, keyNode.getEndPosition() - 1);
-                final var val = type.substring(valNode.getPosition(), valNode.getEndPosition());
-
-                return new Pair<>(key, CommonUtils.toInt(val));
-            })
-            .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
+        return Collections.emptyMap();
     }
 
     @NotNull
