@@ -139,6 +139,8 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
                     }
                 }
             });
+            Control tip = UIUtils.createInfoLabel(repoGroup, UIConnectionMessages.pref_page_drivers_repo_info);
+            tip.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
         }
 
         performDefaults();
