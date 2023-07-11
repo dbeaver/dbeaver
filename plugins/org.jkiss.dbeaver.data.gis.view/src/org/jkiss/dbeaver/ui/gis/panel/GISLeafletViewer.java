@@ -151,7 +151,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
                 }
             };
 
-            if (presentation instanceof AbstractPresentation) {
+            if (presentation instanceof SpreadsheetPresentation) {
                 new BrowserFunction(browser, "setPresentationSelection") {
                     @Override
                     public Object function(Object[] arguments) {
