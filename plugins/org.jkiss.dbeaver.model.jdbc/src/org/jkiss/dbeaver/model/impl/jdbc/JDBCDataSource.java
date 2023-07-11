@@ -604,6 +604,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     @NotNull
     public static DBPDataKind getDataKind(@NotNull String typeName, int valueType)
     {
+        // HERE!
         switch (getValueTypeByTypeName(typeName, valueType)) {
             case Types.BOOLEAN:
                 return DBPDataKind.BOOLEAN;
