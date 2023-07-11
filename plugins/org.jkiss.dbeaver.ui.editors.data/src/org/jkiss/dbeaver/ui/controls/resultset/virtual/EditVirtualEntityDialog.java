@@ -248,11 +248,11 @@ public class EditVirtualEntityDialog extends BaseDialog {
         UIUtils.executeOnResize(fkTable, () -> UIUtils.packColumns(fkTable, true));
 
         UIUtils.createTableColumn(fkTable, SWT.LEFT,
-                ResultSetMessages.controls_resultset_virtual_foreignkey_page_ref_table);
+            ResultSetMessages.controls_resultset_virtual_foreignkey_page_ref_table);
         UIUtils.createTableColumn(fkTable, SWT.LEFT,
-                ResultSetMessages.controls_resultset_virtual_foreignkey_page_columns);
+            ResultSetMessages.controls_resultset_virtual_foreignkey_page_columns);
         UIUtils.createTableColumn(fkTable, SWT.LEFT,
-                ResultSetMessages.controls_resultset_virtual_foreignkey_page_ref_datasource);
+            ResultSetMessages.controls_resultset_virtual_foreignkey_page_ref_datasource);
 
         for (DBVEntityForeignKey fk : vEntity.getForeignKeys()) {
             createForeignKeyItem(fkTable, fk);
@@ -263,7 +263,7 @@ public class EditVirtualEntityDialog extends BaseDialog {
             buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             Button btnAdd = createButton(buttonsPanel, ID_CREATE_FOREIGN_KEY,
-                    ResultSetMessages.controls_resultset_virtual_foreignkey_page_add, false);
+                ResultSetMessages.controls_resultset_virtual_foreignkey_page_add, false);
             btnAdd.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -286,10 +286,10 @@ public class EditVirtualEntityDialog extends BaseDialog {
                 public void widgetSelected(SelectionEvent e) {
                     DBVEntityForeignKey virtualFK = (DBVEntityForeignKey) fkTable.getSelection()[0].getData();
                     if (!UIUtils.confirmAction(getShell(),
-                            ResultSetMessages.controls_resultset_virtual_foreignkey_page_remove_confirmation_title,
-                            NLS.bind(
-                                    ResultSetMessages.controls_resultset_virtual_foreignkey_page_remove_confirmation_question,
-                                    virtualFK.getName()))) {
+                        ResultSetMessages.controls_resultset_virtual_foreignkey_page_remove_confirmation_title,
+                        NLS.bind(
+                            ResultSetMessages.controls_resultset_virtual_foreignkey_page_remove_confirmation_question,
+                            virtualFK.getName()))) {
                         return;
                     }
                     vEntity.removeForeignKey(virtualFK);

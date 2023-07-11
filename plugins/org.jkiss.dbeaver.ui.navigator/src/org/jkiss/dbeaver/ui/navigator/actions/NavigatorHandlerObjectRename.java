@@ -75,7 +75,7 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
         }
         if (newName == null) {
             newName = EnterNameDialog.chooseName(shell,
-                    NLS.bind(UINavigatorMessages.actions_navigator_rename_object, node.getNodeType()), oldName);
+                NLS.bind(UINavigatorMessages.actions_navigator_rename_object, node.getNodeType()), oldName);
         }
         if (CommonUtils.isEmpty(newName) || newName.equals(oldName)) {
             return false;
@@ -88,8 +88,8 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
                 return true;
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError(
-                        UINavigatorMessages.actions_navigator_rename_object_exception_title,
-                        NLS.bind(UINavigatorMessages.actions_navigator_rename_object_exception_message, oldName), e);
+                    UINavigatorMessages.actions_navigator_rename_object_exception_title,
+                    NLS.bind(UINavigatorMessages.actions_navigator_rename_object_exception_message, oldName), e);
             }
         }
         if (node instanceof DBNDatabaseNode) {
@@ -121,13 +121,13 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
                         objectRenamer.renameObject(commandTarget.getContext(), object, options, newName);
                         if (object.isPersisted() && commandTarget.getEditor() == null) {
                             if (!showScript(workbenchWindow, commandTarget.getContext(), DBPScriptObject.EMPTY_OPTIONS,
-                                    UINavigatorMessages.actions_navigator_rename_script)) {
+                                UINavigatorMessages.actions_navigator_rename_script)) {
                                 commandTarget.getContext().resetChanges(true);
                                 return false;
                             } else {
                                 ObjectSaver renamer = new ObjectSaver(commandTarget.getContext(), DBPScriptObject.EMPTY_OPTIONS);
                                 TasksJob.runTask(NLS.bind(UINavigatorMessages.actions_navigator_rename_database_object,
-                                        object.getName()), renamer);
+                                    object.getName()), renamer);
                             }
                         } else {
                             for (DBECommand command : commandTarget.getContext().getFinalCommands()) {
@@ -140,10 +140,10 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
             }
         } catch (Throwable e) {
             DBWorkbench.getPlatformUI().showError(
-                    UINavigatorMessages.actions_navigator_rename_database_object_exception_title,
-                    NLS.bind(UINavigatorMessages.actions_navigator_rename_database_object_exception_message,
-                            node.getNodeName()),
-                    e);
+                UINavigatorMessages.actions_navigator_rename_database_object_exception_title,
+                NLS.bind(UINavigatorMessages.actions_navigator_rename_database_object_exception_message,
+                    node.getNodeName()),
+                e);
             return false;
         }
         return false;

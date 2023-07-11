@@ -580,9 +580,9 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             });
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(
-                    EditorsMessages.edit_foreign_key_page_error_loading_table_title,
-                    EditorsMessages.edit_foreign_key_page_error_loading_table_message,
-                    e);
+                EditorsMessages.edit_foreign_key_page_error_loading_table_title,
+                EditorsMessages.edit_foreign_key_page_error_loading_table_message,
+                e);
         } catch (InterruptedException e) {
             // Ignore
         }

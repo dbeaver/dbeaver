@@ -153,9 +153,9 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                 getWizard().getRunnableContext().run(true, true, initializer);
             } catch (InvocationTargetException e) {
                 DBWorkbench.getPlatformUI().showError(
-                        DTUIMessages.stream_producer_column_mapping_error_title, 
-                        DTUIMessages.stream_producer_column_mapping_error_message, 
-                        e.getTargetException());
+                    DTUIMessages.stream_producer_column_mapping_error_title,
+                    DTUIMessages.stream_producer_column_mapping_error_message,
+                    e.getTargetException());
                 return;
             } catch (InterruptedException e) {
                 // ignore

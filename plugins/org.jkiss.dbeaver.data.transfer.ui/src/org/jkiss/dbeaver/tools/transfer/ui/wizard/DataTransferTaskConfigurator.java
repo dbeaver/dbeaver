@@ -436,13 +436,13 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                 if (!dtWizard.getSettings().isProducerOptional()) {
                     if (pipe.getProducer() == null || !pipe.getProducer().isConfigurationComplete()) {
                         return NLS.bind(DTUIMessages.data_transfer_error_source_not_specified,
-                                (pipe.getConsumer() == null ? "?" : pipe.getConsumer().getObjectName()));
+                            (pipe.getConsumer() == null ? "?" : pipe.getConsumer().getObjectName()));
                     }
                 }
                 if (!dtWizard.getSettings().isConsumerOptional()) {
                     if (pipe.getConsumer() == null || !pipe.getConsumer().isConfigurationComplete()) {
                         return NLS.bind(DTUIMessages.data_transfer_error_target_not_specified,
-                                (pipe.getProducer() == null ? "?" : pipe.getProducer().getObjectName()));
+                            (pipe.getProducer() == null ? "?" : pipe.getProducer().getObjectName()));
                     }
                 }
             }

@@ -243,12 +243,12 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> impleme
         for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
             if (pipe.getProducer() == null || !pipe.getProducer().isConfigurationComplete()) {
                 setErrorMessage(NLS.bind(DTUIMessages.data_transfer_error_source_not_specified,
-                        pipe.getConsumer().getObjectName()));
+                    pipe.getConsumer().getObjectName()));
                 return false;
             }
             if (pipe.getConsumer() == null || !pipe.getConsumer().isConfigurationComplete()) {
                 setErrorMessage(NLS.bind(DTUIMessages.data_transfer_error_target_not_specified,
-                        pipe.getProducer().getObjectName()));
+                    pipe.getProducer().getObjectName()));
                 return false;
             }
         }

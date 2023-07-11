@@ -2956,11 +2956,11 @@ public class ResultSetViewer extends Viewer
         viewMenu.add(new DataFormatsPreferencesAction());
         viewMenu.add(new Separator());
         viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS,
-                ResultSetMessages.controls_resultset_viewer_action_show_selected_row_count));
+            ResultSetMessages.controls_resultset_viewer_action_show_selected_row_count));
         viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS,
-                ResultSetMessages.controls_resultset_viewer_action_show_selected_column_count));
+            ResultSetMessages.controls_resultset_viewer_action_show_selected_column_count));
         viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS,
-                ResultSetMessages.controls_resultset_viewer_action_show_selected_cell_count));
+            ResultSetMessages.controls_resultset_viewer_action_show_selected_cell_count));
 
         viewMenu.add(new Separator());
         viewMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ZOOM_IN));

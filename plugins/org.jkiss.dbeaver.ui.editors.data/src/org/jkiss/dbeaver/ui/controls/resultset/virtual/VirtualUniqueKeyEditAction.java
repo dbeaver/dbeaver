@@ -29,7 +29,7 @@ public class VirtualUniqueKeyEditAction extends Action {
     public VirtualUniqueKeyEditAction(ResultSetViewer resultSetViewer, boolean define)
     {
         super(define ? ResultSetMessages.controls_resultset_virtual_define_virtual_unique_key
-                : ResultSetMessages.controls_resultset_virtual_clear_virtual_unique_key);
+            : ResultSetMessages.controls_resultset_virtual_clear_virtual_unique_key);
         this.resultSetViewer = resultSetViewer;
         this.define = define;
     }
