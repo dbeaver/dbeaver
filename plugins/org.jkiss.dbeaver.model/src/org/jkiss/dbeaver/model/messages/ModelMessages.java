@@ -125,7 +125,6 @@ public class ModelMessages extends NLS {
 	public static String model_navigator_Model_root;
 	public static String model_navigator_Name;
 	public static String model_navigator_Project;
-    public static String model_navigator_folder;
 
 	public static String model_navigator_Root;
 

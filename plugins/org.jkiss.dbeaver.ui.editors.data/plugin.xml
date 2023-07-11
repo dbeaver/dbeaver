@@ -882,7 +882,7 @@
             <separator name="openwith" visible="true"/>
             <dynamic id="org.jkiss.dbeaver.resultset.export.openwith.list" class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerOpenWith$OpenWithMenuContributor"/>
             <separator name="default" visible="true"/>
-            <menu label="%default.command">
+            <menu label="%org.jkiss.dbeaver.resultset.export.openwith.default.label">
                 <dynamic id="org.jkiss.dbeaver.resultset.export.openwith.default" class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerOpenWith$OpenWithMenuDefaultContributor"/>
             </menu>
             <command commandId="hint" label="%command.org.jkiss.dbeaver.core.resultset.export.pulldown.hint"/>

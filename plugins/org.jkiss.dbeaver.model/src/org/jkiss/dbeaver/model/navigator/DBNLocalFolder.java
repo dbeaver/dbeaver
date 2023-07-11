@@ -87,7 +87,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     @Override
     public String getNodeType()
     {
-        return ModelMessages.model_navigator_folder;
+        return "folder";
     }
 
     @Override

@@ -3645,9 +3645,8 @@ public class SQLEditor extends SQLEditorBase implements
                 String queryText = CommonUtils.truncateString(statement.getText(), 1000);
                 DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
                 
-                String notAvaliable = SQLEditorMessages.sql_editor_not_avaliable;
-                String dataSourceContainerName = dataSourceContainer == null ? notAvaliable : dataSourceContainer.getName();
-                String processedQueryText = CommonUtils.isEmpty(queryText) ? notAvaliable : queryText;
+                String dataSourceContainerName = dataSourceContainer == null ? "N/A" : dataSourceContainer.getName();
+                String processedQueryText = CommonUtils.isEmpty(queryText) ? "N/A" : queryText;
                 
                 String toolTip =
                     NLS.bind(SQLEditorMessages.sql_editor_data_receiver_result_name_tooltip_connection, dataSourceContainerName) + 
