@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ui.gis.panel.actions;
 import org.eclipse.jface.action.Action;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
@@ -31,13 +29,9 @@ public class ConfigureLabelsAction extends Action {
     private final GISLeafletViewer viewer;
 
     public ConfigureLabelsAction(@NotNull GISLeafletViewer viewer) {
-        super(null, AS_PUSH_BUTTON);
+        super(GISMessages.panel_configure_labels_action_label, AS_PUSH_BUTTON);
         this.viewer = viewer;
-
-        setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
-        setToolTipText(GISMessages.panel_configure_labels_action_label);
     }
-
 
     @Override
     public void run() {

@@ -89,7 +89,8 @@ public class GISMessages extends NLS {
 	public static String panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_layers_definition_explanation_link_text;
 
 	public static String panel_configure_labels_action_label;
-	public static String panel_toggle_labels_action_label;
+	public static String panel_show_labels_action_label;
+	public static String panel_hide_labels_action_label;
 
 	static {
 		NLS.initializeMessages(BUNDLE_NAME, GISMessages.class);

@@ -17,9 +17,12 @@
 package org.jkiss.dbeaver.ui.gis.panel.actions;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuCreator;
+import org.eclipse.jface.action.MenuManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.MenuCreator;
 import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 import org.jkiss.dbeaver.ui.gis.panel.GISLeafletViewer;
 
@@ -27,16 +30,32 @@ public class ToggleLabelsAction extends Action {
     private final GISLeafletViewer viewer;
 
     public ToggleLabelsAction(@NotNull GISLeafletViewer viewer) {
-        super(null, AS_CHECK_BOX);
+        super(null, AS_DROP_DOWN_MENU);
         this.viewer = viewer;
 
+        setText(getActionText());
         setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.SMALL_INFO));
-        setToolTipText(GISMessages.panel_toggle_labels_action_label);
-        setChecked(viewer.isShowLabels());
     }
 
     @Override
     public void run() {
-        viewer.setShowLabels(isChecked());
+        viewer.setShowLabels(!viewer.isShowLabels());
+        setText(getActionText());
+        viewer.updateToolbar();
+    }
+
+    @Override
+    public IMenuCreator getMenuCreator() {
+        return new MenuCreator(control -> {
+            final MenuManager manager = new MenuManager();
+            manager.setRemoveAllWhenShown(true);
+            manager.addMenuListener(m -> manager.add(new ConfigureLabelsAction(viewer)));
+            return manager;
+        });
+    }
+
+    @NotNull
+    private String getActionText() {
+        return viewer.isShowLabels() ? GISMessages.panel_hide_labels_action_label : GISMessages.panel_show_labels_action_label;
     }
 }

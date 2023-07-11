@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.gis.panel;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -57,6 +56,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
@@ -65,7 +65,6 @@ import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
 import org.jkiss.dbeaver.ui.gis.IGeometryValueEditor;
 import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
-import org.jkiss.dbeaver.ui.gis.panel.actions.ConfigureLabelsAction;
 import org.jkiss.dbeaver.ui.gis.panel.actions.ToggleLabelsAction;
 import org.jkiss.dbeaver.ui.gis.registry.GeometryViewerRegistry;
 import org.jkiss.dbeaver.ui.gis.registry.LeafletTilesDescriptor;
@@ -106,6 +105,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
     private int sourceSRID; // Explicitly set SRID
     private int actualSourceSRID; // SRID taken from geometry value
     private Path scriptFile;
+    private final Composite statusBar;
     private final ToolBarManager toolBarManager;
     private int defaultSRID; // Target SRID used to render map
 
@@ -173,11 +173,11 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         }
 
         {
-            Composite bottomPanel = UIUtils.createPlaceholder(composite, 1);//new Composite(composite, SWT.NONE);
-            bottomPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            CSSUtils.setCSSClass(bottomPanel, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            statusBar = UIUtils.createPlaceholder(composite, 1);//new Composite(composite, SWT.NONE);
+            statusBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            CSSUtils.setCSSClass(statusBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
-            ToolBar bottomToolbar = new ToolBar(bottomPanel, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+            ToolBar bottomToolbar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
 
             toolBarManager = new ToolBarManager(bottomToolbar);
         }
@@ -311,7 +311,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
             }
         }
         lastValue = values;
-        updateToolbar();
+        populateToolbar();
     }
 
     private Path generateViewScript(DBGeometry[] values, @Nullable Bounds bounds) throws IOException {
@@ -504,7 +504,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         return lastValue;
     }
 
-    void updateToolbar() {
+    void populateToolbar() {
         if (browser == null) {
             return;
         }
@@ -611,7 +611,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
                     DBWorkbench.getPlatformUI().showError("Render error", "Error rendering geometry", e);
                 }
                 saveAttributeSettings();
-                updateToolbar();
+                populateToolbar();
             }
         });
 
@@ -631,14 +631,23 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
             public void run() {
                 toolsVisible = !toolsVisible;
                 updateControlsVisibility();
-                updateToolbar();
+                populateToolbar();
             }
         });
 
-        toolBarManager.add(new ActionContributionItem(new ToggleLabelsAction(this)));
-        toolBarManager.add(new ActionContributionItem(new ConfigureLabelsAction(this)));
+        toolBarManager.add(ActionUtils.makeActionContribution(new ToggleLabelsAction(this), true));
 
         toolBarManager.update(true);
+    }
+
+    public void updateToolbar() {
+        try {
+            statusBar.setRedraw(false);
+            UIUtils.updateContributionItems(toolBarManager);
+            statusBar.layout(true, true);
+        } finally {
+            statusBar.setRedraw(true);
+        }
     }
 
     private void saveAttributeSettings() {
