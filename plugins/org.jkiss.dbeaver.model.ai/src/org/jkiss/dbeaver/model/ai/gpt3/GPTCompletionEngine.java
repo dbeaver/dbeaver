@@ -79,6 +79,11 @@ public class GPTCompletionEngine implements DAICompletionEngine {
         "This model's maximum context length is [0-9]+ tokens, "
             + "however you requested [0-9]+ tokens \\(([0-9]+) in your prompt; [0-9]+ "
             + "for the completion\\)\\. Please reduce your prompt; or completion length");
+    private static final Pattern chatSizeErrorPattern = Pattern.compile(
+        "This model's maximum context length is [0-9]+ tokens\\. However, "
+            + "you requested [0-9]+ tokens \\(([0-9]+) in the messages, [0-9]+ "
+            + "in the completion\\)\\. Please reduce the length of the messages or completion\\.");
+
 
     public GPTCompletionEngine() {
     }
@@ -216,7 +221,12 @@ public class GPTCompletionEngine implements DAICompletionEngine {
                             } else {
                                 // Extracts resulted prompt size from the error message and resizes max response to
                                 // value lower that (maxTokens - prompt size)
-                                Matcher matcher = sizeErrorPattern.matcher(e.getMessage());
+                                Matcher matcher;
+                                if (GPTModel.getByName(getModelName()).isChatAPI()) {
+                                    matcher = chatSizeErrorPattern.matcher(e.getMessage());
+                                } else {
+                                    matcher = sizeErrorPattern.matcher(e.getMessage());
+                                }
                                 int promptSize;
                                 if (matcher.find()) {
                                     String numberStr = matcher.group(1);
@@ -226,6 +236,9 @@ public class GPTCompletionEngine implements DAICompletionEngine {
                                 }
                                 responseSize = Math.min(responseSize,
                                     GPTModel.getByName(getModelName()).getMaxTokens() - promptSize - 1);
+                                if (responseSize < 0) {
+                                    throw e;
+                                }
                                 completionRequest = createCompletionRequest(modifiedRequest, responseSize);
                             }
                             if (i >= MAX_REQUEST_ATTEMPTS - 1) {
