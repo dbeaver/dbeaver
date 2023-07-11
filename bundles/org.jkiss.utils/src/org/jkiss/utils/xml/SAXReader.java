@@ -90,7 +90,7 @@ public final class SAXReader implements ContentHandler, EntityResolver, DTDHandl
     /**
      * Parse input stream and handle XML tags.
      */
-    public void parse(SAXListener listener, boolean allowDoctypeDeclaration) throws IOException, XMLException {
+    public void parse(SAXListener listener) throws IOException, XMLException {
         // Initialize SAX parser
         Parser parser = acquireParser();
 
@@ -98,7 +98,7 @@ public final class SAXReader implements ContentHandler, EntityResolver, DTDHandl
         try {
             XMLReader saxReader = parser.getSAXParser().getXMLReader();
             saxReader.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true );
-            saxReader.setFeature("http://apache.org/xml/features/disallow-doctype-decl", !allowDoctypeDeclaration);
+            saxReader.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 
             saxReader.setErrorHandler(new ParseErrorHandler());
             saxReader.setContentHandler(this);
@@ -121,13 +121,6 @@ public final class SAXReader implements ContentHandler, EntityResolver, DTDHandl
         } finally {
             parser.close();
         }
-    }
-
-    /**
-     * Parse input stream and handle XML tags.
-     */
-    public void parse(SAXListener listener) throws IOException, XMLException {
-        parse(listener, false);
     }
 
     public synchronized static Parser acquireParser() throws XMLException {
