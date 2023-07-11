@@ -102,7 +102,7 @@ public class GeometryDataUtils {
         geometry.setProperties(properties);
 
         final DBSEntityAttribute entityAttribute = geomAttrs.getGeomAttr().getEntityAttribute();
-        final DBVEntity entity = entityAttribute != null ? DBVUtils.getVirtualEntity(entityAttribute.getParentObject(), false) : null;
+        final DBVEntity entity = entityAttribute != null ? DBVUtils.getVirtualEntity(entityAttribute.getParentObject(), true) : null;
 
         if (entity != null) {
             final Collection<DBDAttributeBinding> attributes = entity.getDescriptionColumns(geomAttrs.descAttrs);
