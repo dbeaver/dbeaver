@@ -53,9 +53,33 @@
             // This way we can tell whether we're running within DBeaver.
             // If not, just don't bother overriding context menu behavior.
             geoMap.on('contextmenu', function (event) {
+                let actions = [
+                    ['Copy coordinates', 'setClipboardContents(\'' + event.latlng.lat + ', ' + event.latlng.lng + '\')'],
+                    ['Copy viewport bounds', 'setClipboardContents(\'' + geoMap.getBounds().toBBoxString() + '\')'],
+                ];
+
+                if (typeof selection !== 'undefined' && selection.length > 0) {
+                    let bounds = selection[0].layer.getBounds();
+                    for (let i = 1; i < selection.length; i++) {
+                        bounds.extend(selection[i].layer.getBounds());;
+                    }
+                    actions.push(['Copy selection bounds', 'setClipboardContents(\'' + bounds.toBBoxString() + '\')']);
+                }
+
+                let content = '';
+                for (let i = 0; i < actions.length; i++) {
+                    let action = actions[i];
+                    content += '<a href="javascript:' + action[1] + ';geoMap.closePopup();undefined;">';
+                    content += action[0];
+                    content += '</a>';
+                    if (i < actions.length - 1) {
+                        content += '<br/>';
+                    }
+                }
+
                 L.popup()
                     .setLatLng(event.latlng)
-                    .setContent('<a href="javascript:setClipboardContents(\'' + event.latlng.lat + ', ' + event.latlng.lng + '\');geoMap.closePopup();undefined;">Copy coordinates</a>')
+                    .setContent(content)
                     .openOn(geoMap);
             });
         }
