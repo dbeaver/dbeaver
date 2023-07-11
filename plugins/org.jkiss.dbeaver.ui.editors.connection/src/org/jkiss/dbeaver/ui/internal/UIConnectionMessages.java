@@ -234,6 +234,7 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_drivers_button_add;
     public static String pref_page_drivers_label_enter_drivers_location_url;
     public static String pref_page_drivers_button_remove;
+    public static String pref_page_drivers_repo_info;
 
     // Drivers Classpath
     public static String pref_page_drivers_classpath_system_classpath_group;
@@ -256,6 +257,7 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_drivers_maven_group_properties;
     public static String pref_page_drivers_maven_label_name;
     public static String pref_page_drivers_maven_label_scope;
+    public static String pref_page_drivers_maven_checkbox_snapshot;
     public static String pref_page_drivers_maven_group_authentication;
     public static String pref_page_drivers_maven_label_user;
     public static String pref_page_drivers_maven_label_password;

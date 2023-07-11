@@ -113,12 +113,20 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
                 JDBCResultSet dbResult = dbStat.getResultSet();
                 if (dbResult != null) {
                     try {
+                        // There could be multiple objects with the name (e.g. in different case)
+                        String checkName = object != null ? object.getName() : objectName;
+                        OBJECT firstFoundObject = null;
                         while (dbResult.next()) {
                             OBJECT remoteObject = fetchObject(session, owner, dbResult);
-                            if (isValidObject(monitor, owner, remoteObject)) {
-                                return remoteObject;
+                            if (remoteObject != null && isValidObject(monitor, owner, remoteObject)) {
+                                if (remoteObject.getName().equals(checkName)) {
+                                    return remoteObject;
+                                } else {
+                                    firstFoundObject = remoteObject;
+                                }
                             }
                         }
+                        return firstFoundObject;
                     } finally {
                         dbResult.close();
                     }

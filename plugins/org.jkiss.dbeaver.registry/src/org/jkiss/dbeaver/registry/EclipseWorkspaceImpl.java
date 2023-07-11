@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
@@ -60,12 +61,13 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
     @Override
     public final void initializeProjects() {
         initializeWorkspaceSession();
-
-        loadWorkspaceProjects();
-
-        if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects) &&
-            isDefaultProjectNeeded())
-        {
+        try {
+            loadWorkspaceProjects();
+        } catch (DBException ex) {
+            log.error("Can't load workspace projects", ex);
+        }
+        
+        if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects) && isDefaultProjectNeeded()) {
             try {
                 createDefaultProject();
             } catch (CoreException e) {
@@ -97,7 +99,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         super.dispose();
     }
 
-    protected void loadWorkspaceProjects() {
+    protected void loadWorkspaceProjects() throws DBException {
         String activeProjectName = getPlatform().getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
 
         IWorkspaceRoot root = getEclipseWorkspace().getRoot();

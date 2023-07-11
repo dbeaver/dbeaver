@@ -148,6 +148,11 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
                         portForward.getRemoteHost(), portForward.getRemotePort());
                 }
             } catch (IOException e) {
+                try {
+                    client.close();
+                } catch (Exception ex) {
+                    log.error("Error closing SSHJ tunnel", e);
+                }
                 closeTunnel(monitor);
                 throw new DBException("Cannot establish tunnel to " + host.getHostname() + ":" + host.getPort(), e);
             }

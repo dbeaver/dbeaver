@@ -39,6 +39,6 @@ public class SnowflakeSQLDialectTest {
 
         assertTrue(dialect.mustBeQuoted("Бразилски_џијуџицу", false));
         assertTrue(dialect.mustBeQuoted("", false));
-        assertTrue(dialect.mustBeQuoted("noquotesneededforsure", true));
+        assertFalse(dialect.mustBeQuoted("noquotesneededforsure", true));
     }
 }

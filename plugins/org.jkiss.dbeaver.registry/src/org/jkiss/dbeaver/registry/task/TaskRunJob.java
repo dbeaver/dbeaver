@@ -39,6 +39,7 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -82,9 +83,9 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
             new Date(),
             System.getProperty(StandardConstants.ENV_USER_NAME),
             GeneralUtils.getProductTitle(),
-            0, null, null);
+            null, null);
         task.getTaskStatsFolder(true);
-        Path logFile = task.getRunLog(taskRun);
+        Path logFile = Objects.requireNonNull(task.getRunLog(taskRun)); // must exist on local machine
         task.addNewRun(taskRun);
 
         try (PrintStream logStream = new PrintStream(Files.newOutputStream(logFile), true, StandardCharsets.UTF_8.name())) {

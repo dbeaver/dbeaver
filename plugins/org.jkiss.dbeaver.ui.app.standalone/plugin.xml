@@ -97,8 +97,8 @@
         <command
             id="org.jkiss.dbeaver.core.util.resetSettings"
             categoryId="org.jkiss.dbeaver.core.util"
-            name="Reset UI Settings..."
-            description="Reset UI settings and restart"/>
+            name="Reset Settings..."
+            description="Reset settings and restart"/>
         <command
             id="org.jkiss.dbeaver.core.util.clearHistory"
             categoryId="org.jkiss.dbeaver.core.util"
@@ -186,7 +186,7 @@
             </activeWhen>
         </handler>
         <handler commandId="org.eclipse.ui.edit.text.openLocalFile" class="org.jkiss.dbeaver.ui.app.standalone.actions.OpenLocalFileActionExt"/>
-        <handler commandId="org.jkiss.dbeaver.core.util.resetSettings" class="org.jkiss.dbeaver.ui.app.standalone.actions.ResetUISettingsHandler"/>
+        <handler commandId="org.jkiss.dbeaver.core.util.resetSettings" class="org.jkiss.dbeaver.ui.app.standalone.actions.ResetSettingsHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.util.clearHistory" class="org.jkiss.dbeaver.ui.app.standalone.actions.ClearHistoryHandler"/>
     </extension>
 

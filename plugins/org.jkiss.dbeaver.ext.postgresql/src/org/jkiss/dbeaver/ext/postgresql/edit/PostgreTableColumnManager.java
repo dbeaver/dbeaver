@@ -207,9 +207,13 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 //        ALTER [ COLUMN ] column SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
         String prefix = "ALTER " + table.getTableTypeName() + " " + DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) +
             " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";
-        String typeClause = column.getFullTypeName();
-        if (column.getDataSource().getServerType().supportsAlterTableColumnWithUSING() && column.getDataType() != null) {
-            typeClause += " USING " + DBUtils.getQuotedIdentifier(column) + "::" + column.getDataType().getName();
+        final PostgreDataType type = column.getDataType();
+        final String fullTypeName = type != null ? DBUtils.getObjectFullName(type, DBPEvaluationContext.DDL) : column.getFullTypeName();
+        String typeClause = fullTypeName;
+        if (column.getDataSource().getServerType().supportsAlterTableColumnWithUSING()) {
+            typeClause += " USING ";
+            typeClause += column.getDataSource().getSQLDialect().getTypeCastClause(column, DBUtils.getQuotedIdentifier(column), true);
+            typeClause += "::" + fullTypeName;
         }
         if (command.hasProperty("fullTypeName") || command.hasProperty("maxLength") || command.hasProperty("precision") || command.hasProperty("scale")) {
             actionList.add(new SQLDatabasePersistActionAtomic("Set column type", prefix + "TYPE " + typeClause, isAtomic));

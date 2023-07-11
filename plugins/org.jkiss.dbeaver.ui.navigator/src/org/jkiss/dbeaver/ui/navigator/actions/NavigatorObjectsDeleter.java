@@ -226,14 +226,14 @@ public class NavigatorObjectsDeleter {
         }.schedule();
     }
 
-    private void deleteDatabaseNode(final DBNDatabaseNode node) {
+    private void deleteDatabaseNode(@NotNull final DBNDatabaseNode node) {
         try {
             if (!(node.getParentNode() instanceof DBNContainer)) {
                 throw new DBException("Node '" + node + "' doesn't have a container");
             }
             final DBSObject object = node.getObject();
             if (object == null) {
-                throw new DBException("Can't delete node with null object");
+                throw new DBException("Can't delete node with null object (" + node.getClass().getSimpleName() + ":" + node.getNodeName() + ")");
             }
             final DBEObjectMaker objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
             if (objectMaker == null) {

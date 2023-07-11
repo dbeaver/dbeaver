@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
@@ -25,6 +28,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 public interface IDataTransferNode<SETTINGS extends IDataTransferSettings> {
 
     DBSObject getDatabaseObject();
+
+    DBPDataSourceContainer getDataSourceContainer();
 
     String getObjectName();
 
@@ -35,5 +40,8 @@ public interface IDataTransferNode<SETTINGS extends IDataTransferSettings> {
     DBPImage getObjectContainerIcon();
 
     boolean isConfigurationComplete();
+
+    @Nullable
+    DBPProject getProject();
 
 }

@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -883,16 +884,32 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
      *
      * @return {@code true} if table partitioning is supported
      */
+    @Association
     public boolean supportsPartitions() {
         return
             CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-partitions"), true) &&
             isServerVersionAtLeast(5, 1);
     }
 
+    /**
+     * Returns true if table/catalog triggers are supported.
+     */
+    @Association
+    public boolean supportsTriggers() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-triggers"), true);
+    }
+
     public boolean isSystemCatalog(String name) {
         return MySQLConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(name) ||
             MySQLConstants.PERFORMANCE_SCHEMA_NAME.equalsIgnoreCase(name) ||
             MySQLConstants.MYSQL_SCHEMA_NAME.equalsIgnoreCase(name);
+    }
+
+    /**
+     * Checks if it is possible to fetch transform
+     */
+    public boolean supportsFetchTransform() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-mysql-fetch-transform"), true);
     }
 
 }

@@ -25,13 +25,18 @@ import org.jkiss.utils.CommonUtils;
  */
 public class QMMConnectionInfo extends QMMObject {
 
+    @Include
     private final QMMProjectInfo projectInfo;
+    @Include
     private final String containerId;
+
     private String containerName;
     private final String driverId;
     private String connectionUserName;
     private String connectionUrl;
+    @Include
     private String instanceId;
+    @Include
     private String contextName;
     private boolean transactional;
 
@@ -127,11 +132,6 @@ public class QMMConnectionInfo extends QMMObject {
     @Override
     public String getText() {
         return this.containerName + " - " + contextName;
-    }
-
-    @Override
-    public QMMetaObjectType getObjectType() {
-        return QMMetaObjectType.CONNECTION_INFO;
     }
 
     @Override
