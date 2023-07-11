@@ -488,39 +488,45 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return getDescriptionColumns(attributes, descriptionColumnNames);
     }
 
-    public static Collection<DBSEntityAttribute> getDescriptionColumns(DBRProgressMonitor monitor, DBSEntity entity, String descColumns)
-        throws DBException {
-        if (CommonUtils.isEmpty(descColumns)) {
-            return Collections.emptyList();
-        }
-        Collection<? extends DBSEntityAttribute> attributes = entity.getAttributes(monitor);
-        if (CommonUtils.isEmpty(attributes)) {
-            return Collections.emptyList();
-        }
-        return getDescriptionColumns(attributes, descColumns);
+    public static Collection<DBSEntityAttribute> getDescriptionColumns(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntity entity,
+        @NotNull String descColumns
+    ) throws DBException {
+        return getDescriptionColumns(entity.getAttributes(monitor), descColumns);
     }
 
     @NotNull
     public static <T extends DBSAttributeBase> Collection<T> getDescriptionColumns(
-        @NotNull Collection<? extends T> attributes,
+        @Nullable Collection<? extends T> attributes,
         @NotNull String descColumns
     ) {
-        if (CommonUtils.isEmpty(descColumns)) {
+        if (CommonUtils.isEmpty(descColumns) || CommonUtils.isEmpty(attributes)) {
             return Collections.emptyList();
         }
         List<T> result = new ArrayList<>();
-        if (!CommonUtils.isEmpty(attributes)) {
-            StringTokenizer st = new StringTokenizer(descColumns, ",");
-            while (st.hasMoreTokens()) {
-                String colName = st.nextToken();
-                for (T attr : attributes) {
-                    if (colName.equalsIgnoreCase(attr.getName())) {
-                        result.add(attr);
-                    }
+        StringTokenizer st = new StringTokenizer(descColumns, ",");
+        while (st.hasMoreTokens()) {
+            String colName = st.nextToken();
+            for (T attr : attributes) {
+                if (matchesName(attr, colName)) {
+                    result.add(attr);
+                    break;
                 }
             }
         }
         return result;
+    }
+
+    private static boolean matchesName(@NotNull DBSAttributeBase attribute, @NotNull String name) {
+        if (attribute instanceof DBSObject) {
+            final DBPDataSource dataSource = ((DBSObject) attribute).getDataSource();
+            if (dataSource != null) {
+                name = DBUtils.getUnQuotedIdentifier(dataSource, name);
+            }
+        }
+
+        return attribute.getName().equalsIgnoreCase(name);
     }
 
     public static String getDefaultDescriptionColumn(DBRProgressMonitor monitor, DBSEntityAttribute keyColumn) throws DBException {
