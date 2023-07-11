@@ -75,14 +75,9 @@ public class GPTCompletionEngine implements DAICompletionEngine {
     private static final int GPT_MODEL_MAX_RESPONSE_TOKENS = 2000;
     private static final boolean SUPPORTS_ATTRS = true;
 
-    private static final Pattern sizeErrorPattern = Pattern.compile(
-        "This model's maximum context length is [0-9]+ tokens, "
-            + "however you requested [0-9]+ tokens \\(([0-9]+) in your prompt; [0-9]+ "
-            + "for the completion\\)\\. Please reduce your prompt; or completion length");
-    private static final Pattern chatSizeErrorPattern = Pattern.compile(
-        "This model's maximum context length is [0-9]+ tokens\\. However, "
-            + "you requested [0-9]+ tokens \\(([0-9]+) in the messages, [0-9]+ "
-            + "in the completion\\)\\. Please reduce the length of the messages or completion\\.");
+    private static final Pattern sizeErrorPattern = Pattern.compile("This model's maximum context length is [0-9]+ tokens. "
+        + "\\wowever[, ]+you requested [0-9]+ tokens \\(([0-9]+) in \\w+ \\w+[;,] [0-9]+ \\w+ \\w+ completion\\). "
+        + "Please reduce .+");
 
 
     public GPTCompletionEngine() {
@@ -221,12 +216,7 @@ public class GPTCompletionEngine implements DAICompletionEngine {
                             } else {
                                 // Extracts resulted prompt size from the error message and resizes max response to
                                 // value lower that (maxTokens - prompt size)
-                                Matcher matcher;
-                                if (GPTModel.getByName(getModelName()).isChatAPI()) {
-                                    matcher = chatSizeErrorPattern.matcher(e.getMessage());
-                                } else {
-                                    matcher = sizeErrorPattern.matcher(e.getMessage());
-                                }
+                                Matcher matcher = sizeErrorPattern.matcher(e.getMessage());
                                 int promptSize;
                                 if (matcher.find()) {
                                     String numberStr = matcher.group(1);
