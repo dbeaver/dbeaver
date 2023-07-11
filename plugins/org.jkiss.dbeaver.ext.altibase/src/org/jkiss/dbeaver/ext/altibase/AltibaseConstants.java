@@ -115,7 +115,9 @@ public class AltibaseConstants {
     /*
      * DBMS output
      */
-    public static final String CLASS_NAME_4_CONNECTION = "Altibase.jdbc.driver.AltibaseConnection";
-    public static final String CLASS_NAME_4_MESSAGE_CALLBACK = "Altibase.jdbc.driver.AltibaseMessageCallback";
+    //public static final String CLASS_NAME_4_CONNECTION = "Altibase.jdbc.driver.AltibaseConnection";
+    // e.g. Altibase.jdbc.driver.AltibaseMessageCallback, Altibase7_1.jdbc.driver.AltibaseMessageCallback
+    public static final String CLASS_NAME_4_CONNECTION_POSTFIX = ".jdbc.driver.AltibaseConnection";
+    public static final String CLASS_NAME_4_MESSAGE_CALLBACK_POSTFIX = ".jdbc.driver.AltibaseMessageCallback";
     public static final String METHOD_NAME_4_REGISTER_MESSAGE_CALLBACK = "registerMessageCallback"; 
 }

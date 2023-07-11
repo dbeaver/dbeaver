@@ -209,6 +209,10 @@ public class AltibaseDataSource extends GenericDataSource implements DBCQueryPla
             Object instance4Callback = null;
             Method method2RegisterCallback = null;
             
+            String connClassNamePrefix = "Altibase";
+            String className4Connection = "N/A";
+            String className4MessageCallback = "N/A";
+            
             try (JDBCSession session = (JDBCSession) context.openSession(monitor, 
                     DBCExecutionPurpose.UTIL, (enable ? "Enable" : "Disable") + " DBMS output")) {
                 
@@ -218,10 +222,14 @@ public class AltibaseDataSource extends GenericDataSource implements DBCQueryPla
                     throw new SecurityException("Failed to load ClassLoader");
                 }
                 
-                class4MsgCallback = classLoader.loadClass(AltibaseConstants.CLASS_NAME_4_MESSAGE_CALLBACK);
+                // To support Altibasex_x.jar driver
+                connClassNamePrefix = conn.getClass().getName().split("\\.")[0];
+                className4Connection = connClassNamePrefix + AltibaseConstants.CLASS_NAME_4_CONNECTION_POSTFIX;
+                className4MessageCallback = connClassNamePrefix + AltibaseConstants.CLASS_NAME_4_MESSAGE_CALLBACK_POSTFIX;
+                
+                class4MsgCallback = classLoader.loadClass(className4MessageCallback);
                 if (class4MsgCallback == null) {
-                    throw new ClassNotFoundException(
-                            "Failed to load class: " + AltibaseConstants.CLASS_NAME_4_MESSAGE_CALLBACK);
+                    throw new ClassNotFoundException("Failed to load class: " + className4MessageCallback);
                 }
 
                 instance4Callback = Proxy.newProxyInstance(classLoader, new java.lang.Class[]
@@ -236,11 +244,11 @@ public class AltibaseDataSource extends GenericDataSource implements DBCQueryPla
                 });
                 if (instance4Callback == null) {
                     throw new NullPointerException(
-                            "Failed to instantiate class: " + AltibaseConstants.CLASS_NAME_4_MESSAGE_CALLBACK);
+                            "Failed to instantiate class: " + className4MessageCallback);
                 }
 
                 method2RegisterCallback = classLoader
-                        .loadClass(AltibaseConstants.CLASS_NAME_4_CONNECTION)
+                        .loadClass(className4Connection)
                         .getMethod(
                             AltibaseConstants.METHOD_NAME_4_REGISTER_MESSAGE_CALLBACK, 
                             class4MsgCallback);
@@ -249,7 +257,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBCQueryPla
                     throw new NoSuchMethodException(String.format(
                             "Failed to get method: %s of class %s ", 
                             AltibaseConstants.METHOD_NAME_4_REGISTER_MESSAGE_CALLBACK,
-                            AltibaseConstants.CLASS_NAME_4_MESSAGE_CALLBACK));
+                            className4MessageCallback));
                 }
                 
                 method2RegisterCallback.invoke(conn, instance4Callback);
