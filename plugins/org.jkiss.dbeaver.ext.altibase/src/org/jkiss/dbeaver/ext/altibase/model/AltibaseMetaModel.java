@@ -270,7 +270,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
 
         if (DBMS_METADATA) {
             ddl = getDDLFromDbmsMetadata(monitor, sourceObject, sourceObject.getSchema().getName(), 
-                    (packageType == AltibaseConstants.PACKAGE_SPEC) ? "PACKAGE_SPEC" : "PACKAGE_BODY");
+                    (packageType == AltibaseConstants.PACKAGE_TYPE_SPEC) ? "PACKAGE_SPEC" : "PACKAGE_BODY");
         }
 
         if (!DBMS_METADATA || AltibaseUtils.isEmpty(ddl)) {

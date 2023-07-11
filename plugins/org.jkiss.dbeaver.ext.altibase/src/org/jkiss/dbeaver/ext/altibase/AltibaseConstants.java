@@ -27,11 +27,8 @@ public class AltibaseConstants {
 
     public static final String PUBLIC_USER = "PUBLIC";
     
-    public static final int PACKAGE_SPEC = 6;
-    public static final int PACKAGE_BODY = 7;
-
-    public static final String PROP_OBJECT_DEFINITION = "objectDefinitionText";
-    public static final String PROP_OBJECT_BODY_DEFINITION = "extendedDefinitionText";
+    public static final int PACKAGE_TYPE_SPEC = 6;
+    public static final int PACKAGE_TYPE_BODY = 7;
 
     public static final int TYPE_BIGINT = -5;
     public static final int TYPE_BINARY = -2;
@@ -113,4 +110,11 @@ public class AltibaseConstants {
     public static final String PASSWORD_WILL_EXPIRE_WARN_DESCRIPTION = "Change the password or contact the DBA.";
     
     public static final int EC_PASSWORD_WILL_EXPIRE = 0x51A79;
+
+    /*
+     * DBMS output
+     */
+    public static final String CLASS_NAME_4_CONNECTION = "Altibase.jdbc.driver.AltibaseConnection";
+    public static final String CLASS_NAME_4_MESSAGE_CALLBACK = "Altibase.jdbc.driver.AltibaseMessageCallback";
+    public static final String METHOD_NAME_4_REGISTER_MESSAGE_CALLBACK = "registerMessageCallback"; 
 }

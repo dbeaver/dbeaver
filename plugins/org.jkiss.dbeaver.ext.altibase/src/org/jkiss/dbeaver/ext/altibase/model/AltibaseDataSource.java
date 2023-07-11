@@ -16,12 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.Collection;
-import java.util.Properties;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -31,13 +32,17 @@ import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.altibase.model.plan.AltibaseExecutionPlan;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
-import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.ext.generic.model.GenericSynonym;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCExecutionResult;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
+import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
@@ -53,95 +58,11 @@ public class AltibaseDataSource extends GenericDataSource implements DBCQueryPla
 
     private GenericSchema publicSchema;
     private boolean isPasswordExpireWarningShown;
+    private AltibaseOutputReader outputReader;
     
     public AltibaseDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, AltibaseMetaModel metaModel)
             throws DBException {
         super(monitor, container, metaModel, new AltibaseSQLDialect());
-    }
-
-    /* TODO: DB33. Procedure PRINTLN */
-    // private String mCallbackMsg = null;
-    /**
-     * BUG-45342 Need to display the output from PSM execution using JDBC callback.
-     * 
-     * @see https://altra.altibase.com/altimis-2.0/app_bug_new/bug_view.jsp?pk=45342
-     * @see https://docs.oracle.com/javase/8/docs/technotes/guides/reflection/proxy.html
-     */
-    /*
-    @SuppressWarnings("rawtypes")
-    protected void setCallBack(boolean aPrintConsole) {
-        Class class4CallbackInterface = null;
-        Object instance4Callback = null;
-
-        Method method4RegisterCallback = null;
-        ClassLoader sClassLoader = java.sql.DriverManager.class.getClassLoader();
-
-        try {
-            class4CallbackInterface = sClassLoader
-                    .loadClass("Altibase.jdbc.driver.AltibaseMessageCallback");
-            instance4Callback = getCallBack(aPrintConsole); // BUG-45839
-
-            method4RegisterCallback = sClassLoader.loadClass(
-                    "Altibase.jdbc.driver.AltibaseConnection")
-                    .getDeclaredMethod("registerMessageCallback",
-                            class4CallbackInterface);
-            method4RegisterCallback.invoke(mConn, instance4Callback);
-        } catch (Throwable t)
-        {
-            log.warn("Fail to register PSM message callback.");
-        }
-    }
-
-    public String getCallBackMessage() { return mCallbackMsg.toString(); }
-     */
-    /**
-     * @see BUG-45839 Need to support shard table data rebuild.
-     * 	    https://altra.altibase.com/altimis-2.0/app_bug_new/bug_view.jsp?pk=45839
-     */
-    /*
-    private Object getCallBack(final boolean aPrintConsole) throws ClassNotFoundException
-    {
-        ClassLoader sClassLoader = java.sql.DriverManager.class.getClassLoader();
-        @SuppressWarnings("rawtypes")
-        Class class4CallbackInterface = sClassLoader
-        .loadClass(CLASS_NAME_4_CALLBACK_INTERFACE);
-
-        if (!aPrintConsole)
-            mSb4CallBackMsg = new StringBuilder();
-
-        return Proxy.newProxyInstance(mUrlClassLoader, new java.lang.Class[]
-                { class4CallbackInterface }, new InvocationHandler()
-        {
-            public Object invoke(Object aProxy, Method aMethod, Object[] aArgs)
-                    throws Throwable
-            {
-                String methodName = aMethod.getName();
-
-                //
-                // Implementation of the 'print' method in the
-                // 'AltibaseMessageCallback' interface
-                //
-                if (aPrintConsole)
-                {
-                    if (methodName.equals("print"))
-                        System.out.println(mDbQueryExecutor
-                                .prefixDbName((String) aArgs[0]));
-                }
-                else
-                {
-                    if (methodName.equals("print"))
-                        mSb4CallBackMsg.append((String) aArgs[0]);
-                }
-
-                return null;
-            }
-        });
-    }
-    */
-
-    /* FIXME: parameter doesn't work */
-    public boolean splitProceduresAndFunctions() {
-        return true;
     }
     
     @Override
@@ -152,10 +73,42 @@ public class AltibaseDataSource extends GenericDataSource implements DBCQueryPla
         publicSchema = new GenericSchema(this, null, AltibaseConstants.PUBLIC_USER);
         publicSchema.setVirtual(true);
     }
-
+    
     @Override
-    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, 
-            @NotNull String purpose) throws DBCException {
+    protected void initializeContextState(
+            @NotNull DBRProgressMonitor monitor, 
+            @NotNull JDBCExecutionContext context, 
+            JDBCExecutionContext initFrom
+            ) throws DBException {
+        
+        super.initializeContextState(monitor, context, initFrom);
+        
+        // Enable DBMS output
+        if (outputReader == null) {
+            outputReader = new AltibaseOutputReader();
+        }
+        
+        outputReader.enableServerOutput(
+            monitor,
+            context,
+            outputReader.isServerOutputEnabled());
+    }
+
+    @Nullable
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        if (adapter == DBCServerOutputReader.class) {
+            return adapter.cast(outputReader);
+        }
+        return super.getAdapter(adapter);
+    }
+    
+    @Override
+    protected Connection openConnection(
+            @NotNull DBRProgressMonitor monitor, 
+            @Nullable JDBCExecutionContext context, 
+            @NotNull String purpose
+            ) throws DBCException {
         try {
             Connection connection = super.openConnection(monitor, context, purpose);
             try {
@@ -172,13 +125,12 @@ public class AltibaseDataSource extends GenericDataSource implements DBCQueryPla
             }
             return connection;
         } catch (DBCException e) {
-            /* Refer OracleDataSource.changeExpiredPassword if required */
             throw e;
         }
     }
     
     private boolean checkForPasswordWillExpireWarning(@NotNull SQLWarning warning) {
-        if (warning != null && warning.getErrorCode() == AltibaseConstants.EC_PASSWORD_WILL_EXPIRE) {
+        if ((warning != null) && (warning.getErrorCode() == AltibaseConstants.EC_PASSWORD_WILL_EXPIRE)) {
             DBWorkbench.getPlatformUI().showWarningMessageBox(
                     AltibaseConstants.SQL_WARNING_TITILE,
                     warning.getMessage() + 
@@ -196,14 +148,19 @@ public class AltibaseDataSource extends GenericDataSource implements DBCQueryPla
         return this;
     }
 
+    @Override
+    public boolean splitProceduresAndFunctions() {
+        return true;
+    }
+    
     @NotNull
     @Override
     public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         return AltibaseTable.class;
     }
 
-    public Collection<AltibaseSynonym> getPublicSynonyms(DBRProgressMonitor monitor) throws DBException {
-        return (Collection<AltibaseSynonym>) publicSchema.getSynonyms(monitor);
+    public Collection<? extends GenericSynonym> getPublicSynonyms(DBRProgressMonitor monitor) throws DBException {
+        return publicSchema.getSynonyms(monitor);
     }
 
     ///////////////////////////////////////////////
@@ -221,5 +178,100 @@ public class AltibaseDataSource extends GenericDataSource implements DBCQueryPla
     @Override
     public DBCPlanStyle getPlanStyle() {
         return DBCPlanStyle.PLAN;
+    }
+    
+    ///////////////////////////////////////////////
+    // DBMS Procedure Output
+    private class AltibaseOutputReader implements DBCServerOutputReader {
+        
+        private StringBuilder mSb4CallBackMsg = new StringBuilder();
+        
+        @Override
+        public boolean isServerOutputEnabled() {
+            return true;
+        }
+
+        @Override
+        public boolean isAsyncOutputReadSupported() {
+            return false;
+        }
+
+        public void enableServerOutput(
+                DBRProgressMonitor monitor, 
+                DBCExecutionContext context, 
+                boolean enable
+                ) throws DBCException {
+            
+            Connection conn = null;
+            ClassLoader classLoader = null;
+            @SuppressWarnings("rawtypes")
+            Class class4MsgCallback = null;
+            Object instance4Callback = null;
+            Method method2RegisterCallback = null;
+            
+            try (JDBCSession session = (JDBCSession) context.openSession(monitor, 
+                    DBCExecutionPurpose.UTIL, (enable ? "Enable" : "Disable") + " DBMS output")) {
+                
+                conn = session.getOriginal();
+                classLoader = conn.getClass().getClassLoader();
+                if (classLoader == null) {
+                    throw new SecurityException("Failed to load ClassLoader");
+                }
+                
+                class4MsgCallback = classLoader.loadClass(AltibaseConstants.CLASS_NAME_4_MESSAGE_CALLBACK);
+                if (class4MsgCallback == null) {
+                    throw new ClassNotFoundException(
+                            "Failed to load class: " + AltibaseConstants.CLASS_NAME_4_MESSAGE_CALLBACK);
+                }
+
+                instance4Callback = Proxy.newProxyInstance(classLoader, new java.lang.Class[]
+                        { class4MsgCallback }, new InvocationHandler() {
+                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                        if ("print".equals(method.getName())) {
+                            mSb4CallBackMsg.append((String) args[0]);
+                        }
+
+                        return null;
+                    }
+                });
+                if (instance4Callback == null) {
+                    throw new NullPointerException(
+                            "Failed to instantiate class: " + AltibaseConstants.CLASS_NAME_4_MESSAGE_CALLBACK);
+                }
+
+                method2RegisterCallback = classLoader
+                        .loadClass(AltibaseConstants.CLASS_NAME_4_CONNECTION)
+                        .getMethod(
+                            AltibaseConstants.METHOD_NAME_4_REGISTER_MESSAGE_CALLBACK, 
+                            class4MsgCallback);
+                
+                if (method2RegisterCallback == null) {
+                    throw new NoSuchMethodException(String.format(
+                            "Failed to get method: %s of class %s ", 
+                            AltibaseConstants.METHOD_NAME_4_REGISTER_MESSAGE_CALLBACK,
+                            AltibaseConstants.CLASS_NAME_4_MESSAGE_CALLBACK));
+                }
+                
+                method2RegisterCallback.invoke(conn, instance4Callback);
+                
+            } catch (Exception e) {
+                log.error("Failed to register DBMS output message callback method: " + e.getMessage());
+                throw new DBCException(e, context);
+            }
+        }
+
+        @Override
+        public void readServerOutput(
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull DBCExecutionContext context,
+                @Nullable DBCExecutionResult executionResult,
+                @Nullable DBCStatement statement,
+                @NotNull DBCOutputWriter output
+                ) throws DBCException {
+            if (mSb4CallBackMsg != null) {
+                output.println(null, mSb4CallBackMsg.toString());
+                mSb4CallBackMsg.delete(0, mSb4CallBackMsg.length());
+            }
+        }
     }
 }

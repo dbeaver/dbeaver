@@ -55,14 +55,14 @@ public class AltibasePackage extends GenericPackage {
             source = "-- Package specification " 
                     + AltibaseConstants.NEW_LINE 
                     + ((AltibaseMetaModel) getDataSource().getMetaModel())
-                        .getPackageDDL(monitor, this, AltibaseConstants.PACKAGE_SPEC)
+                        .getPackageDDL(monitor, this, AltibaseConstants.PACKAGE_TYPE_SPEC)
                     + AltibaseConstants.NEW_LINE 
                     + "-- Package body " 
                     + AltibaseConstants.NEW_LINE;
 
             if (hasBody == true) {
                 source += ((AltibaseMetaModel) getDataSource().getMetaModel())
-                        .getPackageDDL(monitor, this, AltibaseConstants.PACKAGE_BODY);
+                        .getPackageDDL(monitor, this, AltibaseConstants.PACKAGE_TYPE_BODY);
             } else {
                 source += "-- No body definition";
             }
