@@ -61,7 +61,7 @@
                 if (typeof selection !== 'undefined' && selection.length > 0) {
                     let bounds = selection[0].layer.getBounds();
                     for (let i = 1; i < selection.length; i++) {
-                        bounds.extend(selection[i].layer.getBounds());;
+                        bounds.extend(selection[i].layer.getBounds());
                     }
                     actions.push(['Copy selection bounds', 'setClipboardContents(\'' + bounds.toBBoxString() + '\')']);
                 }
