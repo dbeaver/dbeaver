@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.dpi.process;
+package org.jkiss.dbeaver.model.dpi.client;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.dpi.api.DPIContext;
 import org.jkiss.dbeaver.model.dpi.api.DPIController;
-import org.jkiss.dbeaver.model.dpi.api.DPIUtils;
+import org.jkiss.dbeaver.model.dpi.api.DPISerializer;
 import org.jkiss.dbeaver.model.dpi.app.DPIApplication;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -100,7 +100,7 @@ public class DPIProcessController implements AutoCloseable {
 
         dpiRestClient = RestClient
             .builder(getRemoteEndpoint(), DPIController.class)
-            .setGson(DPIUtils.createSerializer(dpiContext))
+            .setGson(DPISerializer.createSerializer(dpiContext))
             .create();
 
         try {
@@ -109,6 +109,7 @@ public class DPIProcessController implements AutoCloseable {
             terminateChildProcess();
             throw new IOException("Error connecting to DPI Server", e);
         }
+        dpiContext.setController(dpiRestClient);
     }
 
     private void terminateChildProcess() {

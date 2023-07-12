@@ -24,7 +24,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPApplication;
-import org.jkiss.dbeaver.model.dpi.process.ConfigUtils;
+import org.jkiss.dbeaver.model.dpi.client.ConfigUtils;
 import org.jkiss.dbeaver.model.dpi.server.DPIRestServer;
 import org.jkiss.dbeaver.registry.DesktopApplicationImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;

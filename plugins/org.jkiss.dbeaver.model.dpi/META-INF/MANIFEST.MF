@@ -11,7 +11,7 @@ Bundle-Activator: org.jkiss.dbeaver.model.dpi.app.DPIActivator
 Export-Package: org.jkiss.dbeaver.model.dpi,
  org.jkiss.dbeaver.model.dpi.api,
  org.jkiss.dbeaver.model.dpi.app,
- org.jkiss.dbeaver.model.dpi.process
+ org.jkiss.dbeaver.model.dpi.client
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,

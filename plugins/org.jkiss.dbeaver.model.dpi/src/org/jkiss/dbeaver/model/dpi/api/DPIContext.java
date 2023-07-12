@@ -32,6 +32,19 @@ public class DPIContext {
     private final Map<Object, String> objectValueCache = new HashMap<>();
     private final AtomicLong objectCount = new AtomicLong();
 
+    private DPIController dpiController;
+
+    public DPIContext() {
+    }
+
+    public DPIController getDpiController() {
+        return dpiController;
+    }
+
+    public void setController(DPIController dpiController) {
+        this.dpiController = dpiController;
+    }
+
     public Object getObject(String id) {
         return objectIdCache.get(id);
     }
@@ -67,4 +80,5 @@ public class DPIContext {
     public boolean hasObject(Object object) {
         return objectValueCache.containsKey(object);
     }
+
 }

@@ -20,7 +20,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.dpi.api.DPIContext;
 import org.jkiss.dbeaver.model.dpi.api.DPIController;
-import org.jkiss.dbeaver.model.dpi.api.DPIUtils;
+import org.jkiss.dbeaver.model.dpi.api.DPISerializer;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.rest.RestServer;
 
@@ -45,7 +45,7 @@ public class DPIRestServer {
             .builder(DPIController.class, dpiController)
             .setFilter(address -> address.getAddress().isLoopbackAddress())
             .setPort(portNumber)
-            .setGson(DPIUtils.createSerializer(dpiContext))
+            .setGson(DPISerializer.createSerializer(dpiContext))
             .create();
         dpiController.setServer(restServer);
     }

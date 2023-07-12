@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.dpi.process;
+package org.jkiss.dbeaver.model.dpi.client;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.osgi.container.ModuleWire;

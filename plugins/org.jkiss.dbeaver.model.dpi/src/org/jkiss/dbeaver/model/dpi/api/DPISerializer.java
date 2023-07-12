@@ -44,14 +44,14 @@ import java.util.Map;
 /**
  * DPI utils
  */
-public class DPIUtils {
+public class DPISerializer {
 
-    private static final Log log = Log.getLog(DPIUtils.class);
+    private static final Log log = Log.getLog(DPISerializer.class);
     public static final String ATTR_OBJECT_ID = "id";
     public static final String ATTR_OBJECT_TYPE = "type";
     private static final String ATTR_PROPS = "properties";
 
-    public static final Gson createSerializer(DPIContext context) {
+    public static Gson createSerializer(DPIContext context) {
         return new GsonBuilder()
             .registerTypeAdapterFactory(new DPITypeAdapterFactory(context))
             .create();
@@ -166,6 +166,12 @@ public class DPIUtils {
             if (method.getDeclaringClass() == Object.class) {
                 return BeanUtils.handleObjectMethod(proxy, method, args);
             }
+            DPIController controller = context.getDpiController();
+            if (controller == null) {
+                throw new DBException("No DPI controller in client context");
+            }
+            // If method is property read or state read the try lookup in the context cache first
+
             throw new DBException("Not supported method (" + method + " at " + objectId + "@" + objectType + ")");
         }
     }
