@@ -42,6 +42,8 @@ public interface DBTTaskRun {
 
     boolean isRunSuccess();
 
+    boolean isFinished();
+
     @Nullable
     String getErrorMessage();
 

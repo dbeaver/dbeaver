@@ -687,7 +687,13 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
     }
 
     private ImageData captureBrowserImage() {
-        ImageData imageData; 
+        boolean toolsVisibility = toolsVisible;
+        if (toolsVisible) {
+            toolsVisible = false;
+        }
+        updateControlsVisibility();
+
+        ImageData imageData;
         if (RuntimeUtils.isWindows()) {
             imageData = GISBrowserImageUtils.getControlScreenshotOnWindows(browser);
         } else {
@@ -700,6 +706,9 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
             }
             imageData = image.getImageData();
         }
+
+        toolsVisible = toolsVisibility;
+        updateControlsVisibility();
         return imageData;
     }
 
