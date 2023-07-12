@@ -14,21 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.dpi.api;
+package org.jkiss.dbeaver.model;
 
-/**
- * Detached session
- */
-public class DPISession {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    private final String sessionId;
-
-    public DPISession(String sessionId) {
-        this.sessionId = sessionId;
-    }
-
-    public String getSessionId() {
-        return sessionId;
-    }
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface DBPRemoteObject {
 
 }

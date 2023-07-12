@@ -20,8 +20,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.dpi.api.DPIContext;
 import org.jkiss.dbeaver.model.dpi.api.DPIController;
-import org.jkiss.dbeaver.model.dpi.api.DPISession;
+import org.jkiss.dbeaver.model.dpi.api.DPIUtils;
 import org.jkiss.dbeaver.model.dpi.app.DPIApplication;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -44,6 +45,7 @@ public class DPIProcessController implements AutoCloseable {
 
     public static final int PROCESS_PAWN_TIMEOUT = 10000;
     private final DPIController dpiRestClient;
+    private final DPIContext dpiContext;
     private int dpiServerPort;
 
     public static DPIProcessController detachDatabaseProcess(DBRProgressMonitor monitor, DBPDataSourceContainer dataSourceContainer) throws IOException {
@@ -60,6 +62,7 @@ public class DPIProcessController implements AutoCloseable {
 
     public DPIProcessController(BundleProcessConfig processConfig) throws IOException {
         this.processConfig = processConfig;
+        this.dpiContext = new DPIContext();
 
         log.debug("Starting detached database application");
 
@@ -95,7 +98,10 @@ public class DPIProcessController implements AutoCloseable {
             throw new IOException("Child DPI process start is failed (" + process.exitValue() + ")");
         }
 
-        dpiRestClient = RestClient.create(getRemoteEndpoint(), DPIController.class, DPISession.DPI_GSON);
+        dpiRestClient = RestClient
+            .builder(getRemoteEndpoint(), DPIController.class)
+            .setGson(DPIUtils.createSerializer(dpiContext))
+            .create();
 
         try {
             validateRestClient();

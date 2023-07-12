@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSInstanceContainer;
  * datasource instance may be refreshed at any moment. Obtain references on datasource only
  * from DBSObject or DBPContextProvider interfaces.
  */
+@DBPRemoteObject
 public interface DBPDataSource extends DBSInstanceContainer, DBPContextWithAttributes
 {
     /**

@@ -967,7 +967,7 @@ public class DataSourceDescriptor
             }
             try {
                 log.debug("New DPI session: " + session.getSessionId());
-                DBPDataSource dataSource = dpiClient.openDataSource(session.getSessionId(), getProject().getId(), getId(), credentials);
+                this.dataSource = dpiClient.openDataSource(session.getSessionId(), getProject().getId(), getId(), credentials);
                 log.debug("Opened data source: " + dataSource);
             } finally {
                 try {
