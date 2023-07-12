@@ -936,6 +936,8 @@ public class DataSourceDescriptor
 
         connecting = true;
         try {
+            Map<String, String> credentials = new LinkedHashMap<>();
+
             try (DPIProcessController dpiController = DPIProcessController.detachDatabaseProcess(monitor, this)) {
                 DPIController dpiClient = dpiController.getClient();
                 DPISession session = dpiClient.openSession(getProject().getId());
@@ -944,7 +946,7 @@ public class DataSourceDescriptor
                 }
                 try {
                     log.debug("New DPI session: " + session.getSessionId());
-                    DBPDataSource dataSource = dpiClient.openDataSource(session.getSessionId(), getId());
+                    DBPDataSource dataSource = dpiClient.openDataSource(session.getSessionId(), getId(), credentials);
                     log.debug("Opened data source: " + dataSource);
                 } finally {
                     try {

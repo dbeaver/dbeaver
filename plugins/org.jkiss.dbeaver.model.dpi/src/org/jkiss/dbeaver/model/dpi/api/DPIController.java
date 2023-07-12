@@ -17,10 +17,13 @@
 package org.jkiss.dbeaver.model.dpi.api;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.utils.rest.RequestMapping;
 import org.jkiss.utils.rest.RequestParameter;
+
+import java.util.Map;
 
 /**
  * Detached data source proxy.
@@ -40,7 +43,8 @@ public interface DPIController extends AutoCloseable {
     @NotNull
     DBPDataSource openDataSource(
         @RequestParameter("session") @NotNull String session,
-        @RequestParameter("container") @NotNull String container)
+        @RequestParameter("container") @NotNull String container,
+        @RequestParameter("credentials") @Nullable Map<String, String> credentials)
         throws DBException;
 
     @RequestMapping

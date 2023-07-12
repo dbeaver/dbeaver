@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.dpi.server;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -57,7 +58,11 @@ public class DPIControllerImpl implements DPIController {
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(@NotNull String session, @NotNull String container) throws DBException {
+    public DBPDataSource openDataSource(
+        @NotNull String session,
+        @NotNull String container,
+        @Nullable Map<String, String> credentials
+    ) throws DBException {
         throw new DBCFeatureNotSupportedException();
     }
 
