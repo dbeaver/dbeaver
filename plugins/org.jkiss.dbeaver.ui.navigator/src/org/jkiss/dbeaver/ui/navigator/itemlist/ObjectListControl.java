@@ -481,6 +481,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 }
             }
 
+            addExtraColumns(columnController, items);
+
             if (itemsControl.isDisposed()) {
                 return;
             }
@@ -551,6 +553,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             itemsControl.setRedraw(true);
         }
         setInfo(getItemsLoadMessage(objectList.size()));
+    }
+
+    protected void addExtraColumns(ViewerColumnController<ObjectColumn, Object> columnController, Collection<OBJECT_TYPE> items) {
+
     }
 
     public void appendListData(Collection<OBJECT_TYPE> items) {
@@ -687,6 +693,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     @Nullable
     protected final Object getCellValue(Object element, int columnIndex) {
         final ObjectColumn columnInfo = getColumnByIndex(columnIndex);
+        if (columnInfo == null) {
+            return null;
+        }
         return getCellValue(element, columnInfo, true);
     }
 
@@ -1246,6 +1255,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 case SWT.PaintItem:
                     if (e.index < columnController.getColumnsCount()) {
                         final ObjectColumn objectColumn = getColumnByIndex(e.index);
+                        if (objectColumn == null) {
+                            return;
+                        }
                         final OBJECT_TYPE object = (OBJECT_TYPE) e.item.getData();
                         final boolean isFocusCell = focusObject == object && focusColumn == objectColumn;
 
