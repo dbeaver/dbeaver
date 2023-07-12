@@ -43,6 +43,7 @@ public interface DPIController extends AutoCloseable {
     @NotNull
     DBPDataSource openDataSource(
         @RequestParameter("session") @NotNull String session,
+        @RequestParameter("project") String projectId,
         @RequestParameter("container") @NotNull String container,
         @RequestParameter("credentials") @Nullable Map<String, String> credentials)
         throws DBException;

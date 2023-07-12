@@ -7,6 +7,7 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Release-Date: 20230605
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
+Bundle-Activator: org.jkiss.dbeaver.model.dpi.app.DPIActivator
 Export-Package: org.jkiss.dbeaver.model.dpi,
  org.jkiss.dbeaver.model.dpi.api,
  org.jkiss.dbeaver.model.dpi.app,

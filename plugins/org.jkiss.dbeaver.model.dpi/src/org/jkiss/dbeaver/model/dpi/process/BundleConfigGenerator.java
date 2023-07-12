@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.model.dpi.process;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.osgi.container.ModuleWire;
 import org.eclipse.osgi.container.ModuleWiring;
+import org.eclipse.osgi.internal.framework.EquinoxBundle;
 import org.eclipse.osgi.internal.loader.EquinoxClassLoader;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
@@ -64,9 +66,21 @@ public class BundleConfigGenerator {
         DBAAuthModel<DBAAuthCredentials> authModel = dataSourceContainer.getConnectionConfiguration().getAuthModel();
         addBundleFromClass(authModel.getClass(), processConfig);
 
+        addBundleByName("com.dbeaver.resources.drivers.jdbc", processConfig);
+
         processConfig.generateApplicationConfiguration();
 
         return processConfig;
+    }
+
+    private static void addBundleByName(String bundleName, BundleProcessConfig processConfig) {
+        Bundle bundle = Platform.getBundle(bundleName);
+        if (bundle instanceof EquinoxBundle) {
+            ModuleWiring wiring = ((EquinoxBundle) bundle).getModule().getCurrentRevision().getWiring();
+            if (wiring != null) {
+                collectModuleWirings(wiring, processConfig);
+            }
+        }
     }
 
 

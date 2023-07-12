@@ -49,6 +49,11 @@ public class DPIApplication extends DesktopApplicationImpl {
     public static final String SERVER_INI_FILE = "server.ini";
 
     @Override
+    public boolean isDetachedProcess() {
+        return true;
+    }
+
+    @Override
     public Object start(IApplicationContext context) {
         Location instanceLoc = Platform.getInstanceLocation();
         //log.debug("Starting DPI application at " + instanceLoc.getURL());

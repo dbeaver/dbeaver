@@ -23,11 +23,14 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.dpi.api.DPIController;
 import org.jkiss.dbeaver.model.dpi.api.DPISession;
-import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.rest.RestServer;
 
 import java.util.LinkedHashMap;
@@ -60,18 +63,34 @@ public class DPIControllerImpl implements DPIController {
     @Override
     public DBPDataSource openDataSource(
         @NotNull String session,
+        @NotNull String projectId,
         @NotNull String container,
         @Nullable Map<String, String> credentials
     ) throws DBException {
-        throw new DBCFeatureNotSupportedException();
+        DPISession dpiSession = getSession(session);
+
+        DBPProject project = DBWorkbench.getPlatform().getWorkspace().getProjectById(projectId);
+        if (project == null) {
+            throw new DBException("Project '" + projectId + "' not found");
+        }
+        DBPDataSourceContainer dataSourceContainer = project.getDataSourceRegistry().getDataSource(container);
+        if (dataSourceContainer == null) {
+            throw new DBException("Data source '" + container + "' not found");
+        }
+        LoggingProgressMonitor monitor = new LoggingProgressMonitor(log);
+
+        dataSourceContainer.connect(monitor, true, false);
+
+        DBPDataSource dataSource = dataSourceContainer.getDataSource();
+
+        return dataSource;
     }
 
     @Override
     public void closeSession(@NotNull String sessionId) throws DBException {
-        DPISession session = sessions.remove(sessionId);
-        if (session == null) {
-            throw new DBException("Session '" + sessionId + "' not found");
-        }
+        getSession(sessionId);
+        sessions.remove(sessionId);
+
         if (sessions.isEmpty() && server != null) {
             new AbstractJob("Stop detached server") {
                 @Override
@@ -82,6 +101,14 @@ public class DPIControllerImpl implements DPIController {
                 }
             }.schedule(200);
         }
+    }
+
+    private DPISession getSession(@NotNull String sessionId) throws DBException {
+        DPISession session = sessions.get(sessionId);
+        if (session == null) {
+            throw new DBException("Session '" + sessionId + "' not found");
+        }
+        return session;
     }
 
     @Override

@@ -194,7 +194,10 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
             LocalConfigurationController controller = new LocalConfigurationController(
                 getWorkspace().getMetadataFolder().resolve(CONFIG_FOLDER)
             );
-            controller.setLegacyConfigFolder(getProductPlugin().getStateLocation().toFile().toPath());
+            Plugin productPlugin = getProductPlugin();
+            if (productPlugin != null && productPlugin.getStateLocation() != null) {
+                controller.setLegacyConfigFolder(productPlugin.getStateLocation().toFile().toPath());
+            }
             return controller;
         } else {
             return new LocalConfigurationController(

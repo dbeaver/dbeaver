@@ -161,7 +161,7 @@ public class DPIPlatform extends BasePlatformImpl {
 
     @Override
     protected Plugin getProductPlugin() {
-        return null;//Platform.getBundle(PLUGIN_ID);
+        return DPIActivator.getInstance();
     }
 
     @Override
