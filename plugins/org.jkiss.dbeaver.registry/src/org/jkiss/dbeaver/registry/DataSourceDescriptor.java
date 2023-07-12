@@ -947,7 +947,11 @@ public class DataSourceDescriptor
                     DBPDataSource dataSource = dpiClient.openDataSource(session.getSessionId(), getId());
                     log.debug("Opened data source: " + dataSource);
                 } finally {
-                    dpiClient.closeSession(session.getSessionId());
+                    try {
+                        dpiClient.closeSession(session.getSessionId());
+                    } catch (Exception e) {
+                        log.debug("Error closing session: " + e.getMessage());
+                    }
                 }
             } catch (Exception e) {
                 log.debug("Error starting DPI child process", e);

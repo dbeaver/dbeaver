@@ -21,15 +21,16 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.dpi.api.DPIController;
+import org.jkiss.dbeaver.model.dpi.api.DPISession;
 import org.jkiss.dbeaver.model.dpi.app.DPIApplication;
-import org.jkiss.dbeaver.model.dpi.client.RestUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.rest.RestClient;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -94,11 +95,11 @@ public class DPIProcessController implements AutoCloseable {
             throw new IOException("Child DPI process start is failed (" + process.exitValue() + ")");
         }
 
-        dpiRestClient = RestUtils.createRestClient(getRemoteEndpoint(), DPIController.class);
+        dpiRestClient = RestClient.create(getRemoteEndpoint(), DPIController.class, DPISession.DPI_GSON);
 
         try {
             validateRestClient();
-        } catch (DBException e) {
+        } catch (Throwable e) {
             terminateChildProcess();
             throw new IOException("Error connecting to DPI Server", e);
         }
@@ -115,8 +116,13 @@ public class DPIProcessController implements AutoCloseable {
     }
 
     @NotNull
-    private URL getRemoteEndpoint() throws MalformedURLException {
-        return new URL("http://localhost:" + dpiServerPort + "/");
+    private URI getRemoteEndpoint() {
+        String endpoint = "http://localhost:" + dpiServerPort + "/";
+        try {
+            return new URI(endpoint);
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("Wrong REST URI: " + endpoint, e);
+        }
     }
 
     public DPIController getClient() {
@@ -124,7 +130,7 @@ public class DPIProcessController implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         if (this.process != null) {
             if (this.process.isAlive()) {
                 terminateChildProcess();

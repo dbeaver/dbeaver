@@ -16,11 +16,15 @@
  */
 package org.jkiss.dbeaver.model.dpi.api;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 /**
  * Detached session
  */
 public class DPISession {
 
+    public static final Gson DPI_GSON = new GsonBuilder().create();
     private final String sessionId;
 
     public DPISession(String sessionId) {

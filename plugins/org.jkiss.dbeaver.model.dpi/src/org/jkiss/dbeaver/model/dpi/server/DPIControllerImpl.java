@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.dpi.server;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -23,6 +25,9 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.dpi.api.DPIController;
 import org.jkiss.dbeaver.model.dpi.api.DPISession;
 import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.rest.RestServer;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -32,11 +37,10 @@ public class DPIControllerImpl implements DPIController {
 
     private static final Log log = Log.getLog(DPIControllerImpl.class);
 
-    private final DPIRestServer server;
     private final Map<String, DPISession> sessions = new LinkedHashMap<>();
+    private RestServer<?> server;
 
-    public DPIControllerImpl(DPIRestServer server) {
-        this.server = server;
+    public DPIControllerImpl() {
     }
 
     @Override
@@ -63,13 +67,28 @@ public class DPIControllerImpl implements DPIController {
         if (session == null) {
             throw new DBException("Session '" + sessionId + "' not found");
         }
-        if (sessions.isEmpty()) {
-            server.stopServer();
+        if (sessions.isEmpty() && server != null) {
+            new AbstractJob("Stop detached server") {
+                @Override
+                protected IStatus run(DBRProgressMonitor monitor) {
+                    server.stop(1);
+                    server = null;
+                    return Status.OK_STATUS;
+                }
+            }.schedule(200);
         }
     }
 
     @Override
     public void close() {
 
+    }
+
+    public void setServer(RestServer<?> server) {
+        this.server = server;
+    }
+
+    public RestServer<?> getServer() {
+        return server;
     }
 }

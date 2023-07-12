@@ -16,17 +16,14 @@
  */
 package org.jkiss.dbeaver.model.dpi.server;
 
-import com.sun.net.httpserver.HttpServer;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.dpi.api.DPIController;
+import org.jkiss.dbeaver.model.dpi.api.DPISession;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.rest.RestServer;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public class DPIRestServer {
 
@@ -35,44 +32,25 @@ public class DPIRestServer {
     private static final String ENDPOINT = "/";
 
     private final DBPApplication application;
-    private HttpServer server;
+    private final RestServer<?> restServer;
+
 
     public DPIRestServer(DBPApplication application, int portNumber) throws IOException {
         this.application = application;
-        InetSocketAddress localPort = new InetSocketAddress(portNumber);
-        server = HttpServer.create(localPort, 0);
-        server.createContext(ENDPOINT, new DPIRestHandler(this));
-
-        LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(
-            1,
-            10,
-            60,
-            TimeUnit.SECONDS,
-            queue
-        );
-        server.setExecutor(executor); // creates a default executor
-        executor.setRejectedExecutionHandler(new RejectedExecutionHandler() {
-            @Override
-            public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-                log.error("Request rejected: " + r);
-            }
-        });
-        server.start();
-    }
-
-    DBPApplication getApplication() {
-        return application;
-    }
-
-    void stopServer() {
-        server.stop(2);
-        server = null;
+        DPIControllerImpl dpiController = new DPIControllerImpl();
+        restServer = RestServer
+            .builder(DPIController.class, dpiController)
+            .setFilter(address -> address.getAddress().isLoopbackAddress())
+            .setPort(portNumber)
+            .setGson(DPISession.DPI_GSON)
+            .create();
+        dpiController.setServer(restServer);
     }
 
     public void join() {
-        while (server != null) {
+        while (restServer.isRunning()) {
             RuntimeUtils.pause(100);
         }
     }
+
 }

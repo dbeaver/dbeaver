@@ -17,15 +17,11 @@
 package org.jkiss.utils.rest;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -36,15 +32,15 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodySubscribers;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class RestClient {
-    static final Gson gson = new GsonBuilder()
-        .setLenient()
-        .disableHtmlEscaping()
-        .serializeNulls()
-        .create();
 
     private RestClient() {
         // prevents instantiation
@@ -74,7 +70,7 @@ public class RestClient {
         private Builder(@NotNull URI uri, @NotNull Class<T> cls) {
             this.uri = uri;
             this.cls = cls;
-            this.gson = RestClient.gson;
+            this.gson = RestConstants.DEFAULT_GSON;
         }
 
         @NotNull
@@ -133,31 +129,36 @@ public class RestClient {
             }
 
             try {
-                final HttpResponse<Reader> response = client.send(
-                    HttpRequest.newBuilder()
-                        .uri(URI.create(uri.toString() + '/' + mapping.value()))
-                        .header("Content-Type", "application/json")
-                        .POST(BodyPublishers.ofString(gson.toJson(values)))
-                        .build(),
-                    info -> BodySubscribers.mapping(
-                        BodySubscribers.ofInputStream(),
-                        InputStreamReader::new
-                    )
+                String endpoint = mapping.value();
+                if (CommonUtils.isEmpty(endpoint)) {
+                    endpoint = method.getName();
+                }
+                StringBuilder url = new StringBuilder();
+                url.append(uri);
+                if (url.charAt(url.length() - 1) != '/') url.append('/');
+                url.append(endpoint);
+                HttpResponse.BodyHandler<String> readerBodyHandler =
+                    info -> BodySubscribers.ofString(StandardCharsets.UTF_8);
+                HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(url.toString()))
+                    .header("Content-Type", "application/json")
+                    .POST(BodyPublishers.ofString(gson.toJson(values)))
+                    .build();
+                final HttpResponse<String> response = client.send(
+                    httpRequest,
+                    readerBodyHandler
                 );
 
-                try (Reader reader = response.body()) {
-                    if (response.statusCode() != 200) {
-                        final StringWriter writer = new StringWriter();
-                        reader.transferTo(writer);
-                        throw new RestException(writer.toString());
-                    }
-
-                    if (method.getReturnType() == void.class) {
-                        return null;
-                    }
-
-                    return gson.fromJson(response.body(), method.getReturnType());
+                String contents = response.body();
+                if (response.statusCode() != RestConstants.SC_OK) {
+                    handleError(response.statusCode(), contents);
                 }
+
+                if (method.getReturnType() == void.class) {
+                    return null;
+                }
+
+                return gson.fromJson(contents, method.getReturnType());
             } catch (RuntimeException e) {
                 throw e;
             } catch (Exception e) {
@@ -169,5 +170,39 @@ public class RestClient {
         private static RestException createException(@NotNull Method method, @NotNull String reason) {
             return new RestException("Unable to invoke the method " + method + " because " + reason);
         }
+    }
+
+    private static final Pattern ST_LINE_PATTERN = Pattern.compile("\\s*at\\s+([\\w/.$]+)\\((.+)\\)");
+    private static void handleError(int errorCode, String contents) throws RestException {
+        String[] stackTraceRows = contents.split("\n");
+        String errorLine = stackTraceRows[0];
+        List<StackTraceElement> stackTraceElements = new ArrayList<>();
+        for (int i = 1; i < stackTraceRows.length; i++) {
+            Matcher matcher = ST_LINE_PATTERN.matcher(stackTraceRows[i]);
+            if (matcher.find()) {
+                String methodRef = matcher.group(1);
+                int divPos = methodRef.lastIndexOf('.');
+                String className = methodRef.substring(0, divPos);
+                String methodName = methodRef.substring(divPos + 1);
+
+                String classRef = matcher.group(2);
+                divPos = classRef.indexOf(':');
+                String fileName;
+                int fileLine;
+                if (divPos == -1) {
+                    fileName = classRef;
+                    fileLine = -1;
+                } else {
+                    fileName = classRef.substring(0, divPos).trim();
+                    fileLine = CommonUtils.toInt(classRef.substring(divPos + 1).trim());
+                }
+                stackTraceElements.add(
+                    new StackTraceElement(className, methodName, fileName, fileLine));
+            }
+        }
+        RestException runtimeException = new RestException(errorLine);
+        runtimeException.setStackTrace(stackTraceElements.toArray(new StackTraceElement[0]));
+
+        throw runtimeException;
     }
 }

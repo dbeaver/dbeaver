@@ -19,30 +19,32 @@ package org.jkiss.dbeaver.model.dpi.api;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.utils.rest.RequestMapping;
+import org.jkiss.utils.rest.RequestParameter;
 
 /**
  * Detached data source proxy.
  */
 public interface DPIController extends AutoCloseable {
 
-    @ApiEndpoint
+    @RequestMapping
     String ping() throws DBException;
 
     /**
      * Opens new session
      */
-    @ApiEndpoint
-    DPISession openSession(@ApiParameter("project") String projectId) throws DBException;
+    @RequestMapping
+    DPISession openSession(@RequestParameter("project") String projectId) throws DBException;
 
-    @ApiEndpoint
+    @RequestMapping
     @NotNull
     DBPDataSource openDataSource(
-        @ApiParameter("session") @NotNull String session,
-        @ApiParameter("container") @NotNull String container)
+        @RequestParameter("session") @NotNull String session,
+        @RequestParameter("container") @NotNull String container)
         throws DBException;
 
-    @ApiEndpoint
+    @RequestMapping
     // Closes session and terminates detached process when last session is closed
-    void closeSession(@ApiParameter("session") @NotNull String sessionId) throws DBException;
+    void closeSession(@RequestParameter("session") @NotNull String sessionId) throws DBException;
 
 }

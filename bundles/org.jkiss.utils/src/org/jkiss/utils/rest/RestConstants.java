@@ -14,20 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.dpi.api;
+package org.jkiss.utils.rest;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
-/**
- * API endpoints
- */
-@Target(value = {ElementType.PARAMETER})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ApiParameter {
+public class RestConstants {
+    public static final int SC_OK = 200;
+    public static final int SC_FORBIDDEN = 403;
+    public static final int SC_UNSUPPORTED = 405;
+    public static final int SC_NOT_FOUND = 404;
+    public static final int SC_SERVER_ERROR = 500;
 
-    String value();
-
+    static final Gson DEFAULT_GSON = new GsonBuilder()
+        .setLenient()
+        .disableHtmlEscaping()
+        .serializeNulls()
+        .create();
 }

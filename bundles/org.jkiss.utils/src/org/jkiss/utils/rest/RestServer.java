@@ -28,21 +28,24 @@ import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.function.Predicate;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class RestServer<T> {
     private static final Logger log = Logger.getLogger(RestServer.class.getName());
-    private final HttpServer server;
+    private HttpServer server;
 
     public RestServer(
         @NotNull Class<T> cls,
@@ -63,16 +66,24 @@ public class RestServer<T> {
         return new Builder<>(object, cls);
     }
 
+    public boolean isRunning() {
+        return server != null;
+    }
+
     public void stop() {
         stop(1);
     }
 
     public void stop(int delay) {
-        server.stop(delay);
+        try {
+            server.stop(delay);
 
-        final Executor executor = server.getExecutor();
-        if (executor instanceof ExecutorService) {
-            ((ExecutorService) executor).shutdown();
+            final Executor executor = server.getExecutor();
+            if (executor instanceof ExecutorService) {
+                ((ExecutorService) executor).shutdown();
+            }
+        } finally {
+            server = null;
         }
     }
 
@@ -124,17 +135,43 @@ public class RestServer<T> {
             try {
                 response = createResponse(exchange);
             } catch (IOException e) {
+                log.log(Level.SEVERE, "IO error", e);
                 response = new Response<>(e.getMessage(), String.class, 500);
             }
 
             try {
-                exchange.sendResponseHeaders(response.code, 0);
+                Object responseObject = response.object;
+                if (responseObject == null) {
+                    responseObject = "Internal error";
+                }
+                if (response.code == RestConstants.SC_OK) {
+                    String responseText;
+                    if (response.type == void.class) {
+                        responseText = CommonUtils.toString(response.object);
+                        exchange.getResponseHeaders().add("Content-Type", "text/plain");
+                    } else {
+                        responseText = gson.toJson(response.object, response.type);
+                        exchange.getResponseHeaders().add("Content-Type", "application/json");
+                    }
+                    byte[] responseBytes = responseText.getBytes(StandardCharsets.UTF_8);
 
-                if (response.type != void.class) {
-                    try (Writer writer = new BufferedWriter(new OutputStreamWriter(exchange.getResponseBody()))) {
-                        gson.toJson(response.object, response.type, writer);
+                    exchange.sendResponseHeaders(RestConstants.SC_OK, responseBytes.length);
+                    try (OutputStream responseBody = exchange.getResponseBody()) {
+                        responseBody.write(responseBytes);
+                    }
+                } else {
+                    String responseText = responseObject.toString();
+                    byte[] result = responseText.getBytes(StandardCharsets.UTF_8);
+
+                    exchange.getResponseHeaders().add("Content-Type", "text/plain");
+                    exchange.sendResponseHeaders(response.code, result.length);
+                    try (OutputStream responseBody = exchange.getResponseBody()) {
+                        responseBody.write(result);
                     }
                 }
+            } catch (Throwable e) {
+                log.log(Level.SEVERE, "Internal IO error", e);
+                throw e;
             } finally {
                 exchange.close();
             }
@@ -143,11 +180,11 @@ public class RestServer<T> {
         @NotNull
         protected Response<?> createResponse(@NotNull HttpExchange exchange) throws IOException {
             if (!filter.test(exchange.getRemoteAddress())) {
-                return new Response<>("Access is forbidden", String.class, 403);
+                return new Response<>("Access is forbidden", String.class, RestConstants.SC_FORBIDDEN);
             }
 
             if (!exchange.getRequestMethod().equalsIgnoreCase("POST")) {
-                return new Response<>("Unsupported method", String.class, 405);
+                return new Response<>("Unsupported method", String.class, RestConstants.SC_UNSUPPORTED);
             }
 
             final URI uri = exchange.getRequestURI();
@@ -155,7 +192,7 @@ public class RestServer<T> {
             final Method method = mappings.get(path);
 
             if (method == null) {
-                return new Response<>("Mapping " + path + " not found", String.class, 404);
+                return new Response<>("Mapping " + path + " not found", String.class, RestConstants.SC_NOT_FOUND);
             }
 
             final Map<String, JsonElement> request;
@@ -177,9 +214,15 @@ public class RestServer<T> {
             try {
                 final Object result = method.invoke(object, values);
                 final Type type = method.getGenericReturnType();
-                return new Response<>(result, type, 200);
+                return new Response<>(result, type, RestConstants.SC_OK);
             } catch (Throwable e) {
-                return new Response<>(e.getMessage(), String.class, 500);
+                if (e instanceof InvocationTargetException) {
+                    e = ((InvocationTargetException) e).getTargetException();
+                }
+                log.log(Level.SEVERE, "RPC call '" + uri + "' failed: " + e.getMessage());
+                StringWriter buf = new StringWriter();
+                e.printStackTrace(new PrintWriter(buf, true));
+                return new Response<>(buf.toString(), String.class, RestConstants.SC_SERVER_ERROR);
             }
         }
 
@@ -198,18 +241,18 @@ public class RestServer<T> {
                     continue;
                 }
 
+                String methodEndpoint = mapping.value();
                 if (CommonUtils.isEmptyTrimmed(mapping.value())) {
-                    log.warning("Method " + method + " has empty mapping, skipping");
-                    continue;
+                    methodEndpoint = method.getName();
                 }
 
-                if (mappings.containsKey(mapping.value())) {
+                if (mappings.containsKey(methodEndpoint)) {
                     log.warning("Method " + method + " has duplicate mapping, skipping");
                     continue;
                 }
 
                 method.setAccessible(true);
-                mappings.put(mapping.value(), method);
+                mappings.put(methodEndpoint, method);
             }
 
             return Collections.unmodifiableMap(mappings);
@@ -229,7 +272,7 @@ public class RestServer<T> {
         private Builder(@NotNull T object, @NotNull Class<T> cls) {
             this.object = object;
             this.cls = cls;
-            this.gson = RestClient.gson;
+            this.gson = RestConstants.DEFAULT_GSON;
             this.port = 0;
             this.backlog = 0;
         }
