@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
@@ -102,12 +103,15 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         String activeProjectName = getPlatform().getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
 
         IWorkspaceRoot root = getEclipseWorkspace().getRoot();
-        try {
-            reloadWorkspace(new LoggingProgressMonitor(log));
-        } catch (Throwable e) {
-            log.error(e);
-        }
         IProject[] allProjects = root.getProjects();
+        if (ArrayUtils.isEmpty(allProjects)) {
+            try {
+                reloadWorkspace(new LoggingProgressMonitor(log));
+            } catch (Throwable e) {
+                log.error(e);
+            }
+            allProjects = root.getProjects();
+        }
         for (IProject project : allProjects) {
             if (project.exists() && !project.isHidden() && isProjectAccessible(project)) {
                 LocalProjectImpl projectMetadata = projects.get(project);

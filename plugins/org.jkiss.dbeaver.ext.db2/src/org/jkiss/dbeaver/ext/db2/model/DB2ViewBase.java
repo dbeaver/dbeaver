@@ -68,14 +68,14 @@ public abstract class DB2ViewBase extends DB2TableBase implements DB2SourceObjec
 
         setName(JDBCUtils.safeGetString(dbResult, "TABNAME"));
 
-        this.valid = CommonUtils.valueOf(DB2ViewStatus.class, JDBCUtils.safeGetString(dbResult, "VALID"));
+        this.valid = CommonUtils.valueOf(DB2ViewStatus.class, JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_VALID));
         this.text = JDBCUtils.safeGetString(dbResult, "TEXT");
         this.funcPath = JDBCUtils.safeGetString(dbResult, "FUNC_PATH");
 
         this.invalidateTime = JDBCUtils.safeGetTimestamp(dbResult, "INVALIDATE_TIME");
         this.lastRegenTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REGEN_TIME");
         if (getDataSource().isAtLeastV9_5()) {
-            this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
+            this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_ALTER_TIME);
         }
     }
 
