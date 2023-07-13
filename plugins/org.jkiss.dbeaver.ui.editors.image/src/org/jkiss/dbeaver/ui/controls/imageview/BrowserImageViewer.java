@@ -43,9 +43,11 @@ import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Iterator;
 import java.util.Locale;
 
@@ -104,33 +106,17 @@ public class BrowserImageViewer extends AbstractImageViewer {
         boolean success = false;
         try {
             clearTempFile();
-            try (ImageInputStream stream = ImageIO.createImageInputStream(inputStream)) {
-                Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
-                if (!readers.hasNext()) {
-                    throw new IOException("No Image readers");
-                } else {
-                    ImageReader reader = readers.next();
-                    reader.setInput(stream);
-                    tempFile = Files.createTempFile(DBWorkbench.getPlatform()
-                            .getTempFolder(new VoidProgressMonitor(), "dbeaver-images"),
-                        "image",
-                        "." + reader.getFormatName().toLowerCase(Locale.ROOT)
-                    );
-                    ImageIO.write(ImageIO.read(stream),
-                        reader.getFormatName().toLowerCase(Locale.ROOT),
-                        tempFile.toFile()
-                    );
-                    success = true;
-                }
-            } catch (IOException exception) {
-                if (!exception.getMessage().equals("closed")) {
-                    log.error("Error reading image data", exception);
-                    showBinaryTXT(inputStream);
-                    success = false;
-                }
+            tempFile = Files.createTempFile(
+                DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dbeaver-images"),
+                    "image",
+                    ""
+            );
+            try (OutputStream outputStream = Files.newOutputStream(tempFile, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+                IOUtils.copyStream(inputStream, outputStream);
             }
             URL url = tempFile.toUri().toURL();
             browser.setUrl(url.toString());
+            success = true;
         } catch (IOException exception) {
             log.error(exception);
         }
