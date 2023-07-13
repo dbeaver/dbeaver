@@ -43,13 +43,17 @@ import java.io.Reader;
  */
 public class DataExporterXML extends StreamExporterAbstract {
 
+    private static final String PROP_INCLUDE_DOCTYPE_DECLARATION = "includeDoctype";
+
     private DBDAttributeBinding[] columns;
     private String tableName;
+    private boolean includeDoctype;
 
     @Override
     public void init(IStreamDataExporterSite site) throws DBException
     {
         super.init(site);
+        includeDoctype = CommonUtils.getBoolean(site.getProperties().get(PROP_INCLUDE_DOCTYPE_DECLARATION), false);
     }
 
     @Override
@@ -70,25 +74,27 @@ public class DataExporterXML extends StreamExporterAbstract {
         PrintWriter out = getWriter();
         out.write("<?xml version=\"1.0\" encoding=\"" + getSite().getOutputEncoding() + "\"?>\n");
         tableName = escapeXmlElementName(getSite().getSource().getName());
-        out.write("<!DOCTYPE " + tableName + " [\n");
-        out.write("  <!ELEMENT " + tableName + " (DATA_RECORD*)>\n");
-        out.write("  <!ELEMENT DATA_RECORD (");
-        int columnsSize = columns.length;
-        for (int i = 0; i < columnsSize; i++) {
-            String colName = columns[i].getLabel();
-            if (CommonUtils.isEmpty(colName)) {
-                colName = columns[i].getName();
+        if (includeDoctype) {
+            out.write("<!DOCTYPE " + tableName + " [\n");
+            out.write("  <!ELEMENT " + tableName + " (DATA_RECORD*)>\n");
+            out.write("  <!ELEMENT DATA_RECORD (");
+            int columnsSize = columns.length;
+            for (int i = 0; i < columnsSize; i++) {
+                String colName = columns[i].getLabel();
+                if (CommonUtils.isEmpty(colName)) {
+                    colName = columns[i].getName();
+                }
+                out.write(escapeXmlElementName(colName) + "?");
+                if (i < columnsSize - 1) {
+                    out.write(",");
+                }
             }
-            out.write(escapeXmlElementName(colName) + "?");
-            if (i < columnsSize - 1) {
-                out.write(",");
+            out.write(")+>\n");
+            for (int i = 0; i < columnsSize; i++) {
+                out.write("  <!ELEMENT " + escapeXmlElementName(columns[i].getName()) + " (#PCDATA)>\n");
             }
+            out.write("]>\n");
         }
-        out.write(")+>\n");
-        for (int i = 0; i < columnsSize; i++) {
-            out.write("  <!ELEMENT " + escapeXmlElementName(columns[i].getName()) + " (#PCDATA)>\n");
-        }
-        out.write("]>\n");
         out.write("<" + tableName + ">\n");
     }
 

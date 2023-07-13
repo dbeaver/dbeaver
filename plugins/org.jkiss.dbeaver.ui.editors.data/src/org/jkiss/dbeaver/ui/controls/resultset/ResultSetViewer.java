@@ -2635,8 +2635,8 @@ public class ResultSetViewer extends Viewer
         if (isExpensiveFilter && ConfirmationDialog.confirmAction(
             viewerPanel.getShell(),
             ConfirmationDialog.WARNING, ResultSetPreferences.CONFIRM_FILTER_RESULTSET,
-            ConfirmationDialog.QUESTION,
-            curAttribute.getName()) != IDialogConstants.YES_ID)
+            ConfirmationDialog.CONFIRM,
+            curAttribute.getName()) != IDialogConstants.OK_ID)
         {
             return;
         }

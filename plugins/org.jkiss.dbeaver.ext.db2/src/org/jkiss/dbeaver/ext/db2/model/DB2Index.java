@@ -96,9 +96,9 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2TableBase> {
         this.reverseScans = JDBCUtils.safeGetBoolean(dbResult, "REVERSE_SCANS", DB2YesNo.Y.name());
         this.tablespaceId = JDBCUtils.safeGetInteger(dbResult, "TBSPACEID");
         this.pageSplit = CommonUtils.valueOf(DB2IndexPageSplit.class, JDBCUtils.safeGetStringTrimmed(dbResult, "PAGESPLIT"));
-        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+        this.remarks = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_REMARKS);
 
-        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
+        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_CREATE_TIME);
         this.madeUnique = JDBCUtils.safeGetBoolean(dbResult, "MADE_UNIQUE");
 
         this.statsTime = JDBCUtils.safeGetTimestamp(dbResult, "STATS_TIME");

@@ -168,20 +168,22 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             @Override
             public String getText(Object element, boolean forUI) {
                 DBTTaskRun taskRun = (DBTTaskRun) element;
-                return forUI ? RuntimeUtils.formatExecutionTime(taskRun.getRunDuration()) : String.valueOf(taskRun.getRunDuration());
+                return !taskRun.isFinished() ? "N/A" :
+                    (forUI ? RuntimeUtils.formatExecutionTime(taskRun.getRunDuration()) : String.valueOf(taskRun.getRunDuration()));
             }
 
             @Override
             protected void update(ViewerCell cell, DBTTaskRun taskRun) {
-                cell.setText(RuntimeUtils.formatExecutionTime(taskRun.getRunDuration()));
+                cell.setText(!taskRun.isFinished() ? "N/A" : RuntimeUtils.formatExecutionTime(taskRun.getRunDuration()));
             }
         }, null);
         taskRunColumnController.addColumn(TaskUIViewMessages.db_tasks_view_column_controller_add_name_result, TaskUIViewMessages.db_tasks_view_column_controller_add_descr_task_result, SWT.LEFT, true, false, new TaskRunLabelProvider() {
             @Override
             protected void update(ViewerCell cell, DBTTaskRun taskRun) {
-                String resultMessage = taskRun.isRunSuccess()
-                                     ? TaskUIViewMessages.db_tasks_view_cell_text_success
-                                     : CommonUtils.notEmpty(taskRun.getErrorMessage());
+                String resultMessage =
+                    taskRun.isFinished() ?
+                        (taskRun.isRunSuccess() ? TaskUIViewMessages.db_tasks_view_cell_text_success : CommonUtils.notEmpty(taskRun.getErrorMessage())) :
+                        "In progress";
 
                 String extraMessage = taskRun.getExtraMessage();
                 if (CommonUtils.isNotEmpty(extraMessage)) {
