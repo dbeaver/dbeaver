@@ -62,13 +62,13 @@ public class DB2Variable extends DB2Object<DBSObject> {
         super(owner, JDBCUtils.safeGetString(dbResult, "VARNAME"), true);
 
         this.id = JDBCUtils.safeGetInteger(dbResult, "VARID");
-        this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
-        this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
-        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
+        this.owner = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER);
+        this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER_TYPE));
+        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_CREATE_TIME);
         this.lastRegenTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REGEN_TIME");
-        this.valid = JDBCUtils.safeGetBoolean(dbResult, "VALID", DB2YesNo.Y.name());
+        this.valid = JDBCUtils.safeGetBoolean(dbResult, DB2Constants.SYSCOLUMN_VALID, DB2YesNo.Y.name());
         this.published = JDBCUtils.safeGetBoolean(dbResult, "PUBLISHED", DB2YesNo.Y.name());
-        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+        this.remarks = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_REMARKS);
 
         if (owner instanceof DB2Module) {
             db2Schema = ((DB2Module) owner).getSchema();
