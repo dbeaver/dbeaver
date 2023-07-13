@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.data.gis.handlers;
+package org.jkiss.dbeaver.model.gis;
 
 import org.cugos.wkg.Coordinate;
 import org.ejml.data.DMatrixRMaj;

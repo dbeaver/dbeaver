@@ -20,6 +20,7 @@ import org.cugos.wkg.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.gis.CircularArc;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.utils.CommonUtils;
 import org.locationtech.jts.io.WKTReader;
