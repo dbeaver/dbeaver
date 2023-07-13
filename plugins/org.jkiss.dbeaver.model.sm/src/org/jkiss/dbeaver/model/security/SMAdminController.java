@@ -74,7 +74,9 @@ public interface SMAdminController extends SMController {
     SMUser getUserById(String userId) throws DBException;
 
     @NotNull
-    SMUser[] findUsers(String userNameMask) throws DBException;
+    SMUser[] findUsers(@NotNull Integer first, @Nullable String after, @NotNull String userIdMask) throws DBException;
+
+    int countUsers(@Nullable String after, @NotNull String userIdMask) throws DBException;
 
     void enableUser(String userId, boolean enabled) throws DBException;
 
