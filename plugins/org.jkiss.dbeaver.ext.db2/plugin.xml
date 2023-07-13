@@ -84,6 +84,10 @@
                                        <items label="%tree.triggerdeps.node.name" path="triggerdep" property="triggerDeps" icon="#triggerdep"/>
                                     </items>
                                 </folder>
+                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2ColumnMask" label="%tree.column.masks.node.name"
+                                        icon="#triggers" description="tree.column.masks.node.name">
+                                    <items label="%tree.column.mask.node.name" path="columnMask" property="columnMasks" icon="#trigger"/>
+                                </folder>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.db2.model.DB2View" label="%tree.views.node.name" icon="#folder_view" description="Views">

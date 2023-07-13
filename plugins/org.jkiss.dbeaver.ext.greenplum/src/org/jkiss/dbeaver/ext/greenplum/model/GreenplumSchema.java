@@ -82,11 +82,11 @@ public class GreenplumSchema extends PostgreSchema {
                                                     @Nullable PostgreTableBase object,
                                                     @Nullable String objectName) throws SQLException {
             GreenplumDataSource dataSource = getDataSource();
-            boolean greenplumVersionAtLeast5 = dataSource.isGreenplumVersionAtLeast(session.getProgressMonitor(), 5, 0);
+            boolean greenplumVersionAtLeast5 = dataSource.isGreenplumVersionAtLeast(5, 0);
             String uriLocationColumn = greenplumVersionAtLeast5 ? "urilocation" : "location";
             String execLocationColumn = greenplumVersionAtLeast5 ? "execlocation" : "location";
             boolean hasAccessToExttable = dataSource.isHasAccessToExttable(session);
-            hasAccessToPartitionsView = !dataSource.isGreenplumVersionAtLeast(session.getProgressMonitor(), 7, 0);
+            hasAccessToPartitionsView = !dataSource.isGreenplumVersionAtLeast(7, 0);
             String sqlQuery = "SELECT c.oid,c.*,d.description,\n" +
                 (hasAccessToPartitionsView ? "p.partitiontablename,p.partitionboundary as partition_expr," :
                     "pg_catalog.pg_get_expr(c.relpartbound, c.oid) as partition_expr, pg_catalog.pg_get_partkeydef(c.oid) as partition_key,") +
