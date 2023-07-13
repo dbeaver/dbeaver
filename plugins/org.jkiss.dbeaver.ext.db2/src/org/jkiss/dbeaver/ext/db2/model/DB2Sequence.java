@@ -75,7 +75,7 @@ public class DB2Sequence extends DB2SchemaObject implements DBSSequence, DBPRefr
 
         DB2DataSource db2DataSource = schema.getDataSource();
 
-        this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
+        this.owner = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER);
         this.seqId = JDBCUtils.safeGetInteger(dbResult, "SEQID");
         this.seqType = CommonUtils.valueOf(DB2SequenceType.class, JDBCUtils.safeGetString(dbResult, "SEQTYPE"));
         this.incrementBy = JDBCUtils.safeGetLong(dbResult, "INCREMENT");
@@ -88,14 +88,14 @@ public class DB2Sequence extends DB2SchemaObject implements DBSSequence, DBPRefr
         this.order = JDBCUtils.safeGetBoolean(dbResult, "ORDER", DB2YesNo.Y.name());
         this.dataTypeId = JDBCUtils.safeGetInteger(dbResult, "DATATYPEID");
         this.sourceTypeId = JDBCUtils.safeGetInteger(dbResult, "SOURCETYPEID");
-        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
-        this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
+        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_CREATE_TIME);
+        this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_ALTER_TIME);
         this.precision = DB2SequencePrecision.getFromDataType(JDBCUtils.safeGetInteger(dbResult, "PRECISION"));
         this.origin = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "ORIGIN"));
-        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+        this.remarks = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_REMARKS);
 
         if (db2DataSource.isAtLeastV9_5()) {
-            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER_TYPE));
         }
         if (db2DataSource.isAtLeastV9_7()) {
             this.baseSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "BASE_SEQSCHEMA");
