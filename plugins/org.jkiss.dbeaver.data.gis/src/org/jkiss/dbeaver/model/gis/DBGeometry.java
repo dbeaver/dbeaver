@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.gis;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.data.gis.handlers.WKGUtils;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateFilter;
@@ -35,36 +36,28 @@ import java.util.Map;
  */
 public class DBGeometry implements DBDValue {
 
-    private Object rawValue;
+    private final Object rawValue;
     private int srid;
     private Map<String, Object> properties;
 
     public DBGeometry() {
-        this.rawValue = null;
+        this(null, 0);
     }
 
-    public DBGeometry(String rawValue) {
-        this.rawValue = rawValue;
+    public DBGeometry(@NotNull DBGeometry source) {
+        this(source.rawValue, source.srid, source.properties);
     }
 
-    public DBGeometry(DBGeometry source) {
-        this.rawValue = source.rawValue;
-        this.srid = source.srid;
-        this.properties = source.properties == null ? null : new LinkedHashMap<>(source.properties);
+    public DBGeometry(@Nullable Geometry rawValue) {
+        this(rawValue, rawValue == null ? 0 : rawValue.getSRID());
     }
 
-    public DBGeometry(Geometry rawValue) {
-        this.rawValue = rawValue;
-        this.srid = rawValue == null ? 0 : rawValue.getSRID();
+    public DBGeometry(@Nullable Object rawValue, int srid) {
+        this(rawValue, srid, null);
     }
 
-    public DBGeometry(Object rawValue, int srid) {
-        this.rawValue = rawValue;
-        this.srid = srid;
-    }
-
-    public DBGeometry(Object rawValue, int srid, Map<String, Object> properties) {
-        this.rawValue = rawValue;
+    public DBGeometry(@Nullable Object rawValue, int srid, @Nullable Map<String, Object> properties) {
+        this.rawValue = WKGUtils.isCurve(rawValue) ? WKGUtils.linearize((org.cugos.wkg.Geometry) rawValue) : rawValue;
         this.srid = srid;
         this.properties = properties == null ? null : new LinkedHashMap<>(properties);
     }
@@ -200,6 +193,7 @@ public class DBGeometry implements DBDValue {
     private static class InvertCoordinateFilter implements CoordinateFilter {
         public static final InvertCoordinateFilter INSTANCE = new InvertCoordinateFilter();
 
+        @SuppressWarnings("SuspiciousNameCombination")
         @Override
         public void filter(Coordinate coord) {
             double oldX = coord.x;

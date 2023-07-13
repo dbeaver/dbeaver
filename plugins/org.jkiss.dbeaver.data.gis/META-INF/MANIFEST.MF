@@ -11,7 +11,9 @@ Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.jdbc;visibility:=reexport,
  org.eclipse.core.runtime,
  org.jkiss.bundle.gis;visibility:=reexport
-Bundle-ClassPath: .
+Bundle-ClassPath: .,
+ lib/ejml-core-0.41.jar,
+ lib/ejml-ddense-0.41.jar
 Export-Package: org.jkiss.dbeaver.data.gis.handlers,
  org.jkiss.dbeaver.model.gis
 Automatic-Module-Name: org.jkiss.dbeaver.data.gis
