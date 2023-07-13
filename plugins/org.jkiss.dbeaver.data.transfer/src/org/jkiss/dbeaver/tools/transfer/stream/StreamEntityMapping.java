@@ -42,11 +42,21 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
     private final DBPDataSource dataSource;
     private final String entityName;
     private final List<StreamDataImporterColumnInfo> streamColumns = new ArrayList<>();
+    private final boolean child;
 
-    public StreamEntityMapping(File inputFile) {
+    public StreamEntityMapping(@NotNull File inputFile) {
+        this(inputFile, inputFile.getName());
+    }
+
+    public StreamEntityMapping(@NotNull File inputFile, @NotNull String entityName) {
+        this(inputFile, entityName, false);
+    }
+
+    public StreamEntityMapping(@NotNull File inputFile, @NotNull String entityName, boolean child) {
         this.inputFile = inputFile;
-        this.entityName = inputFile.getName();
+        this.entityName = entityName;
         this.dataSource = new StreamDataSource(entityName);
+        this.child = child;
     }
 
     StreamEntityMapping(Map<String, Object> config) throws DBCException {
@@ -59,12 +69,15 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
         this.inputFile = new File(inputFileName);
 
         this.dataSource = new StreamDataSource(entityName);
+        this.child = false;
     }
 
+    @NotNull
     public File getInputFile() {
         return inputFile;
     }
 
+    @NotNull
     public String getEntityName() {
         return entityName;
     }
@@ -153,6 +166,10 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
         return streamColumns;
     }
 
+    public boolean isChild() {
+        return child;
+    }
+
     void setStreamColumns(List<StreamDataImporterColumnInfo> streamColumns) {
         this.streamColumns.clear();
         this.streamColumns.addAll(streamColumns);
@@ -188,18 +205,15 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
     }
 
     @Override
-    public String toString() {
-        return inputFile.getAbsolutePath();
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        StreamEntityMapping that = (StreamEntityMapping) o;
+        return inputFile.equals(that.inputFile) && entityName.equals(that.entityName);
     }
 
     @Override
     public int hashCode() {
-        return inputFile.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof StreamEntityMapping &&
-            CommonUtils.equalObjects(inputFile, ((StreamEntityMapping) obj).inputFile);
+        return Objects.hash(inputFile, entityName);
     }
 }
