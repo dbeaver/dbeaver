@@ -74,20 +74,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
     private static final Log log = Log.getLog(AltibaseMetaModel.class);
     public static boolean DBMS_METADATA = true;
 
-    /*
-    private static final Set<String> INVALID_TABLE_TYPES = new HashSet<>();
-
-    static {
-        INVALID_TABLE_TYPES.add("VIEW");
-        INVALID_TABLE_TYPES.add("MATERIALIZED VIEW");
-        INVALID_TABLE_TYPES.add("QUEUE");
-        INVALID_TABLE_TYPES.add("SEQUENCE");
-        INVALID_TABLE_TYPES.add("SYNONYM");
-    }
-    */
-
     public AltibaseMetaModel() {
-        super();
     }
 
     @Override
@@ -386,6 +373,9 @@ public class AltibaseMetaModel extends GenericMetaModel {
                 JDBCUtils.safeGetString(dbResult, "OBJECT_NAME"));
     }
 
+    //////////////////////////////////////////////////////
+    // Triggers
+    
     @Override
     public boolean supportsTriggers(@NotNull GenericDataSource dataSource) {
         return true;
@@ -517,28 +507,13 @@ public class AltibaseMetaModel extends GenericMetaModel {
         return ddl.toString();
     }
 
-    /*
-
-    @Override
-    public DBPErrorAssistant.ErrorPosition getErrorPosition(@NotNull Throwable error) {
-        String message = error.getMessage();
-        if (!CommonUtils.isEmpty(message)) {
-            Matcher matcher = ERROR_POSITION_PATTERN.matcher(message);
-            if (matcher.find()) {
-                DBPErrorAssistant.ErrorPosition pos = new DBPErrorAssistant.ErrorPosition();
-                pos.line = Integer.parseInt(matcher.group(1)) - 1;
-                pos.position = Integer.parseInt(matcher.group(2)) - 1;
-                return pos;
-            }
-        }
-        return null;
-    }
-     */
-
     @Override
     public boolean isTableCommentEditable() {
         return true;
     }
+
+    //////////////////////////////////////////////////////
+    // Constraints
 
     @Override
     public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session, 
@@ -581,36 +556,6 @@ public class AltibaseMetaModel extends GenericMetaModel {
         }
         
         return dbStat;
-        /*
-        final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT"
-                        + " (SELECT db_name FROM v$database) AS TABLE_CAT,"
-                        + " u.user_name AS TABLE_SCHEME,"
-                        + " t.table_name AS TABLE_NAME,"
-                        + " col.column_name AS COLUMN_NAME, "
-                        + " (ccol.constraint_col_order + 1) AS KEY_SEQ,"
-                        + " c.constraint_name AS PK_NAME, "
-                        + " c.constraint_type, "
-                        + " c.check_condition, "
-                        + " c.validated"
-                        + " FROM"
-                        + " system_.sys_users_ u, system_.sys_tables_ t, system_.sys_columns_ col,"
-                        + " system_.sys_constraints_ c, system_.sys_constraint_columns_ ccol"
-                        + " WHERE"
-                        + " u.user_name = ?"
-                        + " AND t.table_name = ?"
-                        + " AND u.user_id = c.user_id"
-                        + " AND u.user_id = t.user_id"
-                        + " AND t.table_id = c.table_id"
-                        + " AND c.constraint_type != 0"
-                        + " AND c.constraint_id = ccol.constraint_id"
-                        + " AND ccol.column_id = col.column_id"
-                );
-
-        dbStat.setString(1, owner.getName());
-        dbStat.setString(2, forParent.getName());
-        return dbStat;
-        */
     }
 
     @Override
@@ -658,6 +603,9 @@ public class AltibaseMetaModel extends GenericMetaModel {
                 throw new DBException(exMsg);
         }
     }
+
+    //////////////////////////////////////////////////////
+    // Packages
 
     private void loadPackages(DBRProgressMonitor monitor, @NotNull GenericObjectContainer container, 
             JDBCSession session, Map<String, AltibasePackage> packageMap) throws SQLException, DBException {
@@ -828,37 +776,6 @@ public class AltibaseMetaModel extends GenericMetaModel {
         } 
     }
 
-    /* TODO: Remove later if unnecessary
-    private void loadTypesets (DBRProgressMonitor monitor, @NotNull GenericObjectContainer container, JDBCSession session) throws SQLException, DBException {
-
-        // Load packages
-        try (JDBCStatement dbStat = prepareTypesetLoadStatement(session, container)) {
-            dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
-            dbStat.executeStatement();
-            JDBCResultSet dbResult = dbStat.getResultSet();
-            if (dbResult != null) {
-                try {
-                    while (dbResult.next()) {
-                        if (monitor.isCanceled()) {
-                            break;
-                        }
-
-                        String procedureName = JDBCUtils.safeGetString(dbResult, "PROC_NAME");
-                        boolean isValid = (JDBCUtils.safeGetInt(dbResult, "STATUS") == 0); // 0: valid, 1: invalid 
-
-                        final AltibaseTypeset typeset = createTypesetImpl(container, procedureName, isValid);
-
-                        container.addProcedure(typeset);
-
-                    }
-                } finally {
-                    dbResult.close();
-                }
-            }
-        }
-    }
-     */
-
     //////////////////////////////////////////////////////
     // Procedure load
 
@@ -888,23 +805,6 @@ public class AltibaseMetaModel extends GenericMetaModel {
             throw new DBException(e, dataSource);
         }
     }
-
-    //////////////////////////////////////////////////////
-    // Typeset
-    /* TODO: Remove later if unnecessary
-    public JDBCStatement prepareTypesetLoadStatement(JDBCSession session, GenericStructContainer container) throws SQLException {
-        final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT"
-                        + " PROC_NAME, STATUS"
-                        + " FROM SYSTEM_.SYS_PROCEDURES_ P, SYSTEM_.SYS_USERS_ U"
-                        + " WHERE"
-                        + " U.USER_NAME = ?"
-                        + " AND U.USER_ID = P.USER_ID"
-                        + " AND OBJECT_TYPE = 3");
-        dbStat.setString(1, container.getName());
-        return dbStat;
-    }
-     */
 
     public AltibaseTypeset createTypesetImpl(GenericStructContainer container, String procedureName) {
         return new AltibaseTypeset(container, procedureName);
@@ -1015,7 +915,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
         
         /* Reference:
          * Need to use native CallableStatement
-        jcstmt = session.prepareCall("exec ? := dbms_metadata.get_ddl(?, ?, ?)");
+            jcstmt = session.prepareCall("exec ? := dbms_metadata.get_ddl(?, ?, ?)");
             java.lang.NullPointerException
             at Altibase.jdbc.driver.AltibaseParameterMetaData.getParameterMode(AltibaseParameterMetaData.java:31)
             at org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCCallableStatementImpl.getOutputParametersFromJDBC(JDBCCallableStatementImpl.java:316)
@@ -1053,8 +953,6 @@ public class AltibaseMetaModel extends GenericMetaModel {
 
     private boolean hasDbmsMetadataPacakge(JDBCSession session) {
         boolean hasDbmsMetadataPacakge = false;
-        //JDBCPreparedStatement jpstmt = null;
-        //JDBCResultSet jrs = null;
 
         String sql = "SELECT "
                 + " count(*)"
