@@ -16,15 +16,16 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model.plan;
 
-import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
-import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class AltibasePlanNode extends AbstractExecutionPlanNode {
+import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
+import org.jkiss.dbeaver.model.meta.Property;
+
+public class AltibasePlanNode extends AbstractExecutionPlanNode  {
 
     private int depth;
     private String plan;
@@ -74,8 +75,29 @@ public class AltibasePlanNode extends AbstractExecutionPlanNode {
         plan += " " + addPlan;
     }
     
+    @Property(order = 1, viewable = true)
+    public String getPlanString() {
+        return getPrefix(this.depth) + plan;
+    }
+    
     public String toString() {
         return plan;
+    }
+    
+    private static String getPrefix(int depth) {
+        if (depth < 1) {
+            return "";
+        } else {
+            StringBuilder sb = new StringBuilder("└");
+            
+            if (depth > 1) {
+                for(int i = 1; i < depth; i++) {
+                    sb.append('-');
+                }
+            }
+            
+            return sb.toString();
+        }
     }
 
     public String toString4Debug() {
