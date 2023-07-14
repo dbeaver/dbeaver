@@ -25,23 +25,23 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DPIContainer;
 import org.jkiss.dbeaver.model.DPIObject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.dpi.client.DPIClientProxy;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
-import org.jkiss.utils.ArrayUtils;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * DPI utils
@@ -53,6 +53,7 @@ public class DPISerializer {
     public static final String ATTR_OBJECT_TYPE = "type";
     private static final String ATTR_OBJECT_STRING = "string";
     private static final String ATTR_OBJECT_HASH = "hash";
+    private static final String ATTR_INTERFACES = "interfaces";
     private static final String ATTR_PROPS = "properties";
     private static final String ATTR_CONTAINERS = "containers";
 
@@ -71,40 +72,123 @@ public class DPISerializer {
         @Override
         public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> typeToken) {
             if (typeToken.getType() instanceof Class<?>) {
-                DPIObject annotation = getDPIAnno(((Class<?>)typeToken.getType()));
+                Class<?> theClass = (Class<?>) typeToken.getType();
+                if (DBRProgressMonitor.class.isAssignableFrom(theClass)) {
+                    return (TypeAdapter<T>) new DPIProgressMonitorAdapter(context);
+                }
+
+                DPIObject annotation = getDPIAnno(theClass);
                 if (annotation != null) {
-                    return new DPIObjectTypeAdapter<T>(context, typeToken.getType());
+                    return new DPIObjectTypeAdapter<>(context, typeToken.getType());
                 }
             } else if (typeToken.getType() instanceof WildcardType) {
                 Type[] upperBounds = ((WildcardType) typeToken.getType()).getUpperBounds();
                 if (upperBounds.length > 0 && upperBounds[0] instanceof Class) {
                     DPIObject annotation = getDPIAnno((Class<?>) upperBounds[0]);
                     if (annotation != null) {
-                        return new DPIObjectTypeAdapter<T>(context, typeToken.getType());
+                        return new DPIObjectTypeAdapter<>(context, typeToken.getType());
                     }
                 }
+            }
+            if (typeToken.getType() == Class.class) {
+                return (TypeAdapter<T>) new DPIClassAdapter(context);
             }
             return null;
         }
 
-        private static <T> DPIObject getDPIAnno(@NotNull Class<?> type) {
-            DPIObject annotation = type.getAnnotation(DPIObject.class);
+    }
+
+
+    public static <T> DPIObject getDPIAnno(@NotNull Class<?> type) {
+        DPIObject annotation = type.getAnnotation(DPIObject.class);
+        if (annotation != null) {
+            return annotation;
+        }
+        for (Class<?> i : type.getInterfaces()) {
+            annotation = getDPIAnno(i);
             if (annotation != null) {
                 return annotation;
             }
-            for (Class<?> i : type.getInterfaces()) {
-                annotation = getDPIAnno(i);
-                if (annotation != null) {
-                    return annotation;
+        }
+        Class<?> superclass = type.getSuperclass();
+        if (superclass == null || superclass == Object.class) {
+            return null;
+        }
+        return getDPIAnno(superclass);
+    }
+
+    public static <T extends Annotation> T getMethodAnno(@NotNull Method method, Class<T> annoType) {
+        T annotation = method.getAnnotation(annoType);
+        if (annotation == null) {
+            annotation = getMethodAnno(method, annoType, method.getDeclaringClass());
+        }
+        return annotation;
+    }
+
+    @Nullable
+    private static <T extends Annotation> T getMethodAnno(@NotNull Method method, Class<T> annoType, Class<?> methodClass) {
+        for (Class<?> mi : methodClass.getInterfaces()) {
+            if (mi.getAnnotation(DPIObject.class) != null) {
+                try {
+                    Method iMethod = mi.getMethod(method.getName(), method.getParameterTypes());
+                    T anno = iMethod.getAnnotation(annoType);
+                    if (anno != null) {
+                        return anno;
+                    }
+                } catch (NoSuchMethodException e) {
+                    // ignore
                 }
             }
-            Class<?> superclass = type.getSuperclass();
-            if (superclass == null || superclass == Object.class) {
-                return null;
+            T anno = getMethodAnno(method, annoType, mi);
+            if (anno != null) {
+                return anno;
             }
-            return getDPIAnno(superclass);
+        }
+        return null;
+    }
+
+    static abstract class AbstractTypeAdapter<T> extends TypeAdapter<T> {
+        protected final DPIContext context;
+
+        public AbstractTypeAdapter(DPIContext context) {
+            this.context = context;
+        }
+    }
+
+    static class DPIClassAdapter extends AbstractTypeAdapter<Class> {
+        public DPIClassAdapter(DPIContext context) {
+            super(context);
         }
 
+        @Override
+        public void write(JsonWriter jsonWriter, Class aClass) throws IOException {
+            jsonWriter.value(aClass.getName());
+        }
+
+        @Override
+        public Class<?> read(JsonReader jsonReader) throws IOException {
+            String className = jsonReader.nextString();
+            try {
+                return Class.forName(className, true, context.getClassLoader());
+            } catch (Exception e) {
+                throw new IOException(e);
+            }
+        }
+    }
+
+    static class DPIProgressMonitorAdapter extends AbstractTypeAdapter<DBRProgressMonitor> {
+        public DPIProgressMonitorAdapter(DPIContext context) {
+            super(context);
+        }
+
+        @Override
+        public void write(JsonWriter jsonWriter, DBRProgressMonitor aClass) throws IOException {
+        }
+
+        @Override
+        public DBRProgressMonitor read(JsonReader jsonReader) throws IOException {
+            return context.getProgressMonitor();
+        }
     }
 
     static class DPIObjectTypeAdapter<T> extends TypeAdapter<T> {
@@ -133,12 +217,26 @@ public class DPISerializer {
                 jsonWriter.value(t.toString());
                 jsonWriter.name(ATTR_OBJECT_HASH);
                 jsonWriter.value(t.hashCode());
+                {
+                    jsonWriter.name(ATTR_INTERFACES);
+                    jsonWriter.beginArray();
+                    for (Class<?> theClass = t.getClass(); theClass != null && theClass != Object.class; theClass = theClass.getSuperclass()) {
+                        for (Class<?> theInt : theClass.getInterfaces()) {
+                            jsonWriter.value(theInt.getName());
+                        }
+                    }
+                    jsonWriter.endArray();
+                }
 
                 {
                     // Save containers references
+                    Set<String> collectedContainers = null;
                     boolean hasContainers = false;
                     for (Method method : t.getClass().getMethods()) {
-                        DPIContainer anno = method.getAnnotation(DPIContainer.class);
+                        if (collectedContainers != null && collectedContainers.contains(method.getName())) {
+                            continue;
+                        }
+                        DPIContainer anno = getMethodAnno(method, DPIContainer.class);
                         if (anno != null && !anno.root() && method.getParameterTypes().length == 0) {
                             Object container;
                             try {
@@ -148,6 +246,10 @@ public class DPISerializer {
                                 continue;
                             }
                             if (container != null) {
+                                if (collectedContainers == null) {
+                                    collectedContainers = new HashSet<>();
+                                }
+                                collectedContainers.add(method.getName());
                                 String containerId = context.getObjectId(container);
                                 if (containerId != null) {
                                     if (!hasContainers) {
@@ -187,56 +289,78 @@ public class DPISerializer {
             String objectType = null;
             String objectToString = null;
             Integer objectHashCode = null;
+            Set<Class<?>> allInterfaces = new LinkedHashSet<>();
             Map<String, Object> objectContainers = null;
             Map<String, Object> objectProperties = null;
             if (ATTR_OBJECT_ID.equals(jsonReader.nextName())) {
                 objectId = jsonReader.nextString();
             }
-            if (jsonReader.peek() == JsonToken.NAME && ATTR_OBJECT_TYPE.equals(jsonReader.nextName())) {
-                objectType = jsonReader.nextString();
-            }
-            if (jsonReader.peek() == JsonToken.NAME && ATTR_OBJECT_STRING.equals(jsonReader.nextName())) {
-                objectToString = jsonReader.nextString();
-            }
-            if (jsonReader.peek() == JsonToken.NAME && ATTR_OBJECT_HASH.equals(jsonReader.nextName())) {
-                objectHashCode = jsonReader.nextInt();
-            }
-            if (jsonReader.peek() == JsonToken.NAME && ATTR_CONTAINERS.equals(jsonReader.nextName())) {
-                jsonReader.beginObject();
-                while (jsonReader.peek() == JsonToken.NAME) {
-                    String containerName = jsonReader.nextName();
-                    String containerId = jsonReader.nextString();
-                    Object objectContainer = context.getObject(containerId);
-                    if (objectContainer != null) {
-                        if (objectContainers == null) {
-                            objectContainers = new HashMap<>();
+            while (jsonReader.peek() == JsonToken.NAME) {
+                String attrName = jsonReader.nextName();
+                switch (attrName) {
+                    case ATTR_OBJECT_TYPE:
+                        objectType = jsonReader.nextString();
+                        break;
+                    case ATTR_OBJECT_STRING:
+                        objectToString = jsonReader.nextString();
+                        break;
+                    case ATTR_OBJECT_HASH:
+                        objectHashCode = jsonReader.nextInt();
+                        break;
+                    case ATTR_INTERFACES: {
+                        jsonReader.beginArray();
+                        while (jsonReader.peek() == JsonToken.STRING) {
+                            String intName = jsonReader.nextString();
+                            try {
+                                Class<?> intClass = Class.forName(intName, true, getClassLoader());
+                                allInterfaces.add(intClass);
+                            } catch (Exception e) {
+                                log.debug("Interface '" + intName + "' cannot be resolved");
+                            }
                         }
-                        objectContainers.put(containerName, objectContainer);
-                    } else {
-                        log.debug("DPI container '" + containerName + "'='" + containerId + "' not found in DPI context");
+                        jsonReader.endArray();
+                        break;
+                    }
+                    case ATTR_CONTAINERS: {
+                        jsonReader.beginObject();
+                        while (jsonReader.peek() == JsonToken.NAME) {
+                            String containerName = jsonReader.nextName();
+                            String containerId = jsonReader.nextString();
+                            Object objectContainer = containerId.equals(objectId) ? DPIClientProxy.SELF_REFERENCE : context.getObject(containerId);
+                            if (objectContainer != null) {
+                                if (objectContainers == null) {
+                                    objectContainers = new HashMap<>();
+                                }
+                                objectContainers.put(containerName, objectContainer);
+                            } else {
+                                log.debug("DPI container '" + containerName + "'='" + containerId + "' not found in DPI context");
+                            }
+                        }
+                        jsonReader.endObject();
+                        break;
+                    }
+                    case ATTR_PROPS: {
+                        jsonReader.beginObject();
+                        while (jsonReader.peek() == JsonToken.NAME) {
+                            String propName = jsonReader.nextName();
+                            Object propValue = null;
+                            switch (jsonReader.peek()) {
+                                case BOOLEAN: propValue = jsonReader.nextBoolean(); break;
+                                case NUMBER: propValue = jsonReader.nextLong(); break;
+                                case STRING: propValue = jsonReader.nextString(); break;
+                                default:
+                                    log.debug("Skip property '" + propName + "' value");
+                                    jsonReader.skipValue(); break;
+                            }
+                            if (objectProperties == null) {
+                                objectProperties = new LinkedHashMap<>();
+                            }
+                            objectProperties.put(propName, propValue);
+                        }
+                        jsonReader.endObject();
+                        break;
                     }
                 }
-                jsonReader.endObject();
-            }
-            if (jsonReader.peek() == JsonToken.NAME && ATTR_PROPS.equals(jsonReader.nextName())) {
-                jsonReader.beginObject();
-                while (jsonReader.peek() == JsonToken.NAME) {
-                    String propName = jsonReader.nextName();
-                    Object propValue = null;
-                    switch (jsonReader.peek()) {
-                        case BOOLEAN: propValue = jsonReader.nextBoolean(); break;
-                        case NUMBER: propValue = jsonReader.nextLong(); break;
-                        case STRING: propValue = jsonReader.nextString(); break;
-                        default:
-                            log.debug("Skip property '" + propName + "' value");
-                            jsonReader.skipValue(); break;
-                    }
-                    if (objectProperties == null) {
-                        objectProperties = new LinkedHashMap<>();
-                    }
-                    objectProperties.put(propName, propValue);
-                }
-                jsonReader.endObject();
             }
             jsonReader.endObject();
 
@@ -247,16 +371,21 @@ public class DPISerializer {
             if (object != null) {
                 return (T)object;
             }
-            if (!(type instanceof Class<?>)) {
-                throw new IOException("Non class result: " + type);
-            }
-            Class<?> theClass = (Class<?>) type;
-            Class<?>[] allInterfaces = (theClass).getInterfaces();
-            if (allInterfaces.length > 0) {
-                allInterfaces = ArrayUtils.add(Class.class, allInterfaces, theClass);
+            Class<?> theClass;
+            if (type instanceof Class<?>) {
+                theClass = (Class<?>) type;
+            } else if (type instanceof WildcardType) {
+                Type[] upperBounds = ((WildcardType) type).getUpperBounds();
+                if (upperBounds.length == 1 && upperBounds[0] instanceof Class<?>) {
+                    theClass = (Class<?>) upperBounds[0];
+                } else {
+                    throw new IOException("Unrecognized upper bounds '" + Arrays.toString(upperBounds) + "', deserialization not supported (" + type + ")");
+                }
             } else {
-                allInterfaces = new Class[] {theClass};
+                throw new IOException("Non class result, deserialization not supported (" + type + ")");
             }
+            allInterfaces.add(theClass);
+            Collections.addAll(allInterfaces, (theClass).getInterfaces());
             DPIClientProxy objectHandler = new DPIClientProxy(
                 context,
                 objectId,
@@ -264,9 +393,16 @@ public class DPISerializer {
                 objectToString,
                 objectHashCode,
                 objectContainers);
-            object = Proxy.newProxyInstance(getClass().getClassLoader(), allInterfaces, objectHandler);
+            object = Proxy.newProxyInstance(
+                getClassLoader(),
+                allInterfaces.toArray(new Class[0]),
+                objectHandler);
             context.addObject(objectId, object);
             return (T)object;
+        }
+
+        private ClassLoader getClassLoader() {
+            return context.getClassLoader();
         }
 
     }

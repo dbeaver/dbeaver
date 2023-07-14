@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.model.dpi.api;
 
+import com.google.gson.Gson;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,15 +35,23 @@ public class DPIContext {
     private final Map<Object, String> objectValueCache = new HashMap<>();
     private final AtomicLong objectCount = new AtomicLong();
 
+    private final DBRProgressMonitor monitor;
     private final Object rootObject;
+    private final Gson gson;
     private DPIController dpiController;
 
-    public DPIContext(Object rootObject) {
+    public DPIContext(@NotNull DBRProgressMonitor monitor, @NotNull Object rootObject) {
+        this.monitor = monitor;
         this.rootObject = rootObject;
+        this.gson = DPISerializer.createSerializer(this);
     }
 
     public DPIController getDpiController() {
         return dpiController;
+    }
+
+    public Gson getGson() {
+        return gson;
     }
 
     public void setController(DPIController dpiController) {
@@ -87,8 +98,18 @@ public class DPIContext {
         return objectValueCache.containsKey(object);
     }
 
+    @NotNull
     public Object getRootObject() {
         return rootObject;
     }
 
+    @NotNull
+    public ClassLoader getClassLoader() {
+        return rootObject.getClass().getClassLoader();
+    }
+
+    @NotNull
+    public DBRProgressMonitor getProgressMonitor() {
+        return monitor;
+    }
 }

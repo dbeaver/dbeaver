@@ -121,21 +121,7 @@ public class DPIControllerImpl implements DPIController {
                 if ((ArrayUtils.isEmpty(args) && ArrayUtils.isEmpty(argTypes)) ||
                     (args != null && argTypes.length == args.length)
                 ) {
-                    if (args != null) {
-                        boolean argsMatch = true;
-                        for (int i = 0; i < argTypes.length; i++) {
-                            if (args[i] != null && !argTypes[i].isInstance(args[i])) {
-                                argsMatch = false;
-                                break;
-                            }
-                        }
-                        if (argsMatch) {
-                            return invokeObjectMethod(object, objMethod, args);
-                        }
-                    } else {
-                        // No args
-                        return invokeObjectMethod(object, objMethod, null);
-                    }
+                    return invokeObjectMethod(object, objMethod, args);
                 }
             }
         }
@@ -144,8 +130,21 @@ public class DPIControllerImpl implements DPIController {
 
     private Object invokeObjectMethod(Object object, Method method, Object[] args) throws DBException {
         try {
-            log.debug("Invoke DPI method " + method + " on " + object.getClass());
-            return method.invoke(object, args);
+            log.debug("DPI Server: invoke DPI method " + method + " on " + object.getClass());
+            if (args == null) {
+                return method.invoke(object);
+            }
+            // Deserialize arguments
+            Class<?>[] parameterTypes = method.getParameterTypes();
+            Object[] realArgs = new Object[args.length];
+            for (int i = 0; i < parameterTypes.length; i++) {
+                if (args[i] instanceof String) {
+                    realArgs[i] = context.getGson().fromJson((String)args[i], parameterTypes[i]);
+                } else {
+                    realArgs[i] = args[i];
+                }
+            }
+            return method.invoke(object, realArgs);
         } catch (Throwable e) {
             if (e instanceof InvocationTargetException) {
                 e = ((InvocationTargetException) e).getTargetException();

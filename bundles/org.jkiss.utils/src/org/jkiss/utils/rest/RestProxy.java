@@ -16,7 +16,9 @@
  */
 package org.jkiss.utils.rest;
 
+import java.lang.reflect.Type;
+
 public interface RestProxy {
 
-    void setNextCallResultType(Class<?> resultType);
+    void setNextCallResultType(Type resultType);
 }

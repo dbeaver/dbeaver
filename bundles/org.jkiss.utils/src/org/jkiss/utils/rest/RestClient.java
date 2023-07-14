@@ -22,10 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -33,10 +30,7 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodySubscribers;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -89,7 +83,7 @@ public class RestClient {
         private final URI uri;
         private final Gson gson;
         private final HttpClient client;
-        private final ThreadLocal<Class<?>> resultType = new ThreadLocal<>();
+        private final ThreadLocal<Type> resultType = new ThreadLocal<>();
 
         private ClientInvocationHandler(@NotNull URI uri, @NotNull Gson gson) {
             this.uri = uri;
@@ -103,7 +97,7 @@ public class RestClient {
             if (declaringClass == Object.class) {
                 return BeanUtils.handleObjectMethod(proxy, method, args);
             } else if (declaringClass == RestProxy.class) {
-                setNextCallResultType((Class<?>) args[0]);
+                setNextCallResultType((Type) args[0]);
                 return null;
             }
 
@@ -159,7 +153,7 @@ public class RestClient {
                     handleError(response.statusCode(), contents);
                 }
 
-                Class<?> returnType = resultType.get();
+                Type returnType = resultType.get();
                 if (returnType == null) {
                     returnType = method.getReturnType();
                 } else {
@@ -168,7 +162,7 @@ public class RestClient {
                 if (returnType == void.class) {
                     return null;
                 }
-
+System.out.println("RESPONSE: " + contents);
                 return gson.fromJson(contents, returnType);
             } catch (RuntimeException e) {
                 throw e;
@@ -183,7 +177,7 @@ public class RestClient {
         }
 
         @Override
-        public void setNextCallResultType(Class<?> type) {
+        public void setNextCallResultType(Type type) {
             this.resultType.set(type);
         }
     }
@@ -217,6 +211,7 @@ public class RestClient {
             }
         }
         RestException runtimeException = new RestException(errorLine);
+        Collections.addAll(stackTraceElements, runtimeException.getStackTrace());
         runtimeException.setStackTrace(stackTraceElements.toArray(new StackTraceElement[0]));
 
         throw runtimeException;

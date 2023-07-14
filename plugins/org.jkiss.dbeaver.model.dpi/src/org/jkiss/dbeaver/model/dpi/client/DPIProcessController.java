@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.dpi.api.DPIController;
 import org.jkiss.dbeaver.model.dpi.api.DPISerializer;
 import org.jkiss.dbeaver.model.dpi.app.DPIApplication;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.rest.RestClient;
@@ -62,7 +63,7 @@ public class DPIProcessController implements AutoCloseable {
 
     public DPIProcessController(DBPDataSourceContainer dataSourceContainer, BundleProcessConfig processConfig) throws IOException {
         this.processConfig = processConfig;
-        this.dpiContext = new DPIContext(dataSourceContainer);
+        this.dpiContext = new DPIContext(new LoggingProgressMonitor(log), dataSourceContainer);
 
         log.debug("Starting detached database application");
 

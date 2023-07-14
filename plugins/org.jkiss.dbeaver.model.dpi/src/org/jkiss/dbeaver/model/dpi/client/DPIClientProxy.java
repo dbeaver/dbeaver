@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DPIContainer;
 import org.jkiss.dbeaver.model.DPIElement;
 import org.jkiss.dbeaver.model.dpi.api.DPIContext;
 import org.jkiss.dbeaver.model.dpi.api.DPIController;
+import org.jkiss.dbeaver.model.dpi.api.DPISerializer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.rest.RestProxy;
@@ -33,6 +34,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DPIClientProxy implements InvocationHandler {
+
+    public static final Object SELF_REFERENCE = new Object();
+
     private final DPIContext context;
     private final String objectId;
     private final String objectType;
@@ -73,19 +77,22 @@ public class DPIClientProxy implements InvocationHandler {
             return BeanUtils.handleObjectMethod(proxy, method, args);
         }
 
-        DPIContainer containerAnno = method.getAnnotation(DPIContainer.class);
+        DPIContainer containerAnno = DPISerializer.getMethodAnno(method, DPIContainer.class);
         if (containerAnno != null) {
             if (containerAnno.root()) {
                 return context.getRootObject();
             } else if (objectContainers != null) {
                 Object container = objectContainers.get(method.getName());
                 if (container != null) {
+                    if (container == SELF_REFERENCE) {
+                        return this;
+                    }
                     return container;
                 }
             }
         }
 
-        boolean isElement = method.getAnnotation(DPIElement.class) != null ||
+        boolean isElement = DPISerializer.getMethodAnno(method, DPIElement.class) != null ||
             method.getDeclaringClass().getAnnotation(DPIElement.class) != null;
         if (isElement && objectElements != null) {
             Object result = objectElements.get(method);
@@ -100,7 +107,7 @@ public class DPIClientProxy implements InvocationHandler {
         }
         // If method is property read or state read the try lookup in the context cache first
         if (controller instanceof RestProxy) {
-            ((RestProxy) controller).setNextCallResultType(method.getReturnType());
+            ((RestProxy) controller).setNextCallResultType(method.getGenericReturnType());
         }
         Object result = controller.callMethod(this.objectId, method.getName(), args);
         if (method.getAnnotation(Property.class) != null) {
