@@ -21,8 +21,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Object's element.
+ *
+ * Elements are cached on client side
+ */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface DBPRemoteObject {
+@Target({ElementType.METHOD,ElementType.TYPE})
+public @interface DPIElement {
 
 }

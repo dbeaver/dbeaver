@@ -14,13 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.dpi.proxy;
+package org.jkiss.utils.rest;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
+public interface RestProxy {
 
-/**
- * Detached data source
- */
-public abstract class DDSDataSource implements DBPDataSource {
-
+    void setNextCallResultType(Class<?> resultType);
 }

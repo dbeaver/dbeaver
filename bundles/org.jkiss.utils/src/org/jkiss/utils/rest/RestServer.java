@@ -150,7 +150,16 @@ public class RestServer<T> {
                         responseText = CommonUtils.toString(response.object);
                         exchange.getResponseHeaders().add("Content-Type", "text/plain");
                     } else {
-                        responseText = gson.toJson(response.object, response.type);
+                        try {
+                            responseText = gson.toJson(response.object, response.type);
+                        } catch (Throwable e) {
+                            // Serialization error
+                            StringWriter buf = new StringWriter();
+                            new RestException("JSON serialization error: " + e.getMessage(), e).printStackTrace(new PrintWriter(buf, true));
+
+                            sendError(exchange, RestConstants.SC_SERVER_ERROR, buf.toString());
+                            return;
+                        }
                         exchange.getResponseHeaders().add("Content-Type", "application/json");
                     }
                     byte[] responseBytes = responseText.getBytes(StandardCharsets.UTF_8);
@@ -160,20 +169,24 @@ public class RestServer<T> {
                         responseBody.write(responseBytes);
                     }
                 } else {
-                    String responseText = responseObject.toString();
-                    byte[] result = responseText.getBytes(StandardCharsets.UTF_8);
-
-                    exchange.getResponseHeaders().add("Content-Type", "text/plain");
-                    exchange.sendResponseHeaders(response.code, result.length);
-                    try (OutputStream responseBody = exchange.getResponseBody()) {
-                        responseBody.write(result);
-                    }
+                    sendError(exchange, response.code, responseObject);
                 }
             } catch (Throwable e) {
                 log.log(Level.SEVERE, "Internal IO error", e);
                 throw e;
             } finally {
                 exchange.close();
+            }
+        }
+
+        private void sendError(HttpExchange exchange, int resultCode, Object responseObject) throws IOException {
+            String responseText = responseObject.toString();
+            byte[] result = responseText.getBytes(StandardCharsets.UTF_8);
+
+            exchange.getResponseHeaders().add("Content-Type", "text/plain");
+            exchange.sendResponseHeaders(resultCode, result.length);
+            try (OutputStream responseBody = exchange.getResponseBody()) {
+                responseBody.write(result);
             }
         }
 

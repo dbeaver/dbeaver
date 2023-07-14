@@ -14,17 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.dpi.proxy;
+package org.jkiss.dbeaver.model;
 
-import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
+/**
+ * Annotates methods which return container object.
+ * In object hierarchy it is immediate parent object or some higher level parent.
+ *
+ * It is needed to avoid redundant remote calls.
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface DPIContainer {
 
-public class DDSInvocationHandler implements InvocationHandler {
+    boolean root() default false;
 
-    @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        throw new DBCFeatureNotSupportedException();
-    }
 }

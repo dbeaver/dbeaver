@@ -181,6 +181,8 @@ public class DataSourceDescriptor
     private DBWNetworkHandler proxyHandler;
     private DBWTunnel tunnelHandler;
     private final List<DBPDataSourceTask> users = new ArrayList<>();
+    // DPI controller
+    private transient DPIProcessController dpiController;
 
     private transient final DBPExclusiveResource exclusiveLock = new SimpleExclusiveLock();
 
@@ -937,8 +939,7 @@ public class DataSourceDescriptor
         connecting = true;
         try {
             boolean succeeded = false;
-            boolean detachedProcess = DBWorkbench.getPlatform().getApplication().isDetachedProcess();
-            if (!detachedProcess) {
+            if (isDetachedProcessEnabled() && !DBWorkbench.getPlatform().getApplication().isDetachedProcess()) {
                 // Open detached connection
                 succeeded = openDetachedConnection(monitor);
             }
@@ -957,30 +958,35 @@ public class DataSourceDescriptor
         }
     }
 
+    private boolean isDetachedProcessEnabled() {
+        return true;
+    }
+
     private boolean openDetachedConnection(DBRProgressMonitor monitor) {
-        try (DPIProcessController dpiController = DPIProcessController.detachDatabaseProcess(monitor, this)) {
+        try {
+            dpiController = DPIProcessController.detachDatabaseProcess(monitor, this);
             Map<String, String> credentials = new LinkedHashMap<>();
             DPIController dpiClient = dpiController.getClient();
             DPISession session = dpiClient.openSession(getProject().getId());
             if (session == null) {
                 throw new IllegalStateException("No session");
             }
-            try {
-                log.debug("New DPI session: " + session.getSessionId());
-                this.dataSource = dpiClient.openDataSource(session.getSessionId(), getProject().getId(), getId(), credentials);
-                log.debug("Opened data source: " + dataSource);
-            } finally {
-                try {
-                    dpiClient.closeSession(session.getSessionId());
-                } catch (Exception e) {
-                    log.debug("Error closing session: " + e.getMessage());
-                }
-            }
+            log.debug("New DPI session: " + session.getSessionId());
+            this.dataSource = dpiClient.openDataSource(session.getSessionId(), getProject().getId(), getId(), credentials);
+            log.debug("Opened data source: " + dataSource);
         } catch (Exception e) {
             log.debug("Error starting DPI child process", e);
+            closeDetachedProcess();
             return false;
         }
         return true;
+    }
+
+    private void closeDetachedProcess() {
+        if (dpiController != null) {
+            dpiController.close();
+            dpiController = null;
+        }
     }
 
     private boolean connect0(DBRProgressMonitor monitor, boolean initialize, boolean reflect) throws DBException {
@@ -1334,9 +1340,12 @@ public class DataSourceDescriptor
         }
 
         connecting = true;
+        releaseDataSourceUsers(monitor);
         try {
-            releaseDataSourceUsers(monitor);
-
+            if (dpiController != null) {
+                closeDetachedProcess();
+                return true;
+            }
             monitor.beginTask("Disconnect from '" + getName() + "'", 5 + dataSource.getAvailableInstances().size());
 
             processEvents(monitor, DBPConnectionEventType.BEFORE_DISCONNECT);

@@ -51,7 +51,7 @@ public class DPIProcessController implements AutoCloseable {
     public static DPIProcessController detachDatabaseProcess(DBRProgressMonitor monitor, DBPDataSourceContainer dataSourceContainer) throws IOException {
         try {
             BundleProcessConfig processConfig = BundleConfigGenerator.generateBundleConfig(monitor, dataSourceContainer);
-            return new DPIProcessController(processConfig);
+            return new DPIProcessController(dataSourceContainer, processConfig);
         } catch (Exception e) {
             throw new IOException("Error generating osgi process from datasource configuration", e);
         }
@@ -60,9 +60,9 @@ public class DPIProcessController implements AutoCloseable {
     private final BundleProcessConfig processConfig;
     private final Process process;
 
-    public DPIProcessController(BundleProcessConfig processConfig) throws IOException {
+    public DPIProcessController(DBPDataSourceContainer dataSourceContainer, BundleProcessConfig processConfig) throws IOException {
         this.processConfig = processConfig;
-        this.dpiContext = new DPIContext();
+        this.dpiContext = new DPIContext(dataSourceContainer);
 
         log.debug("Starting detached database application");
 

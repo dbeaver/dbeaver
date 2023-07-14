@@ -38,9 +38,9 @@ public class DPIRestServer {
 
     public DPIRestServer(DBPApplication application, int portNumber) throws IOException {
         this.application = application;
-        this.dpiContext = new DPIContext();
+        this.dpiContext = new DPIContext(application);
 
-        DPIControllerImpl dpiController = new DPIControllerImpl();
+        DPIControllerImpl dpiController = new DPIControllerImpl(dpiContext);
         restServer = RestServer
             .builder(DPIController.class, dpiController)
             .setFilter(address -> address.getAddress().isLoopbackAddress())

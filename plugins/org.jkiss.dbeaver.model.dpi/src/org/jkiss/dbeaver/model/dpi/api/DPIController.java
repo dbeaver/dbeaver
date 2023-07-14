@@ -52,4 +52,9 @@ public interface DPIController extends AutoCloseable {
     // Closes session and terminates detached process when last session is closed
     void closeSession(@RequestParameter("session") @NotNull String sessionId) throws DBException;
 
+    @RequestMapping
+    Object callMethod(
+        @RequestParameter("object") @NotNull String objectId,
+        @RequestParameter("method") @NotNull String method,
+        @RequestParameter("args") @Nullable Object[] args) throws DBException;
 }

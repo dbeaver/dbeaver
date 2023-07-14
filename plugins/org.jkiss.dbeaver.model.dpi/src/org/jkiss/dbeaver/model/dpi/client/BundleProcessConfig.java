@@ -214,6 +214,7 @@ class BundleProcessConfig {
             cmd.add("-cp");
             cmd.add(getBundleReference(launcherWiring, false));
         }
+        cmd.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:15005");
 
         cmd.add("org.eclipse.equinox.launcher.Main");
 

@@ -32,9 +32,11 @@ public class DPIContext {
     private final Map<Object, String> objectValueCache = new HashMap<>();
     private final AtomicLong objectCount = new AtomicLong();
 
+    private final Object rootObject;
     private DPIController dpiController;
 
-    public DPIContext() {
+    public DPIContext(Object rootObject) {
+        this.rootObject = rootObject;
     }
 
     public DPIController getDpiController() {
@@ -77,8 +79,16 @@ public class DPIContext {
         return id;
     }
 
+    public String getObjectId(Object object) {
+        return objectValueCache.get(object);
+    }
+
     public boolean hasObject(Object object) {
         return objectValueCache.containsKey(object);
+    }
+
+    public Object getRootObject() {
+        return rootObject;
     }
 
 }

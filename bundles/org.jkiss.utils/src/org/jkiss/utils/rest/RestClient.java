@@ -50,7 +50,7 @@ public class RestClient {
     public static <T> T create(@NotNull URI uri, @NotNull Class<T> cls, @NotNull Gson gson) {
         final Object proxy = Proxy.newProxyInstance(
             cls.getClassLoader(),
-            new Class[]{cls},
+            new Class[]{cls, RestProxy.class},
             new ClientInvocationHandler(uri, gson)
         );
 
@@ -85,10 +85,11 @@ public class RestClient {
         }
     }
 
-    private static class ClientInvocationHandler implements InvocationHandler {
+    private static class ClientInvocationHandler implements InvocationHandler, RestProxy {
         private final URI uri;
         private final Gson gson;
         private final HttpClient client;
+        private final ThreadLocal<Class<?>> resultType = new ThreadLocal<>();
 
         private ClientInvocationHandler(@NotNull URI uri, @NotNull Gson gson) {
             this.uri = uri;
@@ -98,8 +99,12 @@ public class RestClient {
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws RestException {
-            if (method.getDeclaringClass() == Object.class) {
+            Class<?> declaringClass = method.getDeclaringClass();
+            if (declaringClass == Object.class) {
                 return BeanUtils.handleObjectMethod(proxy, method, args);
+            } else if (declaringClass == RestProxy.class) {
+                setNextCallResultType((Class<?>) args[0]);
+                return null;
             }
 
             final RequestMapping mapping = method.getDeclaredAnnotation(RequestMapping.class);
@@ -154,11 +159,17 @@ public class RestClient {
                     handleError(response.statusCode(), contents);
                 }
 
-                if (method.getReturnType() == void.class) {
+                Class<?> returnType = resultType.get();
+                if (returnType == null) {
+                    returnType = method.getReturnType();
+                } else {
+                    resultType.remove();
+                }
+                if (returnType == void.class) {
                     return null;
                 }
 
-                return gson.fromJson(contents, method.getReturnType());
+                return gson.fromJson(contents, returnType);
             } catch (RuntimeException e) {
                 throw e;
             } catch (Exception e) {
@@ -169,6 +180,11 @@ public class RestClient {
         @NotNull
         private static RestException createException(@NotNull Method method, @NotNull String reason) {
             return new RestException("Unable to invoke the method " + method + " because " + reason);
+        }
+
+        @Override
+        public void setNextCallResultType(Class<?> type) {
+            this.resultType.set(type);
         }
     }
 

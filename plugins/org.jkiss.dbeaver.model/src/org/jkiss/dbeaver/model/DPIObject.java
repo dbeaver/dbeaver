@@ -14,15 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.dpi.proxy;
+package org.jkiss.dbeaver.model;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Detached data source proxy.
+ * Object which can be transferred over network in serialized form
  */
-public class DDSProxy {
-
-    public static <T> T createProxy(Class<T> type) {
-        return null;
-    }
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface DPIObject {
 
 }
