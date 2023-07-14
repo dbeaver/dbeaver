@@ -122,7 +122,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
         this.keySeq = JDBCUtils.safeGetInteger(dbResult, "KEYSEQ");
         this.partKeySeq = JDBCUtils.safeGetInteger(dbResult, "PARTKEYSEQ");
 
-        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+        this.remarks = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_REMARKS);
 
         this.codePage = JDBCUtils.safeGetInt(dbResult, "CODEPAGE");
         if (db2DataSource.isAtLeastV9_5()) {

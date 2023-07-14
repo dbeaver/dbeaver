@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineRowType;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
@@ -78,7 +79,7 @@ public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject, DB
 
         this.scale = JDBCUtils.safeGetInteger(dbResult, "SCALE");
         this.length = JDBCUtils.safeGetInteger(dbResult, "LENGTH");
-        this.remarks = JDBCUtils.safeGetStringTrimmed(dbResult, "REMARKS");
+        this.remarks = JDBCUtils.safeGetStringTrimmed(dbResult, DB2Constants.SYSCOLUMN_REMARKS);
         this.rowType = CommonUtils.valueOf(DB2RoutineRowType.class, JDBCUtils.safeGetString(dbResult, "ROWTYPE"));
 
         String typeSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TYPESCHEMA");
