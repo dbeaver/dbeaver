@@ -258,6 +258,7 @@
         <setEntry value="org.jkiss.dbeaver.ext.db2.zos@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.db2@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.derby@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ext.duckdb@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.elasticsearch@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.exasol.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.exasol@default:default"/>
@@ -298,7 +299,6 @@
         <setEntry value="org.jkiss.dbeaver.ext.sqlite@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.teradata@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.trino@default:default"/>
-        <setEntry value="org.jkiss.dbeaver.ext.ui.colortheme@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.ui.locks@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.ui.svg@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.ui.tipoftheday@default:default"/>
@@ -311,7 +311,6 @@
         <setEntry value="org.jkiss.dbeaver.net.ssh.sshj@default:default"/>
         <setEntry value="org.jkiss.dbeaver.net.ssh.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.net.ssh@default:default"/>
-        <setEntry value="org.jkiss.dbeaver.parser.common@default:default"/>
         <setEntry value="org.jkiss.dbeaver.registry@default:default"/>
         <setEntry value="org.jkiss.dbeaver.slf4j@default:false"/>
         <setEntry value="org.jkiss.dbeaver.tasks.native.ui@default:default"/>

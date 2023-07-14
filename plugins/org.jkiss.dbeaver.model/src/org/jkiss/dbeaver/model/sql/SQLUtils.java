@@ -1092,7 +1092,7 @@ public final class SQLUtils {
     public static void fillQueryParameters(SQLQuery sqlStatement, List<SQLQueryParameter> parameters) {
         // Set values for all parameters
         // Replace parameter tokens with parameter values
-        String query = sqlStatement.getOriginalText();
+        String query = sqlStatement.getText();
         for (int i = parameters.size(); i > 0; i--) {
             SQLQueryParameter parameter = parameters.get(i - 1);
             String paramValue = parameter.getValue();
@@ -1101,14 +1101,8 @@ public final class SQLUtils {
             }
             query = query.substring(0, parameter.getTokenOffset()) + paramValue + query.substring(parameter.getTokenOffset() + parameter.getTokenLength());
         }
-        
-        // Line feeds are fixed in SQLScriptParser:parseQuery,
-        // but we need to fill variables in the original text
-        // as variables positions are calculated before line feeds fix
-        // (See #18982)
-        String queryWithFixedLineFeeds = SQLUtils.fixLineFeeds(query);
-        sqlStatement.setText(queryWithFixedLineFeeds);
-        // sqlStatement.setOriginalText(query);
+        sqlStatement.setText(query);
+        //sqlStatement.setOriginalText(query);
     }
 
     public static boolean needQueryDelimiter(SQLDialect sqlDialect, String query) {

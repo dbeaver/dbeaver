@@ -22,7 +22,8 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public enum GPTModel {
-    GPT_TURBO("gpt-3.5-turbo", 2048, true),
+    GPT_TURBO("gpt-3.5-turbo", 4096, true),
+    GPT_TURBO16("gpt-3.5-turbo-16k", 16384, true),
     TEXT_ADA("text-ada-001", 2048, false),
     TEXT_CURIE("text-curie-001", 2048, false),
     TEXT_BABBAGE("text-babbage-001", 2048, false),
@@ -40,7 +41,7 @@ public enum GPTModel {
     @NotNull
     public static GPTModel getByName(@NotNull String name) {
         Optional<GPTModel> model = Arrays.stream(values()).filter(it -> it.name.equals(name)).findFirst();
-        return model.orElse(GPT_TURBO);
+        return model.orElse(GPT_TURBO16);
     }
 
     GPTModel(String name, int maxTokens, boolean isChatAPI) {

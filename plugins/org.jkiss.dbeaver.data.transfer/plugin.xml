@@ -81,6 +81,7 @@
                     contentType="text/xml">
                 <propertyGroup label="%dataTransfer.processor.xml.propertyGroup.general.label">
                     <property id="extension" label="%dataTransfer.processor.xml.property.extension.label" defaultValue="xml"/>
+                    <property id="includeDoctype" label="%dataTransfer.processor.xml.property.doctype.label" type="boolean" defaultValue="false"/>
                 </propertyGroup>
             </processor>
             <processor

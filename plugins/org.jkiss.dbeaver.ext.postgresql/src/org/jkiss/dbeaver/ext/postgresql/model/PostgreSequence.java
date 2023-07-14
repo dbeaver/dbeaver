@@ -305,7 +305,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
             addIndentation(sql, hasIndentation);
             sql.append("INCREMENT BY ").append(info.getIncrementBy());
         }
-        if (info.getMinValue() > 0) {
+        if (info.getMinValue() >= 0) {
             addIndentation(sql, hasIndentation);
             sql.append("MINVALUE ").append(info.getMinValue());
         } else {
@@ -319,7 +319,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
             addIndentation(sql, hasIndentation);
             sql.append("NO MAXVALUE");
         }
-        if (info.getStartValue() > 0) {
+        if (info.getStartValue() >= 0) {
             addIndentation(sql, hasIndentation);
             sql.append("START ").append(info.getStartValue());
         }

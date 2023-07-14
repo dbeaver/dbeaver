@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.VersionUtils;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -212,11 +211,16 @@ public class MavenArtifactVersion implements IMavenIdentifier {
 
     @NotNull
     private String getPackagingFileExtension() {
-        String fileExt = packaging;
-        if (CommonUtils.isEmpty(fileExt) || fileExt.equals(MavenArtifact.PACKAGING_BUNDLE) || fileExt.equals(MavenArtifact.FILE_POM)) {
-            fileExt = MavenArtifact.FILE_JAR;
+        final String packaging = CommonUtils.notEmpty(this.packaging);
+        switch (packaging) {
+            case "": // empty packaging
+            case MavenArtifact.PACKAGING_BUNDLE:
+            case MavenArtifact.PACKAGING_MAVEN_PLUGIN:
+            case MavenArtifact.FILE_POM:
+                return MavenArtifact.FILE_JAR;
+            default:
+                return packaging;
         }
-        return fileExt;
     }
 
     public String getExternalURL(String fileType) {
