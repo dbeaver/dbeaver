@@ -90,8 +90,7 @@ public final class SAXReader implements ContentHandler, EntityResolver, DTDHandl
     /**
      * Parse input stream and handle XML tags.
      */
-    public void parse(SAXListener listener)
-        throws IOException, XMLException {
+    public void parse(SAXListener listener) throws IOException, XMLException {
         // Initialize SAX parser
         Parser parser = acquireParser();
 

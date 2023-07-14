@@ -17,14 +17,47 @@
 package org.jkiss.dbeaver.data.gis.handlers;
 
 import org.cugos.wkg.WKBReader;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.utils.CommonUtils;
+import org.locationtech.jts.io.WKTReader;
 
 /**
  * WKG geometry utils
  */
 public class WKGUtils {
+
+    /**
+     * Parses WKT (Well-known text) or its extension EWKT (Extended well-known text)
+     *
+     * @return parsed geometry
+     * @throws DBCException on parse error
+     */
+    @NotNull
+    public static DBGeometry parseWKT(@NotNull String wkt) throws DBCException {
+        int srid = 0;
+
+        if (wkt.startsWith("SRID=") && wkt.indexOf(';') > 5) {
+            final int index = wkt.indexOf(';');
+            srid = CommonUtils.toInt(wkt.substring(5, index));
+            wkt = wkt.substring(index + 1);
+        }
+
+        final DBGeometry geometry;
+
+        try {
+            geometry = new DBGeometry(new WKTReader().read(wkt));
+        } catch (Exception e) {
+            throw new DBCException("Error parsing geometry value from string", e);
+        }
+
+        if (srid != 0) {
+            geometry.setSRID(srid);
+        }
+
+        return geometry;
+    }
 
     public static DBGeometry parseWKB(String hexString) throws DBCException {
         org.cugos.wkg.Geometry wkgGeometry = new WKBReader().read(hexString);

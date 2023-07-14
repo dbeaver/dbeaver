@@ -46,7 +46,7 @@ public class GreenplumUtils {
     static int[] readDistributedColumns(@NotNull DBRProgressMonitor monitor, @NotNull PostgreTableReal table) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Read Greenplum table distributed columns")) {
             try (JDBCStatement dbStat = session.createStatement()) {
-                if (((GreenplumDataSource) table.getDataSource()).isGreenplumVersionAtLeast(session.getProgressMonitor(), 6, 0)) {
+                if (((GreenplumDataSource) table.getDataSource()).isGreenplumVersionAtLeast(6, 0)) {
                     try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT distkey FROM pg_catalog.gp_distribution_policy WHERE localoid=" + table.getObjectId())) {
                         if (dbResult.next()) {
                             return PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, 1));

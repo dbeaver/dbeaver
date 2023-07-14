@@ -26,7 +26,7 @@
             <treeInjection path="postgresql/database/schema" after="table">
                 <folder type="org.jkiss.dbeaver.ext.greenplum.model.GreenplumExternalTable"
                         label="%tree.externaltables.node.name"
-                        icon="#folder_table">
+                        icon="#folder_table" visibleIf="object.dataSource.supportsExternalTables()">
                     <items label="%tree.externaltable.node.name" path="externalTable" property="externalTables"
                            icon="#table_external">
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"
