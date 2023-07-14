@@ -585,8 +585,8 @@
                 <driver
                         id="postgres-cratedb-jdbc"
                         label="CrateDB"
-                        icon="icons/cratedb_icon.png"
-                        iconBig="icons/cratedb_icon_big.png"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/cratedb_icon.png"
+                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/cratedb_icon_big.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         useURL="true"
