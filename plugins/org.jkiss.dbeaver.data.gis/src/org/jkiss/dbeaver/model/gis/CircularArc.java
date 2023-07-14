@@ -27,13 +27,13 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Taken from the GeoTools library
+ * Taken from the GeoTools library, with small adjustments
  *
- * @see <a href="https://github.com/geotools/geotools/blob/main/modules/library/main/src/main/java/org/geotools/geometry/jts/CircularString.java">CircularString.java</a>
+ * @see <a href="https://github.com/geotools/geotools/blob/main/modules/library/main/src/main/java/org/geotools/geometry/jts/CircularArc.java">CircularArc.java</a>
  */
 public class CircularArc {
-    private static final int BASE_SEGMENTS_QUADRANT = 12;
-    private static final int MAX_SEGMENTS_QUADRANT = 10000;
+    private static final int DEFAULT_SEGMENTS_QUADRANT = 12;
+    private static final int MAXIMUM_SEGMENTS_QUADRANT = 10000;
     private static final double HALF_PI = Math.PI / 2;
     private static final double DOUBLE_PI = Math.PI * 2;
 
@@ -69,39 +69,7 @@ public class CircularArc {
 
     @NotNull
     private List<Coordinate> linearize(double tolerance, @NotNull List<Coordinate> array) {
-        if (tolerance < 0.0D) {
-            throw new IllegalArgumentException("The tolerance must be a positive number (or zero, to make the system use the max number of segments per quadrant configured in org.getools.geometry.arc.maxSegmentsQuadrant, default is 10000)");
-        }
-
         initializeCenterRadius();
-
-        int segmentsPerQuadrant;
-        double chordDistance;
-
-        if (tolerance == 0.0D) {
-            segmentsPerQuadrant = MAX_SEGMENTS_QUADRANT;
-        } else if (tolerance == Double.MAX_VALUE) {
-            segmentsPerQuadrant = BASE_SEGMENTS_QUADRANT;
-        } else {
-            segmentsPerQuadrant = BASE_SEGMENTS_QUADRANT;
-            chordDistance = this.computeChordCircleDistance(segmentsPerQuadrant);
-
-            if (chordDistance >= tolerance) {
-                while (chordDistance > tolerance && segmentsPerQuadrant < MAX_SEGMENTS_QUADRANT) {
-                    segmentsPerQuadrant *= 2;
-                    chordDistance = this.computeChordCircleDistance(segmentsPerQuadrant);
-                }
-            } else {
-                while (chordDistance < tolerance && segmentsPerQuadrant > 1) {
-                    segmentsPerQuadrant /= 2;
-                    chordDistance = this.computeChordCircleDistance(segmentsPerQuadrant);
-                }
-
-                if (chordDistance > tolerance) {
-                    segmentsPerQuadrant *= 2;
-                }
-            }
-        }
 
         double sx = controlPoints[0].getX();
         double sy = controlPoints[0].getY();
@@ -134,7 +102,7 @@ public class CircularArc {
             ea += DOUBLE_PI;
         }
 
-        double step = HALF_PI / segmentsPerQuadrant;
+        double step = HALF_PI / computeSegmentsPerQuadrant(tolerance);
         double angle = (Math.floor(sa / step) + 1.0D) * step;
 
         if (angle <= ea) {
@@ -174,8 +142,42 @@ public class CircularArc {
         return array;
     }
 
-    static boolean equals(double a, double b) {
-        return Math.abs(a - b) < 1.0E-12D;
+    private int computeSegmentsPerQuadrant(double tolerance) {
+        if (tolerance < 0.0D) {
+            throw new IllegalArgumentException("The tolerance must be a positive number, " +
+                "zero to use the default number of segments per quadrant (" + DEFAULT_SEGMENTS_QUADRANT + "), " +
+                "or Double.MAX_VALUE to use the max number of segments per quadrant (" + MAXIMUM_SEGMENTS_QUADRANT + ")");
+        }
+
+        int segmentsPerQuadrant;
+        double chordDistance;
+
+        if (tolerance == 0.0D) {
+            segmentsPerQuadrant = DEFAULT_SEGMENTS_QUADRANT;
+        } else if (tolerance == Double.MAX_VALUE) {
+            segmentsPerQuadrant = MAXIMUM_SEGMENTS_QUADRANT;
+        } else {
+            segmentsPerQuadrant = 2;
+            chordDistance = computeChordCircleDistance(segmentsPerQuadrant);
+
+            if (chordDistance >= tolerance) {
+                while (chordDistance > tolerance && segmentsPerQuadrant < MAXIMUM_SEGMENTS_QUADRANT) {
+                    segmentsPerQuadrant *= 2;
+                    chordDistance = computeChordCircleDistance(segmentsPerQuadrant);
+                }
+            } else {
+                while (chordDistance < tolerance && segmentsPerQuadrant > 1) {
+                    segmentsPerQuadrant /= 2;
+                    chordDistance = computeChordCircleDistance(segmentsPerQuadrant);
+                }
+
+                if (chordDistance > tolerance) {
+                    segmentsPerQuadrant *= 2;
+                }
+            }
+        }
+
+        return segmentsPerQuadrant;
     }
 
     private double computeChordCircleDistance(int segmentsPerQuadrant) {
@@ -259,5 +261,9 @@ public class CircularArc {
         rm = Math.sqrt(Math.pow(centerX - mx, 2) + Math.pow(centerY - my, 2));
         re = Math.sqrt(Math.pow(centerX - ex, 2) + Math.pow(centerY - ey, 2));
         radius = Math.min(Math.max(rs, rm), re);
+    }
+
+    private static boolean equals(double a, double b) {
+        return Math.abs(a - b) < 1.0E-12D;
     }
 }

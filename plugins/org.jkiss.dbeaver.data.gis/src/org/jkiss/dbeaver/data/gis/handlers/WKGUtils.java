@@ -84,7 +84,8 @@ public class WKGUtils {
 
     @NotNull
     public static Object linearize(@NotNull Geometry value) {
-        return linearize(value, 1 / 32.0);
+        // This value results in 32 segments per quadrant, the default tolerance for ST_CurveToLine
+        return linearize(value, 0.001);
     }
 
     @NotNull
