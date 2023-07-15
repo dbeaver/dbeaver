@@ -1634,16 +1634,13 @@ public class SQLEditor extends SQLEditorBase implements
         return null;
     }
 
-    // Additional check added to prevent activeResultsTab from
-    // getting out of sync with resultTabs.getSelection() in case
-    // user clicks tab with mouse, then switches focus to editor
-    // and back with keyboard shortcuts
     private CTabItem getActiveResultsTab() {
         return activeResultsTab == null || activeResultsTab.isDisposed() ?
-            (resultTabs == null ? null : resultTabs.getSelection()) :
-            activeResultsTab == resultTabs.getSelection() ?
-            activeResultsTab :
-            resultTabs.getSelection();
+            (resultTabs == null ? null : resultTabs.getSelection()) : activeResultsTab;
+    }
+
+    public void setActiveResultsTab(CTabItem item) {
+        activeResultsTab = item;
     }
 
     public void closeActiveTab() {
@@ -1693,8 +1690,11 @@ public class SQLEditor extends SQLEditorBase implements
                 currTabItem = nextTabItem;
             }
         }
-
+        
+        setResultTabSelection(currTabItem);
+        
     }
+    
 
     /**
      * Return true if there is an active tab, and its container is pinned
@@ -1754,9 +1754,10 @@ public class SQLEditor extends SQLEditorBase implements
         return false;
     }
 
-    private void setResultTabSelection(CTabItem item) {
+    public void setResultTabSelection(CTabItem item) {
         if (isResultSetAutoFocusEnabled || !(item.getData() instanceof QueryResultsContainer) || resultTabs.getItemCount() == 1) {
             resultTabs.setSelection(item);
+            activeResultsTab = item;
         }
     }
 
@@ -1957,7 +1958,8 @@ public class SQLEditor extends SQLEditorBase implements
     private void switchFocus(boolean results) {
         if (results) {
             ResultSetViewer activeRS = getActiveResultSetViewer();
-            if (activeRS != null && activeRS.getActivePresentation() != null) {
+            // switch focus will fail if active presentation control exists but not visible
+            if (activeRS != null && activeRS.getActivePresentation() != null && activeRS.getActivePresentation().getControl().isVisible()) {
                 activeRS.getActivePresentation().getControl().setFocus();
             } else {
                 CTabItem activeTab = resultTabs.getSelection();
@@ -1972,12 +1974,17 @@ public class SQLEditor extends SQLEditorBase implements
 
     public void toggleActivePanel() {
         if (resultsSash.getMaximizedControl() == null) {
-            if (UIUtils.hasFocus(resultTabs)) {
+            if (getResultTabsActive()) {
                 switchFocus(false);
             } else {
                 switchFocus(true);
             }
+            SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_RESULT_TABS_ACTIVE);
         }
+    }
+
+    public boolean getResultTabsActive() {
+        return UIUtils.hasFocus(resultTabs);
     }
 
     private void updateResultSetOrientation() {

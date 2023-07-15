@@ -50,6 +50,7 @@ public class SQLEditorPropertyTester extends PropertyTester
     public static final String PROP_IS_ACTIVE_QUERY_RUNNING = "isActiveQueryRunning";
     public static final String PROP_FOLDING_SUPPORTED = "foldingSupported";
     public static final String PROP_FOLDING_ENABLED = "foldingEnabled";
+    public static final String PROP_RESULT_TABS_ACTIVE = "resultTabsActive";
 
     public SQLEditorPropertyTester() {
         super();
@@ -117,6 +118,8 @@ public class SQLEditorPropertyTester extends PropertyTester
                 return editor.isFoldingEnabled();
             case PROP_FOLDING_SUPPORTED:
                 return editor.getProjectionAnnotationModel() != null;
+            case PROP_RESULT_TABS_ACTIVE:
+                return editor.getResultTabsActive();
         }
         return false;
     }
