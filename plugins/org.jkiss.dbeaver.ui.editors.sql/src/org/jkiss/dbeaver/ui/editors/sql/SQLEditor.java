@@ -1639,10 +1639,6 @@ public class SQLEditor extends SQLEditorBase implements
             (resultTabs == null ? null : resultTabs.getSelection()) : activeResultsTab;
     }
 
-    public void setActiveResultsTab(CTabItem item) {
-        activeResultsTab = item;
-    }
-
     public void closeActiveTab() {
         CTabItem tabItem = getActiveResultsTab();
         if (tabItem != null && tabItem.getShowClose()) {
@@ -1754,6 +1750,10 @@ public class SQLEditor extends SQLEditorBase implements
         return false;
     }
 
+    /**
+     * Takes a tab item and makes it the active tab
+     * of both the SQLEditor as well as its resultTabs field
+     */
     public void setResultTabSelection(CTabItem item) {
         if (isResultSetAutoFocusEnabled || !(item.getData() instanceof QueryResultsContainer) || resultTabs.getItemCount() == 1) {
             resultTabs.setSelection(item);

@@ -20,27 +20,22 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-public class SQLEditorHandlerResultTabsNavigate extends AbstractHandler //implements IElementUpdater
-{
-    static protected final Log log = Log.getLog(SQLEditorHandlerResultTabsNavigate.class);
-
+public class SQLEditorHandlerResultTabsNavigate extends AbstractHandler { //implements IElementUpdater 
     private static final String COMMAND_PREVIOUS_TAB = "org.eclipse.ui.navigate.previousTab";
     private static final String COMMAND_NEXT_TAB = "org.eclipse.ui.navigate.nextTab";
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
+    public Object execute(ExecutionEvent event) throws ExecutionException {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
         if (editor != null) {
             String actionId = event.getCommand().getId();
             CTabFolder resultTabs = editor.getResultTabsContainer();
-            int idx = resultTabs.getSelectionIndex(), newIdx = idx;
+            int idx = resultTabs.getSelectionIndex();
+            int newIdx = idx;
             
             switch (actionId) {
                 case COMMAND_PREVIOUS_TAB: {
@@ -51,6 +46,8 @@ public class SQLEditorHandlerResultTabsNavigate extends AbstractHandler //implem
                     newIdx = idx < resultTabs.getItemCount() - 1 ? idx + 1 : 0;
                     break;
                 }
+                default:
+                    break;
             }
             
             editor.setResultTabSelection(resultTabs.getItem(newIdx));
