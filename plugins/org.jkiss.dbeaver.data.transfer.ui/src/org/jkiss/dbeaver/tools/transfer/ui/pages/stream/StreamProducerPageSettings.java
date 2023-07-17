@@ -95,19 +95,13 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
 
             filesTable.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetDefaultSelected(SelectionEvent e) {
                     if (filesTable.getSelectionIndex() < 0) {
                         return;
                     }
                     TableItem item = filesTable.getItem(filesTable.getSelectionIndex());
                     DataTransferPipe pipe = (DataTransferPipe) item.getData();
-                    chooseSourceFile(pipe);
-                }
-
-                @Override
-                public void widgetDefaultSelected(SelectionEvent e) {
-                    widgetSelected(e);
-                }
+                    chooseSourceFile(pipe);                }
             });
         }
 
