@@ -42,7 +42,6 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.Types;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -937,8 +936,9 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         return false;
     }
 
+    @NotNull
     @Override
-    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
+    public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position) {
         if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
             boolean ddTagDefault = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PostgreConstants.PROP_DD_TAG_STRING);
             boolean ddTagIsString = dataSource == null
@@ -950,9 +950,12 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
                 ? ddPlainDefault
                 : CommonUtils.getBoolean(dataSource.getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_DD_PLAIN_STRING), ddPlainDefault);
 
-            rules.add(new SQLDollarQuoteRule(position == RulePosition.PARTITION, true, ddTagIsString, ddPlainIsString));
-            rules.add(new PostgreEscapeStringRule());
+            return new TPRule[] {
+                new SQLDollarQuoteRule(position == RulePosition.PARTITION, true, ddTagIsString, ddPlainIsString),
+                new PostgreEscapeStringRule()
+            };
         }
+        return new TPRule[0];
     }
 
     @Override

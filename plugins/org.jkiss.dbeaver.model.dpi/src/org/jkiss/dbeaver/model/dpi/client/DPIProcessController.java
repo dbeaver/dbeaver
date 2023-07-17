@@ -114,6 +114,13 @@ public class DPIProcessController implements AutoCloseable {
     }
 
     private void terminateChildProcess() {
+        if (dpiRestClient != null) {
+            try {
+                dpiRestClient.close();
+            } catch (Exception e) {
+                log.debug(e);
+            }
+        }
         this.process.destroyForcibly();
     }
 

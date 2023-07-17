@@ -31,10 +31,13 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodySubscribers;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RestClient {
+
 
     private RestClient() {
         // prevents instantiation
@@ -45,7 +48,7 @@ public class RestClient {
         final Object proxy = Proxy.newProxyInstance(
             cls.getClassLoader(),
             new Class[]{cls, RestProxy.class},
-            new ClientInvocationHandler(uri, gson)
+            new ClientInvocationHandler(cls, uri, gson)
         );
 
         return cls.cast(proxy);
@@ -80,25 +83,38 @@ public class RestClient {
     }
 
     private static class ClientInvocationHandler implements InvocationHandler, RestProxy {
+        @NotNull
+        private final Class<?> clientClass;
         private final URI uri;
         private final Gson gson;
+        private final ExecutorService httpExecutor;
         private final HttpClient client;
         private final ThreadLocal<Type> resultType = new ThreadLocal<>();
 
-        private ClientInvocationHandler(@NotNull URI uri, @NotNull Gson gson) {
+        private ClientInvocationHandler(@NotNull Class<?> clientClass, @NotNull URI uri, @NotNull Gson gson) {
+            this.clientClass = clientClass;
             this.uri = uri;
             this.gson = gson;
-            this.client = HttpClient.newHttpClient();
+            this.httpExecutor = Executors.newSingleThreadExecutor();
+            this.client = HttpClient.newBuilder()
+                .executor(httpExecutor)
+                .build();
         }
 
         @Override
-        public Object invoke(Object proxy, Method method, Object[] args) throws RestException {
+        public synchronized Object invoke(Object proxy, Method method, Object[] args) throws RestException {
             Class<?> declaringClass = method.getDeclaringClass();
             if (declaringClass == Object.class) {
                 return BeanUtils.handleObjectMethod(proxy, method, args);
             } else if (declaringClass == RestProxy.class) {
                 setNextCallResultType((Type) args[0]);
                 return null;
+            } else if (method.getName().equals("close") && (declaringClass == AutoCloseable.class || declaringClass == clientClass)) {
+                closeClient();
+                return null;
+            }
+            if (httpExecutor.isShutdown() || httpExecutor.isTerminated()) {
+                throw new RestException("Rest client has been terminated");
             }
 
             final RequestMapping mapping = method.getDeclaredAnnotation(RequestMapping.class);
@@ -164,12 +180,24 @@ System.out.println("REQUEST: " + requestString);
                 if (returnType == void.class) {
                     return null;
                 }
+                if (returnType instanceof TypeVariable) {
+                    Type[] bounds = ((TypeVariable<?>) returnType).getBounds();
+                    if (bounds.length > 0) {
+                        returnType = bounds[0];
+                    }
+                }
 System.out.println("RESPONSE: " + contents);
                 return gson.fromJson(contents, returnType);
             } catch (RuntimeException e) {
                 throw e;
             } catch (Exception e) {
                 throw new RestException(e);
+            }
+        }
+
+        private void closeClient() {
+            if (!httpExecutor.isShutdown()) {
+                httpExecutor.shutdown();
             }
         }
 

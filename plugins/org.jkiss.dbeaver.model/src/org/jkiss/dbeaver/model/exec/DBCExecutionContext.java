@@ -67,6 +67,7 @@ public interface DBCExecutionContext extends DBPObject, DBPCloseableObject, DBPC
      * Usually DBPDataSourceContainer.getDataSource() returns datasource only if datasource is connected.
      * But in some cases (e.g. connection invalidation) datasource remains disconnected for some period of time.
      */
+    @DPIElement
     boolean isConnected();
 
     /**
@@ -104,6 +105,7 @@ public interface DBCExecutionContext extends DBPObject, DBPCloseableObject, DBPC
      * Defaults reader/writer.
      * @return null if defaults are not supported
      */
+    @DPIElement
     @Nullable
     DBCExecutionContextDefaults getContextDefaults();
 }

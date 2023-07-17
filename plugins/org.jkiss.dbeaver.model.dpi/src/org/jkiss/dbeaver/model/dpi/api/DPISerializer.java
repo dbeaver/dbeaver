@@ -427,7 +427,8 @@ public class DPISerializer {
                 objectType,
                 objectToString,
                 objectHashCode,
-                objectContainers);
+                objectContainers,
+                objectProperties);
             object = objectHandler.getObjectInstance();
             context.addObject(objectId, object);
             return (T)object;

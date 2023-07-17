@@ -27,7 +27,10 @@ import org.jkiss.dbeaver.model.dpi.api.DPIContext;
 import org.jkiss.dbeaver.model.dpi.api.DPIController;
 import org.jkiss.dbeaver.model.dpi.api.DPISerializer;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.rest.RestProxy;
 
 import java.lang.reflect.InvocationHandler;
@@ -50,7 +53,6 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
     private final Map<String, Object> objectContainers;
     private Map<String, Object> objectProperties;
     private Map<Class<?>, Object> factoryObjects;
-    private Map<Method, Object> objectElements;
 
     public DPIClientProxy(
         @NotNull DPIContext context,
@@ -59,14 +61,15 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
         @Nullable String objectType,
         @Nullable String objectToString,
         @Nullable Integer objectHashCode,
-        @Nullable Map<String, Object> objectContainers
-    ) {
+        @Nullable Map<String, Object> objectContainers,
+        @Nullable Map<String, Object> objectProperties) {
         this.context = context;
         this.objectId = objectId;
         this.objectType = objectType;
         this.objectToString = objectToString;
         this.objectHashCode = objectHashCode;
         this.objectContainers = objectContainers;
+        this.objectProperties = objectProperties;
 
         this.objectInstance = Proxy.newProxyInstance(
             context.getClassLoader(),
@@ -123,8 +126,16 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
 
         boolean isElement = DPISerializer.getMethodAnno(method, DPIElement.class) != null ||
             method.getDeclaringClass().getAnnotation(DPIElement.class) != null;
-        if (isElement && objectElements != null) {
-            Object result = objectElements.get(method);
+        if (isElement && objectProperties != null) {
+            Object result = objectProperties.get(getElementKey(method, args));
+            if (result != null) {
+                return result;
+            }
+        }
+
+        Property propAnnotation = method.getAnnotation(Property.class);
+        if (propAnnotation != null && objectProperties != null) {
+            Object result = objectProperties.get(getPropertyKey(method, propAnnotation));
             if (result != null) {
                 return result;
             }
@@ -158,8 +169,13 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
             ((RestProxy) controller).setNextCallResultType(returnType);
         }
         Object result = controller.callMethod(this.objectId, method.getName(), args);
-        if (method.getAnnotation(Property.class) != null) {
+
+        if (propAnnotation != null) {
             // Cache property value
+            if (objectProperties == null) {
+                objectProperties = new HashMap<>();
+            }
+            objectProperties.put(getPropertyKey(method, propAnnotation), result);
         } else if (dpiFactoryClass != null) {
             // Cache factory result
             if (factoryObjects == null) {
@@ -167,13 +183,36 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
             }
             factoryObjects.put(dpiFactoryClass, result);
         } else if (isElement) {
-            if (objectElements == null) {
-                objectElements = new HashMap<>();
+            if (objectProperties == null) {
+                objectProperties = new HashMap<>();
             }
-            objectElements.put(method, result);
+            objectProperties.put(getElementKey(method, args), result);
         }
 
         return result;
+    }
+
+    private static String getPropertyKey(Method method, Property propAnnotation) {
+        String propId = propAnnotation.id();
+        if (CommonUtils.isEmpty(propId)) {
+            propId = BeanUtils.getPropertyNameFromGetter(method.getName());
+        }
+        return propId;
+    }
+
+    private static String getElementKey(Method method, Object[] args) {
+        if (!ArrayUtils.isEmpty(args)) {
+            StringBuilder buf = new StringBuilder(method.getName());
+            for (Object arg : args) {
+                if (arg instanceof DBRProgressMonitor) {
+                    continue;
+                }
+                buf.append(":").append(arg);
+            }
+            return buf.toString();
+        } else {
+            return method.getName();
+        }
     }
 
 }
