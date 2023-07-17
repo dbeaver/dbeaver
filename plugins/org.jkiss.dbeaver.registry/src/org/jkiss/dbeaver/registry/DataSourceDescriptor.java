@@ -157,6 +157,7 @@ public class DataSourceDescriptor
     private boolean temporary;
     private boolean hidden;
     private boolean template;
+    private boolean dpiEnabled;
 
     @NotNull
     private DataSourceNavigatorSettings navigatorSettings;
@@ -178,8 +179,8 @@ public class DataSourceDescriptor
     private volatile boolean secretsContainsDatabaseCreds = false;
 
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
-    private DBWNetworkHandler proxyHandler;
-    private DBWTunnel tunnelHandler;
+    private transient DBWNetworkHandler proxyHandler;
+    private transient DBWTunnel tunnelHandler;
     private final List<DBPDataSourceTask> users = new ArrayList<>();
     // DPI controller
     private transient DPIProcessController dpiController;
@@ -760,6 +761,10 @@ public class DataSourceDescriptor
         this.hidden = hidden;
     }
 
+    public void setDpiEnabled(boolean dpiEnabled) {
+        this.dpiEnabled = dpiEnabled;
+    }
+
     @Override
     public DBSObject getParentObject() {
         return null;
@@ -959,8 +964,13 @@ public class DataSourceDescriptor
     }
 
     private boolean isDetachedProcessEnabled() {
-        return true;
+        return dpiEnabled;
     }
+
+    public void setDetachedProcessEnabled(boolean enabled) {
+        dpiEnabled = enabled;
+    }
+
 
     private boolean openDetachedConnection(DBRProgressMonitor monitor) {
         try {
