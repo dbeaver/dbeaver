@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
@@ -246,11 +245,13 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         List<DataTransferPipe> dataPipes = dataTransferSettings.getDataPipes();
         {
             if (!dataPipes.isEmpty()) {
-                IDataTransferConsumer consumer = dataPipes.get(0).getConsumer();
+                IDataTransferConsumer<?, ?> consumer = dataPipes.get(0).getConsumer();
                 if (consumer instanceof DatabaseTransferConsumer) {
                     final DBSDataManipulator targetObject = ((DatabaseTransferConsumer) consumer).getTargetObject();
                     if (targetObject != null && targetObject.getParentObject() instanceof DBSObjectContainer) {
                         this.container = (DBSObjectContainer) targetObject.getParentObject();
+                    } else if (consumer.getTargetObjectContainer() instanceof DBSObjectContainer) {
+                        this.container = (DBSObjectContainer) consumer.getTargetObjectContainer();
                     }
                 }
             }
