@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.dpi.api;
 import com.google.gson.Gson;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.HashMap;
@@ -105,6 +106,9 @@ public class DPIContext {
 
     @NotNull
     public ClassLoader getClassLoader() {
+        if (rootObject instanceof DBPDataSourceContainer) {
+            return ((DBPDataSourceContainer) rootObject).getDriver().getDataSourceProvider().getClass().getClassLoader();
+        }
         return rootObject.getClass().getClassLoader();
     }
 
