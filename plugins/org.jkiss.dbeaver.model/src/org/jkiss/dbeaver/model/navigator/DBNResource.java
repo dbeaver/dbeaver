@@ -451,6 +451,14 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
         }.schedule();
     }
 
+    public boolean supportsPaste(@NotNull DBNNode other) {
+        return false;
+    }
+
+    public void pasteNodes(@NotNull Collection<DBNNode> nodes) throws DBException {
+        throw new DBException("Paste is not supported");
+    }
+
     @Override
     @NotNull
     public IResource getResource() {
