@@ -31,6 +31,7 @@
         <serverType id="yugabytedb" name="YugabyteDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerYugabyteDB" logo="icons/yugabyte_logo.png" customURL="true"/>
         <serverType id="cockroach" name="CockroachDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.cockroach.PostgreServerCockroachDB" logo="icons/cockroach_logo.png" customURL="true"/>
         <serverType id="gcloudpg" name="Google Cloud SQL - PostgreSQL" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerGCloud" logo="icons/google_cloud_sql_logo.png" customURL="true" cloudServer="true" needsPort="false"/>
+        <serverType id="cratedb" name="CrateDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerCrateDB" logo="icons/cratedb_logo.png" customURL="true"/>
         <serverType id="materialize" name="Materialize" class="org.jkiss.dbeaver.ext.postgresql.model.impls.materialize.PostgreServerMaterialize" logo="icons/materialize_logo.png" customURL="true"/>
     </extension>
 
@@ -579,6 +580,32 @@
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
                     <property name="socketFactory" value="com.google.cloud.sql.postgres.SocketFactory"/>
+                </driver>
+
+                <driver
+                        id="postgres-cratedb-jdbc"
+                        label="CrateDB"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/cratedb_icon.png"
+                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/cratedb_icon_big.png"
+                        class="org.postgresql.Driver"
+                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                        useURL="true"
+                        defaultPort="5432"
+                        defaultDatabase="crate"
+                        defaultUser="admin"
+                        webURL="https://www.crate.io/"
+                        propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
+                        description="%driver.cratedb.description"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        categories="sql">
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.2]" bundle="!drivers.postgresql"/>
+                    <file type="license" path="https://raw.githubusercontent.com/pgjdbc/pgjdbc/master/LICENSE" bundle="!drivers.postgresql"/>
+
+                    <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
+                    <parameter name="serverType" value="cratedb"/>
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
                 </driver>
 
                 <provider-properties drivers="*">
