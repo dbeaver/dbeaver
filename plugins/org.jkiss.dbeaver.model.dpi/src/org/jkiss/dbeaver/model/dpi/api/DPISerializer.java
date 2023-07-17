@@ -27,6 +27,7 @@ import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DPIContainer;
 import org.jkiss.dbeaver.model.DPIObject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
@@ -38,7 +39,6 @@ import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
 import java.util.*;
@@ -50,6 +50,7 @@ public class DPISerializer {
 
     private static final Log log = Log.getLog(DPISerializer.class);
     public static final String ATTR_OBJECT_ID = "id";
+    public static final String ATTR_ROOT = "root";
     public static final String ATTR_OBJECT_TYPE = "type";
     private static final String ATTR_OBJECT_STRING = "string";
     private static final String ATTR_OBJECT_HASH = "hash";
@@ -204,6 +205,12 @@ public class DPISerializer {
         public void write(JsonWriter jsonWriter, Object t) throws IOException {
             if (t == null) {
                 return;
+            } else if (t instanceof DBPDataSourceContainer) {
+                jsonWriter.beginObject();
+                jsonWriter.name(ATTR_OBJECT_ID);
+                jsonWriter.value(ATTR_ROOT);
+                jsonWriter.endObject();
+                return;
             }
             boolean oldObject = context.hasObject(t);
 
@@ -294,6 +301,10 @@ public class DPISerializer {
             Map<String, Object> objectProperties = null;
             if (ATTR_OBJECT_ID.equals(jsonReader.nextName())) {
                 objectId = jsonReader.nextString();
+            }
+            if (ATTR_ROOT.equals(objectId)) {
+                jsonReader.endObject();
+                return (T) context.getRootObject();
             }
             while (jsonReader.peek() == JsonToken.NAME) {
                 String attrName = jsonReader.nextName();
@@ -388,15 +399,13 @@ public class DPISerializer {
             Collections.addAll(allInterfaces, (theClass).getInterfaces());
             DPIClientProxy objectHandler = new DPIClientProxy(
                 context,
+                allInterfaces.toArray(new Class<?>[0]),
                 objectId,
                 objectType,
                 objectToString,
                 objectHashCode,
                 objectContainers);
-            object = Proxy.newProxyInstance(
-                getClassLoader(),
-                allInterfaces.toArray(new Class[0]),
-                objectHandler);
+            object = objectHandler.getObjectInstance();
             context.addObject(objectId, object);
             return (T)object;
         }

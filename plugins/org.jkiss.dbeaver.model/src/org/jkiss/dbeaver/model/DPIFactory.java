@@ -30,4 +30,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD,ElementType.TYPE})
 public @interface DPIFactory {
 
+    String parameter() default "";
+
 }

@@ -49,6 +49,11 @@ public class DPIApplication extends DesktopApplicationImpl {
     public static final String SERVER_INI_FILE = "server.ini";
 
     @Override
+    public boolean isHeadlessMode() {
+        return true;
+    }
+
+    @Override
     public boolean isDetachedProcess() {
         return true;
     }

@@ -119,12 +119,6 @@ public abstract class JDBCDataSource extends AbstractDataSource
         this.jdbcFactory = createJdbcFactory();
     }
 
-    @NotNull
-    @Override
-    public JDBCDataSource getDataSource() {
-        return this;
-    }
-
     protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
         this.defaultRemoteInstance = new JDBCRemoteInstance(monitor, this, true);
     }

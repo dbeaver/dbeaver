@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DPIContainer;
 import org.jkiss.dbeaver.model.DPIElement;
+import org.jkiss.dbeaver.model.DPIFactory;
 import org.jkiss.dbeaver.model.dpi.api.DPIContext;
 import org.jkiss.dbeaver.model.dpi.api.DPIController;
 import org.jkiss.dbeaver.model.dpi.api.DPISerializer;
@@ -30,6 +31,8 @@ import org.jkiss.utils.rest.RestProxy;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,12 +45,15 @@ public class DPIClientProxy implements InvocationHandler {
     private final String objectType;
     private final String objectToString;
     private final Integer objectHashCode;
+    private transient Object objectInstance;
     private final Map<String, Object> objectContainers;
     private Map<String, Object> objectProperties;
+    private Map<Class<?>, Object> factoryObjects;
     private Map<Method, Object> objectElements;
 
     public DPIClientProxy(
         @NotNull DPIContext context,
+        @NotNull Class<?>[] allInterfaces,
         @NotNull String objectId,
         @Nullable String objectType,
         @Nullable String objectToString,
@@ -60,10 +66,19 @@ public class DPIClientProxy implements InvocationHandler {
         this.objectToString = objectToString;
         this.objectHashCode = objectHashCode;
         this.objectContainers = objectContainers;
+
+        this.objectInstance = Proxy.newProxyInstance(
+            context.getClassLoader(),
+            allInterfaces,
+            this);
     }
 
     public String getObjectId() {
         return objectId;
+    }
+
+    public Object getObjectInstance() {
+        return objectInstance;
     }
 
     @Override
@@ -85,7 +100,7 @@ public class DPIClientProxy implements InvocationHandler {
                 Object container = objectContainers.get(method.getName());
                 if (container != null) {
                     if (container == SELF_REFERENCE) {
-                        return this;
+                        return objectInstance;
                     }
                     return container;
                 }
@@ -101,20 +116,43 @@ public class DPIClientProxy implements InvocationHandler {
             }
         }
 
+        // If method is property read or state read the try lookup in the context cache first
+        DPIFactory dpiFactory = DPISerializer.getMethodAnno(method, DPIFactory.class);
+        Class<?> dpiFactoryClass = null;
+        if (dpiFactory != null) {
+            Class<?>[] parameterTypes = method.getParameterTypes();
+            if (parameterTypes.length == 1 && parameterTypes[0] == Class.class) {
+                // Return type is specified in the first factory parameter
+                dpiFactoryClass = (Class<?>) args[0];
+
+                if (factoryObjects != null) {
+                    Object cachedResult = factoryObjects.get(dpiFactoryClass);
+                    if (cachedResult != null) {
+                        return cachedResult;
+                    }
+                }
+            }
+        }
+
         DPIController controller = context.getDpiController();
         if (controller == null) {
             throw new DBException("No DPI controller in client context");
         }
-        // If method is property read or state read the try lookup in the context cache first
+
         if (controller instanceof RestProxy) {
-            ((RestProxy) controller).setNextCallResultType(method.getGenericReturnType());
+            Type returnType = dpiFactoryClass != null ? dpiFactoryClass : method.getGenericReturnType();
+            ((RestProxy) controller).setNextCallResultType(returnType);
         }
         Object result = controller.callMethod(this.objectId, method.getName(), args);
         if (method.getAnnotation(Property.class) != null) {
             // Cache property value
-        }
-
-        if (isElement) {
+        } else if (dpiFactoryClass != null) {
+            // Cache factory result
+            if (factoryObjects == null) {
+                factoryObjects = new HashMap<>();
+            }
+            factoryObjects.put(dpiFactoryClass, result);
+        } else if (isElement) {
             if (objectElements == null) {
                 objectElements = new HashMap<>();
             }
