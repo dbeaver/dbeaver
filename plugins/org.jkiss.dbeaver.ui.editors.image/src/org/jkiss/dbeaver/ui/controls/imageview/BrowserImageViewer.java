@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.IOUtils;
 
 import javax.imageio.ImageIO;
@@ -106,17 +107,48 @@ public class BrowserImageViewer extends AbstractImageViewer {
         boolean success = false;
         try {
             clearTempFile();
-            tempFile = Files.createTempFile(
-                DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dbeaver-images"),
+            if (RuntimeUtils.isLinux()) {
+                tempFile = Files.createTempFile(
+                    DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dbeaver-images"),
                     "image",
                     ""
-            );
-            try (OutputStream outputStream = Files.newOutputStream(tempFile, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
-                IOUtils.copyStream(inputStream, outputStream);
+                );
+                try (OutputStream outputStream = Files.newOutputStream(tempFile, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+                    IOUtils.copyStream(inputStream, outputStream);
+                    success = true;
+                } catch (IOException ex) {
+                    log.error("Error reading image data", ex);
+                    showBinaryTXT(inputStream);
+                }
+            } else {
+                try (ImageInputStream stream = ImageIO.createImageInputStream(inputStream)) {
+                    Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
+                    if (!readers.hasNext()) {
+                        throw new IOException("No Image readers");
+                    } else {
+                        ImageReader reader = readers.next();
+                        reader.setInput(stream);
+                        tempFile = Files.createTempFile(
+                            DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dbeaver-images"),
+                            "image",
+                            "." + reader.getFormatName().toLowerCase(Locale.ROOT)
+                        );
+                        ImageIO.write(ImageIO.read(stream),
+                            reader.getFormatName().toLowerCase(Locale.ROOT),
+                            tempFile.toFile()
+                        );
+                        success = true;
+                    }
+                } catch (IOException exception) {
+                    if (!exception.getMessage().equals("closed")) {
+                        log.error("Error reading image data", exception);
+                        showBinaryTXT(inputStream);
+                    }
+                }
             }
+
             URL url = tempFile.toUri().toURL();
             browser.setUrl(url.toString());
-            success = true;
         } catch (IOException exception) {
             log.error(exception);
         }
