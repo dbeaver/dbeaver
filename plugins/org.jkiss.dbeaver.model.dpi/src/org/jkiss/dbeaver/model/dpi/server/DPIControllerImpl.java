@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.dpi.server;
 
+import com.google.gson.Gson;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
@@ -67,7 +68,7 @@ public class DPIControllerImpl implements DPIController {
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(
+    public synchronized DBPDataSource openDataSource(
         @NotNull String session,
         @NotNull String projectId,
         @NotNull String container,
@@ -110,7 +111,7 @@ public class DPIControllerImpl implements DPIController {
     }
 
     @Override
-    public Object callMethod(@NotNull String objectId, @NotNull String method, @Nullable Object[] args) throws DBException {
+    public synchronized Object callMethod(@NotNull String objectId, @NotNull String method, @Nullable Object[] args) throws DBException {
         Object object = context.getObject(objectId);
         if (object == null) {
             throw new DBException("DPI object '" + objectId + "' not found");
@@ -118,6 +119,13 @@ public class DPIControllerImpl implements DPIController {
         for (Method objMethod : object.getClass().getMethods()) {
             if (objMethod.getName().equals(method)) {
                 Class<?>[] argTypes = objMethod.getParameterTypes();
+                if (args != null && argTypes.length > 0 && argTypes.length != args.length && argTypes[0] == DBRProgressMonitor.class) {
+                    // Maybe some implicit parameters missing
+                    Object[] modifiedArgs = new Object[args.length + 1];
+                    modifiedArgs[0] = context.getProgressMonitor();
+                    System.arraycopy(args, 0, modifiedArgs, 1, args.length);
+                    args = modifiedArgs;
+                }
                 if ((ArrayUtils.isEmpty(args) && ArrayUtils.isEmpty(argTypes)) ||
                     (args != null && argTypes.length == args.length)
                 ) {
@@ -137,9 +145,13 @@ public class DPIControllerImpl implements DPIController {
             // Deserialize arguments
             Class<?>[] parameterTypes = method.getParameterTypes();
             Object[] realArgs = new Object[args.length];
+            Gson gson = context.getGson();
             for (int i = 0; i < parameterTypes.length; i++) {
-                if (args[i] instanceof String) {
-                    realArgs[i] = context.getGson().fromJson((String)args[i], parameterTypes[i]);
+                if (args[i] instanceof String && !CharSequence.class.isAssignableFrom(parameterTypes[i])) {
+                    realArgs[i] = gson.fromJson((String) args[i], parameterTypes[i]);
+                } else if (args[i] instanceof Map<?,?> && !Map.class.isAssignableFrom(parameterTypes[i])) {
+                    // Double convert of map
+                    realArgs[i] = gson.fromJson(gson.toJsonTree(args[i], Map.class), parameterTypes[i]);
                 } else {
                     realArgs[i] = args[i];
                 }

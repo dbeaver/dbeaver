@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.dpi.client;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DPIClientObject;
 import org.jkiss.dbeaver.model.DPIContainer;
 import org.jkiss.dbeaver.model.DPIElement;
 import org.jkiss.dbeaver.model.DPIFactory;
@@ -36,7 +37,7 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DPIClientProxy implements InvocationHandler {
+public class DPIClientProxy implements DPIClientObject, InvocationHandler {
 
     public static final Object SELF_REFERENCE = new Object();
 
@@ -73,8 +74,14 @@ public class DPIClientProxy implements InvocationHandler {
             this);
     }
 
-    public String getObjectId() {
+    @Override
+    public String dpiObjectId() {
         return objectId;
+    }
+
+    @Override
+    public String dpiObjectType() {
+        return objectType;
     }
 
     public Object getObjectInstance() {
@@ -90,6 +97,13 @@ public class DPIClientProxy implements InvocationHandler {
                 return objectHashCode;
             }
             return BeanUtils.handleObjectMethod(proxy, method, args);
+        } else if (method.getDeclaringClass() == DPIClientObject.class) {
+            if (method.getName().equals("dpiObjectId")) {
+                return dpiObjectId();
+            } else if (method.getName().equals("dpiObjectType")) {
+                return dpiObjectType();
+            }
+            return null;
         }
 
         DPIContainer containerAnno = DPISerializer.getMethodAnno(method, DPIContainer.class);

@@ -28,6 +28,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DPIClientObject;
 import org.jkiss.dbeaver.model.DPIContainer;
 import org.jkiss.dbeaver.model.DPIObject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
@@ -76,6 +77,8 @@ public class DPISerializer {
                 Class<?> theClass = (Class<?>) typeToken.getType();
                 if (DBRProgressMonitor.class.isAssignableFrom(theClass)) {
                     return (TypeAdapter<T>) new DPIProgressMonitorAdapter(context);
+                } else if (DPIClientObject.class.isAssignableFrom(theClass)) {
+                    return (TypeAdapter<T>) new DPIObjectRefAdapter(context);
                 }
 
                 DPIObject annotation = getDPIAnno(theClass);
@@ -153,6 +156,25 @@ public class DPISerializer {
 
         public AbstractTypeAdapter(DPIContext context) {
             this.context = context;
+        }
+    }
+
+    static class DPIObjectRefAdapter extends AbstractTypeAdapter<DPIClientObject> {
+        public DPIObjectRefAdapter(DPIContext context) {
+            super(context);
+        }
+
+        @Override
+        public void write(JsonWriter jsonWriter, DPIClientObject object) throws IOException {
+            jsonWriter.beginObject();
+            jsonWriter.name(ATTR_OBJECT_ID);
+            jsonWriter.value(object.dpiObjectId());
+            jsonWriter.endObject();
+        }
+
+        @Override
+        public DPIClientObject read(JsonReader jsonReader) throws IOException {
+            throw new IOException("DPI object reference deserialization is not supported");
         }
     }
 
@@ -397,6 +419,7 @@ public class DPISerializer {
             }
             allInterfaces.add(theClass);
             Collections.addAll(allInterfaces, (theClass).getInterfaces());
+            allInterfaces.add(DPIClientObject.class);
             DPIClientProxy objectHandler = new DPIClientProxy(
                 context,
                 allInterfaces.toArray(new Class<?>[0]),

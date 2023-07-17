@@ -138,10 +138,12 @@ public class RestClient {
                 url.append(endpoint);
                 HttpResponse.BodyHandler<String> readerBodyHandler =
                     info -> BodySubscribers.ofString(StandardCharsets.UTF_8);
+                String requestString = gson.toJson(values);
+System.out.println("REQUEST: " + requestString);
                 HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(URI.create(url.toString()))
                     .header("Content-Type", "application/json")
-                    .POST(BodyPublishers.ofString(gson.toJson(values)))
+                    .POST(BodyPublishers.ofString(requestString))
                     .build();
                 final HttpResponse<String> response = client.send(
                     httpRequest,
