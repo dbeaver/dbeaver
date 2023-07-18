@@ -29,33 +29,37 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
-import org.jkiss.dbeaver.ext.altibase.model.plan.AltibaseExecutionPlan;
+import org.jkiss.dbeaver.ext.altibase.model.plan.AltibaseQueryPlanner;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericSynonym;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCExecutionResult;
-import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
 import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-public class AltibaseDataSource extends GenericDataSource implements DBCQueryPlanner {
+public class AltibaseDataSource extends GenericDataSource implements DBPObjectStatisticsCollector {
     
     private static final Log log = Log.getLog(AltibaseDataSource.class);
 
+    final TablespaceCache tablespaceCache = new TablespaceCache();
+    private boolean hasStatistics;
+    
     private GenericSchema publicSchema;
     private boolean isPasswordExpireWarningShown;
     private AltibaseOutputReader outputReader;
@@ -94,12 +98,28 @@ public class AltibaseDataSource extends GenericDataSource implements DBCQueryPla
             outputReader.isServerOutputEnabled());
     }
 
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
+        throws DBException {
+        super.refreshObject(monitor);
+        
+        this.tablespaceCache.clearCache();
+        hasStatistics = false;
+
+        this.initialize(monitor);
+
+        return this;
+    }
+    
     @Nullable
     @Override
     public <T> T getAdapter(Class<T> adapter) {
         if (adapter == DBCServerOutputReader.class) {
             return adapter.cast(outputReader);
+        } else if (adapter == DBCQueryPlanner.class) {
+            return adapter.cast(new AltibaseQueryPlanner(this));
         }
+        
         return super.getAdapter(adapter);
     }
     
@@ -165,6 +185,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBCQueryPla
 
     ///////////////////////////////////////////////
     // Plan
+    /*
     @NotNull
     @Override
     public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, 
@@ -178,6 +199,72 @@ public class AltibaseDataSource extends GenericDataSource implements DBCQueryPla
     @Override
     public DBCPlanStyle getPlanStyle() {
         return DBCPlanStyle.PLAN;
+    }
+    */
+    
+    ///////////////////////////////////////////////
+    // Tablespace
+    static class TablespaceCache extends JDBCObjectCache<AltibaseDataSource, AltibaseTablespace> {
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(
+                @NotNull JDBCSession session, @NotNull AltibaseDataSource owner) throws SQLException {
+            return session.prepareStatement("SELECT * FROM V$TABLESPACES ORDER BY NAME ASC");
+        }
+
+        @Override
+        protected AltibaseTablespace fetchObject(
+                @NotNull JDBCSession session, 
+                @NotNull AltibaseDataSource owner, 
+                @NotNull JDBCResultSet resultSet
+                ) throws SQLException, DBException {
+            return new AltibaseTablespace(owner, resultSet);
+        }
+    }
+    
+    ///////////////////////////////////////////////
+    // Statistics
+
+    @Override
+    public boolean isStatisticsCollected() {
+        return hasStatistics;
+    }
+
+    void resetStatistics() {
+        hasStatistics = false;
+    }
+
+    @Override
+    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+        if (hasStatistics && !forceRefresh) {
+            return;
+        }
+        try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load tablespace '" + getName() + "' statistics")) {
+            // Tablespace stats
+            try (JDBCStatement dbStat = session.createStatement()) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery(
+                    "SELECT\n" +
+                    "\tTS.TABLESPACE_NAME, F.AVAILABLE_SPACE, S.USED_SPACE\n" +
+                    "FROM\n" +
+                    "\tSYS.DBA_TABLESPACES TS,\n" +
+                    "\t(SELECT TABLESPACE_NAME, SUM(BYTES) AVAILABLE_SPACE FROM DBA_DATA_FILES GROUP BY TABLESPACE_NAME) F,\n" +
+                    "\t(SELECT TABLESPACE_NAME, SUM(BYTES) USED_SPACE FROM DBA_SEGMENTS GROUP BY TABLESPACE_NAME) S\n" +
+                    "WHERE\n" +
+                    "\tF.TABLESPACE_NAME(+) = TS.TABLESPACE_NAME AND S.TABLESPACE_NAME(+) = TS.TABLESPACE_NAME")) {
+                    while (dbResult.next()) {
+                        String tsName = dbResult.getString(1);
+                        AltibaseTablespace tablespace = tablespaceCache.getObject(monitor, AltibaseDataSource.this, tsName);
+                        if (tablespace != null) {
+                            tablespace.fetchSizes(dbResult);
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException("Can't read tablespace statistics", e, getDataSource());
+        } finally {
+            hasStatistics = true;
+        }
     }
     
     ///////////////////////////////////////////////

@@ -19,14 +19,17 @@ package org.jkiss.dbeaver.ext.altibase.model.plan;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataSource;
+
 public class AltibasePlanBuilder {
 
-    public static List<AltibasePlanNode> build(String planStr) throws IllegalStateException {
+    public static List<AltibasePlanNode> build(AltibaseDataSource dataSource, String planStr) throws IllegalStateException {
         List<AltibasePlanNode> rootNodes = new ArrayList<>();
 
         AltibasePlanNode node = null;
         AltibasePlanNode prevNode = null;
         String [] plans = planStr.split("\\n");
+        int id = 0;
         int depth;
 
         // Altibase plan string is a depth-first traversal
@@ -48,20 +51,20 @@ public class AltibasePlanBuilder {
 
             // root node
             if (depth == 0 && prevNode == null) {
-                node = new AltibasePlanNode(0, plan, null);
+                node = new AltibasePlanNode(dataSource, id++, 0, plan, null);
                 rootNodes.add(node);
                 // not root-node
             } else if (depth > 0 && prevNode != null) {
                 // sibling
                 if (prevNode.getDepth() == depth) {
-                    node = new AltibasePlanNode(depth, plan, (AltibasePlanNode) prevNode.getParent());
+                    node = new AltibasePlanNode(dataSource, id++, depth, plan, (AltibasePlanNode) prevNode.getParent());
                     //prevNode.appendPlan(plan);
                 // prevNode is parent
                 } else if (prevNode.getDepth() < depth) {
-                    node = new AltibasePlanNode(depth, plan, prevNode);
+                    node = new AltibasePlanNode(dataSource, id++, depth, plan, prevNode);
                 // prevNode.getDepth() > depth
                 } else {
-                    node = new AltibasePlanNode(depth, plan, prevNode.getParentNodeAtDepth(depth));
+                    node = new AltibasePlanNode(dataSource, id++, depth, plan, prevNode.getParentNodeAtDepth(depth));
                 }
             } else { 
                 throw new IllegalStateException("Plan parsing error [depth: " + depth + "]: " + plan + "\n" + planStr);
@@ -110,7 +113,7 @@ public class AltibasePlanBuilder {
                 + "* SIMPLE QUERY PLAN";
 
         try {
-            List<AltibasePlanNode> rootNodes  = AltibasePlanBuilder.build(plan);
+            List<AltibasePlanNode> rootNodes  = AltibasePlanBuilder.build(null, plan);
 
             System.out.println(rootNodes.get(0).toString4Debug());
         } catch (Exception e) {

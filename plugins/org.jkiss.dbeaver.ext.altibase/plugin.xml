@@ -215,6 +215,15 @@
 	                    </folder>                   
                         <!-- TODO: Replication: 2nd update -->
                 </folder> <!-- Global metadata -->
+                <folder label="%tree.storage.node.name" icon="#storage" description="Storage management">
+                    <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseTablespace" label="%tree.tablespaces.node.name" icon="#tablespaces" description="Tablespaces">
+                        <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" icon="#tablespace">
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseDataFile" label="%tree.files.node.name" icon="#files" description="Data Files">
+                                <items label="%tree.file.node.name" path="file" property="files" icon="#file"/>
+                            </folder>
+                        </items>
+                    </folder>
+                </folder>
              </tree>
         </datasource>
     </extension>

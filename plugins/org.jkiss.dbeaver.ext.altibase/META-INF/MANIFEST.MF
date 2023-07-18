@@ -7,8 +7,9 @@ Bundle-Release-Date: 20220711
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic,
- org.jkiss.dbeaver.data.gis;bundle-version="1.0.109",
- org.jkiss.dbeaver.model.sql
+ org.jkiss.dbeaver.data.gis,
+ org.jkiss.dbeaver.model.sql,
+ com.google.gson
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: %Bundle-Vendor

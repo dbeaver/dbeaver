@@ -53,6 +53,11 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
         this.query = query;
         this.planQuery = "";
     }
+    
+    public AltibaseExecutionPlan(String query, List<AltibasePlanNode> nodes) {
+        this.query = query;
+        this.rootNodes = nodes;
+    }
 
     public void explain() throws DBException {
         try {
@@ -60,7 +65,7 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
             // Read explained plan
             try {
                 String plan = getExplainPlan(session, query);
-                rootNodes = AltibasePlanBuilder.build(plan);
+                rootNodes = AltibasePlanBuilder.build(dataSource, plan);
             } finally {
                 dbStat.close();
             }
