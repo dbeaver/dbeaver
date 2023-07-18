@@ -57,17 +57,18 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
 
     public static final String NODE_ID = "stream_producer";
 
-    private StreamEntityMapping entityMapping;
-    private DataTransferProcessorDescriptor defaultProcessor;
+    private final StreamEntityMapping entityMapping;
+    private final DataTransferProcessorDescriptor defaultProcessor;
 
     public StreamTransferProducer() {
+        this(null, null);
     }
 
-    public StreamTransferProducer(StreamEntityMapping entityMapping) {
+    public StreamTransferProducer(@Nullable StreamEntityMapping entityMapping) {
         this(entityMapping, null);
     }
 
-    public StreamTransferProducer(StreamEntityMapping entityMapping, DataTransferProcessorDescriptor defaultProcessor) {
+    public StreamTransferProducer(@Nullable StreamEntityMapping entityMapping, @Nullable DataTransferProcessorDescriptor defaultProcessor) {
         this.entityMapping = entityMapping;
         this.defaultProcessor = defaultProcessor;
     }
@@ -174,7 +175,10 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
 
         @Override
         public void serializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull DBTTask context, @NotNull StreamTransferProducer object, @NotNull Map<String, Object> state) {
-            state.put("file", object.getInputFile().getAbsolutePath());
+            final StreamEntityMapping mapping = object.getEntityMapping();
+            state.put("file", mapping.getInputFile().getAbsolutePath());
+            state.put("name", mapping.getEntityName());
+            state.put("child", mapping.isChild());
             if (object.defaultProcessor != null) {
                 state.put("node", object.defaultProcessor.getNode().getId());
                 state.put("processor", object.defaultProcessor.getId());
@@ -183,7 +187,6 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
 
         @Override
         public StreamTransferProducer deserializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull SerializerContext serializeContext, @NotNull DBTTask objectContext, @NotNull Map<String, Object> state) {
-            File inputFile = new File(CommonUtils.toString(state.get("file")));
             String nodeId = CommonUtils.toString(state.get("node"));
             String processorId = CommonUtils.toString(state.get("processor"));
             DataTransferProcessorDescriptor processor = null;
@@ -198,7 +201,14 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
                     }
                 }
             }
-            return new StreamTransferProducer(new StreamEntityMapping(inputFile), processor);
+            return new StreamTransferProducer(
+                new StreamEntityMapping(
+                    new File(CommonUtils.toString(state.get("file"))),
+                    CommonUtils.toString(state.get("name")),
+                    CommonUtils.toBoolean(state.get("child"))
+                ),
+                processor
+            );
         }
     }
 

@@ -35,7 +35,10 @@ import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.panel.GISLeafletViewer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Geometry presentation.
@@ -58,7 +61,7 @@ public class GeometryPresentation extends AbstractPresentation {
             parent,
             bindings,
             GisTransformUtils.getSpatialDataProvider(controller.getDataContainer().getDataSource()),
-            null
+            this
         );
         leafletViewer.getBrowserComposite().setLayoutData(new GridData(GridData.FILL_BOTH));
     }

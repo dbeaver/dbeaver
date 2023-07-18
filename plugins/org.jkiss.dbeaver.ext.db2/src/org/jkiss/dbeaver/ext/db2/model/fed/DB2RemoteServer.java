@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.db2.model.fed;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2GlobalObject;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2RemoteServerOptionCache;
@@ -60,7 +61,7 @@ public class DB2RemoteServer extends DB2GlobalObject implements DBPRefreshableOb
         this.name = JDBCUtils.safeGetString(dbResult, "SERVERNAME");
         this.type = JDBCUtils.safeGetString(dbResult, "SERVERTYPE");
         this.version = JDBCUtils.safeGetString(dbResult, "SERVERVERSION");
-        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+        this.remarks = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_REMARKS);
 
         String db2WrapperName = JDBCUtils.safeGetString(dbResult, "WRAPNAME");
         if (db2WrapperName != null) {
