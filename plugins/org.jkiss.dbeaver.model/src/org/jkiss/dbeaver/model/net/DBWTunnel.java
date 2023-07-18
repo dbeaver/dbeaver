@@ -41,4 +41,6 @@ public interface DBWTunnel extends DBWNetworkHandler, DBWForwarder {
 
     Object getImplementation();
 
+    void addCloseListener(Runnable listener);
+
 }

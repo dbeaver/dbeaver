@@ -1063,7 +1063,7 @@ public class DataSourceDescriptor
                         try {
                             DBPDataSourceProvider dataSourceProvider = driver.getDataSourceProvider();
                             if (dataSourceProvider instanceof DBWHandlerConfigurator) {
-                                ((DBWHandlerConfigurator) dataSourceProvider).configureHandler(tunnelHandler, resolvedConnectionInfo, tunnelConfiguration);
+                                ((DBWHandlerConfigurator) dataSourceProvider).activateHandler(tunnelHandler, resolvedConnectionInfo, tunnelConfiguration);
                             }
                             resolvedConnectionInfo = tunnelHandler.initializeHandler(monitor, tunnelConfiguration, resolvedConnectionInfo);
                         } finally {
@@ -1573,7 +1573,7 @@ public class DataSourceDescriptor
                         path = Paths.get(((URL) path).toURI());
                     } catch (Exception ignored) {
                     }
-                    coll.addProperty(CATEGORY_DRIVER_FILES, "driver-file-" + String.valueOf(urlIndex), String.valueOf(urlIndex), path);
+                    coll.addProperty(CATEGORY_DRIVER_FILES, "driver-file-" + urlIndex, String.valueOf(urlIndex), path);
                 }
             }
             return adapter.cast(coll);
