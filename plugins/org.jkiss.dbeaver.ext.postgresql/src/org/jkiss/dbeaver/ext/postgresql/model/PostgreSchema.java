@@ -1126,6 +1126,7 @@ public class PostgreSchema implements
                     "FROM pg_catalog." + serverType.getProceduresSystemTable() + " p\n" +
                     "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=p." + oidColumn + "\n" +
                     "WHERE p.pronamespace=?" +
+                    (session.getDataSource().isServerVersionAtLeast(7, 2) ? " AND d.objsubid = 0" : "") + // no links to columns
                     (object == null ? "" : " AND p." + oidColumn + "=?") +
                     "\nORDER BY p.proname"
             );
