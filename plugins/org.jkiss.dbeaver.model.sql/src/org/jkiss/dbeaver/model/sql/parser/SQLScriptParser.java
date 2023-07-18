@@ -295,8 +295,8 @@ public class SQLScriptParser {
                         statementStart = tokenOffset + tokenLength;
                         continue;
                     }
-                    String originalQueryText = document.get(statementStart, tokenOffset - statementStart);
-                    String queryText = SQLUtils.fixLineFeeds(originalQueryText);
+                    String queryText = document.get(statementStart, tokenOffset - statementStart);
+                    queryText = SQLUtils.fixLineFeeds(queryText);
 
                     if (isDelimiter &&
                         (keepDelimiters ||
@@ -322,7 +322,6 @@ public class SQLScriptParser {
                     return new SQLQuery(
                         context.getDataSource(),
                         queryText,
-                        originalQueryText,
                         statementStart,
                         queryEndPos - statementStart);
                 }
@@ -695,8 +694,8 @@ public class SQLScriptParser {
                 element = parsedElement;
             } else {
                 // Use selected query as is
-                String fixedSelText = SQLUtils.fixLineFeeds(selText);
-                element = new SQLQuery(context.getDataSource(), fixedSelText, selText, region.getOffset(), region.getLength());
+                selText = SQLUtils.fixLineFeeds(selText);
+                element = new SQLQuery(context.getDataSource(), selText, region.getOffset(), region.getLength());
             }
         } else if (region.getOffset() >= 0) {
             element = extractQueryAtPos(context, region.getOffset());
@@ -710,9 +709,19 @@ public class SQLScriptParser {
         }
         if (element instanceof SQLQuery) {
             SQLQuery query = (SQLQuery) element;
-            query.setParameters(parseParametersAndVariables(context, query.getOffset(), query.getLength()));
+            query.setParameters(parseParametersAndVariables(context, query.getText()));
         }
         return element;
+    }
+
+    public static List<SQLQueryParameter> parseParametersAndVariables(SQLParserContext context, String selectedQueryText) {
+        SQLParserContext ctx = new SQLParserContext(
+                context.getDataSource(),
+                context.getSyntaxManager(),
+                context.getRuleManager(),
+                new Document(selectedQueryText)
+        );
+        return  parseParametersAndVariables(ctx, 0, selectedQueryText.length());
     }
 
     public static List<SQLQueryParameter> parseParametersAndVariables(SQLParserContext context, int queryOffset, int queryLength) {
@@ -763,7 +772,6 @@ public class SQLScriptParser {
                     }
                     firstKeyword = false;
                 }
-
 
                 if (tokenType == SQLTokenType.T_BLOCK_TOGGLE) {
                     insideDollarQuote = !insideDollarQuote;

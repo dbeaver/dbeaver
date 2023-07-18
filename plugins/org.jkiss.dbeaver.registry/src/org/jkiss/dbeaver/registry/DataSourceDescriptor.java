@@ -1061,6 +1061,10 @@ public class DataSourceDescriptor
                         // We need to resolve jump server differently due to it being a part of ssh configuration
                         DBExecUtils.startContextInitiation(this);
                         try {
+                            DBPDataSourceProvider dataSourceProvider = driver.getDataSourceProvider();
+                            if (dataSourceProvider instanceof DBWHandlerConfigurator) {
+                                ((DBWHandlerConfigurator) dataSourceProvider).configureHandler(tunnelHandler, resolvedConnectionInfo, tunnelConfiguration);
+                            }
                             resolvedConnectionInfo = tunnelHandler.initializeHandler(monitor, tunnelConfiguration, resolvedConnectionInfo);
                         } finally {
                             DBExecUtils.finishContextInitiation(this);

@@ -39,7 +39,7 @@ import java.util.List;
  */
 public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     @NotNull
-    private DBSDataContainer dataContainer;
+    private final DBSDataContainer dataContainer;
     @NotNull
     private final DBCAttributeMetaData metaAttribute;
     @Nullable

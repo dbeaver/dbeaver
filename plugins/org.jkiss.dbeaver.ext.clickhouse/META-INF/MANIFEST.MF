@@ -2,13 +2,13 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.clickhouse;singleton:=true
-Bundle-Version: 1.0.113.qualifier
-Bundle-Release-Date: 20230626
+Bundle-Version: 1.0.115.qualifier
+Bundle-Release-Date: 20230724
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.parser.common,
  org.jkiss.dbeaver.ext.generic;visibility:=reexport,
- com.google.guava;resolution:=optional
+ com.google.guava;resolution:=optional,
+ org.jkiss.bundle.antlr4
 Export-Package: org.jkiss.dbeaver.ext.clickhouse,
  org.jkiss.dbeaver.ext.clickhouse.model
 Import-Package: org.slf4j

@@ -74,10 +74,14 @@ public class DatabaseTransferUtils {
         refreshDatabaseMappings(monitor, consumerSettings, containerMapping, false);
     }
 
-    public static void refreshDatabaseMappings(@NotNull DBRProgressMonitor monitor, @NotNull DatabaseConsumerSettings consumerSettings, @NotNull DatabaseMappingContainer containerMapping, boolean force) throws DBException {
+    public static void refreshDatabaseMappings(@NotNull DBRProgressMonitor monitor, @NotNull DatabaseConsumerSettings consumerSettings, @Nullable DatabaseMappingContainer containerMapping, boolean force) throws DBException {
         DBSObjectContainer container = consumerSettings.getContainer();
         if (container == null) {
-            throw new DBException("Null target container");
+            log.debug("Null target container");
+        }
+        if (containerMapping == null) {
+            log.debug("Null container mapping");
+            return;
         }
 
         // Reflect database changes in mappings
