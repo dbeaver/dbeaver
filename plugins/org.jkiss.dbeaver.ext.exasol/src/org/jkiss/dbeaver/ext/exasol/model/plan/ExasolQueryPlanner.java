@@ -81,6 +81,7 @@ public class ExasolQueryPlanner extends AbstractExecutionPlanSerializer implemen
                         JsonObject attr = new JsonObject();
                         Object value = element.getValue();
                         if (value instanceof Double) {
+                            // Keep numbers in the original view
                             attr.add(element.getKey(), new JsonPrimitive((Double) value));
                         } else {
                             attr.add(element.getKey(), new JsonPrimitive(value.toString()));

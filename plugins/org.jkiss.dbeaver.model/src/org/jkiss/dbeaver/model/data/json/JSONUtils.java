@@ -335,6 +335,7 @@ public class JSONUtils {
     }
 
     /**
+     * Returns timestamp value from the attributes map, if map contains key
      *
      * @param attributes Attributes map
      * @param name Name of the attribute

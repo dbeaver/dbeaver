@@ -88,15 +88,15 @@ public class MySQLPlanNodePlain extends MySQLPlanNode {
         this.parent = parent;
         this.id = props.containsKey("id") ? CommonUtils.toInt(props.get("id")) : null;
         this.selectType = JSONUtils.getString(props, "select_type");
-        this.table = JSONUtils.getString(props,"table");
-        this.type = JSONUtils.getString(props,"type");
-        this.possibleKeys = JSONUtils.getString(props,"possible_keys");
-        this.key = JSONUtils.getString(props,"key");
-        this.keyLength = JSONUtils.getString(props,"key_len");
-        this.ref = JSONUtils.getString(props,"ref");
+        this.table = JSONUtils.getString(props, "table");
+        this.type = JSONUtils.getString(props, "type");
+        this.possibleKeys = JSONUtils.getString(props, "possible_keys");
+        this.key = JSONUtils.getString(props, "key");
+        this.keyLength = JSONUtils.getString(props, "key_len");
+        this.ref = JSONUtils.getString(props, "ref");
         this.rowCount = props.containsKey("rows") ? CommonUtils.toLong(props.get("rows")) : null;
-        this.filtered =  props.containsKey("filtered") ? CommonUtils.toLong(props.get("filtered")) : null;
-        this.extra = JSONUtils.getString(props,"extra");
+        this.filtered = props.containsKey("filtered") ? CommonUtils.toLong(props.get("filtered")) : null;
+        this.extra = JSONUtils.getString(props, "extra");
     }
 
     public MySQLPlanNodePlain(MySQLPlanNodePlain parent, String type) {

@@ -118,9 +118,10 @@ public class MySQLPlanAnalyser extends AbstractExecutionPlanSerializer implement
                     attributes.add("extra", new JsonPrimitive(CommonUtils.notEmpty(plainNode.getExtra())));
                 } else if (node instanceof MySQLPlanNodeJSON) {
                     MySQLPlanNodeJSON jsNode = (MySQLPlanNodeJSON) node;
-                    for(Map.Entry<String, Object>  e : jsNode.getNodeProps().entrySet()) {
+                    for (Map.Entry<String, Object> e : jsNode.getNodeProps().entrySet()) {
                         Object value = e.getValue();
                         if (value instanceof Double) {
+                            // Keep numbers in the original view
                             attributes.add(e.getKey(), new JsonPrimitive((Double) value));
                         } else {
                             attributes.add(e.getKey(), new JsonPrimitive(value.toString()));
