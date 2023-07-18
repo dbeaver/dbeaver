@@ -27,6 +27,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
@@ -331,6 +332,28 @@ public class JSONUtils {
     public static String getString(Map<String, Object> map, String name, String defValue) {
         Object value = map.get(name);
         return value == null ? defValue : value.toString();
+    }
+
+    /**
+     * Returns timestamp value from the attributes map, if map contains key
+     *
+     * @param attributes Attributes map
+     * @param name Name of the attribute
+     * @return timestamp from the given string value
+     */
+    @NotNull
+    public static Timestamp getTimestamp(@NotNull Map<String, Object> attributes, @NotNull String name) {
+        if (attributes.containsKey(name)) {
+            try {
+                long inst = getLong(attributes, name, 0);
+                if (inst != 0) {
+                    return Timestamp.from(Instant.ofEpochMilli(inst));
+                }
+            } catch (Exception e) {
+                log.debug("Can't parse timestamp value from " + name);
+            }
+        }
+        return new Timestamp(0);
     }
 
     public static boolean getBoolean(Map<String, Object> map, String name) {
