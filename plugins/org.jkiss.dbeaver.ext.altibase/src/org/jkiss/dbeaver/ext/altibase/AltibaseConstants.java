@@ -98,6 +98,7 @@ public class AltibaseConstants {
      */
     public static final String PREF_EXPLAIN_PLAN_TYPE = "altibase.explain.plan.type";
     public static final String PREF_DBMS_OUTPUT = "altibase.dbms.output";
+    public static final String PREF_PLAN_PREFIX = "altibase.plan.prefix";
     
     public enum EXPLAIN_PLAN {
         ONLY ("EXPLAIN PLAN = ONLY", (byte) 2),

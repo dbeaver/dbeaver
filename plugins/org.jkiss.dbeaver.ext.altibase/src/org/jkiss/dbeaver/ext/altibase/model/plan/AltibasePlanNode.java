@@ -173,8 +173,11 @@ public class AltibasePlanNode extends AbstractExecutionPlanNode  {
     
     @Property(order = 1, viewable = true)
     public String getPlanString() {
-        // return getPrefix(this.depth) + plan;
-        return plan;
+        if (dataSource.getContainer().getPreferenceStore().getBoolean(AltibaseConstants.PREF_PLAN_PREFIX)) {
+            return getPrefix(this.depth) + plan;
+        } else {
+            return plan;
+        }
     }
     
     public String getPlan() {
@@ -182,7 +185,7 @@ public class AltibasePlanNode extends AbstractExecutionPlanNode  {
     }
     
     public String toString() {
-        return getPrefix(this.depth) + plan;
+        return plan;
     }
     
     private static String getPrefix(int depth) {

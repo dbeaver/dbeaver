@@ -30,6 +30,7 @@ public class PrefPageAltibase extends TargetPrefPage {
     private int planTypeIdx;
     private Button[] planTypeBtns;
     private Button enableDbmsOutputCheck;
+    private Button enablePlanPrefixDepthCheck;
     
     public PrefPageAltibase()
     {
@@ -41,7 +42,8 @@ public class PrefPageAltibase extends TargetPrefPage {
     protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dataSourceDescriptor) {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return (store.contains(AltibaseConstants.PREF_EXPLAIN_PLAN_TYPE) ||
-                store.contains(AltibaseConstants.PREF_DBMS_OUTPUT)) ;
+                store.contains(AltibaseConstants.PREF_DBMS_OUTPUT) ||
+                store.contains(AltibaseConstants.PREF_PLAN_PREFIX));
     }
 
     @Override
@@ -85,6 +87,8 @@ public class PrefPageAltibase extends TargetPrefPage {
                     composite, AltibaseUIMessages.pref_page_altibase_legend_misc, 1, GridData.FILL_HORIZONTAL, 0);
             enableDbmsOutputCheck = UIUtils.createCheckbox(
                     miscGroup, AltibaseUIMessages.pref_page_altibase_checkbox_enable_dbms_output, true);
+            enablePlanPrefixDepthCheck = UIUtils.createCheckbox(
+                    miscGroup, AltibaseUIMessages.pref_page_altibase_checkbox_plan_prefix_depth, true);
         }
         
         return composite;
@@ -98,12 +102,14 @@ public class PrefPageAltibase extends TargetPrefPage {
         }
         
         enableDbmsOutputCheck.setSelection(store.getBoolean(AltibaseConstants.PREF_DBMS_OUTPUT));
+        enablePlanPrefixDepthCheck.setSelection(store.getBoolean(AltibaseConstants.PREF_PLAN_PREFIX));
     }
 
     @Override
     protected void savePreferences(DBPPreferenceStore store) {
         store.setValue(AltibaseConstants.PREF_EXPLAIN_PLAN_TYPE, planTypeIdx);
         store.setValue(AltibaseConstants.PREF_DBMS_OUTPUT, enableDbmsOutputCheck.getSelection());
+        store.setValue(AltibaseConstants.PREF_PLAN_PREFIX, enablePlanPrefixDepthCheck.getSelection());
         
         PrefUtils.savePreferenceStore(store);
     }
@@ -112,6 +118,7 @@ public class PrefPageAltibase extends TargetPrefPage {
     protected void clearPreferences(DBPPreferenceStore store) {
         store.setToDefault(AltibaseConstants.PREF_EXPLAIN_PLAN_TYPE);
         store.setToDefault(AltibaseConstants.PREF_DBMS_OUTPUT);
+        store.setToDefault(AltibaseConstants.PREF_PLAN_PREFIX);
     }
 
     @Override

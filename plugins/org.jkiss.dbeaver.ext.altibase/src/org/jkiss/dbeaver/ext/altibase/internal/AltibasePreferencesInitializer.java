@@ -33,6 +33,7 @@ public class AltibasePreferencesInitializer extends AbstractPreferenceInitialize
 
         PrefUtils.setDefaultPreferenceValue(store, AltibaseConstants.PREF_EXPLAIN_PLAN_TYPE, 0);
         PrefUtils.setDefaultPreferenceValue(store, AltibaseConstants.PREF_DBMS_OUTPUT, true);
+        PrefUtils.setDefaultPreferenceValue(store, AltibaseConstants.PREF_PLAN_PREFIX, true);
     }
 
 } 

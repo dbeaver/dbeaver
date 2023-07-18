@@ -52,6 +52,7 @@ public class AltibaseUIMessages extends NLS {
     public static String pref_page_altibase_explain_plan_content;
     public static String pref_page_altibase_legend_misc;
     public static String pref_page_altibase_checkbox_enable_dbms_output;
+    public static String pref_page_altibase_checkbox_plan_prefix_depth;
     
     private AltibaseUIMessages() {
     }
