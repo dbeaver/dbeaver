@@ -55,6 +55,7 @@ public class ResultSetModel {
     private DBDDataFilter dataFilter;
     private DBSEntity singleSourceEntity;
     private DBCExecutionSource executionSource;
+    boolean caseSensitiveOrder;
 
     // Data
     private List<ResultSetRow> curRows = new ArrayList<>();
@@ -1123,7 +1124,11 @@ public class ResultSetModel {
                     }
                     Object cell1 = getCellValue(new ResultSetCellLocation(binding, row1));
                     Object cell2 = getCellValue(new ResultSetCellLocation(binding, row2));
-                    result = DBUtils.compareDataValues(cell1, cell2);
+                    if (caseSensitiveOrder) {
+                        result = DBUtils.compareDataValues(cell1, cell2);
+                    } else {
+                        result = DBUtils.compareDataValues((Object) cell1.toString().toLowerCase(), (Object) cell2.toString().toLowerCase());
+                    }
                     if (co.isOrderDescending()) {
                         result = -result;
                     }

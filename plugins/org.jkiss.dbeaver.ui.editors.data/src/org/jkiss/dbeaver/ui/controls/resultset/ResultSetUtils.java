@@ -180,7 +180,8 @@ public class ResultSetUtils
     public enum OrderingMode {
         SMART(ResultSetMessages.pref_page_database_resultsets_label_order_mode_smart),
         CLIENT_SIDE(ResultSetMessages.pref_page_database_resultsets_label_order_mode_always_client),
-        SERVER_SIDE(ResultSetMessages.pref_page_database_resultsets_label_order_mode_always_server);
+        SERVER_SIDE(ResultSetMessages.pref_page_database_resultsets_label_order_mode_always_server),
+        CLIENT_SIDE_CASE_INSENSITIVE(ResultSetMessages.pref_page_database_resultsets_label_order_mode_always_client_case_insensitive);
 
         private final String text;
 
