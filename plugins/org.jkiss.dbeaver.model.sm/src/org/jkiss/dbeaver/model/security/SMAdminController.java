@@ -122,6 +122,18 @@ public interface SMAdminController extends SMController {
     ) throws DBException;
 
     /**
+     * Delete user credentials for specified provider.
+     *
+     * @param userId         the user id
+     * @param authProviderId the auth provider id
+     * @throws DBException the db exception
+     */
+    void deleteUserCredentials(
+        @NotNull String userId,
+        @NotNull String authProviderId
+    ) throws DBException;
+
+    /**
      * Returns list of auth provider IDs associated with this user
      *
      * @param userId the user id
