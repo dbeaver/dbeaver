@@ -632,9 +632,6 @@ public class TabbedFolderList extends Composite {
     }
 
     public void select(int index, boolean setFocus) {
-        if (setFocus) {
-            setFocus();
-        }
         if (index >= 0 && index < elements.length) {
             int lastSelected = getSelectionIndex();
             if (index == lastSelected) {
@@ -661,8 +658,8 @@ public class TabbedFolderList extends Composite {
         }
         notifyListeners(SWT.Selection, new Event());
         if (setFocus) {
-            elements[index].getInfo().getContents().setFocus();
             getAccessible().setFocus(getSelectionIndex());
+            forceFocus();
         }
     }
 
