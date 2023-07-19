@@ -34,6 +34,7 @@ import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -96,7 +97,14 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                     }
                     if (failedToPasteResources.isEmpty()) {
                         for (DBNNode nodeObject : cbNodes) {
-                            if (nodeObject instanceof DBNDatabaseNode) {
+                            if (curNode instanceof DBNResource && ((DBNResource) curNode).supportsPaste(nodeObject)) {
+                                try {
+                                    ((DBNResource) curNode).pasteNodes(List.of(nodeObject));
+                                } catch (DBException e) {
+                                    DBWorkbench.getPlatformUI().showError("Paste error", "Can't paste node '" + nodeObject.getName() + "'", e);
+                                    failedToPasteResources.add(nodeObject.getName());
+                                }
+                            } else if (nodeObject instanceof DBNDatabaseNode) {
                                 createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), curNode, ((DBNDatabaseNode) nodeObject));
                             } else if (nodeObject instanceof DBNResource && curNode instanceof DBNResource) {
                                 pasteResource((DBNResource) nodeObject, (DBNResource) curNode);
