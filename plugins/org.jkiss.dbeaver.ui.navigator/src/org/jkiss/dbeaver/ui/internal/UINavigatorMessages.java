@@ -53,6 +53,8 @@ public class UINavigatorMessages extends NLS {
     public static String dialog_filter_hint_text;
 
     public static String actions_navigator__objects;
+    public static String actions_navigator_hide_objects;
+    public static String actions_navigator_hide_object;
     public static String actions_navigator_copy_fqn_title;
     public static String actions_navigator_copy_fqn_titles;
     public static String actions_navigator_copy_object_copy_node;
@@ -82,6 +84,19 @@ public class UINavigatorMessages extends NLS {
     public static String actions_navigator_search_filter_container_description;
     public static String actions_navigator_search_filter_object_name;
     public static String actions_navigator_search_filter_object_description;
+    public static String actions_navigator_show_only_selected_objects;
+    public static String actions_navigator_show_only_object;
+    public static String actions_navigator_folder_name;
+    public static String actions_navigator_open_editors_title;
+    public static String actions_navigator_open_editors_question;
+    public static String actions_navigator_rename_object;
+    public static String actions_navigator_rename_object_exception_title;
+    public static String actions_navigator_rename_object_exception_message;
+    public static String actions_navigator_rename_script;
+    public static String actions_navigator_rename_database_object;
+    public static String actions_navigator_rename_database_object_exception_title;
+    public static String actions_navigator_rename_database_object_exception_message;
+    
 
     public static String dialog_project_create_wizard_error_already_exists;
     public static String dialog_project_create_wizard_error_cannot_create;
@@ -176,6 +191,7 @@ public class UINavigatorMessages extends NLS {
     public static String controls_object_list_monitor_load_props;
     public static String controls_object_list_status_objects;
 
+    public static String editors_entity_read_expensive_props_action;
     public static String editors_entity_dialog_persist_title;
     public static String editors_entity_dialog_preview_title;
     public static String editors_entity_monitor_add_folder;

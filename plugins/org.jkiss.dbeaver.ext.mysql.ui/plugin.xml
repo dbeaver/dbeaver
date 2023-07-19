@@ -56,7 +56,7 @@
             objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"
             main="false"
             label="%editor.schema_privileges.name"
-            description="Schema user privileges"
+            description="%editor.schema_privileges.description"
             position="additions_start"
             icon="#user">
         </editor>

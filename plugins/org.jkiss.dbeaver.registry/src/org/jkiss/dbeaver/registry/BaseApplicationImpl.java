@@ -38,7 +38,7 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
 
     private static DBPApplication INSTANCE;
 
-    private final String applicationRunId = UUID.randomUUID().toString();
+    private String applicationRunId;
     private final long applicationStartTime = System.currentTimeMillis();
 
     protected BaseApplicationImpl() {
@@ -103,6 +103,9 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
 
     @NotNull
     public String getApplicationRunId() {
+        if (applicationRunId == null) {
+            applicationRunId = UUID.randomUUID().toString();
+        }
         return applicationRunId;
     }
 

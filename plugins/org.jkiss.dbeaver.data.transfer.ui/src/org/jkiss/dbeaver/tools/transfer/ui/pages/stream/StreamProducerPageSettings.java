@@ -128,7 +128,10 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
 
         DBRRunnableWithProgress initializer = null;
         if (pipe.getConsumer() != null && pipe.getConsumer().getTargetObjectContainer() != null) {
-            File[] files = DialogUtils.openFileList(getShell(), "Select input files", extensions.toArray(new String[0]));
+            File[] files = DialogUtils.openFileList(
+                getShell(),
+                DTUIMessages.stream_producer_select_input_file,
+                extensions.toArray(new String[0]));
             if (files != null && files.length > 0) {
                 initializer = monitor -> updateMultiConsumers(monitor, pipe, files);
             }
@@ -142,7 +145,10 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             try {
                 getWizard().getRunnableContext().run(true, true, initializer);
             } catch (InvocationTargetException e) {
-                DBWorkbench.getPlatformUI().showError("Column mappings error", "Error reading column mappings from stream", e.getTargetException());
+                DBWorkbench.getPlatformUI().showError(
+                    DTUIMessages.stream_producer_column_mapping_error_title,
+                    DTUIMessages.stream_producer_column_mapping_error_message,
+                    e.getTargetException());
                 return;
             } catch (InterruptedException e) {
                 // ignore

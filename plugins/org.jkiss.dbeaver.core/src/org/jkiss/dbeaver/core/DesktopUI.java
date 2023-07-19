@@ -269,8 +269,8 @@ public class DesktopUI implements DBPPlatformUI {
     }
 
     @Override
-    public void showNotification(@NotNull String title, String message, boolean error) {
-        showNotification(title, message, error ? DBPMessageType.ERROR : DBPMessageType.INFORMATION);
+    public void showNotification(@NotNull String title, String message, boolean error, @Nullable Runnable feedback) {
+        NotificationUtils.sendNotification(title, title, message, error ? DBPMessageType.ERROR : DBPMessageType.INFORMATION, feedback);
     }
 
     @Override

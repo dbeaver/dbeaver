@@ -16,12 +16,19 @@
  */
 package org.jkiss.dbeaver.data.gis.handlers;
 
-import org.cugos.wkg.WKBReader;
+import org.cugos.wkg.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.gis.CircularArc;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.utils.CommonUtils;
 import org.locationtech.jts.io.WKTReader;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * WKG geometry utils
@@ -67,4 +74,95 @@ public class WKGUtils {
         throw new DBCException("Invalid geometry object");
     }
 
+    public static boolean isCurve(@Nullable Object value) {
+        return value instanceof CircularString
+            || value instanceof CompoundCurve
+            || value instanceof CurvePolygon
+            || value instanceof MultiCurve
+            || value instanceof MultiSurface;
+    }
+
+    @NotNull
+    public static Object linearize(@NotNull Geometry value) {
+        // This value results in 32 segments per quadrant, the default tolerance for ST_CurveToLine
+        return linearize(value, 0.001);
+    }
+
+    @NotNull
+    public static Geometry linearize(@NotNull Geometry value, double tolerance) {
+        if (value instanceof CircularString) {
+            return convertCircularString((CircularString) value, tolerance);
+        } else if (value instanceof CompoundCurve) {
+            return convertCompoundCurve((CompoundCurve) value, tolerance);
+        } else if (value instanceof CurvePolygon) {
+            return convertCurvePolygon((CurvePolygon) value, tolerance);
+        } else if (value instanceof MultiCurve) {
+            return convertMultiCurve((MultiCurve) value, tolerance);
+        } else if (value instanceof MultiSurface) {
+            return convertMultiSurface((MultiSurface) value, tolerance);
+        } else {
+            return value;
+        }
+    }
+
+    @NotNull
+    private static LineString convertCircularString(@NotNull CircularString value, double tolerance) {
+        final List<Coordinate> input = value.getCoordinates();
+        final List<Coordinate> output = new ArrayList<>();
+
+        for (int i = 2; i < input.size(); i += 2) {
+            final CircularArc arc = new CircularArc(
+                input.get(i - 2),
+                input.get(i - 1),
+                input.get(i)
+            );
+
+            output.addAll(arc.linearize(tolerance));
+        }
+
+        return new LineString(output, Dimension.Two, value.getSrid());
+    }
+
+    @NotNull
+    private static LineString convertCompoundCurve(@NotNull CompoundCurve value, double tolerance) {
+        final List<Coordinate> coordinates = value.getCurves().stream()
+            .map(x -> linearize(x, tolerance))
+            .flatMap(x -> x.getCoordinates().stream())
+            .collect(Collectors.toList());
+
+        return new LineString(coordinates, Dimension.Two, value.getSrid());
+    }
+
+    @NotNull
+    private static Polygon convertCurvePolygon(@NotNull CurvePolygon value, double tolerance) {
+        final LinearRing outerLinearRing = Stream.of(value.getOuterCurve())
+            .map(x -> linearize(x, tolerance))
+            .map(x -> new LinearRing(x.getCoordinates(), x.getDimension(), x.getSrid()))
+            .findAny().get();
+
+        final List<LinearRing> innerLinearRings = value.getInnerCurves().stream()
+            .map(x -> linearize(x, tolerance))
+            .map(x -> new LinearRing(x.getCoordinates(), x.getDimension(), x.getSrid()))
+            .collect(Collectors.toList());
+
+        return new Polygon(outerLinearRing, innerLinearRings, Dimension.Two, value.getSrid());
+    }
+
+    @NotNull
+    private static MultiLineString convertMultiCurve(@NotNull MultiCurve value, double tolerance) {
+        final List<LineString> strings = value.getCurves().stream()
+            .map(x -> (LineString) linearize(x, tolerance))
+            .collect(Collectors.toList());
+
+        return new MultiLineString(strings, Dimension.Two, value.getSrid());
+    }
+
+    @NotNull
+    private static MultiPolygon convertMultiSurface(@NotNull MultiSurface value, double tolerance) {
+        final List<Polygon> polygons = value.getSurfaces().stream()
+            .map(x -> (Polygon) linearize(x, tolerance))
+            .collect(Collectors.toList());
+
+        return new MultiPolygon(polygons, Dimension.Two, value.getSrid());
+    }
 }

@@ -76,6 +76,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
 
     private CLabel errorLabel;
     private TabFolder tabFolder;
+    private boolean isReadOnly = false;
 
     public EditMavenArtifactDialog(@NotNull Shell shell, @NotNull DriverDescriptor driver, @Nullable DriverLibraryMavenArtifact library) {
         super(shell, UIConnectionMessages.dialog_edit_driver_edit_maven_title, DBIcon.TREE_USER);
@@ -246,7 +247,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
             classifierText.setEditable(false);
             preferredVersionText.setEditable(false);
             fallbackVersionText.setEnabled(false);
-
+            isReadOnly = true;
             UIUtils.createInfoLabel(container, "Predefined Maven artifacts are read-only", GridData.FILL_HORIZONTAL, 2);
         }
 
@@ -414,6 +415,10 @@ public class EditMavenArtifactDialog extends BaseDialog {
 
     @Override
     protected void okPressed() {
+        if (isReadOnly) {
+            super.okPressed();
+            return;
+        }
         if (tabFolder.getSelection()[0].getData() == TabType.DECLARE_ARTIFACT_MANUALLY) {
             if (originalArtifact != null) {
                 originalArtifact.setReference(new MavenArtifactReference(

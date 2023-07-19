@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.utils
-Bundle-Version: 2.1.192.qualifier
-Bundle-Release-Date: 20230710
+Bundle-Version: 2.1.193.qualifier
+Bundle-Release-Date: 20230724
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: com.google.gson
 Export-Package: org.jkiss.code,

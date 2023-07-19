@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -346,6 +347,21 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         DTUtils.addSummary(summary, DTMessages.database_consumer_settings_option_truncate_before_load, truncateBeforeLoad);
 
         return summary.toString();
+    }
+
+    @Nullable
+    public static DBPDataSourceContainer getDataSourceContainer(@NotNull DataTransferSettings dataTransferSettings) {
+        final Map<String, Object> settings = dataTransferSettings.getNodeSettingsMap(dataTransferSettings.getConsumer());
+
+        if (settings != null) {
+            final String entityId = CommonUtils.toString(settings.get("entityId"));
+
+            if (CommonUtils.isNotEmpty(entityId)) {
+                return DBUtils.findDataSourceByObjectId(dataTransferSettings.getProject(), entityId);
+            }
+        }
+
+        return null;
     }
 
     private void checkContainerConnection(DBRRunnableContext runnableContext) {
