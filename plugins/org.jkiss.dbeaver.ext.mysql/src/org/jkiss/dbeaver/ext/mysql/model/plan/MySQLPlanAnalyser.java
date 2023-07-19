@@ -20,6 +20,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -55,7 +56,7 @@ public class MySQLPlanAnalyser extends AbstractExecutionPlanSerializer implement
         final String plainQuery = SQLUtils.stripComments(dialect, query).toUpperCase();
         final String firstKeyword = SQLUtils.getFirstKeyword(dialect, plainQuery);
         if (!"SELECT".equalsIgnoreCase(firstKeyword) && !"WITH".equalsIgnoreCase(firstKeyword)) {
-            throw new DBCException("Only SELECT statements could produce execution plan");
+            throw new DBCException(MySQLMessages.exception_only_select_could_produce_execution_plan);
         }
         if (supportsExplainJSON()) {
             return new MySQLPlanJSON(session, query);

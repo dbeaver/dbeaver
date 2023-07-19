@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
@@ -208,7 +209,8 @@ public class SQLPlanTreeViewer extends Viewer
     private class ToggleViewAction extends Action {
         private ToggleViewAction()
         {
-            super("View Source", DBeaverIcons.getImageDescriptor(UIIcon.SQL_TEXT));
+            super(SQLEditorMessages.editors_sql_explain_refresh_tree_viewer_plan_toggle_view_text, 
+                DBeaverIcons.getImageDescriptor(UIIcon.SQL_TEXT));
         }
 
         @Override

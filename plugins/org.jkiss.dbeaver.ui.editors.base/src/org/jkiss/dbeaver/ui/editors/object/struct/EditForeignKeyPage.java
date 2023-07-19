@@ -452,7 +452,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             boolean isSchema = (foreignKey.getParentObject().getParentObject() instanceof DBSSchema);
             DBPDataSourceInfo dsInfo = foreignKey.getDataSource().getInfo();
 
-            UIUtils.createControlLabel(tableGroup, "Container");
+            UIUtils.createControlLabel(tableGroup, EditorsMessages.edit_foreign_key_page_create_schema_container);
             final CSmartCombo<DBNDatabaseNode> schemaCombo = new CSmartCombo<>(tableGroup, SWT.BORDER, labelProvider);
             schemaCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
@@ -506,8 +506,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             tableGroup,
             foreignKey.getDataSource().getContainer().getRegistry().getProject(),
             CONTAINER_LOGICAL_FK,
-            "Reference table container",
-            "Select reference table catalog/schema") {
+            EditorsMessages.edit_foreign_key_page_create_container_reference_table_container,
+            EditorsMessages.edit_foreign_key_page_create_container_select_reference_table_container) {
             @Nullable
             @Override
             protected DBNNode getSelectedNode() {
@@ -579,7 +579,10 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 }
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Error loading tables", "Error during table load", e);
+            DBWorkbench.getPlatformUI().showError(
+                EditorsMessages.edit_foreign_key_page_error_loading_table_title,
+                EditorsMessages.edit_foreign_key_page_error_loading_table_message,
+                e);
         } catch (InterruptedException e) {
             // Ignore
         }

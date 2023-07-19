@@ -398,7 +398,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
     private void updateFileConflictExpanderTitle(ExpandableComposite expander, StreamConsumerSettings settings) {
         if (expander.isExpanded()) {
-            expander.setText("File name conflict behavior settings");
+            expander.setText(DTMessages.data_transfer_file_name_conflict_behavior_setting_text);
         } else {
             String text = DTMessages.data_transfer_file_conflict_behavior_setting + ": " + settings.getDataFileConflictBehavior().title +
                 "; " + DTMessages.data_transfer_blob_file_conflict_behavior_setting + ": " + settings.getBlobFileConflictBehavior().title;

@@ -59,7 +59,7 @@ class SQLGeneratorDialog extends ViewSQLDialog {
 
     SQLGeneratorDialog(IWorkbenchPartSite parentSite, DBCExecutionContext context, SQLGenerator<?> sqlGenerator) {
         super(parentSite, () -> context,
-            "Generated SQL (" + context.getDataSource().getContainer().getName() + ")",
+            SQLEditorMessages.sql_generator_dialog_title,
             null, "");
         this.sqlGenerator = sqlGenerator;
     }

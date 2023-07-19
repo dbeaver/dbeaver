@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tasks.nativetool;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -41,6 +42,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.model.task.DBTTaskRunStatus;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ProgressStreamReader;
+import org.jkiss.dbeaver.tasks.nativetool.messages.NativeToolMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -485,7 +487,8 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
             try {
                 logWriter.print(cmdString.toString());
 
-                logWriter.print("Task '" + task.getName() + "' started at " + new Date() + lf);
+                logWriter.print(
+                    NLS.bind(NativeToolMessages.native_tool_handler_log_task, task.getName(), new Date() + lf));
                 logWriter.flush();
 
 
@@ -517,11 +520,12 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 // just skip
                 logWriter.println(e.getMessage() + lf);
             } finally {
-                logWriter.print("Task '" + task.getName() + "' finished at " + new Date() + lf);
+                logWriter.print(NLS.bind(NativeToolMessages.native_tool_handler_log_finished_task, task.getName(),
+                    new Date() + lf));
                 logWriter.flush();
             }
         }
-
+        
         private String readStream(@NotNull InputStream inputStream) throws IOException {
             StringBuilder message = new StringBuilder();
             try (Reader reader = new InputStreamReader(inputStream, GeneralUtils.getDefaultConsoleEncoding())) {
