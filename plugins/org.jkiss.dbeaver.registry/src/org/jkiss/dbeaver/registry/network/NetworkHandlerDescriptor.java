@@ -67,7 +67,7 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         this.secured = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SECURED), false);
         this.handlerType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_HANDLER_CLASS));
         this.order = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_ORDER), 1);
-        this.isDesktop = CommonUtils.toBoolean(config.getAttribute("desktop"));
+        this.isDesktop = CommonUtils.getBoolean(config.getAttribute("desktop"), true);
 
         this.replacesIDs = Arrays.stream(config.getChildren("replace"))
             .map(re -> re.getAttribute("id"))

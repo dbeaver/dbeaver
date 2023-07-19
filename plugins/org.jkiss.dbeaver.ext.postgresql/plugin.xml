@@ -713,6 +713,7 @@
                 codeName="SSL"
                 label="%handler.ssl.name"
                 description="%handler.ssl.description"
+                desktop="false"
                 secured="false"
                 order="100"
                 handlerClass="org.jkiss.dbeaver.ext.postgresql.model.net.PostgreSSLHandlerImpl">

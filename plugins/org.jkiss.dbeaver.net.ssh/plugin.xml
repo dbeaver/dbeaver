@@ -12,6 +12,7 @@
                 codeName="SSH"
                 label="%handler.ssh_tunnel.label"
                 description="%handler.ssh_tunnel.description"
+                desktop="false"
                 secured="true"
                 order="1"
                 handlerClass="org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl">

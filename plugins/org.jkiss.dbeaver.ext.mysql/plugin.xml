@@ -347,6 +347,7 @@
                 codeName="SSL"
                 label="SSL"
                 description="Secure socket layer"
+                desktop="false"
                 secured="false"
                 order="100"
                 handlerClass="org.jkiss.dbeaver.ext.mysql.model.net.MySQLSSLHandlerImpl">
