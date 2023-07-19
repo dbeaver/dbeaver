@@ -20,6 +20,7 @@ import org.eclipse.jface.action.Action;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 public class VirtualUniqueKeyEditAction extends Action {
     private ResultSetViewer resultSetViewer;
@@ -27,7 +28,8 @@ public class VirtualUniqueKeyEditAction extends Action {
 
     public VirtualUniqueKeyEditAction(ResultSetViewer resultSetViewer, boolean define)
     {
-        super(define ? "Define virtual unique key" : "Clear virtual unique key");
+        super(define ? ResultSetMessages.controls_resultset_virtual_define_virtual_unique_key
+            : ResultSetMessages.controls_resultset_virtual_clear_virtual_unique_key);
         this.resultSetViewer = resultSetViewer;
         this.define = define;
     }

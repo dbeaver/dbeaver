@@ -781,7 +781,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     private class ReadExpensivePropsAction extends Action {
         private final DBSObject databaseObject;
         ReadExpensivePropsAction(DBSObject databaseObject) {
-            super("Read row count and other expensive properties", AS_CHECK_BOX);
+            super(UINavigatorMessages.editors_entity_read_expensive_props_action, AS_CHECK_BOX);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.OBJ_REFRESH));
             this.databaseObject = databaseObject;
         }

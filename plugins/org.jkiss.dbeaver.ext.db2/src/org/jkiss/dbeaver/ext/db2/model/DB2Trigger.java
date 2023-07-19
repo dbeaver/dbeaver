@@ -90,20 +90,20 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
 
         DB2DataSource db2DataSource = table.getDataSource();
 
-        this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
+        this.owner = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER);
         this.time = CommonUtils.valueOf(DB2TriggerTime.class, JDBCUtils.safeGetString(dbResult, "TRIGTIME"));
         this.event = CommonUtils.valueOf(DB2TriggerEvent.class, JDBCUtils.safeGetString(dbResult, "TRIGEVENT"));
         this.granularity = CommonUtils.valueOf(DB2TriggerGranularity.class, JDBCUtils.safeGetString(dbResult, "GRANULARITY"));
-        this.valid = CommonUtils.valueOf(DB2TriggerValid.class, JDBCUtils.safeGetString(dbResult, "VALID"));
-        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
+        this.valid = CommonUtils.valueOf(DB2TriggerValid.class, JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_VALID));
+        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_CREATE_TIME);
         this.qualifier = JDBCUtils.safeGetString(dbResult, "QUALIFIER");
         this.funcPath = JDBCUtils.safeGetString(dbResult, "FUNC_PATH");
         this.text = JDBCUtils.safeGetString(dbResult, "TEXT");
         this.lastRegenTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REGEN_TIME");
-        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+        this.remarks = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_REMARKS);
 
         if (db2DataSource.isAtLeastV9_5()) {
-            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER_TYPE));
             this.collationSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "COLLATIONSCHEMA");
             this.collationName = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME");
             this.collationSchemaOrderBy = JDBCUtils.safeGetString(dbResult, "COLLATIONSCHEMA_ORDERBY");
@@ -114,7 +114,7 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
             this.eventDelete = JDBCUtils.safeGetBoolean(dbResult, "EVENTDELETE", DB2YesNo.Y.name());
             this.eventInsert = JDBCUtils.safeGetBoolean(dbResult, "EVENTINSERT", DB2YesNo.Y.name());
             this.secure = JDBCUtils.safeGetBoolean(dbResult, "SECURE", DB2YesNo.Y.name());
-            this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
+            this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_ALTER_TIME);
             this.libId = JDBCUtils.safeGetInteger(dbResult, "LIB_ID");
             this.precompileOptions = JDBCUtils.safeGetString(dbResult, "PRECOMPILE_OPTIONS");
             this.compileOptions = JDBCUtils.safeGetString(dbResult, "COMPILE_OPTIONS");

@@ -1061,6 +1061,10 @@ public class DataSourceDescriptor
                         // We need to resolve jump server differently due to it being a part of ssh configuration
                         DBExecUtils.startContextInitiation(this);
                         try {
+                            DBPDataSourceProvider dataSourceProvider = driver.getDataSourceProvider();
+                            if (dataSourceProvider instanceof DBWHandlerConfigurator) {
+                                ((DBWHandlerConfigurator) dataSourceProvider).activateHandler(tunnelHandler, resolvedConnectionInfo, tunnelConfiguration);
+                            }
                             resolvedConnectionInfo = tunnelHandler.initializeHandler(monitor, tunnelConfiguration, resolvedConnectionInfo);
                         } finally {
                             DBExecUtils.finishContextInitiation(this);
@@ -1569,7 +1573,7 @@ public class DataSourceDescriptor
                         path = Paths.get(((URL) path).toURI());
                     } catch (Exception ignored) {
                     }
-                    coll.addProperty(CATEGORY_DRIVER_FILES, "driver-file-" + String.valueOf(urlIndex), String.valueOf(urlIndex), path);
+                    coll.addProperty(CATEGORY_DRIVER_FILES, "driver-file-" + urlIndex, String.valueOf(urlIndex), path);
                 }
             }
             return adapter.cast(coll);

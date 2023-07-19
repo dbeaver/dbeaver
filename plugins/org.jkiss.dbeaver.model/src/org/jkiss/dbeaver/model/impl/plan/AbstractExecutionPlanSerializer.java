@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class AbstractExecutionPlanSerializer  implements DBCQueryPlannerSerializable{
 
@@ -125,6 +127,40 @@ public abstract class AbstractExecutionPlanSerializer  implements DBCQueryPlanne
         }
 
         return queryElement.getAsString();
+    }
+
+    /**
+     * Returns map of node objects from the json object for deserializer
+     *
+     * @param nodeObject json node object
+     * @return map of attributes from the json object
+     */
+    protected Map<String, Object> getNodeAttributes(@NotNull JsonObject nodeObject) {
+        Map<String, Object> attributes = new HashMap<>();
+        JsonArray attrs = nodeObject.getAsJsonArray(AbstractExecutionPlanSerializer.PROP_ATTRIBUTES);
+        for (JsonElement attr : attrs) {
+            for (Map.Entry<String, JsonElement> p : attr.getAsJsonObject().entrySet()) {
+                attributes.put(p.getKey(), p.getValue());
+            }
+        }
+        return attributes;
+    }
+
+    /**
+     * Returns map of node objects from the json object for deserializer as strings
+     *
+     * @param nodeObject json node object
+     * @return map of attributes from the json object
+     */
+    protected Map<String, String> getNodeAttributesAsStrings(@NotNull JsonObject nodeObject) {
+        Map<String, String> attributes = new HashMap<>();
+        JsonArray attrs = nodeObject.getAsJsonArray(AbstractExecutionPlanSerializer.PROP_ATTRIBUTES);
+        for (JsonElement attr : attrs) {
+            for (Map.Entry<String, JsonElement> p : attr.getAsJsonObject().entrySet()) {
+                attributes.put(p.getKey(), p.getValue().getAsString());
+            }
+        }
+        return attributes;
     }
 
 

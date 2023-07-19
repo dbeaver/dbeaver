@@ -29,10 +29,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Stream transfer settings
@@ -90,6 +87,30 @@ public class StreamProducerSettings implements IDataTransferSettings {
                 updateProducerSettingsFromStream(monitor, producer, dataTransferSettings);
             }
         }
+    }
+
+    public boolean extractExtraEntities(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull StreamEntityMapping entityMapping,
+        @NotNull DataTransferSettings settings,
+        @NotNull Collection<StreamEntityMapping> pendingEntityMappings
+    ) {
+        if (!entityMapping.isChild() && settings.getProcessor().isMulti()) {
+            final IMultiStreamDataImporter importer = (IMultiStreamDataImporter) settings.getProcessor().getInstance();
+
+            monitor.beginTask("Extract extra entities from stream", 1);
+
+            try (InputStream is = new FileInputStream(entityMapping.getInputFile())) {
+                return pendingEntityMappings.addAll(importer.readEntitiesInfo(entityMapping, is));
+            } catch (Exception e) {
+                settings.getState().addError(e);
+                log.error("IO error while reading entities from stream", e);
+            } finally {
+                monitor.done();
+            }
+        }
+
+        return false;
     }
 
     public void updateProducerSettingsFromStream(DBRProgressMonitor monitor, @NotNull StreamTransferProducer producer, DataTransferSettings dataTransferSettings) {

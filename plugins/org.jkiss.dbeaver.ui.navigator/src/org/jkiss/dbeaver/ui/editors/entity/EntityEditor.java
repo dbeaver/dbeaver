@@ -244,7 +244,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             DBWorkbench.getPlatformUI().showNotification(
                 "Read-only",
                 "Object [" + DBUtils.getObjectFullName(getDatabaseObject(), DBPEvaluationContext.UI) + "] is read-only",
-                true);
+                true, null);
             return;
         }
 

@@ -53,6 +53,8 @@ public class SQLEditorMessages extends NLS {
     public static String editors_sql_variables;
     public static String editors_sql_variables_tip;
     public static String editors_sql_explain_plan;
+    public static String editors_sql_explain_refresh_plan_action_text;
+    public static String editors_sql_explain_refresh_tree_viewer_plan_toggle_view_text;
     public static String editors_sql_output;
     public static String editors_sql_output_tip;
     public static String editors_sql_warning_many_subtables_title;
@@ -349,7 +351,12 @@ public class SQLEditorMessages extends NLS {
     public static String source_viewer_show_partitions_ddl_tip;
 
     public static String sql_editor_action_clear;
+    
     public static String sql_editor_title_tooltip_path;
+    public static String sql_editor_not_avaliable;
+    public static String sql_editor_data_receiver_result_name_tooltip_connection;
+    public static String sql_editor_data_receiver_result_name_tooltip_time;
+    public static String sql_editor_data_receiver_result_name_tooltip_query;
     public static String sql_editor_title_tooltip_connecton;
     public static String sql_editor_title_tooltip_type;
     public static String sql_editor_title_tooltip_url;
@@ -377,6 +384,8 @@ public class SQLEditorMessages extends NLS {
 
     public static String sql_editor_panel_output_filter_message;
     public static String sql_editor_panel_output_filter_hint;
+    public static String sql_generator_dialog_title;
+    
 
     static {
         // initialize resource bundle

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -45,6 +46,16 @@ public class GenericTable extends GenericTableBase implements DBPScriptObjectExt
         @Nullable JDBCResultSet dbResult)
     {
         super(container, tableName, tableType, dbResult);
+    }
+
+    // Constructor for tests
+    public GenericTable(
+        @NotNull GenericStructContainer container,
+        @Nullable String tableName,
+        @NotNull String tableCatalogName,
+        @NotNull String tableSchemaName
+    ) {
+        super(container, tableName, "TABLE", tableCatalogName, tableSchemaName);
     }
 
     @Override
