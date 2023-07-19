@@ -113,7 +113,7 @@ public class TabbedFolderList extends Composite {
          * @param index  the index in the list.
          */
         public ListElement(Composite parent, final TabbedFolderInfo tab, int index) {
-            super(parent, SWT.NO_FOCUS);
+            super(parent, SWT.NONE);
             this.tab = tab;
             hover = false;
             selected = false;
@@ -294,7 +294,7 @@ public class TabbedFolderList extends Composite {
          * @param parent the parent Composite.
          */
         public TopNavigationElement(Composite parent) {
-            super(parent, SWT.NO_FOCUS);
+            super(parent, SWT.NONE);
             addPaintListener(this::paint);
             addMouseListener(new MouseAdapter() {
 
@@ -373,7 +373,7 @@ public class TabbedFolderList extends Composite {
          * @param parent the parent Composite.
          */
         public BottomNavigationElement(Composite parent) {
-            super(parent, SWT.NO_FOCUS);
+            super(parent, SWT.NONE);
             addPaintListener(this::paint);
             addMouseListener(new MouseAdapter() {
 
@@ -444,7 +444,7 @@ public class TabbedFolderList extends Composite {
     }
 
     public TabbedFolderList(Composite parent, boolean section) {
-        super(parent, SWT.NO_FOCUS);
+        super(parent, SWT.NONE);
         //CSSUtils.setCSSClass(this, "MPartStack");
         this.section = section;
         removeAll();
@@ -632,6 +632,9 @@ public class TabbedFolderList extends Composite {
     }
 
     public void select(int index, boolean setFocus) {
+        if (setFocus) {
+            setFocus();
+        }
         if (index >= 0 && index < elements.length) {
             int lastSelected = getSelectionIndex();
             if (index == lastSelected) {
@@ -659,6 +662,7 @@ public class TabbedFolderList extends Composite {
         notifyListeners(SWT.Selection, new Event());
         if (setFocus) {
             elements[index].getInfo().getContents().setFocus();
+            getAccessible().setFocus(getSelectionIndex());
         }
     }
 
@@ -957,59 +961,22 @@ public class TabbedFolderList extends Composite {
      */
     private void initAccessible() {
         final Accessible accessible = getAccessible();
-        accessible.addAccessibleListener(new AccessibleAdapter() {
-
-            public void getName(AccessibleEvent e) {
-                if (getSelectionIndex() != NONE) {
-                    e.result = elements[getSelectionIndex()].getInfo().getText();
-                }
-            }
-
-            public void getHelp(AccessibleEvent e) {
-                if (getSelectionIndex() != NONE) {
-                    e.result = elements[getSelectionIndex()].getInfo().getText();
-                }
-            }
-        });
-
-        accessible.addAccessibleControlListener(new AccessibleControlAdapter() {
-
-            public void getChildAtPoint(AccessibleControlEvent e) {
-                Point pt = toControl(new Point(e.x, e.y));
-                e.childID = (getBounds().contains(pt)) ? ACC.CHILDID_SELF : ACC.CHILDID_NONE;
-            }
-
-            public void getLocation(AccessibleControlEvent e) {
-                if (getSelectionIndex() != NONE) {
-                    Rectangle location = elements[getSelectionIndex()].getBounds();
-                    Point pt = toDisplay(new Point(location.x, location.y));
-                    e.x = pt.x;
-                    e.y = pt.y;
-                    e.width = location.width;
-                    e.height = location.height;
-                }
-            }
-
-            public void getChildCount(AccessibleControlEvent e) {
-                e.detail = 0;
-            }
-
-            public void getRole(AccessibleControlEvent e) {
-                e.detail = ACC.ROLE_TABITEM;
-            }
-
-            public void getState(AccessibleControlEvent e) {
-                e.detail = ACC.STATE_SELECTABLE | ACC.STATE_SELECTED | ACC.STATE_FOCUSED | ACC.STATE_FOCUSABLE;
-            }
-        });
-
+        getAccessible().addAccessibleControlListener(new TabbedAccessibleControlAdapter(this));
+        getAccessible().addAccessibleListener(new TabbedFolderAccessibleAdapter(this));
         addListener(SWT.Selection, event -> {
             if (isFocusControl()) {
                 accessible.setFocus(ACC.CHILDID_SELF);
+            } else {
+                accessible.setFocus(getSelectionIndex());
             }
         });
-
-        addListener(SWT.FocusIn, event -> accessible.setFocus(ACC.CHILDID_SELF));
+        addListener(SWT.FocusIn, event -> {
+            if (isFocusControl()) {
+                accessible.setFocus(ACC.CHILDID_SELF);
+            } else {
+                accessible.setFocus(getSelectionIndex());
+            }
+        });
     }
 
     public void addSelectionListener(SelectionListener listener) {
@@ -1021,7 +988,7 @@ public class TabbedFolderList extends Composite {
 
     public void handleTraverse(TraverseEvent e) {
         if (e.detail == SWT.TRAVERSE_PAGE_PREVIOUS || e.detail == SWT.TRAVERSE_PAGE_NEXT) {
-            if ((e.stateMask & SWT.ALT) != SWT.ALT) {
+            if ((e.stateMask & SWT.SHIFT) != SWT.SHIFT) {
                 // Only in case of CTRL+ALT+PG
                 return;
             }
