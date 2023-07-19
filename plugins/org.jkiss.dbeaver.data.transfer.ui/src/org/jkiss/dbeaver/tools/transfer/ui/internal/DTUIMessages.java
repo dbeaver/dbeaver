@@ -72,6 +72,7 @@ public class DTUIMessages extends NLS {
 	public static String columns_mapping_dialog_composite_label_text_source_entity;
 	public static String columns_mapping_dialog_composite_label_text_target_container;
 	public static String columns_mapping_dialog_composite_label_text_target_entity;
+	public static String columns_mapping_dialog_composite_button_reconnect;
 	public static String columns_mapping_dialog_column_source_text;
 	public static String columns_mapping_dialog_column_source_type_text;
 	public static String columns_mapping_dialog_column_target_text;
@@ -213,6 +214,8 @@ public class DTUIMessages extends NLS {
 	public static String data_transfer_event_processor_execute_command_working_directory;
 	public static String data_transfer_event_processor_execute_command_working_directory_title;
 
+	public static String pref_data_transfer_wizard_title;
+	public static String pref_data_transfer_wizard_reconnect_to_database;
 	public static String pref_data_transfer_options_title;
 	public static String pref_data_transfer_options_fallback_directory;
 	public static String pref_data_transfer_options_fallback_directory_tip;

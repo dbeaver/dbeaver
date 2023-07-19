@@ -428,23 +428,10 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         if (nodeSettingsLoaded) {
             return;
         }
-        // Load nodes' settings (key is impl class simple name, value is descriptor)
-        Map<String, DataTransferNodeDescriptor> nodeNames = new LinkedHashMap<>();
-        if (producer != null) {
-            nodeNames.put(producer.getNodeClass().getSimpleName(), producer);
-        }
-        if (consumer != null) {
-            nodeNames.put(consumer.getNodeClass().getSimpleName(), consumer);
-        }
 
         MonitorRunnableContext runnableContext = new MonitorRunnableContext(monitor);
-        for (Map.Entry<String, DataTransferNodeDescriptor> node : nodeNames.entrySet()) {
-            Map<String, Object> nodeSection = JSONUtils.getObject(configurationMap, node.getKey());
-            IDataTransferSettings nodeSettings = this.getNodeSettings(node.getValue());
-            if (nodeSettings != null) {
-                nodeSettings.loadSettings(runnableContext, this, nodeSection);
-            }
-        }
+        loadNodeSettings(runnableContext, producer);
+        loadNodeSettings(runnableContext, consumer);
 
         // Initialize pipes with loaded settings
         for (int i = 0; i < dataPipes.size(); i++) {
@@ -459,6 +446,19 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         }
 
         this.nodeSettingsLoaded = true;
+    }
+
+    private void loadNodeSettings(@NotNull MonitorRunnableContext runnableContext, @Nullable DataTransferNodeDescriptor node) {
+        if (node == null) {
+            return;
+        }
+
+        final IDataTransferSettings settings = getNodeSettings(node);
+        final Map<String, Object> rawSettings = getNodeSettingsMap(node);
+
+        if (settings != null && rawSettings != null) {
+            settings.loadSettings(runnableContext, this, rawSettings);
+        }
     }
 
     public boolean isConsumerOptional() {
@@ -480,6 +480,11 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
 
     public List<DBSObject> getSourceObjects() {
         return initObjects;
+    }
+
+    @Nullable
+    public Map<String, Object> getNodeSettingsMap(@NotNull DataTransferNodeDescriptor node) {
+        return JSONUtils.getObject(configurationMap, node.getNodeClass().getSimpleName());
     }
 
     @Nullable
