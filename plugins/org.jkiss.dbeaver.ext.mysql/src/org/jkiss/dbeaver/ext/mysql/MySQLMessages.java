@@ -14,19 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.net;
+package org.jkiss.dbeaver.ext.mysql;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.eclipse.osgi.util.NLS;
 
-/**
- * Handler configurator
- */
-public interface DBWHandlerConfigurator {
+public class MySQLMessages extends NLS {
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.mysql.MySQLMessages";
 
-    void activateHandler(
-        @NotNull DBWNetworkHandler handler,
-        @NotNull DBPConnectionConfiguration connectionConfig,
-        @NotNull DBWHandlerConfiguration handlerConfig);
+    public static String exception_direct_database_rename;
+    public static String exception_only_select_could_produce_execution_plan;
+    public static String table_column_length_tooltip;
+    public static String table_column_length;
+
+    static {
+        NLS.initializeMessages(BUNDLE_NAME, MySQLMessages.class);
+    }
+
+    private MySQLMessages() {
+    }
 
 }

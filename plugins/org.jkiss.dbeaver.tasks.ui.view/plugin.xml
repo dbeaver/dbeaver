@@ -215,7 +215,7 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
             <separator name="additions" visible="true"/>
-            <menu label="Project">
+            <menu label="%org.jkiss.dbeaver.tasks.menu.project.label">
                 <dynamic id="org.jkiss.dbeaver.tasks.menu.project.active" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorActiveProjectContributor"/>
             </menu>
         </menuContribution>

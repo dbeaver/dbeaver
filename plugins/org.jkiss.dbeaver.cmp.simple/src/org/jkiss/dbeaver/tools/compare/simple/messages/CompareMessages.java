@@ -14,19 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.net;
+package org.jkiss.dbeaver.tools.compare.simple.messages;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.eclipse.osgi.util.NLS;
 
-/**
- * Handler configurator
- */
-public interface DBWHandlerConfigurator {
+public class CompareMessages extends NLS {
 
-    void activateHandler(
-        @NotNull DBWNetworkHandler handler,
-        @NotNull DBPConnectionConfiguration connectionConfig,
-        @NotNull DBWHandlerConfiguration handlerConfig);
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.tools.compare.simple.messages.CompareMessages";
+
+    public static String open_in_browser;
+    public static String save_to_file;
+    public static String compare_object_handler_error_just_one_object_selected;
+
+    static {
+        NLS.initializeMessages(BUNDLE_NAME, CompareMessages.class);
+    }
+
+    private CompareMessages() {
+    }
 
 }

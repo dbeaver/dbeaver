@@ -14,19 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.net;
+package org.jkiss.dbeaver.tasks.nativetool.messages;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.eclipse.osgi.util.NLS;
 
-/**
- * Handler configurator
- */
-public interface DBWHandlerConfigurator {
+public class NativeToolMessages extends NLS {
 
-    void activateHandler(
-        @NotNull DBWNetworkHandler handler,
-        @NotNull DBPConnectionConfiguration connectionConfig,
-        @NotNull DBWHandlerConfiguration handlerConfig);
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.tasks.nativetool.messages.NativeToolMessages";
 
+    public static String native_tool_handler_log_task;
+    public static String native_tool_handler_log_finished_task;
+
+    static {
+        NLS.initializeMessages(BUNDLE_NAME, NativeToolMessages.class);
+    }
+
+    private NativeToolMessages() {
+    }
 }

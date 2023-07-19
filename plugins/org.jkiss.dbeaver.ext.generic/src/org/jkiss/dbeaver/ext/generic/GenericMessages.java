@@ -14,19 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.net;
+package org.jkiss.dbeaver.ext.generic;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.eclipse.osgi.util.NLS;
 
-/**
- * Handler configurator
- */
-public interface DBWHandlerConfigurator {
+public class GenericMessages extends NLS {
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.generic.GenericMessages";
 
-    void activateHandler(
-        @NotNull DBWNetworkHandler handler,
-        @NotNull DBPConnectionConfiguration connectionConfig,
-        @NotNull DBWHandlerConfiguration handlerConfig);
+    public static String generic_object_container_none;
+
+    static {
+        NLS.initializeMessages(BUNDLE_NAME, GenericMessages.class);
+    }
+
+    private GenericMessages() {
+    }
 
 }
