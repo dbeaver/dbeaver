@@ -79,6 +79,9 @@ public class LocalProjectImpl extends BaseProjectImpl {
     @NotNull
     @Override
     public Path getAbsolutePath() {
+        if (project.getLocation() == null) {
+            throw new IllegalStateException("Can't determine the workspace path for project " + project.getName());
+        }
         return project.getLocation().toFile().toPath();
     }
 
