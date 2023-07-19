@@ -30,6 +30,8 @@ public class AltibaseConstants {
 
     public static final String PUBLIC_USER = "PUBLIC";
     
+    public static final String SYSTEM_GENERATED_PREFIX = "__SYS_";
+    
     public static final String KBYTE_IEC = "KiB";
     public static final String KBYTE_JEDEC = "KB";
     public static final NumberFormat CURRENCY_FORMATTER = NumberFormat.getCurrencyInstance();

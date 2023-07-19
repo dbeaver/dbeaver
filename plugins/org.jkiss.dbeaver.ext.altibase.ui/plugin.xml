@@ -42,6 +42,7 @@
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseSequence"/>
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseSynonym"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableIndex"/>
             <!--<objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTrigger"/>-->
         </editor>
 	    <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseProcedureConfigurator">

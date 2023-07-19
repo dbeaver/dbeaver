@@ -16,14 +16,34 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
+import java.util.Map;
+
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
+import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
-public class AltibaseTableIndex extends GenericTableIndex {
+public class AltibaseTableIndex extends GenericTableIndex implements DBPScriptObject {
 
+    private String source;
+    
     public AltibaseTableIndex(GenericTableBase table, boolean nonUnique, String qualifier, long cardinality,
             String indexName, DBSIndexType indexType, boolean persisted) {
         super(table, nonUnique, qualifier, cardinality, indexName, indexType, persisted);
+    }
+    
+    public boolean isSystemGenerated() {
+        return this.getName().startsWith(AltibaseConstants.SYSTEM_GENERATED_PREFIX);
+    }
+    
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        if (source == null && isPersisted()) {
+            source = ((AltibaseMetaModel)getDataSource().getMetaModel()).getIndexDDL(monitor, this, options);
+        }
+        return source;
     }
 }

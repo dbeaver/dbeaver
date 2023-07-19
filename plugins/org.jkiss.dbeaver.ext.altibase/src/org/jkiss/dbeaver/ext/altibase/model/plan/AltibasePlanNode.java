@@ -80,7 +80,7 @@ public class AltibasePlanNode extends AbstractExecutionPlanNode  {
         setOperation();
     }
     
-    //
+    // Load from Execution Plan
     public AltibasePlanNode(AltibaseDataSource dataSource, IntKeyMap<AltibasePlanNode> prevNodes, Map<String,String> attributes) {
         this.dataSource = dataSource;
         
@@ -185,7 +185,7 @@ public class AltibasePlanNode extends AbstractExecutionPlanNode  {
     }
     
     public String toString() {
-        return plan;
+        return getPlanString();
     }
     
     private static String getPrefix(int depth) {
