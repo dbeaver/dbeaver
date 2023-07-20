@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -24,7 +25,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
@@ -246,11 +246,13 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         List<DataTransferPipe> dataPipes = dataTransferSettings.getDataPipes();
         {
             if (!dataPipes.isEmpty()) {
-                IDataTransferConsumer consumer = dataPipes.get(0).getConsumer();
+                IDataTransferConsumer<?, ?> consumer = dataPipes.get(0).getConsumer();
                 if (consumer instanceof DatabaseTransferConsumer) {
                     final DBSDataManipulator targetObject = ((DatabaseTransferConsumer) consumer).getTargetObject();
                     if (targetObject != null && targetObject.getParentObject() instanceof DBSObjectContainer) {
                         this.container = (DBSObjectContainer) targetObject.getParentObject();
+                    } else if (consumer.getTargetObjectContainer() instanceof DBSObjectContainer) {
+                        this.container = (DBSObjectContainer) consumer.getTargetObjectContainer();
                     }
                 }
             }
@@ -345,6 +347,21 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         DTUtils.addSummary(summary, DTMessages.database_consumer_settings_option_truncate_before_load, truncateBeforeLoad);
 
         return summary.toString();
+    }
+
+    @Nullable
+    public static DBPDataSourceContainer getDataSourceContainer(@NotNull DataTransferSettings dataTransferSettings) {
+        final Map<String, Object> settings = dataTransferSettings.getNodeSettingsMap(dataTransferSettings.getConsumer());
+
+        if (settings != null) {
+            final String entityId = CommonUtils.toString(settings.get("entityId"));
+
+            if (CommonUtils.isNotEmpty(entityId)) {
+                return DBUtils.findDataSourceByObjectId(dataTransferSettings.getProject(), entityId);
+            }
+        }
+
+        return null;
     }
 
     private void checkContainerConnection(DBRRunnableContext runnableContext) {

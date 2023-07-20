@@ -326,7 +326,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             }
             TabItem libsTab = new TabItem(tabFolder, SWT.NONE);
             libsTab.setText(ResultSetMessages.controls_resultset_filter_group_columns);
-            libsTab.setToolTipText("Set criteria and order for individual column(s)");
+            libsTab.setToolTipText(ResultSetMessages.controls_resultset_filter_group_columns_tooltip_text);
             libsTab.setControl(columnsGroup);
         }
 
@@ -444,7 +444,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
 
         TabItem libsTab = new TabItem(tabFolder, SWT.NONE);
         libsTab.setText(ResultSetMessages.controls_resultset_filter_group_custom);
-        libsTab.setToolTipText("Set custom criteria and order for whole query");
+        libsTab.setToolTipText(ResultSetMessages.controls_resultset_filter_group_custom_tooltip_text);
         libsTab.setControl(filterGroup);
     }
 

@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
+import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.utils.ArrayUtils;
@@ -152,7 +153,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
             project.create(monitor);
             project.open(monitor);
             final IProjectDescription description = getEclipseWorkspace().newProjectDescription(project.getName());
-            description.setComment("General DBeaver project");
+            description.setComment(RegistryMessages.project_description_comment);
             description.setNatureIds(new String[]{DBeaverNature.NATURE_ID});
             project.setDescription(description, monitor);
 

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.virtual;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -43,6 +44,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
@@ -86,7 +88,7 @@ public class EditVirtualEntityDialog extends BaseDialog {
     }
 
     public EditVirtualEntityDialog(ResultSetViewer viewer, @Nullable DBSEntity entity, @NotNull DBVEntity vEntity) {
-        super(viewer.getControl().getShell(), "Edit logical structure / presentation", null);
+        super(viewer.getControl().getShell(), ResultSetMessages.controls_resultset_edit_logical_structure, null);
         this.viewer = viewer;
         this.entity = entity;
         this.vEntity = vEntity;
@@ -142,18 +144,17 @@ public class EditVirtualEntityDialog extends BaseDialog {
             }
         }
 
-        UIUtils.createInfoLabel(composite, "Entity logical structure is defined on client-side.\nYou can define virtual unique/foreign keys even if physical database\n" +
-            "doesn't have or doesn't support them. Also you can define how to view column values.");
-
+        UIUtils.createInfoLabel(composite, ResultSetMessages.controls_resultset_virtual_keys_info_label);
+        
         return parent;
     }
-
+    
     private void createDictionaryPage(TabFolder tabFolder) {
         if (entity != null) {
             editDictionaryPage = new EditDictionaryPage(entity);
             editDictionaryPage.createControl(tabFolder);
             TabItem dictItem = new TabItem(tabFolder, SWT.NONE);
-            dictItem.setText("Dictionary");
+            dictItem.setText(ResultSetMessages.controls_resultset_virtual_dictionary_page_text);
             dictItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_PACKAGE));
             dictItem.setControl(editDictionaryPage.getControl());
             dictItem.setData(InitPage.DICTIONARY);
@@ -162,7 +163,7 @@ public class EditVirtualEntityDialog extends BaseDialog {
 
     private void createColumnsPage(TabFolder tabFolder) {
         TabItem attrsItem = new TabItem(tabFolder, SWT.NONE);
-        attrsItem.setText("Virtual Columns");
+        attrsItem.setText(ResultSetMessages.controls_resultset_virtual_columns_page_text);
         attrsItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_COLUMN));
         attrsItem.setData(InitPage.ATTRIBUTES);
 
@@ -234,7 +235,7 @@ public class EditVirtualEntityDialog extends BaseDialog {
 
     private void createForeignKeysPage(TabFolder tabFolder) {
         TabItem fkItem = new TabItem(tabFolder, SWT.NONE);
-        fkItem.setText("Virtual Foreign Keys");
+        fkItem.setText(ResultSetMessages.controls_resultset_virtual_foreignkey_page_text);
         fkItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOREIGN_KEY));
         fkItem.setData(InitPage.FOREIGN_KEYS);
 
@@ -246,9 +247,12 @@ public class EditVirtualEntityDialog extends BaseDialog {
         fkTable.setHeaderVisible(true);
         UIUtils.executeOnResize(fkTable, () -> UIUtils.packColumns(fkTable, true));
 
-        UIUtils.createTableColumn(fkTable, SWT.LEFT, "Ref Table");
-        UIUtils.createTableColumn(fkTable, SWT.LEFT, "Columns");
-        UIUtils.createTableColumn(fkTable, SWT.LEFT, "Ref Datasource");
+        UIUtils.createTableColumn(fkTable, SWT.LEFT,
+            ResultSetMessages.controls_resultset_virtual_foreignkey_page_ref_table);
+        UIUtils.createTableColumn(fkTable, SWT.LEFT,
+            ResultSetMessages.controls_resultset_virtual_foreignkey_page_columns);
+        UIUtils.createTableColumn(fkTable, SWT.LEFT,
+            ResultSetMessages.controls_resultset_virtual_foreignkey_page_ref_datasource);
 
         for (DBVEntityForeignKey fk : vEntity.getForeignKeys()) {
             createForeignKeyItem(fkTable, fk);
@@ -258,7 +262,8 @@ public class EditVirtualEntityDialog extends BaseDialog {
             Composite buttonsPanel = UIUtils.createComposite(panel, 2);
             buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            Button btnAdd = createButton(buttonsPanel, ID_CREATE_FOREIGN_KEY, "Add", false);
+            Button btnAdd = createButton(buttonsPanel, ID_CREATE_FOREIGN_KEY,
+                ResultSetMessages.controls_resultset_virtual_foreignkey_page_add, false);
             btnAdd.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -270,15 +275,21 @@ public class EditVirtualEntityDialog extends BaseDialog {
                 }
             });
 
-            Button btnRemove = createButton(buttonsPanel, ID_REMOVE_FOREIGN_KEY, "Remove", false);
+            Button btnRemove = createButton(
+                buttonsPanel,
+                ID_REMOVE_FOREIGN_KEY,
+                ResultSetMessages.controls_resultset_virtual_foreignkey_page_remove,
+                false);
             btnRemove.setEnabled(false);
             btnRemove.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     DBVEntityForeignKey virtualFK = (DBVEntityForeignKey) fkTable.getSelection()[0].getData();
                     if (!UIUtils.confirmAction(getShell(),
-                        "Delete virtual FK",
-                        "Are you sure you want to delete virtual foreign key '" + virtualFK.getName() + "'?")) {
+                        ResultSetMessages.controls_resultset_virtual_foreignkey_page_remove_confirmation_title,
+                        NLS.bind(
+                            ResultSetMessages.controls_resultset_virtual_foreignkey_page_remove_confirmation_question,
+                            virtualFK.getName()))) {
                         return;
                     }
                     vEntity.removeForeignKey(virtualFK);

@@ -40,7 +40,7 @@ public class FireBirdTable extends GenericTable implements FireBirdTableBase, DB
     private Map<String, String> columnDomainTypes;
 
     public FireBirdTable(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
-        super(container, tableName, tableType, null);
+        super(container, tableName, tableType, dbResult);
 
         if (dbResult != null) {
             keyLength = JDBCUtils.safeGetInt(dbResult, "RDB$DBKEY_LENGTH");
