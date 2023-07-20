@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSInstanceContainer;
  * datasource instance may be refreshed at any moment. Obtain references on datasource only
  * from DBSObject or DBPContextProvider interfaces.
  */
+@DPIObject
 public interface DBPDataSource extends DBSInstanceContainer, DBPContextWithAttributes
 {
     /**
@@ -57,6 +58,7 @@ public interface DBPDataSource extends DBSInstanceContainer, DBPContextWithAttri
      * Datasource container
      * @return container implementation
      */
+    @DPIContainer(root = true)
     @NotNull
     DBPDataSourceContainer getContainer();
 
@@ -66,17 +68,20 @@ public interface DBPDataSource extends DBSInstanceContainer, DBPContextWithAttri
      * at the moment of invocation of this function.
      * @return datasource info.
      */
+    @DPIElement
     @NotNull
     DBPDataSourceInfo getInfo();
 
     /**
      * Data source feature
      */
+    @DPIElement
     Object getDataSourceFeature(String featureId);
 
     /**
      * SQL dialect
      */
+    @DPIElement
     SQLDialect getSQLDialect();
 
     /**

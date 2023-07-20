@@ -14,13 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.dds;
+package org.jkiss.dbeaver.model;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Detached data source
+ * Annotates methods which return container object.
+ * In object hierarchy it is immediate parent object or some higher level parent.
+ *
+ * It is needed to avoid redundant remote calls.
  */
-public abstract class DDSDataSource implements DBPDataSource {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface DPIContainer {
+
+    boolean root() default false;
 
 }

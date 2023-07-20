@@ -14,17 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.dds;
+package org.jkiss.dbeaver.model;
 
-import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
+/**
+ * Object which can be transferred over network in serialized form
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface DPIObject {
 
-public class DDSInvocationHandler implements InvocationHandler {
-
-    @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        throw new DBCFeatureNotSupportedException();
-    }
 }

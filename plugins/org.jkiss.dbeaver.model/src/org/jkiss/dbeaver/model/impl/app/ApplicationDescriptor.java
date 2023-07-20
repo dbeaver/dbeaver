@@ -33,11 +33,12 @@ public class ApplicationDescriptor extends AbstractDescriptor {
     private final String description;
     private final String parentId;
     private final String[] umbrellaProductIds;
-    private boolean serverApplication;
+    private final boolean serverApplication;
+    private final boolean hidden;
     private ApplicationDescriptor parent;
     private boolean finalApplication = true;
 
-    private ObjectType implClass;
+    private final ObjectType implClass;
 
     ApplicationDescriptor(IConfigurationElement config) {
         super(config);
@@ -54,6 +55,7 @@ public class ApplicationDescriptor extends AbstractDescriptor {
             this.umbrellaProductIds = new String[0];
         }
         this.serverApplication = CommonUtils.toBoolean(config.getAttribute("server"));
+        this.hidden = CommonUtils.toBoolean(config.getAttribute("hidden"));
         this.implClass = new ObjectType(config, "class");
     }
 
@@ -92,6 +94,10 @@ public class ApplicationDescriptor extends AbstractDescriptor {
 
     public boolean isServerApplication() {
         return serverApplication;
+    }
+
+    public boolean isHidden() {
+        return hidden;
     }
 
     public Class<? extends DBPApplication> getImplClass() {

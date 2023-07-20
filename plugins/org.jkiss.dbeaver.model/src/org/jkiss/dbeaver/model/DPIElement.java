@@ -14,15 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.dds;
+package org.jkiss.dbeaver.model;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Detached data source proxy.
+ * Object's element.
+ *
+ * Elements are cached on client side
  */
-public class DDSProxy {
-
-    public static <T> T createProxy(Class<T> type) {
-        return null;
-    }
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD, ElementType.TYPE})
+public @interface DPIElement {
 
 }

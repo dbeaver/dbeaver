@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -43,7 +43,7 @@ import java.sql.Savepoint;
  * Implements transaction manager and execution context defaults.
  * Both depend on datasource implementation.
  */
-public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSource> implements DBCTransactionManager, IAdaptable {
+public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSource> implements DBCTransactionManager, DBPAdaptable {
     public static final String TYPE_MAIN = "Main";
     public static final String TYPE_METADATA = "Metadata";
 
