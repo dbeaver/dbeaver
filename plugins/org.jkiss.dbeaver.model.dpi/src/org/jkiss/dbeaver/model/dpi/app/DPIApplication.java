@@ -16,10 +16,8 @@
  */
 package org.jkiss.dbeaver.model.dpi.app;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.osgi.internal.location.EquinoxLocations;
-import org.eclipse.osgi.service.datalocation.Location;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -60,9 +58,6 @@ public class DPIApplication extends DesktopApplicationImpl {
 
     @Override
     public Object start(IApplicationContext context) {
-        Location instanceLoc = Platform.getInstanceLocation();
-        //log.debug("Starting DPI application at " + instanceLoc.getURL());
-
         DPIPlatform.createInstance();
 
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
@@ -81,16 +76,16 @@ public class DPIApplication extends DesktopApplicationImpl {
     private void runServer(IApplicationContext appContext, DBPApplication application) throws IOException {
         int portNumber = IOUtils.findFreePort(20000, 65000);
         DPIRestServer server = new DPIRestServer(application, portNumber);
-        saveServerInfo(appContext, application, portNumber);
+        saveServerInfo(portNumber);
         try {
             log.debug("Started DPI Server at " + portNumber);
             server.join();
         } finally {
-            deleteServerInfo(appContext, application);
+            deleteServerInfo();
         }
     }
 
-    private void saveServerInfo(IApplicationContext appContext, DBPApplication application, int portNumber) throws IOException {
+    private void saveServerInfo(int portNumber) throws IOException {
         Path serverIniFile = getServerIniFile();
         try (BufferedWriter out = Files.newBufferedWriter(serverIniFile, StandardOpenOption.CREATE)) {
             Map<String, String> props = new LinkedHashMap<>();
@@ -100,7 +95,7 @@ public class DPIApplication extends DesktopApplicationImpl {
         }
     }
 
-    private void deleteServerInfo(IApplicationContext appContext, DBPApplication application) throws IOException {
+    private void deleteServerInfo() throws IOException {
         Path serverIniFile = getServerIniFile();
         if (Files.exists(serverIniFile)) {
             Files.delete(serverIniFile);

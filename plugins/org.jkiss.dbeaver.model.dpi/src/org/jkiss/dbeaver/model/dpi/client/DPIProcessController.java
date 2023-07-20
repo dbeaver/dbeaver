@@ -45,9 +45,10 @@ public class DPIProcessController implements AutoCloseable {
     private static final Log log = Log.getLog(DPIProcessController.class);
 
     public static final int PROCESS_PAWN_TIMEOUT = 10000;
-    private final DPIController dpiRestClient;
-    private final DPIContext dpiContext;
+    private DPIController dpiRestClient;
     private int dpiServerPort;
+    private final Process process;
+
 
     public static DPIProcessController detachDatabaseProcess(DBRProgressMonitor monitor, DBPDataSourceContainer dataSourceContainer) throws IOException {
         try {
@@ -58,12 +59,8 @@ public class DPIProcessController implements AutoCloseable {
         }
     }
 
-    private final BundleProcessConfig processConfig;
-    private final Process process;
-
     public DPIProcessController(DBPDataSourceContainer dataSourceContainer, BundleProcessConfig processConfig) throws IOException {
-        this.processConfig = processConfig;
-        this.dpiContext = new DPIContext(new LoggingProgressMonitor(log), dataSourceContainer);
+        DPIContext dpiContext = new DPIContext(new LoggingProgressMonitor(log), dataSourceContainer);
 
         log.debug("Starting detached database application");
 
@@ -119,9 +116,13 @@ public class DPIProcessController implements AutoCloseable {
                 dpiRestClient.close();
             } catch (Exception e) {
                 log.debug(e);
+            } finally {
+                dpiRestClient = null;
             }
         }
-        this.process.destroyForcibly();
+        if (this.process != null && this.process.isAlive()) {
+            this.process.destroyForcibly();
+        }
     }
 
     private void validateRestClient() throws DBException {
@@ -147,9 +148,7 @@ public class DPIProcessController implements AutoCloseable {
     @Override
     public void close() {
         if (this.process != null) {
-            if (this.process.isAlive()) {
-                terminateChildProcess();
-            }
+            terminateChildProcess();
         }
     }
 }

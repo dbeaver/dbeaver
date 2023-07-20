@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
  * Elements are cached on client side
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD,ElementType.TYPE})
+@Target({ElementType.METHOD, ElementType.TYPE})
 public @interface DPIElement {
 
 }

@@ -1044,31 +1044,7 @@ public class DataSourceDescriptor
                 return false;
             }
 
-            // Resolve variables
-            if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS) ||
-                !CommonUtils.isEmpty(connectionInfo.getConfigProfileName())) {
-                // Update config from profile
-                if (!CommonUtils.isEmpty(connectionInfo.getConfigProfileName())) {
-                    // Update config from profile
-                    DBWNetworkProfile profile = registry.getNetworkProfile(resolvedConnectionInfo.getConfigProfileName());
-                    if (profile != null) {
-                        if (secretController != null) {
-                            profile.resolveSecrets(secretController);
-                        }
-                        for (DBWHandlerConfiguration handlerCfg : profile.getConfigurations()) {
-                            if (handlerCfg.isEnabled()) {
-                                resolvedConnectionInfo.updateHandler(new DBWHandlerConfiguration(handlerCfg));
-                            }
-                        }
-                    }
-                }
-                // Process variables
-                if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
-                    IVariableResolver variableResolver = new DataSourceVariableResolver(
-                        this, this.resolvedConnectionInfo);
-                    this.resolvedConnectionInfo.resolveDynamicVariables(variableResolver);
-                }
-            }
+            resolveConnectVariables(secretController);
 
             // Handle tunnelHandler
             // Open tunnelHandler and replace connection info with new one
@@ -1200,6 +1176,34 @@ public class DataSourceDescriptor
             }
         } finally {
             monitor.done();
+        }
+    }
+
+    private void resolveConnectVariables(DBSSecretController secretController) throws DBException {
+        // Resolve variables
+        if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS) ||
+            !CommonUtils.isEmpty(connectionInfo.getConfigProfileName())) {
+            // Update config from profile
+            if (!CommonUtils.isEmpty(connectionInfo.getConfigProfileName())) {
+                // Update config from profile
+                DBWNetworkProfile profile = registry.getNetworkProfile(resolvedConnectionInfo.getConfigProfileName());
+                if (profile != null) {
+                    if (secretController != null) {
+                        profile.resolveSecrets(secretController);
+                    }
+                    for (DBWHandlerConfiguration handlerCfg : profile.getConfigurations()) {
+                        if (handlerCfg.isEnabled()) {
+                            resolvedConnectionInfo.updateHandler(new DBWHandlerConfiguration(handlerCfg));
+                        }
+                    }
+                }
+            }
+            // Process variables
+            if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
+                IVariableResolver variableResolver = new DataSourceVariableResolver(
+                    this, this.resolvedConnectionInfo);
+                this.resolvedConnectionInfo.resolveDynamicVariables(variableResolver);
+            }
         }
     }
 

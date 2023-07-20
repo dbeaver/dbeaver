@@ -38,6 +38,7 @@ import java.util.regex.Pattern;
 
 public class RestClient {
 
+    private static final Pattern ST_LINE_PATTERN = Pattern.compile("\\s*at\\s+([\\w/.$]+)\\((.+)\\)");
 
     private RestClient() {
         // prevents instantiation
@@ -168,7 +169,7 @@ System.out.println("REQUEST: " + requestString);
 
                 String contents = response.body();
                 if (response.statusCode() != RestConstants.SC_OK) {
-                    handleError(response.statusCode(), contents);
+                    handleError(contents);
                 }
 
                 Type returnType = resultType.get();
@@ -212,8 +213,7 @@ System.out.println("RESPONSE: " + contents);
         }
     }
 
-    private static final Pattern ST_LINE_PATTERN = Pattern.compile("\\s*at\\s+([\\w/.$]+)\\((.+)\\)");
-    private static void handleError(int errorCode, String contents) throws RestException {
+    private static void handleError(String contents) throws RestException {
         String[] stackTraceRows = contents.split("\n");
         String errorLine = stackTraceRows[0];
         List<StackTraceElement> stackTraceElements = new ArrayList<>();

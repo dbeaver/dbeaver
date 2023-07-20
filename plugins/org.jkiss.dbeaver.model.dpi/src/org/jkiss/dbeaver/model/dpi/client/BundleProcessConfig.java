@@ -21,7 +21,6 @@ import org.eclipse.osgi.container.ModuleWiring;
 import org.eclipse.osgi.storage.BundleInfo;
 import org.eclipse.osgi.storage.bundlefile.BundleFile;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.dpi.app.DPIApplication;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -43,7 +42,6 @@ import java.util.stream.Collectors;
 
 class BundleProcessConfig {
 
-    private static final Log log = Log.getLog(BundleProcessConfig.class);
     private static final Map<String, Integer> START_BUNDLES = Map.of(
         "org.eclipse.osgi", -1,
         "org.eclipse.core.runtime", 4,

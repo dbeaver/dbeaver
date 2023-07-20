@@ -205,7 +205,8 @@ public class DPISerializer {
         }
 
         @Override
-        public void write(JsonWriter jsonWriter, DBRProgressMonitor aClass) throws IOException {
+        public void write(JsonWriter jsonWriter, DBRProgressMonitor aClass) {
+            // do-nothing
         }
 
         @Override
@@ -240,75 +241,83 @@ public class DPISerializer {
             jsonWriter.name(ATTR_OBJECT_ID);
             jsonWriter.value(context.getOrCreateObjectId(t));
             if (!oldObject) {
-                jsonWriter.name(ATTR_OBJECT_TYPE);
-                jsonWriter.value(t.getClass().getName());
-                jsonWriter.name(ATTR_OBJECT_STRING);
-                jsonWriter.value(t.toString());
-                jsonWriter.name(ATTR_OBJECT_HASH);
-                jsonWriter.value(t.hashCode());
-                {
-                    jsonWriter.name(ATTR_INTERFACES);
-                    jsonWriter.beginArray();
-                    for (Class<?> theClass = t.getClass(); theClass != null && theClass != Object.class; theClass = theClass.getSuperclass()) {
-                        for (Class<?> theInt : theClass.getInterfaces()) {
-                            jsonWriter.value(theInt.getName());
-                        }
-                    }
-                    jsonWriter.endArray();
-                }
-
-                {
-                    // Save containers references
-                    Set<String> collectedContainers = null;
-                    boolean hasContainers = false;
-                    for (Method method : t.getClass().getMethods()) {
-                        if (collectedContainers != null && collectedContainers.contains(method.getName())) {
-                            continue;
-                        }
-                        DPIContainer anno = getMethodAnno(method, DPIContainer.class);
-                        if (anno != null && !anno.root() && method.getParameterTypes().length == 0) {
-                            Object container;
-                            try {
-                                container = method.invoke(t);
-                            } catch (Throwable e) {
-                                log.warn("Error reading DPI container", e);
-                                continue;
-                            }
-                            if (container != null) {
-                                if (collectedContainers == null) {
-                                    collectedContainers = new HashSet<>();
-                                }
-                                collectedContainers.add(method.getName());
-                                String containerId = context.getObjectId(container);
-                                if (containerId != null) {
-                                    if (!hasContainers) {
-                                        jsonWriter.name(ATTR_CONTAINERS);
-                                        jsonWriter.beginObject();
-                                        hasContainers = true;
-                                    }
-                                    jsonWriter.name(method.getName());
-                                    jsonWriter.value(containerId);
-                                }
-                            }
-                        }
-                    }
-                    if (hasContainers) {
-                        jsonWriter.endObject();
-                    }
-                }
-
-                // Serialize properties
-                PropertyCollector pc = new PropertyCollector(t, false);
-                pc.collectProperties();
-                if (pc.getProperties().length > 0) {
-                    Map<String, Object> props = new LinkedHashMap<>();
-                    for (DBPPropertyDescriptor prop : pc.getProperties()) {
-                        props.put(prop.getId(), pc.getPropertyValue(null, prop.getId()));
-                    }
-                    JSONUtils.serializeProperties(jsonWriter, ATTR_PROPS, props);
-                }
+                serializeObjectInfo(jsonWriter, t);
+                serializeContainers(jsonWriter, t);
+                serializeProperties(jsonWriter, t);
             }
             jsonWriter.endObject();
+        }
+
+        private void serializeObjectInfo(JsonWriter jsonWriter, Object t) throws IOException {
+            jsonWriter.name(ATTR_OBJECT_TYPE);
+            jsonWriter.value(t.getClass().getName());
+            jsonWriter.name(ATTR_OBJECT_STRING);
+            jsonWriter.value(t.toString());
+            jsonWriter.name(ATTR_OBJECT_HASH);
+            jsonWriter.value(t.hashCode());
+            {
+                jsonWriter.name(ATTR_INTERFACES);
+                jsonWriter.beginArray();
+                for (Class<?> theClass = t.getClass(); theClass != null && theClass != Object.class; theClass = theClass.getSuperclass()) {
+                    for (Class<?> theInt : theClass.getInterfaces()) {
+                        jsonWriter.value(theInt.getName());
+                    }
+                }
+                jsonWriter.endArray();
+            }
+        }
+
+        private void serializeProperties(JsonWriter jsonWriter, Object t) throws IOException {
+            // Serialize properties
+            PropertyCollector pc = new PropertyCollector(t, false);
+            pc.collectProperties();
+            if (pc.getProperties().length > 0) {
+                Map<String, Object> props = new LinkedHashMap<>();
+                for (DBPPropertyDescriptor prop : pc.getProperties()) {
+                    props.put(prop.getId(), pc.getPropertyValue(null, prop.getId()));
+                }
+                JSONUtils.serializeProperties(jsonWriter, ATTR_PROPS, props);
+            }
+        }
+
+        private void serializeContainers(JsonWriter jsonWriter, Object t) throws IOException {
+            // Save containers references
+            Set<String> collectedContainers = null;
+            boolean hasContainers = false;
+            for (Method method : t.getClass().getMethods()) {
+                if (collectedContainers != null && collectedContainers.contains(method.getName())) {
+                    continue;
+                }
+                DPIContainer anno = getMethodAnno(method, DPIContainer.class);
+                if (anno != null && !anno.root() && method.getParameterTypes().length == 0) {
+                    Object container;
+                    try {
+                        container = method.invoke(t);
+                    } catch (Throwable e) {
+                        log.warn("Error reading DPI container", e);
+                        continue;
+                    }
+                    if (container != null) {
+                        if (collectedContainers == null) {
+                            collectedContainers = new HashSet<>();
+                        }
+                        collectedContainers.add(method.getName());
+                        String containerId = context.getObjectId(container);
+                        if (containerId != null) {
+                            if (!hasContainers) {
+                                jsonWriter.name(ATTR_CONTAINERS);
+                                jsonWriter.beginObject();
+                                hasContainers = true;
+                            }
+                            jsonWriter.name(method.getName());
+                            jsonWriter.value(containerId);
+                        }
+                    }
+                }
+            }
+            if (hasContainers) {
+                jsonWriter.endObject();
+            }
         }
 
         @Override

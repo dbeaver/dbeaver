@@ -30,15 +30,10 @@ public class DPIRestServer {
 
     private static final Log log = Log.getLog(DPIRestServer.class);
 
-    private static final String ENDPOINT = "/";
-
-    private final DBPApplication application;
     private final RestServer<?> restServer;
-    private final DPIContext dpiContext;
 
     public DPIRestServer(DBPApplication application, int portNumber) throws IOException {
-        this.application = application;
-        this.dpiContext = new DPIContext(new LoggingProgressMonitor(log), application);
+        DPIContext dpiContext = new DPIContext(new LoggingProgressMonitor(log), application);
 
         DPIControllerImpl dpiController = new DPIControllerImpl(dpiContext);
         restServer = RestServer
