@@ -2095,7 +2095,7 @@ public class DataSourceDescriptor
         if (this.secretsContainsDatabaseCreds) {
             if (DBWorkbench.isDistributed()) {
                 // In distributed mode we detect saved password dynamically
-                this.savePassword = props.containsKey(RegistryConstants.ATTR_PASSWORD);
+                this.savePassword = emptyDatabaseCredsSaved || props.containsKey(RegistryConstants.ATTR_PASSWORD);
             }
         }
 
