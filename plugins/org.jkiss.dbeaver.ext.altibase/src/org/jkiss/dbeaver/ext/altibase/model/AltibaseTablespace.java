@@ -153,32 +153,47 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
             case DISK_SYSTEM_DATA:
             case DISK_USER_DATA:
                 qry4Size = "SELECT "
-                            + " t.total_page_count * t.page_size TOTAL_SIZE,"
+                            + " (d.max * t.page_size) TOTAL_SIZE,"
                             + " nvl(ds.used, 0) 'USED_SIZE'"
                        + " FROM v$tablespaces t LEFT OUTER JOIN "
                            + " (SELECT space_id, sum(total_used_size) USED"
                            + " FROM x$segment"
                            + " GROUP by space_id) ds on ds.space_id = t.id"
-                       + " WHERE t.id = ?";
+                           + ", (SELECT SPACEID"
+                           + " , SUM(DECODE(MAXSIZE, 0, CURRSIZE, MAXSIZE)) AS MAX"
+                           + " , DECODE(MAX(AUTOEXTEND),1,'ON','OFF') 'AUTOEXTEND'"
+                            + " FROM V$DATAFILES"
+                           + " GROUP BY SPACEID) D"
+                       + " WHERE t.id = D.spaceid AND t.id = ?";
                 break;
             case DISK_SYSTEM_TEMP:
             case DISK_USER_TEMP:
                 qry4Size = "SELECT "
-                            + " t.total_page_count * t.page_size TOTAL_SIZE,"
+                            + "(d.max * t.page_size) TOTAL_SIZE,"
                             + " nvl(xts.used_SIZE, 0) USED_SIZE"
                        + " FROM v$tablespaces t LEFT OUTER JOIN "
                                + " (SELECT tbs_id, sum(normal_area_size) used_SIZE "
                            + " FROM x$temptable_stats "
                            + " GROUP BY tbs_id) xts ON t.id = xts.tbs_id"
-                       + " WHERE t.id = ?";
+                           + ", (SELECT SPACEID"
+                           + " , SUM(DECODE(MAXSIZE, 0, CURRSIZE, MAXSIZE)) AS MAX"
+                           + " , DECODE(MAX(AUTOEXTEND),1,'ON','OFF') 'AUTOEXTEND'"
+                            + " FROM V$DATAFILES"
+                           + " GROUP BY SPACEID) D"
+                       + " WHERE t.id = D.spaceid AND t.id = ?";
                 break;
             case DISK_SYSTEM_UNDO:
                 qry4Size = "SELECT "
-                            + " (t.total_page_count * t.page_size) TOTAL_SIZE,"
+                            + " (d.max * t.page_size) TOTAL_SIZE,"
                             + " ((u.tx_ext_cnt+u.used_ext_cnt+u.unstealable_ext_cnt) * prop.extent_size) USED_SIZE"
                        + " FROM v$tablespaces t, v$disk_undo_usage u,"
                            + " (select value1 extent_size from v$property where name = 'SYS_UNDO_TBS_EXTENT_SIZE') prop"
-                       + " WHERE t.id = ?";
+                           + ", (SELECT SPACEID"
+                               + " , SUM(DECODE(MAXSIZE, 0, CURRSIZE, MAXSIZE)) AS MAX"
+                               + " , DECODE(MAX(AUTOEXTEND),1,'ON','OFF') 'AUTOEXTEND'"
+                            + " FROM V$DATAFILES"
+                           + " GROUP BY SPACEID) D"
+                       + " WHERE t.id = D.spaceid AND t.id = ?";
                 break;
             default:
                 qry4Size = "";
