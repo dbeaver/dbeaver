@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.impl.app.DefaultValueEncryptor;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.rm.RMController;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -45,6 +46,7 @@ import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -81,6 +83,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     private final DBPWorkspace workspace;
     @NotNull
     private final SMSessionContext sessionContext;
+    private final RMController resourceController;
 
     private volatile ProjectFormat format = ProjectFormat.UNKNOWN;
     private volatile DBPDataSourceRegistry dataSourceRegistry;
@@ -95,7 +98,12 @@ public abstract class BaseProjectImpl implements DBPProject {
     private boolean inMemory;
 
     public BaseProjectImpl(@NotNull DBPWorkspace workspace, @Nullable SMSessionContext sessionContext) {
+        this(workspace, workspace.getResourceController(), sessionContext);
+    }
+
+    public BaseProjectImpl(@NotNull DBPWorkspace workspace, @NotNull RMController rmController, @Nullable SMSessionContext sessionContext) {
         this.workspace = workspace;
+        this.resourceController = rmController;
         this.sessionContext = sessionContext == null ? workspace.getAuthContext() : sessionContext;
     }
 
@@ -636,5 +644,10 @@ public abstract class BaseProjectImpl implements DBPProject {
     @Override
     public DBNModel getNavigatorModel() {
         return null;
+    }
+
+    @NotNull
+    public RMController getResourceController() {
+        return resourceController;
     }
 }

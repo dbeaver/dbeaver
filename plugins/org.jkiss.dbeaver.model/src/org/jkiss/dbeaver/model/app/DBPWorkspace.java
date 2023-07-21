@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.auth.SMAuthSpace;
 import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.rm.RMController;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -66,6 +67,9 @@ public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm
     SMSessionContext getAuthContext();
 
     void dispose();
+
+    @NotNull
+    RMController getResourceController();
 
     default SMSession getWorkspaceSession() {
         return getAuthContext().findSpaceSession(this);

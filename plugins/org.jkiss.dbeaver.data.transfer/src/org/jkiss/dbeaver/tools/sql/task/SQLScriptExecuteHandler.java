@@ -22,9 +22,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.rm.RMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLScriptCommitType;
@@ -41,6 +43,7 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 
@@ -96,47 +99,63 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
 
     private void runScripts(DBRProgressMonitor monitor, DBTTask task, SQLScriptExecuteSettings settings, Log log, PrintStream logStream) throws DBException {
         List<DBPDataSourceContainer> dataSources = settings.getDataSources();
-
-        for (String filePath : settings.getScriptFiles()) {
-            IFile sqlFile = SQLScriptExecuteSettings.getWorkspaceFile(filePath);
-            try (InputStream sqlStream = sqlFile.getContents(true)) {
-                try (Reader fileReader = new InputStreamReader(sqlStream, sqlFile.getCharset())) {
-                    String sqlScriptContent = IOUtils.readToString(fileReader);
-                    try {
-                        for (DBPDataSourceContainer dataSourceContainer : dataSources) {
-                            if (!dataSourceContainer.isConnected()) {
-                                dataSourceContainer.connect(monitor, true, true);
-                            }
-                            DBPDataSource dataSource = dataSourceContainer.getDataSource();
-                            if (dataSource == null) {
-                                throw new DBException("Can't obtain data source connection");
-                            }
-                            DBCExecutionContext executionContext = dataSource.getDefaultInstance().getDefaultContext(monitor, false);
-
-                            log.debug("> Execute script [" + filePath + "] in [" + dataSourceContainer.getName() + "]");
-                            DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
-                            if (contextDefaults != null) {
-                                DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
-                                if (defaultCatalog != null) {
-                                    log.debug("> Default catalog: " + defaultCatalog.getName());
-                                }
-                                DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
-                                if (defaultSchema != null) {
-                                    log.debug("> Default schema: " + defaultSchema.getName());
-                                }
-                            }
-
-                            processScript(monitor, task, settings, executionContext, filePath, sqlScriptContent, log, logStream);
-                        }
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
+        DBPProject project = task.getProject();
+        var scriptFiles = settings.getRmScriptFiles().isEmpty() ? settings.getScriptFiles() : settings.getRmScriptFiles();
+        for (String filePath : scriptFiles) {
+            try {
+                String sqlScriptContent = getSqlScriptContent(project, filePath);
+                for (DBPDataSourceContainer dataSourceContainer : dataSources) {
+                    if (!dataSourceContainer.isConnected()) {
+                        dataSourceContainer.connect(monitor, true, true);
                     }
+                    DBPDataSource dataSource = dataSourceContainer.getDataSource();
+                    if (dataSource == null) {
+                        throw new DBException("Can't obtain data source connection");
+                    }
+                    DBCExecutionContext executionContext = dataSource.getDefaultInstance().getDefaultContext(monitor, false);
+
+                    log.debug("> Execute script [" + filePath + "] in [" + dataSourceContainer.getName() + "]");
+                    DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
+                    if (contextDefaults != null) {
+                        DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
+                        if (defaultCatalog != null) {
+                            log.debug("> Default catalog: " + defaultCatalog.getName());
+                        }
+                        DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
+                        if (defaultSchema != null) {
+                            log.debug("> Default schema: " + defaultSchema.getName());
+                        }
+                    }
+
+                    processScript(monitor, task, settings, executionContext, filePath, sqlScriptContent, log, logStream);
                 }
             } catch (Throwable e) {
                 Throwable error = e instanceof InvocationTargetException ? ((InvocationTargetException) e).getTargetException() : e;
                 throw new DBException("Error executing script '" + filePath + "'", error);
             }
         }
+    }
+
+    @NotNull
+    private String getSqlScriptContent(DBPProject project, String filePath) throws Exception {
+        if (project.getEclipseProject() != null) {
+            IFile file = SQLScriptExecuteSettings.getWorkspaceFile(filePath);
+            if (file.exists()) {
+                try (InputStream sqlStream = file.getContents(true)) {
+                    try (Reader fileReader = new InputStreamReader(sqlStream, file.getCharset())) {
+                        return IOUtils.readToString(fileReader);
+                    }
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
+                }
+            }
+        }
+        RMController controller = project.getResourceController();
+        return new String(controller.getResourceContents(project.getId(), getResourcePath(filePath)), StandardCharsets.UTF_8);
+    }
+
+    private String getResourcePath(String filePath) {
+        return filePath;
     }
 
     private void processScript(DBRProgressMonitor monitor, DBTTask task, SQLScriptExecuteSettings settings, DBCExecutionContext executionContext, String filePath, String sqlScriptContent, Log log, PrintStream logStream) throws DBException {

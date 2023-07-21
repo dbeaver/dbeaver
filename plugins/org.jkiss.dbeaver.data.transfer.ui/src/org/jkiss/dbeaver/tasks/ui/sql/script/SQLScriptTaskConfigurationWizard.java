@@ -58,7 +58,7 @@ class SQLScriptTaskConfigurationWizard extends TaskConfigurationWizard<SQLScript
 
     @Override
     public void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state) {
-        pageSettings.saveSettings();
+        pageSettings.saveSettings(task);
 
         settings.saveConfiguration(state);
     }

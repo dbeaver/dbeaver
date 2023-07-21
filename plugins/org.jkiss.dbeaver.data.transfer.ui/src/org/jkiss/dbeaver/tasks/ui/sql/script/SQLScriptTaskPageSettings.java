@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
@@ -297,7 +298,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
 
         getWizard().createVariablesEditButton(composite);
 
-        loadSettings();
+        loadSettings(sqlWizard.getProject());
 
         setControl(composite);
     }
@@ -366,29 +367,11 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         return true;
     }
 
-    public void loadSettings() {
+    public void loadSettings(DBPProject project) {
         SQLScriptExecuteSettings settings = sqlWizard.getSettings();
 
-        List<String> scriptFiles = settings.getScriptFiles();
-        for (String filePath : scriptFiles) {
-            IFile file = SQLScriptExecuteSettings.getWorkspaceFile(filePath);
-            if (file == null) {
-                log.debug("Script file '" + filePath + "' not found");
-                continue;
-            }
-            DBPProject currentProject = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
-            if (currentProject == null) {
-                log.debug("Project '" + file.getProject().getName() + "' not found");
-                continue;
-            }
-            DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(currentProject);
-            if (projectNode != null) {
-                DBNResource resource = projectNode.findResource(file);
-                if (resource != null) {
-                    selectedScripts.add(resource);
-                }
-            }
-        }
+        loadTaskScripts(settings, project);
+        loadOldTaskScripts(settings); // backward compatibility
         scriptsViewer.setInput(selectedScripts);
 
         for (DBPDataSourceContainer dataSource : settings.getDataSources()) {
@@ -406,17 +389,62 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
 //        }
     }
 
-    public void saveSettings() {
+    private void loadTaskScripts(SQLScriptExecuteSettings settings, DBPProject project) {
+        var eclipseProject = project.getEclipseProject();
+        if (eclipseProject == null) {
+            log.debug("Eclipse project is not found");
+            return;
+        }
+        List<String> scriptFiles = settings.getRmScriptFiles();
+        for (String filePath : scriptFiles) {
+            IFile file = eclipseProject.getFile(filePath);
+            if (file == null || !file.exists()) {
+                log.debug("Script file '" + filePath + "' not found");
+                continue;
+            }
+            addFilesToSelectedScripts(file);
+        }
+    }
+
+    private void loadOldTaskScripts(SQLScriptExecuteSettings settings) {
+        List<String> scriptFiles = settings.getScriptFiles();
+        for (String filePath : scriptFiles) {
+            IFile file = SQLScriptExecuteSettings.getWorkspaceFile(filePath);
+            if (file == null) {
+                log.debug("Script file '" + filePath + "' not found");
+                continue;
+            }
+            addFilesToSelectedScripts(file);
+        }
+    }
+
+    private void addFilesToSelectedScripts(IFile file) {
+        DBPProject currentProject = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
+        if (currentProject == null) {
+            log.debug("Project '" + file.getProject().getName() + "' not found");
+            return;
+        }
+        DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(currentProject);
+        if (projectNode != null) {
+            DBNResource resource = projectNode.findResource(file);
+            if (resource != null) {
+                selectedScripts.add(resource);
+            }
+        }
+    }
+
+    public void saveSettings(DBTTask task) {
         if (sqlWizard == null) {
             return;
         }
         SQLScriptExecuteSettings settings = sqlWizard.getSettings();
 
         List<String> scriptPaths = new ArrayList<>();
+        var project = task.getProject();
         for (DBNResource resource : selectedScripts) {
             IResource res = resource.getResource();
             if (res instanceof IFile) {
-                scriptPaths.add(res.getFullPath().toString());
+                scriptPaths.add(project.getResourcePath(res));
             }
         }
         if (!CommonUtils.isEmpty(scriptPaths)) {

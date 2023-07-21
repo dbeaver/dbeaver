@@ -26,7 +26,9 @@ import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
 import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
+import java.nio.file.Path;
 import java.util.UUID;
 
 /**
@@ -112,6 +114,16 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
     @Override
     public long getApplicationStartTime() {
         return applicationStartTime;
+    }
+
+    @Override
+    public Path getWorkspaceDirectory() {
+        return getDefaultWorkingFolder();
+    }
+
+    @Override
+    public String getApplicationId() {
+        return GeneralUtils.getProductTitle();
     }
 
     @Override

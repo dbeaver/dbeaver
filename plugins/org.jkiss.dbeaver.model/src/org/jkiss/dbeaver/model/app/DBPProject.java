@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.auth.SMAuthSpace;
 import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.rm.RMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 
@@ -112,6 +113,8 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
 
     @NotNull
     DBTTaskManager getTaskManager();
+
+    RMController getResourceController();
 
     /**
      * Project auth context

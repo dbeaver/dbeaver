@@ -31,6 +31,8 @@ import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.impl.auth.SessionContextImpl;
+import org.jkiss.dbeaver.model.rm.RMController;
+import org.jkiss.dbeaver.model.rm.local.EmbeddedResourceController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
@@ -68,6 +70,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
 
     protected final Map<IProject, LocalProjectImpl> projects = new LinkedHashMap<>();
     protected DBPProject activeProject;
+    protected RMController rmController;
     private final List<DBPProjectListener> projectListeners = new ArrayList<>();
 
     protected BaseWorkspaceImpl(DBPPlatform platform, IWorkspace eclipseWorkspace) {
@@ -342,6 +345,19 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
     @Override
     public boolean supportsRealmFeature(String feature) {
         return true;
+    }
+
+    @NotNull
+    @Override
+    public RMController getResourceController() {
+        if (rmController == null) {
+            rmController = createResourceController();
+        }
+        return rmController;
+    }
+
+    private RMController createResourceController() {
+        return new EmbeddedResourceController();
     }
 
 }

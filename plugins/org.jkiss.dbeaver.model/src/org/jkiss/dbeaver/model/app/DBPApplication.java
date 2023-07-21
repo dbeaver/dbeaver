@@ -102,5 +102,8 @@ public interface DBPApplication {
      */
     long getApplicationStartTime();
 
+    Path getWorkspaceDirectory();
+
+    String getApplicationId();
 
 }

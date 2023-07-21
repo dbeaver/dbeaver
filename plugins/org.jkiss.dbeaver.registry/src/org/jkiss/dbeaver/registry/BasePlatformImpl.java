@@ -34,6 +34,8 @@ import org.jkiss.dbeaver.model.fs.DBFRegistry;
 import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.rm.RMController;
+import org.jkiss.dbeaver.model.rm.local.EmbeddedResourceController;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.model.task.DBTTaskController;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
@@ -291,4 +293,5 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     public DBPDataSourceProviderRegistry getDataSourceProviderRegistry() {
         return DataSourceProviderRegistry.getInstance();
     }
+
 }

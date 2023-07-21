@@ -43,7 +43,10 @@ public class SQLScriptExecuteSettings implements DBTTaskSettings<IResource> {
     private static final Log log = Log.getLog(SQLScriptExecuteSettings.class);
 
     private List<DBPDataSourceContainer> dataSources = new ArrayList<>();
+
+    @Deprecated // is used for eclipse paths, use rmScriptFiles
     private List<String> scriptFiles = new ArrayList<>();
+    private List<String> rmScriptFiles = new ArrayList<>();
 
     private boolean autoCommit;
     private DBPTransactionIsolation transactionIsolation;
@@ -51,12 +54,17 @@ public class SQLScriptExecuteSettings implements DBTTaskSettings<IResource> {
     private boolean ignoreErrors;
     private boolean dumpQueryResultsToLog;
 
+    @Deprecated // backward compatibility, old tasks
     public List<String> getScriptFiles() {
         return scriptFiles;
     }
 
+    public List<String> getRmScriptFiles() {
+        return rmScriptFiles;
+    }
+
     public void setScriptFiles(List<String> scriptFiles) {
-        this.scriptFiles = scriptFiles;
+        this.rmScriptFiles = scriptFiles;
     }
 
     public List<DBPDataSourceContainer> getDataSources() {
@@ -128,7 +136,9 @@ public class SQLScriptExecuteSettings implements DBTTaskSettings<IResource> {
                 }
             }
         }
+
         scriptFiles = JSONUtils.deserializeStringList(config, "scriptFiles");
+        rmScriptFiles = JSONUtils.deserializeStringList(config, "rmScriptFiles");
 
         ignoreErrors = JSONUtils.getBoolean(config, "ignoreErrors");
         dumpQueryResultsToLog = JSONUtils.getBoolean(config, "dumpQueryResultsToLog");
@@ -137,7 +147,7 @@ public class SQLScriptExecuteSettings implements DBTTaskSettings<IResource> {
     }
 
     public void saveConfiguration(Map<String, Object> config) {
-        config.put("scriptFiles", scriptFiles);
+        config.put("rmScriptFiles", rmScriptFiles);
         List<Map<String, Object>> dsConfig = new ArrayList<>();
         config.put("dataSources", dsConfig);
         for (DBPDataSourceContainer ds : dataSources) {
