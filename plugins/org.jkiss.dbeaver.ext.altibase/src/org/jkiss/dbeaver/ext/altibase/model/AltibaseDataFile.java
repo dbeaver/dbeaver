@@ -47,4 +47,10 @@ public abstract class AltibaseDataFile extends AltibaseObject<AltibaseTablespace
     {
         return id;
     }
+    
+    @Property(viewable = true, order = 3)
+    public int getTbsId()
+    {
+        return spaceid;
+    }
 }

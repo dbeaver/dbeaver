@@ -43,12 +43,7 @@ public class AltibaseDataFile4Disk extends AltibaseDataFile {
         this.isAutoExtend = (JDBCUtils.safeGetInt(dbResult, "AUTOEXTEND") == 1);
         this.state = State.getStateByIdx(JDBCUtils.safeGetInt(dbResult, "STATE"));
     }
-    
-    @Property(viewable = true, order = 3)
-    public int getTbsId()
-    {
-        return spaceid;
-    }
+
     
     @Property(viewable = true, order = 4, formatter = ByteNumberFormat.class)
     public BigInteger getCurrSize()

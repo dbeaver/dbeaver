@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
+import java.math.BigInteger;
 import java.sql.ResultSet;
 
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -24,16 +25,16 @@ import org.jkiss.utils.ByteNumberFormat;
 
 public class AltibaseDataFile4Mem extends AltibaseDataFile {
 
-    private long dbFileSize;
+    private long currSize;
     
     protected AltibaseDataFile4Mem(AltibaseTablespace tablespace, ResultSet dbResult) {
         super(tablespace, dbResult);
-        dbFileSize = (long) JDBCUtils.safeGetDouble(dbResult, "DBFILE_SIZE");
+        this.currSize = new BigInteger(JDBCUtils.safeGetString(dbResult, "CURRENT_SIZE")).longValue();
     }
 
-    @Property(viewable = true, order = 3, formatter = ByteNumberFormat.class)
-    public long getDbFileSize()
+    @Property(viewable = true, order = 4, formatter = ByteNumberFormat.class)
+    public long getCurrSize()
     {
-        return dbFileSize;
+        return currSize;
     }
 }
