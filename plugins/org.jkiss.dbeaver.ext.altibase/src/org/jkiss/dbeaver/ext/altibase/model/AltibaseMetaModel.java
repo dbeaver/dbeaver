@@ -166,7 +166,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
             String schemaName = sourceObject.getContainer().getName();
             ddl.append(getDDLFromDbmsMetadata(monitor, sourceObject, schemaName, sourceObject.getTableType()));
             ddl.append(";").append(AltibaseConstants.NEW_LINE);
-            
+
             // Comment
             addDepDdl(ddl, "COMMENT", monitor, sourceObject, schemaName);
 
@@ -1002,7 +1002,8 @@ public class AltibaseMetaModel extends GenericMetaModel {
         return ddl;
     }
 
-    private String getDepDDLFromDbmsMetadata(DBRProgressMonitor monitor, DBSObject sourceObject, String schemaName, String depObjectType) {
+    private String getDepDDLFromDbmsMetadata(DBRProgressMonitor monitor, DBSObject sourceObject, 
+            String schemaName, String depObjectType) {
         String ddl = "";
         String sqlTerm = "SQLTERMINATOR";
         String getDepDdlQry = "SELECT dbms_metadata.get_dependent_ddl('%s', '%s', '%s') FROM DUAL";
@@ -1026,8 +1027,13 @@ public class AltibaseMetaModel extends GenericMetaModel {
                     ddl = rs.getString(1);
                 }
             }
+        } catch (SQLException e) {
+            if (e.getErrorCode() != AltibaseConstants.EC_DBMS_METADATA_NOT_FOUND) {
+                log.warn("Failed to get dbms_metadata.get_dependent_ddl [TYPE] " + depObjectType 
+                        + " [BASE OBJECT] "+ schemaName + "." + sourceObject.getName(), e);
+            }
         } catch (Exception e) {
-            log.info("Failed to get dbms_metadata.get_dependent_ddl [TYPE] " + depObjectType 
+            log.warn("Failed to get dbms_metadata.get_dependent_ddl [TYPE] " + depObjectType 
                     + " [BASE OBJECT] "+ schemaName + "." + sourceObject.getName(), e);
         } finally {
             try {

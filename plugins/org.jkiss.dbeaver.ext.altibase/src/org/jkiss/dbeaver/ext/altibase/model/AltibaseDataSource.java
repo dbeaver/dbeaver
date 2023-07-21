@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -204,6 +205,16 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     
     ///////////////////////////////////////////////
     // Tablespace
+    
+    @Association
+    public Collection<AltibaseTablespace> getTablespaces(DBRProgressMonitor monitor) throws DBException {
+        return tablespaceCache.getAllObjects(monitor, this);
+    }
+
+    public TablespaceCache getTablespaceCache() {
+        return tablespaceCache;
+    }
+    
     static class TablespaceCache extends JDBCObjectCache<AltibaseDataSource, AltibaseTablespace> {
         @NotNull
         @Override
@@ -235,32 +246,20 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(DBRProgressMonitor monitor, 
+            boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasStatistics && !forceRefresh) {
             return;
         }
-        try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load tablespace '" + getName() + "' statistics")) {
-            // Tablespace stats
-            try (JDBCStatement dbStat = session.createStatement()) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery(
-                    "SELECT\n" +
-                    "\tTS.TABLESPACE_NAME, F.AVAILABLE_SPACE, S.USED_SPACE\n" +
-                    "FROM\n" +
-                    "\tSYS.DBA_TABLESPACES TS,\n" +
-                    "\t(SELECT TABLESPACE_NAME, SUM(BYTES) AVAILABLE_SPACE FROM DBA_DATA_FILES GROUP BY TABLESPACE_NAME) F,\n" +
-                    "\t(SELECT TABLESPACE_NAME, SUM(BYTES) USED_SPACE FROM DBA_SEGMENTS GROUP BY TABLESPACE_NAME) S\n" +
-                    "WHERE\n" +
-                    "\tF.TABLESPACE_NAME(+) = TS.TABLESPACE_NAME AND S.TABLESPACE_NAME(+) = TS.TABLESPACE_NAME")) {
-                    while (dbResult.next()) {
-                        String tsName = dbResult.getString(1);
-                        AltibaseTablespace tablespace = tablespaceCache.getObject(monitor, AltibaseDataSource.this, tsName);
-                        if (tablespace != null) {
-                            tablespace.fetchSizes(dbResult);
-                        }
-                    }
-                }
+        
+        try {
+        for(AltibaseTablespace tbs:tablespaceCache.getAllObjects(monitor, AltibaseDataSource.this)) {
+            AltibaseTablespace tablespace = tablespaceCache.getObject(monitor, AltibaseDataSource.this, tbs.getName());
+            if (tablespace != null) {
+                tablespace.loadSizes(monitor);
             }
-        } catch (SQLException e) {
+        }
+        } catch (DBException e) {
             throw new DBException("Can't read tablespace statistics", e, getDataSource());
         } finally {
             hasStatistics = true;

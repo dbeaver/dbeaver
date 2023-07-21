@@ -31,7 +31,7 @@ import org.jkiss.utils.CommonUtils;
 public class AltibaseTable extends GenericTable implements DBPNamedObject2 {
 
     private static final Log log = Log.getLog(AltibaseTable.class);
-
+    
     public AltibaseTable(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
     }

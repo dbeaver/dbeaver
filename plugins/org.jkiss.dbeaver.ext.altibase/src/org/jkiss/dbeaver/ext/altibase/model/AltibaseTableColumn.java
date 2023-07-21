@@ -80,4 +80,8 @@ public class AltibaseTableColumn extends GenericTableColumn implements DBPNamedO
     public boolean isAutoIncrement() {
         return super.isAutoIncrement();
     }
+    
+    public boolean hasComment() {
+        return (this.getDescription()!= null && this.getDescription().length() > 0);
+    }
 }

@@ -17,9 +17,6 @@
 
 package org.jkiss.dbeaver.ext.altibase;
 
-import java.math.BigInteger;
-import java.text.NumberFormat;
-
 import org.jkiss.utils.StandardConstants;
 
 public class AltibaseConstants {
@@ -31,29 +28,6 @@ public class AltibaseConstants {
     public static final String PUBLIC_USER = "PUBLIC";
     
     public static final String SYSTEM_GENERATED_PREFIX = "__SYS_";
-    
-    public static final String KBYTE_IEC = "KiB";
-    public static final String KBYTE_JEDEC = "KB";
-    public static final NumberFormat CURRENCY_FORMATTER = NumberFormat.getCurrencyInstance();
-    public static final BigInteger KBYTE_BIGINTEGER = new BigInteger("1024");
-    public static final Integer KBYTE = 1024;
-    
-    private static String getCurrencyFormattedBigIntger(BigInteger number) {
-        return CURRENCY_FORMATTER.format(number);
-    }
-    
-    private static BigInteger getBytesToKB(BigInteger bytes) {
-        return bytes.divide(KBYTE_BIGINTEGER);
-    }
-    
-    /*
-     * Return "pageCnt (xxx,xx KB)" 
-     */
-    public static String getHumanReadableSize(BigInteger pageCnt, int pageSizeBytes ) {
-        BigInteger size = pageCnt.multiply(new BigInteger(String.valueOf(pageSizeBytes)));
-        
-        return pageCnt + " (" + getCurrencyFormattedBigIntger(getBytesToKB(size)) + KBYTE_JEDEC + ")";
-    }
     
     public static final int PACKAGE_TYPE_SPEC = 6;
     public static final int PACKAGE_TYPE_BODY = 7;
@@ -140,6 +114,7 @@ public class AltibaseConstants {
     public static final String PASSWORD_WILL_EXPIRE_WARN_DESCRIPTION = "Change the password or contact the DBA.";
     
     public static final int EC_PASSWORD_WILL_EXPIRE = 0x51A79;
+    public static final int EC_DBMS_METADATA_NOT_FOUND = 0xF1B3D;
 
     /*
      * DBMS output
