@@ -161,7 +161,6 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
                            + " GROUP by space_id) ds on ds.space_id = t.id"
                            + ", (SELECT SPACEID"
                            + " , SUM(DECODE(MAXSIZE, 0, CURRSIZE, MAXSIZE)) AS MAX"
-                           + " , DECODE(MAX(AUTOEXTEND),1,'ON','OFF') 'AUTOEXTEND'"
                             + " FROM V$DATAFILES"
                            + " GROUP BY SPACEID) D"
                        + " WHERE t.id = D.spaceid AND t.id = ?";
@@ -177,7 +176,6 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
                            + " GROUP BY tbs_id) xts ON t.id = xts.tbs_id"
                            + ", (SELECT SPACEID"
                            + " , SUM(DECODE(MAXSIZE, 0, CURRSIZE, MAXSIZE)) AS MAX"
-                           + " , DECODE(MAX(AUTOEXTEND),1,'ON','OFF') 'AUTOEXTEND'"
                             + " FROM V$DATAFILES"
                            + " GROUP BY SPACEID) D"
                        + " WHERE t.id = D.spaceid AND t.id = ?";
@@ -190,7 +188,6 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
                            + " (select value1 extent_size from v$property where name = 'SYS_UNDO_TBS_EXTENT_SIZE') prop"
                            + ", (SELECT SPACEID"
                                + " , SUM(DECODE(MAXSIZE, 0, CURRSIZE, MAXSIZE)) AS MAX"
-                               + " , DECODE(MAX(AUTOEXTEND),1,'ON','OFF') 'AUTOEXTEND'"
                             + " FROM V$DATAFILES"
                            + " GROUP BY SPACEID) D"
                        + " WHERE t.id = D.spaceid AND t.id = ?";
