@@ -175,7 +175,7 @@ public class DataSourceHandler {
                     IStatus result = disconnectJob.getConnectStatus();
                     if (onFinish != null) {
                         onFinish.run();
-                    } else if (!result.isOK()) {
+                    } else if (result != null && !result.isOK()) {
                         DBWorkbench.getPlatformUI().showError(
                             disconnectJob.getName(),
                             null,
@@ -198,15 +198,19 @@ public class DataSourceHandler {
     }
 
     public static boolean checkAndCloseActiveTransaction(DBPDataSourceContainer container, boolean isReconnect) {
-        DBPDataSource dataSource = container.getDataSource();
-        if (dataSource == null) {
-            return true;
-        }
-
-        for (DBSInstance instance : dataSource.getAvailableInstances()) {
-            if (!checkAndCloseActiveTransaction(instance.getAllContexts(), isReconnect)) {
-                return false;
+        try {
+            DBPDataSource dataSource = container.getDataSource();
+            if (dataSource == null) {
+                return true;
             }
+
+            for (DBSInstance instance : dataSource.getAvailableInstances()) {
+                if (!checkAndCloseActiveTransaction(instance.getAllContexts(), isReconnect)) {
+                    return false;
+                }
+            }
+        } catch (Throwable e) {
+            log.debug(e);
         }
         return true;
     }

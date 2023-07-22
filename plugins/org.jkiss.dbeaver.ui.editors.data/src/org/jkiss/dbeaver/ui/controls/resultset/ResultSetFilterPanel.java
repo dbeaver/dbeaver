@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposal;
@@ -78,7 +77,7 @@ import java.util.regex.Pattern;
 /**
  * ResultSetFilterPanel
  */
-class ResultSetFilterPanel extends Composite implements IContentProposalProvider, IAdaptable
+class ResultSetFilterPanel extends Composite implements IContentProposalProvider, DBPAdaptable
 {
     private static final Log log = Log.getLog(ResultSetFilterPanel.class);
 

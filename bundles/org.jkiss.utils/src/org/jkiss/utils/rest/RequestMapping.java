@@ -27,5 +27,5 @@ public @interface RequestMapping {
     /**
      * Mapping for the annotated method.
      */
-    String value();
+    String value() default "";
 }

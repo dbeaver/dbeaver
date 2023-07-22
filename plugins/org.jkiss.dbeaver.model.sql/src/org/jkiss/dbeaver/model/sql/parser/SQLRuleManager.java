@@ -40,6 +40,7 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -111,11 +112,11 @@ public class SQLRuleManager {
         List<TPRule> rules = new ArrayList<>();
 
         if (ruleProvider != null) {
-            ruleProvider.extendRules(dataSourceContainer, rules, TPRuleProvider.RulePosition.INITIAL);
+            Collections.addAll(rules, ruleProvider.extendRules(dataSourceContainer, TPRuleProvider.RulePosition.INITIAL));
         }
 
         if (ruleProvider != null) {
-            ruleProvider.extendRules(dataSourceContainer, rules, TPRuleProvider.RulePosition.CONTROL);
+            Collections.addAll(rules, ruleProvider.extendRules(dataSourceContainer, TPRuleProvider.RulePosition.CONTROL));
         }
 
         if (!minimalRules) {
@@ -176,7 +177,7 @@ public class SQLRuleManager {
             }
         }
         if (ruleProvider != null) {
-            ruleProvider.extendRules(dataSourceContainer, rules, TPRuleProvider.RulePosition.QUOTES);
+            Collections.addAll(rules, ruleProvider.extendRules(dataSourceContainer, TPRuleProvider.RulePosition.QUOTES));
         }
         
         // Add rule for single-line comments.
@@ -221,7 +222,7 @@ public class SQLRuleManager {
         }
 
         if (ruleProvider != null) {
-            ruleProvider.extendRules(dataSourceContainer, rules, TPRuleProvider.RulePosition.KEYWORDS);
+            Collections.addAll(rules, ruleProvider.extendRules(dataSourceContainer, TPRuleProvider.RulePosition.KEYWORDS));
         }
 
         if (!minimalRules) {
@@ -264,7 +265,7 @@ public class SQLRuleManager {
         }
 
         if (ruleProvider != null) {
-            ruleProvider.extendRules(dataSourceContainer, rules, TPRuleProvider.RulePosition.FINAL);
+            Collections.addAll(rules, ruleProvider.extendRules(dataSourceContainer, TPRuleProvider.RulePosition.FINAL));
         }
 
         allRules = rules.toArray(new TPRule[0]);

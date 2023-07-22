@@ -260,13 +260,14 @@ public final class RuntimeUtils {
         monitorJob.schedule();
 
         // Wait for job to finish
+        boolean headlessMode = DBWorkbench.getPlatform().getApplication().isHeadlessMode();
         long startTime = System.currentTimeMillis();
         while (!monitoringTask.finished) {
             if (waitTime > 0 && System.currentTimeMillis() - startTime > waitTime) {
                 break;
             }
             try {
-                if (!DBWorkbench.getPlatformUI().readAndDispatchEvents()) {
+                if (headlessMode || !DBWorkbench.getPlatformUI().readAndDispatchEvents()) {
                     Thread.sleep(50);
                 }
             } catch (InterruptedException e) {
