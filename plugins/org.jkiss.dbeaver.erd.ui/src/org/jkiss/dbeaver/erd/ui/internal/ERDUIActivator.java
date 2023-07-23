@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.erd.ui.internal;
 
-import org.eclipse.draw2d.ColorProvider;
 import org.eclipse.gef.internal.InternalImages;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -36,6 +36,8 @@ public class ERDUIActivator extends AbstractUIPlugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.jkiss.dbeaver.erd.ui";
+
+	private static final Log log = Log.getLog(ERDUIActivator.class);
 
 	// The shared instance
 	private static ERDUIActivator plugin;
@@ -67,7 +69,11 @@ public class ERDUIActivator extends AbstractUIPlugin {
         System.setProperty("sun.java2d.d3d", Boolean.FALSE.toString()); //$NON-NLS-1$
 
 		// Overload GEF images
-		InternalImages.set(InternalImages.IMG_PALETTE, DBeaverIcons.getImage(UIIcon.PALETTE));
+		try {
+			InternalImages.set(InternalImages.IMG_PALETTE, DBeaverIcons.getImage(UIIcon.PALETTE));
+		} catch (Exception e) {
+			log.debug(e);
+		}
 		//InternalImages.set(InternalImages.IMG_PINNED, DBeaverIcons.getImage(UIIcon.PI));
 	}
 
