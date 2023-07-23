@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.erd.ui.internal;
 
 import org.eclipse.gef.internal.InternalImages;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
@@ -70,8 +71,12 @@ public class ERDUIActivator extends AbstractUIPlugin {
 
 		// Overload GEF images
 		try {
-			InternalImages.set(InternalImages.IMG_PALETTE, DBeaverIcons.getImage(UIIcon.PALETTE));
-		} catch (Exception e) {
+			// Use reflection because of Eclipse API incompatibility with oder versions
+			InternalImages.class.getMethod(
+				"set",
+				String.class, Image.class)
+				.invoke(null, InternalImages.IMG_PALETTE, DBeaverIcons.getImage(UIIcon.PALETTE));
+		} catch (Throwable e) {
 			log.debug(e);
 		}
 		//InternalImages.set(InternalImages.IMG_PINNED, DBeaverIcons.getImage(UIIcon.PI));
