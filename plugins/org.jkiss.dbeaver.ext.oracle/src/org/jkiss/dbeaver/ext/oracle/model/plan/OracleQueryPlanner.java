@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model.plan;
 
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
@@ -33,9 +36,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Oracle execution plan node
@@ -153,20 +154,6 @@ public class OracleQueryPlanner  extends AbstractExecutionPlanSerializer impleme
 
             }
         });
-    }
-
-
-    private Map<String,String> getNodeAttributes(JsonObject nodeObject){
-        Map<String,String> attributes = new HashMap<>(44);
-
-        JsonArray attrs =  nodeObject.getAsJsonArray(AbstractExecutionPlanSerializer.PROP_ATTRIBUTES);
-        for(JsonElement attr : attrs) {
-            for (Map.Entry<String, JsonElement> p : attr.getAsJsonObject().entrySet()) {
-                attributes.put(p.getKey(), p.getValue().getAsString());
-            }
-        }
-
-        return attributes;
     }
 
     @Override

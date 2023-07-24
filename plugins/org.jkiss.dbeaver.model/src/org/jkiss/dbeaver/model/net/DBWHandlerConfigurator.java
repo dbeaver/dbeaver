@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
  */
 public interface DBWHandlerConfigurator {
 
-    void configureHandler(
+    void activateHandler(
         @NotNull DBWNetworkHandler handler,
         @NotNull DBPConnectionConfiguration connectionConfig,
         @NotNull DBWHandlerConfiguration handlerConfig);

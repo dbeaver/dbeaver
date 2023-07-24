@@ -24,7 +24,6 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -193,7 +192,9 @@ public class ProgressEditorPart extends EditorPart {
         public void completeLoading(IDatabaseEditorInput result) {
             super.completeLoading(result);
             super.visualizeLoading();
-            progressCanvas.removePaintListener(this);
+            if (!progressCanvas.isDisposed()) {
+                progressCanvas.removePaintListener(this);
+            }
             initEntityEditor(result);
             if (result == null) {
                 // Close editor

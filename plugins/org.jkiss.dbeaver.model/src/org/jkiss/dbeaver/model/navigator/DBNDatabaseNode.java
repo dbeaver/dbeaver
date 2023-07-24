@@ -981,7 +981,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         try {
             Method getter = DBXTreeItem.findPropertyReadMethod(object.getClass(), propertyName);
             if (getter == null) {
-                log.warn("Can't find property '" + propertyName + "' read method in '" + object.getClass().getName() + "'");
+                log.warn("Can't find dynamic property '" + propertyName + "' read method in '" + object.getClass().getName() + "'");
                 return null;
             }
             Class<?>[] paramTypes = getter.getParameterTypes();

@@ -14,13 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.dds;
+package org.jkiss.dbeaver.tools.compare.simple.messages;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.eclipse.osgi.util.NLS;
 
-/**
- * Detached data source
- */
-public abstract class DDSDataSource implements DBPDataSource {
+public class CompareMessages extends NLS {
+
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.tools.compare.simple.messages.CompareMessages";
+
+    public static String open_in_browser;
+    public static String save_to_file;
+    public static String compare_object_handler_error_just_one_object_selected;
+
+    static {
+        NLS.initializeMessages(BUNDLE_NAME, CompareMessages.class);
+    }
+
+    private CompareMessages() {
+    }
 
 }

@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DPIContainer;
+import org.jkiss.dbeaver.model.DPIElement;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -60,23 +62,27 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
         return idSequence++;
     }
 
+    @DPIElement
     @Override
     public long getContextId() {
         return this.id;
     }
 
+    @DPIElement
     @NotNull
     @Override
     public String getContextName() {
         return purpose;
     }
 
+    @DPIContainer
     @NotNull
     @Override
     public DATASOURCE getDataSource() {
         return dataSource;
     }
 
+    @DPIElement
     @Nullable
     @Override
     public DBCExecutionContextDefaults getContextDefaults() {

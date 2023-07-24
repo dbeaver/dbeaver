@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
+import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.utils.ArrayUtils;
@@ -54,8 +55,12 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
 
         workspaceId = readWorkspaceId();
 
-        this.projectListener = new ProjectListener();
-        this.getEclipseWorkspace().addResourceChangeListener(projectListener);
+        if (!isReadOnly()) {
+            this.projectListener = new ProjectListener();
+            this.getEclipseWorkspace().addResourceChangeListener(projectListener);
+        } else {
+            this.projectListener = null;
+        }
     }
 
     @Override
@@ -67,14 +72,14 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
             log.error("Can't load workspace projects", ex);
         }
         
-        if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects) && isDefaultProjectNeeded()) {
+        if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects) && isDefaultProjectNeeded() && !isReadOnly()) {
             try {
                 createDefaultProject();
             } catch (CoreException e) {
                 log.error("Can't create default project", e);
             }
         }
-        if (getActiveProject() == null && !projects.isEmpty()) {
+        if (getActiveProject() == null && !projects.isEmpty() && !isReadOnly()) {
             // Set active project
             setActiveProject(projects.values().iterator().next());
         }
@@ -94,7 +99,9 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
 
     @Override
     public void dispose() {
-        this.getEclipseWorkspace().removeResourceChangeListener(projectListener);
+        if (projectListener != null) {
+            this.getEclipseWorkspace().removeResourceChangeListener(projectListener);
+        }
 
         super.dispose();
     }
@@ -152,7 +159,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
             project.create(monitor);
             project.open(monitor);
             final IProjectDescription description = getEclipseWorkspace().newProjectDescription(project.getName());
-            description.setComment("General DBeaver project");
+            description.setComment(RegistryMessages.project_description_comment);
             description.setNatureIds(new String[]{DBeaverNature.NATURE_ID});
             project.setDescription(description, monitor);
 

@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DPIContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -53,6 +54,7 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
         super(instance, purpose);
     }
 
+    @DPIContainer
     @NotNull
     @Override
     public SQLServerDataSource getDataSource() {

@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -36,7 +35,7 @@ import java.util.List;
 /**
  * DBNDataSource
  */
-public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAdaptable
+public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPAdaptable
 {
     private static final boolean USE_ICON_DECORATIONS = false; // Disabled in #9384
 
