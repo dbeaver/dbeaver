@@ -709,17 +709,19 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     bootstrap.setInitQueries(JSONUtils.deserializeStringList(bootstrapCfg, RegistryConstants.TAG_QUERY));
 
                     if (originalDriver != substitutedDriver) {
-                        final DBPDataSourceProvider dataSourceProvider = substitutedDriver.getDataSourceProvider();
-                        if (dataSourceProvider instanceof DBPConnectionConfigurationMigrator) {
-                            final DBPConnectionConfigurationMigrator migrator = (DBPConnectionConfigurationMigrator) dataSourceProvider;
-                            if (migrator.migrationRequired(config)) {
-                                final DBPConnectionConfiguration migrated = new DBPConnectionConfiguration(config);
-                                try {
-                                    migrator.migrateConfiguration(config, migrated);
-                                    dataSource.setConnectionInfo(migrated);
-                                    log.debug("Connection configuration for data source '" + id + "' was migrated successfully");
-                                } catch (DBException e) {
-                                    log.error("Unable to migrate connection configuration for data source '" + id + "'", e);
+                        if (substitutedDriver.getProviderDescriptor().supportsDriverMigration()) {
+                            final DBPDataSourceProvider dataSourceProvider = substitutedDriver.getDataSourceProvider();
+                            if (dataSourceProvider instanceof DBPConnectionConfigurationMigrator) {
+                                final DBPConnectionConfigurationMigrator migrator = (DBPConnectionConfigurationMigrator) dataSourceProvider;
+                                if (migrator.migrationRequired(config)) {
+                                    final DBPConnectionConfiguration migrated = new DBPConnectionConfiguration(config);
+                                    try {
+                                        migrator.migrateConfiguration(config, migrated);
+                                        dataSource.setConnectionInfo(migrated);
+                                        log.debug("Connection configuration for data source '" + id + "' was migrated successfully");
+                                    } catch (DBException e) {
+                                        log.error("Unable to migrate connection configuration for data source '" + id + "'", e);
+                                    }
                                 }
                             }
                         }
