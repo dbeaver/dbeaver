@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DPIElement;
+import org.jkiss.dbeaver.model.DPIObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
@@ -27,6 +29,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
  * Provides access to default context catalog/schema.
  * Note: metadata context defaults are datasource defaults.
  */
+@DPIObject
+@DPIElement
 public interface DBCExecutionContextDefaults<CATALOG extends DBSCatalog, SCHEMA extends DBSSchema> {
 
     @Nullable

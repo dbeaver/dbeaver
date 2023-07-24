@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mysql.ui.config;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndexColumn;
@@ -98,8 +99,8 @@ public class MySQLIndexConfigurator implements DBEObjectConfigurator<MySQLTableI
         protected void createAttributeColumns(Table columnsTable) {
             super.createAttributeColumns(columnsTable);
 
-            TableColumn colDesc = UIUtils.createTableColumn(columnsTable, SWT.NONE, "Length");
-            colDesc.setToolTipText("Index length (for varchar columns)");
+            TableColumn colDesc = UIUtils.createTableColumn(columnsTable, SWT.NONE, MySQLMessages.table_column_length);
+            colDesc.setToolTipText(MySQLMessages.table_column_length_tooltip);
         }
 
         @Override

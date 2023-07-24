@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.hana.model;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -47,7 +46,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HANADataSource extends GenericDataSource implements DBCQueryPlanner, IAdaptable {
+public class HANADataSource extends GenericDataSource implements DBCQueryPlanner {
 
     private static final Log log = Log.getLog(HANADataSource.class);
     private static final String PROP_APPLICATION_NAME = "SESSIONVARIABLE:APPLICATION";

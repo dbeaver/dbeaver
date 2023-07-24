@@ -64,8 +64,16 @@ public class ApplicationRegistry {
 
         List<ApplicationDescriptor> finalApps = new ArrayList<>();
         for (ApplicationDescriptor app : applications) {
-            if (app.isFinalApplication()) {
+            if (app.isFinalApplication() && !app.isHidden()) {
                 finalApps.add(app);
+            }
+        }
+        if (finalApps.isEmpty()) {
+            // Include hidden
+            for (ApplicationDescriptor app : applications) {
+                if (app.isFinalApplication()) {
+                    finalApps.add(app);
+                }
             }
         }
         if (finalApps.isEmpty()) {

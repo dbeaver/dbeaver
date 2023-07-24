@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPIdentifierCase;
-import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
@@ -41,6 +38,8 @@ import java.util.List;
 /**
  * SQL dialect
  */
+@DPIObject
+@DPIElement
 public interface SQLDialect {
 
     int USAGE_NONE = 0;

@@ -226,8 +226,10 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
         DataSourceProviderDescriptor curProvider;
         DriverDescriptor curDriver;
         DBPDriverLibrary curLibrary;
-        boolean isLibraryUpgraded = false;
-        boolean isDistributed = DBWorkbench.isDistributed();
+        private boolean isLibraryUpgraded = false;
+        private final boolean isDistributed = DBWorkbench.isDistributed();
+        // In detached process we usually have just one driver
+        private final boolean isDetachedProcess = DBWorkbench.getPlatform().getApplication().isDetachedProcess();
 
         public DriversParser(boolean provided) {
             this.providedDrivers = provided;
@@ -246,7 +248,9 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                     }
                     curProvider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(idAttr);
                     if (curProvider == null) {
-                        log.warn("Datasource provider '" + idAttr + "' not found. Bad provider description.");
+                        if (!isDetachedProcess) {
+                            log.warn("Datasource provider '" + idAttr + "' not found. Bad provider description.");
+                        }
                     }
                     break;
                 }
@@ -257,12 +261,14 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         String providerId = atts.getValue(RegistryConstants.ATTR_PROVIDER);
                         if (!CommonUtils.isEmpty(providerId)) {
                             curProvider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(providerId);
-                            if (curProvider == null) {
+                            if (curProvider == null && !isDetachedProcess) {
                                 log.warn("Datasource provider '" + providerId + "' not found. Bad driver description.");
                             }
                         }
                         if (curProvider == null) {
-                            log.warn("Driver '" + idAttr + "' outside of datasource provider");
+                            if (!isDetachedProcess) {
+                                log.warn("Driver '" + idAttr + "' outside of datasource provider");
+                            }
                             return;
                         }
                     }
@@ -312,7 +318,9 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                 }
                 case RegistryConstants.TAG_LIBRARY: {
                     if (curDriver == null) {
-                        log.warn("Library outside of driver (" + atts.getValue(RegistryConstants.ATTR_PATH) + ")");
+                        if (!isDetachedProcess) {
+                            log.warn("Library outside of driver (" + atts.getValue(RegistryConstants.ATTR_PATH) + ")");
+                        }
                         return;
                     }
                     isLibraryUpgraded = false;

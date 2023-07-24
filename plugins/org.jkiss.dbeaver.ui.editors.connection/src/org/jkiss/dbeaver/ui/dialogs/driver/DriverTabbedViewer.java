@@ -124,7 +124,7 @@ public class DriverTabbedViewer extends StructuredViewer {
 
         String folderId = UIUtils.getDialogSettings(DIALOG_ID).get(PARAM_LAST_FOLDER);
         if (CommonUtils.isEmpty(folderId)) {
-            folderId = "popular";
+            folderId = "all";
         }
         folderComposite.setFolders(getClass().getSimpleName(), folders.toArray(new TabbedFolderInfo[0]));
         folderComposite.switchFolder(folderId, false);

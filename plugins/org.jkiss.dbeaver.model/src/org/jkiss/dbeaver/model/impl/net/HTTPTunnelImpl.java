@@ -58,6 +58,11 @@ public class HTTPTunnelImpl implements DBWTunnel {
     }
 
     @Override
+    public void addCloseListener(Runnable listener) {
+        // do nothing
+    }
+
+    @Override
     public boolean matchesParameters(String host, int port) {
         return false;
     }

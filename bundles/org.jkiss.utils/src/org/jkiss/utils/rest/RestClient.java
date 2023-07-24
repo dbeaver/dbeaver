@@ -17,34 +17,28 @@
 package org.jkiss.utils.rest;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodySubscribers;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class RestClient {
-    static final Gson gson = new GsonBuilder()
-        .setLenient()
-        .disableHtmlEscaping()
-        .serializeNulls()
-        .create();
+
+    private static final Pattern ST_LINE_PATTERN = Pattern.compile("\\s*at\\s+([\\w/.$]+)\\((.+)\\)");
 
     private RestClient() {
         // prevents instantiation
@@ -54,8 +48,8 @@ public class RestClient {
     public static <T> T create(@NotNull URI uri, @NotNull Class<T> cls, @NotNull Gson gson) {
         final Object proxy = Proxy.newProxyInstance(
             cls.getClassLoader(),
-            new Class[]{cls},
-            new ClientInvocationHandler(uri, gson)
+            new Class[]{cls, RestProxy.class},
+            new ClientInvocationHandler(cls, uri, gson)
         );
 
         return cls.cast(proxy);
@@ -74,7 +68,7 @@ public class RestClient {
         private Builder(@NotNull URI uri, @NotNull Class<T> cls) {
             this.uri = uri;
             this.cls = cls;
-            this.gson = RestClient.gson;
+            this.gson = RestConstants.DEFAULT_GSON;
         }
 
         @NotNull
@@ -89,21 +83,39 @@ public class RestClient {
         }
     }
 
-    private static class ClientInvocationHandler implements InvocationHandler {
+    private static class ClientInvocationHandler implements InvocationHandler, RestProxy {
+        @NotNull
+        private final Class<?> clientClass;
         private final URI uri;
         private final Gson gson;
+        private final ExecutorService httpExecutor;
         private final HttpClient client;
+        private final ThreadLocal<Type> resultType = new ThreadLocal<>();
 
-        private ClientInvocationHandler(@NotNull URI uri, @NotNull Gson gson) {
+        private ClientInvocationHandler(@NotNull Class<?> clientClass, @NotNull URI uri, @NotNull Gson gson) {
+            this.clientClass = clientClass;
             this.uri = uri;
             this.gson = gson;
-            this.client = HttpClient.newHttpClient();
+            this.httpExecutor = Executors.newSingleThreadExecutor();
+            this.client = HttpClient.newBuilder()
+                .executor(httpExecutor)
+                .build();
         }
 
         @Override
-        public Object invoke(Object proxy, Method method, Object[] args) throws RestException {
-            if (method.getDeclaringClass() == Object.class) {
+        public synchronized Object invoke(Object proxy, Method method, Object[] args) throws RestException {
+            Class<?> declaringClass = method.getDeclaringClass();
+            if (declaringClass == Object.class) {
                 return BeanUtils.handleObjectMethod(proxy, method, args);
+            } else if (declaringClass == RestProxy.class) {
+                setNextCallResultType((Type) args[0]);
+                return null;
+            } else if (method.getName().equals("close") && (declaringClass == AutoCloseable.class || declaringClass == clientClass)) {
+                closeClient();
+                return null;
+            }
+            if (httpExecutor.isShutdown() || httpExecutor.isTerminated()) {
+                throw new RestException("Rest client has been terminated");
             }
 
             final RequestMapping mapping = method.getDeclaredAnnotation(RequestMapping.class);
@@ -133,31 +145,50 @@ public class RestClient {
             }
 
             try {
-                final HttpResponse<Reader> response = client.send(
-                    HttpRequest.newBuilder()
-                        .uri(URI.create(uri.toString() + '/' + mapping.value()))
-                        .header("Content-Type", "application/json")
-                        .POST(BodyPublishers.ofString(gson.toJson(values)))
-                        .build(),
-                    info -> BodySubscribers.mapping(
-                        BodySubscribers.ofInputStream(),
-                        InputStreamReader::new
-                    )
+                String endpoint = mapping.value();
+                if (CommonUtils.isEmpty(endpoint)) {
+                    endpoint = method.getName();
+                }
+                StringBuilder url = new StringBuilder();
+                url.append(uri);
+                if (url.charAt(url.length() - 1) != '/') url.append('/');
+                url.append(endpoint);
+                HttpResponse.BodyHandler<String> readerBodyHandler =
+                    info -> BodySubscribers.ofString(StandardCharsets.UTF_8);
+                String requestString = gson.toJson(values);
+System.out.println("REQUEST: " + requestString);
+                HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(url.toString()))
+                    .header("Content-Type", "application/json")
+                    .POST(BodyPublishers.ofString(requestString))
+                    .build();
+                final HttpResponse<String> response = client.send(
+                    httpRequest,
+                    readerBodyHandler
                 );
 
-                try (Reader reader = response.body()) {
-                    if (response.statusCode() != 200) {
-                        final StringWriter writer = new StringWriter();
-                        reader.transferTo(writer);
-                        throw new RestException(writer.toString());
-                    }
-
-                    if (method.getReturnType() == void.class) {
-                        return null;
-                    }
-
-                    return gson.fromJson(response.body(), method.getReturnType());
+                String contents = response.body();
+                if (response.statusCode() != RestConstants.SC_OK) {
+                    handleError(contents);
                 }
+
+                Type returnType = resultType.get();
+                if (returnType == null) {
+                    returnType = method.getReturnType();
+                } else {
+                    resultType.remove();
+                }
+                if (returnType == void.class) {
+                    return null;
+                }
+                if (returnType instanceof TypeVariable) {
+                    Type[] bounds = ((TypeVariable<?>) returnType).getBounds();
+                    if (bounds.length > 0) {
+                        returnType = bounds[0];
+                    }
+                }
+System.out.println("RESPONSE: " + contents);
+                return gson.fromJson(contents, returnType);
             } catch (RuntimeException e) {
                 throw e;
             } catch (Exception e) {
@@ -165,9 +196,54 @@ public class RestClient {
             }
         }
 
+        private void closeClient() {
+            if (!httpExecutor.isShutdown()) {
+                httpExecutor.shutdown();
+            }
+        }
+
         @NotNull
         private static RestException createException(@NotNull Method method, @NotNull String reason) {
             return new RestException("Unable to invoke the method " + method + " because " + reason);
         }
+
+        @Override
+        public void setNextCallResultType(Type type) {
+            this.resultType.set(type);
+        }
+    }
+
+    private static void handleError(String contents) throws RestException {
+        String[] stackTraceRows = contents.split("\n");
+        String errorLine = stackTraceRows[0];
+        List<StackTraceElement> stackTraceElements = new ArrayList<>();
+        for (int i = 1; i < stackTraceRows.length; i++) {
+            Matcher matcher = ST_LINE_PATTERN.matcher(stackTraceRows[i]);
+            if (matcher.find()) {
+                String methodRef = matcher.group(1);
+                int divPos = methodRef.lastIndexOf('.');
+                String className = methodRef.substring(0, divPos);
+                String methodName = methodRef.substring(divPos + 1);
+
+                String classRef = matcher.group(2);
+                divPos = classRef.indexOf(':');
+                String fileName;
+                int fileLine;
+                if (divPos == -1) {
+                    fileName = classRef;
+                    fileLine = -1;
+                } else {
+                    fileName = classRef.substring(0, divPos).trim();
+                    fileLine = CommonUtils.toInt(classRef.substring(divPos + 1).trim());
+                }
+                stackTraceElements.add(
+                    new StackTraceElement(className, methodName, fileName, fileLine));
+            }
+        }
+        RestException runtimeException = new RestException(errorLine);
+        Collections.addAll(stackTraceElements, runtimeException.getStackTrace());
+        runtimeException.setStackTrace(stackTraceElements.toArray(new StackTraceElement[0]));
+
+        throw runtimeException;
     }
 }

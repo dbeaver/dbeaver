@@ -109,7 +109,7 @@ public class EditIndexPage extends AttributesSelectorPage {
         });
 
         if (supportUniqueIndexes) {
-            final Button uniqueButton = UIUtils.createLabelCheckbox(panel, "Unique", false);
+            final Button uniqueButton = UIUtils.createLabelCheckbox(panel, EditorsMessages.dialog_struct_unique, false);
             uniqueButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -136,8 +136,9 @@ public class EditIndexPage extends AttributesSelectorPage {
     protected void createAttributeColumns(Table columnsTable) {
         super.createAttributeColumns(columnsTable);
 
-        TableColumn colDesc = UIUtils.createTableColumn(columnsTable, SWT.NONE, "Order");
-        colDesc.setToolTipText("Ascending/descending");
+        TableColumn colDesc = UIUtils.createTableColumn(columnsTable, SWT.NONE,
+            EditorsMessages.dialog_struct_create_column_order);
+        colDesc.setToolTipText(EditorsMessages.dialog_struct_create_column_order_tooltip);
     }
 
     @Override

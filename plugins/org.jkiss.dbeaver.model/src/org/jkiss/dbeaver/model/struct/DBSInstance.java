@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPExclusiveResource;
+import org.jkiss.dbeaver.model.DPIElement;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -40,6 +41,7 @@ public interface DBSInstance extends DBSObject
      * @param meta request for metadata operations context
      * @return default data source execution context.
      */
+    @DPIElement
     @NotNull
     DBCExecutionContext getDefaultContext(DBRProgressMonitor monitor, boolean meta);
 
