@@ -116,7 +116,9 @@ public class GeometryDataUtils {
                     .filter(Objects::nonNull)
                     .collect(Collectors.joining(divider));
 
-                properties.put("name", name);
+                if (!name.isBlank()) {
+                    properties.put("name", name);
+                }
             }
         }
     }
