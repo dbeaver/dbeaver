@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.model;
 
 public class DBPPage {
-    private final int offset;
-    private final int limit;
+    private int offset;
+    private int limit;
 
     public DBPPage(int offset, int limit) {
         this.offset = offset;
@@ -31,5 +31,13 @@ public class DBPPage {
 
     public int getLimit() {
         return limit;
+    }
+
+    public void setOffset(int offset) {
+        this.offset = offset;
+    }
+
+    public void setLimit(int limit) {
+        this.limit = limit;
     }
 }

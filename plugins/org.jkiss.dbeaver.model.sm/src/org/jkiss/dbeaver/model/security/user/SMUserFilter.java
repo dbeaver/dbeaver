@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.model.security.user;
 
 public class SMUserFilter {
-    private final String userIdMask;
-    private final Boolean enabledState;
+    private String userIdMask;
+    private Boolean enabledState;
 
     public SMUserFilter() {
         this.userIdMask = null;
@@ -36,6 +36,14 @@ public class SMUserFilter {
 
     public Boolean getEnabledState() {
         return enabledState;
+    }
+
+    public void setUserIdMask(String userIdMask) {
+        this.userIdMask = userIdMask;
+    }
+
+    public void setEnabledState(Boolean enabledState) {
+        this.enabledState = enabledState;
     }
 
     public static SMUserFilter Empty = new SMUserFilter();
