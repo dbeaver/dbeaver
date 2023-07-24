@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.ai.translator;
+package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 
@@ -26,22 +26,22 @@ import java.util.Map;
 /**
  * Natural language translator item
  */
-public class DAIHistoryItem {
+public class QMTranslationHistoryItem {
 
     private String id;
     private String naturalText;
     private String completionText;
     private Date time;
 
-    public DAIHistoryItem() {
+    public QMTranslationHistoryItem() {
     }
 
-    public DAIHistoryItem(String naturalText, String completionText) {
+    public QMTranslationHistoryItem(String naturalText, String completionText) {
         this.naturalText = naturalText;
         this.completionText = completionText;
     }
 
-    public DAIHistoryItem(Map<String, Object> map) {
+    public QMTranslationHistoryItem(Map<String, Object> map) {
         this.id = JSONUtils.getString(map, "id");
         this.naturalText = JSONUtils.getString(map, "naturalText");
         this.completionText = JSONUtils.getString(map, "completionText");
