@@ -56,6 +56,7 @@ import org.jkiss.dbeaver.model.text.TextUtils;
 import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
 import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -87,7 +88,15 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
     public SQLCompletionAnalyzer(SQLCompletionRequest request) {
         this.request = request;
-        final DBPPreferenceStore prefStore = request.getContext().getDataSource().getContainer().getPreferenceStore();
+
+        final DBPPreferenceStore prefStore;
+        final DBPDataSource dataSource = request.getContext().getDataSource();
+        if (dataSource != null) {
+            prefStore = request.getContext().getDataSource().getContainer().getPreferenceStore();
+        } else {
+            prefStore = DBWorkbench.getPlatform().getPreferenceStore();
+        }
+
         if (prefStore.getBoolean(ENABLE_EXPERIMENTAL_FEATURES)) {
             tableRefsAnalyzer = new TableReferencesAnalyzer();
         } else {
@@ -125,7 +134,6 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         String prevKeyWord = wordDetector.getPrevKeyWord();
         boolean isPrevWordEmpty = CommonUtils.isEmpty(wordDetector.getPrevWords());
         String prevDelimiter = wordDetector.getPrevDelimiter();
-        tableRefsAnalyzer.prepareTableReferences();
         {
             if (!CommonUtils.isEmpty(prevKeyWord)) {
                 if (syntaxManager.getDialect().isEntityQueryWord(prevKeyWord)) {
@@ -959,7 +967,6 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     }
 
     private interface LSMTableReferencesAnalyzer {
-        void prepareTableReferences();
         @NotNull
         List<Pair<String, String>> getFilteredTableReferences(@NotNull String tableAlias, boolean allowPartialMatch);
     }
@@ -968,8 +975,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
         List<Pair<String, String>> tableReferences;
 
-        @Override
-        public void prepareTableReferences() {
+        private void prepareTableReferences() {
             final SQLScriptElement activeQuery = request.getActiveQuery();
             if (activeQuery == null) {
                 tableReferences = Collections.emptyList();
@@ -982,7 +988,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 );
                 STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
                 tableReferences = getTableAndAliasFromSources(tree);
-                //log.debug("Extracted table names: " + tableReferences);
+                // log.debug("Extracted table names: " + tableReferences);
             } catch (Exception e) {
                 log.debug("Failed to extract table names from query", e);
                 tableReferences = Collections.emptyList();
@@ -993,14 +999,17 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         @Override
         public List<Pair<String, String>> getFilteredTableReferences(@NotNull String tableAlias, boolean allowPartialMatch) {
             List<Pair<String, String>> result;
+            if(tableReferences == null) {
+                prepareTableReferences();
+            }
             if (CommonUtils.isNotEmpty(tableAlias) && tableReferences != null && tableReferences.size() > 0) {
                 result = tableReferences.stream().filter(r -> allowPartialMatch 
                     ? r.getSecond() != null && CommonUtils.startsWithIgnoreCase(r.getSecond(), tableAlias)
                     : r.getSecond() != null && r.getSecond().equalsIgnoreCase(tableAlias)
                 ).collect(Collectors.toList());
-                //log.debug("Matched ("+(allowPartialMatch ? "partial" : "exact")+") table names: " + tableReferences);
+                // log.debug("Matched ("+(allowPartialMatch ? "partial" : "exact")+") table names: " + tableReferences);
             } else {
-                result = Collections.emptyList();
+                result = tableReferences;
             }
             return result;
         }
@@ -1008,12 +1017,6 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     }
 
     private class TableReferencesAnalyzerOld implements LSMTableReferencesAnalyzer {
-
-        @Override
-        public void prepareTableReferences() {
-            // do nothing
-        }
-
         @NotNull
         @Override
         public List<Pair<String, String>> getFilteredTableReferences(@NotNull String tableAlias, boolean allowPartialMatch) {
