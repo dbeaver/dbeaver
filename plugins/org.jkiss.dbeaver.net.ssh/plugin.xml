@@ -12,6 +12,7 @@
                 codeName="SSH"
                 label="%handler.ssh_tunnel.label"
                 description="%handler.ssh_tunnel.description"
+                desktop="false"
                 secured="true"
                 order="1"
                 handlerClass="org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl">
@@ -23,7 +24,7 @@
 
                 <property id="user" label="User name" type="string" description="SSH target user name"/>
                 <property id="password" label="User password" type="string" description="SSH target user password"/>
-                <property id="keyPath" label="Private key path" type="file" description="SSH private key path"/>
+                <property id="keyValue" label="Private key path" type="file" description="SSH private key path" features="multiline,secured"/>
             </propertyGroup>
             <propertyGroup label="SSH Advanced Settings">
                 <property id="aliveInterval" label="Keep-Alive interval" type="string" description="SSH keep-alive interval"/>
