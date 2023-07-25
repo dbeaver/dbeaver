@@ -682,6 +682,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             }
             final DBPPreferenceStore prefStore = request.getContext().getDataSource().getContainer().getPreferenceStore();
             final List<Pair<String, String>> names = extractTableNames(wordPart, true, prefStore);
+            Map<String, Object> parameters = new LinkedHashMap<>();
+            parameters.put(SQLCompletionProposalBase.PARAM_NO_SPACE, true);
             for (Pair<String, String> name : names) {
                 final String tableName = name.getFirst();
                 final String tableAlias = name.getSecond();
@@ -696,7 +698,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             null,
                             false,
                             null,
-                            Collections.emptyMap())
+                            parameters)
                     );
                 }
                 if (!CommonUtils.isEmpty(tableAlias) && !hasProposal(proposals, tableAlias)) {
@@ -710,7 +712,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             null,
                             false,
                             null,
-                            Collections.emptyMap())
+                            parameters)
                     );
                 }
             }
