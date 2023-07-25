@@ -16,35 +16,56 @@
  */
 package org.jkiss.dbeaver.model.security.user;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPPage;
+
 public class SMUserFilter {
+    @Nullable
     private String userIdMask;
+    @Nullable
     private Boolean enabledState;
 
-    public SMUserFilter() {
+    @NotNull
+    private DBPPage page;
+
+    public SMUserFilter(@NotNull DBPPage page) {
         this.userIdMask = null;
         this.enabledState = null;
+        this.page = page;
     }
 
-    public SMUserFilter(String userIdMask, Boolean enabledState) {
+    public SMUserFilter(@Nullable String userIdMask, @Nullable Boolean enabledState, @NotNull DBPPage page) {
         this.userIdMask = userIdMask;
         this.enabledState = enabledState;
+        this.page = page;
     }
 
+    @Nullable
     public String getUserIdMask() {
         return userIdMask;
     }
 
+    @Nullable
     public Boolean getEnabledState() {
         return enabledState;
     }
 
-    public void setUserIdMask(String userIdMask) {
+    @NotNull
+    public DBPPage getPage() {
+        return page;
+    }
+
+    public void setPage(@NotNull DBPPage page) {
+        this.page = page;
+    }
+
+    public void setUserIdMask(@Nullable String userIdMask) {
         this.userIdMask = userIdMask;
     }
 
-    public void setEnabledState(Boolean enabledState) {
+    public void setEnabledState(@Nullable Boolean enabledState) {
         this.enabledState = enabledState;
     }
 
-    public static SMUserFilter Empty = new SMUserFilter();
 }

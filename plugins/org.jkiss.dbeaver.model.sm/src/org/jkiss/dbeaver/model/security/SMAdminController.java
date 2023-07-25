@@ -19,11 +19,10 @@ package org.jkiss.dbeaver.model.security;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPPage;
-import org.jkiss.dbeaver.model.security.user.SMUserImportList;
 import org.jkiss.dbeaver.model.security.user.SMTeam;
 import org.jkiss.dbeaver.model.security.user.SMUser;
 import org.jkiss.dbeaver.model.security.user.SMUserFilter;
+import org.jkiss.dbeaver.model.security.user.SMUserImportList;
 
 import java.util.List;
 import java.util.Map;
@@ -82,7 +81,7 @@ public interface SMAdminController extends SMController {
     SMUser[] findUsers(String userNameMask) throws DBException;
 
     @NotNull
-    SMUser[] findUsers(@NotNull DBPPage page, @NotNull SMUserFilter filter) throws DBException;
+    SMUser[] findUsers(@NotNull SMUserFilter filter) throws DBException;
 
     int countUsers(@NotNull SMUserFilter filter) throws DBException;
 
