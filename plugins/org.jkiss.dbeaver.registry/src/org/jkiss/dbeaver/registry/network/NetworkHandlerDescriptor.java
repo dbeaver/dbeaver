@@ -53,6 +53,7 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
     private final List<String> replacesIDs;
     private NetworkHandlerDescriptor replacedBy;
     private final DBPPropertyDescriptor[] properties;
+    private final boolean isDesktop;
 
     NetworkHandlerDescriptor(
         IConfigurationElement config) {
@@ -66,6 +67,7 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         this.secured = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SECURED), false);
         this.handlerType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_HANDLER_CLASS));
         this.order = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_ORDER), 1);
+        this.isDesktop = CommonUtils.getBoolean(config.getAttribute("desktop"), true);
 
         this.replacesIDs = Arrays.stream(config.getChildren("replace"))
             .map(re -> re.getAttribute("id"))
@@ -152,6 +154,11 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
 
     void setReplacedBy(NetworkHandlerDescriptor replacedBy) {
         this.replacedBy = replacedBy;
+    }
+
+    // Handler works in desktop application only
+    public boolean isDesktopHandler() {
+        return isDesktop;
     }
 
 }
