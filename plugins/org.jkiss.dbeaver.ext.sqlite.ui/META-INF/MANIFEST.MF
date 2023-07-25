@@ -14,6 +14,6 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.data.gis.view
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-Vendor: %Bundle-Vendor
+Bundle-Vendor: DBeaver Corp
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.ext.sqlite.ui

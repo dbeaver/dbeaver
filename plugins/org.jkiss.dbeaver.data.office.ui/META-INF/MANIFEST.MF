@@ -13,6 +13,6 @@ Require-Bundle: org.jkiss.dbeaver.data.office,
  org.jkiss.dbeaver.data.transfer
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-Vendor: %Bundle-Vendor
+Bundle-Vendor: DBeaver Corp
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.data.office.ui
