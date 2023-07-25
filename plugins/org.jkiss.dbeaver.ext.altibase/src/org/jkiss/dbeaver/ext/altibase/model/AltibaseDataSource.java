@@ -30,9 +30,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.altibase.model.plan.AltibaseQueryPlanner;
+import org.jkiss.dbeaver.ext.altibase.model.session.AltibaseServerSessionManager;
+import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericExecutionContext;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericSynonym;
+import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -40,7 +44,10 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCExecutionResult;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.DBCStatementType;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -48,11 +55,13 @@ import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
 import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 public class AltibaseDataSource extends GenericDataSource implements DBPObjectStatisticsCollector {
     
@@ -65,6 +74,9 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     private boolean isPasswordExpireWarningShown;
     private AltibaseOutputReader outputReader;
     
+    private String dbName;
+    String queryGetActiveDB;
+
     public AltibaseDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, AltibaseMetaModel metaModel)
             throws DBException {
         super(monitor, container, metaModel, new AltibaseSQLDialect());
@@ -77,6 +89,8 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         // PublicSchema is for global objects such as public synonym.
         publicSchema = new GenericSchema(this, null, AltibaseConstants.PUBLIC_USER);
         publicSchema.setVirtual(true);
+
+        queryGetActiveDB = CommonUtils.toString(container.getDriver().getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB));
     }
     
     @Override
@@ -99,6 +113,21 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
             outputReader.isServerOutputEnabled());
     }
 
+    public String getDbName(JDBCSession session) throws DBException {
+        if (dbName == null) {
+            try(JDBCPreparedStatement dbStat = session.prepareStatement(queryGetActiveDB)) {
+                try (JDBCResultSet resultSet = dbStat.executeQuery()) {
+                    resultSet.next();
+                    dbName = JDBCUtils.safeGetStringTrimmed(resultSet, 1);
+                }
+            } catch (SQLException e) {
+                throw new DBException(e, this);
+            }
+        }
+
+        return dbName;
+    }
+    
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException {
@@ -119,6 +148,8 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
             return adapter.cast(outputReader);
         } else if (adapter == DBCQueryPlanner.class) {
             return adapter.cast(new AltibaseQueryPlanner(this));
+        } else if (adapter == DBAServerSessionManager.class) {
+            return adapter.cast(new AltibaseServerSessionManager(this));
         }
         
         return super.getAdapter(adapter);

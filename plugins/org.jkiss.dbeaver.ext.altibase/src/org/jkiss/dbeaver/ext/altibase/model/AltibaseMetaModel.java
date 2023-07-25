@@ -72,7 +72,6 @@ import org.jkiss.utils.CommonUtils;
  * Altibase DataSource
  */
 public class AltibaseMetaModel extends GenericMetaModel {
-    //private Pattern ERROR_POSITION_PATTERN = Pattern.compile(" line ([0-9]+), column ([0-9]+)");
 
     private static final Log log = Log.getLog(AltibaseMetaModel.class);
     public static boolean DBMS_METADATA = true;

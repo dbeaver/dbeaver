@@ -58,6 +58,7 @@
 					<!-- In order to circumvent previous version of JDBC bug: ROLE -->
 					<parameter name="schema-filters-enabled" value="true"/>
 					<parameter name="split-procedures-and-functions" value="true"/>
+					<parameter name="query-get-active-db" value="SELECT db_name FROM V$DATABASE"/>
                 </driver>
              </drivers>
              <tree
@@ -223,6 +224,9 @@
                             </folder>
                         </items>
                     </folder>
+                </folder>
+                <folder label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings">
+                    <treeContribution category="connectionEditor"/>
                 </folder>
              </tree>
         </datasource>
