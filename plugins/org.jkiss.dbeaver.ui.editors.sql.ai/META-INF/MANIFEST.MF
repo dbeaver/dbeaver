@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
-Bundle-Name: %Bundle-Name
+Bundle-Name: DBeaver SQL Editors - AI integration
 Bundle-SymbolicName: org.jkiss.dbeaver.ui.editors.sql.ai;singleton:=true
 Bundle-Version: 1.0.12.qualifier
 Import-Package: org.jkiss.dbeaver.model.ai,

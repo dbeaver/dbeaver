@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
-Bundle-Name: %Bundle-Name
+Bundle-Name: DBeaver Schema Compare UI (Simple)
 Bundle-SymbolicName: org.jkiss.dbeaver.cmp.simple.ui;singleton:=true
 Bundle-Version: 6.0.106.qualifier
 Bundle-Release-Date: 20230724
