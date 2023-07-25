@@ -118,6 +118,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         String prevKeyWord = wordDetector.getPrevKeyWord();
         boolean isPrevWordEmpty = CommonUtils.isEmpty(wordDetector.getPrevWords());
         String prevDelimiter = wordDetector.getPrevDelimiter();
+        if (request.getActiveQuery() == null || wordDetector.getPrevKeyWordOffset() < request.getActiveQuery().getOffset()) {
+            prevKeyWord = null;
+            isPrevWordEmpty = true;
+        }
         {
             if (!CommonUtils.isEmpty(prevKeyWord)) {
                 if (syntaxManager.getDialect().isEntityQueryWord(prevKeyWord)) {
