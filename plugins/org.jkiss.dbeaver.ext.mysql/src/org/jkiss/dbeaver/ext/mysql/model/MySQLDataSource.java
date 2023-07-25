@@ -176,8 +176,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         if (isMariaDB()) {
             props.put("trustServerCertificate", String.valueOf(!sslConfig.getBooleanProperty(MySQLConstants.PROP_VERIFY_SERVER_SERT)));
         } else {
-            props.put("verifyServerCertificate", sslConfig.getStringProperty(MySQLConstants.PROP_VERIFY_SERVER_SERT));
-            props.put("requireSSL", sslConfig.getStringProperty(MySQLConstants.PROP_REQUIRE_SSL));
+            props.put("verifyServerCertificate", String.valueOf(sslConfig.getBooleanProperty(MySQLConstants.PROP_VERIFY_SERVER_SERT)));
+            props.put("requireSSL", String.valueOf(sslConfig.getBooleanProperty(MySQLConstants.PROP_REQUIRE_SSL)));
         }
 
         {

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.ai.translator;
+package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -28,13 +28,13 @@ import java.util.List;
 /**
  * Natural language translator history
  */
-public interface DAIHistoryManager {
+public interface QMTranslationHistoryManager {
 
     /**
      * Reads translation history
      */
     @NotNull
-    List<DAIHistoryItem> readTranslationHistory(
+    List<QMTranslationHistoryItem> readTranslationHistory(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSLogicalDataSource dataSource,
         @NotNull DBCExecutionContext executionContext,
