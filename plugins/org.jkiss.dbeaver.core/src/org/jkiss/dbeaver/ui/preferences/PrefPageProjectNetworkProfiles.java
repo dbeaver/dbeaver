@@ -93,9 +93,9 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
     private ToolItem deleteProfileItem;
     private ToolItem copyProfileItem;
 
-    private List<NetworkHandlerDescriptor> allHandlers = new ArrayList<>();
+    private final List<NetworkHandlerDescriptor> allHandlers = new ArrayList<>();
     private DBWNetworkProfile selectedProfile;
-    private Map<NetworkHandlerDescriptor, HandlerBlock> configurations = new HashMap<>();
+    private final Map<NetworkHandlerDescriptor, HandlerBlock> configurations = new HashMap<>();
 
     @Override
     public void init(IWorkbench workbench) {
@@ -107,103 +107,11 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
         CustomSashForm divider = UIUtils.createPartDivider(null, parent, SWT.HORIZONTAL);
 
         {
-            Composite profilesGroup = new Composite(divider, SWT.BORDER);
-            GridLayout gl = new GridLayout(1, false);
-            gl.marginWidth = 0;
-            gl.marginHeight = 0;
-            profilesGroup.setLayout(gl);
+            Composite profilesGroup = UIUtils.createComposite(divider, 1);
+            profilesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            GridData gd = new GridData(GridData.FILL_BOTH);
-            profilesGroup.setLayoutData(gd);
-
-            {
-                ToolBar toolbar = new ToolBar(profilesGroup, SWT.HORIZONTAL | SWT.RIGHT);
-
-                UIUtils.createToolItem(toolbar, CoreMessages.pref_page_network_profiles_tool_create_title,
-                        CoreMessages.pref_page_network_profiles_tool_create_text, UIIcon.ROW_ADD,
-                        new SelectionAdapter() {
-                            @Override
-                            public void widgetSelected(SelectionEvent e) {
-                                createNewProfile(null);
-                            }
-                        });
-
-                deleteProfileItem = UIUtils.createToolItem(toolbar, CoreMessages.pref_page_network_profiles_tool_delete_title,
-                    CoreMessages.pref_page_network_profiles_tool_delete_text, UIIcon.ROW_DELETE,
-                    new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            List<? extends DBPDataSourceContainer> usedBy = projectMeta
-                                .getDataSourceRegistry().getDataSourcesByProfile(selectedProfile);
-                            if (!usedBy.isEmpty()) {
-                                UIUtils.showMessageBox(
-                                    getShell(),
-                                    CoreMessages.pref_page_network_profiles_tool_delete_dialog_error_title,
-                                    NLS.bind(CoreMessages.pref_page_network_profiles_tool_delete_dialog_error_info, new Object[]{
-                                        selectedProfile.getProfileName(),
-                                        usedBy.size(),
-                                        usedBy.stream()
-                                            .sorted(Comparator.comparing(DBPNamedObject::getName))
-                                            .map(x -> " - " + x.getName())
-                                            .collect(Collectors.joining("\n"))
-                                    }),
-                                    SWT.ICON_ERROR
-                                );
-                                return;
-                            }
-                            if (UIUtils.confirmAction(
-                                getShell(),
-                                CoreMessages.pref_page_network_profiles_tool_delete_confirmation_title,
-                                NLS.bind(
-                                    CoreMessages.pref_page_network_profiles_tool_delete_confirmation_question,
-                                    selectedProfile.getProfileName()
-                                )
-                            )) {
-                                projectMeta.getDataSourceRegistry().removeNetworkProfile(selectedProfile);
-                                projectMeta.getDataSourceRegistry().flushConfig();
-
-                                final int index = profilesTable.getSelectionIndex();
-                                profilesTable.remove(index);
-                                profilesTable.select(CommonUtils.clamp(index, 0, profilesTable.getItemCount() - 1));
-                                profilesTable.notifyListeners(SWT.Selection, new Event());
-
-                                updateControlsState();
-                            }
-                        }
-                    });
-
-                copyProfileItem = UIUtils.createToolItem(
-                    toolbar,
-                    CoreMessages.pref_page_network_profiles_tool_copy_title,
-                    CoreMessages.pref_page_network_profiles_tool_copy_text,
-                    UIIcon.ROW_COPY,
-                    new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            createNewProfile(selectedProfile);
-                        }
-                    });
-            }
-
-            profilesTable = new Table(profilesGroup, SWT.SINGLE);
-            gd = new GridData(GridData.FILL_BOTH);
-            gd.minimumWidth = 150;
-            profilesTable.setLayoutData(gd);
-            profilesTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    saveHandlerSettings();
-                    TableItem[] selection = profilesTable.getSelection();
-                    if (ArrayUtils.isEmpty(selection)) {
-                        selectedProfile = null;
-                    } else {
-                        selectedProfile = (DBWNetworkProfile) selection[0].getData();
-                    }
-                    updateControlsState();
-                }
-            });
-
-
+            createProfilesTable(profilesGroup);
+            createProfilesToolBar(profilesGroup);
         }
 
         {
@@ -222,11 +130,101 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
             });
         }
 
-        divider.setWeights(new int[] { 300, 700 } );
+        divider.setWeights(300, 700);
 
         performDefaults();
 
         return divider;
+    }
+
+    private void createProfilesTable(Composite profilesGroup) {
+        GridData gd;
+        profilesTable = new Table(profilesGroup, SWT.SINGLE);
+        gd = new GridData(GridData.FILL_BOTH);
+        gd.minimumWidth = 150;
+        profilesTable.setLayoutData(gd);
+        profilesTable.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                saveHandlerSettings();
+                TableItem[] selection = profilesTable.getSelection();
+                if (ArrayUtils.isEmpty(selection)) {
+                    selectedProfile = null;
+                } else {
+                    selectedProfile = (DBWNetworkProfile) selection[0].getData();
+                }
+                updateControlsState();
+            }
+        });
+    }
+
+    private void createProfilesToolBar(Composite profilesGroup) {
+        ToolBar toolbar = new ToolBar(profilesGroup, SWT.HORIZONTAL | SWT.RIGHT);
+
+        UIUtils.createToolItem(toolbar, CoreMessages.pref_page_network_profiles_tool_create_title,
+                CoreMessages.pref_page_network_profiles_tool_create_text, UIIcon.ROW_ADD,
+                new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        createNewProfile(null);
+                    }
+                });
+
+        deleteProfileItem = UIUtils.createToolItem(toolbar, CoreMessages.pref_page_network_profiles_tool_delete_title,
+            CoreMessages.pref_page_network_profiles_tool_delete_text, UIIcon.ROW_DELETE,
+            new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    List<? extends DBPDataSourceContainer> usedBy = projectMeta
+                        .getDataSourceRegistry().getDataSourcesByProfile(selectedProfile);
+                    if (!usedBy.isEmpty()) {
+                        UIUtils.showMessageBox(
+                            getShell(),
+                            CoreMessages.pref_page_network_profiles_tool_delete_dialog_error_title,
+                            NLS.bind(CoreMessages.pref_page_network_profiles_tool_delete_dialog_error_info, new Object[]{
+                                selectedProfile.getProfileName(),
+                                usedBy.size(),
+                                usedBy.stream()
+                                    .sorted(Comparator.comparing(DBPNamedObject::getName))
+                                    .map(x -> " - " + x.getName())
+                                    .collect(Collectors.joining("\n"))
+                            }),
+                            SWT.ICON_ERROR
+                        );
+                        return;
+                    }
+                    if (UIUtils.confirmAction(
+                        getShell(),
+                        CoreMessages.pref_page_network_profiles_tool_delete_confirmation_title,
+                        NLS.bind(
+                            CoreMessages.pref_page_network_profiles_tool_delete_confirmation_question,
+                            selectedProfile.getProfileName()
+                        )
+                    )) {
+                        projectMeta.getDataSourceRegistry().removeNetworkProfile(selectedProfile);
+                        projectMeta.getDataSourceRegistry().flushConfig();
+
+                        final int index = profilesTable.getSelectionIndex();
+                        profilesTable.remove(index);
+                        profilesTable.select(CommonUtils.clamp(index, 0, profilesTable.getItemCount() - 1));
+                        profilesTable.notifyListeners(SWT.Selection, new Event());
+
+                        updateControlsState();
+                    }
+                }
+            });
+
+        copyProfileItem = UIUtils.createToolItem(
+            toolbar,
+            CoreMessages.pref_page_network_profiles_tool_copy_title,
+            CoreMessages.pref_page_network_profiles_tool_copy_text,
+            UIIcon.ROW_COPY,
+            new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    createNewProfile(selectedProfile);
+                }
+            });
     }
 
     private void createNewProfile(@Nullable DBWNetworkProfile sourceProfile) {
