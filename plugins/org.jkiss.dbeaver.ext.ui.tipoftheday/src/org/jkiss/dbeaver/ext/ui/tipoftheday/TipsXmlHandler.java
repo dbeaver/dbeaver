@@ -17,6 +17,9 @@
 package org.jkiss.dbeaver.ext.ui.tipoftheday;
 
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLUtils;
@@ -29,8 +32,13 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TipsXmlHandler extends DefaultHandler {
+	
+	private static final Log log = Log.getLog(TipsXmlHandler.class);
 
     private static final String TIP = "tip";
+    private static final String COMMAND_REF = "commandRef";
+    private static final String COMMAND_ID = "commandId";
+
     private final String productEdition;
     private boolean tipTagStarted;
     private boolean tipApplicable;
@@ -62,6 +70,15 @@ public class TipsXmlHandler extends DefaultHandler {
             if (!CommonUtils.isEmpty(tipProducts) && !CommonUtils.isEmpty(productEdition)) {
                 this.tipApplicable = ArrayUtils.contains(tipProducts.split(","), productEdition);
             }
+        } else if (qName.equalsIgnoreCase(COMMAND_REF)) {
+        	String commandId = attributes.getValue(COMMAND_ID);
+        	String description = ActionUtils.findCommandDescription(commandId, PlatformUI.getWorkbench(), false);
+        	if (!CommonUtils.isEmpty(description)) {
+        		tipTagContent.append("<b>").append(description).append("</b>");
+            } else {
+            	log.error("No command found by id: " + commandId + ". Consider removing obsolete tip or fixing command id.");
+            }
+        	System.out.println(tipTagContent);
         }
     }
 
