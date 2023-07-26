@@ -3,7 +3,7 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.expressions">
-        <namespace id="geo" class="org.jkiss.dbeaver.model.gis.GisExpressionFunctions" description="%extension-point.org.jkiss.dbeaver.model.gis.GisExpressionFunctions.description"/>
+        <namespace id="geo" class="org.jkiss.dbeaver.model.gis.GisExpressionFunctions" description="GIS functions"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
