@@ -16,15 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model.session;
 
-import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
+import java.sql.ResultSet;
+import java.util.Objects;
+
 import org.jkiss.dbeaver.ext.altibase.AltibaseUtils;
 import org.jkiss.dbeaver.model.admin.sessions.AbstractServerSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.Objects;
 
 /**
  * Session
@@ -34,6 +32,7 @@ public class AltibaseServerSession extends AbstractServerSession {
     public static final String CAT_SESSION = "Session";
     public static final String CAT_SQL = "SQL";
     public static final String CAT_WAIT = "Wait";
+    public static final String CAT_TIMEOUT = "Timeout";
     
     private String sessionId;
     private String txId;
@@ -47,31 +46,51 @@ public class AltibaseServerSession extends AbstractServerSession {
     private String loginIdleSince;
     private String autoCommit;
     private String sysdba;
+    
     private String clientAppInfo;
     private String commName;
     private String clientType;
     private String clientProtocolVersion;
     private String clientPid;
     
+    private String queryTimeLimit;
+    private String ddlTimeLimit;
+    private String fetchTimeLimit;
+    private String utransTimeLimit;
+    private String idleTimeLimit;
+    
+    private String nlsTerritory;
+    private String timezone;
+    
     
     public AltibaseServerSession(ResultSet dbResult) {
-        this.sessionId = JDBCUtils.safeGetString(dbResult, "session_id");
-        this.txId = JDBCUtils.safeGetString(dbResult, "tx_id");
-        this.stmtId = JDBCUtils.safeGetInt(dbResult, "stmt_id");
-        this.userName = JDBCUtils.safeGetString(dbResult, "user_name");
-        this.sql = JDBCUtils.safeGetString(dbResult, "sql");
-        this.lockTarget = JDBCUtils.safeGetString(dbResult, "lock_target");
-        this.lockStatus = JDBCUtils.safeGetString(dbResult, "lock_status");
-        this.lockType = JDBCUtils.safeGetString(dbResult, "lock_type");
-        this.loginTime = JDBCUtils.safeGetString(dbResult, "login_time");
-        this.loginIdleSince = JDBCUtils.safeGetString(dbResult, "idle_since");
-        this.autoCommit = JDBCUtils.safeGetString(dbResult, "autocommit");
-        this.sysdba = JDBCUtils.safeGetString(dbResult, "sysda");
-        this.clientAppInfo = JDBCUtils.safeGetString(dbResult, "client_app_info");
-        this.commName = JDBCUtils.safeGetString(dbResult, "comm_name");
-        this.clientType = JDBCUtils.safeGetString(dbResult, "client_type");
+        this.sessionId          = JDBCUtils.safeGetString(dbResult, "session_id");
+        this.txId               = JDBCUtils.safeGetString(dbResult, "tx_id");
+        this.stmtId             = JDBCUtils.safeGetInt(dbResult, "stmt_id");
+        this.userName           = JDBCUtils.safeGetString(dbResult, "user_name");
+        this.sql                = JDBCUtils.safeGetString(dbResult, "sql");
+        this.lockTarget         = JDBCUtils.safeGetString(dbResult, "lock_target");
+        this.lockStatus         = JDBCUtils.safeGetString(dbResult, "lock_status");
+        this.lockType           = JDBCUtils.safeGetString(dbResult, "lock_type");
+        this.loginTime          = JDBCUtils.safeGetString(dbResult, "login_time");
+        this.loginIdleSince     = JDBCUtils.safeGetString(dbResult, "idle_since");
+        this.autoCommit         = JDBCUtils.safeGetString(dbResult, "autocommit");
+        this.sysdba             = JDBCUtils.safeGetString(dbResult, "sysda");
+        
+        this.queryTimeLimit     = JDBCUtils.safeGetString(dbResult, "QUERY_TIME_LIMIT");
+        this.ddlTimeLimit       = JDBCUtils.safeGetString(dbResult, "DDL_TIME_LIMIT");
+        this.fetchTimeLimit     = JDBCUtils.safeGetString(dbResult, "FETCH_TIME_LIMIT");
+        this.utransTimeLimit    = JDBCUtils.safeGetString(dbResult, "UTRANS_TIME_LIMIT");
+        this.idleTimeLimit      = JDBCUtils.safeGetString(dbResult, "IDLE_TIME_LIMIT");
+        
+        this.clientAppInfo      = JDBCUtils.safeGetString(dbResult, "client_app_info");
+        this.commName           = JDBCUtils.safeGetString(dbResult, "comm_name");
+        this.clientType         = JDBCUtils.safeGetString(dbResult, "client_type");
         this.clientProtocolVersion = JDBCUtils.safeGetString(dbResult, "client_protocol_version");
-        this.clientPid = JDBCUtils.safeGetString(dbResult, "client_pid");
+        this.clientPid          = JDBCUtils.safeGetString(dbResult, "client_pid");
+        
+        this.nlsTerritory       = JDBCUtils.safeGetString(dbResult, "NLS_TERRITORY");
+        this.timezone           = JDBCUtils.safeGetString(dbResult, "TIME_ZONE");
     }
 
     @Property(category = CAT_SESSION, viewable = true, order = 1)
@@ -141,8 +160,8 @@ public class AltibaseServerSession extends AbstractServerSession {
     public String getIsSysdba() {
         return sysdba;
     }
-
-    @Property(category = CAT_SESSION, viewable = true, order = 21)
+    
+    @Property(category = CAT_SESSION, viewable = true, order = 20)
     public String getClientAppInfo() {
         return clientAppInfo;
     }
@@ -152,19 +171,55 @@ public class AltibaseServerSession extends AbstractServerSession {
         return commName;
     }
     
-    @Property(category = CAT_SESSION, viewable = true, order = 21)
+    @Property(category = CAT_SESSION, viewable = true, order = 22)
     public String getClientType() {
         return clientType;
     }
     
-    @Property(category = CAT_SESSION, viewable = true, order = 21)
+    @Property(category = CAT_SESSION, viewable = true, order = 23)
     public String getClientProtocolVersion() {
         return clientProtocolVersion;
     }
     
-    @Property(category = CAT_SESSION, viewable = true, order = 21)
+    @Property(category = CAT_SESSION, viewable = true, order = 24)
     public String getClientPID() {
         return clientPid;
+    }
+    
+    
+    @Property(category = CAT_SESSION, viewable = true, order = 25)
+    public String getNlsTerritory() {
+        return nlsTerritory;
+    }
+    
+    @Property(category = CAT_SESSION, viewable = true, order = 26)
+    public String getTimeZone() {
+        return timezone;
+    }
+    
+    @Property(category = CAT_TIMEOUT, viewable = true, order = 30)
+    public String getQueryTimeLimit() {
+        return queryTimeLimit;
+    }
+    
+    @Property(category = CAT_TIMEOUT, viewable = true, order = 31)
+    public String getDdlTimeLimit() {
+        return ddlTimeLimit;
+    }
+    
+    @Property(category = CAT_TIMEOUT, viewable = true, order = 32)
+    public String getFetchTimeLimit() {
+        return fetchTimeLimit;
+    }
+    
+    @Property(category = CAT_TIMEOUT, viewable = true, order = 33)
+    public String getUtransTimeLimit() {
+        return utransTimeLimit;
+    }
+    
+    @Property(category = CAT_TIMEOUT, viewable = true, order = 34)
+    public String getIdleTimeLimit() {
+        return idleTimeLimit;
     }
     
     @Override
