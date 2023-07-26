@@ -53,6 +53,8 @@ public class SMAuthInfo {
     @Nullable
     private final SMAuthPermissions authPermissions;
 
+    private final boolean isMainSession;
+
     private SMAuthInfo(
         @NotNull SMAuthStatus authStatus,
         @Nullable String error,
@@ -62,7 +64,8 @@ public class SMAuthInfo {
         @Nullable String smAccessToken,
         @Nullable String smRefreshToken,
         @Nullable String authRole,
-        @Nullable SMAuthPermissions authPermissions
+        @Nullable SMAuthPermissions authPermissions,
+        boolean isMainSession
     ) {
         this.authStatus = authStatus;
         this.error = error;
@@ -73,41 +76,51 @@ public class SMAuthInfo {
         this.smRefreshToken = smRefreshToken;
         this.authRole = authRole;
         this.authPermissions = authPermissions;
+        this.isMainSession = isMainSession;
     }
 
     public static SMAuthInfo expired(
         @NotNull String authAttemptId,
-        @NotNull Map<SMAuthConfigurationReference, Object> authData
+        @NotNull Map<SMAuthConfigurationReference, Object> authData,
+        boolean isMainSession
     ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.EXPIRED)
             .setAuthAttemptId(authAttemptId)
             .setAuthData(authData)
+            .setMainSession(isMainSession)
             .build();
     }
 
-    public static SMAuthInfo error(@NotNull String authAttemptId, @NotNull String error) {
+    public static SMAuthInfo error(
+        @NotNull String authAttemptId,
+        @NotNull String error,
+        boolean isMainSession
+    ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.ERROR)
             .setAuthAttemptId(authAttemptId)
             .setError(error)
+            .setMainSession(isMainSession)
             .build();
     }
 
     public static SMAuthInfo inProgress(
         @NotNull String authAttemptId,
         @Nullable String redirectUrl,
-        @NotNull Map<SMAuthConfigurationReference, Object> authData
+        @NotNull Map<SMAuthConfigurationReference, Object> authData,
+        boolean isMainSession
     ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.IN_PROGRESS)
             .setAuthAttemptId(authAttemptId)
             .setRedirectUrl(redirectUrl)
             .setAuthData(authData)
+            .setMainSession(isMainSession)
             .build();
     }
 
-    public static SMAuthInfo success(
+    public static SMAuthInfo successMainSession(
         @NotNull String authAttemptId,
         @NotNull String accessToken,
         @Nullable String refreshToken,
@@ -115,14 +128,25 @@ public class SMAuthInfo {
         @NotNull Map<SMAuthConfigurationReference, Object> authData,
         @Nullable String authRole
     ) {
-        return new Builder()
-            .setAuthStatus(SMAuthStatus.SUCCESS)
+        return new Builder().setAuthStatus(SMAuthStatus.SUCCESS)
             .setAuthAttemptId(authAttemptId)
             .setSmAccessToken(accessToken)
             .setSmRefreshToken(refreshToken)
             .setAuthData(authData)
             .setAuthPermissions(smAuthPermissions)
             .setAuthRole(authRole)
+            .setMainSession(true)
+            .build();
+    }
+
+    public static SMAuthInfo successChildSession(
+        @NotNull String authAttemptId,
+        @NotNull Map<SMAuthConfigurationReference, Object> authData
+    ) {
+        return new Builder().setAuthStatus(SMAuthStatus.SUCCESS)
+            .setAuthAttemptId(authAttemptId)
+            .setMainSession(false)
+            .setAuthData(authData)
             .build();
     }
 
@@ -175,6 +199,9 @@ public class SMAuthInfo {
         return error;
     }
 
+    public boolean isMainSession() {
+        return isMainSession;
+    }
 
     private static final class Builder {
         private SMAuthStatus authStatus;
@@ -186,6 +213,7 @@ public class SMAuthInfo {
         private String smRefreshToken;
         private String authRole;
         private SMAuthPermissions authPermissions;
+        private boolean isMainSession;
 
         private Builder() {
         }
@@ -235,9 +263,24 @@ public class SMAuthInfo {
             return this;
         }
 
+        public Builder setMainSession(boolean mainSession) {
+            isMainSession = mainSession;
+            return this;
+        }
+
         public SMAuthInfo build() {
             return new SMAuthInfo(
-                authStatus, error, authAttemptId, authData, redirectUrl, smAccessToken, smRefreshToken, authRole, authPermissions);
+                authStatus,
+                error,
+                authAttemptId,
+                authData,
+                redirectUrl,
+                smAccessToken,
+                smRefreshToken,
+                authRole,
+                authPermissions,
+                isMainSession
+            );
         }
     }
 }

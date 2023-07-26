@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.security;
 import org.jkiss.code.NotNull;
 
 public class SMTokens {
+    public static SMTokens EMPTY = new SMTokens("", "");
     @NotNull
     private final String smAccessToken;
     @NotNull
