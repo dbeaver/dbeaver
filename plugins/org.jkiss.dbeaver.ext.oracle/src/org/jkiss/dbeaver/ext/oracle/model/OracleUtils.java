@@ -161,6 +161,11 @@ public class OracleUtils {
                 ddl += invokeDBMSMetadataGetDependentDDL(session, schema, object, DBMSMetaDependentObjectType.INDEX);
             }
 
+            if (ddlFormat == OracleDDLFormat.FULL) {
+                // Add grants info to main DDL
+                ddl += invokeDBMSMetadataGetDependentDDL(session, schema, object, DBMSMetaDependentObjectType.OBJECT_GRANT);
+            }
+
             if (ddlFormat != OracleDDLFormat.COMPACT) {
                 // Add object and objects columns info to main DDL
                 ddl = addCommentsToDDL(monitor, object, ddl);
@@ -180,7 +185,8 @@ public class OracleUtils {
         INDEX,
         CONSTRAINT,
         REF_CONSTRAINT,
-        TRIGGER
+        TRIGGER,
+        OBJECT_GRANT
     }
 
     private static String invokeDBMSMetadataGetDependentDDL(JDBCSession session, OracleSchema schema, OracleTableBase object, DBMSMetaDependentObjectType dependentObjectType) {
