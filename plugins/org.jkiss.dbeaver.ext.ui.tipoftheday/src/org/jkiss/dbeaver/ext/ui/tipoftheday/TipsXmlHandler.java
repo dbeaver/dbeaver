@@ -32,8 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TipsXmlHandler extends DefaultHandler {
-	
-	private static final Log log = Log.getLog(TipsXmlHandler.class);
+    private static final Log log = Log.getLog(TipsXmlHandler.class);
 
     private static final String TIP = "tip";
     private static final String COMMAND_REF = "commandRef";
@@ -71,14 +70,13 @@ public class TipsXmlHandler extends DefaultHandler {
                 this.tipApplicable = ArrayUtils.contains(tipProducts.split(","), productEdition);
             }
         } else if (qName.equalsIgnoreCase(COMMAND_REF)) {
-        	String commandId = attributes.getValue(COMMAND_ID);
-        	String description = ActionUtils.findCommandDescription(commandId, PlatformUI.getWorkbench(), false);
-        	if (!CommonUtils.isEmpty(description)) {
-        		tipTagContent.append("<b>").append(description).append("</b>");
+            String commandId = attributes.getValue(COMMAND_ID);
+            String description = ActionUtils.findCommandDescription(commandId, PlatformUI.getWorkbench(), false);
+            if (!CommonUtils.isEmpty(description)) {
+                tipTagContent.append("<b>").append(description).append("</b>");
             } else {
-            	log.error("No command found by id: " + commandId + ". Consider removing obsolete tip or fixing command id.");
+                log.error("No command found by id: " + commandId + ". Consider removing obsolete tip or fixing command id.");
             }
-        	System.out.println(tipTagContent);
         }
     }
 
