@@ -162,13 +162,13 @@ public class AltibaseServerSession extends AbstractServerSession {
     }
     
     @Property(category = CAT_SESSION, viewable = true, order = 20)
-    public String getClientAppInfo() {
-        return clientAppInfo;
-    }
-
-    @Property(category = CAT_SESSION, viewable = true, order = 21)
     public String getCommName() {
         return commName;
+    }
+    
+    @Property(category = CAT_SESSION, viewable = true, order = 21)
+    public String getClientAppInfo() {
+        return clientAppInfo;
     }
     
     @Property(category = CAT_SESSION, viewable = true, order = 22)
@@ -185,7 +185,6 @@ public class AltibaseServerSession extends AbstractServerSession {
     public String getClientPID() {
         return clientPid;
     }
-    
     
     @Property(category = CAT_SESSION, viewable = true, order = 25)
     public String getNlsTerritory() {
