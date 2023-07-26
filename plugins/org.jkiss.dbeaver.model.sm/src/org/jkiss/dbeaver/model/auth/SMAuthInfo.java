@@ -53,8 +53,6 @@ public class SMAuthInfo {
     @Nullable
     private final SMAuthPermissions authPermissions;
 
-    private final boolean isMainSession;
-
     private SMAuthInfo(
         @NotNull SMAuthStatus authStatus,
         @Nullable String error,
@@ -64,8 +62,7 @@ public class SMAuthInfo {
         @Nullable String smAccessToken,
         @Nullable String smRefreshToken,
         @Nullable String authRole,
-        @Nullable SMAuthPermissions authPermissions,
-        boolean isMainSession
+        @Nullable SMAuthPermissions authPermissions
     ) {
         this.authStatus = authStatus;
         this.error = error;
@@ -76,47 +73,40 @@ public class SMAuthInfo {
         this.smRefreshToken = smRefreshToken;
         this.authRole = authRole;
         this.authPermissions = authPermissions;
-        this.isMainSession = isMainSession;
     }
 
     public static SMAuthInfo expired(
         @NotNull String authAttemptId,
-        @NotNull Map<SMAuthConfigurationReference, Object> authData,
-        boolean isMainSession
+        @NotNull Map<SMAuthConfigurationReference, Object> authData
     ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.EXPIRED)
             .setAuthAttemptId(authAttemptId)
             .setAuthData(authData)
-            .setMainSession(isMainSession)
             .build();
     }
 
     public static SMAuthInfo error(
         @NotNull String authAttemptId,
-        @NotNull String error,
-        boolean isMainSession
+        @NotNull String error
     ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.ERROR)
             .setAuthAttemptId(authAttemptId)
             .setError(error)
-            .setMainSession(isMainSession)
             .build();
     }
 
     public static SMAuthInfo inProgress(
         @NotNull String authAttemptId,
         @Nullable String redirectUrl,
-        @NotNull Map<SMAuthConfigurationReference, Object> authData,
-        boolean isMainSession
+        @NotNull Map<SMAuthConfigurationReference, Object> authData
     ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.IN_PROGRESS)
             .setAuthAttemptId(authAttemptId)
             .setRedirectUrl(redirectUrl)
             .setAuthData(authData)
-            .setMainSession(isMainSession)
             .build();
     }
 
@@ -135,17 +125,17 @@ public class SMAuthInfo {
             .setAuthData(authData)
             .setAuthPermissions(smAuthPermissions)
             .setAuthRole(authRole)
-            .setMainSession(true)
             .build();
     }
 
     public static SMAuthInfo successChildSession(
         @NotNull String authAttemptId,
+        SMAuthPermissions permissions,
         @NotNull Map<SMAuthConfigurationReference, Object> authData
     ) {
         return new Builder().setAuthStatus(SMAuthStatus.SUCCESS)
             .setAuthAttemptId(authAttemptId)
-            .setMainSession(false)
+            .setAuthPermissions(permissions)
             .setAuthData(authData)
             .build();
     }
@@ -199,10 +189,6 @@ public class SMAuthInfo {
         return error;
     }
 
-    public boolean isMainSession() {
-        return isMainSession;
-    }
-
     private static final class Builder {
         private SMAuthStatus authStatus;
         private String error;
@@ -213,7 +199,6 @@ public class SMAuthInfo {
         private String smRefreshToken;
         private String authRole;
         private SMAuthPermissions authPermissions;
-        private boolean isMainSession;
 
         private Builder() {
         }
@@ -263,11 +248,6 @@ public class SMAuthInfo {
             return this;
         }
 
-        public Builder setMainSession(boolean mainSession) {
-            isMainSession = mainSession;
-            return this;
-        }
-
         public SMAuthInfo build() {
             return new SMAuthInfo(
                 authStatus,
@@ -278,8 +258,7 @@ public class SMAuthInfo {
                 smAccessToken,
                 smRefreshToken,
                 authRole,
-                authPermissions,
-                isMainSession
+                authPermissions
             );
         }
     }
