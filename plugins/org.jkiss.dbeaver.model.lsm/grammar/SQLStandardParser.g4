@@ -169,7 +169,7 @@ queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
 // from
 fromClause: FROM tableReference ((Comma tableReference)+)?;
 nonjoinedTableReference: (tableName (correlationSpecification)?)|(derivedTable correlationSpecification);
-tableReference: nonjoinedTableReference|joinedTable;
+tableReference: (nonjoinedTableReference|joinedTable)*; // * to handle incomplete queries
 joinedTable: (nonjoinedTableReference|(LeftParen joinedTable RightParen)) (naturalJoinTerm|crossJoinTerm)+;
 correlationSpecification: (AS)? correlationName (LeftParen derivedColumnList RightParen)?;
 derivedColumnList: columnNameList;
