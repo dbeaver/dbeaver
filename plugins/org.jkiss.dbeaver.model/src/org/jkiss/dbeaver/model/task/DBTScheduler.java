@@ -69,6 +69,10 @@ public interface DBTScheduler {
     @Nullable
     DBTTaskScheduleConfiguration getScheduledTaskConfiguration(@NotNull DBTTask task) throws DBException;
 
+    default boolean canSchedule(@NotNull DBTTask task) throws DBException {
+        return true;
+    }
+
     void setTaskSchedule(@NotNull DBTTask task, @NotNull DBTTaskScheduleConfiguration scheduleConfiguration) throws DBException;
 
     void removeTaskSchedule(@NotNull DBTTask task, DBTTaskScheduleInfo scheduleInfo) throws DBException;
