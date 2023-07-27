@@ -718,7 +718,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             null,
                             false,
                             null,
-                            Collections.emptyMap())
+                            Map.of(SQLCompletionProposalBase.PARAM_NO_SPACE, true))
                     );
                 }
                 if (!CommonUtils.isEmpty(tableAlias) && !hasProposal(proposals, tableAlias)) {
@@ -732,7 +732,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             null,
                             false,
                             null,
-                            Collections.emptyMap())
+                            Map.of(SQLCompletionProposalBase.PARAM_NO_SPACE, true))
                     );
                 }
             }
