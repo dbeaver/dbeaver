@@ -1,8 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<?eclipse version="3.2"?>
-<!--
+/*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2023 DBeaver Corp and others
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,18 +13,19 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-  -->
-<plugin>
+ */
+package org.jkiss.dbeaver.ext.derby.model;
 
-   <extension point="com.github.eclipsecolortheme.mapper">
+import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 
-      <mapper
-            class="com.github.eclipsecolortheme.mapper.GenericMapper"
-            name="DBeaver"
-            pluginId="org.eclipse.ui.workbench"
-            xml="mappings/org.jkiss.dbeaver.xml">
-      </mapper>
+public class DerbySQLDialect extends GenericSQLDialect {
 
-   </extension>
+    public DerbySQLDialect() {
+        super("Derby", "derby");
+    }
 
-</plugin>
+    @Override
+    public boolean supportsAliasInConditions() {
+        return false;
+    }
+}
