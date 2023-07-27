@@ -1142,10 +1142,17 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
     @Override
     public void activatePage() {
+        if (getWizard().getContainer() != null) {
+            // The user is importing something into a known container which is already loaded
+            loadSettings(true);
+            return;
+        }
+
         final DBPDataSourceContainer container = DatabaseConsumerSettings.getDataSourceContainer(getWizard().getSettings());
         final DBPPreferenceStore preferences = DTActivator.getDefault().getPreferences();
 
         if (preferences.getBoolean(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE) || container != null && container.isConnected()) {
+            // The user is importing something into an unspecified container - reconnect to the last chosen container if the preference is set
             loadSettings(true);
         }
     }
