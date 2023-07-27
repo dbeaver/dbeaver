@@ -43,6 +43,7 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
     private int startOffset;
     private int endOffset;
     private int delimiterOffset;
+    private int prevKeyWordOffset = -1;
 
     /**
      * Method SQLWordPartDetector.
@@ -151,6 +152,7 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
                 if (dialect.isEntityQueryWord(prevWord) || dialect.isAttributeQueryWord(prevWord) || SQLUtils.isExecKeyword(dialect, prevWord)) {
                     if (CommonUtils.isEmpty(prevKeyWord)) {
                         this.prevKeyWord = prevWord.toUpperCase(Locale.ENGLISH);
+                        this.prevKeyWordOffset = prevOffset;
                         if (prevWordsParse <= 1) {
                             break;
                         }
@@ -248,9 +250,12 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
      * Previous valuable entity or attribute manipulation keyword.
      * All functions, aggregate operators and other keywords are ignored.
      */
-    public String getPrevKeyWord()
-    {
+    public String getPrevKeyWord() {
         return prevKeyWord;
+    }
+    
+    public int getPrevKeyWordOffset() {
+        return prevKeyWordOffset;
     }
 
     public String getNextWord() {

@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -29,7 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 final class DerbyDataSource extends GenericDataSource {
     DerbyDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container,
                     @NotNull GenericMetaModel metaModel) throws DBException {
-        super(monitor, container, metaModel, new GenericSQLDialect());
+        super(monitor, container, metaModel, new DerbySQLDialect());
     }
 
     @Nullable
