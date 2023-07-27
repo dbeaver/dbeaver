@@ -134,6 +134,13 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         String prevKeyWord = wordDetector.getPrevKeyWord();
         boolean isPrevWordEmpty = CommonUtils.isEmpty(wordDetector.getPrevWords());
         String prevDelimiter = wordDetector.getPrevDelimiter();
+        // Here we handle the case when user started typing the new query on the next line without query delimiter for the previous one.
+        // If setting `Blank line is statement delimiter` set, then active query is only newly typed characters
+        // and prev word can't exist in this new query - offset of prev word doesn't fit active query offset, so we set it accordingly.
+        if (request.getActiveQuery() == null || wordDetector.getPrevKeyWordOffset() < request.getActiveQuery().getOffset()) {
+            prevKeyWord = null;
+            isPrevWordEmpty = true;
+        }
         {
             if (!CommonUtils.isEmpty(prevKeyWord)) {
                 if (syntaxManager.getDialect().isEntityQueryWord(prevKeyWord)) {
