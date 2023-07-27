@@ -5,7 +5,7 @@
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
                 class="org.jkiss.dbeaver.ext.kognitio.KognitioDataSourceProvider"
-                description="%datasource.kognitio.description"
+                description="Kognitio datasource"
                 id="kognitio"
                 parent="generic"
                 label="Kognitio"
