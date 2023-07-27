@@ -41,6 +41,8 @@ public class SQLCompletionProposalBase {
 
     public static final String PARAM_EXEC = "exec";
 
+    public static final String PARAM_NO_SPACE = "no-space";
+
     private static final Log log = Log.getLog(SQLCompletionProposalBase.class);
 
     private final SQLCompletionContext context;
