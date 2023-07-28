@@ -204,7 +204,8 @@ public class OracleUtils {
             }
         } catch (Exception e) {
             // No dependent index DDL or something went wrong
-            log.debug("Error reading dependent index DDL", e);
+            log.debug("Error reading dependent DDL '" + dependentObjectType +
+                "' for '" + object.getFullyQualifiedName(DBPEvaluationContext.DDL) + "': " + e.getMessage());
         }
         return ddl;
     }
