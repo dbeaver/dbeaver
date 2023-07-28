@@ -71,7 +71,7 @@ import java.util.zip.ZipOutputStream;
 /**
  * Stream transfer consumer
  */
-@DBSerializable("streamTransferConsumer")
+@DBSerializable(StreamTransferConsumer.NODE_ID)
 public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsumerSettings, IStreamDataExporter> {
 
     private static final Log log = Log.getLog(StreamTransferConsumer.class);
@@ -604,7 +604,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void finishTransfer(@NotNull DBRProgressMonitor monitor, @Nullable Exception exception, boolean last) {
+    public void finishTransfer(@NotNull DBRProgressMonitor monitor, @Nullable Exception exception, @Nullable DBTTask task, boolean last) {
         if (!last && exception == null) {
             exportFooterInFile(monitor);
 
@@ -631,9 +631,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 final IDataTransferEventProcessor<StreamTransferConsumer> processor = descriptor.create();
 
                 if (exception == null) {
-                    processor.processEvent(monitor, IDataTransferEventProcessor.Event.FINISH, this, entry.getValue());
+                    processor.processEvent(monitor, IDataTransferEventProcessor.Event.FINISH, this, task, entry.getValue());
                 } else {
-                    processor.processError(monitor, exception, this, entry.getValue());
+                    processor.processError(monitor, exception, this, task, entry.getValue());
                 }
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Transfer event processor", "Error executing data transfer event processor '" + entry.getKey() + "'", e);

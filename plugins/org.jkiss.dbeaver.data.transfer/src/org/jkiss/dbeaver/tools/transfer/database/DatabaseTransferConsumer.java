@@ -44,13 +44,13 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferAttributeTransformer;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferNodePrimary;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
+import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -63,10 +63,12 @@ import java.util.Map;
 /**
  * Stream transfer consumer
  */
-@DBSerializable("databaseTransferConsumer")
+@DBSerializable(DatabaseTransferConsumer.NODE_ID)
 public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseConsumerSettings, IDataTransferProcessor>,
         IDataTransferNodePrimary, DBPReferentialIntegrityController {
     private static final Log log = Log.getLog(DatabaseTransferConsumer.class);
+
+    public static final String NODE_ID = "databaseTransferConsumer";
 
     private final DBCStatistics statistics = new DBCStatistics();
     private DatabaseConsumerSettings settings;
@@ -715,6 +717,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     @Override
     public void finishTransfer(DBRProgressMonitor monitor, boolean last) {
+        finishTransfer(monitor, null, last);
+    }
+
+    @Override
+    public void finishTransfer(@NotNull DBRProgressMonitor monitor, @Nullable Exception exception, @Nullable DBTTask task, boolean last) {
         if (last) {
             // Refresh navigator
             monitor.subTask("Refresh database model");
@@ -760,6 +767,29 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 }
 
                 DBWorkbench.getPlatformUI().openEntityEditor(targetObject);
+            }
+        }
+
+        if (last) {
+            final DataTransferRegistry registry = DataTransferRegistry.getInstance();
+            for (Map.Entry<String, Map<String, Object>> entry : settings.getEventProcessors().entrySet()) {
+                final DataTransferEventProcessorDescriptor descriptor = registry.getEventProcessorById(entry.getKey());
+                if (descriptor == null) {
+                    log.debug("Can't find event processor '" + entry.getKey() + "'");
+                    continue;
+                }
+                try {
+                    final IDataTransferEventProcessor<DatabaseTransferConsumer> processor = descriptor.create();
+
+                    if (exception == null) {
+                        processor.processEvent(monitor, IDataTransferEventProcessor.Event.FINISH, this, task, entry.getValue());
+                    } else {
+                        processor.processError(monitor, exception, this, task, entry.getValue());
+                    }
+                } catch (DBException e) {
+                    DBWorkbench.getPlatformUI().showError("Transfer event processor", "Error executing data transfer event processor '" + entry.getKey() + "'", e);
+                    log.error("Error executing event processor '" + entry.getKey() + "'", e);
+                }
             }
         }
     }
