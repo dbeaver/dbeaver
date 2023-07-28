@@ -59,7 +59,7 @@ public class AttributeListFigure extends Figure {
 
     public List<AttributeItemFigure> getAttributes() {
         List<AttributeItemFigure> result = new ArrayList<>();
-        for (IFigure child : getChildren()) {
+        for (Object child : getChildren()) {
             if (child instanceof AttributeItemFigure) {
                 result.add((AttributeItemFigure) child);
             }

@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
@@ -104,7 +103,7 @@ import java.util.stream.Collectors;
  * Visualizes results as grid.
  */
 public class SpreadsheetPresentation extends AbstractPresentation
-    implements IResultSetEditor, IResultSetDisplayFormatProvider, ISelectionProvider, IStatefulControl, IAdaptable, IGridController {
+    implements IResultSetEditor, IResultSetDisplayFormatProvider, ISelectionProvider, IStatefulControl, DBPAdaptable, IGridController {
     public static final String PRESENTATION_ID = "spreadsheet";
 
     public static final String ATTR_OPTION_PINNED = "pinned";

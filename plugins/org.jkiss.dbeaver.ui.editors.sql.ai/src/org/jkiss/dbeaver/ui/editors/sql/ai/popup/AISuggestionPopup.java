@@ -33,12 +33,12 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
-import org.jkiss.dbeaver.model.ai.translator.DAIHistoryItem;
-import org.jkiss.dbeaver.model.ai.translator.DAIHistoryManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.qm.QMTranslationHistoryItem;
+import org.jkiss.dbeaver.model.qm.QMTranslationHistoryManager;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
@@ -65,7 +65,7 @@ public class AISuggestionPopup extends AbstractPopupPanel {
     private static final Log log = Log.getLog(AISuggestionPopup.class);
 
     @NotNull
-    private final DAIHistoryManager historyManager;
+    private final QMTranslationHistoryManager historyManager;
 
     @NotNull
     private final DBSLogicalDataSource dataSource;
@@ -86,7 +86,7 @@ public class AISuggestionPopup extends AbstractPopupPanel {
     public AISuggestionPopup(
         @NotNull Shell parentShell,
         @NotNull String title,
-        @NotNull DAIHistoryManager historyManager,
+        @NotNull QMTranslationHistoryManager historyManager,
         @NotNull DBSLogicalDataSource dataSource,
         @NotNull DBCExecutionContext executionContext,
         @NotNull DAICompletionSettings settings) {
@@ -196,10 +196,10 @@ public class AISuggestionPopup extends AbstractPopupPanel {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 try {
-                    List<DAIHistoryItem> queries = historyManager.readTranslationHistory(monitor, dataSource, executionContext, 100);
+                    List<QMTranslationHistoryItem> queries = historyManager.readTranslationHistory(monitor, dataSource, executionContext, 100);
                     UIUtils.syncExec(() -> {
                         if (!CommonUtils.isEmpty(queries)) {
-                            for (DAIHistoryItem query : queries) {
+                            for (QMTranslationHistoryItem query : queries) {
                                 historyCombo.add(query.getNaturalText());
                             }
                             historyCombo.select(0);

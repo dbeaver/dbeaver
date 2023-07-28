@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -71,7 +70,7 @@ import java.util.*;
  * 
  * @author Denis Forveille
  */
-public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IAdaptable, DBPObjectStatisticsCollector {
+public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DBPAdaptable, DBPObjectStatisticsCollector {
 
     private static final Log log = Log.getLog(DB2DataSource.class);
 

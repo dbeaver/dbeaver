@@ -347,9 +347,21 @@
                 codeName="SSL"
                 label="SSL"
                 description="Secure socket layer"
+                desktop="false"
                 secured="false"
                 order="100"
                 handlerClass="org.jkiss.dbeaver.ext.mysql.model.net.MySQLSSLHandlerImpl">
+            <propertyGroup label="SSL Settings">
+                <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured,password" length="MULTILINE"/>
+                <property id="ssl.client.cert.value" label="Client Certificate" type="file" description="Choose client certificate file" features="secured,password" length="MULTILINE"/>
+                <property id="ssl.client.key.value" label="Client Private Key" type="file" description="Choose client private key file" features="secured,password" length="MULTILINE"/>
+                <property id="ssl.cipher.suites" label="Cipher suites (optional)" type="string" features="secured,password"/>
+            </propertyGroup>
+            <propertyGroup label="Additional SSL Settings">
+                <property id="ssl.require" label="Require SSL" type="boolean" description="Require server support of SSL connection."/>
+                <property id="ssl.verify.server" label="Verify server certificate" type="boolean" description="Should the driver verify the server's certificate? When using this feature, the explicit certificate parameters should be specified, rather than system properties." defaultValue="true"/>
+                <property id="ssl.public.key.retrieve" label="Allow public key retrieval" type="boolean" description="Allows special handshake roundtrip to get server RSA public key directly from server."/>
+            </propertyGroup>
             <objectType name="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"/>
         </handler>
     </extension>

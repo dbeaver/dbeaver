@@ -97,7 +97,8 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
                 }
             };
             GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.heightHint = 200;
+            gd.heightHint = 300;
+            gd.widthHint = 400;
             driverSelectViewer.getControl().setLayoutData(gd);
 
             ((GridData)filterIndentLabel.getLayoutData()).widthHint =

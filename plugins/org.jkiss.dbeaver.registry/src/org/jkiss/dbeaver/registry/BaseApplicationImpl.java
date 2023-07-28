@@ -96,6 +96,11 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
         return false;
     }
 
+    @Override
+    public boolean isDetachedProcess() {
+        return false;
+    }
+
     @NotNull
     public String getApplicationRunId() {
         if (applicationRunId == null) {
