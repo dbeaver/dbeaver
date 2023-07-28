@@ -142,8 +142,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
                 @Override
                 protected void setSelectedNode(DBNDatabaseNode node) {
-                    loadSettings(false);
                     settings.setContainer(DBUtils.getAdapter(DBSObjectContainer.class, node.getObject()));
+                    loadSettings(false);
                     setContainerInfo(node);
                     getWizard().runWithProgress(monitor -> {
                         // Reset mappings
