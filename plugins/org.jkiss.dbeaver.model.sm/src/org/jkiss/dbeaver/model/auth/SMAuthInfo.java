@@ -86,7 +86,10 @@ public class SMAuthInfo {
             .build();
     }
 
-    public static SMAuthInfo error(@NotNull String authAttemptId, @NotNull String error) {
+    public static SMAuthInfo error(
+        @NotNull String authAttemptId,
+        @NotNull String error
+    ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.ERROR)
             .setAuthAttemptId(authAttemptId)
@@ -107,7 +110,7 @@ public class SMAuthInfo {
             .build();
     }
 
-    public static SMAuthInfo success(
+    public static SMAuthInfo successMainSession(
         @NotNull String authAttemptId,
         @NotNull String accessToken,
         @Nullable String refreshToken,
@@ -115,14 +118,25 @@ public class SMAuthInfo {
         @NotNull Map<SMAuthConfigurationReference, Object> authData,
         @Nullable String authRole
     ) {
-        return new Builder()
-            .setAuthStatus(SMAuthStatus.SUCCESS)
+        return new Builder().setAuthStatus(SMAuthStatus.SUCCESS)
             .setAuthAttemptId(authAttemptId)
             .setSmAccessToken(accessToken)
             .setSmRefreshToken(refreshToken)
             .setAuthData(authData)
             .setAuthPermissions(smAuthPermissions)
             .setAuthRole(authRole)
+            .build();
+    }
+
+    public static SMAuthInfo successChildSession(
+        @NotNull String authAttemptId,
+        SMAuthPermissions permissions,
+        @NotNull Map<SMAuthConfigurationReference, Object> authData
+    ) {
+        return new Builder().setAuthStatus(SMAuthStatus.SUCCESS)
+            .setAuthAttemptId(authAttemptId)
+            .setAuthPermissions(permissions)
+            .setAuthData(authData)
             .build();
     }
 
@@ -174,7 +188,6 @@ public class SMAuthInfo {
     public String getError() {
         return error;
     }
-
 
     private static final class Builder {
         private SMAuthStatus authStatus;
@@ -237,7 +250,16 @@ public class SMAuthInfo {
 
         public SMAuthInfo build() {
             return new SMAuthInfo(
-                authStatus, error, authAttemptId, authData, redirectUrl, smAccessToken, smRefreshToken, authRole, authPermissions);
+                authStatus,
+                error,
+                authAttemptId,
+                authData,
+                redirectUrl,
+                smAccessToken,
+                smRefreshToken,
+                authRole,
+                authPermissions
+            );
         }
     }
 }
