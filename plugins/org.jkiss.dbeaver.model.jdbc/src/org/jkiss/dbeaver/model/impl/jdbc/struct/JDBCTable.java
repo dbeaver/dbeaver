@@ -47,6 +47,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -809,6 +810,18 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
         }
     }
+    
+    @Override
+    public DBSDictionaryAccessor getDictionaryAccessor(
+            DBCExecutionSource execSource,
+            DBRProgressMonitor monitor,
+            List<DBDAttributeValue> preceedingKeys, 
+            DBSEntityAttribute keyColumn, 
+            boolean sortAsc, 
+            boolean sortByDesc
+        ) throws DBException {
+        return new DictionaryAccessor(execSource, monitor, preceedingKeys, keyColumn, sortAsc, sortByDesc);
+    }
 
     ////////////////////////////////////////////////////////////////////
     // Truncate
@@ -911,4 +924,164 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return "DELETE FROM " + tableName;
     }
 
+    protected class DictionaryAccessor implements DBSDictionaryAccessor {
+        private final DBCExecutionSource execSource;
+        private final List<DBDAttributeValue> precedingKeys;
+        private final DBSEntityAttribute keyColumn;
+        private final boolean sortAsc;
+        private final boolean sortByDesc;
+
+        private final DBDValueHandler keyValueHandler;
+        private final String descColumns;
+        private final Collection<DBSEntityAttribute> descAttributes;
+
+        private final DBDDataFilter filter;
+        private JDBCSession session;
+
+        public DictionaryAccessor(DBCExecutionSource execSource, DBRProgressMonitor monitor, List<DBDAttributeValue> precedingKeys, DBSEntityAttribute keyColumn, boolean sortAsc, boolean sortByDesc) throws DBException {
+            this.execSource = execSource;
+            this.precedingKeys = precedingKeys;
+            this.keyColumn = keyColumn;
+            this.sortAsc = sortAsc;
+            this.sortByDesc = sortByDesc;
+
+            this.keyValueHandler = DBUtils.findValueHandler(keyColumn.getDataSource(), keyColumn);
+            this.descColumns = DBVUtils.getDictionaryDescriptionColumns(monitor, keyColumn);
+            this.descAttributes = descColumns == null ? null : DBVEntity.getDescriptionColumns(monitor, JDBCTable.this, descColumns);
+
+            List<DBDAttributeConstraint> constraints = new ArrayList<>(precedingKeys == null ? 0 : precedingKeys.size() + 1);
+            if (precedingKeys != null) {
+                for (DBDAttributeValue key: precedingKeys) {
+                    DBDAttributeConstraint constraint = new DBDAttributeConstraint(key.getAttribute(), constraints.size());
+                    constraint.setValue(key.getValue());
+                    constraint.setOperator(DBCLogicalOperator.EQUALS);
+                    constraints.add(constraint);
+                }
+            }
+            this.filter = new DBDDataFilter(constraints);
+
+            this.session = DBUtils.openUtilSession(monitor, JDBCTable.this, "Load attribute values count");
+        }
+
+        @Override
+        public long countValues() throws DBException {
+            return countData(execSource, session, filter, 0);
+        }
+
+        @Override
+        public long findValueIndex(Object keyValue) throws DBException {
+            DBDDataFilter filter = new DBDDataFilter(this.filter);
+            List<DBDAttributeConstraint> constraints = filter.getConstraints();
+            DBDAttributeConstraint constraint = new DBDAttributeConstraint(keyColumn, constraints.size());
+            constraint.setValue(keyValue);
+            constraint.setOperator(sortAsc ? DBCLogicalOperator.LESS : DBCLogicalOperator.GREATER);
+            constraints.add(constraint);
+            return countData(execSource, session, filter, 0);
+        }
+
+        private StringBuilder prepareQueryString() {
+            StringBuilder query = new StringBuilder();
+
+            query.append("SELECT ").append(DBUtils.getQuotedIdentifier(keyColumn, DBPAttributeReferencePurpose.DATA_SELECTION));
+            if (descAttributes != null) {
+                if (DBUtils.findObject(descAttributes, keyColumn.getName(), true) != null) {
+                    // Add alias for value column to avoid ambiguity
+                    query.append(" dbvrvalue");
+                }
+                query.append(", ").append(descColumns);
+            }
+            query.append(" FROM ").append(DBUtils.getObjectFullName(JDBCTable.this, DBPEvaluationContext.DML));
+
+            SQLUtils.appendQueryConditions(getDataSource(), query, null, filter);
+
+            return query;
+        }
+
+        private List<DBDLabelValuePair> readValues(String query, int offset, int maxResults) throws DBException {
+            try (DBCStatement dbStat = DBUtils.makeStatement(null, session, DBCStatementType.QUERY, query, offset, maxResults)) {
+                if (dbStat.executeStatement()) {
+                    try (DBCResultSet dbResult = dbStat.openResultSet()) {
+                        return DBVUtils.readDictionaryRows(session, keyColumn, keyValueHandler, dbResult, true, false);
+                    }
+                } else {
+                    return Collections.emptyList();
+                }
+            }
+        }
+
+        @Override
+        public List<DBDLabelValuePair> getValues(int offset, int maxResults) throws DBException {
+            StringBuilder query = prepareQueryString();
+            appendSortingClause(query);
+            return readValues(query.toString(), offset, maxResults);
+        }
+
+        @Override
+        public List<DBDLabelValuePair> getSimilarValues(@NotNull Object pattern, boolean caseInsensitive, boolean byDesc, int offset, int maxResults) throws DBException {
+            StringBuilder query = prepareQueryString();
+            appendByPatternCondition(query, pattern, caseInsensitive, byDesc);
+            appendSortingClause(query);
+            return readValues(query.toString(), offset, maxResults);
+        }
+
+        private void appendByPatternCondition(StringBuilder query, Object pattern, boolean caseInsensitive, boolean byDesc) {
+            if (this.filter.getConstraints().size() > 0) {
+                query.append(" AND ");
+            }
+            query.append("(");
+            DBDDataFilter patternFilter = prepareByPatternCondition(pattern, caseInsensitive, byDesc);
+            getDataSource().getSQLDialect().getQueryGenerator()
+            .appendConditionString(patternFilter, getDataSource(), null, query, true);
+            query.append(")");
+        }
+
+        private DBDDataFilter prepareByPatternCondition(Object pattern, boolean caseInsensitive, boolean byDesc) {
+            DBDDataFilter filter = new DBDDataFilter();
+            filter.setAnyConstraint(true);
+
+            List<DBDAttributeConstraint> constraints = filter.getConstraints();
+            {
+                DBDAttributeConstraint keyConstraint = new DBDAttributeConstraint(keyColumn, constraints.size());
+                keyConstraint.setValue(pattern);
+                if (keyColumn.getDataKind() == DBPDataKind.STRING) {
+                    keyConstraint.setOperator(caseInsensitive ? DBCLogicalOperator.ILIKE : DBCLogicalOperator.LIKE);
+                } else if (keyColumn.getDataKind() == DBPDataKind.NUMERIC) {
+                    keyConstraint.setOperator(DBCLogicalOperator.GREATER_EQUALS);
+                } else {
+                    keyConstraint.setOperator(DBCLogicalOperator.EQUALS);
+                }
+                constraints.add(keyConstraint);
+            }
+            // Add desc columns conditions
+            if (byDesc) {
+                for (DBSEntityAttribute descAttr : descAttributes) {
+                    if (descAttr.getDataKind() == DBPDataKind.STRING) {
+                        DBDAttributeConstraint descConstraint = new DBDAttributeConstraint(descColumns, constraints.size());
+                        descConstraint.setOperator(caseInsensitive ? DBCLogicalOperator.ILIKE : DBCLogicalOperator.LIKE);
+                        constraints.add(descConstraint);
+                    }
+                }
+            }
+
+            return filter;
+        }
+
+        private void appendSortingClause(StringBuilder query) {
+            query.append(" ORDER BY ");
+            if (sortByDesc) {
+                // Sort by description
+                query.append(descColumns);
+            } else {
+                query.append(DBUtils.getQuotedIdentifier(keyColumn));
+            }
+            if (!sortAsc) {
+                query.append(" DESC");
+            }
+        }
+
+        @Override
+        public void close() throws Exception {
+            this.session.close();
+        }
+    }
 }

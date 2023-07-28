@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
+import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -75,4 +76,13 @@ public interface DBSDictionary
         boolean sortAsc
     ) throws DBException;
 
+    @NotNull
+    DBSDictionaryAccessor getDictionaryAccessor(
+        DBCExecutionSource execSource,
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable List<DBDAttributeValue> precedingKeys,
+        @NotNull DBSEntityAttribute keyColumn,
+        boolean sortAsc,
+        boolean sortByDesc
+    ) throws DBException;
 }
