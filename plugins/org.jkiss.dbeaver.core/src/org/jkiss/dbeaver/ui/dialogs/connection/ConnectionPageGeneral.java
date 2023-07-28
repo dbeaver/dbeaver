@@ -67,16 +67,6 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
     static final String PAGE_NAME = ConnectionPageGeneral.class.getSimpleName();
 
-    @Override
-    public DBNBrowseSettings getNavigatorSettings() {
-        return navigatorSettings;
-    }
-
-    @Override
-    public void setNavigatorSettings(DBNBrowseSettings settings) {
-        this.navigatorSettings = settings;
-    }
-
     private static class FilterInfo {
         final Class<?> type;
         final String title;
@@ -106,7 +96,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     private DBNBrowseSettings navigatorSettings;
     private List<DBPDataSourcePermission> accessRestrictions;
 
-    private List<FilterInfo> filters = new ArrayList<>();
+    private final List<FilterInfo> filters = new ArrayList<>();
     private Group filtersGroup;
     private Font boldFont;
 
@@ -134,7 +124,16 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         }
     }
 
-    
+    @Override
+    public DBNBrowseSettings getNavigatorSettings() {
+        return navigatorSettings;
+    }
+
+    @Override
+    public void setNavigatorSettings(DBNBrowseSettings settings) {
+        this.navigatorSettings = settings;
+    }
+
     protected boolean wasActivated() {
         return this.activated;
     }
@@ -401,9 +400,36 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         }
 
         {
+            // Filters
+            Composite vmGroup = UIUtils.createControlGroup(
+                refsGroup,
+                "Virtual model",
+                1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            UIUtils.createCheckbox(
+                vmGroup,
+                "Show virtual model editor",
+                "Show virtual model pages in table editor",
+                false,
+                1);
+            UIUtils.createDialogButton(
+                vmGroup,
+                "Reset client-side configuration",
+                null,
+                "Delete all colorings, transformers and virtual table constraints for all tables in this data source",
+                new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        super.widgetSelected(e);
+                    }
+                });
+            UIUtils.createInfoLabel(vmGroup, "Virtual model is a logical database structure\nconfigured on the client side (not in a real database).\n" +
+                "It also contains information about\nrow coloring and columns transformations");
+        }
+
+        {
             Composite linkGroup = UIUtils.createComposite(refsGroup, 1);
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.horizontalSpan = 2;
+            gd.horizontalSpan = 3;
             linkGroup.setLayoutData(gd);
 
             Link initConfigLink = new Link(linkGroup, SWT.NONE);
