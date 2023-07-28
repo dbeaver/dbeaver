@@ -22,7 +22,7 @@ class FilterResetAllSettingsAction extends Action {
     private final ResultSetViewer resultSetViewer;
 
     FilterResetAllSettingsAction(ResultSetViewer resultSetViewer) {
-        super("Reset all pinned columns");
+        super("Reset all settings");
         this.resultSetViewer = resultSetViewer;
     }
 

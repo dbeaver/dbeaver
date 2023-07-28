@@ -17,8 +17,12 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.action.Action;
+import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
+import org.jkiss.dbeaver.model.data.DBDAttributeConstraintBase;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+
+import java.util.List;
 
 class FilterResetAllPinsAction extends Action {
     private final ResultSetViewer resultSetViewer;
@@ -30,5 +34,13 @@ class FilterResetAllPinsAction extends Action {
 
     @Override
     public void run() {
+        List<DBDAttributeConstraint> constraints = resultSetViewer.getDataFilter().getConstraints();
+        if (constraints == null) {
+            return;
+        }
+        for (DBDAttributeConstraint c : constraints) {
+            c.removeOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED);
+        }
+        resultSetViewer.redrawData(true, true);
     }
 }
