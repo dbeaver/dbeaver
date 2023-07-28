@@ -132,6 +132,7 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_config_panels;
     public static String controls_resultset_config_record;
 
+    public static String sql_editor_resultset_filter_;
     public static String sql_editor_resultset_filter_panel_text_enter_sql_to_filter;
     public static String sql_editor_resultset_filter_panel_text_enter_filter_not_support;
     public static String sql_editor_resultset_filter_panel_btn_apply;
