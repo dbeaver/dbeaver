@@ -29,6 +29,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -255,5 +256,10 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         if (PROP_CONFIG_PROFILE.equals(event.getProperty())) {
             updateProfileList();
         }
+    }
+
+    @NotNull
+    public NetworkHandlerDescriptor getHandlerDescriptor() {
+        return handlerDescriptor;
     }
 }
