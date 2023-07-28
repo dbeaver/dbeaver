@@ -1145,7 +1145,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         final DBPDataSourceContainer container = DatabaseConsumerSettings.getDataSourceContainer(getWizard().getSettings());
         final DBPPreferenceStore preferences = DTActivator.getDefault().getPreferences();
 
-        if (getWizard().getContainer() != null ||
+        if (getDatabaseConsumerSettings().getContainer() != null ||
             container != null && container.isConnected() ||
             preferences.getBoolean(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE)
         ) {
