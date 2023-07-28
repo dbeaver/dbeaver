@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 import java.util.List;
 
@@ -29,12 +30,16 @@ class FilterResetAllTransformersAction extends Action {
     private final ResultSetViewer resultSetViewer;
 
     FilterResetAllTransformersAction(ResultSetViewer resultSetViewer) {
-        super("Reset all column transformers", DBeaverIcons.getImageDescriptor(UIIcon.REVERT));
+        super(ResultSetMessages.controls_resultset_viewer_action_reset_all_transformers, DBeaverIcons.getImageDescriptor(UIIcon.REVERT));
         this.resultSetViewer = resultSetViewer;
     }
 
     @Override
     public void run() {
+        execute(true);
+    }
+
+    void execute(boolean refresh) {
         final DBVEntity virtualEntity = DBVUtils.getVirtualEntity(resultSetViewer.getDataContainer(), false);
         if (virtualEntity == null) {
             return;
@@ -48,6 +53,8 @@ class FilterResetAllTransformersAction extends Action {
                 vAttr.setTransformSettings(null);
             }
         }
-        resultSetViewer.redrawData(true, true);
+        if (refresh) {
+            resultSetViewer.refreshData(null);
+        }
     }
 }

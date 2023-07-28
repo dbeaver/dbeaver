@@ -17,16 +17,35 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.action.Action;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.colors.ResetAllColorAction;
+import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetCommandHandler;
 
 class FilterResetAllSettingsAction extends Action {
-    private final ResultSetViewer resultSetViewer;
+    private final ResultSetViewer viewer;
 
     FilterResetAllSettingsAction(ResultSetViewer resultSetViewer) {
-        super("Reset all settings");
-        this.resultSetViewer = resultSetViewer;
+        super(ResultSetMessages.controls_resultset_viewer_action_reset_all_settings);
+        this.viewer = resultSetViewer;
     }
 
     @Override
     public void run() {
+        ActionUtils.runCommand(ResultSetHandlerMain.CMD_FILTER_CLEAR_SETTING, viewer.getSite());
+        if (viewer.getDataFilter().hasHiddenAttributes()) {
+            ActionUtils.runCommand(SpreadsheetCommandHandler.CMD_SHOW_COLUMNS, viewer.getSite());
+        }
+        if (viewer.hasColorOverrides()) {
+            new ResetAllColorAction(viewer).execute(false);
+        }
+        if (viewer.hasColumnTransformers()) {
+            new FilterResetAllTransformersAction(viewer).execute(false);
+        }
+        if (viewer.getDataFilter().hasPinnedAttributes()) {
+            new FilterResetAllPinsAction(viewer).execute(false);
+        }
+        viewer.refreshData(null);
     }
 }

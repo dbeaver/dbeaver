@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraintBase;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 import java.util.List;
 
@@ -28,12 +29,16 @@ class FilterResetAllPinsAction extends Action {
     private final ResultSetViewer resultSetViewer;
 
     FilterResetAllPinsAction(ResultSetViewer resultSetViewer) {
-        super("Reset all pinned columns", DBeaverIcons.getImageDescriptor(UIIcon.REVERT));
+        super(ResultSetMessages.controls_resultset_viewer_action_reset_all_pins, DBeaverIcons.getImageDescriptor(UIIcon.REVERT));
         this.resultSetViewer = resultSetViewer;
     }
 
     @Override
     public void run() {
+        execute(true);
+    }
+
+    void execute(boolean refresh) {
         List<DBDAttributeConstraint> constraints = resultSetViewer.getDataFilter().getConstraints();
         if (constraints == null) {
             return;
@@ -41,6 +46,8 @@ class FilterResetAllPinsAction extends Action {
         for (DBDAttributeConstraint c : constraints) {
             c.removeOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED);
         }
-        resultSetViewer.redrawData(true, true);
+        if (refresh) {
+            resultSetViewer.redrawData(true, true);
+        }
     }
 }

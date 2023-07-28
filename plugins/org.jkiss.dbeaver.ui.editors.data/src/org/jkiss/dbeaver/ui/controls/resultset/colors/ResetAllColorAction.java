@@ -19,16 +19,23 @@ package org.jkiss.dbeaver.ui.controls.resultset.colors;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 public class ResetAllColorAction extends ColorAction {
     public ResetAllColorAction(ResultSetViewer resultSetViewer) {
-        super(resultSetViewer,"Reset all colors");
+        super(resultSetViewer, ResultSetMessages.controls_resultset_viewer_action_reset_all_colors);
     }
 
     @Override
     public void run() {
+        execute(true);
+    }
+
+    public void execute(boolean refresh) {
         final DBVEntity vEntity = getColorsVirtualEntity();
-        if (!UIUtils.confirmAction("Reset all row coloring", "Are you sure you want to reset all color settings for '" + vEntity.getName() + "'?")) {
+        if (!UIUtils.confirmAction(
+            ResultSetMessages.controls_resultset_viewer_action_reset_all_colors,
+            "Are you sure you want to reset all color settings for '" + vEntity.getName() + "'?")) {
             return;
         }
         vEntity.removeAllColorOverride();

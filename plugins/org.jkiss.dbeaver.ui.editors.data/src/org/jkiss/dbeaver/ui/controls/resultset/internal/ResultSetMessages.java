@@ -71,6 +71,10 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_action_order_filter;
     public static String controls_resultset_viewer_action_order;
     public static String controls_resultset_viewer_action_filter;
+    public static String controls_resultset_viewer_action_reset_all_colors;
+    public static String controls_resultset_viewer_action_reset_all_transformers;
+    public static String controls_resultset_viewer_action_reset_all_pins;
+    public static String controls_resultset_viewer_action_reset_all_settings;
     public static String controls_resultset_viewer_action_filter_clipboard;
     public static String controls_resultset_viewer_action_filter_value;
     public static String controls_resultset_viewer_action_filter_input;
