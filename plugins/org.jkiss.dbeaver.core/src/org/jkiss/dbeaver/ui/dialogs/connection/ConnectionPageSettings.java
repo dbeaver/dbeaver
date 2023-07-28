@@ -258,7 +258,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                     Collections.addAll(allPages, allSubPages);
                 }
 
-                tabFolder = new CTabFolder(parent, SWT.TOP | SWT.FLAT);
+                tabFolder = new CTabFolder(parent, SWT.TOP);
                 tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
                 if (canShowChevron(allPages)) {
@@ -362,15 +362,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     private void activateCurrentItem() {
-        activateCurrentItem(false);
-    }
-
-    private void activateCurrentItem(boolean recreateForcefully) {
         if (tabFolder != null) {
             CTabItem selection = tabFolder.getSelection();
             if (selection != null) {
                 IDialogPage page = (IDialogPage) selection.getData();
-                if (page.getControl() == null || recreateForcefully) {
+                if (page.getControl() == null) {
                     // Create page
                     Composite panel = (Composite) selection.getControl();
                     page.createControl(panel);
@@ -607,7 +603,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
             handler.setEnabled(true);
             tabFolder.setSelection(createPageTab(page, Math.min(tabFolder.getItemCount(), index)));
-            activateCurrentItem(true);
+            activateCurrentItem();
         }
     }
 }
