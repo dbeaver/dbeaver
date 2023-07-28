@@ -17,8 +17,13 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.action.Action;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+
+import java.util.List;
 
 class FilterResetAllTransformersAction extends Action {
     private final ResultSetViewer resultSetViewer;
@@ -30,5 +35,19 @@ class FilterResetAllTransformersAction extends Action {
 
     @Override
     public void run() {
+        final DBVEntity virtualEntity = DBVUtils.getVirtualEntity(resultSetViewer.getDataContainer(), false);
+        if (virtualEntity == null) {
+            return;
+        }
+        if (virtualEntity.getTransformSettings() != null && virtualEntity.getTransformSettings().hasValuableData()) {
+            virtualEntity.setTransformSettings(null);
+        }
+        List<DBVEntityAttribute> vAttrs = virtualEntity.getEntityAttributes();
+        if (vAttrs != null) {
+            for (DBVEntityAttribute vAttr : vAttrs) {
+                vAttr.setTransformSettings(null);
+            }
+        }
+        resultSetViewer.redrawData(true, true);
     }
 }
