@@ -64,6 +64,14 @@ public interface SQLDialectDDLExtension extends SQLDialect {
     String getClobDataType();
 
     /**
+     * Gets blob data type.
+     *
+     * @return the blob data type
+     */
+    @NotNull
+    String getBlobDataType();
+
+    /**
      * Gets uuid data type.
      *
      * @return the uuid data type

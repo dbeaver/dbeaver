@@ -1053,6 +1053,12 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
 
     @NotNull
     @Override
+    public String getBlobDataType() {
+        return PostgreConstants.TYPE_BYTEA;
+    }
+
+    @NotNull
+    @Override
     public String getUuidDataType() {
         return PostgreConstants.TYPE_UUID;
     }
