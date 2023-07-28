@@ -260,7 +260,13 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
                 tabFolder = new CTabFolder(parent, SWT.TOP | SWT.FLAT);
                 tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
-                tabFolder.setTopRight(createChevron(allPages), SWT.RIGHT);
+
+                if (canShowChevron(allPages)) {
+                    final ToolBar chevron = createChevron(allPages);
+                    tabFolder.addCTabFolder2Listener(CTabFolder2Listener.itemsCountAdapter(e -> chevron.setVisible(canShowChevron(allPages))));
+                    tabFolder.setTopRight(chevron, SWT.RIGHT);
+                }
+
                 setControl(tabFolder);
 
                 for (IDialogPage page : allPages) {
@@ -316,12 +322,17 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }));
         toolItem.addDisposeListener(e -> manager.dispose());
 
-        tabFolder.addCTabFolder2Listener(CTabFolder2Listener.itemsCountAdapter(e -> {
-            final boolean anyShown = pages.stream().anyMatch(this::isPageShownInChevron);
-            toolBar.setVisible(anyShown);
-        }));
-
         return toolBar;
+    }
+
+    private boolean canShowChevron(@NotNull List<IDialogPage> pages) {
+        for (IDialogPage page : pages) {
+            if (isPageShownInChevron(page)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private boolean isPageShownInChevron(@NotNull IDialogPage page) {
