@@ -8,7 +8,6 @@ import java.util.Collection;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -110,7 +109,7 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
         this.segmentManagement  = JDBCUtils.safeGetString(dbResult, "SEGMENT_MANAGEMENT");    
         this.dataFileCount      = JDBCUtils.safeGetInt(dbResult, "DATAFILE_COUNT");
         this.totalPageCount     = new BigInteger(JDBCUtils.safeGetString(dbResult, "TOTAL_PAGE_COUNT"));
-        this.extentPageCount    = JDBCUtils.safeGetInt(dbResult, " EXTNET_PAGE_COUNT");
+        this.extentPageCount    = JDBCUtils.safeGetInt(dbResult, "EXTENT_PAGE_COUNT");
         this.allocatedPageCount = new BigInteger(JDBCUtils.safeGetString(dbResult, "ALLOCATED_PAGE_COUNT"));
         this.pageSizeInBytes    = JDBCUtils.safeGetInt(dbResult, "PAGE_SIZE");
         this.isLogCompression   = (JDBCUtils.safeGetInt(dbResult, "ATTR_LOG_COMPRESS") == 1);

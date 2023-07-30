@@ -16,21 +16,40 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
+import java.sql.SQLException;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
+import org.jkiss.dbeaver.model.DBPObjectStatistics;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
-public class AltibaseTable extends GenericTable implements DBPNamedObject2 {
+public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPObjectStatistics {
 
     private static final Log log = Log.getLog(AltibaseTable.class);
+    
+    private transient volatile Long[] tableSize;
+    private static final int SIZE_IDX_MEM = 0;
+    private static final int SIZE_IDX_DISK = 1;
     
     public AltibaseTable(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
@@ -67,5 +86,101 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2 {
         } catch (DBException e) {
             log.warn(e);
         }
+    }
+
+    @Property(viewable = false, hidden = true)
+    public String getTableType() {
+        return super.getTableType();
+    }
+    
+    @Property(viewable = true, order = 20, editable = false, formatter = ByteNumberFormat.class, category = DBConstants.CAT_STATISTICS)
+    public Long getTableSize(DBRProgressMonitor monitor) throws DBCException {
+        if (hasStatistics() == false) {
+            loadSize(monitor);
+        }
+
+        return tableSize[SIZE_IDX_MEM] + tableSize[SIZE_IDX_DISK];
+    }
+    
+    @Property(viewable = true, order = 22, editable = false, formatter = ByteNumberFormat.class)
+    public Long getTableSizeInMemory(DBRProgressMonitor monitor) throws DBCException {
+        if (hasStatistics() == false) {
+            loadSize(monitor);
+        }
+
+        return tableSize[SIZE_IDX_MEM];
+    }
+    
+    @Property(viewable = true, order = 23, editable = false, formatter = ByteNumberFormat.class)
+    public Long getTableSizeInDisk(DBRProgressMonitor monitor) throws DBCException {
+        if (hasStatistics() == false) {
+            loadSize(monitor);
+        }
+
+        return tableSize[SIZE_IDX_DISK];
+    }
+    
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
+    {
+        tableSize = null;
+        getTableSize(monitor);
+
+        return super.refreshObject(monitor);
+    }
+    
+    ///////////////////////////////////
+    // Statistics
+    
+    @Override
+    public boolean hasStatistics() {
+        return tableSize != null;
+    }
+
+    @Override
+    public long getStatObjectSize() {
+        return (hasStatistics() == false)? 0 : tableSize[SIZE_IDX_MEM] + tableSize[SIZE_IDX_DISK];
+    }
+    
+    private void loadSize(DBRProgressMonitor monitor) throws DBCException {
+        resetSize();
+        
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT memory_size, disk_size FROM system_.sys_table_size_ WHERE USER_NAME = ? AND TABLE_NAME = ?"))
+            {
+                dbStat.setString(1, getSchema().getName());
+                dbStat.setString(2, getName());
+
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        fetchTableSize(dbResult);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DBCException("Error reading table statistics", e);
+        }
+    }
+    
+    protected void fetchTableSize(JDBCResultSet dbResult) throws SQLException {
+        if (this.tableSize == null) {
+            resetSize();
+        }
+        tableSize[SIZE_IDX_MEM] = (long) JDBCUtils.safeGetInt(dbResult, "MEMORY_SIZE");
+        tableSize[SIZE_IDX_DISK] = (long) JDBCUtils.safeGetInt(dbResult, "DISK_SIZE");
+    }
+
+    protected void resetSize() {
+        tableSize = new Long[2];
+        for(int i = 0; i < 2;i++) {
+            tableSize[i] = 0L; 
+        }
+    }
+    
+    @Nullable
+    @Override
+    public DBPPropertySource getStatProperties() {
+        return null;
     }
 }

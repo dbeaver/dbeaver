@@ -33,20 +33,16 @@ import org.jkiss.dbeaver.ext.altibase.model.plan.AltibaseQueryPlanner;
 import org.jkiss.dbeaver.ext.altibase.model.session.AltibaseServerSessionManager;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericExecutionContext;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericSynonym;
-import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCExecutionResult;
-import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -80,6 +76,8 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     public AltibaseDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, AltibaseMetaModel metaModel)
             throws DBException {
         super(monitor, container, metaModel, new AltibaseSQLDialect());
+        
+        queryGetActiveDB = CommonUtils.toString(container.getDriver().getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB));
     }
     
     @Override
@@ -89,8 +87,6 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         // PublicSchema is for global objects such as public synonym.
         publicSchema = new GenericSchema(this, null, AltibaseConstants.PUBLIC_USER);
         publicSchema.setVirtual(true);
-
-        queryGetActiveDB = CommonUtils.toString(container.getDriver().getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB));
     }
     
     @Override

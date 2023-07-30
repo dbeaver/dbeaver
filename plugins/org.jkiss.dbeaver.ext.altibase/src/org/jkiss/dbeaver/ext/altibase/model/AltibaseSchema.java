@@ -17,20 +17,31 @@
 
 package org.jkiss.dbeaver.ext.altibase.model;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+public class AltibaseSchema extends GenericSchema implements DBPObjectStatisticsCollector {
 
-public class AltibaseSchema extends GenericSchema {
-
+    private volatile boolean hasStatistics;
+    
     public AltibaseSchema(GenericDataSource dataSource, GenericCatalog catalog, String schemaName) {
         super(dataSource, catalog, schemaName);
     }
@@ -101,5 +112,55 @@ public class AltibaseSchema extends GenericSchema {
             }
         }
         return filteredProcedures;
+    }
+
+    @Override
+    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
+        throws DBException
+    {
+        super.refreshObject(monitor);
+        hasStatistics = false;
+        return this;
+    }
+
+    ///////////////////////////////////
+    // Statistics
+
+    @Override
+    public boolean isStatisticsCollected() {
+        return hasStatistics;
+    }
+
+    @Override
+    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+        if (hasStatistics && !forceRefresh) {
+            return;
+        }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT table_name, memory_size, disk_size FROM system_.sys_table_size_ WHERE USER_NAME = ?"))
+            {
+                dbStat.setString(1, getName());
+                
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String tableName = dbResult.getString(1);
+                        AltibaseTable table = (AltibaseTable) getTable(monitor, tableName);
+                        if (table != null) {
+                            table.fetchTableSize(dbResult);
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBCException("Error reading table statistics", e);
+        } finally {
+            for (GenericTableBase table : getTableCache().getCachedObjects()) {
+                if (table instanceof AltibaseTable && !((AltibaseTable) table).hasStatistics()) {
+                    ((AltibaseTable) table).resetSize();
+                }
+            }
+            hasStatistics = true;
+        }
     }
 }
