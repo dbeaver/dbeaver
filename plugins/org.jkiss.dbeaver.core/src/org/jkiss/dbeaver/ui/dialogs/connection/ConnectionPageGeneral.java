@@ -87,6 +87,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     private ConnectionFolderSelector folderSelector;
     private DBPDataSourceFolder curDataSourceFolder;
     private Text descriptionText;
+    private Button showVirtualModelCheck;
 
     private boolean connectionNameChanged = false;
     private boolean activated = false;
@@ -405,15 +406,15 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 refsGroup,
                 "Virtual model",
                 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
-            UIUtils.createCheckbox(
+            showVirtualModelCheck = UIUtils.createCheckbox(
                 vmGroup,
                 "Show virtual model editor",
                 "Show virtual model pages in table editor",
-                false,
+                dataSourceDescriptor != null && !dataSourceDescriptor.getNavigatorSettings().isHideVirtualModel(),
                 1);
-            UIUtils.createDialogButton(
+            Button resetVM = UIUtils.createDialogButton(
                 vmGroup,
-                "Reset client-side configuration",
+                "Reset configuration",
                 null,
                 "Delete all colorings, transformers and virtual table constraints for all tables in this data source",
                 new SelectionAdapter() {
@@ -422,8 +423,9 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                         super.widgetSelected(e);
                     }
                 });
-            UIUtils.createInfoLabel(vmGroup, "Virtual model is a logical database structure\nconfigured on the client side (not in a real database).\n" +
-                "It also contains information about\nrow coloring and columns transformations");
+            resetVM.setEnabled(getActiveDataSource().getVirtualModel().hasValuableData());
+//            UIUtils.createInfoLabel(vmGroup, "Virtual model is a logical database structure on the client side (not in a real database).\n" +
+//                "It also contains information about\nrow coloring and columns transformations", GridData.FILL_HORIZONTAL, 1);
         }
 
         {
@@ -618,6 +620,8 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             this.navigatorSettings = new DataSourceNavigatorSettings(getWizard().getSelectedNavigatorSettings());
         }
         dsDescriptor.setNavigatorSettings(this.navigatorSettings);
+
+        dsDescriptor.getNavigatorSettings().setHideVirtualModel(!this.showVirtualModelCheck.getSelection());
 
         dsDescriptor.setConnectionReadOnly(this.readOnlyConnection.getSelection());
         dsDescriptor.setModifyPermissions(this.accessRestrictions);

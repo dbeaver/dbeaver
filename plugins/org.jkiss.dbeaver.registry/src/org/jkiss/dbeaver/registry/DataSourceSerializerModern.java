@@ -979,6 +979,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (!CommonUtils.isEmpty(lockPasswordHash)) {
             JSONUtils.field(json, RegistryConstants.ATTR_LOCK_PASSWORD, lockPasswordHash);
         }
+        if (dataSource.isDetachedProcessEnabled()) JSONUtils.field(json, ATTR_DPI_ENABLED, true);
+
         if (dataSource.hasSharedVirtualModel()) {
             JSONUtils.field(json, "virtual-model-id", dataSource.getVirtualModel().getId());
         }
