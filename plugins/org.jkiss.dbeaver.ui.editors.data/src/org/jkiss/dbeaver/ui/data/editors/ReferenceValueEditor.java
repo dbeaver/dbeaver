@@ -79,6 +79,7 @@ public class ReferenceValueEditor {
     private DBSEntityReferrer refConstraint;
     private Table editorSelector;
     private Text valueFilterText;
+    private CLabel pageStatusLabel;
     private static volatile boolean sortByValue = true; // It is static to save its value between editors
     private static volatile boolean sortAsc = true;
     private TableColumn prevSortColumn = null;
@@ -437,13 +438,13 @@ public class ReferenceValueEditor {
             controller.goToNextPage();
         }
     };
-    
-    private CLabel pageStatusLabel;
+
     private ControlContribution pageStatusLabelContribution = new ControlContribution(null) {
         @Override
         protected Control createControl(Composite parent) {
             return pageStatusLabel = new CLabel(parent, SWT.NONE);
         }
+        
         @Override
         protected int computeWidth(Control control) {
             return control.computeSize(SWT.DEFAULT, SWT.DEFAULT, true).x;
@@ -686,7 +687,7 @@ public class ReferenceValueEditor {
 
             actionGoBackward.setEnabled(controller.isPrevPageAvailable());
             actionGoForward.setEnabled(controller.isNextPageAvailable());
-            editorSelector.setEnabled(dataObtained || controller.currPageNumber > 0 );
+            editorSelector.setEnabled(dataObtained || controller.currPageNumber > 0);
             if (pageStatusLabel != null) {
                 pageStatusLabel.setText(controller.makeStatusString());
                 pageStatusLabelContribution.update();

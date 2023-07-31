@@ -813,13 +813,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     
     @Override
     public DBSDictionaryAccessor getDictionaryAccessor(
-            DBCExecutionSource execSource,
-            DBRProgressMonitor monitor,
-            List<DBDAttributeValue> preceedingKeys, 
-            DBSEntityAttribute keyColumn, 
-            boolean sortAsc, 
-            boolean sortByDesc
-        ) throws DBException {
+        DBCExecutionSource execSource,
+        DBRProgressMonitor monitor,
+        List<DBDAttributeValue> preceedingKeys, 
+        DBSEntityAttribute keyColumn, 
+        boolean sortAsc, 
+        boolean sortByDesc
+    ) throws DBException {
         return new DictionaryAccessor(execSource, monitor, preceedingKeys, keyColumn, sortAsc, sortByDesc);
     }
 

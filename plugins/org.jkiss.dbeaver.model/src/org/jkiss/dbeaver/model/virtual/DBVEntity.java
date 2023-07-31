@@ -726,7 +726,13 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         }
 
         @NotNull
-        public List<DBDLabelValuePair> getSimilarValues(@NotNull Object pattern, boolean caseInsensitive, boolean byDesc, long offset, long maxResults) {
+        public List<DBDLabelValuePair> getSimilarValues(
+            @NotNull Object pattern,
+            boolean caseInsensitive,
+            boolean byDesc,
+            long offset,
+            long maxResults
+        ) {
             return Collections.emptyList();
         }
 
