@@ -1019,10 +1019,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             StringBuilder query = prepareQueryString();
             appendByPatternCondition(query, pattern, caseInsensitive, byDesc);
             appendSortingClause(query);
-            System.out.println(query);
             try (DBCStatement dbStat = DBUtils.makeStatement(null, session, DBCStatementType.QUERY, query.toString(), offset, maxResults)) {
                 bindPrecedingKeys(dbStat);
-                bindPattern(dbStat, pattern, byDesc);
+                bindPattern(dbStat, pattern);
                 return readValues(dbStat);
             }
         }
@@ -1103,29 +1102,12 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             return filter;
         }
         
-        private void bindPattern(DBCStatement dbStat, Object pattern, boolean byDesc) throws DBCException {
+        private void bindPattern(DBCStatement dbStat, Object pattern) throws DBCException {
             int paramPos = this.filter.getConstraints().size();
             
             if (keyColumn.getDataKind() == DBPDataKind.NUMERIC) {
                 keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++, pattern);
             }
-            
-            // because wtf damned filters substitute escaped string values even with inlineCriteria=false
-
-//            if (keyColumn.getDataKind() == DBPDataKind.STRING || keyColumn.getDataKind() == DBPDataKind.NUMERIC) {
-//                keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++,
-//                    keyColumn.getDataKind() == DBPDataKind.STRING ? "%" + pattern + "%" : pattern);
-//            }
-//
-//            if (byDesc && descAttributes != null && pattern instanceof CharSequence) {
-//                for (DBSEntityAttribute descAttr : descAttributes) {
-//                    if (descAttr.getDataKind() == DBPDataKind.STRING) {
-//                        final DBDValueHandler valueHandler = DBUtils.findValueHandler(session, descAttr);
-//                        valueHandler.bindValueObject(session, dbStat, descAttr, paramPos++,
-//                            descAttr.getDataKind() == DBPDataKind.STRING ? "%" + pattern + "%" : pattern);
-//                    }
-//                }
-//            }
         }
         
         private void appendSortingClause(StringBuilder query) {

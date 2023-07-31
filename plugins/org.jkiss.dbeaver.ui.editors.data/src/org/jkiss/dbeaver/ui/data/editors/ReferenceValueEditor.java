@@ -33,6 +33,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -73,10 +74,25 @@ import java.util.List;
 public class ReferenceValueEditor {
     private static final Log log = Log.getLog(ReferenceValueEditor.class);
 
+    private final IValueController valueController;
+    private IValueEditor valueEditor;
+    private DBSEntityReferrer refConstraint;
+    private Table editorSelector;
+    private Text valueFilterText;
+    private static volatile boolean sortByValue = true; // It is static to save its value between editors
+    private static volatile boolean sortAsc = true;
+    private TableColumn prevSortColumn = null;
+    private Font boldFont;
+    private ViewController controller;
+
     private class ViewController {
         private final int pageSize;
-        private long currOffset = 0, currPageNumber = 0, maxKnownPage = 0, maxKnownIndex = 0;
-        private boolean nextPageAvailable = false, limitFound = false;
+        private long currOffset = 0;
+        private long currPageNumber = 0;
+        private long maxKnownPage = 0;
+        private long maxKnownIndex = 0;
+        private boolean nextPageAvailable = false;
+        private boolean limitFound = false;
         private String filterPattern = null;
         private Object currentValue = null;
 
@@ -84,9 +100,11 @@ public class ReferenceValueEditor {
             this.pageSize = pageSize;
         }
         
+        @NotNull
         public String makeStatusString() {
-            return "Page " + (currPageNumber + 1) + "/" + (limitFound ? (maxKnownPage + 1) : "...");
-                //" (" + maxKnownIndex + (limitFound ? "" : "+") + ")" + " ";
+            return limitFound ?
+                NLS.bind(ResultSetMessages.reference_value_editor_current_pagination_value, currPageNumber + 1, maxKnownPage + 1) :
+                NLS.bind(ResultSetMessages.reference_value_editor_current_page_value, currPageNumber + 1);
         }
         
         public boolean isNextPageAvailable() {
@@ -113,7 +131,7 @@ public class ReferenceValueEditor {
             }
         }
 
-        public void filter(String pattern) {
+        public void filter(@Nullable String pattern) {
             if (CommonUtils.isEmpty(CommonUtils.toString(pattern))) {
                 this.reset(currentValue);
             } else if (CommonUtils.equalObjects(String.valueOf(filterPattern), String.valueOf(pattern))) {
@@ -123,14 +141,14 @@ public class ReferenceValueEditor {
             }
         }
 
-        private void applyFilter(String pattern) {
+        private void applyFilter(@NotNull String pattern) {
             this.currentValue = null;
             this.filterPattern = pattern;
             this.resetPages();
             this.reloadData(null);
         }
 
-        public void reset(Object valueToShow) {
+        public void reset(@Nullable Object valueToShow) {
             this.currentValue = valueToShow;
             this.filterPattern = null;
             this.resetPages();
@@ -153,7 +171,7 @@ public class ReferenceValueEditor {
             }
         }
 
-        private void reloadData(Object valueToShow) {
+        private void reloadData(@Nullable Object valueToShow) {
             SelectorLoaderService loadingService = new SelectorLoaderService(accessor -> {
                 List<DBDLabelValuePair> data;
                 if (filterPattern == null) {
@@ -181,18 +199,6 @@ public class ReferenceValueEditor {
             LoadingJob.createService(loadingService, new SelectorLoaderVisualizer(loadingService)).schedule();
         }
     }
-
-    private final IValueController valueController;
-    private IValueEditor valueEditor;
-    private DBSEntityReferrer refConstraint;
-    private Table editorSelector;
-    private Text valueFilterText;
-    private static volatile boolean sortByValue = true; // It is static to save its value between editors
-    private static volatile boolean sortAsc = true;
-    private TableColumn prevSortColumn = null;
-    private Font boldFont;
-
-    private ViewController controller;
 
     public ReferenceValueEditor(IValueController valueController, IValueEditor valueEditor) {
         this.valueController = valueController;
@@ -263,15 +269,19 @@ public class ReferenceValueEditor {
                     });
                 dictLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-                Link hintLabel = UIUtils.createLink(labelGroup, "(<a>Define Description</a>)", new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        EditDictionaryPage editDictionaryPage = new EditDictionaryPage(refTable);
-                        if (editDictionaryPage.edit(parent.getShell())) {
-                            controller.reload();
+                Link hintLabel = UIUtils.createLink(
+                    labelGroup,
+                    "(<a>" + ResultSetMessages.reference_value_editor_define_description_value + "</a>)",
+                    new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            EditDictionaryPage editDictionaryPage = new EditDictionaryPage(refTable);
+                            if (editDictionaryPage.edit(parent.getShell())) {
+                                controller.reload();
+                            }
                         }
                     }
-                });
+                );
                 hintLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
             }
         }
@@ -285,7 +295,7 @@ public class ReferenceValueEditor {
             valueFilterText.addPaintListener(e -> {
                 if (valueFilterText.isEnabled() && valueFilterText.getCharCount() == 0) {
                     e.gc.setForeground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-                    e.gc.drawText("Type part of dictionary value to search", 2, 0, true);
+                    e.gc.drawText(ResultSetMessages.reference_value_editor_search_hint_value, 2, 0, true);
                     e.gc.setFont(null);
                 }
             });

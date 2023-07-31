@@ -234,7 +234,7 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
                 try {
                     if (referenceValue) {
                         Label valueLabel = new Label(viewPlaceholder, SWT.NONE);
-                        valueLabel.setText("Value: ");
+                        valueLabel.setText(ResultSetMessages.reference_value_editor_value_label);
                         valueLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                     }
                     valueEditor.createControl();

@@ -739,6 +739,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         }
 
         public void close() {
+            // do nothing
         }
     };
 
