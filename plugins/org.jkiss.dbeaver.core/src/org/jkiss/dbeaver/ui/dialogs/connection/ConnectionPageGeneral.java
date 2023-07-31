@@ -420,7 +420,20 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        super.widgetSelected(e);
+                        if (UIUtils.confirmAction(
+                            getShell(),
+                            "Reset virtual model settings",
+                            "You are about to reset all virtual model configuration.\n It includes:\n" +
+                                "\t- All virtual constraints and foreign keys\n" +
+                                "\t- All column transformers\n" +
+                                "\t- All table row colorings"
+                            )
+                        ) {
+                            dataSourceDescriptor.getVirtualModel().resetData();
+                            DataSourceDescriptor originalDataSource = getWizard().getOriginalDataSource();
+                            originalDataSource.getVirtualModel().resetData();
+                            originalDataSource.persistConfiguration();
+                        }
                     }
                 });
             resetVM.setEnabled(getActiveDataSource().getVirtualModel().hasValuableData());
