@@ -82,6 +82,10 @@ public abstract class DBVObject implements DBSObject {
         return properties == null ? Collections.emptyMap() : properties;
     }
 
+    protected void clearProperties() {
+        this.properties = null;
+    }
+
     protected void copyFrom(@NotNull DBVObject src) {
         if (!CommonUtils.isEmpty(src.properties)) {
             this.properties = new LinkedHashMap<>(src.properties);
@@ -110,4 +114,5 @@ public abstract class DBVObject implements DBSObject {
         DBPDataSourceContainer ds = getDataSourceContainer();
         return ds == null ? null : ds.getProject();
     }
+
 }
