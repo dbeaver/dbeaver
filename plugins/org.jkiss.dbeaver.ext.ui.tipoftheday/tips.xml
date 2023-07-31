@@ -18,26 +18,27 @@
 	<tip> <a href="https://dbeaver.com/2022/06/02/keep-calm-and-use-connection-types/">Highlight your connection types</a>
 		 – Test or Production – to specify their colors in your <b>Navigation Tree, Data Editor, and SQL Editor</b>.
 		 This protects you from accidentally making changes to the production system.</tip>
-	<tip>You can open SQL Console with the <b>Ctrl+Alt+Enter</b> shortcut. It's suitable for executing a query you don't want to save in a file.</tip>
-	<tip>To execute the current query, use the following shortcut: <b>Ctrl+Enter</b>. Please note that queries are separated by delimiters or empty lines.</tip>
-	<tip>To run the current SQL script, use the keyboard shortcut: <b>⌥X</b>.</tip> <tip>In order to format SQL statements use the keyboard shortcut: <b>Ctrl+Shift+F</b>.</tip>
+	<tip>You can open SQL Console with the <commandRef commandId="org.jkiss.dbeaver.core.sql.editor.console" showName="false"/> command. It's suitable for executing a query you don't want to save in a file.</tip>
+	<tip>To execute the current query, use the command <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>. Please note that queries are separated by delimiters or empty lines.</tip>
+	<tip>To run the current SQL script, use the command <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>.</tip>
+	<tip>In order to format SQL statements use the command <commandRef commandId="org.jkiss.dbeaver.ui.editors.text.content.format"/>.</tip>
 	<tip>Use the following options in SQL Editor's context menu: <b>Execute -> Export From Query</b> to export data directly from SQL query without pre-executing it.</tip>
-	<tip>You can convert the selected text into uppercase using the keyboard shortcut: <b>Ctrl+Shift+X</b>.</tip>
-	<tip>You can convert the selected text into lowercase using the keyboard shortcut: <b>Ctrl+Shift+Y</b>.</tip>
-	<tip>To refresh query results in <a href="https://dbeaver.com/2022/04/14/your-first-queries-in-the-sql-editor/">SQL Editor</a>, press <b>F5</b>.</tip>
-	<tip>To see available <a href="https://dbeaver.com/docs/wiki/SQL-Templates">templates</a> of SQL statements, use the <b>Ctrl+Alt+Space</b> shortcut.</tip>
+	<tip>You can convert the selected text into uppercase using the command <commandRef commandId="org.eclipse.ui.edit.text.upperCase"/>.</tip>
+	<tip>You can convert the selected text into lowercase using the <commandRef commandId="org.eclipse.ui.edit.text.lowerCase"/> command.</tip>
+	<tip>To refresh query results in <a href="https://dbeaver.com/2022/04/14/your-first-queries-in-the-sql-editor/">SQL Editor</a>, use <commandRef commandId="org.eclipse.ui.file.refresh"/> command.</tip>
+	<tip>To see available <a href="https://dbeaver.com/docs/wiki/SQL-Templates">templates</a> of SQL statements, use the <commandRef commandId="org.eclipse.ui.edit.text.contentAssist.contextInformation"/> command.</tip>
 	<tip>Based on selected rows, you can generate <b>SQL statements (SELECT/INSERT/UPDATE/DELETE)</b>.
 		 To generate SQL, right-click the selected rows, click <b>Generate SQL</b> and select one of the SQL commands you see.</tip>
-	<tip>To see the execution plan for the current query, use the following shortcut: <b>Ctrl+Shift+E</b>.</tip>
-	<tip>To execute queries of the current script simultaneously and display the results in separate tabs, use the keyboard shortcut: <b>Ctrl+Alt+Shift+X</b>.</tip>
-	<tip>To jump to the previous query in the current SQL script, use the keyboard shortcut: <b>Alt+Up</b>.</tip>
-	<tip>To jump to the next query in the current SQL script, use the keyboard shortcut: <b>Alt+Down</b></tip>
+	<tip>To see the execution plan for the current query, use <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"/> command.</tip>
+	<tip>To execute queries of the current script simultaneously and display the results in separate tabs, use <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew"/> command.</tip>
+	<tip>To jump to the previous query in the current SQL script, use <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.query.prev"/> command.</tip>
+	<tip>To jump to the next query in the current SQL script, use <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.query.next"/> command.</tip>
 	<tip>All the errors that occur when running SQL scripts in DBeaver can be observed in the <a href="view://org.eclipse.pde.runtime.LogView">Error Log</a> view.
 		 The error log tracks SQL, permission, and configuration errors.</tip>
 	<tip>You can view the queries executed in DBeaver in the <b>Query Manager</b>. All internal queries that DBeaver runs to read the metadata can also be found there.</tip>
 	<tip>You can change the editor settings according to your personal needs. To do this, click the gear icon and go to <b>Editors -> SQL Editor</b>.
 		 Here you can change the formatting, script processing settings, and more.</tip>
-	<tip>In SQL Editor, you can press <b>Ctrl/Option+Space</b> after the asterisk in a query like "SELECT * FROM tableName" or
+	<tip>In SQL Editor, you can call <commandRef commandId="org.eclipse.ui.edit.text.contentAssist.proposals"/> after the asterisk in a query like "SELECT * FROM tableName" or
 		 like "INSERT INTO tableName (*)" (brackets are important), and the asterisk will be replaced with a list of all table columns.</tip>
 	<tip>Choose the fully qualified name of the object in the SQL Editor and use <b>Ctrl + Left click</b>.
 		 This will take you to the object's tab. Works with tables, columns, and procedures.</tip>
@@ -45,14 +46,14 @@
 		 filter history.<br/>By clicking <b>Save filter settings</b>, the filter history will be available even after restarting the app.</tip>
 	<tip>You no longer need to import scripts one by one into the SQL Editor. The Import SQL Script option in DBeaver allows you
 		 to select multiple files simultaneously, opening them in one editor.</tip>
-	<tip>To execute the selected SQL expression and get the results, use the following shortcut: <b>Ctrl+Alt+'</b>.</tip>
+	<tip>To execute the selected SQL expression and get the results, use command <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression"/>.</tip>
 	<tip>The SQL button above the <b>Navigation tree</b> allows you to open SQL scripts and change the default command.
 		 For example, you can set up a quick console opening by clicking this button.</tip>
-	<tip>In Data Editor, you can switch between the view modes using the keyboard shortcut: <b>Ctrl+~</b></tip>
-	<tip>In <a href="https://dbeaver.com/2023/01/12/top-5-shortcuts-for-data-editor/">Data Editor</a>, press <b>Ctrl+F</b> to search for data in the current table quickly.</tip>
-	<tip>To filter table rows by column value in<a href="https://dbeaver.com/2023/01/12/top-5-shortcuts-for-data-editor/"> Data Editor,</a>
-		 use the following shortcut: <b>Ctrl+F11</b>. You can also open the filter menu by pressing <b>F11</b>.</tip>
-	<tip>To open the foreign keys menu in <a href="https://dbeaver.com/2023/01/12/top-5-shortcuts-for-data-editor/">Data Editor</a>, use the following shortcut: <b>Ctrl+1</b>.</tip>
+	<tip>In Data Editor, you can switch between the view modes using the command <commandRef commandId="org.jkiss.dbeaver.core.resultset.switchPresentation"/>.</tip>
+	<tip>In <a href="https://dbeaver.com/2023/01/12/top-5-shortcuts-for-data-editor/">Data Editor</a>, use <commandRef commandId="org.eclipse.ui.edit.findReplace"/> command to search for data in the current table quickly.</tip>
+	<tip>To filter table rows by column value in <a href="https://dbeaver.com/2023/01/12/top-5-shortcuts-for-data-editor/"> Data Editor,</a>
+		 use the <commandRef commandId="org.jkiss.dbeaver.core.resultset.filterMenu.distinct"/> command. You can also open <commandRef commandId="org.jkiss.dbeaver.core.resultset.filterMenu"/>.</tip>
+	<tip>To open the foreign keys menu in <a href="https://dbeaver.com/2023/01/12/top-5-shortcuts-for-data-editor/">Data Editor</a>, use <commandRef commandId="org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals"/> command.</tip>
 	<tip>While working with the Data Editor, you can apply to filter using the value from the clipboard.
 		 Copy the value you need from any source, right-click on the cell, go to <b>Filter -> Clipboard,</b> and select the appropriate option.</tip>
 	<tip>Highlighting repeated values in your data is an easy way to find them. You can enable this
@@ -70,7 +71,7 @@
 	<tip>Using a convenient calendar, you can edit date and time fields in your tables.
 		 Open <a href="https://dbeaver.com/2022/04/28/the-most-convenient-way-for-data-review/">the Value panel</a> and click on the icon with the clock
 		 to switch the editor to a calendar view. You can also find a corresponding checkbox in the Preferences.</tip>
-	<tip>You can turn on/off the right panels using the following shortcut: <b>Ctrl+7</b>.</tip>
+	<tip>You can turn on/off the right panels using the <commandRef commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview"/> command.</tip>
 	<tip>You will see a dictionary if you select the cell containing the key and
 		 go to <a href="https://dbeaver.com/2022/04/28/the-most-convenient-way-for-data-review/">the Value panel</a>.It consists of Value and Description columns.
 		 You can quickly view the necessary data using this table and search through it.</tip>
@@ -82,10 +83,10 @@
 	<tip>Instead of constantly switching between all these tables to add or edit data,
 		 use <a href="https://dbeaver.com/2022/05/19/think-about-the-content-not-about-the-structure/">the References Panel</a>.
 		 It lets you quickly view which tables the selected table is associated with.</tip>
-	<tip>In <a href="https://dbeaver.com/docs/wiki/Database-Navigator">Database Navigator</a>, press <b>F2</b> to rename the selected element.</tip>
-	<tip>In <a href="https://dbeaver.com/docs/wiki/Database-Navigator">Database Navigator</a>, press<b>F4</b> to edit the selected element's properties.</tip>
-	<tip>In <a href="https://dbeaver.com/docs/wiki/Database-Navigator">Database Navigator</a>, press <b>F5</b> to refresh the selected element.</tip>
-	<tip>In <a href="https://dbeaver.com/docs/wiki/Database-Navigator">Database Navigator</a>, press <b>Ctrl+Alt+Shift+D</b> to add
+	<tip>In <a href="https://dbeaver.com/docs/wiki/Database-Navigator">Database Navigator</a>, use <commandRef commandId="org.eclipse.ui.edit.rename"/> command to rename the selected element.</tip>
+	<tip>In <a href="https://dbeaver.com/docs/wiki/Database-Navigator">Database Navigator</a>, use <commandRef commandId="org.jkiss.dbeaver.core.object.open"/> command to edit the selected element's properties.</tip>
+	<tip>In <a href="https://dbeaver.com/docs/wiki/Database-Navigator">Database Navigator</a>, use <commandRef commandId="org.eclipse.ui.file.refresh"/> command to refresh the selected element.</tip>
+	<tip>In <a href="https://dbeaver.com/docs/wiki/Database-Navigator">Database Navigator</a>, use <commandRef commandId="org.jkiss.dbeaver.core.navigator.bookmark.add"/> command to add
 		 the selected elements to your <a href="https://dbeaver.com/docs/wiki/Bookmarks">bookmarks</a>.</tip>
 	<tip>Customize your Database Navigator tree to suit your needs. Learn more about Navigation tree customization
 		 <a href="https://dbeaver.com/2022/08/25/how-to-customize-your-navigation-tree/"> here</a>.</tip>
@@ -100,7 +101,7 @@
 		 Learn more about ER diagrams in DBeaver <a href="https://dbeaver.com/2022/06/30/two-ways-to-use-erd-in-dbeaver/">here</a>.</tip>
 	<tip>You can create custom ER diagrams containing tables, relations, and notes.
 		 Learn more about this feature <a href="https://dbeaver.com/2022/06/30/two-ways-to-use-erd-in-dbeaver/">here</a>.</tip>
-	<tip>You can open the dashboard view using the <b>main toolbar</b> or <b>Ctrl+Alt+Shift+B</b> to monitor database health.<br/>Note: dashboards are database-specific.</tip>
+	<tip>You can open the dashboard view using the <b>main toolbar</b> or command <commandRef commandId="org.jkiss.dbeaver.ui.dashboard.open"/> to monitor database health.<br/>Note: dashboards are database-specific.</tip>
 	<tip>While working on our app, you can <a href="https://dbeaver.com/2022/09/08/working-with-tasks-how-to-get-started/">save repetitive tasks</a>
 		 such as importing and exporting data, database dumping and restoring, comparing data, etc.</tip>
 	<tip>You can <a href="https://dbeaver.com/2022/09/22/database-tasks-view-all-your-tasks-in-one-place/">customize</a> the displayed columns in Database tasks.

@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
 import org.jkiss.dbeaver.ui.editors.text.DatabaseMarkerAnnotationModel;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -79,7 +80,9 @@ public abstract class SQLObjectDocumentProvider extends BaseTextDocumentProvider
     @Override
     protected IDocument createDocument(Object element) {
         final Document document = new Document();
-
+        if (element instanceof StringEditorInput) {
+            sourceText = ((StringEditorInput) element).getBuffer().toString();
+        }
         if (sourceText == null) {
             DBPDataSource dataSource = editor.getDataSource();
             if (dataSource != null) {

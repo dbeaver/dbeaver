@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.net.ssh;
 
 import com.jcraft.jsch.Identity;
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.connection.channel.direct.DirectConnection;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.connection.channel.direct.Parameters;
@@ -42,6 +43,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.slf4j.Logger;
+import org.slf4j.helpers.NOPLogger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,6 +53,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * SSHJ tunnel
@@ -80,6 +84,7 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
 
             client.setConnectTimeout(connectTimeout);
             client.getConnection().getKeepAlive().setKeepAliveInterval(keepAliveInterval);
+            client.getTransport().getConfig().setLoggerFactory(new FilterLoggerFactory());
 
             clients[index] = client;
 
@@ -296,6 +301,24 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
         listeners.add(listener);
 
         return ss.getLocalPort();
+    }
+
+    private static class FilterLoggerFactory implements LoggerFactory {
+        private static final Set<String> FILTERED_OUT_CLASSES = Set.of("net.schmizz.sshj.common.StreamCopier");
+
+        @Override
+        public Logger getLogger(String s) {
+            if (FILTERED_OUT_CLASSES.contains(s)) {
+                return NOPLogger.NOP_LOGGER;
+            } else {
+                return org.slf4j.LoggerFactory.getLogger(s);
+            }
+        }
+
+        @Override
+        public Logger getLogger(Class<?> cls) {
+            return getLogger(cls.getName());
+        }
     }
 
     private static class LocalPortListener extends Thread {
