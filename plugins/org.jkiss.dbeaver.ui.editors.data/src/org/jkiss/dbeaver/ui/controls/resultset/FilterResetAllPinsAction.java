@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.jface.action.Action;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraintBase;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 import java.util.List;
@@ -29,7 +27,7 @@ class FilterResetAllPinsAction extends Action {
     private final ResultSetViewer resultSetViewer;
 
     FilterResetAllPinsAction(ResultSetViewer resultSetViewer) {
-        super(ResultSetMessages.controls_resultset_viewer_action_reset_all_pins, DBeaverIcons.getImageDescriptor(UIIcon.REVERT));
+        super(ResultSetMessages.controls_resultset_viewer_action_reset_all_pins);
         this.resultSetViewer = resultSetViewer;
     }
 

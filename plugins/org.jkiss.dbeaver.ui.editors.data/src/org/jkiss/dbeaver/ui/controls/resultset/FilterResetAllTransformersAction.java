@@ -20,8 +20,6 @@ import org.eclipse.jface.action.Action;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 import java.util.List;
@@ -30,7 +28,7 @@ class FilterResetAllTransformersAction extends Action {
     private final ResultSetViewer resultSetViewer;
 
     FilterResetAllTransformersAction(ResultSetViewer resultSetViewer) {
-        super(ResultSetMessages.controls_resultset_viewer_action_reset_all_transformers, DBeaverIcons.getImageDescriptor(UIIcon.REVERT));
+        super(ResultSetMessages.controls_resultset_viewer_action_reset_all_transformers);
         this.resultSetViewer = resultSetViewer;
     }
 

@@ -1239,7 +1239,11 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             menuManager.add(ActionUtils.makeCommandContribution(viewer.getSite(), ResultSetHandlerMain.CMD_FILTER_CLEAR_SETTING));
             if (viewer.getDataFilter().hasHiddenAttributes()) {
-                menuManager.add(ActionUtils.makeCommandContribution(viewer.getSite(), SpreadsheetCommandHandler.CMD_SHOW_COLUMNS));
+                menuManager.add(ActionUtils.makeCommandContribution(
+                    viewer.getSite(),
+                    SpreadsheetCommandHandler.CMD_SHOW_COLUMNS,
+                    ResultSetMessages.controls_resultset_viewer_show_hidden_columns,
+                    null));
             }
             if (viewer.hasColorOverrides()) {
                 menuManager.add(new ResetAllColorAction(viewer));
