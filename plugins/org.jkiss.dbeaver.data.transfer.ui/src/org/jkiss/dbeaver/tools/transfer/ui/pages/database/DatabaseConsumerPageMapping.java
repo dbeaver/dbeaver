@@ -142,8 +142,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
                 @Override
                 protected void setSelectedNode(DBNDatabaseNode node) {
-                    loadSettings(false);
                     settings.setContainer(DBUtils.getAdapter(DBSObjectContainer.class, node.getObject()));
+                    loadSettings(false);
                     setContainerInfo(node);
                     getWizard().runWithProgress(monitor -> {
                         // Reset mappings
@@ -1145,7 +1145,10 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         final DBPDataSourceContainer container = DatabaseConsumerSettings.getDataSourceContainer(getWizard().getSettings());
         final DBPPreferenceStore preferences = DTActivator.getDefault().getPreferences();
 
-        if (preferences.getBoolean(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE) || container != null && container.isConnected()) {
+        if (getDatabaseConsumerSettings().getContainer() != null ||
+            container != null && container.isConnected() ||
+            preferences.getBoolean(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE)
+        ) {
             loadSettings(true);
         }
     }

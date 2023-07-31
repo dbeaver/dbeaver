@@ -149,6 +149,10 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
         containers.put(container.getName(), container);
     }
 
+    protected void clearContainers() {
+        this.containers.clear();
+    }
+
     @NotNull
     public Collection<DBVEntity> getEntities() {
         return entities.values();
@@ -170,6 +174,10 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
     synchronized void removeEntity(DBVEntity entity) {
         entities.remove(entity.getName());
         entity.dispose();
+    }
+
+    protected void clearEntities() {
+        this.entities.clear();
     }
 
     @Override

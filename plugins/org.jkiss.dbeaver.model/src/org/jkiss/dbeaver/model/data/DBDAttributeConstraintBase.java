@@ -30,6 +30,7 @@ import java.util.Arrays;
  */
 public class DBDAttributeConstraintBase {
 
+    public static final String ATTR_OPTION_PINNED = "pinned";
     public static int NULL_VISUAL_POSITION = -1;
 
     private int orderPosition;

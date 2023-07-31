@@ -115,7 +115,7 @@ public class DataSourceDescriptor
     @NotNull
     private DBPDriver driver;
     @NotNull
-    private DBPDriver originalDriver;
+    private final DBPDriver originalDriver;
     @Nullable
     private DBPDriverSubstitutionDescriptor driverSubstitution;
     @NotNull
@@ -163,7 +163,6 @@ public class DataSourceDescriptor
     private DataSourceNavigatorSettings navigatorSettings;
     @NotNull
     private DBVModel virtualModel;
-
     private final boolean manageable;
 
     private boolean accessCheckRequired = true;
@@ -761,10 +760,6 @@ public class DataSourceDescriptor
         this.hidden = hidden;
     }
 
-    public void setDpiEnabled(boolean dpiEnabled) {
-        this.dpiEnabled = dpiEnabled;
-    }
-
     @Override
     public DBSObject getParentObject() {
         return null;
@@ -963,7 +958,7 @@ public class DataSourceDescriptor
         }
     }
 
-    private boolean isDetachedProcessEnabled() {
+    public boolean isDetachedProcessEnabled() {
         return dpiEnabled;
     }
 
@@ -1776,6 +1771,8 @@ public class DataSourceDescriptor
         this.connectionReadOnly = descriptor.connectionReadOnly;
         this.forceUseSingleConnection = descriptor.forceUseSingleConnection;
 
+        this.dpiEnabled = descriptor.dpiEnabled;
+
         this.navigatorSettings = new DataSourceNavigatorSettings(descriptor.getNavigatorSettings());
     }
 
@@ -1806,6 +1803,7 @@ public class DataSourceDescriptor
                 CommonUtils.equalObjects(this.originalDriver, source.originalDriver) &&
                 CommonUtils.equalObjects(this.driverSubstitution, source.driverSubstitution) &&
                 CommonUtils.equalObjects(this.connectionInfo, source.connectionInfo) &&
+                this.dpiEnabled == source.dpiEnabled &&
                 CommonUtils.equalObjects(this.filterMap, source.filterMap) &&
                 CommonUtils.equalObjects(this.formatterProfile, source.formatterProfile) &&
                 CommonUtils.equalObjects(this.clientHome, source.clientHome) &&

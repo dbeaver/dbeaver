@@ -66,14 +66,41 @@ public class DuckDataTypeCache extends JDBCBasicDataTypeCache<GenericStructConta
 
         switch (category.toLowerCase(Locale.ROOT)) {
             case "boolean":
+            case "bool":
+            case "logical":
                 return Types.BOOLEAN;
             case "composite":
+            case "point_2d":
+            case "point_3d":
+            case "point_4d":
+            case "linestring_2d":
+            case "polygon_2d":
+            case "box_2d":
                 return Types.STRUCT;
-            case "datetime":
+            case "wkb_blob":
+            case "blob":
+            case "bytea":
+            case "varbinary":
+            case "binary":
+                return Types.BINARY;
+            case "date":
                 return Types.DATE;
+            case "datetime":
+            case "timestamp_us":
+                return Types.TIMESTAMP;
+            case "timestamptz":
+                return Types.TIMESTAMP_WITH_TIMEZONE;
+            case "time":
+                return Types.TIME;
+            case "timetz":
+                return Types.TIME_WITH_TIMEZONE;
             case "numeric":
                 return Types.NUMERIC;
             case "string":
+            case "varchar":
+            case "bpchar":
+            case "nvarchar":
+            case "text":
                 return Types.VARCHAR;
             default:
                 return Types.OTHER;
