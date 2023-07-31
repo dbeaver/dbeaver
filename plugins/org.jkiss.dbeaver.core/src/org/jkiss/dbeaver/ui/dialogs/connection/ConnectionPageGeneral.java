@@ -436,7 +436,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                         }
                     }
                 });
-            resetVM.setEnabled(getActiveDataSource().getVirtualModel().hasValuableData());
+            resetVM.setEnabled(dataSourceDescriptor != null && dataSourceDescriptor.getVirtualModel().hasValuableData());
 //            UIUtils.createInfoLabel(vmGroup, "Virtual model is a logical database structure on the client side (not in a real database).\n" +
 //                "It also contains information about\nrow coloring and columns transformations", GridData.FILL_HORIZONTAL, 1);
         }

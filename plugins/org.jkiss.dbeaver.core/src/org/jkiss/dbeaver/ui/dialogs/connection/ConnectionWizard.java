@@ -118,7 +118,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         if (registry == null) {
             throw new IllegalStateException("No active project");
         }
-        if (info == null) {
+        if (info == null && driver != null) {
             DBPConnectionConfiguration connectionInfo = getDefaultConnectionConfiguration();
             info = new DataSourceDescriptor(
                 registry,
