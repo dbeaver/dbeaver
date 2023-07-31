@@ -721,12 +721,12 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     private static final DBSDictionaryAccessor emptyDictionaryAccessor = new DBSDictionaryAccessor() {
         @NotNull
-        public List<DBDLabelValuePair> getValues(int offset, int maxResults) {
+        public List<DBDLabelValuePair> getValues(long offset, long maxResults) {
             return Collections.emptyList();
         }
 
         @NotNull
-        public List<DBDLabelValuePair> getSimilarValues(@NotNull Object pattern, boolean caseInsensitive, boolean byDesc, int offset, int maxResults) {
+        public List<DBDLabelValuePair> getSimilarValues(@NotNull Object pattern, boolean caseInsensitive, boolean byDesc, long offset, long maxResults) {
             return Collections.emptyList();
         }
 

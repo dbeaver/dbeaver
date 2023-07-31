@@ -30,15 +30,15 @@ public interface DBSDictionaryAccessor extends AutoCloseable {
     long findValueIndex(@NotNull Object keyValue) throws DBException;
 
     @NotNull
-    List<DBDLabelValuePair> getValues(int offset, int maxResults) throws DBException;
+    List<DBDLabelValuePair> getValues(long offset, long maxResults) throws DBException;
 
     @NotNull
     List<DBDLabelValuePair> getSimilarValues(
         @NotNull Object pattern,
         boolean caseInsensitive,
         boolean byDesc,
-        int offset,
-        int maxResults
+        long offset,
+        long maxResults
     ) throws DBException;
 
 }
