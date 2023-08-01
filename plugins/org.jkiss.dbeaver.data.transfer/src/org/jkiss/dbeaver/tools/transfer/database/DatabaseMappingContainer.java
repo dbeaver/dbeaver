@@ -230,6 +230,9 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             CommonUtils.notNull(sourceAttr.getLabel(), sourceAttr.getName()), attr -> attr.getSourceLabelOrName(attr.getSource(), false));
     }
 
+    /**
+     * Returns attribute mappings collection without a monitor
+     */
     public Collection<DatabaseMappingAttribute> getAttributeMappings() {
         if (attributeMappings.isEmpty()) {
             try {

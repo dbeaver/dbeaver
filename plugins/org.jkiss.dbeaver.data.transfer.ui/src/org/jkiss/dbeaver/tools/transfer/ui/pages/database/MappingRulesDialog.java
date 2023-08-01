@@ -225,8 +225,8 @@ public class MappingRulesDialog extends BaseDialog {
             if (MappingReplaceMechanism.UNDERSCORES == replaceMechanism) {
                 finalName = finalName.replaceAll(" ", "_");
             } else if (MappingReplaceMechanism.CAMELCASE == replaceMechanism
-                && dataSource.getSQLDialect().storesUnquotedCase() != DBPIdentifierCase.UPPER)
-            {
+                && dataSource.getSQLDialect().storesUnquotedCase() != DBPIdentifierCase.UPPER
+            ) {
                 String camelCaseName = CommonUtils.toCamelCase(finalName);
                 if (CommonUtils.isNotEmpty(camelCaseName)) {
                     finalName = camelCaseName.replaceAll(" ", "");

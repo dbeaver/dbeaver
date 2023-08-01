@@ -262,6 +262,14 @@ public class DatabaseTransferUtils {
         return actions.toArray(new DBEPersistAction[0]);
     }
 
+    /**
+     * Transform target mapping name by mapping rules (if we have them)
+     *
+     * @param dataSource for preferences and dialect info
+     * @param targetName name for transformation
+     * @param skipCaseChanging true if we do not want to change name case
+     * @return transformed target name (container or attribute)
+     */
     @Nullable
     public static String getTransformedName(@NotNull DBPDataSource dataSource, @NotNull String targetName, boolean skipCaseChanging) {
         String finalName = targetName;
@@ -278,8 +286,8 @@ public class DatabaseTransferUtils {
             if (MappingReplaceMechanism.UNDERSCORES == mechanism) {
                 finalName = finalName.replaceAll(" ", "_");
             } else if (MappingReplaceMechanism.CAMELCASE == mechanism
-                && dataSource.getSQLDialect().storesUnquotedCase() != DBPIdentifierCase.UPPER)
-            {
+                && dataSource.getSQLDialect().storesUnquotedCase() != DBPIdentifierCase.UPPER
+            ) {
                 String camelCaseName = CommonUtils.toCamelCase(finalName);
                 if (CommonUtils.isNotEmpty(camelCaseName)) {
                     finalName = camelCaseName.replaceAll(" ", "");

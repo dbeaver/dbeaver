@@ -39,6 +39,12 @@ public enum MappingReplaceMechanism {
         return name;
     }
 
+    /**
+     * Get replace mechanism from the values list or ABSENT
+     *
+     * @param id int for search
+     * @return replace mechanism from the list or default one
+     */
     @NotNull
     public static MappingReplaceMechanism getCaseBySelectionId(int id) {
         for (MappingReplaceMechanism value : values()) {
@@ -49,6 +55,13 @@ public enum MappingReplaceMechanism {
         return ABSENT;
     }
 
+    /**
+     * Get replace mechanism from the preferences or ABSENT
+     *
+     * @param dbpPreferenceStore datasource preference store
+     * @param store general preference store
+     * @return replace mechanism from the preferences or default one
+     */
     @NotNull
     public static MappingReplaceMechanism getCaseFromPreferences(
         @NotNull DBPPreferenceStore dbpPreferenceStore,

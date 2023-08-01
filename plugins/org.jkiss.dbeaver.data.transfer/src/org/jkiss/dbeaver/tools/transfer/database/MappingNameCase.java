@@ -48,6 +48,12 @@ public enum MappingNameCase {
         return identifierCase;
     }
 
+    /**
+     * Get name case the values list or DEFAULT
+     *
+     * @param id int for search
+     * @return name case from the list or default one
+     */
     @NotNull
     public static MappingNameCase getCaseBySelectionId(int id) {
         for (MappingNameCase value : values()) {
@@ -58,6 +64,13 @@ public enum MappingNameCase {
         return DEFAULT;
     }
 
+    /**
+     * Get name case from the preferences or DEFAULT
+     *
+     * @param dbpPreferenceStore datasource preference store
+     * @param store general preference store
+     * @return name case from the preferences or default one
+     */
     @NotNull
     public static MappingNameCase getCaseFromPreferences(
         @NotNull DBPPreferenceStore dbpPreferenceStore,

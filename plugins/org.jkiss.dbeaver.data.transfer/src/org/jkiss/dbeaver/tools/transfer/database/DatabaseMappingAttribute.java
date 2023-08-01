@@ -337,7 +337,9 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                 int maxDataTypeLength = preferenceStore.contains(DTConstants.PREF_MAX_TYPE_LENGTH) ?
                     preferenceStore.getInt(DTConstants.PREF_MAX_TYPE_LENGTH) : store.getInt(DTConstants.PREF_MAX_TYPE_LENGTH);
                 DBSTypedObjectExt2 sourceExt = (DBSTypedObjectExt2) source;
-                if (source.getDataKind() == DBPDataKind.NUMERIC && (source.getPrecision() == null || source.getPrecision() > maxDataTypeLength)) {
+                if (source.getDataKind() == DBPDataKind.NUMERIC &&
+                    (source.getPrecision() == null || source.getPrecision() > maxDataTypeLength)
+                ) {
                     sourceExt.setPrecision(maxDataTypeLength);
                 } else {
                     sourceExt.setMaxLength(maxDataTypeLength);
