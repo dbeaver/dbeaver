@@ -36,11 +36,11 @@ import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionRequest;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionResponse;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
-import org.jkiss.dbeaver.model.ai.translator.DAIHistoryManager;
 import org.jkiss.dbeaver.model.ai.translator.SimpleFilterManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
+import org.jkiss.dbeaver.model.qm.QMTranslationHistoryManager;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
@@ -113,7 +113,7 @@ public class AITranslateHandler extends AbstractHandler {
             }
         }
 
-        DAIHistoryManager historyManager = GeneralUtils.adapt(AISuggestionPopup.class, DAIHistoryManager.class);
+        QMTranslationHistoryManager historyManager = GeneralUtils.adapt(AISuggestionPopup.class, QMTranslationHistoryManager.class);
         if (historyManager == null) {
             historyManager = new SimpleFilterManager();
         }
@@ -148,7 +148,7 @@ public class AITranslateHandler extends AbstractHandler {
 
     private void doAutoCompletion(
         DBCExecutionContext executionContext,
-        DAIHistoryManager historyManager,
+        QMTranslationHistoryManager historyManager,
         DBSLogicalDataSource lDataSource,
         SQLEditor editor,
         DAICompletionEngine engine,

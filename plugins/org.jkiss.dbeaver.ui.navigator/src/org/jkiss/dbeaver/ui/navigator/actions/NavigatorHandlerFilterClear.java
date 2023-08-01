@@ -43,7 +43,7 @@ public class NavigatorHandlerFilterClear extends AbstractHandler {
             final DBNDatabaseFolder folder = (DBNDatabaseFolder) node;
             DBXTreeItem itemsMeta = folder.getItemsMeta();
             if (itemsMeta != null) {
-                folder.setNodeFilter(itemsMeta, new DBSObjectFilter());
+                folder.setNodeFilter(itemsMeta, new DBSObjectFilter(), true);
                 NavigatorHandlerRefresh.refreshNavigator(Collections.singleton(folder));
             }
 

@@ -70,6 +70,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private DBXTreeDescriptor treeDescriptor;
     private final Map<String, DBXTreeNode> treeNodeMap = new HashMap<>();
     private boolean driversManagable;
+    private boolean supportsDriverMigration;
     private final List<DBPPropertyDescriptor> driverProperties = new ArrayList<>();
     private final List<DriverDescriptor> drivers = new ArrayList<>();
     private final List<NativeClientDescriptor> nativeClients = new ArrayList<>();
@@ -107,6 +108,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         if (!ArrayUtils.isEmpty(trees)) {
             this.treeDescriptor = this.loadTreeInfo(trees[0]);
         }
+        this.supportsDriverMigration = CommonUtils.toBoolean(config.getAttribute("supports-migration"));
     }
 
     void linkParentProvider(IConfigurationElement config) {
@@ -308,11 +310,13 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     //////////////////////////////////////
     // Drivers
 
-    public boolean isDriversManagable()
-    {
+    public boolean isDriversManagable() {
         return driversManagable;
     }
 
+    public boolean supportsDriverMigration() {
+        return supportsDriverMigration;
+    }
     public List<DBPPropertyDescriptor> getDriverProperties()
     {
         return driverProperties;

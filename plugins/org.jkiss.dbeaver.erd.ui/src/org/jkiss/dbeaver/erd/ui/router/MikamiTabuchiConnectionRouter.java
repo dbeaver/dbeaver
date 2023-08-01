@@ -142,7 +142,7 @@
             this.figuresToBounds.clear();
 
             for (int i = 0; i < this.container.getChildren().size(); ++i) {
-                this.addChild(this.container.getChildren().get(i));
+                this.addChild((IFigure) this.container.getChildren().get(i));
             }
 
             this.container.addLayoutListener(this.listener);

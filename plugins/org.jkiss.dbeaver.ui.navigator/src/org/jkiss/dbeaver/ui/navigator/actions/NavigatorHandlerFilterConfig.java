@@ -78,7 +78,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                 globalFilter);
             switch (dialog.open()) {
                 case IDialogConstants.OK_ID:
-                    folder.setNodeFilter(itemsMeta, dialog.getFilter());
+                    folder.setNodeFilter(itemsMeta, dialog.getFilter(), true);
                     NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(folder));
                     break;
                 case EditObjectFilterDialog.SHOW_GLOBAL_FILTERS_ID:

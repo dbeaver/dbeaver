@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.data.managers;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionManager;
@@ -46,6 +45,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.storage.StringContentStorage;
@@ -76,7 +76,7 @@ import java.nio.file.Path;
 * AbstractTextPanelEditor
 */
 public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
-    implements IStreamValueEditorPersistent<StyledText>, IAdaptable {
+    implements IStreamValueEditorPersistent<StyledText>, DBPAdaptable {
 
     private static final String PREF_TEXT_EDITOR_WORD_WRAP = "content.text.editor.word-wrap";
     private static final String PREF_TEXT_EDITOR_AUTO_FORMAT = "content.text.editor.auto-format";

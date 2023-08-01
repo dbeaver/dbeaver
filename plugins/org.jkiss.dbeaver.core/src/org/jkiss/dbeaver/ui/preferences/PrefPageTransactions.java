@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.dialogs.PreferenceLinkArea;
@@ -82,8 +84,24 @@ public class PrefPageTransactions extends TargetPrefPage
             0);
         String settingsTipString;
         if (dataSourcePreferencePage) {
-            smartCommitCheck = UIUtils.createCheckbox(txnNameGroup, CoreMessages.action_menu_transaction_smart_auto_commit, CoreMessages.action_menu_transaction_smart_auto_commit_tip, false, 2);
-            smartCommitRecoverCheck = UIUtils.createCheckbox(txnNameGroup, CoreMessages.action_menu_transaction_smart_auto_commit_recover, CoreMessages.action_menu_transaction_smart_auto_commit_recover_tip, false, 2);
+            smartCommitCheck = UIUtils.createCheckbox(
+                txnNameGroup,
+                CoreMessages.action_menu_transaction_smart_auto_commit,
+                CoreMessages.action_menu_transaction_smart_auto_commit_tip,
+                false,
+                2);
+            smartCommitCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    updateButtons();
+                }
+            });
+            smartCommitRecoverCheck = UIUtils.createCheckbox(
+                txnNameGroup,
+                CoreMessages.action_menu_transaction_smart_auto_commit_recover,
+                CoreMessages.action_menu_transaction_smart_auto_commit_recover_tip,
+                false,
+                2);
 
             autoCloseTransactionsCheck = UIUtils.createCheckbox(
                 txnNameGroup,
@@ -133,6 +151,16 @@ public class PrefPageTransactions extends TargetPrefPage
         return composite;
     }
 
+    private void updateButtons() {
+        if (!smartCommitCheck.getSelection()) {
+            // Works only with the smart commit mode
+            smartCommitRecoverCheck.setEnabled(false);
+            smartCommitRecoverCheck.setSelection(false);
+        } else if (!smartCommitRecoverCheck.isEnabled()) {
+            smartCommitRecoverCheck.setEnabled(true);
+        }
+    }
+
     @Override
     protected void loadPreferences(DBPPreferenceStore store)
     {
@@ -142,6 +170,9 @@ public class PrefPageTransactions extends TargetPrefPage
             }
             if (smartCommitRecoverCheck != null) {
                 smartCommitRecoverCheck.setSelection(store.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER));
+                if (smartCommitCheck != null) {
+                    updateButtons();
+                }
             }
             if (autoCloseTransactionsCheck != null) {
                 autoCloseTransactionsCheck.setSelection(store.getBoolean(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED));

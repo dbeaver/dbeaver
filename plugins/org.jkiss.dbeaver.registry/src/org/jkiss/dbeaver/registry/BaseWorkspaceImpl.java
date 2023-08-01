@@ -283,7 +283,6 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
                 Math.abs(SecurityUtils.generateRandomLong()),
                 36).toUpperCase();
             workspaceInfo.setProperty(WORKSPACE_ID, workspaceId);
-            BaseWorkspaceImpl.writeWorkspaceInfo(GeneralUtils.getMetadataFolder(), workspaceInfo);
         }
         return workspaceId + "-" + getLocalHostId();
     }
@@ -325,7 +324,11 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
     }
 
     ////////////////////////////////////////////////////////
-    // Realm
+    // Options
+
+    public boolean isReadOnly() {
+        return false;
+    }
 
     public boolean isAdmin() {
         return hasRealmPermission(DBAPermissionRealm.PERMISSION_ADMIN);
