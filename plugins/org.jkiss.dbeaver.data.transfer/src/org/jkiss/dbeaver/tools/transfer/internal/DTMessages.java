@@ -105,6 +105,8 @@ public class DTMessages extends NLS {
 	public static String data_transfer_wizard_settings_column_mapping_type;
 	public static String data_transfer_db_consumer_target_container;
 	public static String data_transfer_db_consumer_choose_container;
+	public static String data_transfer_db_consumer_mapping_rules_button;
+	public static String data_transfer_db_consumer_mapping_rules_button_tip;
 	public static String data_transfer_db_consumer_auto_assign;
 	public static String data_transfer_db_consumer_auto_assign_description;
 	public static String data_transfer_db_consumer_existing_table;
@@ -182,6 +184,13 @@ public class DTMessages extends NLS {
     public static String data_transfer_file_conflict_behavior_apply_to_all_for_current_object;
 
 	public static String data_transfer_summary_title;
+
+	public static String pref_data_transfer_name_case_default;
+	public static String pref_data_transfer_name_case_upper;
+	public static String pref_data_transfer_name_case_lower;
+	public static String pref_data_transfer_replacing_combo_do_not;
+	public static String pref_data_transfer_replacing_combo_underscores;
+	public static String pref_data_transfer_replacing_combo_camel_case;
 
 	static {
 		// initialize resource bundle

@@ -225,6 +225,18 @@ public class DTUIMessages extends NLS {
 	public static String pref_data_transfer_options_title;
 	public static String pref_data_transfer_options_fallback_directory;
 	public static String pref_data_transfer_options_fallback_directory_tip;
+	public static String pref_data_transfer_mapping_group;
+	public static String pref_data_transfer_info_label_mapping;
+	public static String pref_data_transfer_name_case_label;
+	public static String pref_data_transfer_replacing_combo_label;
+    public static String pref_data_transfer_replacing_combo_tip;
+	public static String pref_data_transfer_spanner_max_length;
+	public static String pref_data_transfer_spanner_max_length_tip;
+
+    public static String mappings_rules_dialog_title;
+    public static String mappings_rules_dialog_save_settings_checkbox;
+    public static String mappings_rules_dialog_confirmation_title;
+    public static String mappings_rules_dialog_confirmation_message;
 
 	static {
 		// initialize resource bundle
