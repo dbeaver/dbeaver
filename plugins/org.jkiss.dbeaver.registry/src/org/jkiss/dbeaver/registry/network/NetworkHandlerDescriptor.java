@@ -54,6 +54,7 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
     private NetworkHandlerDescriptor replacedBy;
     private final DBPPropertyDescriptor[] properties;
     private final boolean isDesktop;
+    private final boolean isPinned;
 
     NetworkHandlerDescriptor(
         IConfigurationElement config) {
@@ -68,6 +69,7 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         this.handlerType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_HANDLER_CLASS));
         this.order = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_ORDER), 1);
         this.isDesktop = CommonUtils.getBoolean(config.getAttribute("desktop"), true);
+        this.isPinned = CommonUtils.getBoolean(config.getAttribute("pinned"), false);
 
         this.replacesIDs = Arrays.stream(config.getChildren("replace"))
             .map(re -> re.getAttribute("id"))
@@ -161,4 +163,7 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         return isDesktop;
     }
 
+    public boolean isPinned() {
+        return isPinned;
+    }
 }
