@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: %Bundle-Name
+Bundle-Name: DBeaver TiDB UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.tidb.ui;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Release-Date: 20221121
@@ -18,6 +18,6 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.ui.editors.connection
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-Vendor: %Bundle-Vendor
+Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.tidb.ui

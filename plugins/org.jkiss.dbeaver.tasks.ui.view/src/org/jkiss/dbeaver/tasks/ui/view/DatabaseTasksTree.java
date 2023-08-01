@@ -331,6 +331,9 @@ public class DatabaseTasksTree {
     }
 
     void regroupTasks(ExpansionOptions options) {
+        if (taskViewer.isBusy()) {
+            return;
+        }
         taskViewer.getTree().setRedraw(false);
         try {
             List<Object> rootObjects = new ArrayList<>();
@@ -477,7 +480,9 @@ public class DatabaseTasksTree {
                     }
 
                     UIUtils.asyncExec(() -> {
-                        taskViewer.refresh(true);
+                        if (!taskViewer.isBusy()) {
+                            taskViewer.refresh(true);
+                        }
                     });
                     return Status.OK_STATUS;
                 }

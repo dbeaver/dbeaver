@@ -19,23 +19,25 @@ package org.jkiss.dbeaver.model.ai.translator;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
+import org.jkiss.dbeaver.model.qm.QMTranslationHistoryItem;
+import org.jkiss.dbeaver.model.qm.QMTranslationHistoryManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
-public class SimpleFilterManager implements DAIHistoryManager {
-    private static final Map<String, List<DAIHistoryItem>> queryHistory = new HashMap<>();
+public class SimpleFilterManager implements QMTranslationHistoryManager {
+    private static final Map<String, List<QMTranslationHistoryItem>> queryHistory = new HashMap<>();
 
     @NotNull
     @Override
-    public List<DAIHistoryItem> readTranslationHistory(
+    public List<QMTranslationHistoryItem> readTranslationHistory(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSLogicalDataSource dataSource,
         @NotNull DBCExecutionContext executionContext,
         int maxCount
     ) {
-        List<DAIHistoryItem> queries = queryHistory.get(dataSource.getDataSourceContainer().getId());
+        List<QMTranslationHistoryItem> queries = queryHistory.get(dataSource.getDataSourceContainer().getId());
         if (!CommonUtils.isEmpty(queries)) {
             return new ArrayList<>(queries);
         }
@@ -50,8 +52,8 @@ public class SimpleFilterManager implements DAIHistoryManager {
         @NotNull String natualText,
         @NotNull String sqlText
     ) {
-        List<DAIHistoryItem> queries = queryHistory.computeIfAbsent(dataSource.getDataSourceContainer().getId(), k -> new ArrayList<>());
-        DAIHistoryItem item = new DAIHistoryItem(natualText, sqlText);
+        List<QMTranslationHistoryItem> queries = queryHistory.computeIfAbsent(dataSource.getDataSourceContainer().getId(), k -> new ArrayList<>());
+        QMTranslationHistoryItem item = new QMTranslationHistoryItem(natualText, sqlText);
         item.setTime(new Date());
         queries.add(item);
     }
