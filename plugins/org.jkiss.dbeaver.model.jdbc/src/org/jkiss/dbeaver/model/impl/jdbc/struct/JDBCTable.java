@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.Pair;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -932,7 +931,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         
         public AttrInfo(T attr, DBDValueHandler handler) {
             this.attr = attr;
-            this.handler= handler;
+            this.handler = handler;
         }
     }
     
@@ -996,7 +995,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         private void bindPrecedingKeys(DBCStatement dbStat) throws DBCException {
             if (!preceedingKeysInfo.isEmpty()) {
                 int paramPos = 0;
-                for (var k: preceedingKeysInfo) {
+                for (var k : preceedingKeysInfo) {
                     k.handler.bindValueObject(session, dbStat, k.attr.getAttribute(), paramPos++, k.attr.getValue());
                 }
             }
@@ -1114,7 +1113,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
             // Add desc columns conditions
             if (byDesc && pattern instanceof CharSequence) {
-                for (var a: descAttributesInfo) {
+                for (var a : descAttributesInfo) {
                     if (a.attr.getDataKind() == DBPDataKind.STRING) {
                         final DBDValueHandler valueHandler = DBUtils.findValueHandler(session, a.attr);
                         boolean ilikeUsable = ArrayUtils.contains(valueHandler.getSupportedOperators(a.attr), DBCLogicalOperator.ILIKE);
@@ -1143,7 +1142,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
             
             if (byDesc && pattern instanceof CharSequence) {
-                for (var a: descAttributesInfo) {
+                for (var a : descAttributesInfo) {
                     if (a.attr.getDataKind() == DBPDataKind.STRING) {
                         a.handler.bindValueObject(session, dbStat, a.attr, paramPos++, "%" + pattern + "%");
                     }
