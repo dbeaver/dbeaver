@@ -291,7 +291,7 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2, 
         return transformSettings;
     }
 
-    void setTransformSettings(DBVTransformSettings transformSettings) {
+    public void setTransformSettings(DBVTransformSettings transformSettings) {
         this.transformSettings = transformSettings;
     }
 
