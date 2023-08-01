@@ -246,6 +246,12 @@ public class DBVModel extends DBVContainer {
         }
     }
 
+    public void resetData() {
+        this.clearProperties();
+        this.clearEntities();
+        this.clearContainers();
+    }
+
     public static class ModelChangeListener implements DBPEventListener {
         @Override
         public void handleDataSourceEvent(DBPEvent event) {

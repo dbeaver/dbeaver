@@ -204,13 +204,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
         setPersisted(true);
 
-        if (getTable() instanceof PostgreTable) {
-            PostgreTable postgreTable = (PostgreTable) getTable();
-            if (postgreTable.getDepObjectAttrNumber() == getOrdinalPosition()) {
-                // ID of object which has dependency with this column
-                this.depObjectId = (postgreTable).getDepObjectId();
-            }
-        }
+        this.depObjectId = JDBCUtils.safeGetLong(dbResult, "objid"); // ID of object which has dependency with this column
     }
 
     @NotNull
