@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -52,6 +53,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * JDBC abstract table implementation
@@ -924,9 +926,19 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return "DELETE FROM " + tableName;
     }
 
+    private static class AttrInfo<T> {
+        public final T attr;
+        public final DBDValueHandler handler;
+        
+        public AttrInfo(T attr, DBDValueHandler handler) {
+            this.attr = attr;
+            this.handler= handler;
+        }
+    }
+    
     protected class DictionaryAccessor implements DBSDictionaryAccessor {
         private final DBCExecutionSource execSource;
-        private final List<DBDAttributeValue> preceedingKeys;
+        private final List<AttrInfo<DBDAttributeValue>> preceedingKeysInfo;
         private final DBSEntityAttribute keyColumn;
         private final boolean sortAsc;
         private final boolean sortByDesc;
@@ -934,6 +946,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         private final DBDValueHandler keyValueHandler;
         private final String descColumns;
         private final Collection<DBSEntityAttribute> descAttributes;
+        private final Collection<AttrInfo<DBSEntityAttribute>> descAttributesInfo;
 
         private final DBDDataFilter filter;
         private JDBCSession session;
@@ -947,7 +960,6 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             boolean sortByDesc
         ) throws DBException {
             this.execSource = execSource;
-            this.preceedingKeys = preceedingKeys;
             this.keyColumn = keyColumn;
             this.sortAsc = sortAsc;
             this.sortByDesc = sortByDesc;
@@ -956,26 +968,36 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             this.descColumns = DBVUtils.getDictionaryDescriptionColumns(monitor, keyColumn);
             this.descAttributes = descColumns == null ? null : DBVEntity.getDescriptionColumns(monitor, JDBCTable.this, descColumns);
 
-            List<DBDAttributeConstraint> constraints = new ArrayList<>(preceedingKeys == null ? 0 : preceedingKeys.size() + 1);
-            if (preceedingKeys != null) {
-                for (DBDAttributeValue key : preceedingKeys) {
-                    DBDAttributeConstraint constraint = new DBDAttributeConstraint(key.getAttribute(), constraints.size());
-                    constraint.setValue(key.getValue());
-                    constraint.setOperator(DBCLogicalOperator.EQUALS);
-                    constraints.add(constraint);
-                }
-            }
-            this.filter = new DBDDataFilter(constraints);
-
             this.session = DBUtils.openUtilSession(monitor, JDBCTable.this, "Load attribute values count");
+            
+            {
+                int capacity = preceedingKeys == null ? 0 : preceedingKeys.size() + 1;
+                List<DBDAttributeConstraint> constraints = new ArrayList<>(capacity);
+                List<AttrInfo<DBDAttributeValue>> preceedingKeysInfo = new ArrayList<>(capacity);
+                if (preceedingKeys != null) {
+                    for (DBDAttributeValue key : preceedingKeys) {
+                        DBDAttributeConstraint constraint = new DBDAttributeConstraint(key.getAttribute(), constraints.size());
+                        constraint.setValue(key.getValue());
+                        constraint.setOperator(DBCLogicalOperator.EQUALS);
+                        constraints.add(constraint);
+                        
+                        DBDValueHandler precValueHandler = DBUtils.findValueHandler(session, key.getAttribute());
+                        preceedingKeysInfo.add(new AttrInfo<>(key, precValueHandler));
+                    }
+                }
+                this.preceedingKeysInfo = preceedingKeysInfo;
+                this.filter = new DBDDataFilter(constraints);
+            }
+            
+            this.descAttributesInfo = descAttributes == null ? Collections.emptyList() : descAttributes.stream()
+                .map(a -> new AttrInfo<>(a, DBUtils.findValueHandler(session, a))).collect(Collectors.toList());
         }
         
         private void bindPrecedingKeys(DBCStatement dbStat) throws DBCException {
-            if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
+            if (!preceedingKeysInfo.isEmpty()) {
                 int paramPos = 0;
-                for (DBDAttributeValue precAttribute : preceedingKeys) {
-                    DBDValueHandler precValueHandler = DBUtils.findValueHandler(session, precAttribute.getAttribute());
-                    precValueHandler.bindValueObject(session, dbStat, precAttribute.getAttribute(), paramPos++, precAttribute.getValue());
+                for (var k: preceedingKeysInfo) {
+                    k.handler.bindValueObject(session, dbStat, k.attr.getAttribute(), paramPos++, k.attr.getValue());
                 }
             }
         }
@@ -1021,7 +1043,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             appendSortingClause(query);
             try (DBCStatement dbStat = DBUtils.makeStatement(null, session, DBCStatementType.QUERY, query.toString(), offset, maxResults)) {
                 bindPrecedingKeys(dbStat);
-                bindPattern(dbStat, pattern);
+                bindPattern(dbStat, pattern, byDesc);
                 return readValues(dbStat);
             }
         }
@@ -1076,24 +1098,29 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             {
                 DBDAttributeConstraint keyConstraint = new DBDAttributeConstraint(keyColumn, constraints.size());
                 if (keyColumn.getDataKind() == DBPDataKind.STRING) {
+                    boolean ilikeUsable = ArrayUtils.contains(keyValueHandler.getSupportedOperators(keyColumn), DBCLogicalOperator.ILIKE);
                     keyConstraint.setValue("%" + pattern + "%");
-                    keyConstraint.setOperator(caseInsensitive ? DBCLogicalOperator.ILIKE : DBCLogicalOperator.LIKE);
+                    keyConstraint.setOperator(caseInsensitive && ilikeUsable ? DBCLogicalOperator.ILIKE : DBCLogicalOperator.LIKE);
                 } else if (keyColumn.getDataKind() == DBPDataKind.NUMERIC) {
-                    keyConstraint.setValue(pattern);
-                    keyConstraint.setOperator(DBCLogicalOperator.GREATER_EQUALS);
-                } else {
+                    if (CommonUtils.isNumber(pattern)) {
+                        keyConstraint.setValue(pattern);
+                        keyConstraint.setOperator(DBCLogicalOperator.GREATER_EQUALS);
+                    }
+                } else if (pattern instanceof CharSequence) {
                     keyConstraint.setValue(pattern);
                     keyConstraint.setOperator(DBCLogicalOperator.EQUALS);
                 }
                 constraints.add(keyConstraint);
             }
             // Add desc columns conditions
-            if (byDesc && descAttributes != null && pattern instanceof CharSequence) {
-                for (DBSEntityAttribute descAttr : descAttributes) {
-                    if (descAttr.getDataKind() == DBPDataKind.STRING) {
-                        DBDAttributeConstraint descConstraint = new DBDAttributeConstraint(descColumns, constraints.size());
+            if (byDesc && pattern instanceof CharSequence) {
+                for (var a: descAttributesInfo) {
+                    if (a.attr.getDataKind() == DBPDataKind.STRING) {
+                        final DBDValueHandler valueHandler = DBUtils.findValueHandler(session, a.attr);
+                        boolean ilikeUsable = ArrayUtils.contains(valueHandler.getSupportedOperators(a.attr), DBCLogicalOperator.ILIKE);
+                        DBDAttributeConstraint descConstraint = new DBDAttributeConstraint(a.attr, constraints.size());
                         descConstraint.setValue("%" + pattern + "%");
-                        descConstraint.setOperator(caseInsensitive ? DBCLogicalOperator.ILIKE : DBCLogicalOperator.LIKE);
+                        descConstraint.setOperator(caseInsensitive && ilikeUsable ? DBCLogicalOperator.ILIKE : DBCLogicalOperator.LIKE);
                         constraints.add(descConstraint);
                     }
                 }
@@ -1102,11 +1129,25 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             return filter;
         }
         
-        private void bindPattern(DBCStatement dbStat, Object pattern) throws DBCException {
+        private void bindPattern(DBCStatement dbStat, Object pattern, boolean byDesc) throws DBCException {
             int paramPos = this.filter.getConstraints().size();
             
-            if (keyColumn.getDataKind() == DBPDataKind.NUMERIC) {
+            if (keyColumn.getDataKind() == DBPDataKind.STRING) {
+                keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++, "%" + pattern + "%");
+            } else if (keyColumn.getDataKind() == DBPDataKind.NUMERIC) {
+                if (CommonUtils.isNumber(pattern)) {
+                    keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++, pattern);
+                }
+            } else if (pattern instanceof CharSequence) {
                 keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++, pattern);
+            }
+            
+            if (byDesc && pattern instanceof CharSequence) {
+                for (var a: descAttributesInfo) {
+                    if (a.attr.getDataKind() == DBPDataKind.STRING) {
+                        a.handler.bindValueObject(session, dbStat, a.attr, paramPos++, "%" + pattern + "%");
+                    }
+                }
             }
         }
         

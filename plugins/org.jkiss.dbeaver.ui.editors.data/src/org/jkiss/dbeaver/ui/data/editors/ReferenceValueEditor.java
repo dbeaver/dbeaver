@@ -184,7 +184,7 @@ public class ReferenceValueEditor {
                     }
                     data = accessor.getValues(currOffset, pageSize);
                 } else {
-                    data = accessor.getSimilarValues(filterPattern, false, true, currOffset, pageSize);
+                    data = accessor.getSimilarValues(filterPattern, true, true, currOffset, pageSize);
                 }
                 nextPageAvailable = data.size() >= pageSize;
                 limitFound |= !nextPageAvailable;
@@ -639,7 +639,8 @@ public class ReferenceValueEditor {
             if (fkAttribute != null && enumConstraint != null) {
                 try (DBSDictionaryAccessor accessor = enumConstraint.getDictionaryAccessor(
                     new AbstractExecutionSource(null, valueController.getExecutionContext(), ReferenceValueEditor.this), monitor,
-                    precedingKeys, refColumn, sortAsc, !sortByValue)) {
+                    precedingKeys, refColumn, sortAsc, !sortByValue)
+                ) {
                     List<DBDLabelValuePair> enumValues = action.apply(accessor);
                     if (monitor.isCanceled()) {
                         return null;
