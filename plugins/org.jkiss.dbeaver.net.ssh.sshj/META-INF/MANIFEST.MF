@@ -12,4 +12,6 @@ Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.net.ssh,
  org.jkiss.bundle.sshj,
  com.jcraft.jsch
+Import-Package: org.slf4j,
+ org.slf4j.helpers
 Automatic-Module-Name: org.jkiss.dbeaver.net.ssh.sshj
