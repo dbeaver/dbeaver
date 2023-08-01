@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 
 public class HANASQLDialect extends GenericSQLDialect implements TPRuleProvider {
@@ -199,11 +198,13 @@ public class HANASQLDialect extends GenericSQLDialect implements TPRuleProvider 
         return "\\";
     }
 
+    @NotNull
     @Override
-    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
+    public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position) {
         if (position == RulePosition.FINAL) {
-            rules.add(new SQLVariableRule(this));
+            return new TPRule[] { new SQLVariableRule(this) };
         }
+        return new TPRule[0];
     }
 
     @Override

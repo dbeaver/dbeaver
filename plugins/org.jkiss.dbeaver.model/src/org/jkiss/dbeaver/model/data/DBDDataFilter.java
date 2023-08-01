@@ -56,6 +56,25 @@ public class DBDDataFilter {
         return constraints;
     }
 
+    public boolean hasHiddenAttributes() {
+        for (DBDAttributeConstraint ac : getConstraints()) {
+            DBSAttributeBase attribute = ac.getAttribute();
+            if (!ac.isVisible() && attribute instanceof DBDAttributeBinding && DBDAttributeConstraint.isVisibleByDefault((DBDAttributeBinding) attribute)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean hasPinnedAttributes() {
+        for (DBDAttributeConstraint ac : getConstraints()) {
+            if (ac.hasOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Nullable
     public DBDAttributeConstraint getConstraint(DBDAttributeBinding binding) {
         for (DBDAttributeConstraint co : constraints) {

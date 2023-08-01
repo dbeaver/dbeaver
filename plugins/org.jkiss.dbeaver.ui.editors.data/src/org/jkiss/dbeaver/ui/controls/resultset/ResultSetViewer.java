@@ -82,6 +82,7 @@ import org.jkiss.dbeaver.ui.controls.VerticalButton;
 import org.jkiss.dbeaver.ui.controls.VerticalFolder;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.CustomizeColorsAction;
+import org.jkiss.dbeaver.ui.controls.resultset.colors.ResetAllColorAction;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.ResetRowColorAction;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.SetRowColorAction;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.*;
@@ -129,7 +130,7 @@ import java.util.stream.Collectors;
  *
  */
 public class ResultSetViewer extends Viewer
-    implements DBPContextProvider, IResultSetController, ISaveablePart2, IAdaptable, DBPEventListener
+    implements DBPContextProvider, IResultSetController, ISaveablePart2, DBPAdaptable, DBPEventListener
 {
     private static final Log log = Log.getLog(ResultSetViewer.class);
 
@@ -2959,9 +2960,9 @@ public class ResultSetViewer extends Viewer
                 }
             }
             viewMenu.add(new CustomizeColorsAction(this, attr, row));
-//            if (getModel().getSingleSource() != null && getModel().hasColorMapping(getModel().getSingleSource())) {
-//                viewMenu.add(new ResetAllColorAction());
-//            }
+            if (hasColorOverrides()) {
+                viewMenu.add(new ResetAllColorAction(this));
+            }
         }
         viewMenu.add(new ColorizeDataTypesToggleAction());
         viewMenu.add(new Separator());
@@ -3148,7 +3149,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @NotNull
-    private List<DBVColorOverride> getColorOverrides(@NotNull DBDAttributeBinding binding, @Nullable Object value) {
+    List<DBVColorOverride> getColorOverrides(@NotNull DBDAttributeBinding binding, @Nullable Object value) {
         final DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer == null) {
             return Collections.emptyList();
@@ -3162,6 +3163,41 @@ public class ResultSetViewer extends Viewer
             .filter(override -> override.getOperator() == DBCLogicalOperator.EQUALS)
             .filter(override -> override.getOperator().evaluate(value, override.getAttributeValues()))
             .collect(Collectors.toList());
+    }
+
+    boolean hasColorOverrides() {
+        final DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer == null) {
+            return false;
+        }
+        final DBVEntity virtualEntity = DBVUtils.getVirtualEntity(dataContainer, false);
+        if (virtualEntity == null) {
+            return false;
+        }
+        return !virtualEntity.getColorOverrides().isEmpty();
+    }
+
+    boolean hasColumnTransformers() {
+        final DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer == null) {
+            return false;
+        }
+        final DBVEntity virtualEntity = DBVUtils.getVirtualEntity(dataContainer, false);
+        if (virtualEntity == null) {
+            return false;
+        }
+        if (virtualEntity.getTransformSettings() != null && virtualEntity.getTransformSettings().hasValuableData()) {
+            return true;
+        }
+        List<DBVEntityAttribute> vAttrs = virtualEntity.getEntityAttributes();
+        if (vAttrs != null) {
+            for (DBVEntityAttribute vAttr : vAttrs) {
+                if (vAttr.getTransformSettings() != null && vAttr.getTransformSettings().hasValuableData()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override

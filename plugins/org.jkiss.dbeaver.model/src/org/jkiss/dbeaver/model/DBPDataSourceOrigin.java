@@ -25,6 +25,8 @@ import java.util.Map;
  * Configuration origin.
  * It can be local configuration or some cloud provider.
  */
+@DPIObject
+@DPIElement
 public interface DBPDataSourceOrigin extends DBPObjectWithDetails<DBPDataSourceContainer> {
 
     /**

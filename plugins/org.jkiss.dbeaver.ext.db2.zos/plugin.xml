@@ -9,7 +9,7 @@
 
         <datasource
                 class="org.jkiss.dbeaver.ext.db2.zos.DB2ZOSDataSourceProvider"
-                description="%datasource.db2_zos.description"
+                description="DB2 z/OS Connector"
                 id="db2_zos"
                 parent="generic"
                 label="Db2 for z/OS data source"

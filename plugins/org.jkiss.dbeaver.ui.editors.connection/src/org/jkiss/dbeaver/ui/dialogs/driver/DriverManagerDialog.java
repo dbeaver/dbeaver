@@ -112,14 +112,14 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         getShell().addDisposeListener(e -> UIUtils.dispose(image));
 
 
-        Composite group = UIUtils.createPlaceholder((Composite) super.createDialogArea(parent), 2);
+        Composite group = UIUtils.createPlaceholder(super.createDialogArea(parent), 2);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
             treeControl = new DriverSelectViewer(group, this, enabledProviders, false, DriverSelectViewer.SelectorViewType.tree);
             GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.heightHint = 300;
-            gd.widthHint = 300;
+            gd.heightHint = 400;
+            gd.widthHint = 500;
             treeControl.getControl().setLayoutData(gd);
         }
 
@@ -368,9 +368,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             //driver.validateFilesPresence(this);
 
             DriverEditDialog dialog = new DriverEditDialog(getShell(), driver);
-            if (dialog.open() == IDialogConstants.OK_ID) {
-                // Do nothing
-            }
+            dialog.open();
             treeControl.refresh(driver);
         }
     }

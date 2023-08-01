@@ -54,6 +54,7 @@
             codeName="Proxy"
             label="%handler.socks_proxy.label"
             description="%handler.socks_proxy.description"
+            desktop="true"
             secured="true"
             order="10"
             handlerClass="org.jkiss.dbeaver.model.impl.net.SocksProxyImpl"/>

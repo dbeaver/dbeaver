@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.sql;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DPIObject;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -28,6 +29,7 @@ import java.util.List;
 /**
  * Contains methods used for query generation
  */
+@DPIObject
 public interface SQLDialectQueryGenerator {
 
     /**
