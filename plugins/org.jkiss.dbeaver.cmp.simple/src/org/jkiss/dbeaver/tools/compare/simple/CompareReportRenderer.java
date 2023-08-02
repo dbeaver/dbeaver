@@ -107,7 +107,7 @@ public class CompareReportRenderer {
         StringBuilder styles = new StringBuilder();
         styles.append("table {font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;text-align:left;} ");
         //styles.append(".missing {color:red;} .differs {color:red;} ");
-        styles.append(".missing {color:blue;} .differs {color:blue;}"); //visibility!
+        styles.append(".missing {color:red;} .differs {color:blue;}"); //visibility!
         styles.append(".object td,th {border-top:solid 1px; border-right:solid 1px; border-color: black; white-space:nowrap;} ");
         styles.append(".property td,th {border-top:dashed 1px; border-right:solid 1px; border-color: black; white-space:pre; } ");
         styles.append(".struct {border-top:none; !important } ");
