@@ -1733,6 +1733,10 @@ public final class DBUtils {
     @NotNull
     public static String getFullTypeName(DBPDataSource dataSource, @NotNull DBSTypedObject typedObject) {
         String typeName = typedObject.getTypeName();
+        if (CommonUtils.isEmpty(typeName)) {
+            // No answer from the driver side
+            return "<unknown type>";
+        }
         String typeModifiers = SQLUtils.getColumnTypeModifiers(dataSource, typedObject, typeName, typedObject.getDataKind());
         return typeModifiers == null ? typeName : (typeName + typeModifiers);
     }
