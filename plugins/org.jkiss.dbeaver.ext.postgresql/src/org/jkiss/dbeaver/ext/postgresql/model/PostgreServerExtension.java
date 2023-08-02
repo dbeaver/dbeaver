@@ -104,7 +104,9 @@ public interface PostgreServerExtension {
     String getProceduresSystemTable();
     String getProceduresOidColumn();
 
-    // Specific column which contains routine type
+    /**
+     * Returns true if a database contains prosp column in the pg_proc system table. This column knows about routine type.
+     */
     boolean supportsProSPColumn();
 
     // Table DDL extraction
