@@ -305,6 +305,12 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 kind = PostgreProcedureKind.a;
             } else if (isWindow) {
                 kind = PostgreProcedureKind.w;
+            } else if (dataSource.getServerType().supportsProSPColumn()) {
+                if (JDBCUtils.safeGetBoolean(dbResult, "prosp", false)) {
+                    kind = PostgreProcedureKind.p;
+                } else {
+                    kind = PostgreProcedureKind.f;
+                }
             } else {
                 kind = PostgreProcedureKind.f;
             }

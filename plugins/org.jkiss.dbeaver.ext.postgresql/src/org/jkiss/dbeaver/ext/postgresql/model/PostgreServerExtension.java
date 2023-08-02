@@ -104,6 +104,9 @@ public interface PostgreServerExtension {
     String getProceduresSystemTable();
     String getProceduresOidColumn();
 
+    // Specific column which contains routine type
+    boolean supportsProSPColumn();
+
     // Table DDL extraction
     String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException;
 
