@@ -169,11 +169,9 @@ queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
 // from
 fromClause: FROM tableReference ((Comma tableReference)+)?;
 nonjoinedTableReference: (tableName (PARTITION anyProperty)? (correlationSpecification)?)|(derivedTable correlationSpecification);
-tableReference: (
-    nonjoinedTableReference
-    | joinedTable
-    | ((anyWord|WITH|UPDATE|IN|KEY|JOIN|ORDER BY|GROUP BY|FOR|LOCK|SHARE|MODE|USE|IGNORE|FORCE|INDEX)+ anyProperty?) // dialect-specific cases for mssql, mariadb
-)*; // * to handle incomplete queries
+tableReference: (nonjoinedTableReference|joinedTable|tableReferenceHints)*; // * to handle incomplete queries
+// TODO: postgresql, oracle
+tableReferenceHints: (tableHintKeywords|anyWord)+ (LeftParen (anyValue|tableSelectWithHintOptions)+ RightParen)?; // dialect-specific cases for mssql, mariadb
 joinedTable: (nonjoinedTableReference|(LeftParen joinedTable RightParen)) (naturalJoinTerm|crossJoinTerm)+;
 correlationSpecification: (AS)? correlationName (LeftParen derivedColumnList RightParen)?;
 derivedColumnList: columnNameList;
@@ -359,3 +357,7 @@ anyProperty: LeftParen anyValue+ RightParen;
 anyWordsWithProperty: anyWord+ anyProperty?;
 
 nonReserved: COMMITTED | DATA | NAME | NULLABLE | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED;
+tableHintKeywords: WITH | UPDATE | IN | KEY | JOIN | ORDER BY | GROUP BY | FOR | LOCK | SHARE | MODE | USE | IGNORE | FORCE | INDEX;
+tableSelectWithHintOptions: NOEXPAND | NOLOCK | FORCESEEK | FORCESCAN | HOLDLOCK | NOLOCK | NOWAIT | PAGLOCK | READCOMMITTED | READCOMMITTEDLOCK
+    | READPAST | READUNCOMMITTED | REPEATABLEREAD | ROWLOCK | SERIALIZABLE | SNAPSHOT | TABLOCK | TABLOCKX | UPDLOCK | XLOCK
+    | KEEPIDENTITY | KEEPDEFAULTS | IGNORE_CONSTRAINTS | IGNORE_TRIGGERS;
