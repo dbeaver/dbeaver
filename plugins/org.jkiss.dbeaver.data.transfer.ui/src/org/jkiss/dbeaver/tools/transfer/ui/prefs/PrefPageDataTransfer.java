@@ -117,6 +117,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
                 mappingGroup,
                 DTUIMessages.pref_data_transfer_name_case_label,
                 SWT.READ_ONLY | SWT.DROP_DOWN);
+            nameCaseCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             nameCaseCombo.add(DTMessages.pref_data_transfer_name_case_default);
             nameCaseCombo.add(DTMessages.pref_data_transfer_name_case_upper);
             nameCaseCombo.add(DTMessages.pref_data_transfer_name_case_lower);
@@ -125,6 +126,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
                 mappingGroup,
                 DTUIMessages.pref_data_transfer_replacing_combo_label,
                 SWT.READ_ONLY | SWT.DROP_DOWN);
+            replaceCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             replaceCombo.add(DTMessages.pref_data_transfer_replacing_combo_do_not);
             replaceCombo.add(DTMessages.pref_data_transfer_replacing_combo_underscores);
             replaceCombo.add(DTMessages.pref_data_transfer_replacing_combo_camel_case);

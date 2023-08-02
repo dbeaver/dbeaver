@@ -98,6 +98,7 @@ public class MappingRulesDialog extends BaseDialog {
             mappingGroup,
             DTUIMessages.pref_data_transfer_name_case_label,
             SWT.READ_ONLY | SWT.DROP_DOWN);
+        nameCaseCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         for (MappingNameCase value : MappingNameCase.values()) {
             nameCaseCombo.add(value.getName());
         }
@@ -107,6 +108,7 @@ public class MappingRulesDialog extends BaseDialog {
             mappingGroup,
             DTUIMessages.pref_data_transfer_replacing_combo_label,
             SWT.READ_ONLY | SWT.DROP_DOWN);
+        replaceCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         for (MappingReplaceMechanism value : MappingReplaceMechanism.values()) {
             replaceCombo.add(value.getName());
         }
