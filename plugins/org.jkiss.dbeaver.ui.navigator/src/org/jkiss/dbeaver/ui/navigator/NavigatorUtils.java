@@ -776,8 +776,14 @@ public class NavigatorUtils {
                 }
             }
             // Save folders
+            Set<DBPDataSourceContainer> changedContainers = new HashSet<>();
             for (Map.Entry<DBNDatabaseFolder, DBSObjectFilter> entry : folders.entrySet()) {
-                entry.getKey().setNodeFilter(entry.getKey().getItemsMeta(), entry.getValue());
+                entry.getKey().setNodeFilter(entry.getKey().getItemsMeta(), entry.getValue(), false);
+                changedContainers.add(entry.getKey().getDataSourceContainer());
+            }
+            // Save configs
+            for (DBPDataSourceContainer ds : changedContainers) {
+                ds.persistConfiguration();
             }
             // Refresh all folders
             NavigatorHandlerRefresh.refreshNavigator(folders.keySet());

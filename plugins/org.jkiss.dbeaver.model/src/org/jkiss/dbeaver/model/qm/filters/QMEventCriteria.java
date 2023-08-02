@@ -33,7 +33,7 @@ public class QMEventCriteria {
     @Nullable
     private String containerId;
     @Nullable
-    private String sessionId;
+    private Long sessionId;
     @NotNull
     private QMObjectType[] objectTypes = new QMObjectType[0];
     @NotNull
@@ -65,12 +65,16 @@ public class QMEventCriteria {
         this.containerId = containerId;
     }
 
+    public boolean hasSessionId() {
+        return !(sessionId == null || sessionId == 0);
+    }
+
     @Nullable
-    public String getSessionId() {
+    public Long getSessionId() {
         return sessionId;
     }
 
-    public void setSessionId(String sessionId) {
+    public void setSessionId(Long sessionId) {
         this.sessionId = sessionId;
     }
 

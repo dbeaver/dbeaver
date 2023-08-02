@@ -54,5 +54,10 @@ public class PostgreServerYellowBrick extends PostgreServerExtensionBase {
         }
         return null;
     }
+
+    @Override
+    public boolean supportsExplainPlanXML() {
+        return false;
+    }
 }
 
