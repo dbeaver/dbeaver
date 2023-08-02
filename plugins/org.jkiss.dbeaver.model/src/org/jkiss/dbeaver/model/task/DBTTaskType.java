@@ -51,6 +51,8 @@ public interface DBTTaskType {
 
     boolean supportsVariables();
 
+    boolean supportsDistributedMode();
+
     @NotNull
     DBTTaskHandler createHandler() throws DBException;
 

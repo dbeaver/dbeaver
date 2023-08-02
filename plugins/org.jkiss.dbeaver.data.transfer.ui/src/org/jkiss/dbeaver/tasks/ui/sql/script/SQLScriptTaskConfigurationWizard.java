@@ -36,7 +36,7 @@ class SQLScriptTaskConfigurationWizard extends TaskConfigurationWizard<SQLScript
 
     public SQLScriptTaskConfigurationWizard(@NotNull DBTTask task) {
         super(task);
-        settings.loadConfiguration(UIUtils.getDefaultRunnableContext(), task.getProperties());
+        settings.loadConfiguration(UIUtils.getDefaultRunnableContext(), task);
     }
 
     @Override

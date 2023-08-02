@@ -17,15 +17,14 @@
 package org.jkiss.dbeaver.tools.configuration;
 
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
-import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
 import org.jkiss.utils.CommonUtils;
 
 import java.nio.file.InvalidPathException;
@@ -56,7 +55,8 @@ public class ConfigurationExportWizardPage extends WizardPage {
         file = new TextWithOpenFile(exportSettingsGroup, CoreMessages.dialog_workspace_export_wizard_file_path_dialog,
             new String[]{
                 "*.zip"
-            }
+            },
+            SWT.SAVE | SWT.SINGLE, false
         );
         file.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         file.getTextControl().addModifyListener(e -> updateState());
