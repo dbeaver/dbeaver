@@ -36,17 +36,15 @@ public class JDBCReference implements DBDReference {
     private static final Log log = Log.getLog(JDBCReference.class);
 
     private DBSDataType type;
-    private Ref value;
+    private Object value;
     private Object refObject;
 
-    public JDBCReference(DBSDataType type, Ref value) throws DBCException
-    {
+    public JDBCReference(DBSDataType type, Object value) throws DBCException {
         this.type = type;
         this.value = value;
     }
 
-    public Ref getValue() throws DBCException
-    {
+    public Object getValue() throws DBCException {
         return value;
     }
 
@@ -56,8 +54,7 @@ public class JDBCReference implements DBDReference {
     }
 
     @Override
-    public boolean isNull()
-    {
+    public boolean isNull() {
         return value == null;
     }
 
@@ -67,27 +64,24 @@ public class JDBCReference implements DBDReference {
     }
 
     @Override
-    public void release()
-    {
+    public void release() {
         type = null;
         value = null;
     }
 
     @Override
-    public DBSDataType getReferencedType()
-    {
+    public DBSDataType getReferencedType() {
         return type;
     }
 
     @Override
-    public Object getReferencedObject(DBCSession session) throws DBCException
-    {
+    public Object getReferencedObject(DBCSession session) throws DBCException {
         if (refObject == null) {
             try {
                 session.getProgressMonitor().beginTask("Retrieve references object", 3);
                 try {
                     session.getProgressMonitor().worked(1);
-                    Object refValue = value.getObject();
+                    Object refValue = value instanceof Ref ? ((Ref) value).getObject() : value;
                     session.getProgressMonitor().worked(1);
                     DBDValueHandler valueHandler = DBUtils.findValueHandler(session, type);
                     refObject = valueHandler.getValueFromObject(session, type, refValue, false, false);
@@ -103,10 +97,10 @@ public class JDBCReference implements DBDReference {
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         try {
-            return value == null ? DBConstants.NULL_VALUE_LABEL : value.getBaseTypeName();
+            return value == null ? DBConstants.NULL_VALUE_LABEL :
+                value instanceof Ref ? ((Ref) value).getBaseTypeName() : value.toString();
         } catch (SQLException e) {
             return value.toString();
         }

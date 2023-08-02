@@ -229,10 +229,28 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return getFullyQualifiedName(DBPEvaluationContext.DML);
     }
 
-    protected void appendSelectSource(DBRProgressMonitor monitor, StringBuilder query, String tableAlias, DBDPseudoAttribute rowIdAttribute) {
-        if (rowIdAttribute != null) {
+    protected void appendSelectSource(DBRProgressMonitor monitor, StringBuilder query, String tableAlias, DBDPseudoAttribute rowIdAttribute) throws DBCException {
+        String asteriskString = getDataSource().getSQLDialect().getAllAttributesAlias();
+        if (asteriskString == null) {
+            // Append all table attributes
+            List<? extends DBSEntityAttribute> attributes;
+            try {
+                attributes = CommonUtils.safeList(getAttributes(monitor));
+            } catch (Exception e) {
+                throw new DBCException("Error getting table attributes", e);
+            }
+            for (int i = 0; i < attributes.size(); i++) {
+                if (i > 0) {
+                    query.append(", "); //$NON-NLS-1$
+                }
+                if (tableAlias != null) {
+                    query.append(tableAlias).append("."); //$NON-NLS-1$
+                }
+                query.append(attributes.get(i).getName());
+            }
+        } else if (rowIdAttribute != null) {
             // If we have pseudo attributes then query gonna be more complex
-            query.append(tableAlias).append(".*"); //$NON-NLS-1$
+            query.append(tableAlias).append(".").append(asteriskString); //$NON-NLS-1$
             query.append(",").append(rowIdAttribute.translateExpression(tableAlias));
             if (rowIdAttribute.getAlias() != null) {
                 query.append(" as ").append(rowIdAttribute.getAlias());
@@ -241,7 +259,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             if (tableAlias != null) {
                 query.append(tableAlias).append(".");
             }
-            query.append("*"); //$NON-NLS-1$
+            query.append(asteriskString);
         }
     }
 
