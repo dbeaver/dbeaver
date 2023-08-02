@@ -76,12 +76,12 @@ public class JDBCReference implements DBDReference {
 
     @Override
     public Object getReferencedObject(DBCSession session) throws DBCException {
-        if (refObject == null) {
+        if (refObject == null && value instanceof Ref) {
             try {
                 session.getProgressMonitor().beginTask("Retrieve references object", 3);
                 try {
                     session.getProgressMonitor().worked(1);
-                    Object refValue = value instanceof Ref ? ((Ref) value).getObject() : value;
+                    Object refValue = ((Ref) value).getObject();
                     session.getProgressMonitor().worked(1);
                     DBDValueHandler valueHandler = DBUtils.findValueHandler(session, type);
                     refObject = valueHandler.getValueFromObject(session, type, refValue, false, false);
