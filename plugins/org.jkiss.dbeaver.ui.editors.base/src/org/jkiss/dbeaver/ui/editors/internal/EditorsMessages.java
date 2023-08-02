@@ -113,6 +113,8 @@ public class EditorsMessages extends NLS {
     public static String progress_editor_initializing_text;
     public static String progress_editor_uninitialized_text;
 
+    public static String lazy_editor_input_cant_find_node;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, EditorsMessages.class);
