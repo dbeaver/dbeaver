@@ -36,4 +36,8 @@ public interface DBPDataSourceFolder extends DBPNamedObject2 {
     DBPDataSourceRegistry getDataSourceRegistry();
 
     boolean canMoveTo(DBPDataSourceFolder folder);
+
+    void setProtected(boolean value);
+    
+    boolean isProtected();
 }

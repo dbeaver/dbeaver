@@ -349,6 +349,7 @@ public class DataSourceUtils {
         }
         if (folder != null) {
             newDS.setFolder(folder);
+            folder.setProtected(true);
         }
         DataSourceNavigatorSettings navSettings = ((DataSourceDescriptor)newDS).getNavigatorSettings();
         navSettings.setShowSystemObjects(showSystemObjects);

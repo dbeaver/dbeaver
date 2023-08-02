@@ -790,7 +790,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                     }
                 }
                 for (DataSourceFolder folder : removedFolder) {
-                    if (!parseResults.addedFolders.contains(folder) && !parseResults.updatedFolders.contains(folder)) {
+                    if (!parseResults.addedFolders.contains(folder) && !parseResults.updatedFolders.contains(folder) && !folder.isProtected()) {
                         dataSourceFolders.remove(folder);
                         folder.setParent(null);
                     }
