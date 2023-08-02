@@ -168,8 +168,12 @@ queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
 
 // from
 fromClause: FROM tableReference ((Comma tableReference)+)?;
-nonjoinedTableReference: (tableName (correlationSpecification)?)|(derivedTable correlationSpecification);
-tableReference: (nonjoinedTableReference|joinedTable)*; // * to handle incomplete queries
+nonjoinedTableReference: (tableName (PARTITION anyProperty)? (correlationSpecification)?)|(derivedTable correlationSpecification);
+tableReference: (
+    nonjoinedTableReference
+    | joinedTable
+    | ((anyWord|WITH|UPDATE|IN|KEY|JOIN|ORDER BY|GROUP BY|FOR|LOCK|SHARE|MODE|USE|IGNORE|FORCE|INDEX)+ anyProperty?) // dialect-specific cases for mssql, mariadb
+)*; // * to handle incomplete queries
 joinedTable: (nonjoinedTableReference|(LeftParen joinedTable RightParen)) (naturalJoinTerm|crossJoinTerm)+;
 correlationSpecification: (AS)? correlationName (LeftParen derivedColumnList RightParen)?;
 derivedColumnList: columnNameList;
