@@ -446,8 +446,10 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         additionalInfo.dataFree = JDBCUtils.safeGetLong(dbResult, "Data_free");
         additionalInfo.indexLength = JDBCUtils.safeGetLong(dbResult, "Index_length");
         additionalInfo.rowFormat = JDBCUtils.safeGetString(dbResult, "Row_format");
-        additionalInfo.partitioned = PARTITIONED_STATUS.equalsIgnoreCase(JDBCUtils.safeGetString(dbResult, "Create_options"));
-
+        String createOptions = JDBCUtils.safeGetString(dbResult, "Create_options");
+        if (CommonUtils.isNotEmpty(createOptions)) {
+            additionalInfo.partitioned = createOptions.contains(PARTITIONED_STATUS);
+        }
         additionalInfo.loaded = true;
     }
 
