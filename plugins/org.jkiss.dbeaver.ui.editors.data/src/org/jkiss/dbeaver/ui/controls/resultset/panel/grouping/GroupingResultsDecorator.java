@@ -104,7 +104,7 @@ public class GroupingResultsDecorator extends ResultSetDecoratorBase {
             gridDropListeners = null;
         }
         DropTarget dropTarget = new DropTarget(presentationControl, DND.DROP_MOVE | DND.DROP_COPY);
-        dropTarget.setTransfer(LightGrid.GridColumnTransfer.INSTANCE, TextTransfer.getInstance());
+        dropTarget.setTransfer(LightGrid.GridColumnTransfer.INSTANCE);
         dropTarget.addDropListener(new DropTargetAdapter() {
             @Override
             public void dragEnter(DropTargetEvent event) {
