@@ -47,11 +47,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -284,8 +280,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter, long flags) throws DBCException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
+        String asteriskString = getDataSource().getSQLDialect().getAllAttributesAlias();
+        if (asteriskString == null) {
+            asteriskString = "";
+        }
 
-        StringBuilder query = new StringBuilder("SELECT COUNT(*) FROM "); //$NON-NLS-1$
+        StringBuilder query = new StringBuilder();
+        query.append("SELECT COUNT(").append(asteriskString).append(") FROM "); //$NON-NLS-1$
         query.append(getTableName());
         SQLUtils.appendQueryConditions(getDataSource(), query, null, dataFilter);
         monitor.subTask(ModelMessages.model_jdbc_fetch_table_row_count);
