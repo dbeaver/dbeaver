@@ -37,7 +37,13 @@ public interface DBPDataSourceFolder extends DBPNamedObject2 {
 
     boolean canMoveTo(DBPDataSourceFolder folder);
 
+    /**
+     * Specifies if the folder is not present on the file system, but should not be removed on data sources configuration reload
+     */
     void setProtected(boolean value);
-    
+
+    /**
+     * Is folder protected from the removing on configuration reload
+     */
     boolean isProtected();
 }

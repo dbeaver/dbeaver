@@ -39,7 +39,7 @@ public class DataSourceFolder implements DBPDataSourceFolder {
         this.registry = registry;
         this.name = name;
         this.description = description;
-        this.isProtected= false;
+        this.isProtected = false;
         setParent(parent);
     }
 
