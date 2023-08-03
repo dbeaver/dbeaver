@@ -228,6 +228,8 @@ public class DriverSelectViewer extends Viewer {
         createFilterToolbar(filterComposite);
 
         createExtraFilterControlsAfter(filterGroup);
+
+        UIUtils.asyncExec(() -> filterComposite.layout(true, true));
     }
 
     protected void createExtraFilterControlsBefore(Composite filterGroup) {

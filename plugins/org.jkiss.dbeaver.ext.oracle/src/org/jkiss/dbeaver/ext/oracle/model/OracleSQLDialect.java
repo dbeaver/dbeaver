@@ -733,6 +733,12 @@ public class OracleSQLDialect extends JDBCSQLDialect
 
     @NotNull
     @Override
+    public String getBlobDataType() {
+        return OracleConstants.TYPE_NAME_BLOB;
+    }
+
+    @NotNull
+    @Override
     public String getUuidDataType() {
         return OracleConstants.TYPE_UUID;
     }

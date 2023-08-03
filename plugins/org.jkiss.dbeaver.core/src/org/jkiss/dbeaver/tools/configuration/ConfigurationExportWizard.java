@@ -62,7 +62,7 @@ public class ConfigurationExportWizard extends Wizard implements IExportWizard {
 
     @Override
     public boolean performFinish() {
-        Path workbench = DBWorkbench.getPlatform().getWorkspace().getMetadataFolder().resolve(".plugins\\org.eclipse.core.runtime\\.settings");
+        Path workbench = DBWorkbench.getPlatform().getWorkspace().getMetadataFolder().resolve(".plugins/org.eclipse.core.runtime/.settings");
         if (!workbench.toFile().exists() || !workbench.toFile().isDirectory() || !workbench.toFile().canRead()) {
             log.error("Error reading workspace configuration");
             return false;
