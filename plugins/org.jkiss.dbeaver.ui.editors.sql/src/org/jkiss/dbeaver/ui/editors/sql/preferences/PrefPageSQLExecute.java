@@ -61,6 +61,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
     private Button resetCursorCheck;
     private Button maxEditorCheck;
     private Button showStatisticsForQueriesWithResultsCheck;
+    private Button closeIncludedScriptAfterExecutionCheck;
 
     private Text statementDelimiterText;
     private Button ignoreNativeDelimiter;
@@ -217,6 +218,13 @@ public class PrefPageSQLExecute extends TargetPrefPage
                 false,
                 2
             );
+            closeIncludedScriptAfterExecutionCheck = UIUtils.createCheckbox(
+                scriptsGroup,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_close_included_script_after_execution,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_close_included_script_after_execution_tip,
+                true,
+                2
+            );
         }
         // Parameters
         {
@@ -283,6 +291,9 @@ public class PrefPageSQLExecute extends TargetPrefPage
             showStatisticsForQueriesWithResultsCheck.setSelection(
                 store.getBoolean(SQLPreferenceConstants.SHOW_STATISTICS_FOR_QUERIES_WITH_RESULTS)
             );
+            closeIncludedScriptAfterExecutionCheck.setSelection(
+                store.getBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION)
+            );
 
             statementDelimiterText.setText(store.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER));
             ignoreNativeDelimiter.setSelection(store.getBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER));
@@ -320,6 +331,10 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.setValue(
                 SQLPreferenceConstants.SHOW_STATISTICS_FOR_QUERIES_WITH_RESULTS,
                 showStatisticsForQueriesWithResultsCheck.getSelection()
+            );
+            store.setValue(
+                SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION,
+                closeIncludedScriptAfterExecutionCheck.getSelection()
             );
 
             store.setValue(ModelPreferences.SCRIPT_STATEMENT_DELIMITER, statementDelimiterText.getText());

@@ -401,6 +401,12 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
 
     @NotNull
     @Override
+    public String getBlobDataType() {
+        return SQLServerConstants.TYPE_IMAGE;
+    }
+
+    @NotNull
+    @Override
     public String getUuidDataType() {
         return SQLServerConstants.TYPE_UNIQUEIDENTIFIER;
     }
