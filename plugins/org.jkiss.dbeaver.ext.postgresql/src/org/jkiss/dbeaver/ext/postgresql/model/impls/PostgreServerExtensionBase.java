@@ -419,11 +419,6 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return "oid";
     }
 
-    @Override
-    public boolean supportsProSPColumn() {
-        return false;
-    }
-
     public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
         StringBuilder withClauseBuilder = new StringBuilder();
 

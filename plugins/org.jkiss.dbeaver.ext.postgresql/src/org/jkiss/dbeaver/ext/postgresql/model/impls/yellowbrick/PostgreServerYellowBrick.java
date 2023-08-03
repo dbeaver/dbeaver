@@ -60,9 +60,5 @@ public class PostgreServerYellowBrick extends PostgreServerExtensionBase {
         return false;
     }
 
-    @Override
-    public boolean supportsProSPColumn() {
-        return true;
-    }
 }
 
