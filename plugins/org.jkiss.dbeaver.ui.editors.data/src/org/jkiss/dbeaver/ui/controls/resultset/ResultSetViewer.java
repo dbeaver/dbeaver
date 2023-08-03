@@ -2336,9 +2336,6 @@ public class ResultSetViewer extends Viewer
             case SERVER_SIDE:
                 serverSideOrdering = true;
                 break;
-            case CLIENT_SIDE_CASE_INSENSITIVE:
-                serverSideOrdering = false;
-                break;
             default:
                 serverSideOrdering = isHasMoreData();
                 break;
@@ -2359,11 +2356,6 @@ public class ResultSetViewer extends Viewer
     private void reorderLocally()
     {
         this.rejectChanges();
-        if (!getOrderingMode().equals("CLIENT_SIDE_CASE_INSENSITIVE")) {
-            this.getModel().caseSensitiveOrder = true;
-        } else {
-            this.getModel().caseSensitiveOrder = false;
-        }
         this.getModel().resetOrdering();
         this.getActivePresentation().refreshData(false, false, true);
         this.updateFiltersText();
@@ -2425,10 +2417,6 @@ public class ResultSetViewer extends Viewer
                 }
             }
         }
-    }
-    
-    String getOrderingMode() {
-    	return getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_ORDERING_MODE);
     }
 
     void appendData(List<Object[]> rows, boolean resetOldRows) {
