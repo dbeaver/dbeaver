@@ -45,6 +45,7 @@ public class EventProcessorComposite<T extends IDataTransferConsumerSettings> ex
     private final T settings;
     private final Button enabledCheckbox;
     private Link configureLink;
+    private Map<String, Object> rawSettings;
 
     public EventProcessorComposite(@NotNull Runnable propertyChangeListener, @NotNull Composite parent, @NotNull T settings, @NotNull DataTransferEventProcessorDescriptor descriptor, @Nullable IDataTransferEventProcessorConfigurator<T> configurator) {
         super(parent, SWT.NONE);
@@ -70,6 +71,10 @@ public class EventProcessorComposite<T extends IDataTransferConsumerSettings> ex
             configureLink = UIUtils.createLink(this, DTMessages.data_transfer_wizard_output_event_processor_configure, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
+                    if (rawSettings != null) {
+                        configurator.loadSettings(rawSettings);
+                        rawSettings = null;
+                    }
                     final ConfigureDialog dialog = new ConfigureDialog(getShell());
                     if (dialog.open() == IDialogConstants.OK_ID) {
                         propertyChangeListener.run();
@@ -80,7 +85,11 @@ public class EventProcessorComposite<T extends IDataTransferConsumerSettings> ex
     }
 
     public void loadSettings(@NotNull Map<String, Object> settings) {
-        configurator.loadSettings(settings);
+        if (isProcessorEnabled()) {
+            configurator.loadSettings(settings);
+        } else {
+            rawSettings = settings;
+        }
     }
 
     public void saveSettings(@NotNull Map<String, Object> settings) {
