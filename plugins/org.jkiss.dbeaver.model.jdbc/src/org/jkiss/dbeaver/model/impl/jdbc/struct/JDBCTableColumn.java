@@ -192,7 +192,13 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         }
         query.append(identifier);
         if (calcCount) {
-            query.append(", count(*)");
+            query.append(", count(");
+            String asterisk = dialect.getAllAttributesAlias();
+            if (asterisk == null) {
+                asterisk = "";
+            }
+            query.append(asterisk);
+            query.append(")");
         }
         // Do not use description columns because they duplicate distinct value
 //        String descColumns = DBVUtils.getDictionaryDescriptionColumns(session.getProgressMonitor(), this);
