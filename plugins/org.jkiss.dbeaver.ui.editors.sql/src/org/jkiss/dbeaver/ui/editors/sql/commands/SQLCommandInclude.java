@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.sql.eval.ScriptVariablesResolver;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -145,7 +146,9 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
 
         @Override
         public void onEndScript(DBCStatistics statistics, boolean hasErrors) {
-            UIUtils.syncExec(() -> workbenchWindow.getActivePage().closeEditor(editor, false));
+            if (editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION)) {
+                UIUtils.syncExec(() -> workbenchWindow.getActivePage().closeEditor(editor, false));
+            }
             statusFlag[0] = true;
         }
     }
