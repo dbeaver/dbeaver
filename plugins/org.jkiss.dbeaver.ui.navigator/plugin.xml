@@ -973,6 +973,10 @@
         <key commandId="org.jkiss.dbeaver.core.navigator.set.default" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+A"/>
         <key commandId="org.jkiss.dbeaver.core.object.goto" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+D"/>
         <key commandId="org.jkiss.dbeaver.core.object.open" contextId="org.jkiss.dbeaver.ui.context.navigator" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F4"/>
+
+        <key commandId="org.jkiss.dbeaver.core.object.create" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="win32" sequence="ALT+INSERT"/>
+        <key commandId="org.jkiss.dbeaver.core.object.create" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="gtk" sequence="ALT+INSERT"/>
+        <key commandId="org.jkiss.dbeaver.core.object.create" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="cocoa" sequence="M1+N"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.navigator.nodeAction">
