@@ -33,13 +33,11 @@ public class DataSourceFolder implements DBPDataSourceFolder {
     private List<DataSourceFolder> children = new ArrayList<>();
     private String name;
     private String description;
-    private boolean isProtected;
 
     public DataSourceFolder(DataSourceRegistry registry, DataSourceFolder parent, String name, String description) {
         this.registry = registry;
         this.name = name;
         this.description = description;
-        this.isProtected = false;
         setParent(parent);
     }
 
@@ -61,16 +59,6 @@ public class DataSourceFolder implements DBPDataSourceFolder {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-    
-    @Override
-    public void setProtected(boolean value) {
-        this.isProtected = value;        
-    }
-    
-    @Override
-    public boolean isProtected() {
-        return this.isProtected;
     }
 
     @Override

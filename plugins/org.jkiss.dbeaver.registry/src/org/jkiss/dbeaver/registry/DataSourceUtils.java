@@ -349,7 +349,6 @@ public class DataSourceUtils {
         }
         if (folder != null) {
             newDS.setFolder(folder);
-            folder.setProtected(true);
         }
         DataSourceNavigatorSettings navSettings = ((DataSourceDescriptor)newDS).getNavigatorSettings();
         navSettings.setShowSystemObjects(showSystemObjects);
@@ -408,5 +407,9 @@ public class DataSourceUtils {
             }
         }
         return CommonUtils.notEmpty(hostText);
+    }
+    
+    public static boolean isFolderHasTemporaryDataSources(DataSourceFolder folder) {
+        return folder.getDataSourceRegistry().getDataSources().stream().anyMatch(d -> d.getFolder() == folder && d.isTemporary());
     }
 }
