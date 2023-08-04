@@ -14,20 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.athena.model;
+package org.jkiss.dbeaver.model.rm;
+
+import org.jkiss.code.NotNull;
 
 /**
- * Athena constants
+ * Resource controller provider.
+ * Implemented in DBPProject classes that uses resource manager to have access to the project files.
  */
-public class AthenaConstants
-{
+public interface RMControllerProvider {
 
-    public static final String JDBC_URL_PREFIX = "jdbc:awsathena://";
-
-    public static final String DRIVER_PROP_REGION = "AwsRegion";
-    public static final String DRIVER_PROP_AWS_CREDENTIALS_PROVIDER_CLASS = "AwsCredentialsProviderClass";
-    public static final String DRIVER_PROP_S3_OUTPUT_LOCATION = "S3OutputLocation";
-    public static final String DRIVER_PROP_METADATA_RETRIEVAL_METHOD = "MetadataRetrievalMethod";
-    public static final String PROP_SHOW_CATALOGS = "show-aws-catalogs";
+    @NotNull
+    RMController getResourceController();
 
 }

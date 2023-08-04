@@ -699,8 +699,8 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     public List<DBDLabelValuePair> getDictionaryEnumeration(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSEntityAttribute keyColumn,
-        Object keyPattern,
-        @Nullable List<DBDAttributeValue> preceedingKeys,
+        @Nullable Object keyPattern,
+        @Nullable String searchText, @Nullable List<DBDAttributeValue> preceedingKeys,
         boolean caseInsensitiveSearch,
         boolean sortAsc,
         boolean sortByValue,
@@ -713,6 +713,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
                 monitor,
                 keyColumn,
                 keyPattern,
+                searchText,
                 preceedingKeys,
                 caseInsensitiveSearch,
                 sortAsc,

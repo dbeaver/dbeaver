@@ -42,7 +42,6 @@
 
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
-                    <parameter name="omit-catalog" value="true"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <parameter name="read-only-data" value="true"/>
                     <parameter name="read-only-meta-data" value="true"/>
