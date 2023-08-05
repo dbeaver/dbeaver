@@ -265,6 +265,11 @@ public interface SQLDialect {
 
     boolean supportsAliasInUpdate();
 
+    @Nullable
+    default String getAllAttributesAlias() {
+        return "*"; //$NON-NLS-1$
+    }
+
     default boolean supportsAliasInConditions() {
         return true;
     }

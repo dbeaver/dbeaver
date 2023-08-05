@@ -32,7 +32,7 @@ public class VerticaFlexTableManager extends GenericTableManager {
     protected GenericTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) {
         GenericStructContainer structContainer = (GenericStructContainer) container;
         String tableName = getNewChildName(monitor, structContainer, "new_flex_table");
-        return structContainer.getDataSource().getMetaModel().createTableImpl((GenericStructContainer) container , tableName, VerticaConstants.TYPE_FLEX_TABLE, null);
+        return structContainer.getDataSource().getMetaModel().createTableOrViewImpl((GenericStructContainer) container , tableName, VerticaConstants.TYPE_FLEX_TABLE, null);
     }
 
     @Override
