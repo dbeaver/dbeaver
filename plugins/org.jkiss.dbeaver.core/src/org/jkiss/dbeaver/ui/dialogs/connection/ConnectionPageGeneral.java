@@ -21,6 +21,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -133,6 +134,10 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     @Override
     public void setNavigatorSettings(DBNBrowseSettings settings) {
         this.navigatorSettings = settings;
+
+        if (showVirtualModelCheck != null) {
+            showVirtualModelCheck.setSelection(!settings.isHideVirtualModel());
+        }
     }
 
     protected boolean wasActivated() {
@@ -282,6 +287,10 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     {
         boldFont = UIUtils.makeBoldFont(parent.getFont());
 
+        if (navigatorSettings == null) {
+            navigatorSettings = new DataSourceNavigatorSettings(getWizard().getSelectedNavigatorSettings());
+        }
+
         Composite group = UIUtils.createComposite(parent, 1);
 
         {
@@ -410,8 +419,14 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 vmGroup,
                 "Show virtual model editor",
                 "Show virtual model pages in table editor",
-                dataSourceDescriptor != null && !dataSourceDescriptor.getNavigatorSettings().isHideVirtualModel(),
+                !navigatorSettings.isHideVirtualModel(),
                 1);
+            showVirtualModelCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                final DataSourceNavigatorSettings settings = new DataSourceNavigatorSettings(navigatorSettings);
+                settings.setHideVirtualModel(!showVirtualModelCheck.getSelection());
+                updateNavigatorSettingsPreset(navigatorSettingsCombo, settings);
+                setNavigatorSettings(settings);
+            }));
             Button resetVM = UIUtils.createDialogButton(
                 vmGroup,
                 "Reset configuration",
@@ -633,8 +648,6 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             this.navigatorSettings = new DataSourceNavigatorSettings(getWizard().getSelectedNavigatorSettings());
         }
         dsDescriptor.setNavigatorSettings(this.navigatorSettings);
-
-        dsDescriptor.getNavigatorSettings().setHideVirtualModel(!this.showVirtualModelCheck.getSelection());
 
         dsDescriptor.setConnectionReadOnly(this.readOnlyConnection.getSelection());
         dsDescriptor.setModifyPermissions(this.accessRestrictions);
