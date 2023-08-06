@@ -83,7 +83,14 @@ public class ReferenceValueEditor {
     private static volatile boolean sortByValue = true; // It is static to save its value between editors
     private static volatile boolean sortAsc = true;
     private TableColumn prevSortColumn = null;
+    private volatile boolean dictLoaded = false;
+    private Object lastKeyValue;
+    private Object lastSearchText;
+    private Object firstValue = null;
+    private Object lastValue = null;
+    private int maxResults;
     private Font boldFont;
+    private LoadingJob<EnumValuesData> dictFilterJob;
     private ViewController controller;
 
     private class ViewController {
@@ -95,7 +102,7 @@ public class ReferenceValueEditor {
         private boolean nextPageAvailable = false;
         private boolean limitFound = false;
         private String filterPattern = null;
-        private Object currentValue = null;
+        private Object keyValue = null;
 
         public ViewController(int pageSize) {
             this.pageSize = pageSize;
@@ -134,7 +141,7 @@ public class ReferenceValueEditor {
 
         public void filter(@Nullable String pattern) {
             if (CommonUtils.isEmpty(CommonUtils.toString(pattern))) {
-                this.reset(currentValue);
+                this.reset(keyValue);
             } else if (CommonUtils.equalObjects(String.valueOf(filterPattern), String.valueOf(pattern))) {
                 selectCurrentValue();
             } else {
@@ -143,14 +150,14 @@ public class ReferenceValueEditor {
         }
 
         private void applyFilter(@NotNull String pattern) {
-            this.currentValue = null;
+            this.keyValue = null;
             this.filterPattern = pattern;
             this.resetPages();
             this.reloadData(null);
         }
 
         public void reset(@Nullable Object valueToShow) {
-            this.currentValue = valueToShow;
+            this.keyValue = valueToShow;
             this.filterPattern = null;
             this.resetPages();
             this.reloadData(valueToShow);
@@ -166,7 +173,7 @@ public class ReferenceValueEditor {
 
         public void reload() {
             if (filterPattern == null) {
-                this.reset(this.currentValue);
+                this.reset(this.keyValue);
             } else {
                 this.applyFilter(this.filterPattern);
             }
@@ -554,6 +561,10 @@ public class ReferenceValueEditor {
     class SelectorLoaderService extends AbstractLoadService<EnumValuesData> {
         private ExceptableFunction<DBSDictionaryAccessor, List<DBDLabelValuePair>, DBException> action;
 
+        public Object getLastValue() {
+            return lastValue;
+        }
+
         private SelectorLoaderService(ExceptableFunction<DBSDictionaryAccessor, List<DBDLabelValuePair>, DBException> action) {
             super(ResultSetMessages.dialog_value_view_job_selector_name + valueController.getValueName() + " possible values");
             this.action = action;
@@ -607,9 +618,13 @@ public class ReferenceValueEditor {
         }
 
         @Nullable
-        private EnumValuesData getEnumValuesData(DBRProgressMonitor monitor, IAttributeController attributeController,
-                                                 DBSEntityAttributeRef fkColumn, DBSEntityAssociation association,
-                                                 DBSEntityAttribute refColumn) throws DBException {
+        private EnumValuesData getEnumValuesData(
+            @NotNull DBRProgressMonitor monitor,
+            IAttributeController attributeController,
+            DBSEntityAttributeRef fkColumn,
+            DBSEntityAssociation association,
+            DBSEntityAttribute refColumn
+        ) throws DBException {
             List<DBDAttributeValue> precedingKeys = null;
             List<? extends DBSEntityAttributeRef> allColumns = CommonUtils.safeList(refConstraint.getAttributeReferences(
                 monitor));
@@ -635,7 +650,7 @@ public class ReferenceValueEditor {
             }
             final DBSEntityAttribute fkAttribute = fkColumn.getAttribute();
             final DBSEntityConstraint refConstraint = association.getReferencedConstraint();
-            final DBSDictionary enumConstraint = (DBSDictionary) refConstraint.getParentObject();
+            final DBSDictionary enumConstraint = refConstraint == null ? null : (DBSDictionary) refConstraint.getParentObject();
             if (fkAttribute != null && enumConstraint != null) {
                 try (DBSDictionaryAccessor accessor = enumConstraint.getDictionaryAccessor(
                     new AbstractExecutionSource(null, valueController.getExecutionContext(), ReferenceValueEditor.this), monitor,
