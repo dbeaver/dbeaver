@@ -16,13 +16,16 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model.plan;
 
+import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataSource;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataSource;
-
 public class AltibasePlanBuilder {
 
+    /**
+     * Return plans tree structure based on the result from Altibase.
+     */
     public static List<AltibasePlanNode> build(AltibaseDataSource dataSource, String planStr) throws IllegalStateException {
         List<AltibasePlanNode> rootNodes = new ArrayList<>();
 
@@ -39,7 +42,7 @@ public class AltibasePlanBuilder {
                 continue;
             }
 
-            // No need after "* SIMPLE QUERY PLAN"
+            // No need line that starts with "* SIMPLE QUERY PLAN"
             if (plan.trim().startsWith("* SIMPLE")) {
                 break;
             }
@@ -76,6 +79,9 @@ public class AltibasePlanBuilder {
         return rootNodes;
     }
 
+    /**
+     * Test code
+     */
     public static void main(String[] args) {
         String plan = "-----------------------------------------------------------" + "\n"
                 + "PROJECT ( COLUMN_COUNT: 2, TUPLE_SIZE: 34, COST: 151146.46 )" + "\n"

@@ -32,7 +32,7 @@ import java.util.Map;
 
 public class AltibaseSynonym extends GenericSynonym implements DBPScriptObject {
 
-    protected boolean isPublic;
+    protected boolean isPublicSynonym;
     protected String refObjectSchema;
     protected String refObjectName;
 
@@ -42,7 +42,7 @@ public class AltibaseSynonym extends GenericSynonym implements DBPScriptObject {
             String name, String description, String refObjectSchema, String refObjectName) {
         super(container, name, description);
 
-        isPublic = (ownerId < 1);
+        isPublicSynonym = (ownerId < 1);
         this.refObjectSchema = refObjectSchema;
         this.refObjectName = refObjectName;
     }
@@ -55,7 +55,6 @@ public class AltibaseSynonym extends GenericSynonym implements DBPScriptObject {
 
     @Override
     public DBSObject getTargetObject(DBRProgressMonitor monitor) throws DBException {
-        //getDataSource().
         return null;
     }
 
@@ -63,10 +62,15 @@ public class AltibaseSynonym extends GenericSynonym implements DBPScriptObject {
         return getParentObject().getName();
     }
 
-    public String getDdlLocal() {
+    /**
+     * Create Synonym DDL 
+     * 1. Public synonym DDL.
+     * 2. Schema synonym DDL in case of unable to use DBMS_METADATA.
+     */
+    public String getBuiltDdlLocaly() {
         String ddl;
 
-        if (isPublic) {
+        if (isPublicSynonym) {
             ddl = String.format("CREATE PUBLIC SYNONYM %s FOR %s;", 
                     AltibaseUtils.getQuotedName(null, getName()), 
                     getReferencedObjectName());
@@ -86,8 +90,8 @@ public class AltibaseSynonym extends GenericSynonym implements DBPScriptObject {
         }
 
         if (ddl == null) {
-            if (isPublic) {
-                ddl = getDdlLocal();
+            if (isPublicSynonym) {
+                ddl = getBuiltDdlLocaly();
             } else {
                 ddl = ((AltibaseMetaModel) getDataSource().getMetaModel()).getSynonymDDL(monitor, this, options);
             }
@@ -95,7 +99,10 @@ public class AltibaseSynonym extends GenericSynonym implements DBPScriptObject {
         return ddl;
     }
     
-    public boolean isPublic() {
-        return isPublic; 
+    /**
+     * Public synonym or not
+     */
+    public boolean isPublicSynonym() {
+        return isPublicSynonym; 
     }
 }

@@ -16,14 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model.plan;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataSource;
@@ -40,18 +37,20 @@ import org.jkiss.dbeaver.model.impl.plan.ExecutionPlanDeserializer;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IntKeyMap;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Altibase execution plan node
  */
 public class AltibaseQueryPlanner extends AbstractExecutionPlanSerializer implements DBCQueryPlanner {
 
-    private final static String FORMAT_VERSION = "1";
+    private static final String FORMAT_VERSION = "1";
 
     private final AltibaseDataSource dataSource;    
 
@@ -69,8 +68,7 @@ public class AltibaseQueryPlanner extends AbstractExecutionPlanSerializer implem
     public DBCPlan planQueryExecution(
             @NotNull DBCSession session, 
             @NotNull String query, 
-            @NotNull DBCQueryPlannerConfiguration configuration
-            ) throws DBException {
+            @NotNull DBCQueryPlannerConfiguration configuration) throws DBException {
         AltibaseExecutionPlan plan = new AltibaseExecutionPlan(dataSource, (JDBCSession) session, query);
         plan.explain();
         return plan;
@@ -82,21 +80,21 @@ public class AltibaseQueryPlanner extends AbstractExecutionPlanSerializer implem
         return DBCPlanStyle.PLAN;
     }
 
-    private JsonObject createAttr(String key,String value) {
+    private JsonObject createAttr(String key, String value) {
         JsonObject attr = new JsonObject();
-        attr.add(key,new JsonPrimitive(CommonUtils.notEmpty(value)));
+        attr.add(key, new JsonPrimitive(CommonUtils.notEmpty(value)));
         return attr; 
     }
 
-    private JsonObject createAttr(String key,int value) {
+    private JsonObject createAttr(String key, int value) {
         JsonObject attr = new JsonObject();
-        attr.add(key,new JsonPrimitive(value));
+        attr.add(key, new JsonPrimitive(value));
         return attr; 
     }
 
     @Override
     public void serialize(Writer planData, DBCPlan plan) throws IOException {
-        serializeJson(planData, plan,dataSource.getInfo().getDriverName(), new DBCQueryPlannerSerialInfo() {
+        serializeJson(planData, plan, dataSource.getInfo().getDriverName(), new DBCQueryPlannerSerialInfo() {
 
             @Override
             public String version() {
@@ -119,11 +117,11 @@ public class AltibaseQueryPlanner extends AbstractExecutionPlanSerializer implem
         });
     }
 
-    private Map<String,String> getNodeAttributes(JsonObject nodeObject){
-        Map<String,String> attributes = new HashMap<>(44);
+    private Map<String, String> getNodeAttributes(JsonObject nodeObject) {
+        Map<String, String> attributes = new HashMap<>(44);
 
         JsonArray attrs =  nodeObject.getAsJsonArray(AbstractExecutionPlanSerializer.PROP_ATTRIBUTES);
-        for(JsonElement attr : attrs) {
+        for (JsonElement attr : attrs) {
             for (Map.Entry<String, JsonElement> p : attr.getAsJsonObject().entrySet()) {
                 attributes.put(p.getKey(), p.getValue().getAsString());
             }
@@ -133,7 +131,7 @@ public class AltibaseQueryPlanner extends AbstractExecutionPlanSerializer implem
     }
 
     @Override
-    public DBCPlan deserialize(@NotNull Reader planData) throws IOException,InvocationTargetException {
+    public DBCPlan deserialize(@NotNull Reader planData) throws IOException, InvocationTargetException {
         try {
 
             JsonObject jo = new JsonParser().parse(planData).getAsJsonObject();

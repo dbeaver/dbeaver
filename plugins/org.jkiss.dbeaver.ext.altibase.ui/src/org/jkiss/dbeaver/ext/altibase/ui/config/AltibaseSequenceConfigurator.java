@@ -1,13 +1,13 @@
 package org.jkiss.dbeaver.ext.altibase.ui.config;
 
-import java.util.Map;
-
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseSequence;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
+
+import java.util.Map;
 
 public class AltibaseSequenceConfigurator implements DBEObjectConfigurator<AltibaseSequence> {
 

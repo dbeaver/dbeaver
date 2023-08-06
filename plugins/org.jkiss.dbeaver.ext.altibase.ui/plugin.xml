@@ -2,20 +2,6 @@
 <?eclipse version="3.2"?>
 
 <plugin>
-
-	<!--
-    <extension point="org.eclipse.ui.commands">
-        <category id="org.jkiss.dbeaver.ext.altibase" name="Altibase" description="Altibase Commands"/>
-        <command id="org.jkiss.dbeaver.ext.altibase.code.compile" name="Compile" description="Compile" categoryId="org.jkiss.dbeaver.ext.altibase"/>
-        <command id="org.jkiss.dbeaver.ext.altibase.code.package.navigate" name="Go to source code" description="Navigate to object source code" categoryId="org.jkiss.dbeaver.ext.altibase"/>
-    </extension>
-
-    <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.ext.altibase.code.compile" icon="icons/compile.png"/>
-        <image commandId="org.jkiss.dbeaver.ext.altibase.code.package.navigate" icon="icons/source_navigate.png"/>
-        <image commandId="org.jkiss.dbeaver.ext.altibase.job.run" icon="icons/run.png"/>
-    </extension>
-    -->
     
     <extension point="org.jkiss.dbeaver.dataSourceView">
         <view
@@ -43,7 +29,6 @@
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseSequence"/>
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseSynonym"/>
             <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableIndex"/>
-            <!--<objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTrigger"/>-->
         </editor>
 	    <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseProcedureConfigurator">
 	        <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone"/>

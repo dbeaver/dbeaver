@@ -81,7 +81,10 @@ public class AltibaseTableColumn extends GenericTableColumn implements DBPNamedO
         return super.isAutoIncrement();
     }
     
+    /**
+     * Whether the column has its own comment or not. 
+     */
     public boolean hasComment() {
-        return (this.getDescription()!= null && this.getDescription().length() > 0);
+        return (this.getDescription() != null && this.getDescription().length() > 0);
     }
 }

@@ -48,6 +48,9 @@ public class AltibaseProcedurePackaged extends AltibaseProcedureBase {
         return "-- Unable to get pacakge depedent object source";
     }
 
+    /**
+     * Add procedure columns
+     */
     public void loadProcedureColumns(DBRProgressMonitor monitor) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load procedure columns")) {
             JDBCPreparedStatement dbStat = ((AltibaseMetaModel) getDataSource().getMetaModel())
@@ -57,20 +60,18 @@ public class AltibaseProcedurePackaged extends AltibaseProcedureBase {
             JDBCResultSet dbResult = dbStat.getResultSet();
             try {
                 while (dbResult.next()) {
-                    boolean isFunction  = (JDBCUtils.safeGetInt(dbResult, "SUB_TYPE") == 1);
-                    String columnName   = JDBCUtils.safeGetString(dbResult, "PARA_NAME");
-                    int position        = JDBCUtils.safeGetInt(dbResult, "PARA_ORDER");
-                    //int columnSize 		= JDBCUtils.safeGetInt(dbResult, "SIZE"); It's physical size
-                    int precision       = JDBCUtils.safeGetInt(dbResult, "PRECISION");
-                    int columnSize      = precision;
-                    int scale           = JDBCUtils.safeGetInt(dbResult, "SCALE");
-
-                    int columnTypeNum   = JDBCUtils.safeGetInt(dbResult, "INOUT_TYPE"); // 0: IN, 1: OUT, 2: IN OUT
-                    int valueType       = JDBCUtils.safeGetInt(dbResult, "DATA_TYPE");;
-                    String typeName     = JDBCUtils.safeGetString(dbResult, "TYPE_NAME");
-                    String defaultValue = JDBCUtils.safeGetString(dbResult, "DEFAULT_VAL");
-                    boolean notNull     = (defaultValue == null);
-                    String remarks      = "";
+                    final boolean isFunction  = (JDBCUtils.safeGetInt(dbResult, "SUB_TYPE") == 1);
+                    final String columnName   = JDBCUtils.safeGetString(dbResult, "PARA_NAME");
+                    int position              = JDBCUtils.safeGetInt(dbResult, "PARA_ORDER");
+                    final int precision       = JDBCUtils.safeGetInt(dbResult, "PRECISION");
+                    final int columnSize      = precision;
+                    final int scale           = JDBCUtils.safeGetInt(dbResult, "SCALE");
+                    final int columnTypeNum   = JDBCUtils.safeGetInt(dbResult, "INOUT_TYPE"); // 0: IN, 1: OUT, 2: IN OUT
+                    final int valueType       = JDBCUtils.safeGetInt(dbResult, "DATA_TYPE");;
+                    final String typeName     = JDBCUtils.safeGetString(dbResult, "TYPE_NAME");
+                    final String defaultValue = JDBCUtils.safeGetString(dbResult, "DEFAULT_VAL");
+                    final boolean notNull     = (defaultValue == null);
+                    final String remarks      = "";
 
                     DBSProcedureParameterKind parameterType;
 

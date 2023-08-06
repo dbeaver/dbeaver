@@ -16,13 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model.session;
 
-import java.sql.ResultSet;
-import java.util.Objects;
-
 import org.jkiss.dbeaver.ext.altibase.AltibaseUtils;
 import org.jkiss.dbeaver.model.admin.sessions.AbstractServerSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+
+import java.sql.ResultSet;
+import java.util.Objects;
 
 /**
  * Session
@@ -111,7 +111,7 @@ public class AltibaseServerSession extends AbstractServerSession {
     @Property(category = CAT_SQL, viewable = true, order = 4)
     public String getSql() {
         int effectiveLength = 10;
-        String qry = (sql != null)? sql.trim():"";
+        String qry = (sql != null) ? sql.trim() : "";
 
         if (AltibaseUtils.isEmpty(qry) == false) {
             
@@ -123,7 +123,7 @@ public class AltibaseServerSession extends AbstractServerSession {
             qry = qry.replaceAll("[ ]+",  " ");
         }
         
-        return (qry.length() > 0? qry + "...":"");
+        return (qry.length() > 0 ? qry + "..." : "");
     }
 
     @Property(category = CAT_WAIT, viewable = true, order = 5)
@@ -238,10 +238,19 @@ public class AltibaseServerSession extends AbstractServerSession {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AltibaseServerSession that = (AltibaseServerSession) o;
-        return sessionId == that.sessionId;
+        if (this == o) { 
+            return true;
+        }
+        
+        if (o == null || getClass() != o.getClass()) { 
+            return false;
+        }
+        
+        if (o instanceof AltibaseServerSession) {
+            return sessionId == ((AltibaseServerSession) o).sessionId;
+        }
+        
+        return false;
     }
 
     @Override

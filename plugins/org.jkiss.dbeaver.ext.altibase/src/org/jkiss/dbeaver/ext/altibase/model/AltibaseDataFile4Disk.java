@@ -17,13 +17,13 @@
 
 package org.jkiss.dbeaver.ext.altibase.model;
 
-import java.math.BigInteger;
-import java.sql.ResultSet;
-
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseTablespace.State;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.utils.ByteNumberFormat;
+
+import java.math.BigInteger;
+import java.sql.ResultSet;
 
 public class AltibaseDataFile4Disk extends AltibaseDataFile {
 
@@ -46,38 +46,32 @@ public class AltibaseDataFile4Disk extends AltibaseDataFile {
 
     
     @Property(viewable = true, order = 4, formatter = ByteNumberFormat.class)
-    public BigInteger getCurrSize()
-    {
+    public BigInteger getCurrSize() {
         return currSize.multiply(new BigInteger(this.getParentObject().getPageSizeInBytesStr()));
     }
     
     @Property(viewable = true, order = 5, formatter = ByteNumberFormat.class)
-    public BigInteger getNextSize()
-    {
+    public BigInteger getNextSize() {
         return nextSize.multiply(new BigInteger(this.getParentObject().getPageSizeInBytesStr()));
     }
     
     @Property(viewable = true, order = 6, formatter = ByteNumberFormat.class)
-    public BigInteger getInitSize()
-    {
+    public BigInteger getInitSize() {
         return initSize.multiply(new BigInteger(this.getParentObject().getPageSizeInBytesStr()));
     }
     
     @Property(viewable = true, order = 7, formatter = ByteNumberFormat.class)
-    public BigInteger getMaxSize()
-    {
+    public BigInteger getMaxSize() {
         return maxSize.multiply(new BigInteger(this.getParentObject().getPageSizeInBytesStr()));
     }
     
     @Property(viewable = true, order = 8)
-    public boolean getAutoExtend()
-    {
+    public boolean getAutoExtend() {
         return this.isAutoExtend;
     }
     
     @Property(viewable = true, order = 10)
-    public String getState()
-    {
+    public String getState() {
         return this.state.name();
     }
 }

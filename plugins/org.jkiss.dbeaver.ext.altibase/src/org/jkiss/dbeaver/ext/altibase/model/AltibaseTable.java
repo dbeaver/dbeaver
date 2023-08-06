@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
-import java.sql.SQLException;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -42,6 +40,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
+
+import java.sql.SQLException;
 
 public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPObjectStatistics {
 
@@ -121,8 +121,7 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
     }
     
     @Override
-    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         tableSize = null;
         getTableSize(monitor);
 
@@ -139,7 +138,7 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
 
     @Override
     public long getStatObjectSize() {
-        return (hasStatistics() == false)? 0 : tableSize[SIZE_IDX_MEM] + tableSize[SIZE_IDX_DISK];
+        return (hasStatistics() == false) ? 0 : tableSize[SIZE_IDX_MEM] + tableSize[SIZE_IDX_DISK];
     }
     
     private void loadSize(DBRProgressMonitor monitor) throws DBCException {
@@ -147,8 +146,7 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
         
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT memory_size, disk_size FROM system_.sys_table_size_ WHERE USER_NAME = ? AND TABLE_NAME = ?"))
-            {
+                "SELECT memory_size, disk_size FROM system_.sys_table_size_ WHERE USER_NAME = ? AND TABLE_NAME = ?")) {
                 dbStat.setString(1, getSchema().getName());
                 dbStat.setString(2, getName());
 
@@ -177,7 +175,7 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
 
     protected void resetSize() {
         tableSize = new Long[2];
-        for(int i = 0; i < 2;i++) {
+        for (int i = 0; i < 2; i++) {
             tableSize[i] = 0L; 
         }
     }

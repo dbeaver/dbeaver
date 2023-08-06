@@ -17,10 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.altibase.ui.editors;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
@@ -41,11 +37,14 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.views.session.AbstractSessionEditor;
 import org.jkiss.dbeaver.ui.views.session.SessionManagerViewer;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * AltibaseSessionEditor
  */
-public class AltibaseSessionEditor extends AbstractSessionEditor
-{
+public class AltibaseSessionEditor extends AbstractSessionEditor {
     private DisconnectSessionAction disconnectSessionAction;
 
     public AltibaseSessionEditor() {
@@ -63,15 +62,13 @@ public class AltibaseSessionEditor extends AbstractSessionEditor
                 new AltibaseServerSessionManager((AltibaseDataSource) executionContext.getDataSource())) {
 
             @Override
-            protected void contributeToToolbar(DBAServerSessionManager sessionManager, IContributionManager contributionManager)
-            {
+            protected void contributeToToolbar(DBAServerSessionManager sessionManager, IContributionManager contributionManager) {
                 contributionManager.add(disconnectSessionAction);
                 contributionManager.add(new Separator());
             }
             
             @Override
-            protected void onSessionSelect(DBAServerSession session)
-            {
+            protected void onSessionSelect(DBAServerSession session) {
                 super.onSessionSelect(session);
                 disconnectSessionAction.setEnabled(session != null);
             }
@@ -79,15 +76,13 @@ public class AltibaseSessionEditor extends AbstractSessionEditor
     }
 
     private class DisconnectSessionAction extends Action {
-        DisconnectSessionAction()
-        {
+        DisconnectSessionAction() {
             super(AltibaseUIMessages.editors_altibase_session_editor_title_disconnect_session, 
                  DBeaverIcons.getImageDescriptor(UIIcon.SQL_DISCONNECT));
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             final List<DBAServerSession> sessions = getSessionsViewer().getSelectedSessions();
             final String action = AltibaseUIMessages.editors_altibase_session_editor_action_disconnect 
                     + AltibaseUIMessages.editors_altibase_session_editor_action__session;

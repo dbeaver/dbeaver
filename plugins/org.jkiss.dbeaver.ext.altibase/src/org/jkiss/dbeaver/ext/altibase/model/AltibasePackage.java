@@ -34,7 +34,7 @@ public class AltibasePackage extends GenericPackage {
     private String source;
 
     private boolean status; // 0: Valid, 1: Invalid
-    private int authId; 	// 0: DEFINER, 1: CURRENT_USER
+    private int authId;     // 0: DEFINER, 1: CURRENT_USER
     private boolean hasBody;
 
     public AltibasePackage(GenericStructContainer container, String packageName, JDBCResultSet dbResult) {
@@ -49,7 +49,6 @@ public class AltibasePackage extends GenericPackage {
     }
 
     @Override
-    //@Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         if (source == null) {
             source = "-- Package specification " 
@@ -77,8 +76,7 @@ public class AltibasePackage extends GenericPackage {
     
     @Override
     @Property(viewable = false, hidden = true, order = 3)
-    public GenericCatalog getCatalog()
-    {
+    public GenericCatalog getCatalog() {
         return super.getCatalog();
     }
 }

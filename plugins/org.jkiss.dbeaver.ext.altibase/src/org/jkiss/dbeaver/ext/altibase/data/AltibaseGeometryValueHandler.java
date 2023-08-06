@@ -97,9 +97,9 @@ public class AltibaseGeometryValueHandler extends GISGeometryValueHandler implem
 
                     // geom from WKT
                     geom = new WKTReader().read(content[1]);
-                } 
-                // No SRID, just in case.
-                else if (content.length == 1) {
+
+                } else if (content.length == 1) {
+                    // No SRID, just in case.
                     geom = new WKTReader().read(content[0]);
                 }
 

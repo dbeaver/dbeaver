@@ -29,8 +29,7 @@ public class AltibaseTypeset extends AltibaseProcedureStandAlone {
     
     @Override
     @Property(viewable = false, hidden = true, order = 6)
-    public DBSProcedureType getProcedureType()
-    {
+    public DBSProcedureType getProcedureType() {
         return super.getProcedureType();
     }
     

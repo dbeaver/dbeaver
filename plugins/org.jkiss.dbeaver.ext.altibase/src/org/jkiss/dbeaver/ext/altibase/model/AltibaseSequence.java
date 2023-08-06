@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
-import java.math.BigDecimal;
-import java.util.Map;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -28,6 +25,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.math.BigDecimal;
+import java.util.Map;
 
 /**
  * FireBirdDataSource
@@ -147,6 +147,10 @@ public class AltibaseSequence extends GenericSequence implements DBPScriptObject
         return null;
     }
 
+    /**
+     * Unable to use DBMS_METADATA for sequence because it returns 'START_WITH' value 
+     * as CURRENT_SEQ+INCREMENT_SEQ for schema migration
+     */
     public String buildStatement(boolean forUpdate) {
         StringBuilder sb = new StringBuilder();
         
@@ -158,7 +162,7 @@ public class AltibaseSequence extends GenericSequence implements DBPScriptObject
         
         sb.append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" ");
 
-        if ( (forUpdate == false) && (getStartWith() != null)) {
+        if ((forUpdate == false) && (getStartWith() != null)) {
             sb.append("START WITH ").append(getStartWith()).append(" ");
         }
 
@@ -191,10 +195,6 @@ public class AltibaseSequence extends GenericSequence implements DBPScriptObject
         return sb.toString();
     }
 
-    /*
-     * Unable to use DBMS_METADATA for sequence because it returns 'START_WITH' value 
-     * as CURRENT_SEQ+INCREMENT_SEQ for schema migration
-     */
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         if (source == null) {

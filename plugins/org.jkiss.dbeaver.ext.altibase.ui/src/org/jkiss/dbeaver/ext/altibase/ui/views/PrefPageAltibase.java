@@ -32,8 +32,7 @@ public class PrefPageAltibase extends TargetPrefPage {
     private Button enableDbmsOutputCheck;
     private Button enablePlanPrefixDepthCheck;
     
-    public PrefPageAltibase()
-    {
+    public PrefPageAltibase() {
         super();
         setPreferenceStore(new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore()));
     }
@@ -62,13 +61,15 @@ public class PrefPageAltibase extends TargetPrefPage {
         
         /* Buttons */
         int i = 0;
-        int size = AltibaseConstants.EXPLAIN_PLAN.values().length;
+        int size = AltibaseConstants.ExplainPlan.values().length;
         planTypeBtns = new Button[size];
-        SelectionListener selectionListener = new SelectionAdapter(){
+        
+        SelectionListener selectionListener = new SelectionAdapter() {
+            
             @Override
-            public void widgetSelected(final SelectionEvent e){
+            public void widgetSelected(final SelectionEvent e) {
                 super.widgetSelected(e);
-                for(int i = 0; i < size; i++) {
+                for (int i = 0; i < size; i++) {
                     if (planTypeBtns[i] != null && planTypeBtns[i].getSelection()) {
                         planTypeIdx = i;
                     }
@@ -76,7 +77,10 @@ public class PrefPageAltibase extends TargetPrefPage {
             }
         };
 
-        for(AltibaseConstants.EXPLAIN_PLAN explainplan:AltibaseConstants.EXPLAIN_PLAN.values()) {
+        /*
+         * Explain plains (Execution plan)
+         */
+        for (AltibaseConstants.ExplainPlan explainplan : AltibaseConstants.ExplainPlan.values()) {
             planTypeBtns[i++] = UIUtils.createRadioButton(
                     planGroup, explainplan.getTitle(), null, selectionListener);
         }

@@ -32,7 +32,8 @@ import java.util.Map;
 public class AltibaseProcedureConfigurator implements DBEObjectConfigurator<AltibaseProcedureStandAlone> {
 
     @Override
-    public AltibaseProcedureStandAlone configureObject(DBRProgressMonitor monitor, Object container, AltibaseProcedureStandAlone procedure, Map<String, Object> options) {
+    public AltibaseProcedureStandAlone configureObject(DBRProgressMonitor monitor, Object container, 
+            AltibaseProcedureStandAlone procedure, Map<String, Object> options) {
         return new UITask<AltibaseProcedureStandAlone>() {
             @Override
             protected AltibaseProcedureStandAlone runTask() {
@@ -51,7 +52,7 @@ public class AltibaseProcedureConfigurator implements DBEObjectConfigurator<Alti
                     (procedureType == DBSProcedureType.FUNCTION ? "() RETURN NUMBER" : "") + GeneralUtils.getDefaultLineSeparator() +
                         "IS" + GeneralUtils.getDefaultLineSeparator() +
                         "BEGIN" + GeneralUtils.getDefaultLineSeparator() +
-                        (procedureType == DBSProcedureType.FUNCTION ? "\tRETURN 1;": "\tnull;") +
+                        (procedureType == DBSProcedureType.FUNCTION ? "\tRETURN 1;" : "\tnull;") +
                         GeneralUtils.getDefaultLineSeparator() + 
                         "END");
 

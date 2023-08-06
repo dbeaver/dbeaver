@@ -16,12 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model.session;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -32,6 +26,12 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Altibase session manager
  */
@@ -39,14 +39,12 @@ public class AltibaseServerSessionManager implements DBAServerSessionManager<Alt
 
     private final AltibaseDataSource dataSource;
 
-    public AltibaseServerSessionManager(AltibaseDataSource dataSource)
-    {
+    public AltibaseServerSessionManager(AltibaseDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     @Override
-    public DBPDataSource getDataSource()
-    {
+    public DBPDataSource getDataSource() {
         return dataSource;
     }
 
@@ -68,20 +66,18 @@ public class AltibaseServerSessionManager implements DBAServerSessionManager<Alt
     }
 
     @Override
-    public void alterSession(DBCSession session, AltibaseServerSession sessionType, Map<String, Object> options) throws DBException
-    {
+    public void alterSession(DBCSession session, AltibaseServerSession sessionType, Map<String, Object> options) throws DBException {
         try {
 
             // ALTER DATABASE mydb SESSION CLOSE session_id;
             String sql = String.format("ALTER DATABASE %s SESSION CLOSE %s",
-                    dataSource.getDbName((JDBCSession)session), 
+                    dataSource.getDbName((JDBCSession) session), 
                     sessionType.getSessionId());
             
             try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(sql)) {
                 dbStat.execute();
             }
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DBException(e, session.getDataSource());
         }
     }
@@ -102,9 +98,11 @@ public class AltibaseServerSessionManager implements DBAServerSessionManager<Alt
                 + " , obj_name lock_target"
                 + " , DECODE(is_grant, 1, 'HOLDER', 0, 'WAITER', '') lock_status"
                 + " , lock_desc lock_type"
-                + " , TO_CHAR(conv_timezone(UNIX_TO_DATE( login_time ), '+00:00', db_timezone()), 'YYYY-MM-DD HH24:MI:SS') login_time"
+                + " , TO_CHAR(conv_timezone(UNIX_TO_DATE( login_time ), '+00:00', db_timezone())," 
+                    + " 'YYYY-MM-DD HH24:MI:SS') login_time"
                 + " , CASE2(IDLE_START_TIME < 1, '',"
-                    + " TO_CHAR(conv_timezone(UNIX_TO_DATE( idle_start_time ), '+00:00', db_timezone()), 'YYYY-MM-DD HH24:MI:SS')) idle_since"
+                    + " TO_CHAR(conv_timezone(UNIX_TO_DATE( idle_start_time ), '+00:00'," 
+                    + " db_timezone()), 'YYYY-MM-DD HH24:MI:SS')) idle_since"
                 + " , CASE2(autocommit_flag = 1, 'T', 'F') autocommit"
                 + " , decode(sysdba_flag, 0, 'F', 1, 'T') sysda"
                 + " , query_time_limit"

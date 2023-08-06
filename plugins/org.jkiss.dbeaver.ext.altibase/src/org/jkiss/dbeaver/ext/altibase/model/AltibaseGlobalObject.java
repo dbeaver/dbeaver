@@ -32,41 +32,35 @@ public abstract class AltibaseGlobalObject implements DBSObject, DBPSaveableObje
 
     protected AltibaseGlobalObject(
         AltibaseDataSource dataSource,
-        boolean persisted)
-    {
+        boolean persisted) {
         this.dataSource = dataSource;
         this.persisted = persisted;
     }
 
     @Nullable
     @Override
-    public String getDescription()
-    {
+    public String getDescription() {
         return null;
     }
 
     @Override
-    public DBSObject getParentObject()
-    {
+    public DBSObject getParentObject() {
         return dataSource.getContainer();
     }
 
     @NotNull
     @Override
-    public AltibaseDataSource getDataSource()
-    {
+    public AltibaseDataSource getDataSource() {
         return dataSource;
     }
 
     @Override
-    public boolean isPersisted()
-    {
+    public boolean isPersisted() {
         return persisted;
     }
 
     @Override
-    public void setPersisted(boolean persisted)
-    {
+    public void setPersisted(boolean persisted) {
         this.persisted = persisted;
     }
 }

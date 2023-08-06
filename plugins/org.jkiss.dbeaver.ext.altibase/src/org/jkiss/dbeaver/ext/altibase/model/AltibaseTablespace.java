@@ -1,10 +1,5 @@
 package org.jkiss.dbeaver.ext.altibase.model;
 
-import java.math.BigInteger;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -24,6 +19,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ByteNumberFormat;
 
+import java.math.BigInteger;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+
 public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefreshableObject, DBPObjectStatistics {
 
     public enum TbsType {
@@ -36,17 +36,22 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
         DISK_USER_TEMP(6),
         DISK_SYSTEM_UNDO(7),
         VOLATILE_USER_DATA(8),
-        UNKNOWN (-1);
+        UNKNOWN(-1);
         
         private int stateIdx;
+        
         private TbsType(int stateIdx) {
             this.stateIdx = stateIdx;
         }
         
-        public static TbsType getStateByIdx(int stateIdx) {
-            for(TbsType type:TbsType.values()) {
-                if (stateIdx == type.stateIdx)
+        /**
+         * Get TBS type get its index value. 
+         */
+        public static TbsType getTbsTypeByIdx(int stateIdx) {
+            for (TbsType type : TbsType.values()) {
+                if (stateIdx == type.stateIdx) {
                     return type;
+                }
             }
             
             return UNKNOWN;
@@ -64,14 +69,19 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
         UNKNOWN(-1);
         
         private int stateIdx;
+        
         private State(int stateIdx) {
             this.stateIdx = stateIdx;
         }
         
+        /**
+         * Get TBS status by its state index value. 
+         */
         public static State getStateByIdx(int stateIdx) {
-            for(State status:State.values()) {
-                if (stateIdx == status.stateIdx)
+            for (State status : State.values()) {
+                if (stateIdx == status.stateIdx) {
                     return status;
+                }
             }
             
             return UNKNOWN;
@@ -103,7 +113,7 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
         
         this.id                 = JDBCUtils.safeGetInt(dbResult, "ID");
         this.name               = JDBCUtils.safeGetString(dbResult, "NAME");
-        this.tbsType            = TbsType.getStateByIdx(JDBCUtils.safeGetInt(dbResult, "TYPE"));
+        this.tbsType            = TbsType.getTbsTypeByIdx(JDBCUtils.safeGetInt(dbResult, "TYPE"));
         this.state              = State.getStateByIdx(JDBCUtils.safeGetInt(dbResult, "STATE"));
         this.extentManagement   = JDBCUtils.safeGetString(dbResult, "EXTENT_MANAGEMENT");
         this.segmentManagement  = JDBCUtils.safeGetString(dbResult, "SEGMENT_MANAGEMENT");    
@@ -197,67 +207,61 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
         }
     }
     
-    public String getQry4Size( ) {
+    public String getQry4Size() {
         return qry4Size;
     }
     
     @NotNull
     @Override
     @Property(viewable = true, order = 1)
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
     
     @NotNull
     @Property(viewable = true, order = 2)
-    public int getId()
-    {
+    public int getId() {
         return id;
     }
     
     @Property(viewable = true, order = 3)
-    public String getTbsType()
-    {
+    public String getTbsType() {
         return tbsType.name();
     }
     
     @Property(viewable = true, order = 4)
-    public String getState()
-    {
+    public String getState() {
         return state.name();
     }
     
     @Property(viewable = true, order = 5)
-    public String getExtentManagement()
-    {
+    public String getExtentManagement() {
         return extentManagement;
     }
     
     @Property(viewable = true, order = 6)
-    public String getSegmentManagement()
-    {
+    public String getSegmentManagement() {
         return segmentManagement;
     }
     
     @Property(viewable = true, order = 7)
-    public int getDataFileCount()
-    {
+    public int getDataFileCount() {
         return dataFileCount;
     }
     
     @Property(viewable = true, order = 8, formatter = ByteNumberFormat.class)
-    public int getPageSizeInKBytes()
-    {
+    public int getPageSizeInKBytes() {
         return pageSizeInBytes;
     }
     
     @Property(viewable = true, order = 9)
-    public boolean getIsLogCompression()
-    {
+    public boolean getIsLogCompression() {
         return isLogCompression;
     }
     
+    /**
+     * Return avaiable size (byte) in tablespace
+     */
     @Property(viewable = true, order = 10, formatter = ByteNumberFormat.class)
     public Long getAvailableSize(DBRProgressMonitor monitor) throws DBException {
         if (availableSize == null) {
@@ -266,6 +270,9 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
         return availableSize;
     }
 
+    /**
+     * Return used size (byte) in tablespace
+     */
     @Property(viewable = true, order = 11, formatter = ByteNumberFormat.class)
     public Long getUsedSize(DBRProgressMonitor monitor) throws DBException {
         if (usedSize == null) {
@@ -274,40 +281,54 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
         return usedSize;
     }
 
-    public TbsType getTbsTypeEnum ()
-    {
+    /**
+     * Return Tablespace type as enumeration
+     */
+    public TbsType getTbsTypeEnum() {
         return tbsType;
     }
     
-    public int getPageSizeInBytes()
-    {
+    /**
+     * Return page size in bytes as int
+     */
+    public int getPageSizeInBytes() {
         return pageSizeInBytes;
     }
     
-    public String getPageSizeInBytesStr()
-    {
+    /**
+     * Return page size in bytes as String
+     */
+    public String getPageSizeInBytesStr() {
         return String.valueOf(pageSizeInBytes);
     }
     
+    /**
+     * Whether this is memory tablespace or not. 
+     */
     public boolean isMemTbs() {
         switch (this.tbsType) {
             case MEMORY_SYSTEM_DICTIONARY:
             case MEMORY_SYSTEM_DATA:
             case MEMORY_USER_DATA:
                 return true;
-             default:
-                 return false;
+            default:
+                return false;
         }
     }
     
+
+    /**
+     * Return file collection belongs to this tablespace.
+     */
     @Association
-    public Collection<AltibaseDataFile> getFiles(DBRProgressMonitor monitor) throws DBException
-    {
+    public Collection<AltibaseDataFile> getFiles(DBRProgressMonitor monitor) throws DBException {
         return fileCache.getAllObjects(monitor, this);
     }
     
-    public AltibaseDataFile getFile(DBRProgressMonitor monitor, int fileId) throws DBException
-    {
+    /**
+     * Returns AltibaseDataFile matches to fileId
+     */
+    public AltibaseDataFile getFile(DBRProgressMonitor monitor, int fileId) throws DBException {
         for (AltibaseDataFile file : fileCache.getAllObjects(monitor, this)) {
             if (file.getId() == fileId) {
                 return file;
@@ -350,6 +371,9 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
         return null;
     }
 
+    /**
+     * Load tablespace size
+     */
     public void loadSizes(DBRProgressMonitor monitor) throws DBException {
         String qry = getQry4Size();
         
@@ -380,17 +404,22 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
         availableSize = totalSize - usedSize;
     }
     
+    /**
+     *  Returns data files  
+     */
     static class FileCache extends JDBCObjectCache<AltibaseTablespace, AltibaseDataFile> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(
                 @NotNull JDBCSession session, 
-                @NotNull AltibaseTablespace owner
-                ) throws SQLException
-        {
+                @NotNull AltibaseTablespace owner) throws SQLException {
+            
             String qry = null;
             
             if (owner.isMemTbs()) {
+                /*
+                 * The memory data file consists of two sets, xxx-0-0 and xxx-1-0.
+                 */
                 qry =  " SELECT"
                             + " mt.ID ID"
                             + " , mt.space_id SPACEID"
@@ -431,9 +460,7 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
         protected AltibaseDataFile fetchObject(
                 @NotNull JDBCSession session, 
                 @NotNull AltibaseTablespace owner, 
-                @NotNull JDBCResultSet resultSet
-                ) throws SQLException, DBException
-        {
+                @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             if (owner.isMemTbs()) {
                 return new AltibaseDataFile4Mem(owner, resultSet);
             } else {

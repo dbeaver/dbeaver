@@ -34,7 +34,6 @@ import java.util.List;
  */
 public class AltibaseConstraint extends GenericUniqueKey {
 
-    // public DBSEntityConstraintType(String id, String name, String localizedName, boolean association, boolean unique, boolean custom, boolean logical)
     public static final DBSEntityConstraintType LOCAL_UNIQUE_KEY = new DBSEntityConstraintType(
             "localunique", "LOCAL UNIQUE", "LOCAL UNIQUE", false, true, true, false);
     public static final DBSEntityConstraintType TIMESTAMP = new DBSEntityConstraintType(

@@ -17,9 +17,6 @@
 
 package org.jkiss.dbeaver.ext.altibase.edit;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
@@ -34,6 +31,9 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.List;
+import java.util.Map;
+
 public class AltibaseTableColumnManager extends GenericTableColumnManager 
     implements DBEObjectRenamer<GenericTableColumn> {
 
@@ -44,8 +44,8 @@ public class AltibaseTableColumnManager extends GenericTableColumnManager
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
-    {
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
+            List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         final GenericTableBase table = command.getObject().getParentObject();
         StringBuilder sql = new StringBuilder();
         
@@ -57,6 +57,6 @@ public class AltibaseTableColumnManager extends GenericTableColumnManager
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_create_new_table_column,
-                sql.toString()) );
+                sql.toString()));
     }
 }

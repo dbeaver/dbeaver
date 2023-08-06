@@ -17,10 +17,6 @@
 
 package org.jkiss.dbeaver.ext.altibase.model;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
@@ -38,10 +34,17 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 public class AltibaseSchema extends GenericSchema implements DBPObjectStatisticsCollector {
 
     private volatile boolean hasStatistics;
     
+    /**
+     * Altibase Schema
+     */
     public AltibaseSchema(GenericDataSource dataSource, GenericCatalog catalog, String schemaName) {
         super(dataSource, catalog, schemaName);
     }
@@ -61,6 +64,9 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
         return null;
     }
 
+    /**
+     * Return queue table objects only from table list.
+     */
     public List<AltibaseQueue> getQueueTables(DBRProgressMonitor monitor) throws DBException {
         List<? extends GenericTableBase> tables = getTables(monitor);
         if (tables != null) {
@@ -90,6 +96,9 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
         return null;
     }
 
+    /**
+     * Return materialized view only from table list.
+     */
     public List<AltibaseMaterializedView> getMaterializedViews(DBRProgressMonitor monitor) throws DBException {
         List<? extends GenericTableBase> tables = getTables(monitor);
         if (tables != null) {
@@ -104,6 +113,9 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
         return null;
     }
 
+    /**
+     * Return typeset objects only from procedures
+     */
     public List<AltibaseTypeset> getTypesetsOnly(DBRProgressMonitor monitor) throws DBException {
         List<AltibaseTypeset> filteredProcedures = new ArrayList<>();
         for (GenericProcedure proc : CommonUtils.safeList(getProcedures(monitor))) {
@@ -115,9 +127,7 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
     }
 
     @Override
-    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.refreshObject(monitor);
         hasStatistics = false;
         return this;
@@ -138,8 +148,7 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT table_name, memory_size, disk_size FROM system_.sys_table_size_ WHERE USER_NAME = ?"))
-            {
+                    "SELECT table_name, memory_size, disk_size FROM system_.sys_table_size_ WHERE USER_NAME = ?")) {
                 dbStat.setString(1, getName());
                 
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {

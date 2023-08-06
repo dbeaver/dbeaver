@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.altibase.model.plan;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
-import org.jkiss.dbeaver.ext.altibase.AltibaseConstants.EXPLAIN_PLAN;
+import org.jkiss.dbeaver.ext.altibase.AltibaseConstants.ExplainPlan;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -47,6 +47,9 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
 
     private static final String setExplainPlan = "setExplainPlan";
 
+    /**
+     * Read from database
+     */
     public AltibaseExecutionPlan(AltibaseDataSource dataSource, JDBCSession session, String query) {
         this.dataSource = dataSource;
         this.session = session;
@@ -54,11 +57,17 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
         this.planQuery = "";
     }
     
+    /** 
+     * Deserialize excution plan
+     */
     public AltibaseExecutionPlan(String query, List<AltibasePlanNode> nodes) {
         this.query = query;
         this.rootNodes = nodes;
     }
 
+    /**
+     * Get Execution Plan by firing query to database. 
+     */
     public void explain() throws DBException {
         try {
             JDBCPreparedStatement dbStat = session.prepareStatement(getQueryString());
@@ -89,13 +98,16 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
         return rootNodes;
     }
 
+    /**
+     *  Get explain plan result string using Java reflection. 
+     */
     private String getExplainPlan(JDBCSession session, String query) {
         Statement stmt = null;
 
         Connection conn = null;
         Class<? extends Connection> clazz = null;
         Method method = null;
-        EXPLAIN_PLAN expPlan = null;
+        ExplainPlan expPlan = null;
         
         try {
             conn = session.getOriginal();
@@ -106,10 +118,10 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
              * The first one's argument is boolean, the second one's argument is byte.
              * Here, the second method is required.
              */
-            method = getMethod4setExplainWithByteArgType(clazz, 
+            method = getMethod2SetExplainWithByteArgType(clazz, 
                     setExplainPlan, AltibaseConstants.TYPE_NAME_BYTE.toLowerCase());
 
-            expPlan = AltibaseConstants.EXPLAIN_PLAN.getByIndex(
+            expPlan = AltibaseConstants.ExplainPlan.getByIndex(
                     dataSource.getContainer().getPreferenceStore().getInt(
                             AltibaseConstants.PREF_EXPLAIN_PLAN_TYPE));
 
@@ -118,7 +130,7 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
             stmt = conn.prepareStatement(query);
             
             // In case of EXPLAIN_PLAN_ON, need to execute query
-            if (expPlan == AltibaseConstants.EXPLAIN_PLAN.ON) {
+            if (expPlan == AltibaseConstants.ExplainPlan.ON) {
                 if (query.trim().toUpperCase().startsWith("SELECT")) {
                     stmt.getClass().getMethod("executeQuery").invoke(stmt);
                 } else {
@@ -128,7 +140,7 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
             
             // sStmt.getExplainPlan()            
             planQuery = (String) stmt.getClass().getMethod("getExplainPlan").invoke(stmt);
-            
+
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
                 | SecurityException | SQLException | ArrayIndexOutOfBoundsException e) {
             log.error("Failed to execute explain plan: " + e.getMessage());
@@ -146,9 +158,11 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
     }
 
 
+    /**
+     * Returns a method (BYTE xxxx): BYTE data type argument of method with the given name. 
+     */
     @SuppressWarnings("rawtypes")
-    private Method getMethod4setExplainWithByteArgType(Class class1, String methodName, String argName) 
-    throws InvocationTargetException {
+    private Method getMethod2SetExplainWithByteArgType(Class class1, String methodName, String argName) throws InvocationTargetException {
         for (Method method : class1.getMethods()) {
             if (method.getName().equals(methodName)) {
                 for (Class paramType : method.getParameterTypes()) {

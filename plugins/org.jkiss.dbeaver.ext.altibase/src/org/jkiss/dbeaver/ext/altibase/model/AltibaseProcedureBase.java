@@ -17,12 +17,6 @@
 
 package org.jkiss.dbeaver.ext.altibase.model;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -37,21 +31,26 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 public abstract class AltibaseProcedureBase extends GenericProcedure implements DBSObjectWithScript {
 
     protected List<GenericProcedureParameter> columns;
     protected static final Log log = Log.getLog(AltibaseProcedureBase.class);
 
-    public AltibaseProcedureBase(GenericStructContainer container, String procedureName, 
-            DBSProcedureType procedureType) {
-        super(container, procedureName, null, null, procedureType, GenericFunctionResultType.UNKNOWN);
-    }
-    
+    /**
+     * Constructor
+     */
     public AltibaseProcedureBase(GenericStructContainer container, String procedureName, String specificName,
             String description, DBSProcedureType procedureType, GenericFunctionResultType functionResultType) {
         super(container, procedureName, specificName, description, procedureType, functionResultType);
     }
 
+    @Override
     public void addColumn(GenericProcedureParameter column) {
         if (this.columns == null) {
             this.columns = new ArrayList<>();
@@ -76,8 +75,7 @@ public abstract class AltibaseProcedureBase extends GenericProcedure implements 
     }
     
     @Property(viewable = false, hidden = true, order = 3)
-    public GenericCatalog getCatalog()
-    {
+    public GenericCatalog getCatalog() {
         return getContainer().getCatalog();
     }
     
@@ -86,6 +84,9 @@ public abstract class AltibaseProcedureBase extends GenericProcedure implements 
         return super.getFunctionResultType();
     }
     
+    /**
+     * Set procedure type, especially for Typeset
+     */
     public void setProcedureType(DBSProcedureType procedureType) {
         Field procedureTypeField = null;
         try {
@@ -99,7 +100,7 @@ public abstract class AltibaseProcedureBase extends GenericProcedure implements 
             log.error(e.getMessage());
         } catch (NoSuchFieldException e) {
             log.error(e.getMessage());
-        }catch (SecurityException e) {
+        } catch (SecurityException e) {
             log.error(e.getMessage());
         }
     }
@@ -111,8 +112,7 @@ public abstract class AltibaseProcedureBase extends GenericProcedure implements 
     }
 
     @Override
-    public void setObjectDefinitionText(String source)
-    {
+    public void setObjectDefinitionText(String source) {
         super.setSource(source);
     }
     

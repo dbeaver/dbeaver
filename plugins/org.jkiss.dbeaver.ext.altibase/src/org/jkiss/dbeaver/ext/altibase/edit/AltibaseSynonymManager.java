@@ -17,9 +17,6 @@
 
 package org.jkiss.dbeaver.ext.altibase.edit;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseSynonym;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -36,6 +33,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 
+import java.util.List;
+import java.util.Map;
 
 public class AltibaseSynonymManager extends SQLObjectEditor<GenericSynonym, GenericStructContainer> {
 
@@ -48,12 +47,12 @@ public class AltibaseSynonymManager extends SQLObjectEditor<GenericSynonym, Gene
     public boolean canDeleteObject(GenericSynonym object) {
         return true;
     }
+    
     @Override
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
-            List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
-    {
+            List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         AltibaseSynonym object = (AltibaseSynonym) command.getObject();
-        boolean isPublic = object.isPublic();
+        boolean isPublic = object.isPublicSynonym();
         StringBuilder ddl = new StringBuilder("DROP");
         String objName;
         

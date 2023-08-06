@@ -16,14 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.util.Collection;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -59,6 +51,14 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.util.Collection;
+
 public class AltibaseDataSource extends GenericDataSource implements DBPObjectStatisticsCollector {
     
     private static final Log log = Log.getLog(AltibaseDataSource.class);
@@ -93,8 +93,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     protected void initializeContextState(
             @NotNull DBRProgressMonitor monitor, 
             @NotNull JDBCExecutionContext context, 
-            JDBCExecutionContext initFrom
-            ) throws DBException {
+            JDBCExecutionContext initFrom) throws DBException {
         
         super.initializeContextState(monitor, context, initFrom);
         
@@ -109,9 +108,12 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
             outputReader.isServerOutputEnabled());
     }
 
+    /**
+     * Get database name.
+     */
     public String getDbName(JDBCSession session) throws DBException {
         if (dbName == null) {
-            try(JDBCPreparedStatement dbStat = session.prepareStatement(queryGetActiveDB)) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(queryGetActiveDB)) {
                 try (JDBCResultSet resultSet = dbStat.executeQuery()) {
                     resultSet.next();
                     dbName = JDBCUtils.safeGetStringTrimmed(resultSet, 1);
@@ -120,13 +122,12 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
                 throw new DBException(e, this);
             }
         }
-
+        
         return dbName;
     }
     
     @Override
-    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
-        throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.refreshObject(monitor);
         
         this.tablespaceCache.clearCache();
@@ -155,8 +156,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     protected Connection openConnection(
             @NotNull DBRProgressMonitor monitor, 
             @Nullable JDBCExecutionContext context, 
-            @NotNull String purpose
-            ) throws DBCException {
+            @NotNull String purpose) throws DBCException {
         try {
             Connection connection = super.openConnection(monitor, context, purpose);
             try {
@@ -183,8 +183,8 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
                     AltibaseConstants.SQL_WARNING_TITILE,
                     warning.getMessage() + 
                     AltibaseConstants.NEW_LINE + 
-                    AltibaseConstants.PASSWORD_WILL_EXPIRE_WARN_DESCRIPTION
-                    );
+                    AltibaseConstants.PASSWORD_WILL_EXPIRE_WARN_DESCRIPTION);
+            
             return true;
         }
         return false;
@@ -207,37 +207,27 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         return AltibaseTable.class;
     }
 
+    /**
+     * Returns public synonym as a collection.
+     */
     public Collection<? extends GenericSynonym> getPublicSynonyms(DBRProgressMonitor monitor) throws DBException {
         return publicSchema.getSynonyms(monitor);
     }
-
-    ///////////////////////////////////////////////
-    // Plan
-    /*
-    @NotNull
-    @Override
-    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, 
-            @NotNull DBCQueryPlannerConfiguration configuration) throws DBException {
-        AltibaseExecutionPlan plan = new AltibaseExecutionPlan(this, (JDBCSession) session, query);
-        plan.explain();
-        return plan;
-    }
-
-    @NotNull
-    @Override
-    public DBCPlanStyle getPlanStyle() {
-        return DBCPlanStyle.PLAN;
-    }
-    */
     
     ///////////////////////////////////////////////
     // Tablespace
     
+    /**
+     * Get tablespace colection
+     */
     @Association
     public Collection<AltibaseTablespace> getTablespaces(DBRProgressMonitor monitor) throws DBException {
         return tablespaceCache.getAllObjects(monitor, this);
     }
 
+    /**
+     * Get tablespace cache
+     */
     public TablespaceCache getTablespaceCache() {
         return tablespaceCache;
     }
@@ -254,8 +244,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         protected AltibaseTablespace fetchObject(
                 @NotNull JDBCSession session, 
                 @NotNull AltibaseDataSource owner, 
-                @NotNull JDBCResultSet resultSet
-                ) throws SQLException, DBException {
+                @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new AltibaseTablespace(owner, resultSet);
         }
     }
@@ -273,19 +262,18 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, 
-            boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasStatistics && !forceRefresh) {
             return;
         }
-        
+
         try {
-        for(AltibaseTablespace tbs:tablespaceCache.getAllObjects(monitor, AltibaseDataSource.this)) {
-            AltibaseTablespace tablespace = tablespaceCache.getObject(monitor, AltibaseDataSource.this, tbs.getName());
-            if (tablespace != null) {
-                tablespace.loadSizes(monitor);
+            for (AltibaseTablespace tbs : tablespaceCache.getAllObjects(monitor, AltibaseDataSource.this)) {
+                AltibaseTablespace tablespace = tablespaceCache.getObject(monitor, AltibaseDataSource.this, tbs.getName());
+                if (tablespace != null) {
+                    tablespace.loadSizes(monitor);
+                }
             }
-        }
         } catch (DBException e) {
             throw new DBException("Can't read tablespace statistics", e, getDataSource());
         } finally {
@@ -297,7 +285,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     // DBMS Procedure Output
     private class AltibaseOutputReader implements DBCServerOutputReader {
         
-        private StringBuilder mSb4CallBackMsg = new StringBuilder();
+        private StringBuilder callBackMsg = new StringBuilder();
         
         @Override
         public boolean isServerOutputEnabled() {
@@ -312,8 +300,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         public void enableServerOutput(
                 DBRProgressMonitor monitor, 
                 DBCExecutionContext context, 
-                boolean enable
-                ) throws DBCException {
+                boolean enable) throws DBCException {
             
             Connection conn = null;
             ClassLoader classLoader = null;
@@ -328,53 +315,52 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
             
             try (JDBCSession session = (JDBCSession) context.openSession(monitor, 
                     DBCExecutionPurpose.UTIL, (enable ? "Enable" : "Disable") + " DBMS output")) {
-                
+
                 conn = session.getOriginal();
                 classLoader = conn.getClass().getClassLoader();
                 if (classLoader == null) {
                     throw new SecurityException("Failed to load ClassLoader");
                 }
-                
+
                 // To support Altibasex_x.jar driver
                 connClassNamePrefix = conn.getClass().getName().split("\\.")[0];
                 className4Connection = connClassNamePrefix + AltibaseConstants.CLASS_NAME_4_CONNECTION_POSTFIX;
                 className4MessageCallback = connClassNamePrefix + AltibaseConstants.CLASS_NAME_4_MESSAGE_CALLBACK_POSTFIX;
-                
+
                 class4MsgCallback = classLoader.loadClass(className4MessageCallback);
                 if (class4MsgCallback == null) {
                     throw new ClassNotFoundException("Failed to load class: " + className4MessageCallback);
                 }
 
-                instance4Callback = Proxy.newProxyInstance(classLoader, new java.lang.Class[]
-                        { class4MsgCallback }, new InvocationHandler() {
-                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                        if ("print".equals(method.getName())) {
-                            mSb4CallBackMsg.append((String) args[0]);
+                instance4Callback = Proxy.newProxyInstance(classLoader, 
+                        new java.lang.Class[] { class4MsgCallback }, 
+                        new InvocationHandler() {
+                            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                                if ("print".equals(method.getName())) {
+                                    callBackMsg.append((String) args[0]);
+                                }
+        
+                                return null;
                         }
+                    });
 
-                        return null;
-                    }
-                });
                 if (instance4Callback == null) {
-                    throw new NullPointerException(
-                            "Failed to instantiate class: " + className4MessageCallback);
+                    throw new NullPointerException("Failed to instantiate class: " + className4MessageCallback);
                 }
 
                 method2RegisterCallback = classLoader
                         .loadClass(className4Connection)
-                        .getMethod(
-                            AltibaseConstants.METHOD_NAME_4_REGISTER_MESSAGE_CALLBACK, 
-                            class4MsgCallback);
-                
+                        .getMethod(AltibaseConstants.METHOD_NAME_4_REGISTER_MESSAGE_CALLBACK, class4MsgCallback);
+
                 if (method2RegisterCallback == null) {
                     throw new NoSuchMethodException(String.format(
                             "Failed to get method: %s of class %s ", 
                             AltibaseConstants.METHOD_NAME_4_REGISTER_MESSAGE_CALLBACK,
                             className4MessageCallback));
                 }
-                
+
                 method2RegisterCallback.invoke(conn, instance4Callback);
-                
+
             } catch (Exception e) {
                 log.error("Failed to register DBMS output message callback method: " + e.getMessage());
                 throw new DBCException(e, context);
@@ -387,11 +373,10 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
                 @NotNull DBCExecutionContext context,
                 @Nullable DBCExecutionResult executionResult,
                 @Nullable DBCStatement statement,
-                @NotNull DBCOutputWriter output
-                ) throws DBCException {
-            if (mSb4CallBackMsg != null) {
-                output.println(null, mSb4CallBackMsg.toString());
-                mSb4CallBackMsg.delete(0, mSb4CallBackMsg.length());
+                @NotNull DBCOutputWriter output) throws DBCException {
+            if (callBackMsg != null) {
+                output.println(null, callBackMsg.toString());
+                callBackMsg.delete(0, callBackMsg.length());
             }
         }
     }

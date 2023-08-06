@@ -16,12 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
-import java.math.BigInteger;
-import java.sql.ResultSet;
-
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.utils.ByteNumberFormat;
+
+import java.math.BigInteger;
+import java.sql.ResultSet;
 
 public class AltibaseDataFile4Mem extends AltibaseDataFile {
 
@@ -33,8 +33,7 @@ public class AltibaseDataFile4Mem extends AltibaseDataFile {
     }
 
     @Property(viewable = true, order = 4, formatter = ByteNumberFormat.class)
-    public long getCurrSize()
-    {
+    public long getCurrSize() {
         return currSize;
     }
 }

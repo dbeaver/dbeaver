@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.altibase.sql;
 
-import java.util.List;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -29,6 +27,8 @@ import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
 import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
 import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
+
+import java.util.List;
 
 /**
 * Altibase dialect rules
@@ -95,8 +95,11 @@ class AltibaseDialectRules implements TPRuleProvider {
 
         private boolean tryReadQString(TPCharacterScanner scanner, char quoteEndChar) {
             int charsRead = 0;
-            int prevChar = -1, currChar = -1;
-            boolean isEndOfLiteral, isEndOfText;
+            int prevChar = -1;
+            int currChar = -1;
+            boolean isEndOfLiteral;
+            boolean isEndOfText;
+            
             do {
                 prevChar = currChar;
                 currChar = scanner.read();

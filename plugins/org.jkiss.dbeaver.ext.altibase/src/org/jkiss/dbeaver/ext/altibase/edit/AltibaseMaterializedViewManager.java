@@ -17,9 +17,6 @@
 
 package org.jkiss.dbeaver.ext.altibase.edit;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseMaterializedView;
 import org.jkiss.dbeaver.ext.generic.edit.GenericViewManager;
@@ -34,11 +31,13 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.List;
+import java.util.Map;
+
 public class AltibaseMaterializedViewManager extends GenericViewManager {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
-    {
+    public long getMakerOptions(DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
     
@@ -53,8 +52,7 @@ public class AltibaseMaterializedViewManager extends GenericViewManager {
     
     @Override
     protected GenericTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, 
-            Object container, Object copyFrom, Map<String, Object> options)
-    {
+            Object container, Object copyFrom, Map<String, Object> options) {
         GenericStructContainer structContainer = (GenericStructContainer) container;
         String tableName = getNewChildName(monitor, structContainer, SQLTableManager.BASE_MATERIALIZED_VIEW_NAME);
         GenericTableBase viewImpl = structContainer.getDataSource().getMetaModel().createTableImpl(
@@ -77,8 +75,7 @@ public class AltibaseMaterializedViewManager extends GenericViewManager {
     
     @Override
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
-            List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
-    {
+            List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         actions.add(
             new SQLDatabasePersistAction("Drop view", 
                     "DROP " + AltibaseConstants.OBJ_TYPE_MATERIALIZED_VIEW + " " 
@@ -88,9 +85,9 @@ public class AltibaseMaterializedViewManager extends GenericViewManager {
     
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
-            List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
-    {
-        final AltibaseMaterializedView view = (AltibaseMaterializedView)command.getObject();
-        actions.add(new SQLDatabasePersistAction("Create " + AltibaseConstants.OBJ_TYPE_MATERIALIZED_VIEW.toLowerCase(), view.getDDL()));
+            List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+        final AltibaseMaterializedView view = (AltibaseMaterializedView) command.getObject();
+        actions.add(new SQLDatabasePersistAction(
+                "Create " + AltibaseConstants.OBJ_TYPE_MATERIALIZED_VIEW.toLowerCase(), view.getDDL()));
     }
 }

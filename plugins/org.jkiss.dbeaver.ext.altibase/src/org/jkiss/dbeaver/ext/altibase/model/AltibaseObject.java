@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
-public abstract class AltibaseObject <PARENT extends DBSObject> implements DBSObject, DBPSaveableObject {
+public abstract class AltibaseObject<PARENT extends DBSObject> implements DBSObject, DBPSaveableObject {
 
     private static final Log log = Log.getLog(AltibaseObject.class);
     
@@ -38,8 +38,7 @@ public abstract class AltibaseObject <PARENT extends DBSObject> implements DBSOb
         PARENT parent,
         String name,
         long objectId,
-        boolean persisted)
-    {
+        boolean persisted) {
         this.parent = parent;
         this.name = CommonUtils.notEmpty(name);
         this.objectId = objectId;
@@ -49,8 +48,7 @@ public abstract class AltibaseObject <PARENT extends DBSObject> implements DBSOb
     protected AltibaseObject(
         PARENT parent,
         String name,
-        boolean persisted)
-    {
+        boolean persisted) {
         this.parent = parent;
         this.name = name;
         this.persisted = persisted;
@@ -58,51 +56,43 @@ public abstract class AltibaseObject <PARENT extends DBSObject> implements DBSOb
 
     @Nullable
     @Override
-    public String getDescription()
-    {
+    public String getDescription() {
         return null;
     }
 
     @Override
-    public PARENT getParentObject()
-    {
+    public PARENT getParentObject() {
         return parent;
     }
 
     @NotNull
     @Override
-    public AltibaseDataSource getDataSource()
-    {
+    public AltibaseDataSource getDataSource() {
         return (AltibaseDataSource) parent.getDataSource();
     }
 
     @NotNull
     @Override
     @Property(viewable = true, editable = true, order = 1)
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public long getObjectId()
-    {
+    public long getObjectId() {
         return objectId;
     }
 
     @Override
-    public boolean isPersisted()
-    {
+    public boolean isPersisted() {
         return persisted;
     }
 
     @Override
-    public void setPersisted(boolean persisted)
-    {
+    public void setPersisted(boolean persisted) {
         this.persisted = persisted;
     }
 }

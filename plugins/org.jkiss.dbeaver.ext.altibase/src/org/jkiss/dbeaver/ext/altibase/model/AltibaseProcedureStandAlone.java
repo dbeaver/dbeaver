@@ -28,7 +28,7 @@ public class AltibaseProcedureStandAlone extends AltibaseProcedureBase {
 
     public AltibaseProcedureStandAlone(GenericStructContainer container, String procedureName, 
             DBSProcedureType procedureType) {
-        super (container, procedureName, "", "", procedureType, GenericFunctionResultType.UNKNOWN);
+        super(container, procedureName, "", "", procedureType, GenericFunctionResultType.UNKNOWN);
     }
             
     public AltibaseProcedureStandAlone(GenericStructContainer container, String procedureName, String specificName,
@@ -36,6 +36,9 @@ public class AltibaseProcedureStandAlone extends AltibaseProcedureBase {
         super(container, procedureName, specificName, description, procedureType, functionResultType);
     }
 
+    /**
+     * Get Procedure type, especially for TYPESET
+     */
     public String getProcedureTypeName() {
         DBSProcedureType procedureType = getProcedureType();
         if (procedureType == DBSProcedureType.UNKNOWN) {
@@ -46,8 +49,7 @@ public class AltibaseProcedureStandAlone extends AltibaseProcedureBase {
     }
     
     @Property(viewable = false, hidden = true, order = 5)
-    public GenericPackage getPackage()
-    {
+    public GenericPackage getPackage() {
         return getContainer() instanceof GenericPackage ? (GenericPackage) getContainer() : null;
     }
 }

@@ -17,11 +17,11 @@
 
 package org.jkiss.dbeaver.ext.altibase.model;
 
-import java.sql.ResultSet;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+
+import java.sql.ResultSet;
 
 public abstract class AltibaseDataFile extends AltibaseObject<AltibaseTablespace> {
 
@@ -37,20 +37,17 @@ public abstract class AltibaseDataFile extends AltibaseObject<AltibaseTablespace
     @NotNull
     @Override
     @Property(viewable = true, order = 1)
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
     
     @Property(viewable = true, order = 2)
-    public int getId()
-    {
+    public int getId() {
         return id;
     }
     
     @Property(viewable = true, order = 3)
-    public int getTbsId()
-    {
+    public int getTbsId() {
         return spaceid;
     }
 }

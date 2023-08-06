@@ -17,9 +17,6 @@
 
 package org.jkiss.dbeaver.ext.altibase.edit;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone;
@@ -35,6 +32,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+import java.util.Map;
+
 public class AltibaseProcedureManager extends GenericProcedureManager  {
     
     @Override
@@ -49,7 +49,7 @@ public class AltibaseProcedureManager extends GenericProcedureManager  {
 
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, 
-            List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options){
+            List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         createOrReplaceProcedureQuery(actions, command.getObject());
     }
 
@@ -58,7 +58,7 @@ public class AltibaseProcedureManager extends GenericProcedureManager  {
             DBRProgressMonitor monitor, DBECommandContext context, final Object container,
             Object from, Map<String, Object> options) {
         return new AltibaseProcedureStandAlone(
-                (GenericStructContainer)container,
+                (GenericStructContainer) container,
                 "NEW_PROCEDURE",
                 DBSProcedureType.PROCEDURE);
     }
@@ -75,16 +75,15 @@ public class AltibaseProcedureManager extends GenericProcedureManager  {
         
         final AltibaseProcedureStandAlone object = (AltibaseProcedureStandAlone) command.getObject();
         DBSProcedureType procType = object.getProcedureType();
-        String procTypeName = (procType == DBSProcedureType.UNKNOWN)? AltibaseConstants.OBJ_TYPE_TYPESET:procType.name();
+        String procTypeName = (procType == DBSProcedureType.UNKNOWN) ? AltibaseConstants.OBJ_TYPE_TYPESET : procType.name();
         
-        actions.add(
-                new SQLDatabasePersistAction("Drop procedure",
-                    "DROP " + procTypeName + " " + object.getFullyQualifiedName(DBPEvaluationContext.DDL))
-            );
+        actions.add(new SQLDatabasePersistAction(
+                "Drop procedure", "DROP " + procTypeName + " " + object.getFullyQualifiedName(DBPEvaluationContext.DDL)));
     }
     
     @Override
-    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command,
+            Map<String, Object> options) throws DBException {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Procedure name cannot be empty");
         }
@@ -93,8 +92,7 @@ public class AltibaseProcedureManager extends GenericProcedureManager  {
         }
     }
 
-    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, GenericProcedure procedure)
-    {
+    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, GenericProcedure procedure) {
         actions.add(new SQLDatabasePersistAction("Create procedure", procedure.getSource()));
     }
 }

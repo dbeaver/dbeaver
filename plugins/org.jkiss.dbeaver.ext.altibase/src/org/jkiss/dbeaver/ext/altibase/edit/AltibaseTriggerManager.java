@@ -1,7 +1,5 @@
 package org.jkiss.dbeaver.ext.altibase.edit;
 
-import java.util.List;
-
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseTrigger;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTriggerManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
@@ -9,6 +7,8 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.List;
 
 public class AltibaseTriggerManager extends GenericTriggerManager {
     
@@ -23,11 +23,8 @@ public class AltibaseTriggerManager extends GenericTriggerManager {
         DBCExecutionContext executionContext,
         List<DBEPersistAction> actions,
         GenericTrigger trigger,
-        boolean create
-    ) {
-        actions.add(
-                new SQLDatabasePersistAction("Alter sequence", 
-                        ((AltibaseTrigger) trigger).getSource())
-                );
+        boolean create) {
+        actions.add(new SQLDatabasePersistAction(
+                "Alter sequence", ((AltibaseTrigger) trigger).getSource()));
     }
 }

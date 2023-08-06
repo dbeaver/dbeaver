@@ -65,8 +65,8 @@ public class AltibaseConstants {
     public static final String OBJ_TYPE_MATERIALIZED_VIEW = "MATERIALIZED VIEW";
     public static final String OBJ_TYPE_TYPESET = "TYPESET";
     
-    public static final String NO_DBMS_METADATA = 
-    "-- [WARNING] Without DBMS_METADATA package, the generated DDL may not be correct." + NEW_LINE;
+    public static final String NO_DBMS_METADATA = "-- [WARNING] Without DBMS_METADATA package, " 
+            + "the generated DDL may not be correct." + NEW_LINE;
     
 
     /*
@@ -76,14 +76,14 @@ public class AltibaseConstants {
     public static final String PREF_DBMS_OUTPUT = "altibase.dbms.output";
     public static final String PREF_PLAN_PREFIX = "altibase.plan.prefix";
     
-    public enum EXPLAIN_PLAN {
-        ONLY ("EXPLAIN PLAN = ONLY", (byte) 2),
-        ON ("EXPLAIN PLAN = ON", (byte) 1);
+    public enum ExplainPlan {
+        ONLY("EXPLAIN PLAN = ONLY", (byte) 2),
+        ON("EXPLAIN PLAN = ON", (byte) 1);
         
         private String title;
         private byte value;
         
-        EXPLAIN_PLAN(String title, byte value) {
+        ExplainPlan(String title, byte value) {
             this.title = title;
             this.value = value;
         }
@@ -96,8 +96,11 @@ public class AltibaseConstants {
             return this.value;
         }
         
-        public static EXPLAIN_PLAN getByIndex(int idx) throws ArrayIndexOutOfBoundsException {
-            for(EXPLAIN_PLAN expPlan:EXPLAIN_PLAN.values()) {
+        /**
+         * Get EXPLAIN_PLAN enum object by index
+         */
+        public static ExplainPlan getByIndex(int idx) throws ArrayIndexOutOfBoundsException {
+            for (ExplainPlan expPlan : ExplainPlan.values()) {
                 if (expPlan.ordinal() == idx) {
                     return expPlan;
                 }
