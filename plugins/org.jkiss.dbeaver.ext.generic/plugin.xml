@@ -673,6 +673,24 @@
                     <file type="jar" path="drivers/csvjdbc" bundle="drivers.csvjdbc"/>
                 </driver>
                 <driver
+                    id="jdbcx"
+                    label="JDBCX"
+                    class="io.github.jdbcx.WrappedDriver"
+                    sampleURL="jdbcx:[extension:]vendor://{host}[:{port}][/{database}]"
+                    defaultPort=""
+                    icon="icons/jdbcx_icon.png"
+                    iconBig="icons/jdbcx_icon_big.png"
+                    description="Extended JDBC driver for dynamic multi-language queries with optional bridge server for federated datasource connectivity."
+                    supportedConfigurationTypes="MANUAL,URL"
+                    webURL="https://github.com/jdbcx/jdbcx"
+                    categories="codeql,graphql,prompt,prql,rest,script,shell,sql"
+                    singleConnection="true">
+                    <file type="jar" path="maven:/io.github.jdbcx:jdbcx-driver:RELEASE" load-optional-dependencies="true" bundle="!drivers.jdbcx" />
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.jdbcx"/>
+                    <file type="jar" path="drivers/jdbcx" bundle="drivers.jdbcx"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.jdbcx"/>
+                </driver>
+                <driver
                     id="msaccess_ucanaccess"
                     label="MS Access (UCanAccess)"
                     icon="icons/msaccess_icon.png"
