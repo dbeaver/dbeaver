@@ -69,7 +69,10 @@ public class WKGUtils {
     public static DBGeometry parseWKB(String hexString) throws DBCException {
         org.cugos.wkg.Geometry wkgGeometry = new WKBReader().read(hexString);
         if (wkgGeometry != null) {
-            return new DBGeometry(wkgGeometry, CommonUtils.toInt(wkgGeometry.getSrid()));
+            final int srid = CommonUtils.toInt(wkgGeometry.getSrid());
+            // Nullify geometry's SRID so it's not included in its toString representation
+            wkgGeometry.setSrid(null);
+            return new DBGeometry(wkgGeometry, srid);
         }
         throw new DBCException("Invalid geometry object");
     }
