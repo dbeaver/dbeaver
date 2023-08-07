@@ -20,6 +20,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.websocket.event.datasource.WSDataSourceEvent;
 import org.jkiss.dbeaver.model.websocket.event.datasource.WSDatasourceFolderEvent;
 import org.jkiss.dbeaver.model.websocket.event.permissions.WSObjectPermissionEvent;
+import org.jkiss.dbeaver.model.websocket.event.permissions.WSSubjectPermissionEvent;
 import org.jkiss.dbeaver.model.websocket.event.resource.WSResourceUpdatedEvent;
 import org.jkiss.dbeaver.model.websocket.event.session.WSSessionExpiredEvent;
 import org.jkiss.dbeaver.model.websocket.event.session.WSSessionStateEvent;
@@ -63,7 +64,8 @@ public enum WSEventType {
         WSDatasourceFolderEvent.class
     ),
 
-    OBJECT_PERMISSIONS_UPDATED("cb_object_permissions_updated", WSEventTopic.PERMISSIONS, WSObjectPermissionEvent.class),
+    OBJECT_PERMISSIONS_UPDATED("cb_object_permissions_updated", WSEventTopic.OBJECT_PERMISSIONS, WSObjectPermissionEvent.class),
+    SUBJECT_PERMISSIONS_UPDATED("cb_subject_permissions_updated", WSEventTopic.SUBJECT_PERMISSIONS, WSSubjectPermissionEvent.class),
 
     DATASOURCE_SECRET_UPDATED("cb_user_secret_updated", WSEventTopic.USER_SECRET, WSUserSecretEvent.class),
 
