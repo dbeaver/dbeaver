@@ -27,6 +27,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
@@ -72,6 +73,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
 
     private static final ImageDescriptor logoImage = AthenaActivator.getImageDescriptor("icons/aws_athena_logo.png"); //$NON-NLS-1$
     private final DriverPropertiesDialogPage driverPropsPage;
+    private Button showCatalogsCheck;
 
     public AthenaConnectionPage() {
         driverPropsPage = new DriverPropertiesDialogPage(this);
@@ -164,6 +166,10 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
             }
 
             UIUtils.addVariablesToControl(s3LocationText, getAvailableVariables(), "S3 location pattern");
+
+            showCatalogsCheck = UIUtils.createCheckbox(addrGroup,
+                "Show catalogs",
+                "To show multiple data catalogs with Athena (for example, when using an external Hive metastore or federated queries)", false, 2);
         }
 
         createAuthPanel(settingsGroup, 1);
@@ -222,6 +228,11 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
             }
             s3LocationText.setText(databaseName);
         }
+        if (showCatalogsCheck != null) {
+            showCatalogsCheck.setSelection(
+                CommonUtils.getBoolean(connectionInfo.getProviderProperty(AthenaConstants.PROP_SHOW_CATALOGS))
+            );
+        }
     }
 
     @Override
@@ -233,6 +244,9 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
         if (s3LocationText != null) {
             connectionInfo.setProviderProperty(AthenaConstants.DRIVER_PROP_S3_OUTPUT_LOCATION, s3LocationText.getText().trim());
             connectionInfo.setDatabaseName(s3LocationText.getText().trim());
+        }
+        if (showCatalogsCheck != null) {
+            connectionInfo.setProviderProperty(AthenaConstants.PROP_SHOW_CATALOGS, String.valueOf(showCatalogsCheck.getSelection()));
         }
         super.saveSettings(dataSource);
     }

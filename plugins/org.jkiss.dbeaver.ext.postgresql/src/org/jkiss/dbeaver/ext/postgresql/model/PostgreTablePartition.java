@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -62,6 +63,12 @@ public class PostgreTablePartition extends PostgreTable implements DBSTableParti
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        options.put(DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS, true);
+        options.put(OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, false);
+        options.put(OPTION_INCLUDE_NESTED_OBJECTS, false);
+        options.put(OPTION_INCLUDE_PERMISSIONS, false);
+        options.put(OPTION_SKIP_INDEXES, true);
+        options.put(DBPScriptObject.OPTION_SKIP_UNIQUE_KEYS, true);
         return DBStructUtils.generateTableDDL(monitor, this, options, false);
     }
 

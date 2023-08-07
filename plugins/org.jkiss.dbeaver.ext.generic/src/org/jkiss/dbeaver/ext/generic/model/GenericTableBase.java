@@ -379,6 +379,18 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         return !isView();
     }
 
+    public boolean isExternalTable() {
+        return "EXTERNAL_TABLE".equals(tableType);
+    }
+
+    public boolean isAbstractTable() {
+        return "ABSTRACT_TABLE".equals(tableType);
+    }
+
+    public boolean isSharedTable() {
+        return "SHARED_TABLE".equals(tableType);
+    }
+
     public abstract String getDDL();
 
     private List<GenericTableForeignKey> loadReferences(DBRProgressMonitor monitor)

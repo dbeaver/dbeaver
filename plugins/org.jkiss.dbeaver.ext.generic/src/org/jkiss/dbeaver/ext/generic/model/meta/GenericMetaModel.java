@@ -628,7 +628,7 @@ public class GenericMetaModel {
             // Wrong schema - this may happen with virtual schemas
             return null;
         }
-        GenericTableBase table = this.createTableImpl(
+        GenericTableBase table = this.createTableOrViewImpl(
             owner,
             tableName,
             tableType,
@@ -649,7 +649,7 @@ public class GenericMetaModel {
         return table;
     }
 
-    public GenericTableBase createTableImpl(
+    public GenericTableBase createTableOrViewImpl(
         GenericStructContainer container,
         @Nullable String tableName,
         @Nullable String tableType,

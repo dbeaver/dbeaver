@@ -47,6 +47,10 @@ public enum DBPDataKind
         return complex;
     }
 
+    public boolean supportsRangeSearch() {
+        return !complex && this != ROWID;
+    }
+
     /**
      * The commonality describes how common is a given data kind, mostly
      * its ability for one type to consume another <b>without losing any data</b>.

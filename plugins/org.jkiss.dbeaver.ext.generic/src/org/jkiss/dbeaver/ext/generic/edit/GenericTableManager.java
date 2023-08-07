@@ -91,7 +91,7 @@ public class GenericTableManager extends SQLTableManager<GenericTableBase, Gener
             }
         }
         String tableName = getNewChildName(monitor, structContainer, isView ? BASE_VIEW_NAME : BASE_TABLE_NAME);
-        return structContainer.getDataSource().getMetaModel().createTableImpl(structContainer, tableName,
+        return structContainer.getDataSource().getMetaModel().createTableOrViewImpl(structContainer, tableName,
             isView ? GenericConstants.TABLE_TYPE_VIEW : GenericConstants.TABLE_TYPE_TABLE,
             null);
     }

@@ -33,6 +33,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -81,11 +82,13 @@ public class ReferenceValueEditor {
     private static volatile boolean sortAsc = true;
     private TableColumn prevSortColumn = null;
     private volatile boolean dictLoaded = false;
-    private Object lastPattern;
+    private Object lastKeyValue;
+    private Object lastSearchText;
     private Object firstValue = null;
     private Object lastValue = null;
     private int maxResults;
     private Font boldFont;
+    private LoadingJob<EnumValuesData> dictFilterJob;
 
 
     public ReferenceValueEditor(IValueController valueController, IValueEditor valueEditor) {
@@ -162,7 +165,7 @@ public class ReferenceValueEditor {
                     public void widgetSelected(SelectionEvent e) {
                         EditDictionaryPage editDictionaryPage = new EditDictionaryPage(refTable);
                         if (editDictionaryPage.edit(parent.getShell())) {
-                            reloadSelectorValues(null, true);
+                            reloadSelectorValues(null, null, true);
                         }
                     }
                 });
@@ -253,7 +256,7 @@ public class ReferenceValueEditor {
             }
 
             if (!newValueFound) {
-                reloadSelectorValues(curEditorValue, false);
+                reloadSelectorValues(curEditorValue, null, false);
             }
         };
         if (control instanceof Text) {
@@ -267,7 +270,7 @@ public class ReferenceValueEditor {
             valueFilterText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             valueFilterText.addModifyListener(e -> {
                 String filterPattern = valueFilterText.getText();
-                reloadSelectorValues(filterPattern, false);
+                reloadSelectorValues(lastKeyValue, filterPattern, false);
             });
             valueFilterText.addPaintListener(e -> {
                 if (valueFilterText.isEnabled() && valueFilterText.getCharCount() == 0) {
@@ -280,30 +283,40 @@ public class ReferenceValueEditor {
         }
         final Object curValue = valueController.getValue();
 
-        reloadSelectorValues(curValue, false);
+        reloadSelectorValues(curValue, null, false);
 
         return true;
     }
 
-    private void reloadSelectorValues(Object pattern, boolean force) {
-        reloadSelectorValues(pattern, force, 0);
+    private void reloadSelectorValues(Object keyValue, String searchText, boolean force) {
+        reloadSelectorValues(keyValue, searchText, force, 0);
     }
 
-    private void reloadSelectorValues(Object pattern, boolean force, int offset) {
-        if (!force && dictLoaded && CommonUtils.equalObjects(String.valueOf(lastPattern), String.valueOf(pattern))) {
+    private void reloadSelectorValues(Object keyValue, String searchText, boolean force, int offset) {
+        if (!force && dictLoaded &&
+            CommonUtils.equalObjects(searchText, lastSearchText) &&
+            CommonUtils.equalObjects(String.valueOf(lastKeyValue), String.valueOf(keyValue))
+        ) {
             selectCurrentValue();
             return;
         }
-        lastPattern = pattern;
+        lastKeyValue = keyValue;
+        lastSearchText = searchText;
         dictLoaded = true;
         SelectorLoaderService loadingService = new SelectorLoaderService(offset);
-        if (pattern != null) {
-            loadingService.setPattern(pattern);
+        if (keyValue != null) {
+            loadingService.setKeyValue(keyValue);
         }
-        LoadingJob.createService(
+        if (searchText != null) {
+            loadingService.setSearchText(searchText);
+        }
+        if (dictFilterJob != null) {
+            dictFilterJob.cancel();
+        }
+        dictFilterJob = LoadingJob.createService(
             loadingService,
-            new SelectorLoaderVisualizer(loadingService))
-            .schedule();
+            new SelectorLoaderVisualizer(loadingService));
+        dictFilterJob.schedule(250);
     }
 
     private void updateDictionarySelector(EnumValuesData valuesData) {
@@ -418,7 +431,7 @@ public class ReferenceValueEditor {
             sortAsc = sortDirection == SWT.DOWN;
             editorSelector.setSortColumn(column);
             editorSelector.setSortDirection(sortDirection);
-            reloadSelectorValues(lastPattern, true);
+            reloadSelectorValues(lastKeyValue, null, true);
 
         }
     }
@@ -438,7 +451,8 @@ public class ReferenceValueEditor {
     class SelectorLoaderService extends AbstractLoadService<EnumValuesData> {
 
         int offset;
-        private Object pattern;
+        private Object keyValue;
+        private String searchText;
 
         public Object getLastValue() {
             return lastValue;
@@ -449,11 +463,13 @@ public class ReferenceValueEditor {
             this.offset = offset;
         }
 
-        public void setPattern(@Nullable Object pattern)
-        {
-            this.pattern = pattern;
+        public void setKeyValue(@Nullable Object keyValue) {
+            this.keyValue = keyValue;
         }
 
+        public void setSearchText(String searchText) {
+            this.searchText = searchText;
+        }
 
         @Override
         public EnumValuesData evaluate(DBRProgressMonitor monitor) {
@@ -520,9 +536,13 @@ public class ReferenceValueEditor {
         }
 
         @Nullable
-        private EnumValuesData getEnumValuesData(DBRProgressMonitor monitor, IAttributeController attributeController,
-                                                 DBSEntityAttributeRef fkColumn, DBSEntityAssociation association,
-                                                 DBSEntityAttribute refColumn) throws DBException {
+        private EnumValuesData getEnumValuesData(
+            @NotNull DBRProgressMonitor monitor,
+            IAttributeController attributeController,
+            DBSEntityAttributeRef fkColumn,
+            DBSEntityAssociation association,
+            DBSEntityAttribute refColumn
+        ) throws DBException {
             List<DBDAttributeValue> precedingKeys = null;
             List<? extends DBSEntityAttributeRef> allColumns = CommonUtils.safeList(refConstraint.getAttributeReferences(
                 monitor));
@@ -548,10 +568,19 @@ public class ReferenceValueEditor {
             }
             final DBSEntityAttribute fkAttribute = fkColumn.getAttribute();
             final DBSEntityConstraint refConstraint = association.getReferencedConstraint();
-            final DBSDictionary enumConstraint = (DBSDictionary) refConstraint.getParentObject();
+            final DBSDictionary enumConstraint = refConstraint == null ? null : (DBSDictionary) refConstraint.getParentObject();
             if (fkAttribute != null && enumConstraint != null) {
-                List<DBDLabelValuePair> enumValues = enumConstraint.getDictionaryEnumeration(monitor, refColumn,
-                    pattern, precedingKeys, false, sortAsc, sortByValue, offset, maxResults);
+                List<DBDLabelValuePair> enumValues = enumConstraint.getDictionaryEnumeration(
+                    monitor,
+                    refColumn,
+                    keyValue,
+                    searchText,
+                    precedingKeys,
+                    false,
+                    sortAsc,
+                    sortByValue,
+                    offset,
+                    maxResults);
 //                        for (DBDLabelValuePair pair : enumValues) {
 //                            keyValues.put(pair.getValue(), pair.getLabel());
 //                        }
@@ -605,9 +634,9 @@ public class ReferenceValueEditor {
 
         private void updateList() throws DBException {
             if (backwardMove && firstValue != null) {
-                reloadSelectorValues(firstValue, true, Math.min(-Math.floorDiv(maxResults, 2), -1));
+                reloadSelectorValues(firstValue, null, true, Math.min(-Math.floorDiv(maxResults, 2), -1));
             } else if (!backwardMove && lastValue != null) {
-                reloadSelectorValues(lastValue, true, Math.max(Math.round((float) maxResults / 2) + 1, 1));
+                reloadSelectorValues(lastValue, null, true, Math.max(Math.round((float) maxResults / 2) + 1, 1));
             }
         }
 
