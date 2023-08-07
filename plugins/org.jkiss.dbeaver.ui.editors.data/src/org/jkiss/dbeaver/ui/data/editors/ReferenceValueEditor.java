@@ -18,12 +18,10 @@ package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ContributionItem;
-import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.ModifyListener;
@@ -42,7 +40,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
-import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -64,6 +61,7 @@ import org.jkiss.utils.ReaderWriterLock.ExceptableFunction;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -79,7 +77,6 @@ public class ReferenceValueEditor {
     private DBSEntityReferrer refConstraint;
     private Table editorSelector;
     private Text valueFilterText;
-    private CLabel pageStatusLabel;
     private static volatile boolean sortByValue = true; // It is static to save its value between editors
     private static volatile boolean sortAsc = true;
     private TableColumn prevSortColumn = null;
@@ -104,14 +101,7 @@ public class ReferenceValueEditor {
             this.pageSize = pageSize;
             this.halfPageSize = pageSize / 2;
         }
-        
-        @NotNull
-        public String makeStatusString() {
-            return lastPageFound && firstPageFound ?
-                NLS.bind(ResultSetMessages.reference_value_editor_current_pagination_value, currPageNumber + 1, maxKnownPage + 1) :
-                NLS.bind(ResultSetMessages.reference_value_editor_current_page_value, currPageNumber + 1);
-        }
-        
+
         public boolean isNextPageAvailable() {
             return !(lastPageFound && currPageNumber >= maxKnownPage);
         }
@@ -123,14 +113,16 @@ public class ReferenceValueEditor {
         public void goToNextPage() {
             if (nextPageAvailable) {
                 currPageNumber++;
-                reloadData(null);
+                prevPageAvailable = true;
+                reloadData();
             }
         }
 
         public void goToPrevPage() {
             if (prevPageAvailable) {
                 currPageNumber--;
-                reloadData(null);
+                nextPageAvailable = true;
+                reloadData();
             }
         }
 
@@ -149,14 +141,14 @@ public class ReferenceValueEditor {
             this.searchText = pattern;
             this.resetPages();
             this.firstPageFound = true;
-            this.reloadData(null);
+            this.reloadData();
         }
 
         public void reset(@Nullable Object valueToShow) {
             this.keyValue = valueToShow;
             this.searchText = null;
             this.resetPages();
-            this.reloadData(valueToShow);
+            this.reloadData();
         }
         
         private void resetPages() {
@@ -175,30 +167,39 @@ public class ReferenceValueEditor {
             }
         }
 
-        private void reloadData(@Nullable Object valueToShow) {
+        private void reloadData() {
             SelectorLoaderService loadingService = new SelectorLoaderService(accessor -> {
                 List<DBDLabelValuePair> data;
                 if (searchText == null) {
                     if (currPageNumber == 0) {
-                        List<DBDLabelValuePair> prefix = accessor.getValuesNear(valueToShow, true, 0, halfPageSize);
-                        List<DBDLabelValuePair> suffix = accessor.getValuesNear(valueToShow, false, 0, halfPageSize);
+                        List<DBDLabelValuePair> prefix = accessor.getValuesNear(keyValue, true, 0, halfPageSize);
+                        List<DBDLabelValuePair> suffix = accessor.getValuesNear(keyValue, false, 0, halfPageSize);
                         estimateHead(prefix.size(), halfPageSize);
                         estimateTail(suffix.size(), halfPageSize);
                         data = prefix;
                         data.addAll(suffix);
                     } else {
-                        long offset = halfPageSize + currPageNumber * pageSize;
+                        long offset = currPageNumber * pageSize - halfPageSize;
                         if (currPageNumber < 0) {
-                            data = accessor.getValuesNear(valueToShow, true, -offset, pageSize);
+                            data = accessor.getValuesNear(keyValue, true, -offset, pageSize);
                             estimateHead(data.size(), pageSize);
                         } else {
-                            data = accessor.getValuesNear(valueToShow, false, offset, pageSize);
+                            data = accessor.getValuesNear(keyValue, false, offset, pageSize);
                             estimateTail(data.size(), pageSize);
                         }
                     }
                 } else {
                     long offset = currPageNumber * pageSize;
                     data = accessor.getSimilarValues(searchText, true, true, offset, pageSize);
+                }
+                {
+                    Comparator<DBDLabelValuePair> comparator = sortByValue 
+                        ? (a, b) -> CommonUtils.compare(a.getValue(), b.getValue())
+                        : (a, b) -> CommonUtils.compare(a.getLabel(), b.getLabel());
+                    if (!sortAsc) {
+                        comparator = comparator.reversed();
+                    }
+                    data.sort(comparator);
                 }
                 return data;
             });
@@ -470,19 +471,6 @@ public class ReferenceValueEditor {
         }
     };
 
-    private ControlContribution pageStatusLabelContribution = new ControlContribution(null) {
-        @Override
-        protected Control createControl(Composite parent) {
-            return pageStatusLabel = new CLabel(parent, SWT.NONE);
-        }
-        
-        @Override
-        protected int computeWidth(Control control) {
-            return control.computeSize(SWT.DEFAULT, SWT.DEFAULT, true).x;
-        }
-    };
-
-
     /**
      * Returns action to allow editor paging
      *
@@ -490,7 +478,6 @@ public class ReferenceValueEditor {
      */
     public ContributionItem[] getContributionItems() {
         return new ContributionItem[]{
-            pageStatusLabelContribution,
             ActionUtils.makeActionContribution(actionGoBackward, false),
             ActionUtils.makeActionContribution(actionGoForward, false)
         };
@@ -673,9 +660,8 @@ public class ReferenceValueEditor {
             final DBSDictionary enumConstraint = refConstraint == null ? null : (DBSDictionary) refConstraint.getParentObject();
             if (fkAttribute != null && enumConstraint != null) {
                 try (DBSDictionaryAccessor accessor = enumConstraint.getDictionaryAccessor(
-                    new AbstractExecutionSource(null, valueController.getExecutionContext(), ReferenceValueEditor.this), monitor,
-                    precedingKeys, refColumn, sortAsc, !sortByValue)
-                ) {
+                    monitor, precedingKeys, refColumn, sortAsc, !sortByValue
+                )) {
                     List<DBDLabelValuePair> enumValues = action.apply(accessor);
                     if (monitor.isCanceled()) {
                         return null;
@@ -721,13 +707,10 @@ public class ReferenceValueEditor {
                 updateDictionarySelector(result);
             }
 
-            actionGoBackward.setEnabled(controller.isPrevPageAvailable());
-            actionGoForward.setEnabled(controller.isNextPageAvailable());
-            editorSelector.setEnabled(dataObtained || controller.currPageNumber > 0);
-            if (pageStatusLabel != null) {
-                pageStatusLabel.setText(controller.makeStatusString());
-                pageStatusLabelContribution.update();
-                UIUtils.asyncExec(() -> pageStatusLabel.getParent().getParent().pack(true));
+            if (!editorSelector.isDisposed()) {
+                actionGoBackward.setEnabled(controller.isPrevPageAvailable());
+                actionGoForward.setEnabled(controller.isNextPageAvailable());
+                editorSelector.setEnabled(dataObtained || controller.searchText == null);
             }
         }
     }

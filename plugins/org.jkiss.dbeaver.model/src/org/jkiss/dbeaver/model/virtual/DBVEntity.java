@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -697,7 +696,6 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     @Override
     public DBSDictionaryAccessor getDictionaryAccessor(
-        DBCExecutionSource execSource,
         DBRProgressMonitor monitor,
         List<DBDAttributeValue> precedingKeys,
         DBSEntityAttribute keyColumn,
@@ -707,7 +705,6 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         final DBSEntity realEntity = getRealEntity(monitor);
         if (realEntity instanceof DBSDictionary) {
             return ((DBSDictionary) realEntity).getDictionaryAccessor(
-                execSource,
                 monitor,
                     precedingKeys,
                 keyColumn,

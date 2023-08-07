@@ -66,7 +66,6 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     private static final String DEFAULT_TABLE_ALIAS = "x";
 
     private boolean persisted;
-    private boolean allNulls;
 
     protected JDBCTable(CONTAINER container, boolean persisted)
     {
@@ -847,14 +846,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     
     @Override
     public DBSDictionaryAccessor getDictionaryAccessor(
-        DBCExecutionSource execSource,
         DBRProgressMonitor monitor,
         List<DBDAttributeValue> preceedingKeys, 
         DBSEntityAttribute keyColumn, 
         boolean sortAsc, 
         boolean sortByDesc
     ) throws DBException {
-        return new DictionaryAccessor(execSource, monitor, preceedingKeys, keyColumn, sortAsc, sortByDesc);
+        return new DictionaryAccessor(monitor, preceedingKeys, keyColumn, sortAsc, sortByDesc);
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -969,7 +967,6 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     }
     
     protected class DictionaryAccessor implements DBSDictionaryAccessor {
-        private final DBCExecutionSource execSource;
         private final List<AttrInfo<DBDAttributeValue>> preceedingKeysInfo;
         private final DBSEntityAttribute keyColumn;
         private final boolean sortAsc;
@@ -984,14 +981,12 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         private JDBCSession session;
 
         public DictionaryAccessor(
-            @NotNull DBCExecutionSource execSource,
             @NotNull DBRProgressMonitor monitor,
             @Nullable List<DBDAttributeValue> preceedingKeys,
             @NotNull DBSEntityAttribute keyColumn,
             boolean sortAsc,
             boolean sortByDesc
         ) throws DBException {
-            this.execSource = execSource;
             this.keyColumn = keyColumn;
             this.sortAsc = sortAsc;
             this.sortByDesc = sortByDesc;
@@ -1043,9 +1038,11 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             constraint.setOperator(isPreceeding ? DBCLogicalOperator.LESS : DBCLogicalOperator.GREATER_EQUALS); //TODO: sortAsc
             constraints.add(constraint);
             StringBuilder query = prepareQueryString(filter);
-            appendSortingClause(query);
+            appendSortingClause(query, isPreceeding);
             try (DBCStatement dbStat = DBUtils.makeStatement(null, session, DBCStatementType.QUERY, query.toString(), offset, maxResults)) {
                 bindPrecedingKeys(dbStat);
+                int paramPos = this.filter.getConstraints().size();
+                keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos, value);
                 return readValues(dbStat);
             }
         }
@@ -1060,8 +1057,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             long maxResults
         ) throws DBException {
             StringBuilder query = prepareQueryString(filter);
-            appendByPatternCondition(query, pattern, caseInsensitive, byDesc);
-            appendSortingClause(query);
+            appendByPatternCondition(query, filter, pattern, caseInsensitive, byDesc);
+            appendSortingClause(query, false);
             try (DBCStatement dbStat = DBUtils.makeStatement(null, session, DBCStatementType.QUERY, query.toString(), offset, maxResults)) {
                 bindPrecedingKeys(dbStat);
                 bindPattern(dbStat, pattern, byDesc);
@@ -1083,6 +1080,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
             query.append(" FROM ").append(DBUtils.getObjectFullName(JDBCTable.this, DBPEvaluationContext.DML));
 
+            if (filter.getConstraints().size() > 0) {
+                query.append(" WHERE ");
+            }
+            
             getDataSource().getSQLDialect().getQueryGenerator().appendConditionString(filter, getDataSource(), null, query, false);
             
             return query;
@@ -1099,8 +1100,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
         }
 
-        private void appendByPatternCondition(StringBuilder query, Object pattern, boolean caseInsensitive, boolean byDesc) {
-            if (this.filter.getConstraints().size() > 0) {
+        private void appendByPatternCondition(StringBuilder query, DBDDataFilter existingFilter, Object pattern, boolean caseInsensitive, boolean byDesc) {
+            if (existingFilter.getConstraints().size() > 0) {
                 query.append(" AND ");
             } else {
                 query.append(" WHERE ");
@@ -1172,7 +1173,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
         }
         
-        private void appendSortingClause(StringBuilder query) {
+        private void appendSortingClause(StringBuilder query, boolean isPreceeding) {
             query.append(" ORDER BY ");
             if (sortByDesc) {
                 // Sort by description
@@ -1180,7 +1181,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             } else {
                 query.append(DBUtils.getQuotedIdentifier(keyColumn));
             }
-            if (!sortAsc) {
+            if (sortAsc && !isPreceeding) {
+                query.append(" ASC");
+            } else {
                 query.append(" DESC");
             }
         }
