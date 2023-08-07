@@ -25,13 +25,6 @@ import java.util.List;
 
 public interface DBSDictionaryAccessor extends AutoCloseable {
 
-    long countValues() throws DBException;
-
-    long findValueIndex(@NotNull Object keyValue) throws DBException;
-
-    @NotNull
-    List<DBDLabelValuePair> getValues(long offset, long maxResults) throws DBException;
-
     @NotNull
     List<DBDLabelValuePair> getSimilarValues(
         @NotNull Object pattern,
@@ -40,6 +33,8 @@ public interface DBSDictionaryAccessor extends AutoCloseable {
         long offset,
         long maxResults
     ) throws DBException;
+
+    List<DBDLabelValuePair> getValuesNear(Object value, boolean isPreceeding, long offset, long maxResults) throws DBException;
 
 }
 

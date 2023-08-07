@@ -83,66 +83,61 @@ public class ReferenceValueEditor {
     private static volatile boolean sortByValue = true; // It is static to save its value between editors
     private static volatile boolean sortAsc = true;
     private TableColumn prevSortColumn = null;
-    private volatile boolean dictLoaded = false;
-    private Object lastKeyValue;
-    private Object lastSearchText;
-    private Object firstValue = null;
-    private Object lastValue = null;
-    private int maxResults;
     private Font boldFont;
     private LoadingJob<EnumValuesData> dictFilterJob;
     private ViewController controller;
 
     private class ViewController {
         private final int pageSize;
-        private long currOffset = 0;
+        private final int halfPageSize;
         private long currPageNumber = 0;
         private long maxKnownPage = 0;
-        private long maxKnownIndex = 0;
+        private long minKnownPage = 0;
         private boolean nextPageAvailable = false;
-        private boolean limitFound = false;
-        private String filterPattern = null;
+        private boolean prevPageAvailable = false;
+        private boolean lastPageFound = false;
+        private boolean firstPageFound = false;
+        private String searchText = null;
         private Object keyValue = null;
 
         public ViewController(int pageSize) {
             this.pageSize = pageSize;
+            this.halfPageSize = pageSize / 2;
         }
         
         @NotNull
         public String makeStatusString() {
-            return limitFound ?
+            return lastPageFound && firstPageFound ?
                 NLS.bind(ResultSetMessages.reference_value_editor_current_pagination_value, currPageNumber + 1, maxKnownPage + 1) :
                 NLS.bind(ResultSetMessages.reference_value_editor_current_page_value, currPageNumber + 1);
         }
         
         public boolean isNextPageAvailable() {
-            return !(limitFound && currPageNumber >= maxKnownPage);
+            return !(lastPageFound && currPageNumber >= maxKnownPage);
         }
         
         public boolean isPrevPageAvailable() {
-            return currPageNumber > 0;
+            return !(firstPageFound && currPageNumber <= minKnownPage);
         }
 
         public void goToNextPage() {
             if (nextPageAvailable) {
-                this.currPageNumber++;
-                this.currOffset = this.currPageNumber * this.pageSize;
-                this.reloadData(null);
+                currPageNumber++;
+                reloadData(null);
             }
         }
 
         public void goToPrevPage() {
-            if (this.isPrevPageAvailable()) {
-                this.currPageNumber--;
-                this.currOffset = this.currPageNumber * this.pageSize;
-                this.reloadData(null);
+            if (prevPageAvailable) {
+                currPageNumber--;
+                reloadData(null);
             }
         }
 
         public void filter(@Nullable String pattern) {
             if (CommonUtils.isEmpty(CommonUtils.toString(pattern))) {
                 this.reset(keyValue);
-            } else if (CommonUtils.equalObjects(String.valueOf(filterPattern), String.valueOf(pattern))) {
+            } else if (CommonUtils.equalObjects(String.valueOf(searchText), String.valueOf(pattern))) {
                 selectCurrentValue();
             } else {
                 this.applyFilter(pattern);
@@ -151,60 +146,89 @@ public class ReferenceValueEditor {
 
         private void applyFilter(@NotNull String pattern) {
             this.keyValue = null;
-            this.filterPattern = pattern;
+            this.searchText = pattern;
             this.resetPages();
+            this.firstPageFound = true;
             this.reloadData(null);
         }
 
         public void reset(@Nullable Object valueToShow) {
             this.keyValue = valueToShow;
-            this.filterPattern = null;
+            this.searchText = null;
             this.resetPages();
             this.reloadData(valueToShow);
         }
         
         private void resetPages() {
-            this.currOffset = 0;
             this.currPageNumber = 0;
+            this.minKnownPage = 0;
             this.maxKnownPage = 0;
-            this.maxKnownIndex = 0;
-            this.limitFound = false;
+            this.firstPageFound = false;
+            this.lastPageFound = false;
         }
 
         public void reload() {
-            if (filterPattern == null) {
+            if (searchText == null) {
                 this.reset(this.keyValue);
             } else {
-                this.applyFilter(this.filterPattern);
+                this.applyFilter(this.searchText);
             }
         }
 
         private void reloadData(@Nullable Object valueToShow) {
             SelectorLoaderService loadingService = new SelectorLoaderService(accessor -> {
                 List<DBDLabelValuePair> data;
-                if (filterPattern == null) {
-                    if (valueToShow != null) {
-                        long valueIndex = accessor.findValueIndex(valueToShow);
-                        long valuePageNumber = valueIndex / pageSize; // integer division without remainder and rounding
-                        this.currPageNumber = valuePageNumber;
-                        this.currOffset = valuePageNumber * this.pageSize;
+                if (searchText == null) {
+                    if (currPageNumber == 0) {
+                        List<DBDLabelValuePair> prefix = accessor.getValuesNear(valueToShow, true, 0, halfPageSize);
+                        List<DBDLabelValuePair> suffix = accessor.getValuesNear(valueToShow, false, 0, halfPageSize);
+                        estimateHead(prefix.size(), halfPageSize);
+                        estimateTail(suffix.size(), halfPageSize);
+                        data = prefix;
+                        data.addAll(suffix);
+                    } else {
+                        long offset = halfPageSize + currPageNumber * pageSize;
+                        if (currPageNumber < 0) {
+                            data = accessor.getValuesNear(valueToShow, true, -offset, pageSize);
+                            estimateHead(data.size(), pageSize);
+                        } else {
+                            data = accessor.getValuesNear(valueToShow, false, offset, pageSize);
+                            estimateTail(data.size(), pageSize);
+                        }
                     }
-                    data = accessor.getValues(currOffset, pageSize);
                 } else {
-                    data = accessor.getSimilarValues(filterPattern, true, true, currOffset, pageSize);
+                    long offset = currPageNumber * pageSize;
+                    data = accessor.getSimilarValues(searchText, true, true, offset, pageSize);
                 }
-                nextPageAvailable = data.size() >= pageSize;
-                limitFound |= !nextPageAvailable;
-                if (data.size() > 0) {
-                    maxKnownPage = Math.max(maxKnownPage, this.currPageNumber);
-                    maxKnownIndex = Math.max(maxKnownIndex, this.currPageNumber * this.pageSize + data.size());
-                }
-                if (limitFound) {
-                    currPageNumber = Math.min(currPageNumber, maxKnownPage);
-                }   
                 return data;
             });
-            LoadingJob.createService(loadingService, new SelectorLoaderVisualizer(loadingService)).schedule();
+            if (dictFilterJob != null) {
+                dictFilterJob.cancel();
+            }
+            dictFilterJob = LoadingJob.createService(loadingService, new SelectorLoaderVisualizer(loadingService));
+            dictFilterJob.schedule(250);
+        }
+        
+        private void estimateHead(int dataObtained, int dataExpected) {
+            prevPageAvailable = dataObtained >= dataExpected;
+            firstPageFound |= !prevPageAvailable;
+            if (dataObtained > 0) {
+                minKnownPage = Math.min(minKnownPage, currPageNumber);
+            }
+            if (firstPageFound) {
+                currPageNumber = Math.max(currPageNumber, minKnownPage);
+            }
+        }
+        
+        private void estimateTail(int dataObtained, int dataExpected) {
+            nextPageAvailable = dataObtained >= dataExpected;
+            lastPageFound |= !nextPageAvailable;
+            if (dataObtained > 0) {
+                maxKnownPage = Math.max(maxKnownPage, currPageNumber);
+            }
+            if (lastPageFound) {
+                currPageNumber = Math.min(currPageNumber, maxKnownPage);
+            }
         }
     }
 
@@ -560,10 +584,6 @@ public class ReferenceValueEditor {
 
     class SelectorLoaderService extends AbstractLoadService<EnumValuesData> {
         private ExceptableFunction<DBSDictionaryAccessor, List<DBDLabelValuePair>, DBException> action;
-
-        public Object getLastValue() {
-            return lastValue;
-        }
 
         private SelectorLoaderService(ExceptableFunction<DBSDictionaryAccessor, List<DBDLabelValuePair>, DBException> action) {
             super(ResultSetMessages.dialog_value_view_job_selector_name + valueController.getValueName() + " possible values");

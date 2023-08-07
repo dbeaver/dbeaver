@@ -736,15 +736,14 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             return Collections.emptyList();
         }
 
-        public long findValueIndex(@NotNull Object keyValue) {
-            return 0;
+
+        @Override
+        public List<DBDLabelValuePair> getValuesNear(Object value, boolean isPreceeding, long offset, long maxResults) throws DBException {
+            return Collections.emptyList();
         }
 
-        public long countValues() {
-            return 0;
-        }
-
-        public void close() {
+        @Override
+        public void close() throws Exception {
             // do nothing
         }
     };

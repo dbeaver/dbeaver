@@ -1035,25 +1035,14 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
 
         @Override
-        public long countValues() throws DBException {
-            return countData(execSource, session, filter, 0);
-        }
-
-        @Override
-        public long findValueIndex(@NotNull Object keyValue) throws DBException {
+        public List<DBDLabelValuePair> getValuesNear(Object value, boolean isPreceeding, long offset, long maxResults) throws DBException {
             DBDDataFilter filter = new DBDDataFilter(this.filter);
             List<DBDAttributeConstraint> constraints = filter.getConstraints();
             DBDAttributeConstraint constraint = new DBDAttributeConstraint(keyColumn, constraints.size());
-            constraint.setValue(keyValue);
-            constraint.setOperator(sortAsc ? DBCLogicalOperator.LESS : DBCLogicalOperator.GREATER);
+            constraint.setValue(value);
+            constraint.setOperator(isPreceeding ? DBCLogicalOperator.LESS : DBCLogicalOperator.GREATER_EQUALS); //TODO: sortAsc
             constraints.add(constraint);
-            return countData(execSource, session, filter, 0);
-        }
-
-        @NotNull
-        @Override
-        public List<DBDLabelValuePair> getValues(long offset, long maxResults) throws DBException {
-            StringBuilder query = prepareQueryString();
+            StringBuilder query = prepareQueryString(filter);
             appendSortingClause(query);
             try (DBCStatement dbStat = DBUtils.makeStatement(null, session, DBCStatementType.QUERY, query.toString(), offset, maxResults)) {
                 bindPrecedingKeys(dbStat);
@@ -1070,7 +1059,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             long offset,
             long maxResults
         ) throws DBException {
-            StringBuilder query = prepareQueryString();
+            StringBuilder query = prepareQueryString(filter);
             appendByPatternCondition(query, pattern, caseInsensitive, byDesc);
             appendSortingClause(query);
             try (DBCStatement dbStat = DBUtils.makeStatement(null, session, DBCStatementType.QUERY, query.toString(), offset, maxResults)) {
@@ -1081,7 +1070,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
         
         @NotNull
-        private StringBuilder prepareQueryString() {
+        private StringBuilder prepareQueryString(DBDDataFilter filter) {
             StringBuilder query = new StringBuilder();
 
             query.append("SELECT ").append(DBUtils.getQuotedIdentifier(keyColumn, DBPAttributeReferencePurpose.DATA_SELECTION));
