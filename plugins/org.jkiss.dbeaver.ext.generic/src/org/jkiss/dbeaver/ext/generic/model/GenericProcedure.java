@@ -109,10 +109,6 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         return procedureType;
     }
 
-    protected void setProcedureType(DBSProcedureType procedureType) {
-        this.procedureType = procedureType;
-    }
-
     @Property(viewable = true, order = 7)
     public GenericFunctionResultType getFunctionResultType() {
         return functionResultType;
