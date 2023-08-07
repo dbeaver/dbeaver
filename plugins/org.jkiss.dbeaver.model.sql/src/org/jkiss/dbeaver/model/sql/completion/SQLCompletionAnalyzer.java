@@ -568,6 +568,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                                     monitor,
                                     refAttribute,
                                     null,
+                                    null,
                                     Collections.emptyList(),
                                     true,
                                     true,
