@@ -14,18 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer.ui;
+package org.jkiss.dbeaver.tools.transfer;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumerSettings;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 
-import java.util.Map;
+public interface IDataTransferConsumerSettings extends IDataTransferSettings {
+    void addEventProcessor(@NotNull DataTransferEventProcessorDescriptor descriptor);
 
-public interface IDataTransferEventProcessorConfigurator<T extends IDataTransferConsumerSettings> extends IObjectPropertyConfigurator<T, Map<String, Object>> {
-    boolean isApplicable(@NotNull T settings);
+    void removeEventProcessor(@NotNull DataTransferEventProcessorDescriptor descriptor);
 
-    default boolean hasControl() {
-        return true;
-    }
 }

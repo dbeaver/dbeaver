@@ -153,7 +153,7 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
         if (refEntityId == null) {
             throw new DBException("Ref entity ID not set for virtual FK " + getName());
         }
-        DBNNode refNode = DBWorkbench.getPlatform().getNavigatorModel().getNodeByPath(monitor, refEntityId);
+        DBNNode refNode = DBNUtils.getNavigatorModel(entity).getNodeByPath(monitor, refEntityId);
         if (!(refNode instanceof DBNDatabaseNode)) {
             throw new DBException("Can't find reference node " + refEntityId + " for virtual foreign key");
         }
@@ -251,7 +251,7 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
         if (refEntityId == null) {
             return null;
         }
-        DBNDataSource dsNode = DBWorkbench.getPlatform().getNavigatorModel().getDataSourceByPath(
+        DBNDataSource dsNode = DBNUtils.getNavigatorModel(entity).getDataSourceByPath(
             getParentObject().getProject(),
             refEntityId);
         return dsNode == null ? null : dsNode.getDataSourceContainer();
