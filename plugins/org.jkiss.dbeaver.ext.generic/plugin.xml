@@ -685,10 +685,8 @@
                     webURL="https://github.com/jdbcx/jdbcx"
                     categories="codeql,graphql,prompt,prql,rest,script,shell,sql"
                     singleConnection="true">
-                    <file type="jar" path="maven:/io.github.jdbcx:jdbcx-driver:RELEASE" load-optional-dependencies="true" bundle="!drivers.jdbcx" />
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.jdbcx"/>
-                    <file type="jar" path="drivers/jdbcx" bundle="drivers.jdbcx"/>
-                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.jdbcx"/>
+                    <file type="jar" path="maven:/io.github.jdbcx:jdbcx-driver:RELEASE" load-optional-dependencies="true"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
                 </driver>
                 <driver
                     id="msaccess_ucanaccess"
