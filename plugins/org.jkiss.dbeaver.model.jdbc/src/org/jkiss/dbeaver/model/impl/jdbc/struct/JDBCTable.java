@@ -1035,7 +1035,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             List<DBDAttributeConstraint> constraints = filter.getConstraints();
             DBDAttributeConstraint constraint = new DBDAttributeConstraint(keyColumn, constraints.size());
             constraint.setValue(value);
-            constraint.setOperator(isPreceeding ? DBCLogicalOperator.LESS : DBCLogicalOperator.GREATER_EQUALS); //TODO: sortAsc
+            constraint.setOperator(isPreceeding ? DBCLogicalOperator.LESS : DBCLogicalOperator.GREATER_EQUALS);
             constraints.add(constraint);
             StringBuilder query = prepareQueryString(filter);
             appendSortingClause(query, isPreceeding);
