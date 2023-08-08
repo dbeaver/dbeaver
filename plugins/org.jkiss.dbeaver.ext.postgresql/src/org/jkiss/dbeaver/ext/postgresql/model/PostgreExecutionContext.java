@@ -21,6 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DPIContainer;
+import org.jkiss.dbeaver.model.DPIElement;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -56,12 +58,14 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         super(database, purpose);
     }
 
+    @DPIContainer
     @NotNull
     @Override
     public PostgreDataSource getDataSource() {
         return (PostgreDataSource) super.getDataSource();
     }
 
+    @DPIElement
     @Nullable
     @Override
     public PostgreExecutionContext getContextDefaults() {

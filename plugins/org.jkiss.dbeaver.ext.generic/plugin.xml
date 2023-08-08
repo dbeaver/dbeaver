@@ -33,6 +33,10 @@
                     <items label="#schema" path="schema" property="schemaList" icon="#schema" optional="true">
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
                             <items label="%tree.table.node.name" path="table" property="physicalTables" icon="#table">
+                                <icon if="object.externalTable" icon="#table_external"/>
+                                <icon if="object.abstractTable" icon="#table_alias"/>
+                                <icon if="object.sharedTable" icon="#table_shared"/>
+
                                 <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip">
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
@@ -757,7 +761,7 @@
                     <file type="jar" path="maven:/org.apache.phoenix:phoenix-client:RELEASE[4.14.1-HBase-1.4]" ignore-dependencies="true" bundle="!drivers.apache_phoenix"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.apache_phoenix"/>
                     <file type="jar" path="drivers/apache_phoenix" bundle="drivers.apache_phoenix"/>
-                    <file type="jar" path="drivers/apache_lic" bundle="drivers.apache_phoenix"/>
+                    <file type="license" path="drivers/apache_lic" bundle="drivers.apache_phoenix"/>
                 </driver>
                 <driver
                     id="gemfire_xd"
@@ -871,9 +875,9 @@
                     categories="hadoop"
                     singleConnection="true">
                     <file type="jar" path="maven:/org.apache.drill.exec:drill-jdbc-all:RELEASE" bundle="!drivers.apache_drill"/>
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
-                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.apache_drill"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.apache_drill"/>
                     <file type="jar" path="drivers/apache_drill" bundle="drivers.apache_drill"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.apache_drill"/>
 
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="supports-references" value="false"/>
@@ -1041,7 +1045,7 @@
                     webURL="https://github.com/neo4j-contrib/neo4j-jdbc"
                     categories="graph">
                     <file type="jar" path="maven:/org.neo4j:neo4j-jdbc-driver:RELEASE" bundle="!drivers.neo4j"/>
-                    <file type="license" path="https://www.gnu.org/licenses/lgpl-3.0.txt"/>
+                    <file type="license" path="https://www.gnu.org/licenses/lgpl-3.0.txt" bundle="!drivers.neo4j"/>
                     <file type="jar" path="drivers/neo4j" bundle="drivers.neo4j"/>
                     <parameter name="supports-truncate" value="false"/>
                     <property name="@dbeaver-default-sql.parameter.enabled" value="false"/>
@@ -1219,7 +1223,7 @@
                         webURL="https://apacheignite-sql.readme.io/docs/jdbc-driver"
                         categories="hadoop">
                     <file type="jar" path="maven:/org.apache.ignite:ignite-core:RELEASE" bundle="!drivers.apache_ignite"/>
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.apache_ignite"/>
                     <file type="jar" path="drivers/apache_ignite" bundle="drivers.apache_ignite"/>
                     <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.apache_ignite"/>
                 </driver>
@@ -1246,7 +1250,7 @@
 
                 <driver
                     id="cratedb"
-                    label="CrateDB"
+                    label="CrateDB (Legacy)"
                     icon="icons/cratedb_icon.png"
                     iconBig="icons/cratedb_icon_big.png"
                     class="io.crate.client.jdbc.CrateDriver"

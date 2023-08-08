@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.tools.transfer.processor;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
@@ -30,7 +32,7 @@ public class ShowInExplorerEventProcessor implements IDataTransferEventProcessor
     public static final String ID = "showInExplorer";
 
     @Override
-    public void processEvent(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull StreamTransferConsumer consumer, @NotNull Map<String, Object> processorSettings) throws DBException {
+    public void processEvent(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull StreamTransferConsumer consumer, @Nullable DBTTask task, @NotNull Map<String, Object> processorSettings) throws DBException {
         if (!consumer.getSettings().isOutputClipboard()) {
             final String folder = consumer.getOutputFolder();
             final String filename = consumer.getOutputFileName();

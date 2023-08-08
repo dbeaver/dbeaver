@@ -53,6 +53,7 @@ public class MavenArtifact implements IMavenIdentifier
     public static final String FILE_JAR = "jar";
     public static final String FILE_POM = "pom";
     public static final String PACKAGING_BUNDLE = "bundle";
+    public static final String PACKAGING_MAVEN_PLUGIN = "maven-plugin";
 
     @NotNull
     private final MavenRepository repository;

@@ -196,6 +196,7 @@ public final class SQLSchemaManager {
             }
             try (Statement dbStat = connection.createStatement()) {
                 try {
+                    log.info("Execute migration query: " + line);
                     dbStat.execute(line);
                 } catch (SQLException e) {
                     //TODO: find a better way to avoid migration errors

@@ -26,6 +26,8 @@ import java.util.Map;
 /**
  * DBPDataSourceInfo
  */
+@DPIObject
+@DPIElement
 public interface DBPDataSourceInfo
 {
 

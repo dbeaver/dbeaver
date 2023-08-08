@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -69,9 +70,8 @@ public class JDBCBasicDataTypeCache<OWNER extends DBSObject, OBJECT extends JDBC
         }
         int valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
         // Check for bad value type for strings: #494 && 19219
-        if ((valueType == Types.BINARY  && name.toUpperCase(Locale.ENGLISH).contains("VARCHAR")) ||
+        if ((valueType == Types.BINARY  && name.toLowerCase(Locale.ROOT).contains(SQLConstants.DATA_TYPE_VARCHAR)) ||
             (valueType == Types.JAVA_OBJECT && SQLConstants.DATA_TYPE_VARCHAR.equalsIgnoreCase(name))
-
         ) {
             log.warn("Inconsistent string data type name/id: " + name + "(" + valueType + "). Setting to " + Types.VARCHAR);
             valueType = Types.VARCHAR;
@@ -138,12 +138,17 @@ public class JDBCBasicDataTypeCache<OWNER extends DBSObject, OBJECT extends JDBC
     }
 
     public DBSDataType getCachedObject(int typeID) {
-        for (JDBCDataType type : getCachedObjects()) {
+        for (JDBCDataType<?> type : getCachedObjects()) {
             if (type.getTypeID() == typeID) {
                 return type;
             }
         }
         return null;
+    }
+
+    @Override
+    protected boolean isValidDuplicateObject(OBJECT object) {
+        return object.getDataKind() != DBPDataKind.UNKNOWN;
     }
 
 }

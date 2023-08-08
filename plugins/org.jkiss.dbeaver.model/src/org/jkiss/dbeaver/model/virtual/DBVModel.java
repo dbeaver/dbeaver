@@ -23,11 +23,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.XMLBuilder;
 
@@ -246,6 +246,12 @@ public class DBVModel extends DBVContainer {
         }
     }
 
+    public void resetData() {
+        this.clearProperties();
+        this.clearEntities();
+        this.clearContainers();
+    }
+
     public static class ModelChangeListener implements DBPEventListener {
         @Override
         public void handleDataSourceEvent(DBPEvent event) {
@@ -264,7 +270,7 @@ public class DBVModel extends DBVContainer {
     }
 
     private static void handleEntityRename(DBSEntity object, String oldName, String newName) {
-        DBNDatabaseNode objectNode = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(object);
+        DBNDatabaseNode objectNode = DBNUtils.getNavigatorModel(object).getNodeByObject(object);
         if (objectNode != null) {
             String objectNodePath = objectNode.getNodeItemPath();
             renameEntityInGlobalCache(objectNodePath, oldName, newName);

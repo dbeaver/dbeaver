@@ -32,7 +32,7 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_connection_driver;
     public static String dialog_connection_edit_driver_button;
 
-    public static String dialog_connection_wizard_final_checkbox_save_password_locally;
+    public static String dialog_connection_wizard_final_checkbox_save_password;
 
     public static String controls_client_home_selector_browse;
     public static String controls_client_home_selector_missing;
@@ -234,6 +234,7 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_drivers_button_add;
     public static String pref_page_drivers_label_enter_drivers_location_url;
     public static String pref_page_drivers_button_remove;
+    public static String pref_page_drivers_repo_info;
 
     // Drivers Classpath
     public static String pref_page_drivers_classpath_system_classpath_group;

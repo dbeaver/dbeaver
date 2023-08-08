@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DPIElement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -30,6 +31,7 @@ public interface DBSInstanceLazy extends DBSInstance
      */
     void checkInstanceConnection(@NotNull DBRProgressMonitor monitor) throws DBException;
 
+    @DPIElement
     boolean isInstanceConnected();
 
 }

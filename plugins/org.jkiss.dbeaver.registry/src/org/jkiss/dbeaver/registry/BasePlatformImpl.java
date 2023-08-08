@@ -89,8 +89,6 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
             }
         });
 
-        this.localSystem = new OSDescriptor(Platform.getOS(), Platform.getOSArch());
-
         // Navigator model
         this.navigatorModel = new DBNModel(this, null);
         this.navigatorModel.setModelAuthContext(getWorkspace().getAuthContext());
@@ -196,7 +194,10 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
             LocalConfigurationController controller = new LocalConfigurationController(
                 getWorkspace().getMetadataFolder().resolve(CONFIG_FOLDER)
             );
-            controller.setLegacyConfigFolder(getProductPlugin().getStateLocation().toFile().toPath());
+            Plugin productPlugin = getProductPlugin();
+            if (productPlugin != null && productPlugin.getStateLocation() != null) {
+                controller.setLegacyConfigFolder(productPlugin.getStateLocation().toFile().toPath());
+            }
             return controller;
         } else {
             return new LocalConfigurationController(
@@ -273,7 +274,10 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     @NotNull
     @Override
     public OSDescriptor getLocalSystem() {
-        return localSystem;
+        if (this.localSystem == null) {
+            this.localSystem = new OSDescriptor(Platform.getOS(), Platform.getOSArch());
+        }
+        return this.localSystem;
     }
 
     @NotNull

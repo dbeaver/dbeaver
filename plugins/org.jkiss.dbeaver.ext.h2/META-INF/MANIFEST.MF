@@ -1,14 +1,14 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: %Bundle-Name
+Bundle-Name: DBeaver H2 Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.h2;singleton:=true
-Bundle-Version: 1.0.163.qualifier
-Bundle-Release-Date: 20230626
+Bundle-Version: 1.0.166.qualifier
+Bundle-Release-Date: 20230807
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-Vendor: %Bundle-Vendor
+Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.ext.h2.model
 Automatic-Module-Name: org.jkiss.dbeaver.ext.h2

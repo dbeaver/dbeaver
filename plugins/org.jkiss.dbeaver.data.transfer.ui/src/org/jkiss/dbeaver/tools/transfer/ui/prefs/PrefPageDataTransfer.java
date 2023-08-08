@@ -16,11 +16,8 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.prefs;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
@@ -37,6 +34,7 @@ import org.jkiss.utils.CommonUtils;
 public class PrefPageDataTransfer extends AbstractPrefPage implements IWorkbenchPreferencePage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.datatransfer";
 
+    private Button reconnectToLastDatabaseButton;
     private Text fallbackOutputDirectoryText;
 
     @Override
@@ -47,31 +45,44 @@ public class PrefPageDataTransfer extends AbstractPrefPage implements IWorkbench
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
+        final Composite composite = UIUtils.createPlaceholder(parent, 1);
         final DBPPreferenceStore preferences = DTActivator.getDefault().getPreferences();
-        final String fallbackDirectory = preferences.getString(DTConstants.PREF_FALLBACK_OUTPUT_DIRECTORY);
-        final Group group = UIUtils.createControlGroup(parent, DTUIMessages.pref_data_transfer_options_title, 2, SWT.NONE, 0);
 
-        fallbackOutputDirectoryText = DialogUtils.createOutputFolderChooser(
-            group,
-            DTUIMessages.pref_data_transfer_options_fallback_directory,
-            DTUIMessages.pref_data_transfer_options_fallback_directory_tip,
-            null,
-            null
-        );
+        {
+            final Group group = UIUtils
+                .createControlGroup(composite, DTUIMessages.pref_data_transfer_wizard_title, 1, GridData.FILL_HORIZONTAL, 0);
 
-        if (CommonUtils.isEmpty(fallbackDirectory)) {
-            fallbackOutputDirectoryText.setMessage(DTConstants.DEFAULT_FALLBACK_OUTPUT_DIRECTORY);
-        } else {
-            fallbackOutputDirectoryText.setText(fallbackDirectory);
+            reconnectToLastDatabaseButton = UIUtils.createCheckbox(
+                group,
+                DTUIMessages.pref_data_transfer_wizard_reconnect_to_database,
+                preferences.getBoolean(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE)
+            );
         }
 
-        return group;
+        {
+            final Group group = UIUtils
+                .createControlGroup(composite, DTUIMessages.pref_data_transfer_options_title, 2, GridData.FILL_HORIZONTAL, 0);
+
+            fallbackOutputDirectoryText = DialogUtils.createOutputFolderChooser(
+                group,
+                DTUIMessages.pref_data_transfer_options_fallback_directory,
+                DTUIMessages.pref_data_transfer_options_fallback_directory_tip,
+                null,
+                null
+            );
+
+            fallbackOutputDirectoryText.setText(CommonUtils.notEmpty(preferences.getString(DTConstants.PREF_FALLBACK_OUTPUT_DIRECTORY)));
+            fallbackOutputDirectoryText.setMessage(DTConstants.DEFAULT_FALLBACK_OUTPUT_DIRECTORY);
+        }
+
+        return composite;
     }
 
     @Override
     protected void performDefaults() {
         final DBPPreferenceStore preferences = DTActivator.getDefault().getPreferences();
 
+        reconnectToLastDatabaseButton.setSelection(preferences.getDefaultBoolean(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE));
         fallbackOutputDirectoryText.setText("");
         fallbackOutputDirectoryText.setMessage(preferences.getDefaultString(DTConstants.PREF_FALLBACK_OUTPUT_DIRECTORY));
     }
@@ -79,13 +90,9 @@ public class PrefPageDataTransfer extends AbstractPrefPage implements IWorkbench
     @Override
     public boolean performOk() {
         final DBPPreferenceStore preferences = DTActivator.getDefault().getPreferences();
-        final String fallbackDirectory = fallbackOutputDirectoryText.getText();
 
-        if (fallbackDirectory.isEmpty()) {
-            preferences.setToDefault(DTConstants.PREF_FALLBACK_OUTPUT_DIRECTORY);
-        } else {
-            preferences.setValue(DTConstants.PREF_FALLBACK_OUTPUT_DIRECTORY, fallbackDirectory);
-        }
+        preferences.setValue(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE, reconnectToLastDatabaseButton.getSelection());
+        preferences.setValue(DTConstants.PREF_FALLBACK_OUTPUT_DIRECTORY, fallbackOutputDirectoryText.getText());
 
         PrefUtils.savePreferenceStore(preferences);
 

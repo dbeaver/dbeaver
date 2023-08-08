@@ -140,11 +140,7 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
                 }
             }
         } else if (object instanceof String) {
-            try {
-                geometry = new DBGeometry(new WKTReader().read((String) object));
-            } catch (Exception e) {
-                throw new DBCException("Error parsing geometry value from string", e);
-            }
+            return WKGUtils.parseWKT((String) object);
         } else {
             throw new DBCException("Unsupported geometry value: " + object);
         }

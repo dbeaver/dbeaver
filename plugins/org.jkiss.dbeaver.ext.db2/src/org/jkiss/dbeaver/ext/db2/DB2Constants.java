@@ -97,8 +97,16 @@ public class DB2Constants {
     public static final String             PLAN_COST_FORMAT            = "###,###,###,##0.000";
 
     // Schema for system datatypes
-    public static final String             SYSTEM_DATATYPE_SCHEMA      = "SYSIBM";
-    public static final String             SYSTEM_CATALOG_SCHEMA       = "SYSCAT";
+    public static final String SYSTEM_DATATYPE_SCHEMA = "SYSIBM";
+    public static final String SYSTEM_CATALOG_SCHEMA = "SYSCAT";
+
+    // System columns
+    public static final String SYSCOLUMN_CREATE_TIME = "CREATE_TIME";
+    public static final String SYSCOLUMN_ALTER_TIME = "ALTER_TIME";
+    public static final String SYSCOLUMN_VALID = "VALID";
+    public static final String SYSCOLUMN_REMARKS = "REMARKS";
+    public static final String SYSCOLUMN_OWNER = "OWNER";
+    public static final String SYSCOLUMN_OWNER_TYPE = "OWNERTYPE";
 
     // Preferences
     public static final String             PREF_KEY_DDL_FORMAT         = "db2.ddl.format";

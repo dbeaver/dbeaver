@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.rm.RMUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
@@ -371,7 +372,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
 
         List<String> scriptFiles = settings.getScriptFiles();
         for (String filePath : scriptFiles) {
-            IFile file = SQLScriptExecuteSettings.getWorkspaceFile(filePath);
+            IFile file = RMUtils.findEclipseProjectFile(getWizard().getProject(), filePath);
             if (file == null) {
                 log.debug("Script file '" + filePath + "' not found");
                 continue;
@@ -416,7 +417,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         for (DBNResource resource : selectedScripts) {
             IResource res = resource.getResource();
             if (res instanceof IFile) {
-                scriptPaths.add(res.getFullPath().toString());
+                scriptPaths.add(getWizard().getProject().getResourcePath(res));
             }
         }
         if (!CommonUtils.isEmpty(scriptPaths)) {

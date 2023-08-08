@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.model.rm;
  * RM constants
  */
 public interface RMConstants {
+    String PROJECT_CONF_FOLDER = ".configuration";
+
     String PERMISSION_PROJECT_DATASOURCES_EDIT = "project-datasource-edit";
     String PERMISSION_PROJECT_DATASOURCES_VIEW = "project-datasource-view";
 

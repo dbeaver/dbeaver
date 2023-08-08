@@ -21,13 +21,14 @@ import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 public class VirtualAttributeAddAction extends Action {
 
     private ResultSetViewer resultSetViewer;
 
     public VirtualAttributeAddAction(ResultSetViewer resultSetViewer) {
-        super("Add virtual column");
+        super(ResultSetMessages.controls_resultset_virtual_add_virtual_column);
         this.resultSetViewer = resultSetViewer;
     }
 

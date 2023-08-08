@@ -21,12 +21,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DPIObject;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 
 /**
  * Execution plan builder.
  * Extends DBPObject to enable configurators
  */
+@DPIObject
 public interface DBCQueryPlanner extends DBPObject {
 
     DBPDataSource getDataSource();

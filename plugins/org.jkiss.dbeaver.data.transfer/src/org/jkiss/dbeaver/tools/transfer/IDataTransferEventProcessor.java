@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.tools.transfer;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.task.DBTTask;
 
 import java.util.Map;
 
@@ -27,6 +29,7 @@ public interface IDataTransferEventProcessor<T extends IDataTransferConsumer<?, 
         @NotNull DBRProgressMonitor monitor,
         @NotNull Event event,
         @NotNull T consumer,
+        @Nullable DBTTask task,
         @NotNull Map<String, Object> settings
     ) throws DBException;
 
@@ -34,6 +37,7 @@ public interface IDataTransferEventProcessor<T extends IDataTransferConsumer<?, 
         @NotNull DBRProgressMonitor monitor,
         @NotNull Exception exception,
         @NotNull T consumer,
+        @Nullable DBTTask task,
         @NotNull Map<String, Object> settings
     ) throws DBException {
         // do nothing by default

@@ -33,6 +33,8 @@ import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * SSH tunnel
@@ -44,9 +46,15 @@ public class SSHTunnelImpl implements DBWTunnel {
 
     private DBWHandlerConfiguration configuration;
     private SSHImplementation implementation;
+    private final List<Runnable> listeners = new ArrayList<>();
 
     public SSHImplementation getImplementation() {
         return implementation;
+    }
+
+    @Override
+    public void addCloseListener(Runnable listener) {
+        this.listeners.add(listener);
     }
 
     @Override
@@ -84,6 +92,10 @@ public class SSHTunnelImpl implements DBWTunnel {
             implementation.closeTunnel(monitor);
             // Do not nullify tunnel to keep saved tunnel port number (#7952)
         }
+        for (Runnable listener : this.listeners) {
+            listener.run();
+        }
+        this.listeners.clear();
     }
 
     @Override

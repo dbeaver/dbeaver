@@ -225,6 +225,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         final Runtime runtime = Runtime.getRuntime();
 
+        initializeConfiguration();
+
         // Debug logger
         initDebugWriter();
 
@@ -512,6 +514,11 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             }
         }
         folder.deleteOnExit();
+    }
+
+    // Called
+    protected void initializeConfiguration() {
+
     }
 
     /**

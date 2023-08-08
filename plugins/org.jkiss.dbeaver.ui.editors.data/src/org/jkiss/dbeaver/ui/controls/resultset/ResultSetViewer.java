@@ -82,6 +82,7 @@ import org.jkiss.dbeaver.ui.controls.VerticalButton;
 import org.jkiss.dbeaver.ui.controls.VerticalFolder;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.CustomizeColorsAction;
+import org.jkiss.dbeaver.ui.controls.resultset.colors.ResetAllColorAction;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.ResetRowColorAction;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.SetRowColorAction;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.*;
@@ -129,7 +130,7 @@ import java.util.stream.Collectors;
  *
  */
 public class ResultSetViewer extends Viewer
-    implements DBPContextProvider, IResultSetController, ISaveablePart2, IAdaptable, DBPEventListener
+    implements DBPContextProvider, IResultSetController, ISaveablePart2, DBPAdaptable, DBPEventListener
 {
     private static final Log log = Log.getLog(ResultSetViewer.class);
 
@@ -278,9 +279,9 @@ public class ResultSetViewer extends Viewer
                 if (txnManager != null) {
                     try {
                         if (txnManager.isAutoCommit()) {
-                            return "Hint: frequent refresh may cause high server load";
+                            return ResultSetMessages.controls_resultset_viewer_frequent_refresh_hint;
                         } else {
-                            return "Hint: switch to auto-commit to see external changes";
+                            return ResultSetMessages.controls_resultset_viewer_switch_autocommit_hint;
                         }
                     } catch (DBCException e) {
                         log.debug(e);
@@ -2635,8 +2636,8 @@ public class ResultSetViewer extends Viewer
         if (isExpensiveFilter && ConfirmationDialog.confirmAction(
             viewerPanel.getShell(),
             ConfirmationDialog.WARNING, ResultSetPreferences.CONFIRM_FILTER_RESULTSET,
-            ConfirmationDialog.QUESTION,
-            curAttribute.getName()) != IDialogConstants.YES_ID)
+            ConfirmationDialog.CONFIRM,
+            curAttribute.getName()) != IDialogConstants.OK_ID)
         {
             return;
         }
@@ -2947,17 +2948,20 @@ public class ResultSetViewer extends Viewer
                 }
             }
             viewMenu.add(new CustomizeColorsAction(this, attr, row));
-//            if (getModel().getSingleSource() != null && getModel().hasColorMapping(getModel().getSingleSource())) {
-//                viewMenu.add(new ResetAllColorAction());
-//            }
+            if (hasColorOverrides()) {
+                viewMenu.add(new ResetAllColorAction(this));
+            }
         }
         viewMenu.add(new ColorizeDataTypesToggleAction());
         viewMenu.add(new Separator());
         viewMenu.add(new DataFormatsPreferencesAction());
         viewMenu.add(new Separator());
-        viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS, "Show selected row count"));
-        viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS, "Show selected column count"));
-        viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS, "Show selected cell count"));
+        viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS,
+            ResultSetMessages.controls_resultset_viewer_action_show_selected_row_count));
+        viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS,
+            ResultSetMessages.controls_resultset_viewer_action_show_selected_column_count));
+        viewMenu.add(new ToggleSelectionStatAction(ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS,
+            ResultSetMessages.controls_resultset_viewer_action_show_selected_cell_count));
 
         viewMenu.add(new Separator());
         viewMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ZOOM_IN));
@@ -3133,7 +3137,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @NotNull
-    private List<DBVColorOverride> getColorOverrides(@NotNull DBDAttributeBinding binding, @Nullable Object value) {
+    List<DBVColorOverride> getColorOverrides(@NotNull DBDAttributeBinding binding, @Nullable Object value) {
         final DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer == null) {
             return Collections.emptyList();
@@ -3147,6 +3151,41 @@ public class ResultSetViewer extends Viewer
             .filter(override -> override.getOperator() == DBCLogicalOperator.EQUALS)
             .filter(override -> override.getOperator().evaluate(value, override.getAttributeValues()))
             .collect(Collectors.toList());
+    }
+
+    boolean hasColorOverrides() {
+        final DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer == null) {
+            return false;
+        }
+        final DBVEntity virtualEntity = DBVUtils.getVirtualEntity(dataContainer, false);
+        if (virtualEntity == null) {
+            return false;
+        }
+        return !virtualEntity.getColorOverrides().isEmpty();
+    }
+
+    boolean hasColumnTransformers() {
+        final DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer == null) {
+            return false;
+        }
+        final DBVEntity virtualEntity = DBVUtils.getVirtualEntity(dataContainer, false);
+        if (virtualEntity == null) {
+            return false;
+        }
+        if (virtualEntity.getTransformSettings() != null && virtualEntity.getTransformSettings().hasValuableData()) {
+            return true;
+        }
+        List<DBVEntityAttribute> vAttrs = virtualEntity.getEntityAttributes();
+        if (vAttrs != null) {
+            for (DBVEntityAttribute vAttr : vAttrs) {
+                if (vAttr.getTransformSettings() != null && vAttr.getTransformSettings().hasValuableData()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override

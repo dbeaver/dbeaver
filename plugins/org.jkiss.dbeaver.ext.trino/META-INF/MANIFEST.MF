@@ -1,14 +1,14 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: %Bundle-Name
+Bundle-Name: DBeaver Trino Support
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.trino;singleton:=true
-Bundle-Version: 1.0.1.qualifier
-Bundle-Release-Date: 20230626
+Bundle-Version: 1.0.4.qualifier
+Bundle-Release-Date: 20230807
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-Vendor: %Bundle-Vendor
+Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.trino
 Export-Package: org.jkiss.dbeaver.ext.trino.model

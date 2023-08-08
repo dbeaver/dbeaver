@@ -760,7 +760,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return null;
     }
 
-    public void setNodeFilter(DBXTreeItem meta, DBSObjectFilter filter) {
+    public void setNodeFilter(DBXTreeItem meta, DBSObjectFilter filter, boolean saveConfiguration) {
         DBPDataSourceContainer dataSource = getDataSourceContainer();
         if (this instanceof DBNContainer) {
             Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
@@ -773,7 +773,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                     childrenClass,
                     (DBSObject) parentObject,
                     filter);
-                dataSource.persistConfiguration();
+                if (saveConfiguration) {
+                    dataSource.persistConfiguration();
+                }
             } else {
                 log.error("Cannot detect child node type - can't save filter configuration");
             }
@@ -981,7 +983,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         try {
             Method getter = DBXTreeItem.findPropertyReadMethod(object.getClass(), propertyName);
             if (getter == null) {
-                log.warn("Can't find property '" + propertyName + "' read method in '" + object.getClass().getName() + "'");
+                log.warn("Can't find dynamic property '" + propertyName + "' read method in '" + object.getClass().getName() + "'");
                 return null;
             }
             Class<?>[] paramTypes = getter.getParameterTypes();

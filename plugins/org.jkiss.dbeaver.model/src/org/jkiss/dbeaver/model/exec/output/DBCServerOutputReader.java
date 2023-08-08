@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.model.exec.output;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DPIElement;
+import org.jkiss.dbeaver.model.DPIObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionResult;
@@ -28,13 +30,16 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * Provides ability to read server logs for certain session
  */
+@DPIObject
 public interface DBCServerOutputReader extends DBPObject
 {
+    @DPIElement
     boolean isServerOutputEnabled();
 
     /**
      * If async output reading is supported then SQL job will read output during statement execution.
      */
+    @DPIElement
     boolean isAsyncOutputReadSupported();
 
     /**

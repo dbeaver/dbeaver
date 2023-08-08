@@ -98,8 +98,6 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         this.hasPartitions = this.partitionKey != null;
         this.hasRowLevelSecurity = getDataSource().getServerType().supportsRowLevelSecurity()
             && JDBCUtils.safeGetBoolean(dbResult, "relrowsecurity");
-        this.depObjectId = JDBCUtils.safeGetLong(dbResult, "objid");
-        this.depObjectAttrNumber = JDBCUtils.safeGetLong(dbResult, "refobjsubid");
     }
 
     // Copy constructor
@@ -190,14 +188,6 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
 
     public void setPartitionKey(String partitionKey) {
         this.partitionKey = partitionKey;
-    }
-
-    public long getDepObjectId() {
-        return depObjectId;
-    }
-
-    public long getDepObjectAttrNumber() {
-        return depObjectAttrNumber;
     }
 
     @Override

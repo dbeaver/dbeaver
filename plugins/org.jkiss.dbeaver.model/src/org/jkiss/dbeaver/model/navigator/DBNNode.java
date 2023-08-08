@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -38,7 +37,7 @@ import java.util.List;
 /**
  * DBNNode
  */
-public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized, DBPPersistedObject, IAdaptable {
+public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized, DBPPersistedObject, DBPAdaptable {
     static final Log log = Log.getLog(DBNNode.class);
 
     public enum NodePathType {

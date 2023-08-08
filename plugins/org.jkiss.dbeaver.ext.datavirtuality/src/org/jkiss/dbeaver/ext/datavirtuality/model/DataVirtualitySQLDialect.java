@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 
 import java.util.Arrays;
-import java.util.List;
 
 public class DataVirtualitySQLDialect extends GenericSQLDialect implements TPRuleProvider {
 
@@ -49,11 +48,14 @@ public class DataVirtualitySQLDialect extends GenericSQLDialect implements TPRul
                 ));
     }
 
+    @NotNull
     @Override
-    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
+    public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position) {
         if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
-            rules.add(new SQLDollarQuoteRule(position == RulePosition.PARTITION, false, false, true));
+            return new TPRule[] {
+                new SQLDollarQuoteRule(position == RulePosition.PARTITION, false, false, true) };
         }
+        return new TPRule[0];
     }
 
 }
