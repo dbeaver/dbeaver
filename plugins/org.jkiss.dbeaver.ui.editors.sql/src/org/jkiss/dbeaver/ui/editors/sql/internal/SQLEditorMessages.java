@@ -263,6 +263,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_checkbox_max_editor_on_script_exec;
     public static String pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results;
     public static String pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results_tip;
+    public static String pref_page_sql_editor_checkbox_close_included_script_after_execution;
+    public static String pref_page_sql_editor_checkbox_close_included_script_after_execution_tip;
     public static String pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters;
     public static String pref_page_sql_editor_text_anonymous_parameter_mark;
     public static String pref_page_sql_editor_text_named_parameter_prefix;
@@ -353,7 +355,6 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_action_clear;
     
     public static String sql_editor_title_tooltip_path;
-    public static String sql_editor_not_avaliable;
     public static String sql_editor_data_receiver_result_name_tooltip_connection;
     public static String sql_editor_data_receiver_result_name_tooltip_time;
     public static String sql_editor_data_receiver_result_name_tooltip_query;

@@ -34,10 +34,16 @@ import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSDataBulkLoader;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.ui.IDataTransferEventProcessorConfigurator;
+import org.jkiss.dbeaver.tools.transfer.ui.controls.EventProcessorComposite;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.ShellUtils;
@@ -68,6 +74,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
     private Button ignoreDuplicateRows;
     private Button useBulkLoadCheck;
     private List<SQLInsertReplaceMethodDescriptor> availableInsertMethodsDescriptors;
+    private final Map<String, EventProcessorComposite<?>> processors = new HashMap<>();
 
     public DatabaseConsumerPageLoadSettings() {
         super(DTUIMessages.database_consumer_wizard_name);
@@ -156,21 +163,34 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
         }
 
         {
-            Group generalSettings = UIUtils.createControlGroup(composite, DTUIMessages.database_consumer_wizard_general_group_label, 4, GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
-            final Button showTableCheckbox = UIUtils.createCheckbox(generalSettings, DTUIMessages.database_consumer_wizard_table_checkbox_label, null, settings.isOpenTableOnFinish(), 4);
+            Group generalSettings = UIUtils.createControlGroup(composite, DTUIMessages.database_consumer_wizard_general_group_label, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            final Button showTableCheckbox = UIUtils.createCheckbox(generalSettings, DTUIMessages.database_consumer_wizard_table_checkbox_label, settings.isOpenTableOnFinish());
             showTableCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     settings.setOpenTableOnFinish(showTableCheckbox.getSelection());
                 }
             });
-            final Button showFinalMessageCheckbox = UIUtils.createCheckbox(generalSettings, DTUIMessages.database_consumer_wizard_final_message_checkbox_label, null, getWizard().getSettings().isShowFinalMessage(), 4);
+            final Button showFinalMessageCheckbox = UIUtils.createCheckbox(generalSettings, DTUIMessages.database_consumer_wizard_final_message_checkbox_label, getWizard().getSettings().isShowFinalMessage());
             showFinalMessageCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     getWizard().getSettings().setShowFinalMessage(showFinalMessageCheckbox.getSelection());
                 }
             });
+
+            final DataTransferRegistry dataTransferRegistry = DataTransferRegistry.getInstance();
+            final UIPropertyConfiguratorRegistry configuratorRegistry = UIPropertyConfiguratorRegistry.getInstance();
+
+            for (DataTransferEventProcessorDescriptor descriptor : dataTransferRegistry.getEventProcessors(DatabaseTransferConsumer.NODE_ID)) {
+                try {
+                    final UIPropertyConfiguratorDescriptor configuratorDescriptor = configuratorRegistry.getDescriptor(descriptor.getType().getImplName());
+                    final IDataTransferEventProcessorConfigurator<DatabaseConsumerSettings> configurator = configuratorDescriptor.createConfigurator();
+                    this.processors.put(descriptor.getId(), new EventProcessorComposite<>(this::updatePageCompletion, generalSettings, settings, descriptor, configurator));
+                } catch (Exception e) {
+                    log.error("Can't create event processor", e);
+                }
+            }
         }
 
         {
@@ -391,8 +411,15 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
 
     @Override
     public void activatePage() {
+        final DatabaseConsumerSettings settings = getSettings();
+
+        for (Map.Entry<String, EventProcessorComposite<?>> processor : processors.entrySet()) {
+            processor.getValue().setProcessorEnabled(settings.hasEventProcessor(processor.getKey()));
+            processor.getValue().loadSettings(settings.getEventProcessorSettings(processor.getKey()));
+        }
 
         updatePageCompletion();
+        updateControlsEnablement();
 
         UIUtils.asyncExec(this::loadSettings);
     }
@@ -480,11 +507,27 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
 
     @Override
     public void deactivatePage() {
+        final DatabaseConsumerSettings settings = getSettings();
+
+        for (Map.Entry<String, EventProcessorComposite<?>> processor : processors.entrySet()) {
+            final EventProcessorComposite<?> configurator = processor.getValue();
+            if (configurator.isProcessorEnabled() && configurator.isProcessorApplicable() && configurator.isProcessorComplete()) {
+                configurator.saveSettings(settings.getEventProcessorSettings(processor.getKey()));
+            }
+        }
+
         super.deactivatePage();
     }
 
     @Override
     protected boolean determinePageCompletion() {
+        for (EventProcessorComposite<?> processor : processors.values()) {
+            if (processor.isProcessorApplicable() && processor.isProcessorEnabled() && !processor.isProcessorComplete()) {
+                setErrorMessage(NLS.bind(DTMessages.data_transfer_wizard_output_event_processor_error_incomplete_configuration, processor.getDescriptor().getLabel()));
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -493,4 +536,9 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
         return isConsumerOfType(DatabaseTransferConsumer.class);
     }
 
+    private void updateControlsEnablement() {
+        for (EventProcessorComposite<?> processor : processors.values()) {
+            processor.setProcessorAvailable(processor.isProcessorApplicable());
+        }
+    }
 }

@@ -85,7 +85,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         listener.taskStarted(task);
         int indexOfLastPipeWithDisabledReferentialIntegrity = -1;
         try {
-            indexOfLastPipeWithDisabledReferentialIntegrity = initializePipes(runnableContext, settings);
+            indexOfLastPipeWithDisabledReferentialIntegrity = initializePipes(runnableContext, settings, task);
             Throwable error = runDataTransferJobs(runnableContext, task, locale, log, listener, settings);
             listener.taskFinished(task, null, error, settings);
         } catch (InvocationTargetException e) {
@@ -105,8 +105,11 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         }
     }
 
-    private int initializePipes(@NotNull DBRRunnableContext runnableContext, @NotNull DataTransferSettings settings)
-            throws InvocationTargetException, InterruptedException, DBException {
+    private int initializePipes(
+        @NotNull DBRRunnableContext runnableContext,
+        @NotNull DataTransferSettings settings,
+        @Nullable DBTTask task
+    ) throws InvocationTargetException, InterruptedException, DBException {
         int[] indexOfLastPipeWithDisabledReferentialIntegrity = new int[]{-1};
         DBException[] dbException = {null};
         List<DataTransferPipe> dataPipes = settings.getDataPipes();
@@ -120,7 +123,12 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
                     pipe.initPipe(settings, i, dataPipes.size());
                     IDataTransferConsumer<?, ?> consumer = pipe.getConsumer();
                     consumer.setRuntimeParameters(consumerRuntimeParameters);
-                    consumer.startTransfer(monitor);
+                    try {
+                        consumer.startTransfer(monitor);
+                    } catch (DBException e) {
+                        consumer.finishTransfer(monitor, e, task, true);
+                        throw e;
+                    }
                     if (enableReferentialIntegrity(consumer, monitor, false)) {
                         indexOfLastPipeWithDisabledReferentialIntegrity[0] = i;
                     }

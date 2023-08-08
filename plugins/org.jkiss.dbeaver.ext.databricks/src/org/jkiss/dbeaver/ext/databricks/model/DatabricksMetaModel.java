@@ -130,7 +130,7 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
     }
 
     @Override
-    public GenericTableBase createTableImpl(
+    public GenericTableBase createTableOrViewImpl(
         GenericStructContainer container,
         @Nullable String tableName,
         @Nullable String tableType,

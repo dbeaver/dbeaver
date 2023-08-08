@@ -987,7 +987,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
         if (hasPropertiesEditor) {
             // Update main editor image
-            setPageImage(0, DBeaverIcons.getImage(getEditorInput().getNavigatorNode().getNodeIconDefault()));
+            DBNDatabaseNode navigatorNode = getEditorInput().getNavigatorNode();
+            if (navigatorNode != null) {
+                setPageImage(0, DBeaverIcons.getImage(navigatorNode.getNodeIconDefault()));
+            }
         }
 
         firePropertyChange(IWorkbenchPartConstants.PROP_DIRTY);
