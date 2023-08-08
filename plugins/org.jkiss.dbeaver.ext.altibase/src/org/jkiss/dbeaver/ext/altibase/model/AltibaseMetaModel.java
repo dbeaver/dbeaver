@@ -214,7 +214,8 @@ public class AltibaseMetaModel extends GenericMetaModel {
             }
         }
 
-        if (!DBMS_METADATA || ddl.length() < 1) {
+        if (!DBMS_METADATA || ddl.length() < 5) {
+            ddl = new StringBuilder();
             ddl.append(AltibaseConstants.NO_DBMS_METADATA).append(super.getTableDDL(monitor, sourceObject, options));
         }
 
@@ -284,7 +285,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
             ddl = getViewProcDDLFromCatalog(monitor, sourceObject, sourceObject.getSchema().getName(), sql);
         }
 
-        return (ddl.length() < 1) ? "-- View definition not available" : ddl.toString();
+        return (ddl.length() < 5) ? "-- View definition not available" : ddl.toString();
     }
 
     @Override
@@ -310,7 +311,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
             ddl = getViewProcDDLFromCatalog(monitor, sourceObject, sourceObject.getSchema().getName(), sql);
         }
 
-        if (ddl.length() < 1) {
+        if (ddl.length() < 5) {
             ddl = "-- Source code not available";
         } else {
             //ddl += ";" + AltibaseUtils.NEW_LINE + "/";
@@ -362,7 +363,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
             ddl = getViewProcDDLFromCatalog(monitor, sourceObject, sourceObject.getSchema().getName(), sql);
         }
 
-        if (ddl.length() < 1) {
+        if (ddl.length() < 5) {
             ddl = "-- Source code not available";
         }
 
