@@ -55,6 +55,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
     private static final String DATA_KEY = ViewerColumnController.class.getSimpleName();
 
     private static final int MIN_COLUMN_AUTO_WIDTH = 100;
+    private static final DefaultComparator comparator = new DefaultComparator(Collator.getInstance());
 
     private final String configId;
     private final ColumnViewer viewer;
@@ -130,7 +131,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
             }
         };
 
-        viewer.setComparator(new DefaultComparator(Collator.getInstance()));
+        viewer.setComparator(comparator);
     }
 
     public void dispose() {
@@ -840,7 +841,17 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
             Item column = (Item)e.widget;
             if (prevColumn == column) {
                 // Set reverse order
-                sortDirection = sortDirection == SWT.UP ? SWT.DOWN : SWT.UP;
+                if (viewer.getComparator() == null) {
+                    viewer.setComparator(comparator);
+                }
+                if (sortDirection == SWT.NONE) {
+                    sortDirection = SWT.UP;
+                } else if (sortDirection == SWT.UP) {
+                    sortDirection = SWT.DOWN;
+                } else {
+                    sortDirection = SWT.None;
+                    viewer.setComparator(null);
+                }
             }
             prevColumn = column;
 
