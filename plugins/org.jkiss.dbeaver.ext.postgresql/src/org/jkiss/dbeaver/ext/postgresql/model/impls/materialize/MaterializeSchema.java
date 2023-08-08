@@ -35,8 +35,10 @@ public class MaterializeSchema extends PostgreSchema {
 
     @Override
     public boolean isSystem() {
-        return isCatalogSchema() || PostgreConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(name)
-                || name.startsWith(PostgreConstants.SYSTEM_SCHEMA_PREFIX) || name.startsWith("mz_");
+        return isCatalogSchema()
+            || PostgreConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(name)
+            || name.startsWith(PostgreConstants.SYSTEM_SCHEMA_PREFIX)
+            || name.startsWith("mz_");
     }
 
 }
