@@ -845,7 +845,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                 } else if (sortDirection == SWT.UP) {
                     sortDirection = SWT.DOWN;
                 } else {
-                    sortDirection = SWT.None;
+                    sortDirection = SWT.NONE;
                 }
             }
             prevColumn = column;
