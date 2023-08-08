@@ -32,8 +32,9 @@ public class MaterializeSchemaCache extends PostgreDatabase.SchemaCache {
         if (name == null) {
             return null;
         }
-        if (MaterializeSchema.isUtilitySchema(name)
-                && !owner.getDataSource().getContainer().getNavigatorSettings().isShowUtilityObjects()) {
+        if (MaterializeSchema.isUtilitySchema(name) && 
+            !owner.getDataSource().getContainer().getNavigatorSettings().isShowUtilityObjects()
+        ) {
             return null;
         }
         return new MaterializeSchema(owner, name, resultSet);
