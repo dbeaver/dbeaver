@@ -16,8 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.commands;
 
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IURIEditorInput;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDEEncoding;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -88,6 +92,19 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         UIUtils.syncExec(() -> {
             try {
                 final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+                for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+                    for (IWorkbenchPage page : window.getPages()) {
+                        for (IEditorReference editorReference : page.getEditorReferences()) {
+                            if (editorReference.getEditorInput() instanceof IncludeEditorInput) {
+                                IncludeEditorInput includeInput = (IncludeEditorInput)editorReference.getEditorInput();
+                                if (includeInput.incFile.getAbsolutePath().equals(finalIncFile.getAbsolutePath())) {
+                                    UIUtils.syncExec(
+                                        () -> workbenchWindow.getActivePage().closeEditor(editorReference.getEditor(false), false));
+                                }
+                            }
+                        }
+                    }
+                }
                 final IncludeEditorInput input = new IncludeEditorInput(finalIncFile, fileContents);
                 SQLEditor sqlEditor = SQLEditorHandlerOpenEditor.openSQLConsole(
                         workbenchWindow,
