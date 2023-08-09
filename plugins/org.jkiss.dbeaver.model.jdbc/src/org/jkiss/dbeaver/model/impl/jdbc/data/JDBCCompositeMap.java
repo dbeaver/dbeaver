@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
@@ -48,7 +49,7 @@ public class JDBCCompositeMap extends JDBCComposite {
             int index = 0;
             for (Map.Entry<?,?> entry : contents.entrySet()) {
                 Object value = entry.getValue();
-                StructAttribute attr = new StructAttribute(this.type, index, value);
+                StructAttribute attr = new StructAttribute(CommonUtils.toString(entry.getKey()), this.type, index, value);
                 value = DBUtils.findValueHandler(session, attr).getValueFromObject(session, attr, value, false, modified);
                 attributes[index] = attr;
                 values[index] = value;
