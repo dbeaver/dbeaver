@@ -67,7 +67,7 @@ class SQLToolTaskWizard extends TaskConfigurationWizard<SQLToolExecuteSettings> 
             throw new IllegalArgumentException("Error instantiating task type handler", e);
         }
         settings = taskHandler.createToolSettings();
-        settings.loadConfiguration(UIUtils.getDialogRunnableContext(), task.getProperties());
+        settings.loadConfiguration(task.getProject(), UIUtils.getDialogRunnableContext(), task.getProperties());
         objectList = settings.getObjectList();
     }
 
