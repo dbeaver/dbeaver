@@ -40,6 +40,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.data.gis.handlers.WKGUtils;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -353,6 +354,9 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
                 log.error("Error forcing geometry to 2D", e);
             }
             Object targetValue = value.getRawValue();
+            if (WKGUtils.isCurve(targetValue)) {
+                targetValue = WKGUtils.linearize((org.cugos.wkg.Geometry) targetValue);
+            }
             int srid = sourceSRID == 0 ? value.getSRID() : sourceSRID;
             if (srid == GisConstants.SRID_SIMPLE) {
                 srid = attributeSrid;
