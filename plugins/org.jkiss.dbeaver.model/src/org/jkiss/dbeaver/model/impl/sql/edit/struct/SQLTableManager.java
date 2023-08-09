@@ -246,7 +246,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 command.aggregateCommand(tcm.makeCreateCommand(column, options));
             }
         }
-        if (pkm != null) {
+        if (pkm != null && !CommonUtils.getOption(options, DBPScriptObject.OPTION_SKIP_UNIQUE_KEYS)) {
             try {
                 for (DBSEntityConstraint constraint : CommonUtils.safeCollection(table.getConstraints(monitor))) {
                     if (skipObject(constraint)) {
@@ -287,7 +287,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 log.debug(e);
             }
         }
-        if (im != null && table instanceof DBSTable) {
+        if (im != null && table instanceof DBSTable && !CommonUtils.getOption(options, DBPScriptObject.OPTION_SKIP_INDEXES)) {
             try {
                 for (DBSTableIndex index : CommonUtils.safeCollection(((DBSTable)table).getIndexes(monitor))) {
                     if (!isIncludeIndexInDDL(monitor, index)) {

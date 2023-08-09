@@ -419,6 +419,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
         }
 
         updatePageCompletion();
+        updateControlsEnablement();
 
         UIUtils.asyncExec(this::loadSettings);
     }
@@ -535,4 +536,9 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
         return isConsumerOfType(DatabaseTransferConsumer.class);
     }
 
+    private void updateControlsEnablement() {
+        for (EventProcessorComposite<?> processor : processors.values()) {
+            processor.setProcessorAvailable(processor.isProcessorApplicable());
+        }
+    }
 }
