@@ -52,6 +52,7 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
 
     public static final String PROP_SSL_KEYSTORE = "ssl.keystore";
     public static final String PROP_SSL_KEYSTORE_VALUE = PROP_SSL_KEYSTORE + CERT_VALUE_SUFFIX;
+    public static final String PROP_SSL_KEYSTORE_PASSWORD = "ssl.keystore.password";
 
     public static final String PROP_SSL_SELF_SIGNED_CERT = "ssl.self-signed-cert";
     public static final String PROP_SSL_METHOD = "ssl.method";
@@ -78,7 +79,9 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
         {
             if (method == SSLConfigurationMethod.KEYSTORE && keyStore != null) {
                 monitor.subTask("Load keystore");
-                final String password = sslConfig.getPassword();
+                final String password = sslConfig.getPassword() == null ?
+                    sslConfig.getSecureProperty(PROP_SSL_KEYSTORE_PASSWORD) :
+                    sslConfig.getPassword();
 
                 char[] keyStorePasswordData = CommonUtils.isEmpty(password) ? new char[0] : password.toCharArray();
                 securityManager.addCertificate(dataSource.getContainer(), CERT_TYPE, keyStore, keyStorePasswordData);
