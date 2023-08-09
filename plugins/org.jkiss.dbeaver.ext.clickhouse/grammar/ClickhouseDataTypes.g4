@@ -52,15 +52,32 @@ Eq: '=';
 String: '\'' (~('\''|'\r'|'\n'))+ '\''; // FIXME: string does not support escape sequences
 
 type
- : simpleType
- | enumType
+ : anyType EOF
+ ;
+
+anyType
+ : enumType
  | tupleType
  | mapType
- | arrayType;
+ | arrayType
+ | simpleType
+ | markerType
+ ;
+
+markerType
+ : 'Nullable' LeftParen anyType RightParen
+ | 'LowCardinality' LeftParen anyType RightParen
+ ;
 
 simpleType
  : intType
+ | floatType
+ | decimalType
  | stringType
+ | uuidType
+ | boolType
+ | ipv4Type
+ | ipv6Type
  ;
 
 enumType: ENUM_KW LeftParen enumEntryList RightParen;
@@ -69,10 +86,19 @@ enumEntry: String Eq Number;
 
 tupleType: TUPLE_KV LeftParen tupleElementList RightParen;
 tupleElementList: tupleElement (Comma tupleElement)*;
-tupleElement: type; // TODO support named elements (Name? type)
+tupleElement: anyType; // TODO support named elements (Name? type)
 
-arrayType: ARRAY_KV LeftParen type RightParen;
-mapType: MAP_KV LeftParen key=type Comma value=type RightParen;
+arrayType: ARRAY_KV LeftParen anyType RightParen;
+mapType: MAP_KV LeftParen key=anyType Comma value=anyType RightParen;
 
-intType: 'U'? 'Int' ('8' | '16' | '32' | '64' | '128' | '256');
 stringType: 'String';
+uuidType: 'UUID';
+boolType: 'Boolean';
+intType: unsigned='U'? 'Int' bits=('8' | '16' | '32' | '64' | '128' | '256');
+floatType: 'Float' bits=('32' | '64');
+ipv4Type: 'IPV4';
+ipv6Type: 'IPV6';
+decimalType
+ : 'Decimal' bits=('32' | '64' | '128' | '256') LeftParen Comma scale=Number RightParen
+ | 'Decimal' LeftParen precision=Number Comma scale=Number RightParen
+ ;

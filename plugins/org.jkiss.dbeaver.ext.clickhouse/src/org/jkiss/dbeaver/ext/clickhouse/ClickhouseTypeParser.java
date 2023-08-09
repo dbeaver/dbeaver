@@ -21,6 +21,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.clickhouse.ClickhouseDataTypesParser.ArrayTypeContext;
 import org.jkiss.dbeaver.ext.clickhouse.ClickhouseDataTypesParser.MapTypeContext;
 import org.jkiss.dbeaver.ext.clickhouse.ClickhouseDataTypesParser.TupleTypeContext;
@@ -42,6 +43,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ClickhouseTypeParser {
+    private static final Log log = Log.getLog(ClickhouseTypeParser.class);
 
     private ClickhouseTypeParser() {
         // prevents instantiation
@@ -99,35 +101,56 @@ public class ClickhouseTypeParser {
     public static DBSDataType getType(@NotNull DBRProgressMonitor monitor, @NotNull ClickhouseDataSource dataSource, @NotNull String typeName) throws DBException {
         final var lexer = new ClickhouseDataTypesLexer(CharStreams.fromString(typeName));
         final var parser = new ClickhouseDataTypesParser(new CommonTokenStream(lexer));
-        final var type = parser.type();
+        final var type = parser.type().anyType();
+        final DBSDataType resolved;
 
         if (type.simpleType() != null) {
-            return DBUtils.resolveDataType(monitor, dataSource, type.simpleType().getText());
+            resolved = DBUtils.resolveDataType(monitor, dataSource, type.simpleType().getText());
+        } else if (type.markerType() != null) {
+            resolved = DBUtils.resolveDataType(monitor, dataSource, type.markerType().anyType().getText());
         } else if (type.tupleType() != null) {
-            return getTupleType(monitor, dataSource, type.tupleType());
+            resolved = getTupleType(monitor, dataSource, type.tupleType());
         } else if (type.mapType() != null) {
-            return getMapType(monitor, dataSource, type.mapType());
+            resolved = getMapType(monitor, dataSource, type.mapType());
         } else if (type.arrayType() != null) {
-            return getArrayType(monitor, dataSource, type.arrayType());
+            resolved = getArrayType(monitor, dataSource, type.arrayType());
         } else {
+            resolved = null;
+        }
+
+        if (resolved == null) {
+            log.debug("Can't resolve type for '" + typeName + "'");
+        }
+
+        return resolved;
+    }
+
+    @Nullable
+    private static DBSDataType getArrayType(@NotNull DBRProgressMonitor monitor, @NotNull ClickhouseDataSource dataSource, ArrayTypeContext type) throws DBException {
+        final DBSDataType componentType = getType(monitor, dataSource, type.anyType().getText());
+
+        if (componentType == null) {
             return null;
         }
+
+        return new ClickhouseArrayType(dataSource, componentType);
     }
 
-    @NotNull
-    private static DBSDataType getArrayType(@NotNull DBRProgressMonitor monitor, @NotNull ClickhouseDataSource dataSource, ArrayTypeContext type) throws DBException {
-        return new ClickhouseArrayType(dataSource, getType(monitor, dataSource, type.type().getText()));
-    }
-
-    @NotNull
+    @Nullable
     private static DBSDataType getTupleType(@NotNull DBRProgressMonitor monitor, @NotNull ClickhouseDataSource dataSource, @NotNull TupleTypeContext context) throws DBException {
         final List<String> names = new ArrayList<>();
         final List<DBSDataType> types = new ArrayList<>();
 
         if (context.tupleElementList() != null && context.tupleElementList().tupleElement() != null) {
             for (ClickhouseDataTypesParser.TupleElementContext element : context.tupleElementList().tupleElement()) {
+                final DBSDataType type = getType(monitor, dataSource, element.anyType().getText());
+
+                if (type == null) {
+                    return null;
+                }
+
                 names.add("Attr" + (names.size() + 1)); // TODO: Named tuple elements are not supported
-                types.add(getType(monitor, dataSource, element.type().getText()));
+                types.add(type);
             }
         }
 
@@ -138,10 +161,15 @@ public class ClickhouseTypeParser {
         );
     }
 
-    @NotNull
+    @Nullable
     private static DBSDataType getMapType(@NotNull DBRProgressMonitor monitor, @NotNull ClickhouseDataSource dataSource, @NotNull MapTypeContext context) throws DBException {
         final DBSDataType keyType = getType(monitor, dataSource, context.key.getText());
         final DBSDataType valueType = getType(monitor, dataSource, context.value.getText());
+
+        if (keyType == null || valueType == null) {
+            return null;
+        }
+
         return new ClickhouseMapType(dataSource, keyType, valueType);
     }
 
