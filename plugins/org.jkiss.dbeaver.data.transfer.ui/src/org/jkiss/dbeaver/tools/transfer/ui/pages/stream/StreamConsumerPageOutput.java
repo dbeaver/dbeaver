@@ -426,7 +426,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         encodingBOMCheckbox.setEnabled(!isBinary && !clipboard);
         timestampPattern.setEnabled(!clipboard);
 
-        for (EventProcessorComposite processor : processors.values()) {
+        for (EventProcessorComposite<?> processor : processors.values()) {
             processor.setProcessorAvailable(processor.isProcessorApplicable());
         }
     }
@@ -508,7 +508,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             return false;
         }
 
-        for (EventProcessorComposite processor : processors.values()) {
+        for (EventProcessorComposite<?> processor : processors.values()) {
             if (processor.isProcessorApplicable() && processor.isProcessorEnabled() && !processor.isProcessorComplete()) {
                 setErrorMessage(NLS.bind(DTMessages.data_transfer_wizard_output_event_processor_error_incomplete_configuration, processor.getDescriptor().getLabel()));
                 return false;

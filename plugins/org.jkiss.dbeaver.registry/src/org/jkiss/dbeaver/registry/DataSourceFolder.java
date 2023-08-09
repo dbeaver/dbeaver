@@ -27,8 +27,7 @@ import java.util.List;
 /**
  * DataSourceFolder
  */
-public class DataSourceFolder implements DBPDataSourceFolder
-{
+public class DataSourceFolder implements DBPDataSourceFolder {
     private final DataSourceRegistry registry;
     private DataSourceFolder parent;
     private List<DataSourceFolder> children = new ArrayList<>();
