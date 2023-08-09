@@ -24,6 +24,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
@@ -130,6 +131,18 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
                 if (activeProject == null || (!CommonUtils.isEmpty(activeProjectName) && project.getName().equals(activeProjectName))) {
                     activeProject = projectMetadata;
                 }
+
+                // To avoid search/replace functionality accidentally corrupting workspace configuration we need to
+                // mark metadata folder as hidden see dbeaver/dbeaver#20759
+                IFolder metadataFolder = project.getFolder(DBPProject.METADATA_FOLDER);
+                if (metadataFolder.exists() && !metadataFolder.isHidden()) {
+                    try {
+                        project.getFolder(".dbeaver").setHidden(true);
+                    } catch (CoreException e) {
+                        log.error("Error hiding metadata folder", e);
+                    }
+                }
+
             }
         }
     }
