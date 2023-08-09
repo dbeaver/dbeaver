@@ -36,6 +36,10 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandImageService;
 import org.eclipse.ui.commands.ICommandService;
@@ -50,10 +54,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * Action utils
@@ -448,6 +453,51 @@ public class ActionUtils
                     commandService.refreshElements(commandID, null);
                 }
             });
+        }
+    }
+
+    @Nullable
+    public static Point getLocationFromControl(@NotNull  Shell activeShell, @NotNull Control focusControl) {
+        Point location = null;
+        final Display display = activeShell.getDisplay();
+        if (focusControl instanceof Table) {
+            final Table table = (Table) focusControl;
+            final int selectionIndex = table.getSelectionIndex();
+            if (selectionIndex < 0) {
+                location = display.map(focusControl, null, table.getLocation());
+            } else {
+                Rectangle absBounds = display.map(focusControl, null, table.getItem(selectionIndex).getBounds());
+                location = new Point(absBounds.x, absBounds.y + table.getItemHeight());
+            }
+        } else if (focusControl instanceof Tree) {
+            final Tree tree = (Tree) focusControl;
+            final TreeItem[] selection = tree.getSelection();
+            if (ArrayUtils.isEmpty(selection)) {
+                location = display.map(focusControl, null, tree.getLocation());
+            } else {
+                Rectangle absBounds = display.map(focusControl, null, selection[0].getBounds());
+                location = new Point(absBounds.x, absBounds.y + tree.getItemHeight());
+            }
+        } else if (focusControl instanceof StyledText) {
+            final StyledText styledText = (StyledText) focusControl;
+            final int caretOffset = styledText.getCaretOffset();
+            location = styledText.getLocationAtOffset(caretOffset);
+            location = display.map(styledText, null, location);
+            location.y += styledText.getLineHeight();
+        }
+        return location;
+    }
+
+    @NotNull
+    public static String getLabelWithIndexMnemonic(@NotNull String label, int index) {
+        if (index < 0) {
+            throw new IllegalArgumentException("negative index: " + index);
+        } else if (index < 10) {
+            return String.format("&%d. %s", index < 9 ? index + 1 : 0, label);
+        } else if (index < 36) {
+            return String.format("&%c. %s", index - 10 + 'A', label);
+        } else {
+            return label;
         }
     }
 }
