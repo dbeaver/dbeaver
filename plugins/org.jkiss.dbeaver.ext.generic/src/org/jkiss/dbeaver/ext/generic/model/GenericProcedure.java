@@ -120,6 +120,9 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
     {
         if (columns == null) {
             loadProcedureColumns(monitor);
+            if (columns == null) {
+                columns = new ArrayList<>();
+            }
         }
         return columns;
     }
