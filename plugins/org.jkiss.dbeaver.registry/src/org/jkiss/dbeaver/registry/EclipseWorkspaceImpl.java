@@ -137,7 +137,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
                 IFolder metadataFolder = project.getFolder(DBPProject.METADATA_FOLDER);
                 if (metadataFolder.exists() && !metadataFolder.isHidden()) {
                     try {
-                        project.getFolder(".dbeaver").setHidden(true);
+                        metadataFolder.setHidden(true);
                     } catch (CoreException e) {
                         log.error("Error hiding metadata folder", e);
                     }
