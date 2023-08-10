@@ -82,8 +82,8 @@ public class DB2RunstatsToolSettings extends SQLToolExecuteSettings<DB2TableBase
     }
 
     @Override
-    public void loadConfiguration(@NotNull DBPProject project, @NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config) {
-        super.loadConfiguration(project, runnableContext, config);
+    public void loadConfiguration(@NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config, @NotNull DBPProject project) {
+        super.loadConfiguration(runnableContext, config, project);
         columnStat = JSONUtils.getString(config, "column_stat"); //$NON-NLS-1$
         indexStat = JSONUtils.getString(config, "index_stat"); //$NON-NLS-1$
         isTableSampling = JSONUtils.getBoolean(config, "is_table_sampling"); //$NON-NLS-1$

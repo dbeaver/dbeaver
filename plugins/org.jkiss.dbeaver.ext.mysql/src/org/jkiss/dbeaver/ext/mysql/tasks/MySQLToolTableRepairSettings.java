@@ -59,8 +59,8 @@ public class MySQLToolTableRepairSettings extends SQLToolExecuteSettings<MySQLTa
     }
 
     @Override
-    public void loadConfiguration(@NotNull DBPProject project, @NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config) {
-        super.loadConfiguration(project, runnableContext, config);
+    public void loadConfiguration(@NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config, @NotNull DBPProject project) {
+        super.loadConfiguration(runnableContext, config, project);
         isQuick = JSONUtils.getBoolean(config, "quick");
         isExtended = JSONUtils.getBoolean(config, "extended");
         useFRM = JSONUtils.getBoolean(config, "use_frm");

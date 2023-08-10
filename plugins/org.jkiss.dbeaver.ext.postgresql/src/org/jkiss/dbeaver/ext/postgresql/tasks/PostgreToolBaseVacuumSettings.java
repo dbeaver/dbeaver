@@ -99,8 +99,8 @@ public class PostgreToolBaseVacuumSettings extends SQLToolExecuteSettings<DBSObj
     }
 
     @Override
-    public void loadConfiguration(@NotNull DBPProject project, @NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config) {
-        super.loadConfiguration(project, runnableContext, config);
+    public void loadConfiguration(@NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config, @NotNull DBPProject project) {
+        super.loadConfiguration(runnableContext, config, project);
         isFull = JSONUtils.getBoolean(config, "full");
         isFreeze = JSONUtils.getBoolean(config, "freeze");
         isAnalyzed = JSONUtils.getBoolean(config, "analyze");

@@ -39,8 +39,8 @@ public class MySQLToolTableTruncateSettings extends SQLToolExecuteSettings<MySQL
     }
 
     @Override
-    public void loadConfiguration(@NotNull DBPProject project, @NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config) {
-        super.loadConfiguration(project, runnableContext, config);
+    public void loadConfiguration(@NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config, @NotNull DBPProject project) {
+        super.loadConfiguration(runnableContext, config, project);
         isForce = JSONUtils.getBoolean(config, "force");
     }
 

@@ -74,8 +74,8 @@ public class PostgreToolTableTruncateSettings extends SQLToolExecuteSettings<Pos
     }
 
     @Override
-    public void loadConfiguration(@NotNull DBPProject project, @NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config) {
-        super.loadConfiguration(project, runnableContext, config);
+    public void loadConfiguration(@NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config, @NotNull DBPProject project) {
+        super.loadConfiguration(runnableContext, config, project);
         isRunning = JSONUtils.getBoolean(config, "run_in_separate_transaction");
         isOnly = JSONUtils.getBoolean(config, "only");
         isRestarting = JSONUtils.getBoolean(config, "restart_identity");

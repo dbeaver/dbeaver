@@ -41,8 +41,8 @@ public class OracleToolTableGatherStatisticsSettings extends SQLToolExecuteSetti
     }
 
     @Override
-    public void loadConfiguration(@NotNull DBPProject project, @NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config) {
-        super.loadConfiguration(project, runnableContext, config);
+    public void loadConfiguration(@NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config, @NotNull DBPProject project) {
+        super.loadConfiguration(runnableContext, config, project);
         samplePercent = JSONUtils.getInteger(config, "sample_percent");
     }
 

@@ -58,8 +58,8 @@ public class DB2ReorgIndexToolSettings extends SQLToolExecuteSettings<DB2TableBa
     }
 
     @Override
-    public void loadConfiguration(@NotNull DBPProject project, @NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config) {
-        super.loadConfiguration(project, runnableContext, config);
+    public void loadConfiguration(@NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config, @NotNull DBPProject project) {
+        super.loadConfiguration(runnableContext, config, project);
         tableAccess = JSONUtils.getString(config, "table_access"); //$NON-NLS-1$
         cleanupOption = JSONUtils.getString(config, "option"); //$NON-NLS-1$
     }

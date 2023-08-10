@@ -63,7 +63,7 @@ public class SQLToolExecuteSettings<OBJECT_TYPE extends DBSObject> implements DB
         objectList.addAll(inputObjects);
     }
 
-    public void loadConfiguration(@NotNull DBPProject project, @NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config) {
+    public void loadConfiguration(@NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config, @NotNull DBPProject project) {
         try {
             runnableContext.run(true, true, monitor -> {
                 List<OBJECT_TYPE> objList = new ArrayList<>();

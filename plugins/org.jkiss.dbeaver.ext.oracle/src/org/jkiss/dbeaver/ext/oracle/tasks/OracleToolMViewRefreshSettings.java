@@ -79,8 +79,8 @@ public class OracleToolMViewRefreshSettings extends SQLToolExecuteSettings<Oracl
     }
 
     @Override
-    public void loadConfiguration(@NotNull DBPProject project, @NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config) {
-        super.loadConfiguration(project, runnableContext, config);
+    public void loadConfiguration(@NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config, @NotNull DBPProject project) {
+        super.loadConfiguration(runnableContext, config, project);
         isFast = JSONUtils.getBoolean(config, "fast");
         isForce = JSONUtils.getBoolean(config, "force");
         isComplete = JSONUtils.getBoolean(config, "complete");
