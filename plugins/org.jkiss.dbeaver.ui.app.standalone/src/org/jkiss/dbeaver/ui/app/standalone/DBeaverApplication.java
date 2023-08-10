@@ -22,7 +22,6 @@ import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.equinox.internal.security.auth.AuthPlugin;
 import org.eclipse.equinox.internal.security.storage.StorageUtils;
-import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.osgi.service.environment.EnvironmentInfo;
@@ -110,7 +109,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     static DBeaverApplication instance;
 
-    private static final Path filePath = Path.of(RuntimeUtils.getWorkingDirectory("DBeaverData")).resolve("security")
+    private static final Path storagePath = Path.of(RuntimeUtils.getWorkingDirectory("DBeaverData")).resolve("security")
         .resolve("secure_storage");
 
     private boolean exclusiveMode = false;
@@ -331,18 +330,16 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         } catch (DBException e) {
             log.error(e);
         }
-        Path userStorage = Path.of(RuntimeUtils.getWorkingDirectory("DBeaverData")).resolve("security")
-            .resolve("secure_storage");
         EnvironmentInfo environmentInfoService = AuthPlugin.getDefault().getEnvironmentInfoService();
         String[] nonFrameworkArgs = environmentInfoService.getNonFrameworkArgs();
-        if (!isDistributed() && userStorage.toFile().exists() && Arrays.stream(nonFrameworkArgs)
+        if (!isDistributed() && storagePath.toFile().exists() && Arrays.stream(nonFrameworkArgs)
             .filter(it -> it.equals("-eclipse.keyring")).findAny().isEmpty()) {
             // Unfortunately the Equinox reads the eclipse.keyring from arguments
             // before any DBeaver controlled part is executed and there is no way
             // to modify the variable after that without reflection.
             String[] updatedArgs = Arrays.copyOf(nonFrameworkArgs, nonFrameworkArgs.length + 2);
             updatedArgs[updatedArgs.length - 2] = "-eclipse.keyring";
-            updatedArgs[updatedArgs.length - 1] = userStorage.toString();
+            updatedArgs[updatedArgs.length - 1] = storagePath.toString();
             try {
                 Field appArgs = environmentInfoService.getClass().getDeclaredField("appArgs");
                 appArgs.setAccessible(true);
@@ -356,18 +353,18 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     private void migrateFromEclipseStorage() throws IOException, URISyntaxException {
         Path oldLocation = Path.of(StorageUtils.getDefaultLocation().toURI());
-        Files.createDirectories(filePath.getParent());
-        Files.copy(oldLocation, filePath, StandardCopyOption.REPLACE_EXISTING);
+        Files.createDirectories(storagePath.getParent());
+        Files.copy(oldLocation, storagePath, StandardCopyOption.REPLACE_EXISTING);
     }
 
     private void tryCreateSecretFile() throws DBException {
         try {
-            if (!filePath.toFile().exists()) {
+            if (!storagePath.toFile().exists()) {
                 if (Path.of(StorageUtils.getDefaultLocation().toURI()).toFile().exists()) {
                     migrateFromEclipseStorage();
                 } else {
-                    Files.createDirectories(filePath.getParent());
-                    Files.createFile(filePath);
+                    Files.createDirectories(storagePath.getParent());
+                    Files.createFile(storagePath);
                 }
             }
         } catch (IOException | URISyntaxException e) {
