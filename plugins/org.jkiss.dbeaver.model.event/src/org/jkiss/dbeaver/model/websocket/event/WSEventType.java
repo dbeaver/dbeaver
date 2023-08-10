@@ -41,6 +41,7 @@ public enum WSEventType {
     SESSION_WEBSOCKET_CONNECTED("cb_session_websocket_connected", WSEventTopic.SESSION, WSSocketConnectedEvent.class),
     SESSION_STATE("cb_session_state", WSEventTopic.SESSION, WSSessionStateEvent.class),
     SESSION_EXPIRED("cb_session_expired", WSEventTopic.SESSION, WSSessionExpiredEvent.class),
+    ACCESS_TOKEN_EXPIRED("cb_access_token_expired", WSEventTopic.SESSION, WSSessionExpiredEvent.class),
 
     DATASOURCE_CREATED("cb_datasource_created", WSEventTopic.DATASOURCE, WSDataSourceEvent.class),
     DATASOURCE_UPDATED("cb_datasource_updated", WSEventTopic.DATASOURCE, WSDataSourceEvent.class),
