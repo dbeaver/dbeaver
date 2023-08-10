@@ -19,9 +19,13 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.accessibility.Accessible;
+import org.eclipse.swt.accessibility.AccessibleAdapter;
+import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
@@ -86,7 +90,8 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
         parent.layout();
 
         // Activate items control on focus
-        itemControl.getItemsViewer().getControl().addFocusListener(new FocusListener() {
+        Control nodeItemsViewer = itemControl.getItemsViewer().getControl();
+        nodeItemsViewer.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
                 // Update selection provider and selection
@@ -112,6 +117,15 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
                 itemControl.activate(false);
             }
         });
+
+        {
+            final Accessible accessible = nodeItemsViewer.getAccessible();
+            accessible.addAccessibleListener(new AccessibleAdapter() {
+                public void getName(AccessibleEvent e) {
+                    e.result = "Folder " + node.getName();
+                }
+            });
+        }
     }
 
     @Override
