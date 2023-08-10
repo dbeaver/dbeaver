@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.altibase.model;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericFunctionResultType;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
@@ -41,6 +42,7 @@ public abstract class AltibaseProcedureBase extends GenericProcedure implements 
 
     protected List<GenericProcedureParameter> columns;
     protected static final Log log = Log.getLog(AltibaseProcedureBase.class);
+    private DBSProcedureType procedureType;
 
     /**
      * Constructor
@@ -48,6 +50,7 @@ public abstract class AltibaseProcedureBase extends GenericProcedure implements 
     public AltibaseProcedureBase(GenericStructContainer container, String procedureName, String specificName,
             String description, DBSProcedureType procedureType, GenericFunctionResultType functionResultType) {
         super(container, procedureName, specificName, description, procedureType, functionResultType);
+        this.procedureType = procedureType;
     }
 
     @Override
@@ -88,20 +91,18 @@ public abstract class AltibaseProcedureBase extends GenericProcedure implements 
      * Set procedure type, especially for Typeset
      */
     public void setProcedureType(DBSProcedureType procedureType) {
-        Field procedureTypeField = null;
-        try {
-            procedureTypeField = 
-                    AltibaseProcedureBase.class.getSuperclass().getDeclaredField("procedureType");
-            procedureTypeField.setAccessible(true);
-            procedureTypeField.set(this, procedureType);
-        } catch (IllegalArgumentException e) {
-            log.error(e.getMessage());
-        } catch (IllegalAccessException e) {
-            log.error(e.getMessage());
-        } catch (NoSuchFieldException e) {
-            log.error(e.getMessage());
-        } catch (SecurityException e) {
-            log.error(e.getMessage());
+        this.procedureType = procedureType;
+    }
+    
+    /**
+     * Get Procedure type, especially for TYPESET
+     */
+    public String getProcedureTypeName() {
+        DBSProcedureType procedureType = getProcedureType();
+        if (procedureType == DBSProcedureType.UNKNOWN) {
+            return AltibaseConstants.OBJ_TYPE_TYPESET;
+        } else {
+            return procedureType.name();
         }
     }
     

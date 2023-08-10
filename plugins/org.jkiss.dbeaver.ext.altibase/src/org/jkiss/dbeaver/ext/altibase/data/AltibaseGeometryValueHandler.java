@@ -121,31 +121,37 @@ public class AltibaseGeometryValueHandler extends GISGeometryValueHandler implem
             DBSTypedObject paramType, int paramIndex, Object value) throws DBCException, SQLException {
 
         int srid = 0;
+        DBSTypedObject attribute = null;
+        Object rawValue = null;
         
         if (paramType instanceof DBDAttributeBinding) {
-            paramType = ((DBDAttributeBinding) paramType).getAttribute();
+            attribute = ((DBDAttributeBinding) paramType).getAttribute();
+        } else {
+            attribute = paramType;
         }
         
         if (value instanceof DBGeometry) {
             srid = ((DBGeometry) value).getSRID();
-            value = ((DBGeometry) value).getRawValue();
+            rawValue = ((DBGeometry) value).getRawValue();
+        } else {
+            rawValue = value;
         }
         
-        if (srid == 0 && paramType instanceof GisAttribute) {
-            srid = ((GisAttribute) paramType).getAttributeGeometrySRID(session.getProgressMonitor());
+        if (srid == 0 && attribute instanceof GisAttribute) {
+            srid = ((GisAttribute) attribute).getAttributeGeometrySRID(session.getProgressMonitor());
         }
         
-        if (value == null) {
-            statement.setNull(paramIndex, paramType.getTypeID());
-        } else if (value instanceof Geometry) {
-            if (((Geometry) value).getSRID() == 0) {
-                ((Geometry) value).setSRID(srid);
+        if (rawValue == null) {
+            statement.setNull(paramIndex, attribute.getTypeID());
+        } else if (rawValue instanceof Geometry) {
+            if (((Geometry) rawValue).getSRID() == 0) {
+                ((Geometry) rawValue).setSRID(srid);
             }
             // format: GEOMFROMTEXT(?, SRID)
-            statement.setString(paramIndex, new WKTWriter(4).write((Geometry) value));
+            statement.setString(paramIndex, new WKTWriter(4).write((Geometry) rawValue));
 
         } else {
-            String strValue = value.toString();
+            String strValue = rawValue.toString();
             if (srid != 0 && !strValue.startsWith("SRID=")) {
                 strValue = "SRID=" + srid + ";" + strValue;
             }

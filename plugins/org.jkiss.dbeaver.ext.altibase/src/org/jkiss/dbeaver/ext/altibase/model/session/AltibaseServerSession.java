@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model.session;
 
-import org.jkiss.dbeaver.ext.altibase.AltibaseUtils;
 import org.jkiss.dbeaver.model.admin.sessions.AbstractServerSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;

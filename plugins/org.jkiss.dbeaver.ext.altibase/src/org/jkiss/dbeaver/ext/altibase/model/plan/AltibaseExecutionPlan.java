@@ -162,7 +162,7 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
      * Returns a method (BYTE xxxx): BYTE data type argument of method with the given name. 
      */
     @SuppressWarnings("rawtypes")
-    private Method getMethod2SetExplainWithByteArgType(Class class1, String methodName, String argName) throws InvocationTargetException {
+    private Method getMethod2SetExplainWithByteArgType(Class class1, String methodName, String argName) throws NoSuchMethodException {
         for (Method method : class1.getMethods()) {
             if (method.getName().equals(methodName)) {
                 for (Class paramType : method.getParameterTypes()) {
@@ -173,8 +173,7 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
             }
         }
 
-        throw new InvocationTargetException(new Throwable(), 
-                String.format("Unable to find the target method: [class] %s, [method] %s, [argument type] %s", 
+        throw new NoSuchMethodException(String.format("Unable to find the target method: [class] %s, [method] %s, [argument type] %s", 
                         class1.getName(), setExplainPlan, AltibaseConstants.TYPE_NAME_BYTE.toLowerCase()));
     }
 }

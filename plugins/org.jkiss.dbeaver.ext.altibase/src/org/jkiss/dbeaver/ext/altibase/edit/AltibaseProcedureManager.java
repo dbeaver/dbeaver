@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.altibase.edit;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone;
 import org.jkiss.dbeaver.ext.generic.edit.GenericProcedureManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
@@ -74,9 +73,8 @@ public class AltibaseProcedureManager extends GenericProcedureManager  {
             List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         
         final AltibaseProcedureStandAlone object = (AltibaseProcedureStandAlone) command.getObject();
-        DBSProcedureType procType = object.getProcedureType();
-        String procTypeName = (procType == DBSProcedureType.UNKNOWN) ? AltibaseConstants.OBJ_TYPE_TYPESET : procType.name();
-        
+        String procTypeName = object.getProcedureTypeName();
+
         actions.add(new SQLDatabasePersistAction(
                 "Drop procedure", "DROP " + procTypeName + " " + object.getFullyQualifiedName(DBPEvaluationContext.DDL)));
     }

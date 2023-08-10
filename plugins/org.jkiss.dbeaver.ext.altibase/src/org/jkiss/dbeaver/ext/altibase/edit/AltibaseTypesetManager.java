@@ -61,7 +61,7 @@ public class AltibaseTypesetManager extends GenericProcedureManager {
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table,
-                "DROP TYPESET" + " " + procedureName)
+                "DROP TYPESET " + procedureName)
         );
     }
     
@@ -69,15 +69,15 @@ public class AltibaseTypesetManager extends GenericProcedureManager {
     protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, 
             Map<String, Object> options) throws DBException {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
-            throw new DBException("Procedure name cannot be empty");
+            throw new DBException("Typeset name cannot be empty");
         }
         if (CommonUtils.isEmpty(command.getObject().getSource())) {
-            throw new DBException("Procedure body cannot be empty");
+            throw new DBException("Typeset body cannot be empty");
         }
     }
 
     private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, GenericProcedure procedure) {
         actions.add(new SQLDatabasePersistAction(
-                "Create procedure", procedure.getSource()));
+                "Create typeset", procedure.getSource()));
     }
 }

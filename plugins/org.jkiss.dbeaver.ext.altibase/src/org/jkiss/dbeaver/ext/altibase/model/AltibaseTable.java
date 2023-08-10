@@ -113,7 +113,7 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
     
     @Property(viewable = true, order = 23, editable = false, formatter = ByteNumberFormat.class)
     public Long getTableSizeInDisk(DBRProgressMonitor monitor) throws DBCException {
-        if (hasStatistics() == false) {
+        if (!hasStatistics()) {
             loadSize(monitor);
         }
 
@@ -138,7 +138,7 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
 
     @Override
     public long getStatObjectSize() {
-        return (hasStatistics() == false) ? 0 : tableSize[SIZE_IDX_MEM] + tableSize[SIZE_IDX_DISK];
+        return (!hasStatistics()) ? 0 : tableSize[SIZE_IDX_MEM] + tableSize[SIZE_IDX_DISK];
     }
     
     private void loadSize(DBRProgressMonitor monitor) throws DBCException {

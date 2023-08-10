@@ -36,17 +36,7 @@ public class AltibaseProcedureStandAlone extends AltibaseProcedureBase {
         super(container, procedureName, specificName, description, procedureType, functionResultType);
     }
 
-    /**
-     * Get Procedure type, especially for TYPESET
-     */
-    public String getProcedureTypeName() {
-        DBSProcedureType procedureType = getProcedureType();
-        if (procedureType == DBSProcedureType.UNKNOWN) {
-            return AltibaseConstants.OBJ_TYPE_TYPESET;
-        } else {
-            return procedureType.name();
-        }
-    }
+
     
     @Property(viewable = false, hidden = true, order = 5)
     public GenericPackage getPackage() {
