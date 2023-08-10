@@ -79,6 +79,7 @@ public class Spreadsheet extends LightGrid implements Listener {
     @Nullable
     private final IGridController gridController;
 
+    private boolean accessibilityEnabled;
     private Clipboard clipboard;
 
     public Spreadsheet(
@@ -534,4 +535,13 @@ public class Spreadsheet extends LightGrid implements Listener {
     private void hookAccessibility() {
         SpreadsheetAccessibleAdapter.install(this);
     }
+
+    boolean isAccessibilityEnabled() {
+        return accessibilityEnabled;
+    }
+
+    void setAccessibilityEnabled(boolean enabled) {
+        this.accessibilityEnabled = enabled;
+    }
+
 }

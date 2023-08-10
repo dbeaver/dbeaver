@@ -19,10 +19,8 @@ package org.jkiss.dbeaver.ui.controls.folders;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.ACC;
-import org.eclipse.swt.accessibility.AccessibleAdapter;
 import org.eclipse.swt.accessibility.AccessibleControlAdapter;
 import org.eclipse.swt.accessibility.AccessibleControlEvent;
-import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
@@ -161,12 +159,12 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
                         e.detail = ACC.ROLE_TABITEM;
                     }
                 });
-                newContent.getAccessible().addAccessibleListener(new AccessibleAdapter() {
-                    @Override
-                    public void getName(AccessibleEvent e) {
-                        e.result = folder.getTooltip();
-                    }
-                });
+//                newContent.getAccessible().addAccessibleListener(new AccessibleAdapter() {
+//                    @Override
+//                    public void getName(AccessibleEvent e) {
+//                        e.result = folder.getTooltip();
+//                    }
+//                });
                 newFolder.createControl(newContent);
                 contentsMap.put(folder, newContent);
             }

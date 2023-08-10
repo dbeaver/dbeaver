@@ -122,7 +122,9 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
             final Accessible accessible = nodeItemsViewer.getAccessible();
             accessible.addAccessibleListener(new AccessibleAdapter() {
                 public void getName(AccessibleEvent e) {
-                    e.result = "Folder " + node.getName();
+                    if (e.childID < 0) {
+                        e.result = "Folder " + node.getName();
+                    }
                 }
             });
         }

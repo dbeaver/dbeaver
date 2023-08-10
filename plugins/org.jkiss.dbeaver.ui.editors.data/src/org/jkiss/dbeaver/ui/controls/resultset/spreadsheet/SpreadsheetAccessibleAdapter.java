@@ -135,6 +135,7 @@ public class SpreadsheetAccessibleAdapter extends AccessibleControlAdapter imple
                 return;
             }
 
+            spreadsheet.setAccessibilityEnabled(true);
             valueStr = "";
             valueType = "";
 
