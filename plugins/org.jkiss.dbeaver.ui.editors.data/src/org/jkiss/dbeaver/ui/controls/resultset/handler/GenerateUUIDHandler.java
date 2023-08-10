@@ -94,7 +94,7 @@ public class GenerateUUIDHandler extends NavigatorHandlerObjectBase {
                         new Object[]{generateUUID()},
                         new Transfer[]{textTransfer});
                     DBeaverNotifications.showNotification(
-                        "uuid-generator",
+                        "rsv.uuid.copied",
                         DataEditorsMessages.notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy,
                         DataEditorsMessages.notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy_text,
                         DBPMessageType.INFORMATION,

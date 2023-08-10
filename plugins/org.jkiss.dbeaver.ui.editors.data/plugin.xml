@@ -1511,4 +1511,9 @@
         </dataSourceConfigurator>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.notifications">
+        <notification id="rsv.filter.saved" title="Result Set: Filter saved"/>
+        <notification id="rsv.uuid.copied" title="Result Set: UUID value copied"/>
+    </extension>
+
 </plugin>

@@ -1448,4 +1448,8 @@
             <item commandId="org.jkiss.dbeaver.ui.editors.sql.show.variables" defaultVisibility="true"/>
         </toolBar>
     </extension>
+
+    <extension point="org.jkiss.dbeaver.notifications">
+        <notification id="sql.sourceCode.transform" title="SQL: Transformed from source code"/>
+    </extension>
 </plugin>

@@ -14,4 +14,9 @@
                 handler="org.jkiss.dbeaver.tasks.ui.handlers.TaskClearHistoryHandler"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.notifications">
+        <notification id="task.execute.success" title="Task execution success"/>
+        <notification id="task.execute.failure" title="Task execution failure"/>
+    </extension>
+
 </plugin>

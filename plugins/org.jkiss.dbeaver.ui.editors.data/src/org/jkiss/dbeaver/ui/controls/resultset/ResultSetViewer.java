@@ -589,7 +589,8 @@ public class ResultSetViewer extends Viewer
         DataFilterRegistry.getInstance().saveDataFilter(dataContainer, model.getDataFilter());
 
         if (filtersPanel != null) {
-            DBeaverNotifications.showNotification(DBeaverNotifications.NT_GENERAL,
+            DBeaverNotifications.showNotification(
+                "rsv.filter.saved",
                 "Data filter was saved",
                 filtersPanel.getFilterText(),
                 DBPMessageType.INFORMATION, null);

@@ -45,9 +45,9 @@ import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguageManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.SWTBrowserRegistry;
-import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageDescriptor;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
+import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
@@ -178,10 +178,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             Group notificationsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_notifications, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             notificationsEnabled = UIUtils.createCheckbox(notificationsGroup,
-                CoreMessages.pref_page_ui_general_label_enable_notifications,
-                CoreMessages.pref_page_ui_general_label_enable_notifications_tip, false, 2);
+                CoreMessages.pref_page_notifications_enable_notifications_label,
+                CoreMessages.pref_page_notifications_enable_notifications_label_tip, false, 2);
 
-            notificationsCloseDelay = UIUtils.createLabelSpinner(notificationsGroup, CoreMessages.pref_page_ui_general_label_notifications_close_delay, 0, 0, Integer.MAX_VALUE);
+            notificationsCloseDelay = UIUtils.createLabelSpinner(notificationsGroup, CoreMessages.pref_page_notifications_label_notifications_close_delay, 0, 0, Integer.MAX_VALUE);
         }
 
         // Agent settings

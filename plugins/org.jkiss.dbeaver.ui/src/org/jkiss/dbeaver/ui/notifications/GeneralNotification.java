@@ -22,6 +22,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.notifications.sounds.BeepSoundProvider;
+import org.jkiss.dbeaver.ui.notifications.sounds.FileSoundProvider;
 
 import java.util.Date;
 
@@ -40,7 +42,7 @@ public class GeneralNotification extends AbstractUiNotification {
         @Nullable DBPMessageType messageType,
         @Nullable Runnable feedback)
     {
-        super("org.jkiss.dbeaver.notifications.event." + id);
+        super(id);
         this.label = title;
         this.description = description;
         this.messageType = messageType;
@@ -86,6 +88,20 @@ public class GeneralNotification extends AbstractUiNotification {
                 return DBeaverIcons.getImage(DBIcon.STATUS_WARNING);
             default:
                 return DBeaverIcons.getImage(DBIcon.STATUS_INFO);
+        }
+    }
+
+    @Nullable
+    @Override
+    public NotificationSoundProvider getNotificationSoundProvider() {
+        final NotificationSettings settings = NotificationUtils.getNotificationSettings(getId());
+
+        if (!settings.isPlaySound()) {
+            return null;
+        } else if (settings.getSoundFile() == null) {
+            return BeepSoundProvider.INSTANCE;
+        } else {
+            return new FileSoundProvider(settings.getSoundFile());
         }
     }
 

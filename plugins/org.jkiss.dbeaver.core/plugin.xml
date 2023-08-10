@@ -1182,6 +1182,7 @@
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.sql" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.editor.sql.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.entity" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.editor.entity.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.ui.general" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.ui.general.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.ui.notifications" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.ui.notifications.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.dbeaver" label="dbeaver beaver"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.connection" label="%keyword.org.jkiss.dbeaver.core.keyword.connection"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.resultset.grid" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.resultset.grid.label"/>
@@ -1297,6 +1298,15 @@
             id="org.jkiss.dbeaver.preferences.main.toolbar.customization"
             class="org.jkiss.dbeaver.ui.preferences.PrefPageToolbarCustomization"
             name="%org.jkiss.dbeaver.preferences.main.toolbar.customization.name"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.notifications">
+        <notification id="commit" title="Transaction commit"/>
+        <notification id="rollback" title="Transaction rollback"/>
+        <notification id="rollback.idle" title="Transaction rollback after long idle period"/>
+        <notification id="reconnect.success" title="Datasource invalidation success"/>
+        <notification id="reconnect.failure" title="Datasource invalidation failure"/>
+        <notification id="agent.notify" title="Agent notification"/>
     </extension>
 
 </plugin>

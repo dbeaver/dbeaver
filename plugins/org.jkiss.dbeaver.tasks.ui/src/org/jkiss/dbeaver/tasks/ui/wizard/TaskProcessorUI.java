@@ -112,15 +112,20 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
             }
 
             if (isShowFinalMessage() && !hasErrors) {
-                // Show message box
                 DBeaverNotifications.showNotification(
-                    "task",
+                    "task.execute.success",
                     task == null ? this.task.getName() : task.getName(),
                     completeMessage.toString(),
                     DBPMessageType.INFORMATION,
                     null);
-            } else if (error != null && !(error instanceof InterruptedException)) {
-                DBWorkbench.getPlatformUI().showError("Task error", "Task execution failed", error);
+            } else if (error != null && !(error instanceof InterruptedException)) { ;
+                DBeaverNotifications.showNotification(
+                    "task.execute.failure",
+                    task == null ? this.task.getName() : task.getName(),
+                    error.getMessage(),
+                    DBPMessageType.ERROR,
+                    () -> DBWorkbench.getPlatformUI().showError("Task error", "Task execution failed", error)
+                );
             }
         });
     }

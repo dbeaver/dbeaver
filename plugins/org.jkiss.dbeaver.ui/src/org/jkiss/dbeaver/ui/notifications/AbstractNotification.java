@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.jkiss.dbeaver.ui.notifications;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.utils.CommonUtils;
 
@@ -19,18 +20,19 @@ import java.util.Date;
  * Copied from Mylyn sources
  */
 public abstract class AbstractNotification implements Comparable<AbstractNotification>, DBPAdaptable {
-    private final String eventId;
+    private final String id;
 
-    public AbstractNotification(String eventId) {
-        this.eventId = eventId;
+    public AbstractNotification(@NotNull String id) {
+        this.id = id;
     }
 
     public int compareTo(AbstractNotification o) {
         return o == null ? 1 : CommonUtils.compare(this.getDate(), o.getDate());
     }
 
-    public String getEventId() {
-        return this.eventId;
+    @NotNull
+    public String getId() {
+        return this.id;
     }
 
     public abstract Date getDate();

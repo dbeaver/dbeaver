@@ -16,11 +16,15 @@
  */
 package org.jkiss.dbeaver.ui.notifications;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPMessageType;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
 import java.util.Collections;
 
 public abstract class NotificationUtils {
@@ -29,13 +33,13 @@ public abstract class NotificationUtils {
 
     private static final DatabaseNotificationSink NOTIFICATION_SINK = new DatabaseNotificationSink();
 
-
-    public static void sendNotification(DBPDataSource dataSource, String id, String text) {
-        sendNotification(dataSource, id, text, null, null);
-    }
+    private static final String NOTIFICATIONS_SETTINGS_PREFIX = "notifications.settings."; //$NON-NLS-1$
+    private static final String NOTIFICATIONS_KEY_ENABLE_POPUP = ".enablePopup"; //$NON-NLS-1$
+    private static final String NOTIFICATIONS_KEY_ENABLE_SOUND = ".enableSound"; //$NON-NLS-1$
+    private static final String NOTIFICATIONS_KEY_SOUND_FILE = ".soundFile"; //$NON-NLS-1$
 
     public static void sendNotification(DBPDataSource dataSource, String id, String text, DBPMessageType messageType, Runnable feedback) {
-        if (!ModelPreferences.getPreferences().getBoolean(ModelPreferences.NOTIFICATIONS_ENABLED)) {
+        if (!isNotificationEnabled(id)) {
             return;
         }
         AbstractNotification notification = new DatabaseNotification(
@@ -54,7 +58,7 @@ public abstract class NotificationUtils {
     }
 
     public static void sendNotification(String id, String title, String text, DBPMessageType messageType, Runnable feedback) {
-        if (!ModelPreferences.getPreferences().getBoolean(ModelPreferences.NOTIFICATIONS_ENABLED)) {
+        if (!isNotificationEnabled(id)) {
             return;
         }
         AbstractNotification notification = new GeneralNotification(
@@ -72,4 +76,43 @@ public abstract class NotificationUtils {
         }
     }
 
+    @NotNull
+    public static NotificationSettings getNotificationSettings(@NotNull String id) {
+        final String enablePopupKey = NOTIFICATIONS_SETTINGS_PREFIX + id + NOTIFICATIONS_KEY_ENABLE_POPUP;
+        final String enableSoundKey = NOTIFICATIONS_SETTINGS_PREFIX + id + NOTIFICATIONS_KEY_ENABLE_SOUND;
+        final String soundFileKey = NOTIFICATIONS_SETTINGS_PREFIX + id + NOTIFICATIONS_KEY_SOUND_FILE;
+
+        final DBPPreferenceStore preferences = ModelPreferences.getPreferences();
+        preferences.setDefault(enablePopupKey, true);
+        preferences.setDefault(enableSoundKey, true);
+
+        final NotificationSettings settings = new NotificationSettings();
+        settings.setShowPopup(preferences.getBoolean(enablePopupKey));
+        settings.setPlaySound(preferences.getBoolean(enableSoundKey));
+        settings.setSoundFile(CommonUtils.isEmpty(preferences.getString(soundFileKey)) ? null : new File(preferences.getString(soundFileKey)));
+
+        return settings;
+    }
+
+    public static void setNotificationSettings(@NotNull String id, @NotNull NotificationSettings settings) {
+        final String enablePopupKey = NOTIFICATIONS_SETTINGS_PREFIX + id + NOTIFICATIONS_KEY_ENABLE_POPUP;
+        final String enableSoundKey = NOTIFICATIONS_SETTINGS_PREFIX + id + NOTIFICATIONS_KEY_ENABLE_SOUND;
+        final String soundFileKey = NOTIFICATIONS_SETTINGS_PREFIX + id + NOTIFICATIONS_KEY_SOUND_FILE;
+
+        final DBPPreferenceStore preferences = ModelPreferences.getPreferences();
+        preferences.setDefault(enablePopupKey, true);
+        preferences.setDefault(enableSoundKey, true);
+
+        preferences.setValue(enablePopupKey, settings.isShowPopup());
+        preferences.setValue(enableSoundKey, settings.isPlaySound());
+        preferences.setValue(soundFileKey, settings.getSoundFile() == null ? "" : settings.getSoundFile().toString());
+    }
+
+    private static boolean isNotificationEnabled(@NotNull String id) {
+        if (ModelPreferences.getPreferences().getBoolean(ModelPreferences.NOTIFICATIONS_ENABLED)) {
+            return getNotificationSettings(id).isShowPopup();
+        } else {
+            return false;
+        }
+    }
 }

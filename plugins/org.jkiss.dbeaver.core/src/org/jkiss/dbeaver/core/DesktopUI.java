@@ -164,7 +164,7 @@ public class DesktopUI implements DBPPlatformUI {
             getInstance().trayItem.notify(message, status);
         } else {
             DBeaverNotifications.showNotification(
-                "agentNotify",
+                "agent.notify",
                 "Agent Notification",
                 message,
                 status == IStatus.INFO ? DBPMessageType.INFORMATION :
