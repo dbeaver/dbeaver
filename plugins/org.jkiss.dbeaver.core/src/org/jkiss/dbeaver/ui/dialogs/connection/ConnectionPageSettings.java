@@ -443,9 +443,14 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 if (page.getControl() == null) {
                     // Create page
                     Composite panel = (Composite) selection.getControl();
-                    page.createControl(panel);
-                    Dialog.applyDialogFont(panel);
-                    panel.layout(true, true);
+                    panel.setRedraw(false);
+                    try {
+                        page.createControl(panel);
+                        Dialog.applyDialogFont(panel);
+                        panel.layout(true, true);
+                    } finally {
+                        panel.setRedraw(true);
+                    }
                 }
                 page.setVisible(true);
             }
