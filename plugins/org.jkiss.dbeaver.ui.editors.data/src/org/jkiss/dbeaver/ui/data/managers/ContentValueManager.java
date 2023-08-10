@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyManager;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
@@ -60,9 +61,9 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.awt.*;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 
@@ -147,17 +148,7 @@ public class ContentValueManager extends BaseValueManager {
     }
 
     private static boolean openExternalFile(@NotNull Path path) {
-        File file = path.toFile();
-        if (!file.exists()) {
-            return false;
-        }
-        try {
-            Desktop.getDesktop().open(file);
-            return true;
-        } catch (IOException e) {
-            log.error("Unable to open external file", e);
-            return false;
-        }
+        return Files.exists(path) && ShellUtils.openExternalFile(path);
     }
 
     private static void getDBDContent(Object value) throws IOException, DBCException {
@@ -216,7 +207,7 @@ public class ContentValueManager extends BaseValueManager {
                     }
                 });
             } else {
-                Desktop.getDesktop().open(tmpFile);
+                ShellUtils.openExternalFile(tmpFile.toPath());
             }
 
 
