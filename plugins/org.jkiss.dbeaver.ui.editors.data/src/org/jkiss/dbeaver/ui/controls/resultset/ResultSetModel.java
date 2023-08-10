@@ -1123,7 +1123,12 @@ public class ResultSetModel {
                     }
                     Object cell1 = getCellValue(new ResultSetCellLocation(binding, row1));
                     Object cell2 = getCellValue(new ResultSetCellLocation(binding, row2));
-                    result = DBUtils.compareDataValues((Object) cell1.toString().toLowerCase(), (Object) cell2.toString().toLowerCase());
+                    if(cell1 instanceof String && cell2 instanceof String) {
+                    	result = DBUtils.compareDataValues((Object) cell1.toString().toLowerCase(), (Object) cell2.toString().toLowerCase());                    	
+                    }else {
+                    	result = DBUtils.compareDataValues(cell1, cell2);
+                    }
+                          
                     if (co.isOrderDescending()) {
                         result = -result;
                     }
