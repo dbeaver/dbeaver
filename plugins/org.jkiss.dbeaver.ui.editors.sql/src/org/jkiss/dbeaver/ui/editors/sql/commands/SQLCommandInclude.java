@@ -96,10 +96,10 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
                     for (IWorkbenchPage page : window.getPages()) {
                         for (IEditorReference editorReference : page.getEditorReferences()) {
                             if (editorReference.getEditorInput() instanceof IncludeEditorInput) {
-                                IncludeEditorInput includeInput = (IncludeEditorInput)editorReference.getEditorInput();
+                                IncludeEditorInput includeInput = (IncludeEditorInput) editorReference.getEditorInput();
                                 if (includeInput.incFile.getAbsolutePath().equals(finalIncFile.getAbsolutePath())) {
                                     UIUtils.syncExec(
-                                        () -> workbenchWindow.getActivePage().closeEditor(editorReference.getEditor(false), false));
+                                        () -> page.closeEditor(editorReference.getEditor(false), false));
                                 }
                             }
                         }
