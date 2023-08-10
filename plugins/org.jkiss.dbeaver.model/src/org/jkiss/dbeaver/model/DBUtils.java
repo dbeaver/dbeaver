@@ -2224,7 +2224,7 @@ public final class DBUtils {
      * Also checks DBValue for nullability
      */
     public static int compareDataValues(Object cell1, Object cell2) {
-        if (cell1 == cell2) {
+        if (cell1 == cell2 || (isNullValue(cell1) && isNullValue(cell2))) {
             return 0;
         } else if (isNullValue(cell1)) {
             return 1;
