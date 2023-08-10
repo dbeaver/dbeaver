@@ -206,7 +206,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
             // Dependent index
             for (GenericTableIndex index : sourceObject.getIndexes(monitor)) {
                 AltibaseTableIndex altiIndex = (AltibaseTableIndex) index;
-                if (altiIndex.isSystemGenerated() == false) {
+                if (!altiIndex.isSystemGenerated()) {
                     ddl.append(AltibaseConstants.NEW_LINE)
                         .append(altiIndex.getObjectDefinitionText(monitor, options))
                         .append(AltibaseConstants.NEW_LINE);
@@ -247,11 +247,11 @@ public class AltibaseMetaModel extends GenericMetaModel {
             ddl = getDDLFromDbmsMetadata(monitor, sourceObject, sourceObject.getSchemaName(), "SYNONYM");
         }
 
-        if (!DBMS_METADATA || AltibaseUtils.isEmpty(ddl)) {
+        if (!DBMS_METADATA || CommonUtils.isEmpty(ddl)) {
             ddl = AltibaseConstants.NO_DBMS_METADATA + sourceObject.getBuiltDdlLocaly();
         }
 
-        if (!AltibaseUtils.isEmpty(ddl)) {
+        if (CommonUtils.isNotEmpty(ddl)) {
             ddl += ";";
         }
 
@@ -269,7 +269,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
                     AltibaseUtils.getDmbsMetaDataObjTypeName(sourceObject.getTableType()));
         }
 
-        if (!DBMS_METADATA || AltibaseUtils.isEmpty(ddl)) {
+        if (!DBMS_METADATA || CommonUtils.isEmpty(ddl)) {
             String sql = "SELECT "
                     + " parse "
                     + " FROM "
@@ -285,7 +285,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
             ddl = getViewProcDDLFromCatalog(monitor, sourceObject, sourceObject.getSchema().getName(), sql);
         }
 
-        return (ddl.length() < 5) ? "-- View definition not available" : ddl.toString();
+        return (ddl.length() < 5) ? "-- View definition not available" : ddl;
     }
 
     @Override
@@ -297,7 +297,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
                     sourceObject.getSchema().getName(), ((AltibaseProcedureStandAlone) sourceObject).getProcedureTypeName());
         }
 
-        if (!DBMS_METADATA || AltibaseUtils.isEmpty(ddl)) {
+        if (!DBMS_METADATA || CommonUtils.isEmpty(ddl)) {
             String sql = "SELECT "
                     + " parse "
                     + " FROM "
@@ -346,7 +346,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
                     (packageType == AltibaseConstants.PACKAGE_TYPE_SPEC) ? "PACKAGE_SPEC" : "PACKAGE_BODY");
         }
 
-        if (!DBMS_METADATA || AltibaseUtils.isEmpty(ddl)) {
+        if (!DBMS_METADATA || CommonUtils.isEmpty(ddl)) {
             String sql = "SELECT "
                     + " parse "
                     + " FROM "
@@ -442,7 +442,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
                                 " U.USER_NAME = ? AND U.USER_ID = S.SYNONYM_OWNER_ID")
                         + " ORDER BY SYNONYM_NAME");
 
-        if (isPublic == false) {
+        if (!isPublic) {
             dbStat.setString(1, container.getName());
         }
 
@@ -535,16 +535,18 @@ public class AltibaseMetaModel extends GenericMetaModel {
     public GenericTrigger createTableTriggerImpl(@NotNull JDBCSession session, 
             @NotNull GenericStructContainer container, @NotNull GenericTableBase parent, 
             String triggerName, @NotNull JDBCResultSet dbResult) throws DBException {
-        if (CommonUtils.isEmpty(triggerName)) {
-            triggerName = JDBCUtils.safeGetStringTrimmed(dbResult, "TRIGGER_NAME");
+        String newTriggerName = triggerName;
+        
+        if (CommonUtils.isEmpty(newTriggerName)) {
+            newTriggerName = JDBCUtils.safeGetStringTrimmed(dbResult, "TRIGGER_NAME");
         }
-        if (triggerName == null) {
+        if (newTriggerName == null) {
             return null;
         }
 
         return new AltibaseTableTrigger(
                 parent,
-                triggerName,
+                newTriggerName,
                 null, //description
                 dbResult);
     }
@@ -570,7 +572,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
             ddl = getDDLFromDbmsMetadata(monitor, trigger, schemaName, "TRIGGER");
         }
 
-        if (!DBMS_METADATA || AltibaseUtils.isEmpty(ddl)) {
+        if (!DBMS_METADATA || CommonUtils.isEmpty(ddl)) {
             String sql = "SELECT "
                     + " substring"
                     + " FROM"
@@ -591,7 +593,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
             //ddl += AltibaseConstants.PSM_POSTFIX;
         }
 
-        return ddl.toString();
+        return ddl;
     }
 
     @Override
@@ -630,7 +632,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
                 + " AND c.constraint_id = ccol.constraint_id"
                 + " AND ccol.column_id = col.column_id");
         
-        if (hasParent == true) {
+        if (hasParent) {
             qry.append(" AND t.table_name = ?");
         }
 
@@ -638,7 +640,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
 
         dbStat.setString(1, owner.getName());
         
-        if (hasParent == true) {
+        if (hasParent) {
             dbStat.setString(2, forParent.getName());
         }
         
@@ -769,7 +771,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
                         String procName = JDBCUtils.safeGetString(dbResult, "SUB_PROC_NAME");
                         int subType = JDBCUtils.safeGetInt(dbResult, "SUB_TYPE");
 
-                        if (AltibaseUtils.isEmpty(procName)) {
+                        if (CommonUtils.isEmpty(procName)) {
                             continue;
                         }
 

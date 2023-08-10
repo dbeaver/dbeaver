@@ -17,32 +17,19 @@
 
 package org.jkiss.dbeaver.ext.altibase;
 
-import org.jkiss.dbeaver.Log;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Altibase utils
  */
 public class AltibaseUtils {
 
-    private static final Log log = Log.getLog(AltibaseUtils.class);
-
-    /**
-     * Check the string is null or no value
-     */
-    public static boolean isEmpty(String strVal) {
-        if (strVal != null) {
-            return (strVal.length() < 1);
-        } else {
-            return true;
-        }
-    }
-
     /**
      * DBMS_METADATA: Object type name
      * In case of space in the name, DBMS_METADATA requires replace space to underscore.
      */
     public static String getDmbsMetaDataObjTypeName(String objTypeName) {
-        if (isEmpty(objTypeName)) {
+        if (CommonUtils.isEmpty(objTypeName)) {
             return "UNKNOWN_OBJECT_TYPE";
         }
 
@@ -55,11 +42,11 @@ public class AltibaseUtils {
     public static String getQuotedName(String schemaName, String objName) {
         StringBuilder quotedName = new StringBuilder();
 
-        if (isEmpty(schemaName) == false) {
+        if (CommonUtils.isNotEmpty(schemaName)) {
             quotedName.append("\"").append(schemaName).append("\".");
         }
 
-        if (isEmpty(objName) == false) {
+        if (CommonUtils.isNotEmpty(objName)) {
             quotedName.append("\"").append(objName).append("\"");
         }
 
@@ -74,7 +61,7 @@ public class AltibaseUtils {
         int i = 0;
         for (String line : script) {
             if ((line != null) && (line.trim().length() > 0) 
-                    && (line.stripLeading().startsWith("--") == false)) {
+                    && !line.stripLeading().startsWith("--")) {
                 return i;
             }
             i++;

@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.ext.altibase.AltibaseUtils;
 import org.jkiss.dbeaver.model.admin.sessions.AbstractServerSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.Objects;
@@ -113,7 +114,7 @@ public class AltibaseServerSession extends AbstractServerSession {
         int effectiveLength = 10;
         String qry = (sql != null) ? sql.trim() : "";
 
-        if (AltibaseUtils.isEmpty(qry) == false) {
+        if (CommonUtils.isNotEmpty(qry)) {
             
             if (qry.length() > effectiveLength) {
                 qry = sql.trim().substring(0, 7);

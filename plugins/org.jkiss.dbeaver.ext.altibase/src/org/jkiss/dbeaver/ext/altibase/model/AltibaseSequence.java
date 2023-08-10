@@ -162,7 +162,7 @@ public class AltibaseSequence extends GenericSequence implements DBPScriptObject
         
         sb.append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" ");
 
-        if ((forUpdate == false) && (getStartWith() != null)) {
+        if ((!forUpdate) && (getStartWith() != null)) {
             sb.append("START WITH ").append(getStartWith()).append(" ");
         }
 

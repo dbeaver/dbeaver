@@ -19,13 +19,10 @@ package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public abstract class AltibaseGlobalObject implements DBSObject, DBPSaveableObject {
-
-    private static final Log log = Log.getLog(AltibaseGlobalObject.class);
 
     private final AltibaseDataSource dataSource;
     private boolean persisted;

@@ -110,7 +110,7 @@ public class AltibasePlanNode extends AbstractExecutionPlanNode  {
      */
     private void setOperation() {
         // e.g. SCAN ( PARTITION: " )
-        if (plan.contains("(") == true) {
+        if (plan.contains("(")) {
             String[] splittedPlan = plan.trim().split("\\(");
             operation = splittedPlan[0].trim();
             options = splittedPlan[1].replace(")", "").trim();
@@ -124,7 +124,7 @@ public class AltibasePlanNode extends AbstractExecutionPlanNode  {
      * Return String type value matches to key (name).
      */
     private String getStringFromMap(Map<String, String> attributes, String name) {
-        return attributes.containsKey(name) ? attributes.get(name).toString() : "";
+        return attributes.containsKey(name) ? attributes.get(name) : "";
     }
 
     /**

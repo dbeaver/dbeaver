@@ -34,14 +34,14 @@ public class AltibasePackage extends GenericPackage {
     private String source;
 
     private boolean status; // 0: Valid, 1: Invalid
-    private int authId;     // 0: DEFINER, 1: CURRENT_USER
+    //private int authId;     // 0: DEFINER, 1: CURRENT_USER
     private boolean hasBody;
 
     public AltibasePackage(GenericStructContainer container, String packageName, JDBCResultSet dbResult) {
         super(container, packageName, true);
 
         status = (JDBCUtils.safeGetInt(dbResult, "STATUS") == 0);
-        authId = JDBCUtils.safeGetInt(dbResult, "AUTHID");
+        //authId = JDBCUtils.safeGetInt(dbResult, "AUTHID");
     }
 
     public void setBody(boolean hasBody) {
@@ -59,7 +59,7 @@ public class AltibasePackage extends GenericPackage {
                     + "-- Package body " 
                     + AltibaseConstants.NEW_LINE;
 
-            if (hasBody == true) {
+            if (hasBody) {
                 source += ((AltibaseMetaModel) getDataSource().getMetaModel())
                         .getPackageDDL(monitor, this, AltibaseConstants.PACKAGE_TYPE_BODY);
             } else {

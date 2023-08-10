@@ -91,16 +91,16 @@ public class AltibaseProcedurePackaged extends AltibaseProcedureBase {
                     }
 
                     // procedure with no argument case
-                    if (isFunction == false && columnName == null && position == 0) {
+                    if (!isFunction && columnName == null && position == 0) {
                         return; 
                     }
 
                     // function return type
-                    if (isFunction == true && columnName == null && position == 1) {
+                    if (isFunction && columnName == null && position == 1) {
                         continue; 
                     }
 
-                    if (isFunction == true) {
+                    if (isFunction) {
                         --position;
                     }
 

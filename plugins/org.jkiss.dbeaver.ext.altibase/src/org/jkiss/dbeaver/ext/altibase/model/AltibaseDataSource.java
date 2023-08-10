@@ -333,7 +333,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
                 }
 
                 instance4Callback = Proxy.newProxyInstance(classLoader, 
-                        new java.lang.Class[] { class4MsgCallback }, 
+                        new Class[] { class4MsgCallback }, 
                         new InvocationHandler() {
                             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                                 if ("print".equals(method.getName())) {
@@ -345,7 +345,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
                     });
 
                 if (instance4Callback == null) {
-                    throw new NullPointerException("Failed to instantiate class: " + className4MessageCallback);
+                    throw new InstantiationException("Failed to instantiate class: " + className4MessageCallback);
                 }
 
                 method2RegisterCallback = classLoader

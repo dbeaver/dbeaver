@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialectDDLExtension;
 import org.jkiss.dbeaver.model.sql.SQLDialectSchemaController;
@@ -50,7 +49,6 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
             implements SQLDialectDDLExtension, SQLDialectSchemaController {
 
     private SQLTokenPredicateSet cachedDialectSkipTokenPredicates = null;
-    private DBPPreferenceStore preferenceStore;
     
     private static final String[] ALTIBASE_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
             BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
@@ -237,6 +235,126 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
         "VAR_SAMP",                
     };
     
+    private static final String[] ALTIBASE_FUNCTIONS = new String[] {
+        // Aggregation functions
+        "AVG", "CORR", "COUNT", "COVAR_POP", "COVAR_SAMP", 
+        "CUME_DIST", "FIRST", "GROUP_CONCAT", "LAST", "LISTAGG", 
+        "MAX", "MIN", "PERCENTILE_CONT", "PERCENTILE_DISC", "PERCENT_RANK", 
+        "RANK", "STATS_ONE_WAY_ANOVA", "STDDEV", "STDDEV_POP", "STDDEV_SAMP", 
+        "SUM", "VARIANCE", "VAR_POP", "VAR_SAMP", "MEDIAN",
+        // Window functions
+        "LISTAGG", "RATIO_TO_REPORT", "GROUP_CONCAT", 
+        "RANK", "DENSE_RANK", "ROW_NUMBER", "LAG", "LAG_IGNORE_NULLS", 
+        "LEAD", "LEAD_IGNORE_NULLS", "NTILE", "FIRST", "LAST",
+        "FIRST_VALUE", "FIRST_VALUE_IGNORE_NULLS", "LAST_VALUE", "LAST_VALUE_IGNORE_NULLS", "NTH_VALUE",
+        "NTH_VALUE_IGNORE_NULLS",
+
+        // Number
+        "ABS", "ACOS", "ASIN", "ATAN", "ATAN2", 
+        "CEIL", "COS", "COSH", "EXP", "FLOOR", 
+        "ISNUMERIC", "LN", "LOG", "MOD", "NUMAND", 
+        "NUMOR", "NUMSHIFT", "NUMXOR", "POWER", "RAND", 
+        "RANDOM", "ROUND", "SIGN", "SIN", "SINH", 
+        "SQRT", "TAN", "TANH", "TRUNC", "BITAND", 
+        "BITOR", "BITXOR", "BITNOT",
+
+        // Convert string
+        "CHR", "CHOSUNG", "CONCAT", "DIGITS", "INITCAP", 
+        "LOWER", "LPAD", "LTRIM", "NCHR", "PKCS7PAD16", 
+        "PKCS7UNPAD16", "RANDOM_STRING", "REGEXP_COUNT", "REGEXP_REPLACE", "REPLICATE", 
+        "REPLACE2", "REVERSE_STR", "RPAD", "RTRIM", "STUFF", "SUBSTRB", 
+        "TRANSLATE", "TRIM", "UPPER", 
+
+        // Convert number
+        "ASCII", "CHAR_LENGTH", "DIGEST", "INSTR", "OCTET_LENGTH", 
+        "REGEXP_INSTR", "REGEXP_SUBSTR", "SIZEOF",
+
+        // Date
+        "ADD_MONTHS", "DATEADD", "DATEDIFF", "DATENAME", "EXTRACT", 
+        "LAST_DAY", "MONTHS_BETWEEN", "NEXT_DAY", "SESSION_TIMEZONE", "SYSTIMESTAMP", 
+        "UNIX_DATE", "UNIX_TIMESTAMP", "CURRENT_DATE", "CURRENT_TIMESTAMP", "DB_TIMEZONE", 
+        "CONV_TIMEZONE", "ROUND", "TRUNC",
+
+        // Convert
+        "ASCIISTR", "BIN_TO_NUM", "CONVERT", "DATE_TO_UNIX", "HEX_ENCODE", 
+        "HEX_DECODE", "HEX_TO_NUM", "OCT_TO_NUM", "RAW_TO_FLOAT", "RAW_TO_INTEGER", 
+        "RAW_TO_NUMERIC", "RAW_TO_VARCHAR", "TO_BIN", "TO_CHAR", "TO_DATE", 
+        "TO_HEX", "TO_INTERVAL", "TO_NCHAR", "TO_NUMBER", "TO_OCT", 
+        "TO_RAW", "UNISTR", "UNIX_TO_DATE",
+
+        // Encryption
+        "AESDECRYPT", "AESENCRYPT", "DESENCRYPT", "DESDECRYPT", "TDESDECRYPT", "TRIPLE_DESDECRYPT", 
+        "TDESENCRYPT", "TRIPLE_DESENCRYPT",
+
+        // Etc.
+        "BASE64_DECODE", "BASE64_DECODE_STR", "BASE64_ENCODE", "BASE64_ENCODE_STR", "BINARY_LENGTH", 
+        "CASE2", "COALESCE", "DECODE", "DIGEST", 
+        "DUMP", "EMPTY_BLOB", "EMPTY_CLOB", "GREATEST", "GROUPING", 
+        "GROUPING_ID", "HOST_NAME", "LEAST", "LNNVL", "MSG_CREATE_QUEUE", 
+        "MSG_DROP_QUEUE", "MSG_SND_QUEUE", "MSG_RCV_QUEUE", "NULLIF", "NVL", 
+        "NVL2", "QUOTE_PRINTABLE_DECODE", "QUOTE_PRINTABLE_ENCODE", "RAW_CONCAT", "RAW_SIZEOF", 
+        "ROWNUM", "SENDMSG", "USER_ID", "USER_NAME", "SESSION_ID", 
+        "SUBRAW", "SYS_CONNECT_BY_PATH", "SYS_GUID_STR", "USER_LOCK_REQUEST", "USER_LOCK_RELEASE", 
+        "SYS_CONTEXT"
+    };
+    /******************************************************************************
+     * Base data to generate Altibase only keyword and function list
+     ******************************************************************************/
+    private static final String[] ALTIBASE_KEYWORDS = {
+        "ACCESS",             "ADD",                "AFTER",              "AGER",               "ALL",                  //5
+        "ALTER",              "AND",                "ANY",                "APPLY",              "ARCHIVE",              //10
+        "ARCHIVELOG",         "AS",                 "ASC",                "AT",                 "AUDIT",                //15
+        "AUTHID",             "AUTOEXTEND",         "BACKUP",             "BEFORE",             "BEGIN",                //20
+        "BETWEEN",            "BODY",               "BULK",               "BY",                 "CASCADE",              //25
+        "CASE",               "CAST",               "CHECK",              "CHECKPOINT",         "CLOSE",                //30
+        "COALESCE",           "COLUMN",             "COMMENT",            "COMMIT",             "COMPILE",              //35
+        "COMPRESS",           "COMPRESSED",         "CONJOIN",            "CONNECT",            "CONNECT_BY_ROOT",      //40
+        "CONSTANT",           "CONSTRAINT",         "CONSTRAINTS",        "CONTINUE",           "CREATE",               //45
+        "CROSS",              "CUBE",               "CURRENT_USER",       "CURSOR",             "CYCLE",                //50
+        "DATABASE",           "DECLARE",            "DECRYPT",            "DEFAULT",            "DEFINER",              //55
+        "DELAUDIT",           "DELETE",             "DEQUEUE",            "DESC",               "DETERMINISTIC",        //60
+        "DIRECTORY",          "DISABLE",            "DISASTER",           "DISCONNECT",         "DISJOIN",              //65
+        "DISTINCT",           "DROP",               "DUMP_CALLSTACKS",    "EACH",               "ELSE",                 //70
+        "ELSEIF",             "ELSIF",              "ENABLE",             "END",                "ENQUEUE",              //75
+        "ESCAPE",             "EXCEPTION",          "EXEC",               "EXECUTE",            "EXISTS",               //80
+        "EXIT",               "EXTENT",             "EXTENTSIZE",         "FALSE",              "FETCH",                //85
+        "FIFO",               "FIXED",              "FLASHBACK",          "FLUSH",              "FLUSHER",              //90
+        "FOLLOWING",          "FOR",                "FOREIGN",            "FROM",               "FULL",                 //95
+        "FUNCTION",           "GOTO",               "GRANT",              "GROUP",              "HAVING",               //100
+        "IDENTIFIED",         "IF",                 "IN",                 "INDEX",              "INITRANS",             //105
+        "INNER",              "INSERT",             "INSTEAD",            "INTERSECT",          "INTO",                 //110
+        "IS",                 "ISOLATION",          "JOIN",               "KEEP",               "KEY",                  //115
+        "LANGUAGE",           "LATERAL",            "LEFT",               "LESS",               "LEVEL",                //120
+        "LIBRARY",            "LIFO",               "LIKE",               "LIMIT",              "LINK",                 //125
+        "LINKER",             "LOB",                "LOCAL",              "LOCALUNIQUE",        "LOCK",                 //130
+        "LOGANCHOR",          "LOGGING",            "LOOP",               "MATERIALIZED",       "MAXROWS",              //135
+        "MAXTRANS",           "MERGE",              "MINUS",              "MODE",               "MODIFY",               //140
+        "MOVE",               "MOVEMENT",           "NEW",                "NOARCHIVELOG",       "NOAUDIT",              //145
+        "NOCOPY",             "NOCYCLE",            "NOLOGGING",          "NOPARALLEL",         "NOT",                  //150
+        "NULL",               "NULLS",              "OF",                 "OFF",                "OFFLINE",              //155
+        "OLD",                "ON",                 "ONLINE",             "OPEN",               "OR",                   //160
+        "ORDER",              "OTHERS",             "OUT",                "OUTER",              "OVER",                 //165
+        "PACKAGE",            "PARALLEL",           "PARAMETERS",         "PARTITION",          "PARTITIONS",           //170
+        "PIVOT",              "PRECEDING",          "PRIMARY",            "PRIOR",              "PRIVILEGES",           //175
+        "PROCEDURE",          "PURGE",              "QUEUE",              "RAISE",              "READ",                 //180
+        "REBUILD",            "RECOVER",            "REFERENCES",         "REFERENCING",        "REMOTE_TABLE",         //185
+        "REMOTE_TABLE_STORE", "REMOVE",             "RENAME",             "REORGANIZE",         "REPLACE",              //190
+        "REPLICATION",        "RETURN",             "RETURNING",          "REVOKE",             "RIGHT",                //195
+        "ROLLBACK",           "ROLLUP",             "ROW",                "ROWCOUNT",           "ROWNUM",               //200
+        "ROWTYPE",            "SAVEPOINT",          "SEGMENT",            "SELECT",             "SEQUENCE",             //205
+        "SESSION",            "SET",                "SHARD",              "SHRINK_MEMPOOL",     "SOME",                 //210
+        "SPECIFICATION",      "SPLIT",              "SQLCODE",            "SQLERRM",            "START",                //215
+        "STATEMENT",          "STEP",               "STORAGE",            "STORE",              "SUPPLEMENTAL",         //220
+        "SYNONYM",            "TABLE",              "TABLESPACE",         "TEMPORARY",          "THAN",                 //225
+        "THEN",               "TO",                 "TOP",                "TRIGGER",            "TRUE",                 //230
+        "TRUNCATE",           "TYPE",               "TYPESET",            "UNCOMPRESSED",       "UNION",                //235
+        "UNIQUE",             "UNLOCK",             "UNPIVOT",            "UNTIL",              "UPDATE",               //240
+        "USING",              "VALUES",             "VARIABLE",           "VARIABLE_LARGE",     "VC2COLL",              //245
+        "VIEW",               "VOLATILE",           "WAIT",               "WHEN",               "WHENEVER",             //250
+        "WHERE",              "WHILE",              "WITH",               "WITHIN",             "WORK",                 //255
+        "WRAPPED",            "WRITE",              "_PROWID",            "CACHE",              "NOCACHE"
+    };
+    
     public AltibaseSQLDialect() {
         super("Altibase", "altibase");
         setUnquotedIdentCase(DBPIdentifierCase.UPPER);
@@ -270,7 +388,6 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
      */
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
-        preferenceStore = dataSource.getContainer().getPreferenceStore();
         
         addFunctions(Arrays.asList(ALTIBASE_ONLY_FUNCTIONS));
         addSQLKeywords(Arrays.asList(ALTIBASE_ONLY_KEYWORDS));
@@ -452,127 +569,6 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
         return "CREATE USER \"" + schemaName + "\" IDENTIFIED BY \"" + schemaName + "\"";
     }
     
-    /******************************************************************************
-     * Base data to generate Altibase only keyword and function list
-     ******************************************************************************/
-    private static final String[] ALTIBASE_KEYWORDS = {
-        "ACCESS",             "ADD",                "AFTER",              "AGER",               "ALL",                  //5
-        "ALTER",              "AND",                "ANY",                "APPLY",              "ARCHIVE",              //10
-        "ARCHIVELOG",         "AS",                 "ASC",                "AT",                 "AUDIT",                //15
-        "AUTHID",             "AUTOEXTEND",         "BACKUP",             "BEFORE",             "BEGIN",                //20
-        "BETWEEN",            "BODY",               "BULK",               "BY",                 "CASCADE",              //25
-        "CASE",               "CAST",               "CHECK",              "CHECKPOINT",         "CLOSE",                //30
-        "COALESCE",           "COLUMN",             "COMMENT",            "COMMIT",             "COMPILE",              //35
-        "COMPRESS",           "COMPRESSED",         "CONJOIN",            "CONNECT",            "CONNECT_BY_ROOT",      //40
-        "CONSTANT",           "CONSTRAINT",         "CONSTRAINTS",        "CONTINUE",           "CREATE",               //45
-        "CROSS",              "CUBE",               "CURRENT_USER",       "CURSOR",             "CYCLE",                //50
-        "DATABASE",           "DECLARE",            "DECRYPT",            "DEFAULT",            "DEFINER",              //55
-        "DELAUDIT",           "DELETE",             "DEQUEUE",            "DESC",               "DETERMINISTIC",        //60
-        "DIRECTORY",          "DISABLE",            "DISASTER",           "DISCONNECT",         "DISJOIN",              //65
-        "DISTINCT",           "DROP",               "DUMP_CALLSTACKS",    "EACH",               "ELSE",                 //70
-        "ELSEIF",             "ELSIF",              "ENABLE",             "END",                "ENQUEUE",              //75
-        "ESCAPE",             "EXCEPTION",          "EXEC",               "EXECUTE",            "EXISTS",               //80
-        "EXIT",               "EXTENT",             "EXTENTSIZE",         "FALSE",              "FETCH",                //85
-        "FIFO",               "FIXED",              "FLASHBACK",          "FLUSH",              "FLUSHER",              //90
-        "FOLLOWING",          "FOR",                "FOREIGN",            "FROM",               "FULL",                 //95
-        "FUNCTION",           "GOTO",               "GRANT",              "GROUP",              "HAVING",               //100
-        "IDENTIFIED",         "IF",                 "IN",                 "INDEX",              "INITRANS",             //105
-        "INNER",              "INSERT",             "INSTEAD",            "INTERSECT",          "INTO",                 //110
-        "IS",                 "ISOLATION",          "JOIN",               "KEEP",               "KEY",                  //115
-        "LANGUAGE",           "LATERAL",            "LEFT",               "LESS",               "LEVEL",                //120
-        "LIBRARY",            "LIFO",               "LIKE",               "LIMIT",              "LINK",                 //125
-        "LINKER",             "LOB",                "LOCAL",              "LOCALUNIQUE",        "LOCK",                 //130
-        "LOGANCHOR",          "LOGGING",            "LOOP",               "MATERIALIZED",       "MAXROWS",              //135
-        "MAXTRANS",           "MERGE",              "MINUS",              "MODE",               "MODIFY",               //140
-        "MOVE",               "MOVEMENT",           "NEW",                "NOARCHIVELOG",       "NOAUDIT",              //145
-        "NOCOPY",             "NOCYCLE",            "NOLOGGING",          "NOPARALLEL",         "NOT",                  //150
-        "NULL",               "NULLS",              "OF",                 "OFF",                "OFFLINE",              //155
-        "OLD",                "ON",                 "ONLINE",             "OPEN",               "OR",                   //160
-        "ORDER",              "OTHERS",             "OUT",                "OUTER",              "OVER",                 //165
-        "PACKAGE",            "PARALLEL",           "PARAMETERS",         "PARTITION",          "PARTITIONS",           //170
-        "PIVOT",              "PRECEDING",          "PRIMARY",            "PRIOR",              "PRIVILEGES",           //175
-        "PROCEDURE",          "PURGE",              "QUEUE",              "RAISE",              "READ",                 //180
-        "REBUILD",            "RECOVER",            "REFERENCES",         "REFERENCING",        "REMOTE_TABLE",         //185
-        "REMOTE_TABLE_STORE", "REMOVE",             "RENAME",             "REORGANIZE",         "REPLACE",              //190
-        "REPLICATION",        "RETURN",             "RETURNING",          "REVOKE",             "RIGHT",                //195
-        "ROLLBACK",           "ROLLUP",             "ROW",                "ROWCOUNT",           "ROWNUM",               //200
-        "ROWTYPE",            "SAVEPOINT",          "SEGMENT",            "SELECT",             "SEQUENCE",             //205
-        "SESSION",            "SET",                "SHARD",              "SHRINK_MEMPOOL",     "SOME",                 //210
-        "SPECIFICATION",      "SPLIT",              "SQLCODE",            "SQLERRM",            "START",                //215
-        "STATEMENT",          "STEP",               "STORAGE",            "STORE",              "SUPPLEMENTAL",         //220
-        "SYNONYM",            "TABLE",              "TABLESPACE",         "TEMPORARY",          "THAN",                 //225
-        "THEN",               "TO",                 "TOP",                "TRIGGER",            "TRUE",                 //230
-        "TRUNCATE",           "TYPE",               "TYPESET",            "UNCOMPRESSED",       "UNION",                //235
-        "UNIQUE",             "UNLOCK",             "UNPIVOT",            "UNTIL",              "UPDATE",               //240
-        "USING",              "VALUES",             "VARIABLE",           "VARIABLE_LARGE",     "VC2COLL",              //245
-        "VIEW",               "VOLATILE",           "WAIT",               "WHEN",               "WHENEVER",             //250
-        "WHERE",              "WHILE",              "WITH",               "WITHIN",             "WORK",                 //255
-        "WRAPPED",            "WRITE",              "_PROWID",            "CACHE",              "NOCACHE"
-    };
-    
-    private static final String[] ALTIBASE_FUNCTIONS = new String[] {
-        // Aggregation functions
-        "AVG", "CORR", "COUNT", "COVAR_POP", "COVAR_SAMP", 
-        "CUME_DIST", "FIRST", "GROUP_CONCAT", "LAST", "LISTAGG", 
-        "MAX", "MIN", "PERCENTILE_CONT", "PERCENTILE_DISC", "PERCENT_RANK", 
-        "RANK", "STATS_ONE_WAY_ANOVA", "STDDEV", "STDDEV_POP", "STDDEV_SAMP", 
-        "SUM", "VARIANCE", "VAR_POP", "VAR_SAMP", "MEDIAN",
-        // Window functions
-        "LISTAGG", "RATIO_TO_REPORT", "GROUP_CONCAT", 
-        "RANK", "DENSE_RANK", "ROW_NUMBER", "LAG", "LAG_IGNORE_NULLS", 
-        "LEAD", "LEAD_IGNORE_NULLS", "NTILE", "FIRST", "LAST",
-        "FIRST_VALUE", "FIRST_VALUE_IGNORE_NULLS", "LAST_VALUE", "LAST_VALUE_IGNORE_NULLS", "NTH_VALUE",
-        "NTH_VALUE_IGNORE_NULLS",
-
-        // Number
-        "ABS", "ACOS", "ASIN", "ATAN", "ATAN2", 
-        "CEIL", "COS", "COSH", "EXP", "FLOOR", 
-        "ISNUMERIC", "LN", "LOG", "MOD", "NUMAND", 
-        "NUMOR", "NUMSHIFT", "NUMXOR", "POWER", "RAND", 
-        "RANDOM", "ROUND", "SIGN", "SIN", "SINH", 
-        "SQRT", "TAN", "TANH", "TRUNC", "BITAND", 
-        "BITOR", "BITXOR", "BITNOT",
-
-        // Convert string
-        "CHR", "CHOSUNG", "CONCAT", "DIGITS", "INITCAP", 
-        "LOWER", "LPAD", "LTRIM", "NCHR", "PKCS7PAD16", 
-        "PKCS7UNPAD16", "RANDOM_STRING", "REGEXP_COUNT", "REGEXP_REPLACE", "REPLICATE", 
-        "REPLACE2", "REVERSE_STR", "RPAD", "RTRIM", "STUFF", "SUBSTRB", 
-        "TRANSLATE", "TRIM", "UPPER", 
-
-        // Convert number
-        "ASCII", "CHAR_LENGTH", "DIGEST", "INSTR", "OCTET_LENGTH", 
-        "REGEXP_INSTR", "REGEXP_SUBSTR", "SIZEOF",
-
-        // Date
-        "ADD_MONTHS", "DATEADD", "DATEDIFF", "DATENAME", "EXTRACT", 
-        "LAST_DAY", "MONTHS_BETWEEN", "NEXT_DAY", "SESSION_TIMEZONE", "SYSTIMESTAMP", 
-        "UNIX_DATE", "UNIX_TIMESTAMP", "CURRENT_DATE", "CURRENT_TIMESTAMP", "DB_TIMEZONE", 
-        "CONV_TIMEZONE", "ROUND", "TRUNC",
-
-        // Convert
-        "ASCIISTR", "BIN_TO_NUM", "CONVERT", "DATE_TO_UNIX", "HEX_ENCODE", 
-        "HEX_DECODE", "HEX_TO_NUM", "OCT_TO_NUM", "RAW_TO_FLOAT", "RAW_TO_INTEGER", 
-        "RAW_TO_NUMERIC", "RAW_TO_VARCHAR", "TO_BIN", "TO_CHAR", "TO_DATE", 
-        "TO_HEX", "TO_INTERVAL", "TO_NCHAR", "TO_NUMBER", "TO_OCT", 
-        "TO_RAW", "UNISTR", "UNIX_TO_DATE",
-
-        // Encryption
-        "AESDECRYPT", "AESENCRYPT", "DESENCRYPT", "DESDECRYPT", "TDESDECRYPT", "TRIPLE_DESDECRYPT", 
-        "TDESENCRYPT", "TRIPLE_DESENCRYPT",
-
-        // Etc.
-        "BASE64_DECODE", "BASE64_DECODE_STR", "BASE64_ENCODE", "BASE64_ENCODE_STR", "BINARY_LENGTH", 
-        "CASE2", "COALESCE", "DECODE", "DIGEST", 
-        "DUMP", "EMPTY_BLOB", "EMPTY_CLOB", "GREATEST", "GROUPING", 
-        "GROUPING_ID", "HOST_NAME", "LEAST", "LNNVL", "MSG_CREATE_QUEUE", 
-        "MSG_DROP_QUEUE", "MSG_SND_QUEUE", "MSG_RCV_QUEUE", "NULLIF", "NVL", 
-        "NVL2", "QUOTE_PRINTABLE_DECODE", "QUOTE_PRINTABLE_ENCODE", "RAW_CONCAT", "RAW_SIZEOF", 
-        "ROWNUM", "SENDMSG", "USER_ID", "USER_NAME", "SESSION_ID", 
-        "SUBRAW", "SYS_CONNECT_BY_PATH", "SYS_GUID_STR", "USER_LOCK_REQUEST", "USER_LOCK_RELEASE", 
-        "SYS_CONTEXT"
-    };
-    
     /**
      * Extracting and Formatting Altibase only keywords and functions 
      * for ALTIBASE_ONLY_KEYWORDS and ALTIBASE_ONLY_FUNCTIONS.
@@ -582,15 +578,17 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
         filter(ALTIBASE_FUNCTIONS, SQLConstants.SQL2003_FUNCTIONS);
     }
     
-    private static void filter(String[] dbProvideWords, String[] defaultWords) {
-
+    private static void filter(String[] dbProvideNames, String[] sqlProvidedNames) {
+        String[] sqlDistinctNames = null;
+        String[] dbDistinctNames = null;
+        
         // Remove duplicates if any
-        defaultWords = Arrays.stream(defaultWords).distinct().toArray(String[]::new);
-        dbProvideWords = Arrays.stream(dbProvideWords).distinct().toArray(String[]::new);
+        sqlDistinctNames = Arrays.stream(sqlProvidedNames).distinct().toArray(String[]::new);
+        dbDistinctNames = Arrays.stream(dbProvideNames).distinct().toArray(String[]::new);
         
         // Find DB only words
-        Set<String> defaultWordList = Set.of(defaultWords);
-        final List<String> dbOnlyWordList = List.of(dbProvideWords).stream()
+        Set<String> defaultWordList = Set.of(sqlDistinctNames);
+        final List<String> dbOnlyWordList = List.of(dbDistinctNames).stream()
                 .filter(e -> !defaultWordList.contains(e))
                 .sorted()
                 .collect(Collectors.toList());

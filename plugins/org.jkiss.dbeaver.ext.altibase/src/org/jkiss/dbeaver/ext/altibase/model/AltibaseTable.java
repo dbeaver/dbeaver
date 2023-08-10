@@ -95,7 +95,7 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
     
     @Property(viewable = true, order = 20, editable = false, formatter = ByteNumberFormat.class, category = DBConstants.CAT_STATISTICS)
     public Long getTableSize(DBRProgressMonitor monitor) throws DBCException {
-        if (hasStatistics() == false) {
+        if (!hasStatistics()) {
             loadSize(monitor);
         }
 
@@ -104,7 +104,7 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
     
     @Property(viewable = true, order = 22, editable = false, formatter = ByteNumberFormat.class)
     public Long getTableSizeInMemory(DBRProgressMonitor monitor) throws DBCException {
-        if (hasStatistics() == false) {
+        if (!hasStatistics()) {
             loadSize(monitor);
         }
 

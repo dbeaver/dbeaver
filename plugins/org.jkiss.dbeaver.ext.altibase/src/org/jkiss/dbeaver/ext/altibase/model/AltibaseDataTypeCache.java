@@ -18,8 +18,6 @@
 package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataTypeCache;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -38,7 +36,6 @@ import java.util.List;
  * AltibaseDataTypeCache
  */
 public class AltibaseDataTypeCache extends JDBCBasicDataTypeCache<GenericStructContainer, AltibaseDataType> {
-    private static final Log log = Log.getLog(GenericDataTypeCache.class);
 
     public AltibaseDataTypeCache(GenericStructContainer owner) {
         super(owner);
@@ -72,7 +69,7 @@ public class AltibaseDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
                             int dataTypeId = JDBCUtils.safeGetInt(dbResult, "DATA_TYPE");
                             boolean searchabel = (JDBCUtils.safeGetInt(dbResult, "SEARCHABLE") > 0);
                             int precision = JDBCUtils.safeGetInt(dbResult, "COLUMN_SIZE");
-                            int nullable = JDBCUtils.safeGetInt(dbResult, "NULLABLE");
+                            //int nullable = JDBCUtils.safeGetInt(dbResult, "NULLABLE");
                             boolean unsinged = (JDBCUtils.safeGetInt(dbResult, "UNSIGNED_ATTRIBUTE") == 1);
                             String remarks = JDBCUtils.safeGetString(dbResult, "LOCAL_TYPE_NAME");
                             int minScale = JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE");

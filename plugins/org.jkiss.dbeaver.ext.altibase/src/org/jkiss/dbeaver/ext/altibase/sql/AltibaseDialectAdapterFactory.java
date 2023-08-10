@@ -27,10 +27,8 @@ public class AltibaseDialectAdapterFactory implements IAdapterFactory {
     
     @Override
     public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
-        if (adaptableObject instanceof SQLDialect) {
-            if (adapterType == TPRuleProvider.class) {
-                return adapterType.cast(new AltibaseDialectRules());
-            }
+        if ((adaptableObject instanceof SQLDialect) && (adapterType == TPRuleProvider.class)) {
+            return adapterType.cast(new AltibaseDialectRules());
         }
         return null;
     }

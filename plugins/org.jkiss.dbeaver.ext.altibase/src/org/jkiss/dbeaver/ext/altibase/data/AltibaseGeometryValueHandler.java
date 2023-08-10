@@ -121,16 +121,20 @@ public class AltibaseGeometryValueHandler extends GISGeometryValueHandler implem
             DBSTypedObject paramType, int paramIndex, Object value) throws DBCException, SQLException {
 
         int srid = 0;
+        
         if (paramType instanceof DBDAttributeBinding) {
             paramType = ((DBDAttributeBinding) paramType).getAttribute();
         }
+        
         if (value instanceof DBGeometry) {
             srid = ((DBGeometry) value).getSRID();
             value = ((DBGeometry) value).getRawValue();
         }
+        
         if (srid == 0 && paramType instanceof GisAttribute) {
             srid = ((GisAttribute) paramType).getAttributeGeometrySRID(session.getProgressMonitor());
         }
+        
         if (value == null) {
             statement.setNull(paramIndex, paramType.getTypeID());
         } else if (value instanceof Geometry) {

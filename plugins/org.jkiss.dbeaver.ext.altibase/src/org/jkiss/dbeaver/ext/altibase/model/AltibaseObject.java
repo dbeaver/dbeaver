@@ -19,15 +19,12 @@ package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 public abstract class AltibaseObject<PARENT extends DBSObject> implements DBSObject, DBPSaveableObject {
-
-    private static final Log log = Log.getLog(AltibaseObject.class);
     
     protected final PARENT parent;
     protected String name;
