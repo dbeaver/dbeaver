@@ -18,17 +18,17 @@ package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ContributionItem;
-import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
-import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -51,6 +50,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -59,7 +59,6 @@ import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.ReaderWriterLock.ExceptableFunction;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -74,142 +73,33 @@ import java.util.List;
 public class ReferenceValueEditor {
     private static final Log log = Log.getLog(ReferenceValueEditor.class);
 
+    private final Color selectionColor = UIUtils.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK);
     private final IValueController valueController;
     private IValueEditor valueEditor;
     private DBSEntityReferrer refConstraint;
     private Table editorSelector;
-    private Text valueFilterText;
-    private CLabel pageStatusLabel;
     private static volatile boolean sortByValue = true; // It is static to save its value between editors
     private static volatile boolean sortAsc = true;
     private TableColumn prevSortColumn = null;
+    private volatile boolean dictLoaded = false;
+    private Object lastKeyValue;
+    private Object lastSearchText;
+    private Object firstValue = null;
+    private Object lastValue = null;
+    private int maxResults;
     private Font boldFont;
-    private ViewController controller;
+    private LoadingJob<EnumValuesData> dictFilterJob;
 
-    private class ViewController {
-        private final int pageSize;
-        private long currOffset = 0;
-        private long currPageNumber = 0;
-        private long maxKnownPage = 0;
-        private long maxKnownIndex = 0;
-        private boolean nextPageAvailable = false;
-        private boolean limitFound = false;
-        private String filterPattern = null;
-        private Object currentValue = null;
-
-        public ViewController(int pageSize) {
-            this.pageSize = pageSize;
-        }
-        
-        @NotNull
-        public String makeStatusString() {
-            return limitFound ?
-                NLS.bind(ResultSetMessages.reference_value_editor_current_pagination_value, currPageNumber + 1, maxKnownPage + 1) :
-                NLS.bind(ResultSetMessages.reference_value_editor_current_page_value, currPageNumber + 1);
-        }
-        
-        public boolean isNextPageAvailable() {
-            return !(limitFound && currPageNumber >= maxKnownPage);
-        }
-        
-        public boolean isPrevPageAvailable() {
-            return currPageNumber > 0;
-        }
-
-        public void goToNextPage() {
-            if (nextPageAvailable) {
-                this.currPageNumber++;
-                this.currOffset = this.currPageNumber * this.pageSize;
-                this.reloadData(null);
-            }
-        }
-
-        public void goToPrevPage() {
-            if (this.isPrevPageAvailable()) {
-                this.currPageNumber--;
-                this.currOffset = this.currPageNumber * this.pageSize;
-                this.reloadData(null);
-            }
-        }
-
-        public void filter(@Nullable String pattern) {
-            if (CommonUtils.isEmpty(CommonUtils.toString(pattern))) {
-                this.reset(currentValue);
-            } else if (CommonUtils.equalObjects(String.valueOf(filterPattern), String.valueOf(pattern))) {
-                selectCurrentValue();
-            } else {
-                this.applyFilter(pattern);
-            }
-        }
-
-        private void applyFilter(@NotNull String pattern) {
-            this.currentValue = null;
-            this.filterPattern = pattern;
-            this.resetPages();
-            this.reloadData(null);
-        }
-
-        public void reset(@Nullable Object valueToShow) {
-            this.currentValue = valueToShow;
-            this.filterPattern = null;
-            this.resetPages();
-            this.reloadData(valueToShow);
-        }
-        
-        private void resetPages() {
-            this.currOffset = 0;
-            this.currPageNumber = 0;
-            this.maxKnownPage = 0;
-            this.maxKnownIndex = 0;
-            this.limitFound = false;
-        }
-
-        public void reload() {
-            if (filterPattern == null) {
-                this.reset(this.currentValue);
-            } else {
-                this.applyFilter(this.filterPattern);
-            }
-        }
-
-        private void reloadData(@Nullable Object valueToShow) {
-            SelectorLoaderService loadingService = new SelectorLoaderService(accessor -> {
-                List<DBDLabelValuePair> data;
-                if (filterPattern == null) {
-                    if (valueToShow != null) {
-                        long valueIndex = accessor.findValueIndex(valueToShow);
-                        long valuePageNumber = valueIndex / pageSize; // integer division without remainder and rounding
-                        this.currPageNumber = valuePageNumber;
-                        this.currOffset = valuePageNumber * this.pageSize;
-                    }
-                    data = accessor.getValues(currOffset, pageSize);
-                } else {
-                    data = accessor.getSimilarValues(filterPattern, true, true, currOffset, pageSize);
-                }
-                nextPageAvailable = data.size() >= pageSize;
-                limitFound |= !nextPageAvailable;
-                if (data.size() > 0) {
-                    maxKnownPage = Math.max(maxKnownPage, this.currPageNumber);
-                    maxKnownIndex = Math.max(maxKnownIndex, this.currPageNumber * this.pageSize + data.size());
-                }
-                if (limitFound) {
-                    currPageNumber = Math.min(currPageNumber, maxKnownPage);
-                }   
-                return data;
-            });
-            LoadingJob.createService(loadingService, new SelectorLoaderVisualizer(loadingService)).schedule();
-        }
-    }
 
     public ReferenceValueEditor(IValueController valueController, IValueEditor valueEditor) {
         this.valueController = valueController;
         this.valueEditor = valueEditor;
         DBCExecutionContext executionContext = valueController.getExecutionContext();
-
-        int pageSize = executionContext == null ? 200
-            : executionContext.getDataSource().getContainer().getPreferenceStore().getInt(ModelPreferences.DICTIONARY_MAX_ROWS);
-
-        this.controller = new ViewController(pageSize);
+        if (executionContext != null) {
+            this.maxResults =
+                executionContext.getDataSource().getContainer().getPreferenceStore().getInt(
+                    ModelPreferences.DICTIONARY_MAX_ROWS);
+        }
     }
 
     public void setValueEditor(IValueEditor valueEditor) {
@@ -270,37 +160,19 @@ public class ReferenceValueEditor {
                     });
                 dictLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-                Link hintLabel = UIUtils.createLink(
-                    labelGroup,
-                    "(<a>" + ResultSetMessages.reference_value_editor_define_description_value + "</a>)",
-                    new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            EditDictionaryPage editDictionaryPage = new EditDictionaryPage(refTable);
-                            if (editDictionaryPage.edit(parent.getShell())) {
-                                controller.reload();
-                            }
+                Link hintLabel = UIUtils.createLink(labelGroup, "(<a>Define Description</a>)", new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        EditDictionaryPage editDictionaryPage = new EditDictionaryPage(refTable);
+                        if (editDictionaryPage.edit(parent.getShell())) {
+                            reloadSelectorValues(null, null, true);
                         }
                     }
-                );
+                });
                 hintLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
             }
         }
-        if (refConstraint instanceof DBSEntityAssociation) {
-            valueFilterText = new Text(parent, SWT.BORDER);
-            valueFilterText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            valueFilterText.addModifyListener(e -> {
-                String filterPattern = valueFilterText.getText();
-                controller.filter(filterPattern);
-            });
-            valueFilterText.addPaintListener(e -> {
-                if (valueFilterText.isEnabled() && valueFilterText.getCharCount() == 0) {
-                    e.gc.setForeground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-                    e.gc.drawText(ResultSetMessages.reference_value_editor_search_hint_value, 2, 0, true);
-                    e.gc.setFont(null);
-                }
-            });
-        }
+
         editorSelector = new Table(parent, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
         editorSelector.setLinesVisible(true);
         editorSelector.setHeaderVisible(true);
@@ -384,7 +256,7 @@ public class ReferenceValueEditor {
             }
 
             if (!newValueFound) {
-                controller.reset(curEditorValue);
+                reloadSelectorValues(curEditorValue, null, false);
             }
         };
         if (control instanceof Text) {
@@ -393,11 +265,58 @@ public class ReferenceValueEditor {
             ((StyledText)control).addModifyListener(modifyListener);
         }
 
+        if (refConstraint instanceof DBSEntityAssociation) {
+            final Text valueFilterText = new Text(parent, SWT.BORDER);
+            valueFilterText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            valueFilterText.addModifyListener(e -> {
+                String filterPattern = valueFilterText.getText();
+                reloadSelectorValues(lastKeyValue, filterPattern, false);
+            });
+            valueFilterText.addPaintListener(e -> {
+                if (valueFilterText.isEnabled() && valueFilterText.getCharCount() == 0) {
+                    e.gc.setForeground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                    e.gc.drawText("Type part of dictionary value to search",
+                        2, 0, true);
+                    e.gc.setFont(null);
+                }
+            });
+        }
         final Object curValue = valueController.getValue();
 
-        controller.reset(curValue);
+        reloadSelectorValues(curValue, null, false);
 
         return true;
+    }
+
+    private void reloadSelectorValues(Object keyValue, String searchText, boolean force) {
+        reloadSelectorValues(keyValue, searchText, force, 0);
+    }
+
+    private void reloadSelectorValues(Object keyValue, String searchText, boolean force, int offset) {
+        if (!force && dictLoaded &&
+            CommonUtils.equalObjects(searchText, lastSearchText) &&
+            CommonUtils.equalObjects(String.valueOf(lastKeyValue), String.valueOf(keyValue))
+        ) {
+            selectCurrentValue();
+            return;
+        }
+        lastKeyValue = keyValue;
+        lastSearchText = searchText;
+        dictLoaded = true;
+        SelectorLoaderService loadingService = new SelectorLoaderService(offset);
+        if (keyValue != null) {
+            loadingService.setKeyValue(keyValue);
+        }
+        if (searchText != null) {
+            loadingService.setSearchText(searchText);
+        }
+        if (dictFilterJob != null) {
+            dictFilterJob.cancel();
+        }
+        dictFilterJob = LoadingJob.createService(
+            loadingService,
+            new SelectorLoaderVisualizer(loadingService));
+        dictFilterJob.schedule(250);
     }
 
     private void updateDictionarySelector(EnumValuesData valuesData) {
@@ -425,31 +344,6 @@ public class ReferenceValueEditor {
             editorSelector.setRedraw(true);
         }
     }
-    
-    private Action actionGoBackward = new Action("Move Backward", DBeaverIcons.getImageDescriptor(UIIcon.ARROW_LEFT)) {
-        @Override
-        public void run() {
-            controller.goToPrevPage();
-        }
-    }; 
-    private Action actionGoForward = new Action("Move Forward", DBeaverIcons.getImageDescriptor(UIIcon.ARROW_RIGHT)) {
-        @Override
-        public void run() {
-            controller.goToNextPage();
-        }
-    };
-
-    private ControlContribution pageStatusLabelContribution = new ControlContribution(null) {
-        @Override
-        protected Control createControl(Composite parent) {
-            return pageStatusLabel = new CLabel(parent, SWT.NONE);
-        }
-        
-        @Override
-        protected int computeWidth(Control control) {
-            return control.computeSize(SWT.DEFAULT, SWT.DEFAULT, true).x;
-        }
-    };
 
 
     /**
@@ -458,11 +352,13 @@ public class ReferenceValueEditor {
      * @return actions for paging
      */
     public ContributionItem[] getContributionItems() {
-        return new ContributionItem[]{
-            pageStatusLabelContribution,
-            ActionUtils.makeActionContribution(actionGoBackward, false),
-            ActionUtils.makeActionContribution(actionGoForward, false)
-        };
+        MoveToNextPageAction moveBackward = new MoveToNextPageAction("Move Backward", true,
+            DBeaverIcons.getImageDescriptor(UIIcon.ARROW_LEFT));
+        MoveToNextPageAction moveForward = new MoveToNextPageAction("Move Forward", false,
+            DBeaverIcons.getImageDescriptor(UIIcon.ARROW_RIGHT));
+
+        return new ContributionItem[]{ ActionUtils.makeActionContribution(moveBackward, false),
+            ActionUtils.makeActionContribution(moveForward, false) };
     }
 
     private void selectCurrentValue() {
@@ -535,7 +431,8 @@ public class ReferenceValueEditor {
             sortAsc = sortDirection == SWT.DOWN;
             editorSelector.setSortColumn(column);
             editorSelector.setSortDirection(sortDirection);
-            controller.reload();
+            reloadSelectorValues(lastKeyValue, null, true);
+
         }
     }
 
@@ -552,11 +449,26 @@ public class ReferenceValueEditor {
     }
 
     class SelectorLoaderService extends AbstractLoadService<EnumValuesData> {
-        private ExceptableFunction<DBSDictionaryAccessor, List<DBDLabelValuePair>, DBException> action;
 
-        private SelectorLoaderService(ExceptableFunction<DBSDictionaryAccessor, List<DBDLabelValuePair>, DBException> action) {
+        int offset;
+        private Object keyValue;
+        private String searchText;
+
+        public Object getLastValue() {
+            return lastValue;
+        }
+
+        private SelectorLoaderService(int offset) {
             super(ResultSetMessages.dialog_value_view_job_selector_name + valueController.getValueName() + " possible values");
-            this.action = action;
+            this.offset = offset;
+        }
+
+        public void setKeyValue(@Nullable Object keyValue) {
+            this.keyValue = keyValue;
+        }
+
+        public void setSearchText(String searchText) {
+            this.searchText = searchText;
         }
 
         @Override
@@ -583,7 +495,24 @@ public class ReferenceValueEditor {
 
         @Nullable
         private EnumValuesData readEnum(DBRProgressMonitor monitor) throws DBException {
-            IAttributeController attributeController = (IAttributeController) valueController;
+    /*
+                final Map<Object, String> keyValues = new TreeMap<>((o1, o2) -> {
+                    if (o1 instanceof Comparable && o2 instanceof Comparable) {
+                        return ((Comparable) o1).compareTo(o2);
+                    }
+                    if (o1 == o2) {
+                        return 0;
+                    } else if (o1 == null) {
+                        return -1;
+                    } else if (o2 == null) {
+                        return 1;
+                    } else {
+                        return o1.toString().compareTo(o2.toString());
+                    }
+                });
+    */
+
+            IAttributeController attributeController = (IAttributeController)valueController;
             final DBSEntityAttribute tableColumn = attributeController.getBinding().getEntityAttribute();
             if (tableColumn == null) {
                 return null;
@@ -607,9 +536,13 @@ public class ReferenceValueEditor {
         }
 
         @Nullable
-        private EnumValuesData getEnumValuesData(DBRProgressMonitor monitor, IAttributeController attributeController,
-                                                 DBSEntityAttributeRef fkColumn, DBSEntityAssociation association,
-                                                 DBSEntityAttribute refColumn) throws DBException {
+        private EnumValuesData getEnumValuesData(
+            @NotNull DBRProgressMonitor monitor,
+            IAttributeController attributeController,
+            DBSEntityAttributeRef fkColumn,
+            DBSEntityAssociation association,
+            DBSEntityAttribute refColumn
+        ) throws DBException {
             List<DBDAttributeValue> precedingKeys = null;
             List<? extends DBSEntityAttributeRef> allColumns = CommonUtils.safeList(refConstraint.getAttributeReferences(
                 monitor));
@@ -635,24 +568,34 @@ public class ReferenceValueEditor {
             }
             final DBSEntityAttribute fkAttribute = fkColumn.getAttribute();
             final DBSEntityConstraint refConstraint = association.getReferencedConstraint();
-            final DBSDictionary enumConstraint = (DBSDictionary) refConstraint.getParentObject();
+            final DBSDictionary enumConstraint = refConstraint == null ? null : (DBSDictionary) refConstraint.getParentObject();
             if (fkAttribute != null && enumConstraint != null) {
-                try (DBSDictionaryAccessor accessor = enumConstraint.getDictionaryAccessor(
-                    new AbstractExecutionSource(null, valueController.getExecutionContext(), ReferenceValueEditor.this), monitor,
-                    precedingKeys, refColumn, sortAsc, !sortByValue)
-                ) {
-                    List<DBDLabelValuePair> enumValues = action.apply(accessor);
-                    if (monitor.isCanceled()) {
-                        return null;
-                    }
-                    if (enumValues.isEmpty()) {
-                        return null;
-                    }
-                    final DBDValueHandler colHandler = DBUtils.findValueHandler(fkAttribute.getDataSource(), fkAttribute);
-                    return new EnumValuesData(enumValues, fkColumn, colHandler);
-                } catch (Exception e) {
-                    throw new DBException("Failed to load values", e);
+                List<DBDLabelValuePair> enumValues = enumConstraint.getDictionaryEnumeration(
+                    monitor,
+                    refColumn,
+                    keyValue,
+                    searchText,
+                    precedingKeys,
+                    false,
+                    sortAsc,
+                    sortByValue,
+                    offset,
+                    maxResults);
+//                        for (DBDLabelValuePair pair : enumValues) {
+//                            keyValues.put(pair.getValue(), pair.getLabel());
+//                        }
+                if (monitor.isCanceled()) {
+                    return null;
                 }
+                if (enumValues.isEmpty()) {
+                    return null;
+                }
+                if (enumValues.size() >= 1) {
+                    firstValue = enumValues.get(0).getValue();
+                    lastValue = enumValues.get(enumValues.size() - 1).getValue();
+                }
+                final DBDValueHandler colHandler = DBUtils.findValueHandler(fkAttribute.getDataSource(), fkAttribute);
+                return new EnumValuesData(enumValues, fkColumn, colHandler);
             }
 
             return null;
@@ -678,22 +621,40 @@ public class ReferenceValueEditor {
 
         @Override
         public void completeLoading(EnumValuesData result) {
-            boolean dataObtained = result != null && !result.keyValues.isEmpty();
-            
             super.completeLoading(result);
             super.visualizeLoading();
             if (result != null) {
                 updateDictionarySelector(result);
             }
-
-            actionGoBackward.setEnabled(controller.isPrevPageAvailable());
-            actionGoForward.setEnabled(controller.isNextPageAvailable());
-            editorSelector.setEnabled(dataObtained || controller.currPageNumber > 0);
-            if (pageStatusLabel != null) {
-                pageStatusLabel.setText(controller.makeStatusString());
-                pageStatusLabelContribution.update();
-                UIUtils.asyncExec(() -> pageStatusLabel.getParent().getParent().pack(true));
-            }
         }
     }
+
+    private class MoveToNextPageAction extends Action {
+        boolean backwardMove;
+
+        private void updateList() throws DBException {
+            if (backwardMove && firstValue != null) {
+                reloadSelectorValues(firstValue, null, true, Math.min(-Math.floorDiv(maxResults, 2), -1));
+            } else if (!backwardMove && lastValue != null) {
+                reloadSelectorValues(lastValue, null, true, Math.max(Math.round((float) maxResults / 2) + 1, 1));
+            }
+        }
+
+        private MoveToNextPageAction(String text, boolean backwardMove, ImageDescriptor image) {
+            super(text, image);
+            this.backwardMove = backwardMove;
+        }
+
+        @Override
+        public void run() {
+            super.run();
+            try {
+                updateList();
+            } catch (DBException e) {
+                log.error("Can't load new dictionary values", e);
+            }
+        }
+
+    }
+
 }

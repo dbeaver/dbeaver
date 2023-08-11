@@ -370,6 +370,7 @@
                 description="Secure socket layer"
                 desktop="false"
                 secured="false"
+                pinned="true"
                 order="100"
                 handlerClass="org.jkiss.dbeaver.ext.mysql.model.net.MySQLSSLHandlerImpl">
             <propertyGroup label="SSL Settings">

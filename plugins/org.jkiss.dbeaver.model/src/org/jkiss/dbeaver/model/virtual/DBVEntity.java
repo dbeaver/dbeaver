@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -695,67 +694,13 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return true;
     }
 
-    @Override
-    public DBSDictionaryAccessor getDictionaryAccessor(
-        DBCExecutionSource execSource,
-        DBRProgressMonitor monitor,
-        List<DBDAttributeValue> precedingKeys,
-        DBSEntityAttribute keyColumn,
-        boolean sortAsc,
-        boolean sortByDesc
-    ) throws DBException {
-        final DBSEntity realEntity = getRealEntity(monitor);
-        if (realEntity instanceof DBSDictionary) {
-            return ((DBSDictionary) realEntity).getDictionaryAccessor(
-                execSource,
-                monitor,
-                    precedingKeys,
-                keyColumn,
-                sortAsc,
-                sortByDesc
-            );
-        } else {
-            return emptyDictionaryAccessor;
-        }
-    }
-
-    private static final DBSDictionaryAccessor emptyDictionaryAccessor = new DBSDictionaryAccessor() {
-        @NotNull
-        public List<DBDLabelValuePair> getValues(long offset, long maxResults) {
-            return Collections.emptyList();
-        }
-
-        @NotNull
-        public List<DBDLabelValuePair> getSimilarValues(
-            @NotNull Object pattern,
-            boolean caseInsensitive,
-            boolean byDesc,
-            long offset,
-            long maxResults
-        ) {
-            return Collections.emptyList();
-        }
-
-        public long findValueIndex(@NotNull Object keyValue) {
-            return 0;
-        }
-
-        public long countValues() {
-            return 0;
-        }
-
-        public void close() {
-            // do nothing
-        }
-    };
-
     @NotNull
     @Override
     public List<DBDLabelValuePair> getDictionaryEnumeration(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSEntityAttribute keyColumn,
-        Object keyPattern,
-        @Nullable List<DBDAttributeValue> precedingKeys,
+        @Nullable Object keyPattern,
+        @Nullable String searchText, @Nullable List<DBDAttributeValue> preceedingKeys,
         boolean caseInsensitiveSearch,
         boolean sortAsc,
         boolean sortByValue,
@@ -768,7 +713,8 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
                 monitor,
                 keyColumn,
                 keyPattern,
-                precedingKeys,
+                searchText,
+                preceedingKeys,
                 caseInsensitiveSearch,
                 sortAsc,
                 sortByValue,

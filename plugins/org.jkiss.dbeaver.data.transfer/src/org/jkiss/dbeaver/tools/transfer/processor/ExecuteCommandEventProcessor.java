@@ -17,10 +17,12 @@
 package org.jkiss.dbeaver.tools.transfer.processor;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.utils.CommonUtils;
@@ -34,7 +36,7 @@ public class ExecuteCommandEventProcessor implements IDataTransferEventProcessor
     public static final String PROP_WORKING_DIRECTORY = "workingDirectory";
 
     @Override
-    public void processEvent(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull StreamTransferConsumer consumer, @NotNull Map<String, Object> processorSettings) throws DBException {
+    public void processEvent(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull StreamTransferConsumer consumer, @Nullable DBTTask task, @NotNull Map<String, Object> processorSettings) throws DBException {
         final String commandLine = consumer.translatePattern(CommonUtils.toString(processorSettings.get(PROP_COMMAND)), new File(consumer.getOutputFolder(), consumer.getOutputFileName()));
         final String workingDirectory = CommonUtils.toString(processorSettings.get(PROP_WORKING_DIRECTORY));
 

@@ -722,6 +722,7 @@
                 description="%handler.ssl.description"
                 desktop="false"
                 secured="false"
+                pinned="true"
                 order="100"
                 handlerClass="org.jkiss.dbeaver.ext.postgresql.model.net.PostgreSSLHandlerImpl">
             <propertyGroup label="SSL Settings">

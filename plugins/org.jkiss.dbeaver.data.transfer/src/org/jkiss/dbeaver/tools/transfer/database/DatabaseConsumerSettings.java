@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -33,19 +34,17 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * DatabaseConsumerSettings
  */
 @SuppressWarnings("unchecked")
-public class DatabaseConsumerSettings implements IDataTransferSettings {
+public class DatabaseConsumerSettings implements IDataTransferConsumerSettings {
 
     private static final Log log = Log.getLog(DatabaseConsumerSettings.class);
 
@@ -68,6 +67,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     private boolean useBulkLoad = false;
     private String onDuplicateKeyInsertMethodId;
     private boolean disableReferentialIntegrity;
+    private final Map<String, Map<String, Object>> eventProcessors = new HashMap<>();
 
     private transient Map<String, Object> dialogSettings;
 
@@ -292,6 +292,11 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
                 }
             }
         }
+
+        final Map<String, Object> processors = JSONUtils.getObject(settings, "eventProcessors");
+        for (String processor : processors.keySet()) {
+            eventProcessors.put(processor, JSONUtils.getObject(processors, processor));
+        }
     }
 
     @Override
@@ -324,6 +329,10 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
                 dmc.saveSettings(dmcSettings);
             }
         }
+
+        if (!eventProcessors.isEmpty()) {
+            settings.put("eventProcessors", eventProcessors);
+        }
     }
 
     @Override
@@ -347,6 +356,30 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         DTUtils.addSummary(summary, DTMessages.database_consumer_settings_option_truncate_before_load, truncateBeforeLoad);
 
         return summary.toString();
+    }
+
+    @Override
+    public void addEventProcessor(@NotNull DataTransferEventProcessorDescriptor descriptor) {
+        eventProcessors.putIfAbsent(descriptor.getId(), new HashMap<>());
+    }
+
+    @Override
+    public void removeEventProcessor(@NotNull DataTransferEventProcessorDescriptor descriptor) {
+        eventProcessors.remove(descriptor.getId());
+    }
+
+    public boolean hasEventProcessor(@NotNull String id) {
+        return eventProcessors.containsKey(id);
+    }
+
+    @NotNull
+    public Map<String, Object> getEventProcessorSettings(@NotNull String id) {
+        return eventProcessors.computeIfAbsent(id, x -> new HashMap<>());
+    }
+
+    @NotNull
+    public Map<String, Map<String, Object>> getEventProcessors() {
+        return eventProcessors;
     }
 
     @Nullable

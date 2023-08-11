@@ -100,7 +100,7 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     @Override
-    public GenericTableBase createTableImpl(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
+    public GenericTableBase createTableOrViewImpl(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
         VerticaSchema schema = (VerticaSchema) container;
         if (CommonUtils.isNotEmpty(tableType)) {
             if (isView(tableType)) {
