@@ -248,6 +248,8 @@ public class ModelMessages extends NLS {
     public static String dialog_user_password_change_question_message;
     public static String dialog_user_password_change_error_message;
 
+    public static String dbutils_type_name_unknown;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, ModelMessages.class);
