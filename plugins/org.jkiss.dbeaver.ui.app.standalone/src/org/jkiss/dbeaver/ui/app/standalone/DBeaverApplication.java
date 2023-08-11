@@ -99,6 +99,9 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private static final String PROP_EXIT_DATA = IApplicationContext.EXIT_DATA_PROPERTY; //$NON-NLS-1$
     private static final String PROP_EXIT_CODE = "eclipse.exitcode"; //$NON-NLS-1$
 
+    private static final String ECLIPSE_KEYRING = "-eclipse.keyring"; //$NON-NLS-1$
+    private static final String ECLIPSE_APP_ARGUMENTS_FIELD = "appArgs"; //$NON-NLS-1$
+
     public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
 
     private final String WORKSPACE_DIR_6; //$NON-NLS-1$
@@ -333,15 +336,15 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         EnvironmentInfo environmentInfoService = AuthPlugin.getDefault().getEnvironmentInfoService();
         String[] nonFrameworkArgs = environmentInfoService.getNonFrameworkArgs();
         if (!isDistributed() && storagePath.toFile().exists() && Arrays.stream(nonFrameworkArgs)
-            .filter(it -> it.equals("-eclipse.keyring")).findAny().isEmpty()) {
+            .filter(it -> it.equals(ECLIPSE_KEYRING)).findAny().isEmpty()) {
             // Unfortunately the Equinox reads the eclipse.keyring from arguments
             // before any DBeaver controlled part is executed and there is no way
             // to modify the variable after that without reflection.
             String[] updatedArgs = Arrays.copyOf(nonFrameworkArgs, nonFrameworkArgs.length + 2);
-            updatedArgs[updatedArgs.length - 2] = "-eclipse.keyring";
+            updatedArgs[updatedArgs.length - 2] = ECLIPSE_KEYRING;
             updatedArgs[updatedArgs.length - 1] = storagePath.toString();
             try {
-                Field appArgs = environmentInfoService.getClass().getDeclaredField("appArgs");
+                Field appArgs = environmentInfoService.getClass().getDeclaredField(ECLIPSE_APP_ARGUMENTS_FIELD);
                 appArgs.setAccessible(true);
                 appArgs.set(environmentInfoService, updatedArgs);
             } catch (NoSuchFieldException | IllegalAccessException e) {
