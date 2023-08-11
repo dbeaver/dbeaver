@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.clickhouse.ClickhouseConstants;
+import org.jkiss.dbeaver.ext.clickhouse.ClickhouseTypeParser;
 import org.jkiss.dbeaver.ext.clickhouse.model.jdbc.ClickhouseJdbcFactory;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSourceInfo;
@@ -151,7 +152,12 @@ public class ClickhouseDataSource extends GenericDataSource {
         if (shortName != null) {
             typeFullName = shortName;
         }
-
+        if (ClickhouseTypeParser.isComplexType(typeFullName)) {
+            final DBSDataType type = ClickhouseTypeParser.getType(monitor, this, typeFullName);
+            if (type != null) {
+                return type;
+            }
+        }
         return super.resolveDataType(monitor, typeFullName);
     }
 

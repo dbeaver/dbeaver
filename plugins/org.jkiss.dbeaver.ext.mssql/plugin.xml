@@ -568,6 +568,7 @@
                 label="SSL"
                 description="SSL settings"
                 secured="false"
+                pinned="true"
                 order="100"
                 handlerClass="org.jkiss.dbeaver.ext.mssql.model.SQLServerSSLHandlerImpl">
             <objectType name="org.jkiss.dbeaver.ext.mssql.SQLServerDataSourceProvider"/>

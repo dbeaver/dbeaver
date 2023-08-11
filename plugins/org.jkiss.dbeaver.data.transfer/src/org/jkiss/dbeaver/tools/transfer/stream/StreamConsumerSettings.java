@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor;
 import org.jkiss.dbeaver.tools.transfer.processor.ShowInExplorerEventProcessor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
@@ -45,7 +46,7 @@ import java.util.Map;
 /**
  * Stream transfer settings
  */
-public class StreamConsumerSettings implements IDataTransferSettings {
+public class StreamConsumerSettings implements IDataTransferConsumerSettings {
 
     private static final Log log = Log.getLog(StreamConsumerSettings.class);
 
@@ -278,12 +279,14 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         return eventProcessors.computeIfAbsent(id, x -> new HashMap<>());
     }
 
-    public void addEventProcessor(@NotNull String id) {
-        eventProcessors.putIfAbsent(id, new HashMap<>());
+    @Override
+    public void addEventProcessor(@NotNull DataTransferEventProcessorDescriptor descriptor) {
+        eventProcessors.putIfAbsent(descriptor.getId(), new HashMap<>());
     }
 
-    public void removeEventProcessor(@NotNull String id) {
-        eventProcessors.remove(id);
+    @Override
+    public void removeEventProcessor(@NotNull DataTransferEventProcessorDescriptor descriptor) {
+        eventProcessors.remove(descriptor.getId());
     }
 
     public boolean hasEventProcessor(@NotNull String id) {

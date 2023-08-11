@@ -57,6 +57,8 @@ public interface DBPScriptObject extends DBPObject {
 
     String OPTION_DDL_SKIP_FOREIGN_KEYS = "ddl.skipForeignKeys"; //$NON-NLS-1$
     String OPTION_DDL_ONLY_FOREIGN_KEYS = "ddl.onlyForeignKeys"; //$NON-NLS-1$
+    String OPTION_SKIP_UNIQUE_KEYS = "ddl.skipUniqueKeys"; //$NON-NLS-1$
+    String OPTION_SKIP_INDEXES = "ddl.skipIndexes"; //$NON-NLS-1$
 
     String OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS = "ddl.separateForeignKeys"; //$NON-NLS-1$
 
