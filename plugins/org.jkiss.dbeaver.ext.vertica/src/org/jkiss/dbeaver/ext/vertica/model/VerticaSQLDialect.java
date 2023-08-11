@@ -36,6 +36,8 @@ public class VerticaSQLDialect extends GenericSQLDialect {
             {SQLConstants.KEYWORD_CASE, SQLConstants.BLOCK_END},
     };
 
+    private static String[] EXEC_KEYWORDS = {"CALL"};
+
     private static String[] VERTICA_KEYWORDS = new String[]{
         // SELECT * FROM keywords WHERE reserved = 'R'
         "BIT",
@@ -86,6 +88,12 @@ public class VerticaSQLDialect extends GenericSQLDialect {
         super.initDriverSettings(session, dataSource, metaData);
         addSQLKeywords(Arrays.asList(VERTICA_KEYWORDS));
         addFunctions(Arrays.asList(VERTICA_FUNCTIONS));
+    }
+
+    @NotNull
+    @Override
+    public String[] getExecuteKeywords() {
+        return EXEC_KEYWORDS;
     }
 
     @Override
