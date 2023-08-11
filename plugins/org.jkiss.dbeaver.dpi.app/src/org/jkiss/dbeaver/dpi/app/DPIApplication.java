@@ -57,6 +57,7 @@ public class DPIApplication extends DesktopApplicationImpl {
 
     @Override
     public Object start(IApplicationContext context) {
+        super.start(context);
         DPIPlatform.createInstance();
 
         DBPApplication application = DBWorkbench.getPlatform().getApplication();

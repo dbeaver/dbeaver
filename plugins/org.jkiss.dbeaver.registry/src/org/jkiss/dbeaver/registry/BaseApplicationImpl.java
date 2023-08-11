@@ -136,7 +136,7 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
     // IApplication
 
     @Override
-    public Object start(IApplicationContext context) throws Exception {
+    public Object start(IApplicationContext context)  {
         return EXIT_OK;
     }
 

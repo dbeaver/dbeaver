@@ -20,11 +20,8 @@ import org.apache.commons.cli.CommandLine;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
-import org.eclipse.equinox.internal.security.auth.AuthPlugin;
-import org.eclipse.equinox.internal.security.storage.StorageUtils;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.service.datalocation.Location;
-import org.eclipse.osgi.service.environment.EnvironmentInfo;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Listener;
@@ -38,7 +35,10 @@ import org.eclipse.ui.internal.ide.ChooseWorkspaceData;
 import org.eclipse.ui.internal.ide.ChooseWorkspaceDialog;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.*;
+import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.LogOutputStream;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPApplicationController;
@@ -68,9 +68,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -99,11 +101,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private static final String PROP_EXIT_DATA = IApplicationContext.EXIT_DATA_PROPERTY; //$NON-NLS-1$
     private static final String PROP_EXIT_CODE = "eclipse.exitcode"; //$NON-NLS-1$
 
-    private static final String ECLIPSE_KEYRING = "-eclipse.keyring"; //$NON-NLS-1$
-    private static final String ECLIPSE_APP_ARGUMENTS_FIELD = "appArgs"; //$NON-NLS-1$
-
     public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
-
+    
     private final String WORKSPACE_DIR_6; //$NON-NLS-1$
     private final Path FILE_WITH_WORKSPACES;
     public final String WORKSPACE_DIR_CURRENT;
@@ -111,9 +110,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     static boolean WORKSPACE_MIGRATED = false;
 
     static DBeaverApplication instance;
-
-    private static final Path storagePath = Path.of(RuntimeUtils.getWorkingDirectory("DBeaverData")).resolve("security")
-        .resolve("secure_storage");
 
     private boolean exclusiveMode = false;
     private boolean reuseWorkspace = false;
@@ -170,6 +166,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     @Override
     public Object start(IApplicationContext context) {
+        super.start(context);
         instance = this;
 
         Location instanceLoc = Platform.getInstanceLocation();
@@ -269,7 +266,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             SWTBrowserRegistry.overrideBrowser();
         }
         TimezoneRegistry.overrideTimezone();
-        updateSecretStorage();
+
         if (RuntimeUtils.isWindows()
             && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE))
             && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE))
@@ -324,54 +321,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 */
             display.dispose();
             display = null;
-        }
-    }
-
-    private void updateSecretStorage() {
-        try {
-            tryCreateSecretFile();
-        } catch (DBException e) {
-            log.error(e);
-        }
-        EnvironmentInfo environmentInfoService = AuthPlugin.getDefault().getEnvironmentInfoService();
-        String[] nonFrameworkArgs = environmentInfoService.getNonFrameworkArgs();
-        if (!isDistributed() && storagePath.toFile().exists() && Arrays.stream(nonFrameworkArgs)
-            .filter(it -> it.equals(ECLIPSE_KEYRING)).findAny().isEmpty()) {
-            // Unfortunately the Equinox reads the eclipse.keyring from arguments
-            // before any DBeaver controlled part is executed and there is no way
-            // to modify the variable after that without reflection.
-            String[] updatedArgs = Arrays.copyOf(nonFrameworkArgs, nonFrameworkArgs.length + 2);
-            updatedArgs[updatedArgs.length - 2] = ECLIPSE_KEYRING;
-            updatedArgs[updatedArgs.length - 1] = storagePath.toString();
-            try {
-                Field appArgs = environmentInfoService.getClass().getDeclaredField(ECLIPSE_APP_ARGUMENTS_FIELD);
-                appArgs.setAccessible(true);
-                appArgs.set(environmentInfoService, updatedArgs);
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                log.error("Error setting the secure storage");
-            }
-        }
-    }
-
-
-    private void migrateFromEclipseStorage() throws IOException, URISyntaxException {
-        Path oldLocation = Path.of(StorageUtils.getDefaultLocation().toURI());
-        Files.createDirectories(storagePath.getParent());
-        Files.copy(oldLocation, storagePath, StandardCopyOption.REPLACE_EXISTING);
-    }
-
-    private void tryCreateSecretFile() throws DBException {
-        try {
-            if (!storagePath.toFile().exists()) {
-                if (Path.of(StorageUtils.getDefaultLocation().toURI()).toFile().exists()) {
-                    migrateFromEclipseStorage();
-                } else {
-                    Files.createDirectories(storagePath.getParent());
-                    Files.createFile(storagePath);
-                }
-            }
-        } catch (IOException | URISyntaxException e) {
-            throw new DBException("Error migrating secure storage file", e);
         }
     }
 

@@ -37,6 +37,7 @@ public class DBeaverHeadlessApplication extends DesktopApplicationImpl {
 
     @Override
     public Object start(IApplicationContext context) {
+        super.start(context);
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
         if (RuntimeUtils.isWindows() && ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)) {
             System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STORE_TYPE_WINDOWS);

@@ -56,7 +56,7 @@ public class EclipsePluginApplicationImpl extends DesktopApplicationImpl {
     }
 
     @Override
-    public Object start(IApplicationContext context) throws Exception {
+    public Object start(IApplicationContext context)  {
         return null;
     }
 
