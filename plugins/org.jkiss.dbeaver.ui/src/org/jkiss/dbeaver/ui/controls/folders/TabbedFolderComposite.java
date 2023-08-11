@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ui.controls.folders;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.accessibility.ACC;
 import org.eclipse.swt.accessibility.AccessibleControlAdapter;
 import org.eclipse.swt.accessibility.AccessibleControlEvent;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -156,7 +155,7 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
                 newContent.getAccessible().addAccessibleControlListener(new AccessibleControlAdapter() {
                     @Override
                     public void getRole(AccessibleControlEvent e) {
-                        e.detail = ACC.ROLE_TABITEM;
+                        //e.detail = ACC.ROLE_TABITEM;
                     }
                 });
 //                newContent.getAccessible().addAccessibleListener(new AccessibleAdapter() {

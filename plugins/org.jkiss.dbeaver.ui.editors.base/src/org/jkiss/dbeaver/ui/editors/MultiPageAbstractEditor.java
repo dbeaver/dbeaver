@@ -19,11 +19,7 @@ package org.jkiss.dbeaver.ui.editors;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.accessibility.Accessible;
-import org.eclipse.swt.accessibility.AccessibleAdapter;
-import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
@@ -123,6 +119,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
                 tabFolder.setTopRight(topRight, SWT.RIGHT | SWT.WRAP);
             }
 
+/*
             final Accessible accessible = tabFolder.getAccessible();
             accessible.addAccessibleListener(new AccessibleAdapter() {
                 public void getName(AccessibleEvent e) {
@@ -134,6 +131,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
                     }
                 }
             });
+*/
 
 //            tabFolder.setSimple(false);
             //tabFolder.setBorderVisible(true);

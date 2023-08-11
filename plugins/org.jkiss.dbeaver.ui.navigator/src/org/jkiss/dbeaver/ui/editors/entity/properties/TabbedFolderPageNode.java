@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.itemlist.ItemListControl;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 
@@ -234,14 +235,16 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
 
     private class FolderSimpleAccessibleAdapter extends AccessibleAdapter {
         public void getName(AccessibleEvent e) {
-            e.result = node.getNodeDescription();
+            if (e.childID == ACC.CHILDID_SELF) {
+                e.result = CommonUtils.notNull(node.getNodeDescription(), node.getName());
+            }
         }
     }
 
     private class FolderAccessibleAdapter extends AccessibleControlAdapter implements AccessibleListener {
         public void getName(AccessibleEvent e) {
             if (e.childID == ACC.CHILDID_SELF) {
-                e.result = node.getNodeDescription();
+                e.result = CommonUtils.notNull(node.getNodeDescription(), node.getName());
             }
         }
 

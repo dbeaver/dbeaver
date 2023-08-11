@@ -78,8 +78,7 @@ public class SpreadsheetAccessibleAdapter extends AccessibleControlAdapter imple
             final GridCell cell = spreadsheet.getFocusCell();
             if (cell != null && cell != lastCell) {
                 adapter.setNewCell(cell);
-                //accessible.selectionChanged();
-                accessible.sendEvent(ACC.EVENT_VALUE_CHANGED, new Object[]{null, cell.getRow().getElement()});
+                accessible.sendEvent(ACC.EVENT_NAME_CHANGED, new Object[]{null, cell.getRow().getElement()});
             }
         });
     }
