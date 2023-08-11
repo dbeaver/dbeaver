@@ -21,6 +21,7 @@ import org.eclipse.core.internal.localstore.BucketTree;
 import org.eclipse.core.internal.properties.PropertyBucket;
 import org.eclipse.core.internal.resources.Workspace;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
@@ -29,6 +30,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
@@ -111,6 +113,7 @@ public class LocalProjectImpl extends BaseProjectImpl {
                     try {
                         recoverProjectDescription();
                         project.open(monitor);
+                        hideMetadataFolder();
                         project.refreshLocal(IFile.DEPTH_ONE, monitor);
                     } catch (Exception e2) {
                         log.error("Error opening project", e2);
@@ -133,11 +136,13 @@ public class LocalProjectImpl extends BaseProjectImpl {
             setFormat(ProjectFormat.MODERN);
         }
 
+
         // Check project structure and migrate
         checkAndUpdateProjectStructure();
 
         // Now project is in modern format
         setFormat(ProjectFormat.MODERN);
+
     }
 
     @Override
@@ -216,6 +221,21 @@ public class LocalProjectImpl extends BaseProjectImpl {
         }
 
         return result;
+    }
+
+    public void hideMetadataFolder() {
+        if (project.isOpen()) {
+            // To avoid accidental corruption of the workspace configuration by search/replace commands,
+            // we need to mark metadata folder as hidden (see dbeaver/dbeaver#20759)
+            IFolder metadataFolder = project.getFolder(DBPProject.METADATA_FOLDER);
+            if (metadataFolder.exists() && !metadataFolder.isHidden()) {
+                try {
+                    metadataFolder.setHidden(true);
+                } catch (CoreException e) {
+                    log.error("Error hiding metadata folder", e);
+                }
+            }
+        }
     }
 
     public void recoverProjectDescription() throws IOException {

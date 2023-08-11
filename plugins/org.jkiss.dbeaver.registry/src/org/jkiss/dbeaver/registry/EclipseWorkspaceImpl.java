@@ -131,18 +131,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
                 if (activeProject == null || (!CommonUtils.isEmpty(activeProjectName) && project.getName().equals(activeProjectName))) {
                     activeProject = projectMetadata;
                 }
-
-                // To avoid accidental corruption of the workspace configuration by search/replace commands,
-                // we need to mark metadata folder as hidden (see dbeaver/dbeaver#20759)
-                IFolder metadataFolder = project.getFolder(DBPProject.METADATA_FOLDER);
-                if (metadataFolder.exists() && !metadataFolder.isHidden()) {
-                    try {
-                        metadataFolder.setHidden(true);
-                    } catch (CoreException e) {
-                        log.error("Error hiding metadata folder", e);
-                    }
-                }
-
+                projectMetadata.hideMetadataFolder();
             }
         }
     }
