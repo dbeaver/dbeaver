@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -98,7 +97,6 @@ public abstract class AltibaseProcedureBase extends GenericProcedure implements 
      * Get Procedure type, especially for TYPESET
      */
     public String getProcedureTypeName() {
-        DBSProcedureType procedureType = getProcedureType();
         if (procedureType == DBSProcedureType.UNKNOWN) {
             return AltibaseConstants.OBJ_TYPE_TYPESET;
         } else {

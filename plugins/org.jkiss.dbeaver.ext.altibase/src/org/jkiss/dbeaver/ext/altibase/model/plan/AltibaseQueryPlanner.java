@@ -134,6 +134,7 @@ public class AltibaseQueryPlanner extends AbstractExecutionPlanSerializer implem
     public DBCPlan deserialize(@NotNull Reader planData) throws IOException, InvocationTargetException {
         try {
 
+            @SuppressWarnings("deprecation")
             JsonObject jo = new JsonParser().parse(planData).getAsJsonObject();
 
             String query = getQuery(jo);

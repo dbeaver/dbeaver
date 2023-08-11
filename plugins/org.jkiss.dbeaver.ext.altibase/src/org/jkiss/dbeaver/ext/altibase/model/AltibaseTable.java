@@ -159,7 +159,7 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
         } catch (Exception e) {
             throw new DBCException("Error reading table statistics", e);
         } finally {
-            if (hasStatistics() == false) {
+            if (!hasStatistics()) {
                 resetSize();
             }
         }
