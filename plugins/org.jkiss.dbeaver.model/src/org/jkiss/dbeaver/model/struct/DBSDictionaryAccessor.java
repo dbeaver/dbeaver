@@ -24,6 +24,8 @@ import java.util.List;
 
 
 public interface DBSDictionaryAccessor extends AutoCloseable {
+    
+    boolean isKeyComparable();
 
     @NotNull
     List<DBDLabelValuePair> getSimilarValues(
@@ -34,7 +36,25 @@ public interface DBSDictionaryAccessor extends AutoCloseable {
         long maxResults
     ) throws DBException;
 
-    List<DBDLabelValuePair> getValuesNear(Object value, boolean isPreceeding, long offset, long maxResults) throws DBException;
+    @NotNull
+    List<DBDLabelValuePair> getValuesNear(
+        @NotNull Object value,
+        boolean isPreceeding,
+        long offset,
+        long maxResults
+    ) throws DBException;
 
+    @NotNull
+    List<DBDLabelValuePair> getSimilarValuesNear(
+        @NotNull Object pattern,
+        boolean caseInsensitive,
+        boolean byDesc,
+        Object value, boolean isPreceeding,
+        long offset,
+        long maxResults
+    ) throws DBException;
+    
+    @NotNull
+    List<DBDLabelValuePair> getValueEntry(@NotNull Object keyValue) throws DBException;
 }
 

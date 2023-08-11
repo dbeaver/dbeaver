@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.data.ExecuteBatchWithMultipleInsert;
 import org.jkiss.dbeaver.model.impl.data.ExecuteInsertBatchImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStringValueHandler;
 import org.jkiss.dbeaver.model.impl.sql.ChangeTableDataStatement;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -1020,17 +1021,53 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 .map(a -> new AttrInfo<>(a, DBUtils.findValueHandler(session, a))).collect(Collectors.toList());
         }
         
-        private void bindPrecedingKeys(DBCStatement dbStat) throws DBCException {
+        @Override
+        public boolean isKeyComparable() {
+            switch (keyColumn.getDataKind()) { 
+                case STRING:
+                case NUMERIC:
+                case DATETIME:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private int bindPrecedingKeys(@NotNull DBCStatement dbStat) throws DBCException {
+            int paramPos = 0;
             if (!preceedingKeysInfo.isEmpty()) {
-                int paramPos = 0;
                 for (var k : preceedingKeysInfo) {
                     k.handler.bindValueObject(session, dbStat, k.attr.getAttribute(), paramPos++, k.attr.getValue());
                 }
             }
+            return paramPos;
+        }
+        
+        @NotNull
+        @Override
+        public List<DBDLabelValuePair> getValueEntry(@NotNull Object keyValue) throws DBException {
+            DBDDataFilter filter = new DBDDataFilter(this.filter);
+            List<DBDAttributeConstraint> constraints = filter.getConstraints();
+            DBDAttributeConstraint constraint = new DBDAttributeConstraint(keyColumn, constraints.size());
+            constraint.setValue(keyValue);
+            constraint.setOperator(DBCLogicalOperator.EQUALS);
+            constraints.add(constraint);
+            StringBuilder query = prepareQueryString(filter);
+            try (DBCStatement dbStat = DBUtils.makeStatement(null, session, DBCStatementType.QUERY, query.toString(), 0, 1)) {
+                int paramPos = bindPrecedingKeys(dbStat);
+                keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos, keyValue);
+                return readValues(dbStat);
+            }
         }
 
+        @NotNull
         @Override
-        public List<DBDLabelValuePair> getValuesNear(Object value, boolean isPreceeding, long offset, long maxResults) throws DBException {
+        public List<DBDLabelValuePair> getValuesNear(
+            @NotNull Object value,
+            boolean isPreceeding,
+            long offset,
+            long maxResults
+        ) throws DBException {
             DBDDataFilter filter = new DBDDataFilter(this.filter);
             List<DBDAttributeConstraint> constraints = filter.getConstraints();
             DBDAttributeConstraint constraint = new DBDAttributeConstraint(keyColumn, constraints.size());
@@ -1040,8 +1077,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             StringBuilder query = prepareQueryString(filter);
             appendSortingClause(query, isPreceeding);
             try (DBCStatement dbStat = DBUtils.makeStatement(null, session, DBCStatementType.QUERY, query.toString(), offset, maxResults)) {
-                bindPrecedingKeys(dbStat);
-                int paramPos = this.filter.getConstraints().size();
+                int paramPos = bindPrecedingKeys(dbStat);
                 keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos, value);
                 return readValues(dbStat);
             }
@@ -1060,14 +1096,38 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             appendByPatternCondition(query, filter, pattern, caseInsensitive, byDesc);
             appendSortingClause(query, false);
             try (DBCStatement dbStat = DBUtils.makeStatement(null, session, DBCStatementType.QUERY, query.toString(), offset, maxResults)) {
-                bindPrecedingKeys(dbStat);
-                bindPattern(dbStat, pattern, byDesc);
+                int paramPos = bindPrecedingKeys(dbStat);
+                bindPattern(dbStat, pattern, byDesc, paramPos);
+                return readValues(dbStat);
+            }
+        }
+
+        @NotNull
+        @Override
+        public List<DBDLabelValuePair> getSimilarValuesNear(
+            @NotNull Object pattern, boolean caseInsensitive, boolean byDesc,
+            Object value, boolean isPreceeding, 
+            long offset, long maxResults
+        ) throws DBException {
+            DBDDataFilter filter = new DBDDataFilter(this.filter);
+            List<DBDAttributeConstraint> constraints = filter.getConstraints();
+            DBDAttributeConstraint constraint = new DBDAttributeConstraint(keyColumn, constraints.size());
+            constraint.setValue(value);
+            constraint.setOperator(isPreceeding ? DBCLogicalOperator.LESS : DBCLogicalOperator.GREATER_EQUALS);
+            constraints.add(constraint);
+            StringBuilder query = prepareQueryString(filter);
+            appendByPatternCondition(query, filter, pattern, caseInsensitive, byDesc);
+            appendSortingClause(query, isPreceeding);
+            try (DBCStatement dbStat = DBUtils.makeStatement(null, session, DBCStatementType.QUERY, query.toString(), offset, maxResults)) {
+                int paramPos = bindPrecedingKeys(dbStat);
+                keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++, value);
+                bindPattern(dbStat, pattern, byDesc, paramPos);
                 return readValues(dbStat);
             }
         }
         
         @NotNull
-        private StringBuilder prepareQueryString(DBDDataFilter filter) {
+        private StringBuilder prepareQueryString(@NotNull DBDDataFilter filter) {
             StringBuilder query = new StringBuilder();
 
             query.append("SELECT ").append(DBUtils.getQuotedIdentifier(keyColumn, DBPAttributeReferencePurpose.DATA_SELECTION));
@@ -1090,7 +1150,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
 
         @NotNull
-        private List<DBDLabelValuePair> readValues(DBCStatement dbStat) throws DBException {
+        private List<DBDLabelValuePair> readValues(@NotNull DBCStatement dbStat) throws DBException {
             if (dbStat.executeStatement()) {
                 try (DBCResultSet dbResult = dbStat.openResultSet()) {
                     return DBVUtils.readDictionaryRows(session, keyColumn, keyValueHandler, dbResult, true, false);
@@ -1100,38 +1160,52 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
         }
 
-        private void appendByPatternCondition(StringBuilder query, DBDDataFilter existingFilter, Object pattern, boolean caseInsensitive, boolean byDesc) {
+        private void appendByPatternCondition(
+            @NotNull StringBuilder query,
+            @NotNull DBDDataFilter existingFilter,
+            @NotNull Object pattern,
+            boolean caseInsensitive,
+            boolean byDesc
+        ) {
             if (existingFilter.getConstraints().size() > 0) {
                 query.append(" AND ");
             } else {
                 query.append(" WHERE ");
             }
-            query.append("(");
             DBDDataFilter patternFilter = prepareByPatternCondition(pattern, caseInsensitive, byDesc);
+            query.append("(");
             getDataSource().getSQLDialect().getQueryGenerator().appendConditionString(patternFilter, getDataSource(), null, query, false);
+            // handle custom expression for decription assuming it returns string
+            if (CommonUtils.isNotEmpty(descColumns) && (descAttributes == null || descAttributes.isEmpty())) {
+                if (patternFilter.hasConditions()) {
+                    query.append(" OR ");
+                }
+                query.append("(").append(descColumns).append(") LIKE ").append("?");
+            }
             query.append(")");
         }
 
-        private DBDDataFilter prepareByPatternCondition(Object pattern, boolean caseInsensitive, boolean byDesc) {
+        @NotNull
+        private DBDDataFilter prepareByPatternCondition(@NotNull Object pattern, boolean caseInsensitive, boolean byDesc) {
             DBDDataFilter filter = new DBDDataFilter();
             filter.setAnyConstraint(true);
             
             List<DBDAttributeConstraint> constraints = filter.getConstraints();
-            {
-                DBDAttributeConstraint keyConstraint = new DBDAttributeConstraint(keyColumn, constraints.size());
-                if (keyColumn.getDataKind() == DBPDataKind.STRING) {
-                    boolean ilikeUsable = ArrayUtils.contains(keyValueHandler.getSupportedOperators(keyColumn), DBCLogicalOperator.ILIKE);
-                    keyConstraint.setValue("%" + pattern + "%");
-                    keyConstraint.setOperator(caseInsensitive && ilikeUsable ? DBCLogicalOperator.ILIKE : DBCLogicalOperator.LIKE);
-                } else if (keyColumn.getDataKind() == DBPDataKind.NUMERIC) {
-                    if (CommonUtils.isNumber(pattern)) {
-                        keyConstraint.setValue(pattern);
-                        keyConstraint.setOperator(DBCLogicalOperator.GREATER_EQUALS);
-                    }
-                } else if (pattern instanceof CharSequence) {
+            DBDAttributeConstraint keyConstraint = new DBDAttributeConstraint(keyColumn, constraints.size());
+            if (keyColumn.getDataKind() == DBPDataKind.STRING) {
+                boolean ilikeUsable = ArrayUtils.contains(keyValueHandler.getSupportedOperators(keyColumn), DBCLogicalOperator.ILIKE);
+                keyConstraint.setValue("%" + pattern + "%");
+                keyConstraint.setOperator(caseInsensitive && ilikeUsable ? DBCLogicalOperator.ILIKE : DBCLogicalOperator.LIKE);
+            } else if (keyColumn.getDataKind() == DBPDataKind.NUMERIC) {
+                if (CommonUtils.isNumber(pattern)) {
                     keyConstraint.setValue(pattern);
-                    keyConstraint.setOperator(DBCLogicalOperator.EQUALS);
+                    keyConstraint.setOperator(DBCLogicalOperator.GREATER_EQUALS);
                 }
+            } else if (pattern instanceof CharSequence) {
+                keyConstraint.setValue(pattern);
+                keyConstraint.setOperator(DBCLogicalOperator.EQUALS);
+            }
+            if (keyConstraint.getValue() != null) {
                 constraints.add(keyConstraint);
             }
             // Add desc columns conditions
@@ -1151,8 +1225,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             return filter;
         }
         
-        private void bindPattern(DBCStatement dbStat, Object pattern, boolean byDesc) throws DBCException {
-            int paramPos = this.filter.getConstraints().size();
+        private void bindPattern(@NotNull DBCStatement dbStat, @NotNull Object pattern, boolean byDesc, int bindAt) throws DBCException {
+            int paramPos = bindAt;
             
             if (keyColumn.getDataKind() == DBPDataKind.STRING) {
                 keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++, "%" + pattern + "%");
@@ -1171,20 +1245,26 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     }
                 }
             }
+            // handle custom expression for description assuming it returns string
+            if (CommonUtils.isNotEmpty(descColumns) && (descAttributes == null || descAttributes.isEmpty())) {
+                JDBCStringValueHandler.INSTANCE.bindValueObject(session, dbStat, null, paramPos++, "%" + pattern + "%");
+            }
         }
         
-        private void appendSortingClause(StringBuilder query, boolean isPreceeding) {
-            query.append(" ORDER BY ");
-            if (sortByDesc) {
-                // Sort by description
-                query.append(descColumns);
-            } else {
-                query.append(DBUtils.getQuotedIdentifier(keyColumn));
-            }
-            if (sortAsc && !isPreceeding) {
-                query.append(" ASC");
-            } else {
-                query.append(" DESC");
+        private void appendSortingClause(@NotNull StringBuilder query, boolean isPreceeding) {
+            if (isKeyComparable() || sortByDesc) {
+                query.append(" ORDER BY ");
+                if (sortByDesc) {
+                    // Sort by description
+                    query.append(descColumns);
+                } else {
+                    query.append(DBUtils.getQuotedIdentifier(keyColumn));
+                }
+                if (sortAsc && !isPreceeding) {
+                    query.append(" ASC");
+                } else {
+                    query.append(" DESC");
+                }
             }
         }
 

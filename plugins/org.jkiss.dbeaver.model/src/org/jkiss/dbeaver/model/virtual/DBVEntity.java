@@ -717,6 +717,18 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     }
 
     private static final DBSDictionaryAccessor emptyDictionaryAccessor = new DBSDictionaryAccessor() {
+        
+        @Override
+        public boolean isKeyComparable() {
+            return false;
+        }
+        
+        @NotNull
+        @Override
+        public List<DBDLabelValuePair> getValueEntry(@NotNull Object keyValue) throws DBException {
+            return Collections.emptyList();
+        }
+        
         @NotNull
         public List<DBDLabelValuePair> getValues(long offset, long maxResults) {
             return Collections.emptyList();
@@ -733,9 +745,23 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             return Collections.emptyList();
         }
 
-
+        @NotNull
         @Override
-        public List<DBDLabelValuePair> getValuesNear(Object value, boolean isPreceeding, long offset, long maxResults) throws DBException {
+        public List<DBDLabelValuePair> getValuesNear(
+            @NotNull Object value,
+            boolean isPreceeding,
+            long offset,
+            long maxResults
+        ) throws DBException {
+            return Collections.emptyList();
+        }
+        
+        @Override
+        public List<DBDLabelValuePair> getSimilarValuesNear(
+            @NotNull Object pattern, boolean caseInsensitive, boolean byDesc, 
+            Object value, boolean isPreceeding, 
+            long offset, long maxResults
+        ) throws DBException {
             return Collections.emptyList();
         }
 

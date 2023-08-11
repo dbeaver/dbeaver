@@ -126,18 +126,18 @@ public class ReferenceValueEditor {
             }
         }
 
-        public void filter(@Nullable String pattern) {
+        public void filter(@Nullable Object valueToShow, @Nullable String pattern) {
             if (CommonUtils.isEmpty(CommonUtils.toString(pattern))) {
-                this.reset(keyValue);
+                this.reset(valueToShow);
             } else if (CommonUtils.equalObjects(String.valueOf(searchText), String.valueOf(pattern))) {
                 selectCurrentValue();
             } else {
-                this.applyFilter(pattern);
+                this.applyFilter(valueToShow, pattern);
             }
         }
 
-        private void applyFilter(@NotNull String pattern) {
-            this.keyValue = null;
+        private void applyFilter(@Nullable Object valueToShow, @NotNull String pattern) {
+            this.keyValue = valueToShow;
             this.searchText = pattern;
             this.resetPages();
             this.firstPageFound = true;
@@ -163,51 +163,74 @@ public class ReferenceValueEditor {
             if (searchText == null) {
                 this.reset(this.keyValue);
             } else {
-                this.applyFilter(this.searchText);
+                this.applyFilter(this.keyValue, this.searchText);
             }
         }
 
         private void reloadData() {
             SelectorLoaderService loadingService = new SelectorLoaderService(accessor -> {
-                List<DBDLabelValuePair> data;
-                if (searchText == null) {
-                    if (currPageNumber == 0) {
-                        List<DBDLabelValuePair> prefix = accessor.getValuesNear(keyValue, true, 0, halfPageSize);
-                        List<DBDLabelValuePair> suffix = accessor.getValuesNear(keyValue, false, 0, halfPageSize);
-                        estimateHead(prefix.size(), halfPageSize);
-                        estimateTail(suffix.size(), halfPageSize);
-                        data = prefix;
-                        data.addAll(suffix);
-                    } else {
-                        long offset = currPageNumber * pageSize - halfPageSize;
-                        if (currPageNumber < 0) {
-                            data = accessor.getValuesNear(keyValue, true, -offset, pageSize);
-                            estimateHead(data.size(), pageSize);
-                        } else {
-                            data = accessor.getValuesNear(keyValue, false, offset, pageSize);
-                            estimateTail(data.size(), pageSize);
-                        }
-                    }
+                if (accessor.isKeyComparable()) {
+                    return loadComparableKeyValues(accessor);
                 } else {
-                    long offset = currPageNumber * pageSize;
-                    data = accessor.getSimilarValues(searchText, true, true, offset, pageSize);
+                    return loadNoncomparableKeyValues(accessor);
                 }
-                {
-                    Comparator<DBDLabelValuePair> comparator = sortByValue 
-                        ? (a, b) -> CommonUtils.compare(a.getValue(), b.getValue())
-                        : (a, b) -> CommonUtils.compare(a.getLabel(), b.getLabel());
-                    if (!sortAsc) {
-                        comparator = comparator.reversed();
-                    }
-                    data.sort(comparator);
-                }
-                return data;
             });
             if (dictFilterJob != null) {
                 dictFilterJob.cancel();
             }
             dictFilterJob = LoadingJob.createService(loadingService, new SelectorLoaderVisualizer(loadingService));
             dictFilterJob.schedule(250);
+        }
+        
+        private List<DBDLabelValuePair> loadNoncomparableKeyValues(DBSDictionaryAccessor accessor) throws DBException {
+            List<DBDLabelValuePair> data;
+            if (searchText == null) {
+                data = accessor.getValueEntry(keyValue);
+                estimateOnePage(true);
+            } else {
+                long offset = currPageNumber * pageSize;
+                data = accessor.getSimilarValues(searchText, true, true, offset, pageSize);
+                if (currPageNumber == 0) {
+                    estimateOnePage(false);
+                }
+                estimateTail(data.size(), pageSize);
+            }
+            return data;
+        }
+        
+        private List<DBDLabelValuePair> loadComparableKeyValues(DBSDictionaryAccessor accessor) throws DBException {
+            List<DBDLabelValuePair> data;
+            if (currPageNumber == 0) {
+                List<DBDLabelValuePair> prefix = searchText == null ? accessor.getValuesNear(keyValue, true, 0, halfPageSize)
+                    : accessor.getSimilarValuesNear(searchText, true, true, keyValue, true, 0, halfPageSize);
+                List<DBDLabelValuePair> suffix = searchText == null ? accessor.getValuesNear(keyValue, false, 0, halfPageSize)
+                    : accessor.getSimilarValuesNear(searchText, true, true, keyValue, false, 0, halfPageSize);
+                estimateHead(prefix.size(), halfPageSize);
+                estimateTail(suffix.size(), halfPageSize);
+                data = prefix;
+                data.addAll(suffix);
+            } else {
+                long offset = currPageNumber * pageSize - halfPageSize;
+                if (currPageNumber < 0) {
+                    data = searchText == null ? accessor.getValuesNear(keyValue, true, -offset, pageSize)
+                        : accessor.getSimilarValuesNear(searchText, true, true, keyValue, true, -offset, pageSize);
+                    estimateHead(data.size(), pageSize);
+                } else {
+                    data = searchText == null ? accessor.getValuesNear(keyValue, false, offset, pageSize)
+                        : accessor.getSimilarValuesNear(searchText, true, true, keyValue, false, offset, pageSize);
+                    estimateTail(data.size(), pageSize);
+                }
+            }
+            {
+                Comparator<DBDLabelValuePair> comparator = sortByValue 
+                    ? (a, b) -> CommonUtils.compare(a.getValue(), b.getValue())
+                    : (a, b) -> CommonUtils.compare(a.getLabel(), b.getLabel());
+                if (!sortAsc) {
+                    comparator = comparator.reversed();
+                }
+                data.sort(comparator);
+            }
+            return data;
         }
         
         private void estimateHead(int dataObtained, int dataExpected) {
@@ -230,6 +253,16 @@ public class ReferenceValueEditor {
             if (lastPageFound) {
                 currPageNumber = Math.min(currPageNumber, maxKnownPage);
             }
+        }
+        
+        private void estimateOnePage(boolean noNextPage) {
+            currPageNumber = 0;
+            maxKnownPage = 0;
+            minKnownPage = 0;
+            nextPageAvailable = !noNextPage;
+            prevPageAvailable = false;
+            lastPageFound = noNextPage;
+            firstPageFound = true;
         }
     }
 
@@ -323,7 +356,7 @@ public class ReferenceValueEditor {
             valueFilterText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             valueFilterText.addModifyListener(e -> {
                 String filterPattern = valueFilterText.getText();
-                controller.filter(filterPattern);
+                controller.filter(valueController.getValue(), filterPattern);
             });
             valueFilterText.addPaintListener(e -> {
                 if (valueFilterText.isEnabled() && valueFilterText.getCharCount() == 0) {
@@ -672,6 +705,7 @@ public class ReferenceValueEditor {
                     final DBDValueHandler colHandler = DBUtils.findValueHandler(fkAttribute.getDataSource(), fkAttribute);
                     return new EnumValuesData(enumValues, fkColumn, colHandler);
                 } catch (Exception e) {
+                    e.printStackTrace(System.out);
                     throw new DBException("Failed to load values", e);
                 }
             }
