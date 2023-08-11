@@ -375,7 +375,12 @@ public class Spreadsheet extends LightGrid implements Listener {
 
     @Override
     public void refreshData(boolean refreshColumns, boolean keepState, boolean fitValue) {
+        // Disable accessibility support.
+        // It will automatically turn on once we detect ACC events
+        accessibilityEnabled = false;
+        // Cancel all editors
         cancelInlineEditor();
+
         super.refreshData(refreshColumns, keepState, fitValue);
         super.redraw();
     }

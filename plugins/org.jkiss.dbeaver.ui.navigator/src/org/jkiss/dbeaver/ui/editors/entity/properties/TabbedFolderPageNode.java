@@ -19,9 +19,7 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.accessibility.Accessible;
-import org.eclipse.swt.accessibility.AccessibleAdapter;
-import org.eclipse.swt.accessibility.AccessibleEvent;
+import org.eclipse.swt.accessibility.*;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Composite;
@@ -120,13 +118,7 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
 
         {
             final Accessible accessible = nodeItemsViewer.getAccessible();
-            accessible.addAccessibleListener(new AccessibleAdapter() {
-                public void getName(AccessibleEvent e) {
-                    if (e.childID < 0) {
-                        e.result = "Folder " + node.getName();
-                    }
-                }
-            });
+            accessible.addAccessibleListener(new FolderAccessibleAdapter());
         }
     }
 
@@ -237,5 +229,83 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
             return adapter.cast(itemControl);
         }
         return null;
+    }
+
+
+    private class FolderSimpleAccessibleAdapter extends AccessibleAdapter {
+        public void getName(AccessibleEvent e) {
+            e.result = node.getNodeDescription();
+        }
+    }
+
+    private class FolderAccessibleAdapter extends AccessibleControlAdapter implements AccessibleListener {
+        public void getName(AccessibleEvent e) {
+            if (e.childID == ACC.CHILDID_SELF) {
+                e.result = node.getNodeDescription();
+            }
+        }
+
+        @Override
+        public void getDescription(AccessibleEvent e) {
+            if (e.childID == ACC.CHILDID_SELF) {
+                e.result = node.getNodeDescription();
+            }
+        }
+
+        @Override
+        public void getHelp(AccessibleEvent e) {
+
+        }
+
+        @Override
+        public void getKeyboardShortcut(AccessibleEvent e) {
+
+        }
+
+        /////////////////////////////
+
+
+        @Override
+        public void getDefaultAction(AccessibleControlEvent e) {
+        }
+
+        @Override
+        public void getFocus(AccessibleControlEvent e) {
+            e.childID = ACC.CHILDID_SELF;
+        }
+
+
+        @Override
+        public void getRole(AccessibleControlEvent e) {
+            int role;
+            int childID = e.childID;
+            if (childID == ACC.CHILDID_SELF) {
+                role = ACC.ROLE_TABFOLDER;
+            } else {
+                role = ACC.ROLE_TABITEM;
+            }
+            e.detail = role;
+        }
+
+        @Override
+        public void getState(AccessibleControlEvent e) {
+            int state = 0;
+            int childID = e.childID;
+            if (childID == ACC.CHILDID_SELF) {
+                state = ACC.STATE_NORMAL;
+            } else {
+                state = ACC.STATE_SELECTABLE;
+                if (itemControl.getItemsViewer().getControl().isFocusControl()) {
+                    state |= ACC.STATE_FOCUSABLE;
+                }
+                if (!itemControl.getItemsViewer().getSelection().isEmpty()) {
+                    state |= ACC.STATE_SELECTED;
+                    if ((state & ACC.STATE_FOCUSABLE) != 0) {
+                        state |= ACC.STATE_FOCUSED;
+                    }
+                }
+            }
+            e.detail = state;
+        }
     }
 }
