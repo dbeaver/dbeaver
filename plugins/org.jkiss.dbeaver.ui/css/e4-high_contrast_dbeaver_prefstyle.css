@@ -1,0 +1,25 @@
+ @import url("platform:/plugin/org.eclipse.ui.themes/css/e4_classic.css");
+
+CTabItem:selected {
+ 	color: '#org-eclipse-ui-workbench-INACTIVE_TAB_TEXT_COLOR';
+}
+
+.MPartStack.active > CTabItem:selected {
+	color: '#org-eclipse-ui-workbench-ACTIVE_TAB_TEXT_COLOR';
+}
+
+
+ IEclipsePreferences#org-eclipse-ui-workbench:org-jkiss-dbeaver-core {
+        preferences:
+            'org.jkiss.dbeaver.sql.resultset.color.cell.odd.background=255,255,255'
+            'org.jkiss.dbeaver.sql.resultset.color.selection.background=0,87,158'
+            'org.jkiss.dbeaver.sql.resultset.color.selection.foreground=255,255,255'
+            'org.jkiss.dbeaver.sql.resultset.color.cell.error.background=255,199,255'
+            'org.jkiss.dbeaver.sql.resultset.color.cell.deleted.background=255,192,163'
+            'org.jkiss.dbeaver.sql.resultset.color.lines.normal=105,105,105'
+            'org.jkiss.dbeaver.sql.resultset.color.null.foreground=81,81,81'
+            'org.jkiss.dbeaver.sql.resultset.color.boolean.foreground=170,0,0'
+            'org.jkiss.dbeaver.sql.resultset.color.binary.foreground=128,0,108'
+            'org.jkiss.dbeaver.sql.resultset.color.numeric.foreground=0,0,199'
+
+}

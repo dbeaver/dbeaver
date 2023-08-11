@@ -35,6 +35,8 @@ public class UIStyles {
 
     private static final Log log = Log.getLog(UIStyles.class);
 
+    private static final String THEME_HIGH_CONTRAST_ID = "org.jkiss.dbeaver.dbeaver.ui.themes.highcontrast";
+
     static IPreferenceStore EDITORS_PREFERENCE_STORE;
 
     public static synchronized IPreferenceStore getEditorsPreferenceStore() {
@@ -46,6 +48,10 @@ public class UIStyles {
 
     public static boolean isDarkTheme() {
         return UIUtils.isDark(getDefaultTextBackground().getRGB());
+    }
+
+    public static boolean isHighContrastTheme() {
+        return UIUtils.getActiveWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getId().equals(THEME_HIGH_CONTRAST_ID);
     }
 
     public static Color getDefaultWidgetBackground() {

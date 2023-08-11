@@ -2399,7 +2399,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
             if (cellSelected) {
                 Color normalColor = getCellBackground(attribute, row, cellValue, rowPosition, false, true);
-                if (normalColor == null || normalColor == backgroundNormal) {
+                if (normalColor == null || normalColor == backgroundNormal || UIStyles.isHighContrastTheme()) {
                     return backgroundSelected;
                 }
                 RGB mixRGB = UIUtils.blend(
@@ -2436,7 +2436,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if (!ignoreRowSelection && highlightRowsWithSelectedCells && spreadsheet.isRowSelected(rowPosition)) {
                 Color normalColor = getCellBackground(attribute, row, cellValue, rowPosition, false, true);
                 Color selectedCellColor;
-                if (normalColor == null || normalColor == backgroundNormal) {
+                if (normalColor == null || normalColor == backgroundNormal || UIStyles.isHighContrastTheme()) {
                     selectedCellColor = backgroundSelected;
                 } else {
                     RGB mixRGB = UIUtils.blend(
