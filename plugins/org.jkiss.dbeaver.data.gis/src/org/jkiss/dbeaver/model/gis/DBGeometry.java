@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.model.gis;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.data.gis.handlers.WKGUtils;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateFilter;
@@ -57,7 +56,7 @@ public class DBGeometry implements DBDValue {
     }
 
     public DBGeometry(@Nullable Object rawValue, int srid, @Nullable Map<String, Object> properties) {
-        this.rawValue = WKGUtils.isCurve(rawValue) ? WKGUtils.linearize((org.cugos.wkg.Geometry) rawValue) : rawValue;
+        this.rawValue = rawValue;
         this.srid = srid;
         this.properties = properties == null ? null : new LinkedHashMap<>(properties);
     }

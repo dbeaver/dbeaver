@@ -98,6 +98,20 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         if (document == null) {
             return new ICompletionProposal[0];
         }
+        try {
+            IRegion line = document.getLineInformationOfOffset(documentOffset);
+            if (documentOffset <= line.getLength() + line.getOffset() && line.getLength() > 0) { // we are in the nonempty line
+                String typeAtLine = TextUtilities.getContentType(document, SQLParserPartitions.SQL_PARTITIONING, documentOffset - 1, true);
+                // and previous position belongs to the single-line comment
+                if (SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(typeAtLine)) {
+                    return new ICompletionProposal[0];
+                }
+            }
+        } catch (BadLocationException e) {
+            log.debug(e);
+            return new ICompletionProposal[0];
+        }
+
         final SQLCompletionRequest request = new SQLCompletionRequest(
             editor.getCompletionContext(),
             document,
