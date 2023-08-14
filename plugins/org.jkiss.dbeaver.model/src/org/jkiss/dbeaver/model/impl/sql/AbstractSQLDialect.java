@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexNative;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.parser.EmptyTokenPredicateSet;
+import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicateSet;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
@@ -602,6 +604,28 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return false;
     }
 
+    @Nullable
+    @Override
+    public String getAllAttributesAlias() {
+        return SQLConstants.COLUMN_ASTERISK;
+    }
+
+    @Nullable
+    @Override
+    public String getDefaultGroupAttribute() {
+        return getAllAttributesAlias();
+    }
+
+    @Override
+    public boolean supportsAliasInConditions() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsAliasInHaving() {
+        return true;
+    }
+
     @Override
     public boolean supportsTableDropCascade() {
         return false;
@@ -953,6 +977,12 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     @Override
     public boolean supportsInsertAllDefaultValuesStatement() {
         return false;
+    }
+
+    @NotNull
+    @Override
+    public SQLTokenPredicateSet getSkipTokenPredicates() {
+        return EmptyTokenPredicateSet.INSTANCE;
     }
 
     @Override

@@ -233,8 +233,11 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
     protected static class StructAttribute extends AbstractAttribute implements DBSEntityAttribute {
         final DBSDataType type;
         DBPDataKind dataKind;
-        public StructAttribute(DBSDataType type, int index, Object value) throws DBException
-        {
+        public StructAttribute(DBSDataType type, int index, Object value) throws DBException {
+            this("Attr" + index, type, index, value);
+        }
+
+        public StructAttribute(String name, DBSDataType type, int index, Object value) throws DBException {
             this.type = type;
             if (value instanceof CharSequence) {
                 dataKind = DBPDataKind.STRING;
@@ -255,7 +258,7 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
                 dataKind = DBPDataKind.OBJECT;
                 setValueType(Types.OTHER);
             }
-            setName("Attr" + index);
+            setName(name);
             setOrdinalPosition(index);
             setTypeName(dataKind.name());
         }
