@@ -623,7 +623,7 @@
 
             <nativeClients>
                 <client id="postgresql_client" label="PostgreSQL Binaries">
-                    <dist os="win32" targetPath="clients/postgresql/win/14" remotePath="repo:/drivers/postgresql/client/win/14" resourcePath="clients/postgresql/win/14">
+                    <dist os="win32" targetPath="clients/postgresql/win/15" remotePath="repo:/drivers/postgresql/client/win/15" resourcePath="clients/postgresql/win/15">
                         <file type="exec" name="psql.exe"/>
                         <file type="exec" name="pg_dump.exe"/>
                         <file type="exec" name="pg_dumpall.exe"/>
