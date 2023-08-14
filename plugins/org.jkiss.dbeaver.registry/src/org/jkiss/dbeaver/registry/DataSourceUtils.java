@@ -408,4 +408,8 @@ public class DataSourceUtils {
         }
         return CommonUtils.notEmpty(hostText);
     }
+    
+    public static boolean isFolderHasTemporaryDataSources(DataSourceFolder folder) {
+        return folder.getDataSourceRegistry().getDataSources().stream().anyMatch(d -> d.getFolder() == folder && d.isTemporary());
+    }
 }

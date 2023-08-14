@@ -193,7 +193,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         query.append(identifier);
         if (calcCount) {
             query.append(", count(");
-            String asterisk = dialect.getAllAttributesAlias();
+            String asterisk = dialect.getDefaultGroupAttribute();
             if (asterisk == null) {
                 asterisk = "";
             }

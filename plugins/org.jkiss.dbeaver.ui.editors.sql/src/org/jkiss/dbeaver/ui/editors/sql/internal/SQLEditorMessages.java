@@ -355,7 +355,6 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_action_clear;
     
     public static String sql_editor_title_tooltip_path;
-    public static String sql_editor_not_avaliable;
     public static String sql_editor_data_receiver_result_name_tooltip_connection;
     public static String sql_editor_data_receiver_result_name_tooltip_time;
     public static String sql_editor_data_receiver_result_name_tooltip_query;
