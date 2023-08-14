@@ -977,6 +977,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         private final String descColumns;
         private final Collection<DBSEntityAttribute> descAttributes;
         private final Collection<AttrInfo<DBSEntityAttribute>> descAttributesInfo;
+        private final boolean isKeyComparable;
 
         private final DBDDataFilter filter;
         private JDBCSession session;
@@ -995,6 +996,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             this.keyValueHandler = DBUtils.findValueHandler(keyColumn.getDataSource(), keyColumn);
             this.descColumns = DBVUtils.getDictionaryDescriptionColumns(monitor, keyColumn);
             this.descAttributes = descColumns == null ? null : DBVEntity.getDescriptionColumns(monitor, JDBCTable.this, descColumns);
+            this.isKeyComparable = ArrayUtils.contains(DBUtils.getAttributeOperators(keyColumn), DBCLogicalOperator.LESS);
 
             this.session = DBUtils.openUtilSession(monitor, JDBCTable.this, "Load attribute values count");
             
@@ -1023,14 +1025,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         
         @Override
         public boolean isKeyComparable() {
-            switch (keyColumn.getDataKind()) { 
-                case STRING:
-                case NUMERIC:
-                case DATETIME:
-                    return true;
-                default:
-                    return false;
-            }
+            return isKeyComparable;
         }
 
         private int bindPrecedingKeys(@NotNull DBCStatement dbStat) throws DBCException {
@@ -1072,7 +1067,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             List<DBDAttributeConstraint> constraints = filter.getConstraints();
             DBDAttributeConstraint constraint = new DBDAttributeConstraint(keyColumn, constraints.size());
             constraint.setValue(value);
-            constraint.setOperator(isPreceeding ? DBCLogicalOperator.LESS : DBCLogicalOperator.GREATER_EQUALS);
+            constraint.setOperator(isPreceeding ^ sortAsc? DBCLogicalOperator.GREATER_EQUALS : DBCLogicalOperator.LESS);
             constraints.add(constraint);
             StringBuilder query = prepareQueryString(filter);
             appendSortingClause(query, isPreceeding);
@@ -1113,7 +1108,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             List<DBDAttributeConstraint> constraints = filter.getConstraints();
             DBDAttributeConstraint constraint = new DBDAttributeConstraint(keyColumn, constraints.size());
             constraint.setValue(value);
-            constraint.setOperator(isPreceeding ? DBCLogicalOperator.LESS : DBCLogicalOperator.GREATER_EQUALS);
+            constraint.setOperator(isPreceeding ^ sortAsc? DBCLogicalOperator.GREATER_EQUALS : DBCLogicalOperator.LESS);
             constraints.add(constraint);
             StringBuilder query = prepareQueryString(filter);
             appendByPatternCondition(query, filter, pattern, caseInsensitive, byDesc);
@@ -1260,7 +1255,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 } else {
                     query.append(DBUtils.getQuotedIdentifier(keyColumn));
                 }
-                if (sortAsc && !isPreceeding) {
+                if (sortAsc ^ isPreceeding) {
                     query.append(" ASC");
                 } else {
                     query.append(" DESC");

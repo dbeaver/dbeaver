@@ -210,10 +210,10 @@ public class ReferenceValueEditor {
                 data = prefix;
                 data.addAll(suffix);
             } else {
-                long offset = currPageNumber * pageSize - halfPageSize;
+                long offset = (Math.abs(currPageNumber)  - 1) * pageSize + halfPageSize;
                 if (currPageNumber < 0) {
-                    data = searchText == null ? accessor.getValuesNear(keyValue, true, -offset, pageSize)
-                        : accessor.getSimilarValuesNear(searchText, true, true, keyValue, true, -offset, pageSize);
+                    data = searchText == null ? accessor.getValuesNear(keyValue, true, offset, pageSize)
+                        : accessor.getSimilarValuesNear(searchText, true, true, keyValue, true, offset, pageSize);
                     estimateHead(data.size(), pageSize);
                 } else {
                     data = searchText == null ? accessor.getValuesNear(keyValue, false, offset, pageSize)
