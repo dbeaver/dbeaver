@@ -24,7 +24,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
@@ -131,7 +130,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
                 if (activeProject == null || (!CommonUtils.isEmpty(activeProjectName) && project.getName().equals(activeProjectName))) {
                     activeProject = projectMetadata;
                 }
-                projectMetadata.hideMetadataFolder();
+                projectMetadata.hideConfigurationFiles();
             }
         }
     }
