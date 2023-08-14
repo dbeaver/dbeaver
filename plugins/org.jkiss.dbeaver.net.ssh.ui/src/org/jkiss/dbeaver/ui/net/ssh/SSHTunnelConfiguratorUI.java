@@ -256,7 +256,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                     ? SSHUIMessages.model_ssh_dialog_credentials_passphrase
                     : SSHUIMessages.model_ssh_dialog_credentials_password,
                 password,
-                type.equals(SSHConstants.AuthType.PUBLIC_KEY),
+                false,
                 false
             );
         } catch (Exception e) {
@@ -298,9 +298,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                         DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(authType, configuration.getUserName(),
                             configuration.getPassword());
                         if (dbpAuthInfo != null) {
-                            if (authType.equals(SSHConstants.AuthType.PASSWORD)) {
-                                configuration.setUserName(dbpAuthInfo.getUserName());
-                            }
+                            configuration.setUserName(dbpAuthInfo.getUserName());
                             configuration.setPassword(dbpAuthInfo.getUserPassword());
                         }
                         checkJumpServerConfiguration(tunnel);
@@ -337,19 +335,18 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                     );
                     if (tunnel.getRequiredCredentials(configuration, getJumpServerSettingsPrefix())
                         != DBWTunnel.AuthCredentials.NONE) {
-                        DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(authType,
-                            configuration.getStringProperty(getJumpServerSettingsPrefix()
-                                                            + DBConstants.PROP_ID_NAME),
-                            configuration.getSecureProperty(getJumpServerSettingsPrefix()
-                                                            + DBConstants.PROP_FEATURE_PASSWORD)
+                        DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(
+                            authType,
+                            configuration.getStringProperty(getJumpServerSettingsPrefix() + DBConstants.PROP_ID_NAME),
+                            configuration.getSecureProperty(
+                                getJumpServerSettingsPrefix() + DBConstants.PROP_FEATURE_PASSWORD)
                         );
                         if (dbpAuthInfo != null) {
-                            if (authType.equals(SSHConstants.AuthType.PASSWORD)) {
-                                configuration.setProperty(getJumpServerSettingsPrefix() + DBConstants.PROP_ID_NAME,
-                                    dbpAuthInfo.getUserName()
-                                );
-                            }
-                            configuration.setSecureProperty(getJumpServerSettingsPrefix() + DBConstants.PROP_FEATURE_PASSWORD,
+                            configuration.setProperty(getJumpServerSettingsPrefix() + DBConstants.PROP_ID_NAME,
+                                dbpAuthInfo.getUserName()
+                            );
+                            configuration.setSecureProperty(
+                                getJumpServerSettingsPrefix() + DBConstants.PROP_FEATURE_PASSWORD,
                                 dbpAuthInfo.getUserPassword()
                             );
                         }
