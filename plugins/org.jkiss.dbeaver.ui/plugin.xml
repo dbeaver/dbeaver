@@ -95,19 +95,6 @@
         </handler>
     </extension>
 
-    <extension point="org.eclipse.e4.ui.css.swt.theme">
-        <theme
-                basestylesheeturi="css/style.css"
-                id="org.jkiss.dbeaver.ui.theme"
-                label="DBeaver Theme">
-        </theme>
-        <theme
-                basestylesheeturi="css/style.css"
-                id="org.eclipse.e4.ui.css.theme.high-contrast"
-                label="%theme.high-contrast">
-        </theme>
-    </extension>
-
     <extension point="org.eclipse.ui.themes">
         <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.dbeaver.ui.fonts.label" id="org.jkiss.dbeaver.ui.fonts">
             <description>%themeElementCategory.org.jkiss.dbeaver.ui.fonts.description</description>
@@ -130,6 +117,6 @@
             <description>%fontDefinition.org.jkiss.dbeaver.ui.fonts.main.description</description>
             <fontValue os="macosx" value="Sans-regular-13"/>
         </fontDefinition>
-
+       
     </extension>
 </plugin>
