@@ -309,28 +309,33 @@ public final class RuntimeUtils {
             String[] cmdBin = {binPath};
             String[] cmd = args == null ? cmdBin : ArrayUtils.concatArrays(cmdBin, args);
             Process p = Runtime.getRuntime().exec(cmd);
-            try {
-                StringBuilder out = new StringBuilder();
-                readStringToBuffer(p.getInputStream(), out);
-
-                StringBuilder err = new StringBuilder();
-                readStringToBuffer(p.getErrorStream(), err);
-
-                p.waitFor();
-                if (p.exitValue() != 0) {
-                    throw new DBException(err.toString());
-                }
-
-                return out.toString();
-            } finally {
-                p.destroy();
-            }
+            return getProcessResults(p);
         }
         catch (Exception ex) {
             if (ex instanceof DBException) {
                 throw (DBException) ex;
             }
             throw new DBException("Error executing process " + binPath, ex);
+        }
+    }
+
+    @NotNull
+    public static String getProcessResults(Process p) throws IOException, InterruptedException, DBException {
+        try {
+            StringBuilder out = new StringBuilder();
+            readStringToBuffer(p.getInputStream(), out);
+
+            StringBuilder err = new StringBuilder();
+            readStringToBuffer(p.getErrorStream(), err);
+
+            p.waitFor();
+            if (p.exitValue() != 0) {
+                throw new DBException(err.toString());
+            }
+
+            return out.toString();
+        } finally {
+            p.destroy();
         }
     }
 
