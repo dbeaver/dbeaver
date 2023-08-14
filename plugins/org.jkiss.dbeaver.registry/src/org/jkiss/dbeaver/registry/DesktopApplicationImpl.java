@@ -56,7 +56,7 @@ public abstract class DesktopApplicationImpl extends BaseApplicationImpl {
 
     @Override
     public Object start(IApplicationContext context)  {
-        if (isStandalone()) {
+        if (isStandalone() && !isDistributed()) {
             updateSecretStorage();
         }
         return null;
@@ -71,7 +71,8 @@ public abstract class DesktopApplicationImpl extends BaseApplicationImpl {
         EnvironmentInfo environmentInfoService = AuthPlugin.getDefault().getEnvironmentInfoService();
         if (environmentInfoService instanceof EquinoxConfiguration) {
             String[] nonFrameworkArgs = environmentInfoService.getNonFrameworkArgs();
-            if (!isDistributed() && STORAGE_PATH.toFile().exists() && Arrays.stream(nonFrameworkArgs).filter(it -> it.equals(ECLIPSE_KEYRING)).findAny().isEmpty()) {
+            if (!isDistributed() && Files.exists(STORAGE_PATH) && Arrays.stream(nonFrameworkArgs)
+                .filter(it -> it.equals(ECLIPSE_KEYRING)).findAny().isEmpty()) {
                 // Unfortunately the Equinox reads the eclipse.keyring from arguments
                 // before any DBeaver controlled part is executed and there is no way
                 // to modify the variable after that without reflection.
@@ -92,8 +93,8 @@ public abstract class DesktopApplicationImpl extends BaseApplicationImpl {
 
     private void tryCreateSecretFile() throws DBException {
         try {
-            if (!STORAGE_PATH.toFile().exists()) {
-                if (Path.of(StorageUtils.getDefaultLocation().toURI()).toFile().exists()) {
+            if (!Files.exists(STORAGE_PATH)) {
+                if (Files.exists(Path.of(StorageUtils.getDefaultLocation().toURI()))) {
                     migrateFromEclipseStorage();
                 } else {
                     Files.createDirectories(STORAGE_PATH.getParent());
