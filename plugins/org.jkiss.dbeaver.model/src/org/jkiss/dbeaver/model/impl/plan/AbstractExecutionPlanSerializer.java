@@ -137,9 +137,15 @@ public abstract class AbstractExecutionPlanSerializer  implements DBCQueryPlanne
      */
     protected Map<String, Object> getNodeAttributes(@NotNull JsonObject nodeObject) {
         Map<String, Object> attributes = new HashMap<>();
-        JsonArray attrs = nodeObject.getAsJsonArray(AbstractExecutionPlanSerializer.PROP_ATTRIBUTES);
-        for (JsonElement attr : attrs) {
-            for (Map.Entry<String, JsonElement> p : attr.getAsJsonObject().entrySet()) {
+        JsonElement attrs = nodeObject.get(AbstractExecutionPlanSerializer.PROP_ATTRIBUTES);
+        if (attrs instanceof JsonArray) {
+            for (JsonElement attr : (JsonArray)attrs) {
+                for (Map.Entry<String, JsonElement> p : attr.getAsJsonObject().entrySet()) {
+                    attributes.put(p.getKey(), p.getValue());
+                }
+            }
+        } else if (attrs instanceof JsonObject) {
+            for (Map.Entry<String, JsonElement> p : ((JsonObject)attrs).entrySet()) {
                 attributes.put(p.getKey(), p.getValue());
             }
         }
@@ -154,9 +160,15 @@ public abstract class AbstractExecutionPlanSerializer  implements DBCQueryPlanne
      */
     protected Map<String, String> getNodeAttributesAsStrings(@NotNull JsonObject nodeObject) {
         Map<String, String> attributes = new HashMap<>();
-        JsonArray attrs = nodeObject.getAsJsonArray(AbstractExecutionPlanSerializer.PROP_ATTRIBUTES);
-        for (JsonElement attr : attrs) {
-            for (Map.Entry<String, JsonElement> p : attr.getAsJsonObject().entrySet()) {
+        JsonElement attrs = nodeObject.get(AbstractExecutionPlanSerializer.PROP_ATTRIBUTES);
+        if (attrs instanceof JsonArray) {
+            for (JsonElement attr : (JsonArray)attrs) {
+                for (Map.Entry<String, JsonElement> p : attr.getAsJsonObject().entrySet()) {
+                    attributes.put(p.getKey(), p.getValue().getAsString());
+                }
+            }
+        } else if (attrs instanceof JsonObject) {
+            for (Map.Entry<String, JsonElement> p : ((JsonObject)attrs).entrySet()) {
                 attributes.put(p.getKey(), p.getValue().getAsString());
             }
         }
