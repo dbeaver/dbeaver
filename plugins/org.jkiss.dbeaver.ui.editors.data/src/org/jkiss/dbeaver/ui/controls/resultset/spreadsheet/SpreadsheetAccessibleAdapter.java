@@ -42,7 +42,8 @@ public class SpreadsheetAccessibleAdapter extends AccessibleControlAdapter imple
         MimeTypes.MULTIPART_RELATED, "multipart"
     );
 
-    private static boolean voiced;
+    private static final boolean READ_VALUE = false;
+
     private static GridCell lastCell;
 
     private final Spreadsheet spreadsheet;
@@ -62,6 +63,8 @@ public class SpreadsheetAccessibleAdapter extends AccessibleControlAdapter imple
     private SpreadsheetAccessibleAdapter(@NotNull Spreadsheet spreadsheet) {
         this.spreadsheet = spreadsheet;
         this.lastPosition = new GridPos(-1, -1);
+        this.labelProvider = spreadsheet.getLabelProvider();
+        this.contentProvider = spreadsheet.getContentProvider();
     }
 
     public static void install(@NotNull Spreadsheet spreadsheet) {
@@ -72,30 +75,24 @@ public class SpreadsheetAccessibleAdapter extends AccessibleControlAdapter imple
         accessible.addAccessibleControlListener(adapter);
 
         spreadsheet.addCursorChangeListener(event -> {
-            accessible.selectionChanged();
-
             final GridCell cell = spreadsheet.getFocusCell();
             if (cell != null && cell != lastCell) {
-                lastCell = cell;
-                voiced = false;
-                accessible.sendEvent(ACC.EVENT_VALUE_CHANGED, new Object[]{null, cell.getRow().getElement()});
+                adapter.setNewCell(cell);
+                accessible.sendEvent(ACC.EVENT_NAME_CHANGED, new Object[]{null, cell.getRow().getElement()});
             }
         });
     }
 
     @Override
     public void getValue(AccessibleControlEvent e) {
-        if (voiced) {
+        if (!READ_VALUE) {
             return;
         }
-        checkCounts();
 
         if (cellsCount == 1) {
-            readCell();
             if (cell == null) {
                 return;
             }
-            readProvidersAndValue();
 
             valueStr = "";
             valueType = "";
@@ -120,38 +117,24 @@ public class SpreadsheetAccessibleAdapter extends AccessibleControlAdapter imple
                     valueType
                 });
             }
-
-            lastPosition.col = position.col;
-            lastPosition.row = position.row;
-        } else if (rowsCount == 1) {
             e.result = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_columns_selected, colsCount);
         } else if (colsCount == 1) {
             e.result = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_rows_selected, rowsCount);
         } else {
             e.result = DataEditorsMessages.spreadsheet_accessibility_freeform_range_selected;
         }
-        if (e.result != null) {
-            voiced = true;
-        }
-
     }
 
     // This is a duplicate of the getValue() method. Because for some reason,
     // some accessibility tools (like JAWs) use only results from the getName() method.
     @Override
     public void getName(AccessibleEvent e) {
-        if (voiced) {
-            return;
-        }
-        checkCounts();
-
         if (cellsCount == 1) {
-            readCell();
             if (cell == null) {
                 return;
             }
-            readProvidersAndValue();
 
+            spreadsheet.setAccessibilityEnabled(true);
             valueStr = "";
             valueType = "";
 
@@ -167,17 +150,16 @@ public class SpreadsheetAccessibleAdapter extends AccessibleControlAdapter imple
                     valueStr,
                     labelProvider.getText(cell.getRow()),
                 });
-            } else {
+            } else if (!lastPosition.equals(position)) {
                 e.result = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_grid_value_row_col, new Object[]{
                     valueStr,
                     labelProvider.getText(cell.getRow()),
                     labelProvider.getText(cell.getColumn()),
                     valueType
                 });
+            } else {
+                e.result = valueStr;
             }
-
-            lastPosition.col = position.col;
-            lastPosition.row = position.row;
         } else if (rowsCount == 1) {
             e.result = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_columns_selected, colsCount);
         } else if (colsCount == 1) {
@@ -185,26 +167,23 @@ public class SpreadsheetAccessibleAdapter extends AccessibleControlAdapter imple
         } else {
             e.result = DataEditorsMessages.spreadsheet_accessibility_freeform_range_selected;
         }
-        if (e.result != null) {
-            voiced = true;
-        }
     }
 
-    private void checkCounts() {
+    private void setNewCell(GridCell cell) {
+        if (position != null) {
+            lastPosition.col = position.col;
+            lastPosition.row = position.row;
+        }
+
+        lastCell = cell;
+        this.cell = cell;
+        position = new GridPos(spreadsheet.getCursorPosition());
+
+        value = contentProvider.getCellValue(cell.getColumn(), cell.getRow(), false);
+
         rowsCount = spreadsheet.getRowSelectionSize();
         colsCount = spreadsheet.getColumnSelectionSize();
         cellsCount = spreadsheet.getCellSelectionSize();
-    }
-
-    private void readCell() {
-        position = spreadsheet.getCursorPosition();
-        cell = spreadsheet.posToCell(position);
-    }
-
-    private void readProvidersAndValue() {
-        labelProvider = spreadsheet.getLabelProvider();
-        contentProvider = spreadsheet.getContentProvider();
-        value = contentProvider.getCellValue(cell.getColumn(), cell.getRow(), false);
     }
 
     private void readValueStringAndType(@NotNull IGridContentProvider contentProvider, @NotNull GridCell cell, Object value) {
