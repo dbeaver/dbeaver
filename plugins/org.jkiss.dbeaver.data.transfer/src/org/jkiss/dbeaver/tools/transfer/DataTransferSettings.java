@@ -589,12 +589,12 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         CommonUtils.shiftRight(dataPipes, pipe);
     }
 
-    public synchronized DataTransferPipe acquireDataPipe(DBRProgressMonitor monitor) {
+    public synchronized DataTransferPipe acquireDataPipe(@NotNull DBRProgressMonitor monitor, @Nullable DBTTask task) {
         if (curPipeNum >= dataPipes.size()) {
             // End of transfer
             // Signal last pipe about it
             if (!dataPipes.isEmpty()) {
-                dataPipes.get(dataPipes.size() - 1).getConsumer().finishTransfer(monitor, true);
+                dataPipes.get(dataPipes.size() - 1).getConsumer().finishTransfer(monitor, null, task, true);
             }
             return null;
         }

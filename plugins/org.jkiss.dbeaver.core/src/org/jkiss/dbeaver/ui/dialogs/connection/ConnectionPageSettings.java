@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
@@ -24,37 +26,51 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabFolder2Adapter;
+import org.eclipse.swt.custom.CTabFolderEvent;
+import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.TabFolder;
-import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.registry.*;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceViewRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
 import java.util.*;
 
 /**
@@ -64,6 +80,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     private static final Log log = Log.getLog(DriverDescriptor.class);
 
     public static final String PAGE_NAME = ConnectionPageSettings.class.getSimpleName();
+
+    // Sort network handler pages to be last, with pinned pages first among them
+    private static final Comparator<IDialogPage> PAGE_COMPARATOR = Comparator
+        .comparing((IDialogPage page) -> page instanceof ConnectionPageNetworkHandler)
+        .thenComparing(page -> !isPagePinned(page));
 
     @NotNull
     private final ConnectionWizard wizard;
@@ -75,10 +96,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     private IDataSourceConnectionEditor connectionEditor;
     private IDataSourceConnectionEditor originalConnectionEditor;
     @Nullable
-    private DataSourceDescriptor dataSource;
+    private final DataSourceDescriptor dataSource;
     private final Set<DataSourceDescriptor> activated = new HashSet<>();
     private IDialogPage[] subPages, extraPages;
-    private TabFolder tabFolder;
+    private CTabFolder tabFolder;
 
     /**
      * Constructor for ConnectionPageSettings
@@ -245,23 +266,56 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                     // Add sub pages
                     Collections.addAll(allPages, allSubPages);
                 }
+                allPages.sort(PAGE_COMPARATOR);
 
-                tabFolder = new TabFolder(parent, SWT.TOP);
+                tabFolder = new CTabFolder(parent, SWT.TOP);
                 tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
+                tabFolder.setUnselectedCloseVisible(false);
+
+                final ToolBar tabFolderChevron = createChevron(allPages);
+                tabFolder.setTopRight(tabFolderChevron, SWT.RIGHT);
+
+                tabFolder.addCTabFolder2Listener(new CTabFolder2Adapter() {
+                    @Override
+                    public void close(CTabFolderEvent event) {
+                        if (confirmTabClose((CTabItem) event.item)) {
+                            final ConnectionPageNetworkHandler page = (ConnectionPageNetworkHandler) event.item.getData();
+                            final NetworkHandlerDescriptor descriptor = page.getHandlerDescriptor();
+                            final DBPConnectionConfiguration configuration = getActiveDataSource().getConnectionConfiguration();
+                            final DBWHandlerConfiguration handler = configuration.getHandler(descriptor.getId());
+
+                            if (handler != null) {
+                                handler.setEnabled(false);
+                            }
+                        } else {
+                            event.doit = false;
+                        }
+                    }
+
+                    //@Override
+                    public void itemsCount(CTabFolderEvent event) {
+                        tabFolderChevron.setVisible(canShowChevron(allPages));
+                    }
+                });
+                tabFolder.addKeyListener(KeyListener.keyPressedAdapter(event -> {
+                    if (event.keyCode == SWT.DEL && event.stateMask == 0) {
+                        final CTabFolder folder = (CTabFolder) event.widget;
+                        final CTabItem selection = folder.getSelection();
+
+                        if (selection != null && selection.getShowClose() && confirmTabClose(selection)) {
+                            selection.dispose();
+                        }
+                    }
+                }));
+
                 setControl(tabFolder);
 
                 for (IDialogPage page : allPages) {
-                    if (ArrayUtils.contains(extraPages, page)) {
+                    if (ArrayUtils.contains(extraPages, page) || canShowInChevron(page)) {
                         // Ignore extra pages
                         continue;
                     }
-                    TabItem item = new TabItem(tabFolder, SWT.NONE);
-                    Composite dummyComposite = new Composite(tabFolder, SWT.NONE);
-                    dummyComposite.setLayout(new FillLayout());
-                    item.setData(page);
-                    item.setControl(dummyComposite);
-                    item.setText(CommonUtils.isEmpty(page.getTitle()) ? CoreMessages.dialog_setting_connection_general : page.getTitle());
-                    item.setToolTipText(page.getDescription());
+                    createPageTab(page, tabFolder.getItemCount());
                 }
                 tabFolder.setSelection(0);
                 tabFolder.addSelectionListener(new SelectionAdapter() {
@@ -282,17 +336,121 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         parent.layout();
     }
 
+    @NotNull
+    private ToolBar createChevron(@NotNull List<IDialogPage> pages) {
+        final MenuManager manager = new MenuManager();
+        manager.setRemoveAllWhenShown(true);
+        manager.addMenuListener(m -> {
+            for (int i = 0; i < pages.size(); i++) {
+                final IDialogPage page = pages.get(i);
+
+                if (canShowInChevron(page)) {
+                    manager.add(new AddNetworkHandlerAction(getActiveDataSource(), (ConnectionPageNetworkHandler) page, i));
+                }
+            }
+        });
+
+        final ToolBar toolBar = new ToolBar(tabFolder, SWT.FLAT | SWT.RIGHT);
+
+        final ToolItem toolItem = UIUtils
+            .createToolItem(toolBar, CoreMessages.dialog_connection_network_add_tunnel_label, null, UIIcon.ADD, null);
+        toolItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            final Rectangle bounds = toolItem.getBounds();
+            final Point location = toolBar.getDisplay().map(toolBar, null, 0, bounds.height);
+            final Menu menu = manager.createContextMenu(tabFolder);
+            menu.setLocation(location.x, location.y);
+            menu.setVisible(true);
+        }));
+        toolItem.addDisposeListener(e -> manager.dispose());
+
+        return toolBar;
+    }
+
+    private boolean confirmTabClose(@NotNull CTabItem item) {
+        if (item.getData() instanceof ConnectionPageNetworkHandler) {
+            final ConnectionPageNetworkHandler page = (ConnectionPageNetworkHandler) item.getData();
+            final NetworkHandlerDescriptor descriptor = page.getHandlerDescriptor();
+
+            final int decision = ConfirmationDialog.confirmAction(
+                getShell(),
+                ConfirmationDialog.INFORMATION,
+                DBeaverPreferences.CONFIRM_DISABLE_NETWORK_HANDLER,
+                ConfirmationDialog.CONFIRM,
+                descriptor.getCodeName()
+            );
+
+            return decision == IDialogConstants.OK_ID;
+        }
+
+        return false;
+    }
+
+    private boolean canShowChevron(@NotNull List<IDialogPage> pages) {
+        for (IDialogPage page : pages) {
+            if (canShowInChevron(page)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean canShowInChevron(@NotNull IDialogPage page) {
+        if (isPagePinned(page) || !(page instanceof ConnectionPageNetworkHandler)) {
+            return false;
+        }
+
+        final NetworkHandlerDescriptor descriptor = ((ConnectionPageNetworkHandler) page).getHandlerDescriptor();
+        final DBPConnectionConfiguration configuration = getActiveDataSource().getConnectionConfiguration();
+        final DBWHandlerConfiguration handler = configuration.getHandler(descriptor.getId());
+
+        return handler == null || !handler.isEnabled();
+    }
+
+    private static boolean isPagePinned(@NotNull IDialogPage page) {
+        if (page instanceof ConnectionPageNetworkHandler) {
+            return ((ConnectionPageNetworkHandler) page).getHandlerDescriptor().isPinned();
+        } else {
+            return true;
+        }
+    }
+
+    @NotNull
+    private CTabItem createPageTab(@NotNull IDialogPage page, int index) {
+        final CTabItem item = new CTabItem(tabFolder, isPagePinned(page) ? SWT.NONE : SWT.CLOSE, index);
+        item.setData(page);
+        item.setText(CommonUtils.isEmpty(page.getTitle()) ? CoreMessages.dialog_setting_connection_general : page.getTitle());
+        item.setToolTipText(page.getDescription());
+
+        if (page.getControl() == null) {
+            final Composite placeholder = new Composite(tabFolder, SWT.NONE);
+            placeholder.setLayout(new FillLayout());
+            item.setControl(placeholder);
+        } else {
+            final Control control = page.getControl();
+            control.setParent(tabFolder);
+            item.setControl(control);
+        }
+
+        return item;
+    }
+
     private void activateCurrentItem() {
         if (tabFolder != null) {
-            TabItem[] selection = tabFolder.getSelection();
-            if (selection.length == 1) {
-                IDialogPage page = (IDialogPage) selection[0].getData();
+            CTabItem selection = tabFolder.getSelection();
+            if (selection != null) {
+                IDialogPage page = (IDialogPage) selection.getData();
                 if (page.getControl() == null) {
                     // Create page
-                    Composite panel = (Composite) selection[0].getControl();
-                    page.createControl(panel);
-                    Dialog.applyDialogFont(panel);
-                    panel.layout(true, true);
+                    Composite panel = (Composite) selection.getControl();
+                    panel.setRedraw(false);
+                    try {
+                        page.createControl(panel);
+                        Dialog.applyDialogFont(panel);
+                        panel.layout(true, true);
+                    } finally {
+                        panel.setRedraw(true);
+                    }
                 }
                 page.setVisible(true);
             }
@@ -369,7 +527,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @Override
     public void firePropertyChange(Object source, String property, Object oldValue, Object newValue) {
         PropertyChangeEvent pcEvent = new PropertyChangeEvent(source, property, oldValue, newValue);
-        for (TabItem item : tabFolder.getItems()) {
+        for (CTabItem item : tabFolder.getItems()) {
             IDialogPage page = (IDialogPage) item.getData();
             if (page instanceof IPropertyChangeListener && page.getControl() != null) {
                 ((IPropertyChangeListener) page).propertyChange(pcEvent);
@@ -482,19 +640,49 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Override
     public void showSubPage(IDialogPage subPage) {
-        TabItem[] selection = tabFolder.getSelection();
-        for (TabItem pageTab : tabFolder.getItems()) {
+        CTabItem selection = tabFolder.getSelection();
+        for (CTabItem pageTab : tabFolder.getItems()) {
             if (pageTab.getData() == subPage) {
                 tabFolder.setSelection(pageTab);
                 activateCurrentItem();
-                if (selection.length == 1 && selection[0].getData() != subPage && selection[0].getData() instanceof ActiveWizardPage) {
-                    ((ActiveWizardPage) selection[0].getData()).deactivatePage();
+                if (selection != null && selection.getData() != subPage && selection.getData() instanceof ActiveWizardPage) {
+                    ((ActiveWizardPage<?>) selection.getData()).deactivatePage();
                 }
                 if (subPage instanceof ActiveWizardPage) {
-                    ((ActiveWizardPage) subPage).activatePage();
+                    ((ActiveWizardPage<?>) subPage).activatePage();
                 }
                 break;
             }
+        }
+    }
+
+    private class AddNetworkHandlerAction extends Action {
+        private final DBPDataSourceContainer container;
+        private final ConnectionPageNetworkHandler page;
+        private final int index;
+
+        public AddNetworkHandlerAction(@NotNull DBPDataSourceContainer container, @NotNull ConnectionPageNetworkHandler page, int index) {
+            super(page.getHandlerDescriptor().getCodeName(), AS_PUSH_BUTTON);
+
+            this.container = container;
+            this.page = page;
+            this.index = index;
+        }
+
+        @Override
+        public void run() {
+            final NetworkHandlerDescriptor descriptor = page.getHandlerDescriptor();
+            final DBPConnectionConfiguration configuration = container.getConnectionConfiguration();
+            DBWHandlerConfiguration handler = configuration.getHandler(descriptor.getId());
+
+            if (handler == null) {
+                handler = new DBWHandlerConfiguration(descriptor, container);
+                configuration.updateHandler(handler);
+            }
+
+            handler.setEnabled(true);
+            tabFolder.setSelection(createPageTab(page, Math.min(tabFolder.getItemCount(), index)));
+            activateCurrentItem();
         }
     }
 }
