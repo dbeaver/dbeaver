@@ -251,7 +251,7 @@ quantifier: (all|some);
 all: ALL;
 some: (SOME|ANY);
 existsPredicate: EXISTS tableSubquery;
-matchPredicate: rowValueConstructor MATCH (UNIQUE)? ((PARTIAL|FULL))? tableSubquery;
+matchPredicate: rowValueConstructor MATCH (UNIQUE)? (matchType)? tableSubquery;
 overlapsPredicate: rowValueConstructor1 OVERLAPS rowValueConstructor2;
 rowValueConstructor1: rowValueConstructor;
 rowValueConstructor2: rowValueConstructor;
@@ -339,10 +339,10 @@ rollbackStatement: ROLLBACK (WORK)?;
 
 // session
 sqlSessionStatement: (setCatalogStatement|setSchemaStatement|setNamesStatement|setSessionAuthorizationIdentifierStatement|setLocalTimeZoneStatement);
-setCatalogStatement: SET CATALOG valueSpecification;
+setCatalogStatement: SET CATALOG (identifier|valueSpecification);
 valueSpecification: (literal|generalValueSpecification);
-setSchemaStatement: SET SCHEMA valueSpecification;
-setNamesStatement: SET NAMES valueSpecification;
+setSchemaStatement: SET SCHEMA (identifier|valueSpecification);
+setNamesStatement: SET NAMES (identifier|valueSpecification);
 setSessionAuthorizationIdentifierStatement: SET SESSION AUTHORIZATION valueSpecification;
 setLocalTimeZoneStatement: SET TIME ZONE setTimeZoneValue;
 setTimeZoneValue: (intervalValueExpression|LOCAL);
@@ -354,4 +354,13 @@ anyWordWithAnyValue: anyWord anyValue;
 anyProperty: LeftParen anyValue+ RightParen;
 anyWordsWithProperty: anyWord+ anyProperty?;
 
-nonReserved: COMMITTED | DATA | NAME | NULLABLE | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED;
+nonReserved: COMMITTED | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED |
+    CURRENT_USER | SESSION_USER | SYSTEM_USER | USER | VALUE |
+    DATE | YEAR | MONTH | DAY | HOUR | MINUTE | SECOND | ZONE |
+    ACTION | ADD | AUTHORIZATION | BY | CASCADE | CASCADED | CATALOG | COALESCE | COMMIT |
+    CONSTRAINT | CONSTRAINTS | CORRESPONDING | COUNT | DEFERRABLE | DEFERRED | IMMEDIATE |
+    EXTRACT | FULL | GLOBAL | LOCAL | INDICATOR | INITIALLY | INTERVAL | ISOLATION | KEY | LEVEL |
+    NAMES | NO | NULLIF| ONLY | OVERLAPS| PARTIAL | PRESERVE | READ | RESTRICT | ROLLBACK | SCHEMA |
+    SESSION | SET | TEMPORARY | TIME | TIMESTAMP | TIMEZONE_HOUR | TIMEZONE_MINUTE | TRANSACTION |
+    VIEW | WORK | WRITE
+;
