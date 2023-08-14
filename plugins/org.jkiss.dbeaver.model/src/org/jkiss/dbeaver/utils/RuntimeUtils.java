@@ -294,7 +294,7 @@ public final class RuntimeUtils {
                     return err.toString();
                 }
 
-                return out.length() == 0 ? null: out.toString();
+                return out.toString();
             } finally {
                 p.destroy();
             }
