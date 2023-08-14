@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.impl.sql.SQLDialectQueryGenerator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.parser.EmptyTokenPredicateSet;
 import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicateSet;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -265,21 +264,24 @@ public interface SQLDialect {
 
     boolean supportsAliasInUpdate();
 
+    /**
+     * Column name to list all table columns. Usually asterisk (*).
+     */
     @Nullable
-    default String getAllAttributesAlias() {
-        return "*"; //$NON-NLS-1$
-    }
+    String getAllAttributesAlias();
 
-    default boolean supportsAliasInConditions() {
-        return true;
-    }
+    /**
+     * Column name to use in grouping queries like COUNT. Usually asterisk (*).
+     */
+    @Nullable
+    String getDefaultGroupAttribute();
+
+    boolean supportsAliasInConditions();
 
     /**
      * Checks whether dialect supports alias for queries with HAVING syntax.
      */
-    default boolean supportsAliasInHaving() {
-        return true;
-    }
+    boolean supportsAliasInHaving();
 
     boolean supportsTableDropCascade();
 
@@ -483,9 +485,7 @@ public interface SQLDialect {
      * @return a set of token predicates
      */
     @NotNull
-    default SQLTokenPredicateSet getSkipTokenPredicates() {
-        return EmptyTokenPredicateSet.INSTANCE;
-    }
+    SQLTokenPredicateSet getSkipTokenPredicates();
     
     /**
      * @return a set of SQLBlockCompletions with information about blocks for autoedit
