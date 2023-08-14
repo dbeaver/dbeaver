@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.equinox.internal.security.auth.AuthPlugin;
 import org.eclipse.equinox.internal.security.storage.StorageUtils;
+import org.eclipse.osgi.internal.framework.EquinoxConfiguration;
 import org.eclipse.osgi.service.environment.EnvironmentInfo;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -42,7 +43,8 @@ import java.util.Arrays;
 public abstract class DesktopApplicationImpl extends BaseApplicationImpl {
     private static final Log log = Log.getLog(DesktopApplicationImpl.class);
 
-    private static final String DBEAVER_DATA_DIR = "DBeaverData"; //$NON-NLS-1$
+    public static final String DBEAVER_DATA_DIR = "DBeaverData"; //$NON-NLS-1$
+
     private static final String DBEAVER_SECURE_DIR = "secure"; //$NON-NLS-1$
     private static final String DBEAVER_SECURE_FILE = "secure_storage"; //$NON-NLS-1$
     private static final String ECLIPSE_KEYRING = "-eclipse.keyring"; //$NON-NLS-1$
@@ -67,21 +69,16 @@ public abstract class DesktopApplicationImpl extends BaseApplicationImpl {
             log.error(e);
         }
         EnvironmentInfo environmentInfoService = AuthPlugin.getDefault().getEnvironmentInfoService();
-        String[] nonFrameworkArgs = environmentInfoService.getNonFrameworkArgs();
-        if (!isDistributed() && STORAGE_PATH.toFile().exists() && Arrays.stream(nonFrameworkArgs)
-            .filter(it -> it.equals(ECLIPSE_KEYRING)).findAny().isEmpty()) {
-            // Unfortunately the Equinox reads the eclipse.keyring from arguments
-            // before any DBeaver controlled part is executed and there is no way
-            // to modify the variable after that without reflection.
-            String[] updatedArgs = Arrays.copyOf(nonFrameworkArgs, nonFrameworkArgs.length + 2);
-            updatedArgs[updatedArgs.length - 2] = ECLIPSE_KEYRING;
-            updatedArgs[updatedArgs.length - 1] = STORAGE_PATH.toString();
-            try {
-                Field appArgs = environmentInfoService.getClass().getDeclaredField(ECLIPSE_APP_ARGUMENTS_FIELD);
-                appArgs.setAccessible(true);
-                appArgs.set(environmentInfoService, updatedArgs);
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                log.error("Error setting the secure storage");
+        if (environmentInfoService instanceof EquinoxConfiguration) {
+            String[] nonFrameworkArgs = environmentInfoService.getNonFrameworkArgs();
+            if (!isDistributed() && STORAGE_PATH.toFile().exists() && Arrays.stream(nonFrameworkArgs).filter(it -> it.equals(ECLIPSE_KEYRING)).findAny().isEmpty()) {
+                // Unfortunately the Equinox reads the eclipse.keyring from arguments
+                // before any DBeaver controlled part is executed and there is no way
+                // to modify the variable after that without reflection.
+                String[] updatedArgs = Arrays.copyOf(nonFrameworkArgs, nonFrameworkArgs.length + 2);
+                updatedArgs[updatedArgs.length - 2] = ECLIPSE_KEYRING;
+                updatedArgs[updatedArgs.length - 1] = STORAGE_PATH.toString();
+                ((EquinoxConfiguration) environmentInfoService).setAppArgs(updatedArgs);
             }
         }
     }

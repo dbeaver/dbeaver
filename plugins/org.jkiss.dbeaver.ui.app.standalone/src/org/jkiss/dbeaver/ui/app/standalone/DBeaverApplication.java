@@ -89,7 +89,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     public static final String WORKSPACE_DIR_LEGACY = "${user.home}/.dbeaver"; //$NON-NLS-1$
     public static final String WORKSPACE_DIR_4 = "${user.home}/.dbeaver4"; //$NON-NLS-1$
 
-    public static final String DBEAVER_DATA_DIR = "DBeaverData";
+
 
     public static final String[] WORKSPACE_DIR_PREVIOUS = {
         WORKSPACE_DIR_4,
