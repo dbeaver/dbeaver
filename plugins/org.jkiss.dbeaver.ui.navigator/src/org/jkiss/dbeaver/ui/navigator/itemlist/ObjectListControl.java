@@ -174,6 +174,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             TableViewerEditor.create(tableViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_VERTICAL | ColumnViewerEditor.TABBING_HORIZONTAL);
             table.addTraverseListener(traverseListener);
         }
+
         //editorActivationStrategy.setEnableEditorActivationWithKeyboard(true);
         renderer = createRenderer();
         itemsViewer.getColumnViewerEditor().addEditorActivationListener(new EditorActivationListener());
