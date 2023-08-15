@@ -29,10 +29,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLGroupingQueryGenerator;
-import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.DataEditorFeatures;
@@ -40,7 +37,10 @@ import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 public class GroupingResultsContainer implements IResultSetContainer {
 
@@ -48,13 +48,11 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     public static final String FUNCTION_COUNT = "COUNT";
 
-    public static final String DEFAULT_FUNCTION = FUNCTION_COUNT + "(*)";
-
     private final IResultSetPresentation presentation;
-    private GroupingDataContainer dataContainer;
-    private ResultSetViewer groupingViewer;
-    private List<String> groupAttributes = new ArrayList<>();
-    private List<String> groupFunctions = new ArrayList<>();
+    private final GroupingDataContainer dataContainer;
+    private final ResultSetViewer groupingViewer;
+    private final List<String> groupAttributes = new ArrayList<>();
+    private final List<String> groupFunctions = new ArrayList<>();
 
     public GroupingResultsContainer(Composite parent, IResultSetPresentation presentation) {
         this.presentation = presentation;
@@ -64,10 +62,17 @@ public class GroupingResultsContainer implements IResultSetContainer {
         initDefaultSettings();
     }
 
+    private String getDefaultFunction() {
+        DBPDataSource dataSource = dataContainer.getDataSource();
+        return FUNCTION_COUNT + "(" +
+            (dataSource == null ? SQLConstants.COLUMN_ASTERISK :
+            dataSource.getSQLDialect().getDefaultGroupAttribute()) + ")";
+    }
+
     private void initDefaultSettings() {
         this.groupAttributes.clear();
         this.groupFunctions.clear();
-        addGroupingFunctions(Collections.singletonList(DEFAULT_FUNCTION));
+        addGroupingFunctions(Collections.singletonList(getDefaultFunction()));
     }
 
     public IResultSetPresentation getOwnerPresentation() {
@@ -223,7 +228,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
             dataFilter = new DBDDataFilter(groupingViewer.getModel().getDataFilter());
         }
 
-        boolean isDefaultGrouping = groupFunctions.size() == 1 && groupFunctions.get(0).equals(DEFAULT_FUNCTION);
+        boolean isDefaultGrouping = groupFunctions.size() == 1 && groupFunctions.get(0).equalsIgnoreCase(getDefaultFunction());
         String defaultSorting = dataSource.getContainer().getPreferenceStore().getString(ResultSetPreferences.RS_GROUPING_DEFAULT_SORTING);
         if (!CommonUtils.isEmpty(defaultSorting) && isDefaultGrouping) {
             if (false/*dialect.supportsOrderByIndex()*/) {

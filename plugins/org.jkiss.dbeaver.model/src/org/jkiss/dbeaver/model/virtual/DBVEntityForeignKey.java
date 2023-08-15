@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
@@ -258,6 +259,7 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
 
     @Override
     public String toString() {
-        return "VFK: " + entity.getName() + "->" + refEntityId + "." + refConstraintId + " (" + attributes + ")";
+        return "VFK: " + entity.getFullyQualifiedName(DBPEvaluationContext.UI) +
+            "->" + refEntityId + "." + refConstraintId + " (" + attributes + ")";
     }
 }

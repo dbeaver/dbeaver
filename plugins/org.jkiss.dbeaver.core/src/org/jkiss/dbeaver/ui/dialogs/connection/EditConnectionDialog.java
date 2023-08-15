@@ -168,6 +168,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
         getWizard().testConnection();
     }
 
+
     public static boolean openEditConnectionDialog(IWorkbenchWindow window, DBPDataSourceContainer dataSource, String defaultPageName) {
         return openEditConnectionDialog(window, dataSource, defaultPageName, null);
     }

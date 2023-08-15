@@ -168,8 +168,9 @@ queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
 
 // from
 fromClause: FROM tableReference ((Comma tableReference)+)?;
-nonjoinedTableReference: (tableName (correlationSpecification)?)|(derivedTable correlationSpecification);
-tableReference: (nonjoinedTableReference|joinedTable)*; // * to handle incomplete queries
+nonjoinedTableReference: (tableName (PARTITION anyProperty)? (correlationSpecification)?)|(derivedTable correlationSpecification);
+tableReference: (nonjoinedTableReference|joinedTable|tableReferenceHints)*; // * to handle incomplete queries
+tableReferenceHints: (tableHintKeywords|anyWord)+ anyProperty; // dialect-specific options, should be described and moved to dialects in future
 joinedTable: (nonjoinedTableReference|(LeftParen joinedTable RightParen)) (naturalJoinTerm|crossJoinTerm)+;
 correlationSpecification: (AS)? correlationName (LeftParen derivedColumnList RightParen)?;
 derivedColumnList: columnNameList;
@@ -251,7 +252,7 @@ quantifier: (all|some);
 all: ALL;
 some: (SOME|ANY);
 existsPredicate: EXISTS tableSubquery;
-matchPredicate: rowValueConstructor MATCH (UNIQUE)? ((PARTIAL|FULL))? tableSubquery;
+matchPredicate: rowValueConstructor MATCH (UNIQUE)? (matchType)? tableSubquery;
 overlapsPredicate: rowValueConstructor1 OVERLAPS rowValueConstructor2;
 rowValueConstructor1: rowValueConstructor;
 rowValueConstructor2: rowValueConstructor;
@@ -339,10 +340,10 @@ rollbackStatement: ROLLBACK (WORK)?;
 
 // session
 sqlSessionStatement: (setCatalogStatement|setSchemaStatement|setNamesStatement|setSessionAuthorizationIdentifierStatement|setLocalTimeZoneStatement);
-setCatalogStatement: SET CATALOG valueSpecification;
+setCatalogStatement: SET CATALOG (identifier|valueSpecification);
 valueSpecification: (literal|generalValueSpecification);
-setSchemaStatement: SET SCHEMA valueSpecification;
-setNamesStatement: SET NAMES valueSpecification;
+setSchemaStatement: SET SCHEMA (identifier|valueSpecification);
+setNamesStatement: SET NAMES (identifier|valueSpecification);
 setSessionAuthorizationIdentifierStatement: SET SESSION AUTHORIZATION valueSpecification;
 setLocalTimeZoneStatement: SET TIME ZONE setTimeZoneValue;
 setTimeZoneValue: (intervalValueExpression|LOCAL);
@@ -354,4 +355,15 @@ anyWordWithAnyValue: anyWord anyValue;
 anyProperty: LeftParen anyValue+ RightParen;
 anyWordsWithProperty: anyWord+ anyProperty?;
 
-nonReserved: COMMITTED | DATA | NAME | NULLABLE | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED;
+tableHintKeywords: WITH | UPDATE | IN | KEY | JOIN | ORDER BY | GROUP BY;
+
+nonReserved: COMMITTED | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED |
+    CURRENT_USER | SESSION_USER | SYSTEM_USER | USER | VALUE |
+    DATE | YEAR | MONTH | DAY | HOUR | MINUTE | SECOND | ZONE |
+    ACTION | ADD | AUTHORIZATION | BY | CASCADE | CASCADED | CATALOG | COALESCE | COMMIT |
+    CONSTRAINT | CONSTRAINTS | CORRESPONDING | COUNT | DEFERRABLE | DEFERRED | IMMEDIATE |
+    EXTRACT | FULL | GLOBAL | LOCAL | INDICATOR | INITIALLY | INTERVAL | ISOLATION | KEY | LEVEL |
+    NAMES | NO | NULLIF| ONLY | OVERLAPS| PARTIAL | PRESERVE | READ | RESTRICT | ROLLBACK | SCHEMA |
+    SESSION | SET | TEMPORARY | TIME | TIMESTAMP | TIMEZONE_HOUR | TIMEZONE_MINUTE | TRANSACTION |
+    VIEW | WORK | WRITE
+;
