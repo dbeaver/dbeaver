@@ -48,11 +48,15 @@ public class UIStyles {
     }
 
     public static boolean isDarkTheme() {
-        return UIUtils.isDark(getDefaultTextBackground().getRGB());
+        return UIUtils.isDark(getDefaultTextBackground().getRGB()) || isDarkHighContrastTheme();
     }
 
     public static boolean isHighContrastTheme() {
         return PlatformUI.getWorkbench().getService(IThemeEngine.class).getActiveTheme().getId().equals(THEME_HIGH_CONTRAST_ID);
+    }
+    
+    public static boolean isDarkHighContrastTheme() {
+        return isHighContrastTheme() && UIUtils.isDark(getDefaultWidgetBackground().getRGB());
     }
 
     public static Color getDefaultWidgetBackground() {
