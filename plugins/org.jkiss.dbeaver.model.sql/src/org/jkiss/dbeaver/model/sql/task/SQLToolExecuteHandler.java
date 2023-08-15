@@ -62,7 +62,7 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         @NotNull DBTTaskExecutionListener listener) throws DBException
     {
         SETTINGS settings = createToolSettings();
-        settings.loadConfiguration(runnableContext, task.getProperties());
+        settings.loadConfiguration(runnableContext, task.getProperties(), task.getProject());
         executeWithSettings(runnableContext, task, locale, log, logStream, listener, settings);
         return DBTTaskRunStatus.makeStatisticsStatus(statistics);
     }

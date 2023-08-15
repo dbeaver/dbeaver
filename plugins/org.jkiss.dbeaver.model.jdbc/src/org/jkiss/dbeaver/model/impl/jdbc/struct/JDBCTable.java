@@ -284,7 +284,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter, long flags) throws DBCException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
-        String asteriskString = getDataSource().getSQLDialect().getAllAttributesAlias();
+        String asteriskString = getDataSource().getSQLDialect().getDefaultGroupAttribute();
         if (asteriskString == null) {
             asteriskString = "";
         }
