@@ -341,19 +341,23 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
         }
     }
 
+    @NotNull
     @Override
-    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
+    public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position) {
         if (position == RulePosition.FINAL) {
-            rules.add(new SQLVariableRule(this));
+            return new TPRule[] { new SQLVariableRule(this) };
         }
         if (position == RulePosition.KEYWORDS) {
             final TPTokenDefault keywordToken = new TPTokenDefault(SQLTokenType.T_KEYWORD);
             // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/transactions-transact-sql
-            rules.add(new SQLMultiWordRule(new String[]{"BEGIN", "DISTRIBUTED", "TRANSACTION"}, keywordToken));
-            rules.add(new SQLMultiWordRule(new String[]{"BEGIN", "DISTRIBUTED", "TRAN"}, keywordToken));
-            rules.add(new SQLMultiWordRule(new String[]{"BEGIN", "TRANSACTION"}, keywordToken));
-            rules.add(new SQLMultiWordRule(new String[]{"BEGIN", "TRAN"}, keywordToken));
+            return new TPRule[]{
+                new SQLMultiWordRule(new String[]{"BEGIN", "DISTRIBUTED", "TRANSACTION"}, keywordToken),
+                new SQLMultiWordRule(new String[]{"BEGIN", "DISTRIBUTED", "TRAN"}, keywordToken),
+                new SQLMultiWordRule(new String[]{"BEGIN", "TRANSACTION"}, keywordToken),
+                new SQLMultiWordRule(new String[]{"BEGIN", "TRAN"}, keywordToken)
+            };
         }
+        return new TPRule[0];
     }
 
     @Override
@@ -393,6 +397,12 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
     @Override
     public String getClobDataType() {
         return SQLServerConstants.TYPE_VARCHAR + "(max)";
+    }
+
+    @NotNull
+    @Override
+    public String getBlobDataType() {
+        return SQLServerConstants.TYPE_IMAGE;
     }
 
     @NotNull

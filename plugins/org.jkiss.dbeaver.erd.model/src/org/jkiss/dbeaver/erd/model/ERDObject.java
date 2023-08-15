@@ -19,8 +19,8 @@
  */
 package org.jkiss.dbeaver.erd.model;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
@@ -34,7 +34,7 @@ import java.util.Map;
  *
  * @author Serge Rider
  */
-public abstract class ERDObject<OBJECT> implements IAdaptable, DBPNamedObject {
+public abstract class ERDObject<OBJECT> implements DBPAdaptable, DBPNamedObject {
 
     public static final String PROP_CHILD = "CHILD";
     public static final String PROP_REORDER = "REORDER";

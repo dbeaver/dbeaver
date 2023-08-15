@@ -116,12 +116,12 @@ public class DB2Routine extends DB2Object<DBSObject>
 
         this.origin = CommonUtils.valueOf(DB2RoutineOrigin.class, JDBCUtils.safeGetString(dbResult, "ORIGIN"));
         this.language = CommonUtils.valueOf(DB2RoutineLanguage.class, JDBCUtils.safeGetStringTrimmed(dbResult, "LANGUAGE"));
-        this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
-        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
-        this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
+        this.owner = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER);
+        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_CREATE_TIME);
+        this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, DB2Constants.SYSCOLUMN_ALTER_TIME);
         this.lastRegenTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REGEN_TIME");
         this.text = JDBCUtils.safeGetString(dbResult, "TEXT");
-        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+        this.remarks = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_REMARKS);
 
         this.resultSets = JDBCUtils.safeGetInteger(dbResult, "RESULT_SETS");
         this.parameterStyle = JDBCUtils.safeGetString(dbResult, "PARAMETER_STYLE");
@@ -133,10 +133,10 @@ public class DB2Routine extends DB2Object<DBSObject>
         this.jarSchema = JDBCUtils.safeGetString(dbResult, "JARSCHEMA");
         this.jarSignature = JDBCUtils.safeGetString(dbResult, "JAR_SIGNATURE");
         this.javaClass = JDBCUtils.safeGetString(dbResult, "CLASS");
-        this.valid = CommonUtils.valueOf(DB2RoutineValidType.class, JDBCUtils.safeGetString(dbResult, "VALID"));
+        this.valid = CommonUtils.valueOf(DB2RoutineValidType.class, JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_VALID));
 
         if (db2DataSource.isAtLeastV9_5()) {
-            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER_TYPE));
         }
         if (db2DataSource.isAtLeastV9_7()) {
             this.dialect = JDBCUtils.safeGetString(dbResult, "DIALECT");

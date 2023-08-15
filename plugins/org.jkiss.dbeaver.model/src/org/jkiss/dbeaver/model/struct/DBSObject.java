@@ -18,22 +18,20 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBPObjectWithDescription;
-import org.jkiss.dbeaver.model.DBPPersistedObject;
+import org.jkiss.dbeaver.model.*;
 
 /**
  * Meta object
  */
-public interface DBSObject extends DBPNamedObject, DBPObjectWithDescription, DBPPersistedObject
-{
+@DPIObject
+public interface DBSObject extends DBPNamedObject, DBPObjectWithDescription, DBPPersistedObject {
 
     /**
      * Parent object
      *
      * @return parent object or null
      */
+    @DPIContainer
     @Nullable
 	DBSObject getParentObject();
 
@@ -42,6 +40,7 @@ public interface DBSObject extends DBPNamedObject, DBPObjectWithDescription, DBP
      * It can be null if object was detached from data source.
      * @return datasource reference or null
      */
+    @DPIContainer
     @Nullable
     DBPDataSource getDataSource();
 

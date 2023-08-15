@@ -115,6 +115,11 @@ public class TaskTypeDescriptor extends DataSourceBindingDescriptor implements D
         return CommonUtils.toBoolean(config.getAttribute("supportsVariables"));
     }
 
+    @Override
+    public boolean supportsDistributedMode() {
+        return CommonUtils.getBoolean(config.getAttribute("supportsDistributedMode"), true);
+    }
+
     @NotNull
     @Override
     public DBTTaskHandler createHandler() throws DBException {

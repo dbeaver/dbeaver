@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -651,6 +652,10 @@ public final class DBUtils {
             }
         }
         return null;
+    }
+
+    public static DBPDataSourceContainer findDataSourceByObjectId(@NotNull DBPProject project, @NotNull String objectId) {
+        return project.getDataSourceRegistry().getDataSource(objectId.split("/")[0]);
     }
 
     public static boolean isNullValue(@Nullable Object value)
@@ -1729,6 +1734,10 @@ public final class DBUtils {
     @NotNull
     public static String getFullTypeName(DBPDataSource dataSource, @NotNull DBSTypedObject typedObject) {
         String typeName = typedObject.getTypeName();
+        if (CommonUtils.isEmpty(typeName)) {
+            // No answer from the driver side
+            return "<" + ModelMessages.dbutils_type_name_unknown + ">";
+        }
         String typeModifiers = SQLUtils.getColumnTypeModifiers(dataSource, typedObject, typeName, typedObject.getDataKind());
         return typeModifiers == null ? typeName : (typeName + typeModifiers);
     }
@@ -2066,7 +2075,38 @@ public final class DBUtils {
         });
     }
 
-    public static String getClientApplicationName(DBPDataSourceContainer container, DBCExecutionContext context, String purpose) {
+    /**
+     * Returns client application identifier that contains application name, version and current connection purpose
+     *
+     * @param container data source container
+     * @param context execution context
+     * @param purpose if null, purpose will not be included
+     * @return the client application name built according to passed arguments
+     */
+    public static String getClientApplicationName(
+            @NotNull DBPDataSourceContainer container,
+            @Nullable DBCExecutionContext context,
+            @Nullable String purpose
+    ) {
+        return getClientApplicationName(container, context, purpose, true);
+    }
+
+    /**
+     * Returns client application identifier that contains application name and
+     * optionally version and current connection purpose
+     *
+     * @param container data source container
+     * @param context execution context
+     * @param purpose if null, purpose will not be included
+     * @param addVersion if false version will not be included
+     * @return the client application name built according to passed arguments
+     */
+    public static String getClientApplicationName(
+        @NotNull DBPDataSourceContainer container,
+        @Nullable DBCExecutionContext context,
+        @Nullable String purpose,
+        boolean addVersion
+    ) {
         if (container.getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_OVERRIDE)) {
             String appName = container.getPreferenceStore().getString(ModelPreferences.META_CLIENT_NAME_VALUE);
             IVariableResolver cVarResolver = container.getVariablesResolver(false);
@@ -2081,7 +2121,7 @@ public final class DBUtils {
                 }
             });
         }
-        final String productTitle = GeneralUtils.getProductTitle();
+        final String productTitle = addVersion ? GeneralUtils.getProductTitle() : GeneralUtils.getProductName();
         return purpose == null ? productTitle : productTitle + " - " + purpose;
     }
 
@@ -2184,7 +2224,7 @@ public final class DBUtils {
      * Also checks DBValue for nullability
      */
     public static int compareDataValues(Object cell1, Object cell2) {
-        if (cell1 == cell2) {
+        if (cell1 == cell2 || (isNullValue(cell1) && isNullValue(cell2))) {
             return 0;
         } else if (isNullValue(cell1)) {
             return 1;

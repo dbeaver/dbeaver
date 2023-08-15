@@ -747,21 +747,12 @@ public class PostgreSchema implements
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreTableContainer container, @Nullable PostgreTableBase object, @Nullable String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder();
             PostgreDataSource dataSource = getDataSource();
-            boolean supportsSequences = dataSource.getServerType().supportsSequences();
             sql.append("SELECT c.oid,c.*,d.description");
             if (dataSource.isServerVersionAtLeast(10, 0)) {
                 sql.append(",pg_catalog.pg_get_expr(c.relpartbound, c.oid) as partition_expr,  pg_catalog.pg_get_partkeydef(c.oid) as partition_key ");
             }
-            if (supportsSequences) {
-                sql.append(", dep.objid, dep.refobjsubid");
-            }
             sql.append("\nFROM pg_catalog.pg_class c\n")
                 .append("LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0 AND d.classoid='pg_class'::regclass\n");
-            if (supportsSequences) {
-                // Search connection with sequence object
-                sql.append("LEFT OUTER JOIN pg_depend dep on dep.refobjid = c.\"oid\" " +
-                    "AND dep.deptype = 'i' and dep.refobjsubid <> 0 and dep.classid = dep.refclassid\n");
-            }
             sql.append("WHERE c.relnamespace=? AND c.relkind not in ('i','I','c')")
                 .append(object == null && objectName == null ? "" : " AND relname=?");
             final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
@@ -788,37 +779,29 @@ public class PostgreSchema implements
             return JDBCUtils.safeGetBoolean(dbResult, "relispartition");
         }
 
-        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull PostgreTableContainer container)
-            throws SQLException {
-            String sql = "SELECT c.relname,a.*,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid, true) as def_value,dsc.description" +
-                getTableColumnsQueryExtraParameters(container.getSchema(), null) +
-                "\nFROM pg_catalog.pg_attribute a" +
-                "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
-                "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
-                "\nLEFT OUTER JOIN pg_catalog.pg_description dsc ON (c.oid=dsc.objoid AND a.attnum = dsc.objsubid)" +
-                "\nWHERE NOT a.attisdropped AND c.relnamespace=? AND c.relkind not in ('i','I','c')  ORDER BY a.attnum";
-
-            JDBCPreparedStatement dbStat = session.prepareStatement(sql);
-            dbStat.setLong(1, PostgreSchema.this.getObjectId());
-            return dbStat;
-        }
-
         @Override
         protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull PostgreTableContainer container, @Nullable PostgreTableBase forTable)
             throws SQLException {
-            if (forTable == null) {
-                return prepareChildrenStatement(session, container);
-            }
+            boolean supportsSequences = container.getDataSource().getServerType().supportsSequences();
 
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT c.relname,a.*,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid, true) as def_value,dsc.description" +
                     getTableColumnsQueryExtraParameters(container.getSchema(), forTable) +
+                    (supportsSequences ? ",dep.objid" : "") +
                     "\nFROM pg_catalog.pg_attribute a" +
                     "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
                     "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
                     "\nLEFT OUTER JOIN pg_catalog.pg_description dsc ON (c.oid=dsc.objoid AND a.attnum = dsc.objsubid)" +
-                    "\nWHERE NOT a.attisdropped AND c.oid=? ORDER BY a.attnum");
-            dbStat.setLong(1, forTable.getObjectId());
+                    (supportsSequences ? "\nLEFT OUTER JOIN pg_depend dep on dep.refobjid = a.attrelid AND dep.deptype = 'i' " +
+                        "and dep.refobjsubid = a.attnum and dep.classid = dep.refclassid" : "") +
+                    "\nWHERE NOT a.attisdropped AND c.relkind not in ('i','I','c')" +
+                    (forTable != null ? " AND c.oid=?" : " AND c.relnamespace=?") +
+                    "\nORDER BY a.attnum");
+            if (forTable != null) {
+                dbStat.setLong(1, forTable.getObjectId());
+            } else {
+                dbStat.setLong(1, PostgreSchema.this.getObjectId());
+            }
             return dbStat;
         }
 
@@ -1124,8 +1107,9 @@ public class PostgreSchema implements
                 "SELECT p." + oidColumn + " as poid,p.*," +
                     (session.getDataSource().isServerVersionAtLeast(8, 4) ? "pg_catalog.pg_get_expr(p.proargdefaults, 0)" : "NULL") + " as arg_defaults,d.description\n" +
                     "FROM pg_catalog." + serverType.getProceduresSystemTable() + " p\n" +
-                    "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=p." + oidColumn + "\n" +
-                    "WHERE p.pronamespace=?" +
+                    "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=p." + oidColumn +
+                    (session.getDataSource().isServerVersionAtLeast(7, 2) ? " AND d.objsubid = 0" : "") + // no links to columns
+                    "\nWHERE p.pronamespace=?" +
                     (object == null ? "" : " AND p." + oidColumn + "=?") +
                     "\nORDER BY p.proname"
             );

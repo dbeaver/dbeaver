@@ -163,7 +163,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
             final Composite client = new Composite(group, SWT.BORDER);
             client.setLayout(new GridLayout(4, false));
-            client.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+            client.setLayoutData(new GridData(GridData.FILL_BOTH));
             group.setClient(client);
 
             tunnelImplCombo = UIUtils.createLabelCombo(client, SSHUIMessages.model_ssh_configurator_label_implementation, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -179,21 +179,23 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 tunnelImplCombo.add(it.getLabel());
             }
 
-            fingerprintVerificationCheck = UIUtils.createCheckbox(client, SSHUIMessages.model_ssh_configurator_label_bypass_verification, false);
-            GridData cgd = new GridData(GridData.FILL_HORIZONTAL);
-            cgd.horizontalSpan = 2;
-            fingerprintVerificationCheck.setLayoutData(cgd);
-            fingerprintVerificationCheck.setToolTipText(SSHUIMessages.model_ssh_configurator_label_bypass_verification_description);
+            fingerprintVerificationCheck = UIUtils.createCheckbox(
+                client,
+                SSHUIMessages.model_ssh_configurator_label_bypass_verification,
+                SSHUIMessages.model_ssh_configurator_label_bypass_verification_description,
+                false,
+                2);
 
             localHostText = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_local_host, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
             localHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_local_host_description);
             localHostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            remoteHostText = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_remote_host, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
-            remoteHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_remote_host_description);
-            remoteHostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             localPortSpinner = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_local_port, String.valueOf(0));
             localPortSpinner.setToolTipText(SSHUIMessages.model_ssh_configurator_label_local_port_description);
             setNumberEditStyles(localPortSpinner);
+
+            remoteHostText = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_remote_host, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+            remoteHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_remote_host_description);
+            remoteHostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             remotePortSpinner = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_remote_port, String.valueOf(0));
             remotePortSpinner.setToolTipText(SSHUIMessages.model_ssh_configurator_label_remote_port_description);
@@ -254,7 +256,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                     ? SSHUIMessages.model_ssh_dialog_credentials_passphrase
                     : SSHUIMessages.model_ssh_dialog_credentials_password,
                 password,
-                type.equals(SSHConstants.AuthType.PUBLIC_KEY),
+                false,
                 false
             );
         } catch (Exception e) {
@@ -296,23 +298,24 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                         DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(authType, configuration.getUserName(),
                             configuration.getPassword());
                         if (dbpAuthInfo != null) {
-                            if (authType.equals(SSHConstants.AuthType.PASSWORD)) {
-                                configuration.setUserName(dbpAuthInfo.getUserName());
-                            }
+                            configuration.setUserName(dbpAuthInfo.getUserName());
                             configuration.setPassword(dbpAuthInfo.getUserPassword());
                         }
                         checkJumpServerConfiguration(tunnel);
 
                     }
                     tunnel.initializeHandler(monitor, configuration, connectionConfig);
-                    monitor.worked(1);
-                    // Get info
-                    tunnelVersions[0] = tunnel.getImplementation().getClientVersion();
-                    tunnelVersions[1] = tunnel.getImplementation().getServerVersion();
+                    try {
+                        monitor.worked(1);
+                        // Get info
+                        tunnelVersions[0] = tunnel.getImplementation().getClientVersion();
+                        tunnelVersions[1] = tunnel.getImplementation().getServerVersion();
 
-                    // Close it
-                    monitor.subTask("Close tunnel");
-                    tunnel.closeTunnel(monitor);
+                    } finally {
+                        // Close it
+                        monitor.subTask("Close tunnel");
+                        tunnel.closeTunnel(monitor);
+                    }
                     monitor.worked(1);
                 } finally {
                     monitor.done();
@@ -332,19 +335,18 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                     );
                     if (tunnel.getRequiredCredentials(configuration, getJumpServerSettingsPrefix())
                         != DBWTunnel.AuthCredentials.NONE) {
-                        DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(authType,
-                            configuration.getStringProperty(getJumpServerSettingsPrefix()
-                                                            + DBConstants.PROP_ID_NAME),
-                            configuration.getSecureProperty(getJumpServerSettingsPrefix()
-                                                            + DBConstants.PROP_FEATURE_PASSWORD)
+                        DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(
+                            authType,
+                            configuration.getStringProperty(getJumpServerSettingsPrefix() + DBConstants.PROP_ID_NAME),
+                            configuration.getSecureProperty(
+                                getJumpServerSettingsPrefix() + DBConstants.PROP_FEATURE_PASSWORD)
                         );
                         if (dbpAuthInfo != null) {
-                            if (authType.equals(SSHConstants.AuthType.PASSWORD)) {
-                                configuration.setProperty(getJumpServerSettingsPrefix() + DBConstants.PROP_ID_NAME,
-                                    dbpAuthInfo.getUserName()
-                                );
-                            }
-                            configuration.setSecureProperty(getJumpServerSettingsPrefix() + DBConstants.PROP_FEATURE_PASSWORD,
+                            configuration.setProperty(getJumpServerSettingsPrefix() + DBConstants.PROP_ID_NAME,
+                                dbpAuthInfo.getUserName()
+                            );
+                            configuration.setSecureProperty(
+                                getJumpServerSettingsPrefix() + DBConstants.PROP_FEATURE_PASSWORD,
                                 dbpAuthInfo.getUserPassword()
                             );
                         }

@@ -33,8 +33,8 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -47,14 +47,12 @@ import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueManager;
 import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.ReferenceValueEditor;
-import org.jkiss.dbeaver.ui.data.managers.ContentValueManager;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * RSV value view panel
  */
-public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
+public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
 
     private static final Log log = Log.getLog(ValueViewerPanel.class);
 
@@ -234,6 +232,11 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
             }
             if (valueEditor != null) {
                 try {
+                    if (referenceValue) {
+                        Label valueLabel = new Label(viewPlaceholder, SWT.NONE);
+                        valueLabel.setText(ResultSetMessages.reference_value_editor_value_label);
+                        valueLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                    }
                     valueEditor.createControl();
                 } catch (Exception e) {
                     log.error(e);

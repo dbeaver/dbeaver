@@ -431,6 +431,20 @@ public class BeanUtils {
         return (T) field.get(object);
     }
 
+    @Nullable
+    public static Object handleObjectMethod(@NotNull Object proxy, @NotNull Method method, Object[] args) {
+        switch (method.getName()) {
+            case "toString":
+                return "Proxy";
+            case "hashCode":
+                return System.identityHashCode(proxy);
+            case "equals":
+                return proxy == args[0];
+            default:
+                return null;
+        }
+    }
+
     @NotNull
     public static <T> List<T> deepCopy(@NotNull List<T> src) {
         final List<T> dst = tryInstantiateOrDefault(src.getClass(), ArrayList::new);

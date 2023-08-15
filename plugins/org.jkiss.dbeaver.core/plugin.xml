@@ -20,9 +20,9 @@
 
 <plugin>
     <!-- UI extensions -->
-    <extension-point id="org.jkiss.dbeaver.workbenchHandler" name="%extension-point.org.jkiss.dbeaver.workbenchHandler.name" schema="schema/org.jkiss.dbeaver.workbenchHandler.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.clearHistoryHandler" name="%extension-point.org.jkiss.dbeaver.clearHistoryHandler.name" schema="schema/org.jkiss.dbeaver.clearHistoryHandler.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.toolBarConfiguration" name="%extension-point.org.jkiss.dbeaver.toolbarConfiguration.name" schema="schema/org.jkiss.dbeaver.toolBarConfiguration.exsd" />
+    <extension-point id="org.jkiss.dbeaver.workbenchHandler" name="Workbench handlers" schema="schema/org.jkiss.dbeaver.workbenchHandler.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.clearHistoryHandler" name="Clear history handlers" schema="schema/org.jkiss.dbeaver.clearHistoryHandler.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.toolBarConfiguration" name="Toolbar configurations" schema="schema/org.jkiss.dbeaver.toolBarConfiguration.exsd" />
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
@@ -1209,9 +1209,11 @@
     </extension>
 
     <extension point="org.eclipse.e4.ui.css.swt.theme">
+        <stylesheet uri="css/e4-dbeaver_prefstyle.css">
+            <themeid refid="org.eclipse.e4.ui.css.theme.e4_default"/>
+        </stylesheet>
         <stylesheet uri="css/e4-dark_dbeaver_prefstyle.css">
-            <themeid refid="org.eclipse.e4.ui.css.theme.e4_dark">
-            </themeid>
+            <themeid refid="org.eclipse.e4.ui.css.theme.e4_dark"/>
         </stylesheet>
     </extension>
 
@@ -1228,6 +1230,7 @@
 
     <extension point="org.jkiss.dbeaver.mavenRepository">
         <repository id="maven-central" name="%maven.respository.central" url="https://repo1.maven.org/maven2/" order="0"/>
+        <repository id="oss.sonatype.org" snapshot="true" name="%maven.repository.sonatype" url="https://oss.sonatype.org/content/repositories/snapshots/" order="0"/>
 
         <!-- Non-HTTPS Maven Central is no longer alive. Hooray. -->
 <!--
@@ -1279,6 +1282,13 @@
                 title="%confirm.driver_download.title"
                 description="%confirm.driver_download.tip"
                 message="%confirm.driver_download.message"
+                toggleMessage="%confirm.general.toggleMessage"
+                group="%confirmation.group.general.actions"/>
+        <confirmation
+                id="disable_network_handler"
+                title="%confirm.disable_network_handler.title"
+                description="%confirm.disable_network_handler.tip"
+                message="%confirm.disable_network_handler.message"
                 toggleMessage="%confirm.general.toggleMessage"
                 group="%confirmation.group.general.actions"/>
     </extension>

@@ -169,7 +169,7 @@ public class DatabaseTasksTree {
             protected String getCellText(Object element) {
                 if (element instanceof DBTTask) {
                     DBTTaskRun lastRun = ((DBTTask) element).getLastRun();
-                    if (lastRun == null) {
+                    if (lastRun == null || !lastRun.isFinished()) {
                         return "N/A";
                     } else {
                         return RuntimeUtils.formatExecutionTime(lastRun.getRunDuration());
@@ -331,6 +331,9 @@ public class DatabaseTasksTree {
     }
 
     void regroupTasks(ExpansionOptions options) {
+        if (taskViewer.isBusy()) {
+            return;
+        }
         taskViewer.getTree().setRedraw(false);
         try {
             List<Object> rootObjects = new ArrayList<>();
@@ -477,7 +480,9 @@ public class DatabaseTasksTree {
                     }
 
                     UIUtils.asyncExec(() -> {
-                        taskViewer.refresh(true);
+                        if (!taskViewer.isBusy()) {
+                            taskViewer.refresh(true);
+                        }
                     });
                     return Status.OK_STATUS;
                 }

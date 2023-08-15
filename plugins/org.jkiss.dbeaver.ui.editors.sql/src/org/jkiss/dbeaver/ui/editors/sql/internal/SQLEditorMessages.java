@@ -53,6 +53,8 @@ public class SQLEditorMessages extends NLS {
     public static String editors_sql_variables;
     public static String editors_sql_variables_tip;
     public static String editors_sql_explain_plan;
+    public static String editors_sql_explain_refresh_plan_action_text;
+    public static String editors_sql_explain_refresh_tree_viewer_plan_toggle_view_text;
     public static String editors_sql_output;
     public static String editors_sql_output_tip;
     public static String editors_sql_warning_many_subtables_title;
@@ -261,6 +263,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_checkbox_max_editor_on_script_exec;
     public static String pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results;
     public static String pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results_tip;
+    public static String pref_page_sql_editor_checkbox_close_included_script_after_execution;
+    public static String pref_page_sql_editor_checkbox_close_included_script_after_execution_tip;
     public static String pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters;
     public static String pref_page_sql_editor_text_anonymous_parameter_mark;
     public static String pref_page_sql_editor_text_named_parameter_prefix;
@@ -349,7 +353,11 @@ public class SQLEditorMessages extends NLS {
     public static String source_viewer_show_partitions_ddl_tip;
 
     public static String sql_editor_action_clear;
+    
     public static String sql_editor_title_tooltip_path;
+    public static String sql_editor_data_receiver_result_name_tooltip_connection;
+    public static String sql_editor_data_receiver_result_name_tooltip_time;
+    public static String sql_editor_data_receiver_result_name_tooltip_query;
     public static String sql_editor_title_tooltip_connecton;
     public static String sql_editor_title_tooltip_type;
     public static String sql_editor_title_tooltip_url;
@@ -377,6 +385,8 @@ public class SQLEditorMessages extends NLS {
 
     public static String sql_editor_panel_output_filter_message;
     public static String sql_editor_panel_output_filter_hint;
+    public static String sql_generator_dialog_title;
+    
 
     static {
         // initialize resource bundle

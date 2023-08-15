@@ -83,7 +83,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
             new Date(),
             System.getProperty(StandardConstants.ENV_USER_NAME),
             GeneralUtils.getProductTitle(),
-            0, null, null);
+            null, null);
         task.getTaskStatsFolder(true);
         Path logFile = Objects.requireNonNull(task.getRunLog(taskRun)); // must exist on local machine
         task.addNewRun(taskRun);

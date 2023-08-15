@@ -316,11 +316,12 @@ class GenericFilterValueEdit {
                 }
                 final DBSEntityAttribute fkAttribute = fkColumn.getAttribute();
                 final DBSEntityConstraint refConstraint = association.getReferencedConstraint();
-                final DBSDictionary enumConstraint = (DBSDictionary) refConstraint.getParentObject();
+                final DBSDictionary enumConstraint = refConstraint == null ? null : (DBSDictionary) refConstraint.getParentObject();
                 if (fkAttribute != null && enumConstraint != null) {
                     return enumConstraint.getDictionaryEnumeration(
                         monitor,
                         refColumn,
+                        filterPattern,
                         filterPattern,
                         null,
                         true,

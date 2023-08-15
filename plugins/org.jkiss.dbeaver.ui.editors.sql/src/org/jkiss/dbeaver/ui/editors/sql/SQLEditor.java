@@ -2288,6 +2288,7 @@ public class SQLEditor extends SQLEditorBase implements
         ExplainPlanViewer planView = getPlanView(null, planner);
 
         if (planView != null) {
+            showResultsPanel(false);
             if (!planView.loadQueryPlan(planner, planView)) {
                 closeActiveTab();
             }
@@ -3644,10 +3645,17 @@ public class SQLEditor extends SQLEditorBase implements
                 String tabName = null;
                 String queryText = CommonUtils.truncateString(statement.getText(), 1000);
                 DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+                
+                String dataSourceContainerName = dataSourceContainer == null ? "N/A" : dataSourceContainer.getName();
+                String processedQueryText = CommonUtils.isEmpty(queryText) ? "N/A" : queryText;
+                
                 String toolTip =
-                    "Connection: " + (dataSourceContainer == null ? "N/A" : dataSourceContainer.getName()) + GeneralUtils.getDefaultLineSeparator() +
-                    "Time: " + new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date()) + GeneralUtils.getDefaultLineSeparator() +
-                    "Query: " + (CommonUtils.isEmpty(queryText) ? "N/A" : queryText);
+                    NLS.bind(SQLEditorMessages.sql_editor_data_receiver_result_name_tooltip_connection, dataSourceContainerName) + 
+                    GeneralUtils.getDefaultLineSeparator() +
+                    NLS.bind(SQLEditorMessages.sql_editor_data_receiver_result_name_tooltip_time, 
+                            new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date())) +
+                    GeneralUtils.getDefaultLineSeparator() +
+                    NLS.bind(SQLEditorMessages.sql_editor_data_receiver_result_name_tooltip_query, processedQueryText);
                 // Special statements (not real statements) have their name in data
                 if (isStatsResult) {
                     tabName = SQLEditorMessages.editors_sql_statistics;
@@ -3882,8 +3890,16 @@ public class SQLEditor extends SQLEditorBase implements
 
         @NotNull
         @Override
-        public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException
-        {
+        public DBCStatistics readData(
+            @NotNull DBCExecutionSource source,
+            @NotNull DBCSession session,
+            @NotNull DBDDataReceiver dataReceiver,
+            DBDDataFilter dataFilter,
+            long firstRow,
+            long maxRows,
+            long flags,
+            int fetchSize
+        ) throws DBCException {
             if (dataContainer != null) {
                 return dataContainer.readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags, fetchSize);
             }

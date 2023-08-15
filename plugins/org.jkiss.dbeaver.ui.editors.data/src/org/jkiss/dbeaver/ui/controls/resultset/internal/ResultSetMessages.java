@@ -31,7 +31,9 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_filter_column_criteria;
     public static String controls_resultset_filter_column_order;
     public static String controls_resultset_filter_group_columns;
+    public static String controls_resultset_filter_group_columns_tooltip_text;
     public static String controls_resultset_filter_group_custom;
+    public static String controls_resultset_filter_group_custom_tooltip_text;
     public static String controls_resultset_filter_label_orderby;
     public static String controls_resultset_filter_label_where;
     public static String controls_resultset_filter_title;
@@ -42,11 +44,37 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_grouping_clear;
     public static String controls_resultset_grouping_default_sorting;
     public static String controls_resultset_grouping_show_duplicates_only;
-
+    
+    public static String controls_resultset_virtual_edit_action;
+    public static String controls_resultset_virtual_add_virtual_foreign_key;
+    public static String controls_resultset_virtual_define_virtual_unique_key;
+    public static String controls_resultset_virtual_clear_virtual_unique_key;
+    public static String controls_resultset_virtual_add_virtual_column;
+    public static String controls_resultset_virtual_foreignkey_page_remove_confirmation_question;
+    public static String controls_resultset_virtual_foreignkey_page_remove_confirmation_title;
+    public static String controls_resultset_virtual_foreignkey_page_remove;
+    public static String controls_resultset_virtual_foreignkey_page_add;
+    public static String controls_resultset_virtual_foreignkey_page_ref_datasource;
+    public static String controls_resultset_virtual_foreignkey_page_columns;
+    public static String controls_resultset_virtual_foreignkey_page_ref_table;
+    public static String controls_resultset_virtual_foreignkey_page_text;
+    public static String controls_resultset_virtual_columns_page_text;
+    public static String controls_resultset_virtual_dictionary_page_text;
+    public static String controls_resultset_virtual_keys_info_label;
+    public static String controls_resultset_viewer_frequent_refresh_hint;
+    public static String controls_resultset_viewer_switch_autocommit_hint;
+    public static String controls_resultset_viewer_action_show_selected_row_count;
+    public static String controls_resultset_viewer_action_show_selected_column_count;
+    public static String controls_resultset_viewer_action_show_selected_cell_count;
+    public static String controls_resultset_viewer_action_open_value_editor_column_readonly;
     public static String controls_resultset_viewer_action_edit;
     public static String controls_resultset_viewer_action_order_filter;
     public static String controls_resultset_viewer_action_order;
     public static String controls_resultset_viewer_action_filter;
+    public static String controls_resultset_viewer_action_reset_all_colors;
+    public static String controls_resultset_viewer_action_reset_all_transformers;
+    public static String controls_resultset_viewer_action_reset_all_pins;
+    public static String controls_resultset_viewer_action_reset_all_settings;
     public static String controls_resultset_viewer_action_filter_clipboard;
     public static String controls_resultset_viewer_action_filter_value;
     public static String controls_resultset_viewer_action_filter_input;
@@ -104,6 +132,7 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_edit_save;
     public static String controls_resultset_edit_cancel;
     public static String controls_resultset_edit_script;
+    public static String controls_resultset_edit_logical_structure;
     public static String controls_resultset_config_panels;
     public static String controls_resultset_config_record;
 
@@ -433,6 +462,13 @@ public class ResultSetMessages extends NLS {
     public static String meta_data_panel_action_copy_column_text;
     public static String result_set_viewer_selection_stat_tooltip;
 
+
+    public static String reference_value_editor_value_label;
+    public static String reference_value_editor_current_page_value;
+    public static String reference_value_editor_current_pagination_value;
+    public static String reference_value_editor_define_description_value;
+    public static String reference_value_editor_search_hint_value;
+    
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, ResultSetMessages.class);

@@ -72,7 +72,7 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
-    public void showNotification(@NotNull String title, @Nullable String message, boolean error) {
+    public void showNotification(@NotNull String title, @Nullable String message, boolean error, @Nullable Runnable feedback) {
         showMessageBox(title, message, error);
     }
 

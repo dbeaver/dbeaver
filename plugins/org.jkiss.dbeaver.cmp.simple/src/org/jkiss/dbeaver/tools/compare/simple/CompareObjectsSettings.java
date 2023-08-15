@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.tools.compare.simple;
 
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.preferences.DBPSettingsSection;
+import org.jkiss.dbeaver.tools.compare.simple.messages.CompareMessages;
 
 import java.util.List;
 
@@ -27,8 +28,8 @@ import java.util.List;
 public class CompareObjectsSettings {
 
     public enum OutputType {
-        BROWSER("Open in browser"),
-        FILE("Save to file");
+        BROWSER(CompareMessages.open_in_browser),
+        FILE(CompareMessages.save_to_file);
         private final String title;
 
         private OutputType(String title) {

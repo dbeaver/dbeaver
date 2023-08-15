@@ -53,7 +53,6 @@ import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
-import org.jkiss.dbeaver.ui.app.standalone.rpc.InstanceClient;
 import org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -118,7 +117,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private boolean headlessMode = false;
     private boolean ignoreRecentWorkspaces = false;
 
-    private IInstanceController instanceServer;
+    private DBeaverInstanceServer instanceServer;
 
     private OutputStream debugWriter;
     private PrintStream oldSystemOut;
@@ -226,6 +225,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         final Runtime runtime = Runtime.getRuntime();
 
+        initializeConfiguration();
+
         // Debug logger
         initDebugWriter();
 
@@ -254,7 +255,11 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         initializeApplication();
 
         // Run instance server
-        instanceServer = DBeaverInstanceServer.startInstanceServer(commandLine, createInstanceController());
+        try {
+            instanceServer = DBeaverInstanceServer.createServer();
+        } catch (Exception e) {
+            log.error("Can't start instance server", e);
+        }
 
         if (RuntimeUtils.isWindows() && isStandalone()) {
             SWTBrowserRegistry.overrideBrowser();
@@ -477,10 +482,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     }
 
-    protected IInstanceController createInstanceController() {
-        return new DBeaverInstanceServer();
-    }
-
     private void resetUISettings(Location instanceLoc) {
         try {
             File instanceDir = new File(instanceLoc.getURL().toURI());
@@ -513,6 +514,11 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             }
         }
         folder.deleteOnExit();
+    }
+
+    // Called
+    protected void initializeConfiguration() {
+
     }
 
     /**
@@ -654,10 +660,11 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private void shutdown() {
         log.debug("DBeaver is stopping"); //$NON-NLS-1$
         try {
-            instanceServer = null;
-            RuntimeUtils.runTask(monitor -> {
-                DBeaverInstanceServer.stopInstanceServer();
-            }, "Stop RMI", 1000);
+            DBeaverInstanceServer server = instanceServer;
+            if (server != null) {
+                instanceServer = null;
+                RuntimeUtils.runTask(monitor -> server.stopInstanceServer(), "Stop instance server", 1000);
+            }
         } catch (Throwable e) {
             log.error(e);
         } finally {
@@ -701,18 +708,14 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
     }
 
+    @Nullable
     public IInstanceController getInstanceServer() {
         return instanceServer;
     }
 
+    @Nullable
     public IInstanceController createInstanceClient() {
-        return InstanceClient.createClient(getDefaultInstanceLocation());
-    }
-
-    private static File getDefaultWorkspaceLocation(String path) {
-        return new File(
-            System.getProperty(StandardConstants.ENV_USER_HOME),
-            path);
+        return DBeaverInstanceServer.createClient(getDefaultInstanceLocation());
     }
 
     @Override

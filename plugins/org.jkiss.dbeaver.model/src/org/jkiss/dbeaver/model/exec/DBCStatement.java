@@ -21,13 +21,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DPIObject;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 
 /**
  * DBCStatement
  */
-public interface DBCStatement extends DBPObject, DBRBlockingObject, DBPCloseableObject
-{
+@DPIObject
+public interface DBCStatement extends DBPObject, DBRBlockingObject, DBPCloseableObject {
 
     /**
      * Statement's context

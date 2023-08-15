@@ -68,4 +68,18 @@ public class DBNBookmarkFolder extends DBNResource {
             }
         }
     }
+
+    @Override
+    public boolean supportsPaste(@NotNull DBNNode other) {
+        return other instanceof DBNDatabaseNode;
+    }
+
+    @Override
+    public void pasteNodes(@NotNull Collection<DBNNode> nodes) throws DBException {
+        for (DBNNode node : nodes) {
+            if (node instanceof DBNDatabaseNode) {
+                BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node, node.getNodeName(), (IFolder) getResource());
+            }
+        }
+    }
 }

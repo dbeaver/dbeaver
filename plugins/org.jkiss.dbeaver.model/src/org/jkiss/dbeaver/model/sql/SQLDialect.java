@@ -18,16 +18,12 @@ package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPIdentifierCase;
-import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.impl.sql.SQLDialectQueryGenerator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.parser.EmptyTokenPredicateSet;
 import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicateSet;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -41,6 +37,8 @@ import java.util.List;
 /**
  * SQL dialect
  */
+@DPIObject
+@DPIElement
 public interface SQLDialect {
 
     int USAGE_NONE = 0;
@@ -266,9 +264,24 @@ public interface SQLDialect {
 
     boolean supportsAliasInUpdate();
 
-    default boolean supportsAliasInConditions() {
-        return true;
-    }
+    /**
+     * Column name to list all table columns. Usually asterisk (*).
+     */
+    @Nullable
+    String getAllAttributesAlias();
+
+    /**
+     * Column name to use in grouping queries like COUNT. Usually asterisk (*).
+     */
+    @Nullable
+    String getDefaultGroupAttribute();
+
+    boolean supportsAliasInConditions();
+
+    /**
+     * Checks whether dialect supports alias for queries with HAVING syntax.
+     */
+    boolean supportsAliasInHaving();
 
     boolean supportsTableDropCascade();
 
@@ -472,9 +485,7 @@ public interface SQLDialect {
      * @return a set of token predicates
      */
     @NotNull
-    default SQLTokenPredicateSet getSkipTokenPredicates() {
-        return EmptyTokenPredicateSet.INSTANCE;
-    }
+    SQLTokenPredicateSet getSkipTokenPredicates();
     
     /**
      * @return a set of SQLBlockCompletions with information about blocks for autoedit

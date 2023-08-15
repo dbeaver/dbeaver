@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -59,7 +58,7 @@ import java.util.Properties;
 /**
  * GenericDataSource
  */
-public class GenericDataSource extends JDBCDataSource implements DBPTermProvider, IAdaptable, GenericStructContainer {
+public class GenericDataSource extends JDBCDataSource implements DBPTermProvider, DBPAdaptable, GenericStructContainer {
     private static final Log log = Log.getLog(GenericDataSource.class);
 
     private final TableTypeCache tableTypeCache;
@@ -106,6 +105,18 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         nativeFormatTime = makeNativeFormat(GenericConstants.PARAM_NATIVE_FORMAT_TIME);
         nativeFormatDate = makeNativeFormat(GenericConstants.PARAM_NATIVE_FORMAT_DATE);
 
+        final Object supportsStructCacheParam = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_STRUCT_CACHE);
+        if (supportsStructCacheParam != null) {
+            this.supportsStructCache = CommonUtils.toBoolean(supportsStructCacheParam);
+        }
+
+        if (dialect instanceof JDBCSQLDialect) {
+            final Object supportsSubqueries = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_SUBQUERIES);
+            if (supportsSubqueries != null) {
+                ((JDBCSQLDialect) dialect).setSupportsSubqueries(CommonUtils.toBoolean(supportsSubqueries));
+            }
+        }
+
         initializeRemoteInstance(monitor);
     }
 
@@ -119,6 +130,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         this.tableTypeCache = new TableTypeCache();
     }
 
+    @DPIContainer
     @NotNull
     @Override
     public GenericDataSource getDataSource() {
@@ -226,47 +238,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
     @Override
     protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
-        final GenericDataSourceInfo info = new GenericDataSourceInfo(getContainer().getDriver(), metaData);
-        final JDBCSQLDialect dialect = (JDBCSQLDialect) getSQLDialect();
-
-        final Object supportsReferences = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_REFERENCES);
-        if (supportsReferences != null) {
-            info.setSupportsReferences(CommonUtils.toBoolean(supportsReferences));
-        }
-
-        final Object supportsIndexes = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_INDEXES);
-        if (supportsIndexes != null) {
-            info.setSupportsIndexes(CommonUtils.toBoolean(supportsIndexes));
-        }
-
-        final Object supportsViews = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_VIEWS);
-        if (supportsViews != null) {
-            info.setSupportsViews(CommonUtils.toBoolean(supportsViews));
-        }
-
-        final Object supportsStoredCode = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_STORED_CODE);
-        if (supportsStoredCode != null) {
-            info.setSupportsStoredCode(CommonUtils.toBoolean(supportsStoredCode));
-        }
-
-        final Object supportsSubqueries = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_SUBQUERIES);
-        if (supportsSubqueries != null) {
-            dialect.setSupportsSubqueries(CommonUtils.toBoolean(supportsSubqueries));
-        }
-
-        final Object supportsStructCacheParam = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_STRUCT_CACHE);
-        if (supportsStructCacheParam != null) {
-            this.supportsStructCache = CommonUtils.toBoolean(supportsStructCacheParam);
-        }
-        final Object supportsCatalogSelection = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_CATALOG_SELECTION);
-        if (supportsCatalogSelection != null) {
-            info.supportsCatalogSelection = CommonUtils.toBoolean(supportsCatalogSelection);
-        }
-        final Object supportSchemaSelection = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_SCHEMA_SELECTION);
-        if (supportSchemaSelection != null) {
-            info.supportsSchemaSelection = CommonUtils.toBoolean(supportSchemaSelection);
-        }
-        return info;
+        return new GenericDataSourceInfo(container.getDriver(), metaData);
     }
 
     @Override

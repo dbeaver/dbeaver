@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model;
 /**
  * DBPTransactionIsolation
  */
+@DPIObject
 public interface DBPTransactionIsolation
 {
     int getCode();

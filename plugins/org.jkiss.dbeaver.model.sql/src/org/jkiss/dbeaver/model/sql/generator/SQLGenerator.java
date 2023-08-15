@@ -212,7 +212,7 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
         } catch (DBException e) {
             throw new InvocationTargetException(e);
         }
-        result = sql.toString();
+        result = sql.toString().trim();
     }
 
     protected abstract void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, OBJECT object)

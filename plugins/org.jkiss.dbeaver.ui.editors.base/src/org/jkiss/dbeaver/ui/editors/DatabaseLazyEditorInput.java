@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.code.NotNull;
@@ -48,6 +49,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConnectionLostDialog;
+import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -307,7 +309,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
             });
             DBNNode node = editorNodeResult[0];
             if (node == null) {
-                throw new DBException("Navigator node '" + nodePath + "' not found");
+                throw new DBException(NLS.bind(EditorsMessages.lazy_editor_input_cant_find_node, nodePath));
             }
             if (node instanceof DBNDatabaseNode) {
                 DBSObject object = ((DBNDatabaseNode) node).getObject();

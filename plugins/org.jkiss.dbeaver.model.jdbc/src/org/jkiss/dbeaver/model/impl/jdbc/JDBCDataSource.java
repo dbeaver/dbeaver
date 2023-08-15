@@ -119,12 +119,6 @@ public abstract class JDBCDataSource extends AbstractDataSource
         this.jdbcFactory = createJdbcFactory();
     }
 
-    @NotNull
-    @Override
-    public JDBCDataSource getDataSource() {
-        return this;
-    }
-
     protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
         this.defaultRemoteInstance = new JDBCRemoteInstance(monitor, this, true);
     }
@@ -150,7 +144,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
                     final Properties substitutedProperties = substitution.getConnectionProperties(monitor, container, connectionInfo);
                     final String substitutedUrl = substitution.getConnectionURL(container, connectionInfo);
 
-                    if (substitutedProperties != null&& connectProps != null) {
+                    if (substitutedProperties != null && connectProps != null) {
                         connectProps.putAll(substitutedProperties);
                     }
 
@@ -204,6 +198,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 try {
                     driverInstance = getDriverInstance(monitor);
                 } catch (DBException e) {
+                    e.printStackTrace();
                     throw new DBCConnectException("Can't create driver instance", e, this);
                 }
             } else {
@@ -604,6 +599,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     @NotNull
     public static DBPDataKind getDataKind(@NotNull String typeName, int valueType)
     {
+        // HERE!
         switch (getValueTypeByTypeName(typeName, valueType)) {
             case Types.BOOLEAN:
                 return DBPDataKind.BOOLEAN;

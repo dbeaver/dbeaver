@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DPIContainer;
+import org.jkiss.dbeaver.model.DPIElement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.LinkedHashMap;
@@ -38,29 +40,34 @@ public abstract class AbstractDataSource implements DBPDataSource, DBSObject {
         this.container = container;
     }
 
+    @DPIContainer(root = true)
     @NotNull
     @Override
     public DBPDataSourceContainer getContainer() {
         return container;
     }
 
+    @DPIContainer
     @NotNull
     @Override
     public DBPDataSource getDataSource() {
         return this;
     }
 
+    @DPIContainer(root = true)
     @Override
     public DBSObject getParentObject() {
         return container;
     }
 
+    @DPIElement
     @NotNull
     @Override
     public String getName() {
         return container.getName();
     }
 
+    @DPIElement
     @Nullable
     @Override
     public String getDescription() {

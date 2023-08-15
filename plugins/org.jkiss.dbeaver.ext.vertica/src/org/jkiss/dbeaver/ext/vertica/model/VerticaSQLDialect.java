@@ -36,35 +36,40 @@ public class VerticaSQLDialect extends GenericSQLDialect {
             {SQLConstants.KEYWORD_CASE, SQLConstants.BLOCK_END},
     };
 
+    private static String[] EXEC_KEYWORDS = {"CALL"};
+
     private static String[] VERTICA_KEYWORDS = new String[]{
-            // SELECT * FROM keywords WHERE reserved = 'R'
-            "BIT",
-            "CACHE",
-            "COMMENT",
-            "CORRELATION",
-            "ENCODED",
-            "FLEX",
-            "ILIKE",
-            "ILIKEB",
-            "INTERVALYM",
-            "ISNULL",
-            "KSAFE",
-            "LIKEB",
-            "MINUS",
-            "MONEY",
-            "NCHAR",
-            "NOTNULL",
-            "NULLSEQUAL",
-            "OFFSET",
-            "PINNED",
-            "PROJECTION",
-            "SMALLDATETIME",
-            "TEXT",
-            "TIMESERIES",
-            "TIMEZONE",
-            "TINYINT",
-            "UUID",
-            "VARCHAR2"
+        // SELECT * FROM keywords WHERE reserved = 'R'
+        "BIT",
+        "CACHE",
+        "COMMENT",
+        "CORRELATION",
+        "ENCODED",
+        "FLEX",
+        "ILIKE",
+        "ILIKEB",
+        "INTERVALYM",
+        "ISNULL",
+        "KSAFE",
+        "LIKEB",
+        "MINUS",
+        "MONEY",
+        "NCHAR",
+        "NOTNULL",
+        "NULLSEQUAL",
+        "OFFSET",
+        "PINNED",
+        "PROJECTION",
+        "SMALLDATETIME",
+        "TEXT",
+        "TIMESERIES",
+        "TIMEZONE",
+        "TINYINT",
+        "UUID",
+        "VARCHAR2",
+        "EXPLAIN",
+        "VERBOSE",
+        "JSON"
     };
 
     private static String[] VERTICA_FUNCTIONS = new String[]{
@@ -83,6 +88,12 @@ public class VerticaSQLDialect extends GenericSQLDialect {
         super.initDriverSettings(session, dataSource, metaData);
         addSQLKeywords(Arrays.asList(VERTICA_KEYWORDS));
         addFunctions(Arrays.asList(VERTICA_FUNCTIONS));
+    }
+
+    @NotNull
+    @Override
+    public String[] getExecuteKeywords() {
+        return EXEC_KEYWORDS;
     }
 
     @Override

@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -450,8 +451,21 @@ public class DBExecUtils {
     }
 
     public static void recoverSmartCommit(DBCExecutionContext executionContext) {
-        DBPPreferenceStore preferenceStore = executionContext.getDataSource().getContainer().getPreferenceStore();
-        if (preferenceStore.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT) && preferenceStore.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER)) {
+        DBPDataSourceContainer container = executionContext.getDataSource().getContainer();
+        DBPPreferenceStore preferenceStore = container.getPreferenceStore();
+        boolean recoverSmartCommit;
+        if (preferenceStore.contains(ModelPreferences.TRANSACTIONS_SMART_COMMIT)
+            && preferenceStore.contains(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER)
+        ) {
+            // First check specific datasource settings
+            recoverSmartCommit = preferenceStore.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT)
+                && preferenceStore.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER);
+        } else {
+            // Or use settings from the connection type
+            DBPConnectionType connectionType = container.getConnectionConfiguration().getConnectionType();
+            recoverSmartCommit = connectionType.isSmartCommit() && connectionType.isSmartCommitRecover();
+        }
+        if (recoverSmartCommit) {
             DBCTransactionManager transactionManager = DBUtils.getTransactionManager(executionContext);
             if (transactionManager != null) {
                 new AbstractJob("Recover smart commit mode") {

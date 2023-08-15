@@ -16,10 +16,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
@@ -49,9 +46,8 @@ public class DBeaverNotificationPopup extends AbstractWorkbenchNotificationPopup
         int count = 0;
         for (final AbstractNotification notification : notifications) {
             Composite notificationComposite = new Composite(parent, SWT.NO_FOCUS);
-            GridLayout gridLayout = new GridLayout(2, false);
-            GridDataFactory.fillDefaults().grab(true, false).align(SWT.FILL, SWT.TOP).applyTo(notificationComposite);
-            notificationComposite.setLayout(gridLayout);
+            GridDataFactory.fillDefaults().grab(true, true).align(SWT.FILL, SWT.FILL).applyTo(notificationComposite);
+            notificationComposite.setLayout(new GridLayout(2, false));
             notificationComposite.setBackground(parent.getBackground());
 
             if (count < NUM_NOTIFICATIONS_TO_DISPLAY) {
@@ -61,8 +57,7 @@ public class DBeaverNotificationPopup extends AbstractWorkbenchNotificationPopup
                     notificationLabelIcon.setImage(((AbstractUiNotification) notification).getNotificationKindImage());
                 }
 
-                final ScalingHyperlink itemLink = new ScalingHyperlink(notificationComposite, SWT.BEGINNING
-                    | SWT.NO_FOCUS);
+                final ScalingHyperlink itemLink = new ScalingHyperlink(notificationComposite, SWT.BEGINNING | SWT.NO_FOCUS);
                 GridDataFactory.fillDefaults().grab(true, false).align(SWT.FILL, SWT.TOP).applyTo(itemLink);
                 itemLink.setForeground(HYPERLINK_WIDGET_COLOR);
                 itemLink.registerMouseTrackListener();
@@ -97,13 +92,13 @@ public class DBeaverNotificationPopup extends AbstractWorkbenchNotificationPopup
                     descriptionText = notification.getDescription();
                 }
                 if (descriptionText != null && !descriptionText.trim().equals("")) { //$NON-NLS-1$
-                    Label descriptionLabel = new Label(notificationComposite, SWT.NO_FOCUS);
+                    Text descriptionLabel = new Text(notificationComposite, SWT.NO_FOCUS | SWT.WRAP | SWT.MULTI);
                     descriptionLabel.setText(LegacyActionTools.escapeMnemonics(descriptionText));
                     descriptionLabel.setBackground(parent.getBackground());
                     GridDataFactory.fillDefaults()
                         .span(2, SWT.DEFAULT)
-                        .grab(true, false)
-                        .align(SWT.FILL, SWT.TOP)
+                        .grab(true, true)
+                        .align(SWT.FILL, SWT.FILL)
                         .applyTo(descriptionLabel);
                 }
             } else {
@@ -118,8 +113,6 @@ public class DBeaverNotificationPopup extends AbstractWorkbenchNotificationPopup
                 remainingLink.addHyperlinkListener(new HyperlinkAdapter() {
                     @Override
                     public void linkActivated(HyperlinkEvent e) {
-                        // FIXME
-                        //						TasksUiUtil.openTasksViewInActivePerspective().setFocus();
                         IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
                         if (window != null) {
                             Shell windowShell = window.getShell();
