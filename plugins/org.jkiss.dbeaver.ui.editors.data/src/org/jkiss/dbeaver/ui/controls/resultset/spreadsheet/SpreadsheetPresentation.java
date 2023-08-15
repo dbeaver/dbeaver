@@ -2490,7 +2490,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
             }
 
-            if (!controller.isRecordMode() && showOddRows) {
+            if (!controller.isRecordMode() && showOddRows && !UIStyles.isHighContrastTheme()) {
                 // Determine odd/even row
                 if (rowBatchSize < 1) {
                     rowBatchSize = 1;

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -35,7 +36,7 @@ public class UIStyles {
 
     private static final Log log = Log.getLog(UIStyles.class);
 
-    private static final String THEME_HIGH_CONTRAST_ID = "org.jkiss.dbeaver.dbeaver.ui.themes.highcontrast";
+    private static final String THEME_HIGH_CONTRAST_ID = "org.eclipse.e4.ui.css.theme.high-contrast";
 
     static IPreferenceStore EDITORS_PREFERENCE_STORE;
 
@@ -51,7 +52,7 @@ public class UIStyles {
     }
 
     public static boolean isHighContrastTheme() {
-        return UIUtils.getActiveWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getId().equals(THEME_HIGH_CONTRAST_ID);
+        return PlatformUI.getWorkbench().getService(IThemeEngine.class).getActiveTheme().getId().equals(THEME_HIGH_CONTRAST_ID);
     }
 
     public static Color getDefaultWidgetBackground() {
