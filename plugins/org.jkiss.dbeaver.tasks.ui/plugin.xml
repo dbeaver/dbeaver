@@ -15,8 +15,8 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.notifications">
-        <notification id="task.execute.success" title="Task execution success"/>
-        <notification id="task.execute.failure" title="Task execution failure"/>
+        <notification id="task.execute.success" name="Task execution success" isSoundEnabled="true"/>
+        <notification id="task.execute.failure" name="Task execution failure" isSoundEnabled="true"/>
     </extension>
 
 </plugin>

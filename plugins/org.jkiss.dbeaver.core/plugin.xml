@@ -1301,12 +1301,12 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.notifications">
-        <notification id="commit" title="Transaction commit"/>
-        <notification id="rollback" title="Transaction rollback"/>
-        <notification id="rollback.idle" title="Transaction rollback after long idle period"/>
-        <notification id="reconnect.success" title="Datasource invalidation success"/>
-        <notification id="reconnect.failure" title="Datasource invalidation failure"/>
-        <notification id="agent.notify" title="Agent notification"/>
+        <notification id="commit" name="Transaction commit"/>
+        <notification id="rollback" name="Transaction rollback"/>
+        <notification id="rollback.idle" name="Transaction rollback after long idle period"/>
+        <notification id="reconnect.success" name="Datasource invalidation success"/>
+        <notification id="reconnect.failure" name="Datasource invalidation failure"/>
+        <notification id="agent.notify" name="Long-time operations" description="This is a notification for long-time operations.&#10;It will be shown for all operations that have exceeded the specified timeout." isSoundEnabled="true"/>
     </extension>
 
 </plugin>

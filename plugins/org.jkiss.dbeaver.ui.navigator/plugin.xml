@@ -1019,7 +1019,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.notifications">
-        <notification id="navigator.projects.refresh" title="Projects synchronized with the file system"/>
+        <notification id="navigator.projects.refresh" name="Projects synchronized with the file system"/>
     </extension>
 
     <extension point="org.eclipse.ui.commands">

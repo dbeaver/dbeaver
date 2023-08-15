@@ -16,24 +16,25 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.EditingSupport;
-import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomCheckboxCellEditor;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.notifications.NotificationSettings;
 import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 import org.jkiss.dbeaver.ui.registry.NotificationDescriptor;
@@ -47,8 +48,8 @@ import java.util.Map;
 
 public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenchPreferencePage {
     private static final String SOUND_BEEP_LABEL = "System beep";
-    private static final String SOUND_FILE_LABEL = "<Choose file>";
-    private static final String SOUND_NONE_LABEL = "<None>";
+    private static final String SOUND_NONE_LABEL = "No sound";
+    private static final String SOUND_FILE_LABEL = "Choose file...";
 
     private final Map<NotificationDescriptor, NotificationSettings> settings = new HashMap<>();
 
@@ -57,6 +58,8 @@ public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenc
     private Spinner hideDelaySpinner;
     private Button enableSoundsCheckbox;
     private Spinner soundVolumeSpinner;
+    private Button longOperationsCheck;
+    private Spinner longOperationsTimeout;
 
     @Override
     public void init(IWorkbench workbench) {
@@ -66,10 +69,10 @@ public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenc
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        final DBPPreferenceStore preferences = ModelPreferences.getPreferences();
         final Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         {
+            final DBPPreferenceStore preferences = ModelPreferences.getPreferences();
             final Group group = UIUtils.createControlGroup(
                 composite,
                 CoreMessages.pref_page_notifications_group_global,
@@ -105,11 +108,25 @@ public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenc
                 CoreMessages.pref_page_notifications_sound_volume_label,
                 preferences.getInt(ModelPreferences.NOTIFICATIONS_SOUND_VOLUME), 1, 100
             );
+
+            longOperationsCheck = UIUtils.createCheckbox(
+                group,
+                CoreMessages.pref_page_ui_general_label_enable_long_operations,
+                CoreMessages.pref_page_ui_general_label_enable_long_operations_tip,
+                preferences.getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY),
+                2
+            );
+
+            longOperationsTimeout = UIUtils.createLabelSpinner(
+                group,
+                CoreMessages.pref_page_ui_general_label_long_operation_timeout + UIMessages.label_sec,
+                preferences.getInt(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT), 0, Integer.MAX_VALUE
+            );
         }
 
         {
             viewer = new TableViewer(composite, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
-            viewer.getTable().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+            viewer.getTable().setLayoutData(GridDataFactory.fillDefaults().grab(true, true).hint(600, SWT.DEFAULT).create());
             viewer.getTable().setHeaderVisible(true);
 
             final ViewerColumnController<Object, Object> controller = new ViewerColumnController<>("PrefPageNotifications", viewer);
@@ -119,7 +136,12 @@ public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenc
                 new ColumnLabelProvider() {
                     @Override
                     public String getText(Object element) {
-                        return ((NotificationDescriptor) element).getTitle();
+                        return ((NotificationDescriptor) element).getName();
+                    }
+
+                    @Override
+                    public String getToolTipText(Object element) {
+                        return ((NotificationDescriptor) element).getDescription();
                     }
                 }
             );
@@ -141,8 +163,8 @@ public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenc
                     protected CellEditor getCellEditor(Object element) {
                         final List<String> choices = new ArrayList<>();
                         choices.add(SOUND_BEEP_LABEL);
-                        choices.add(SOUND_FILE_LABEL);
                         choices.add(SOUND_NONE_LABEL);
+                        choices.add(SOUND_FILE_LABEL);
 
                         return new CustomComboBoxCellEditor(
                             viewer,
@@ -233,6 +255,8 @@ public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenc
             viewer.setContentProvider(new ListContentProvider());
             viewer.setInput(NotificationRegistry.getInstance().getNotifications());
             UIUtils.asyncExec(() -> UIUtils.packColumns(viewer.getTable(), true));
+
+            ColumnViewerToolTipSupport.enableFor(viewer);
         }
 
         return composite;
@@ -244,12 +268,14 @@ public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenc
             NotificationUtils.setNotificationSettings(entry.getKey().getId(), entry.getValue());
         }
 
-        final DBPPreferenceStore preferences = ModelPreferences.getPreferences();
+        final DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
 
         preferences.setValue(ModelPreferences.NOTIFICATIONS_ENABLED, enablePopupsCheckbox.getSelection());
         preferences.setValue(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT, hideDelaySpinner.getSelection());
         preferences.setValue(ModelPreferences.NOTIFICATIONS_SOUND_ENABLED, enableSoundsCheckbox.getSelection());
         preferences.setValue(ModelPreferences.NOTIFICATIONS_SOUND_VOLUME, soundVolumeSpinner.getSelection());
+        preferences.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY, longOperationsCheck.getSelection());
+        preferences.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, longOperationsTimeout.getSelection());
 
         return super.performOk();
     }
@@ -257,9 +283,10 @@ public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenc
     @Override
     protected void performDefaults() {
         for (Map.Entry<NotificationDescriptor, NotificationSettings> entry : settings.entrySet()) {
+            final NotificationDescriptor descriptor = entry.getKey();
             final NotificationSettings settings = entry.getValue();
             settings.setShowPopup(true);
-            settings.setPlaySound(true);
+            settings.setPlaySound(descriptor.isSoundEnabled());
             settings.setSoundFile(null);
         }
 
@@ -269,6 +296,8 @@ public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenc
         hideDelaySpinner.setSelection(preferences.getDefaultInt(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT));
         enableSoundsCheckbox.setSelection(preferences.getDefaultBoolean(ModelPreferences.NOTIFICATIONS_SOUND_ENABLED));
         soundVolumeSpinner.setSelection(preferences.getDefaultInt(ModelPreferences.NOTIFICATIONS_SOUND_VOLUME));
+        longOperationsCheck.setSelection(preferences.getDefaultBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY));
+        longOperationsTimeout.setSelection(preferences.getDefaultInt(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT));
 
         viewer.refresh();
 

@@ -104,7 +104,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.notifications">
-        <notification id="git.project.added" title="Project was added to Git"/>
+        <notification id="git.project.added" name="Project was added to Git"/>
     </extension>
 
 </plugin>

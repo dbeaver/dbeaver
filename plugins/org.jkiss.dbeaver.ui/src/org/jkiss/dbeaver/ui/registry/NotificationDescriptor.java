@@ -18,21 +18,25 @@ package org.jkiss.dbeaver.ui.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.utils.CommonUtils;
 
 public class NotificationDescriptor extends AbstractDescriptor {
     public static final String ELEMENT_ID = "notification";
 
     private final String id;
-    private final String title;
-    private final String message;
+    private final String name;
+    private final String description;
+    private final boolean soundEnabled;
 
     NotificationDescriptor(@NotNull IConfigurationElement config) {
         super(config);
 
         this.id = config.getAttribute("id");
-        this.title = config.getAttribute("title");
-        this.message = config.getAttribute("message");
+        this.name = config.getAttribute("name");
+        this.description = config.getAttribute("description");
+        this.soundEnabled = CommonUtils.getBoolean(config.getAttribute("isSoundEnabled"));
     }
 
     @NotNull
@@ -41,12 +45,16 @@ public class NotificationDescriptor extends AbstractDescriptor {
     }
 
     @NotNull
-    public String getTitle() {
-        return title;
+    public String getName() {
+        return name;
     }
 
-    @NotNull
-    public String getMessage() {
-        return message;
+    @Nullable
+    public String getDescription() {
+        return description;
+    }
+
+    public boolean isSoundEnabled() {
+        return soundEnabled;
     }
 }

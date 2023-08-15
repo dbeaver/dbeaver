@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -53,10 +52,5 @@ public class NotificationRegistry {
     @NotNull
     public Collection<NotificationDescriptor> getNotifications() {
         return notifications.values();
-    }
-
-    @Nullable
-    public NotificationDescriptor getNotification(@NotNull String id) {
-        return notifications.get(id);
     }
 }
