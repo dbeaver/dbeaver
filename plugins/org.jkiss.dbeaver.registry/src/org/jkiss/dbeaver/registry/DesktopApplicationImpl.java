@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.equinox.internal.security.auth.AuthPlugin;
+import org.eclipse.equinox.internal.security.storage.SecurePreferencesMapper;
 import org.eclipse.equinox.internal.security.storage.StorageUtils;
 import org.eclipse.osgi.internal.framework.EquinoxConfiguration;
 import org.eclipse.osgi.service.environment.EnvironmentInfo;
@@ -80,6 +81,7 @@ public abstract class DesktopApplicationImpl extends BaseApplicationImpl {
                 updatedArgs[updatedArgs.length - 2] = ECLIPSE_KEYRING;
                 updatedArgs[updatedArgs.length - 1] = STORAGE_PATH.toString();
                 ((EquinoxConfiguration) environmentInfoService).setAppArgs(updatedArgs);
+                SecurePreferencesMapper.clearDefault();
             }
         }
     }
