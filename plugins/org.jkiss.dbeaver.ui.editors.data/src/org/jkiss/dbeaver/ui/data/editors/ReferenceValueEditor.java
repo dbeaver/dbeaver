@@ -608,6 +608,8 @@ public class ReferenceValueEditor {
         private SelectorLoaderService(ExceptableFunction<DBSDictionaryAccessor, List<DBDLabelValuePair>, DBException> action) {
             super(ResultSetMessages.dialog_value_view_job_selector_name + valueController.getValueName() + " possible values");
             this.action = action;
+            actionGoBackward.setEnabled(false);
+            actionGoForward.setEnabled(false);
         }
 
         @Override
