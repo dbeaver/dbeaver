@@ -20,11 +20,9 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -40,12 +38,6 @@ public class NavigatorHandlerProjectRefresh extends NavigatorHandlerObjectBase {
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 }
-                DBeaverNotifications.showNotification(
-                    "navigator.projects.refresh",
-                    "Projects refresh",
-                    "Project list was synchronized with local file system",
-                    DBPMessageType.INFORMATION,
-                    null);
             });
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError("Refresh workspace", "Can't refresh workspace", e.getTargetException());
