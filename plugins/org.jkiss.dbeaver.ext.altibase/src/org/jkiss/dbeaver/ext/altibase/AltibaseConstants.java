@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.ext.altibase;
 
+import java.sql.Types;
+
 import org.jkiss.utils.StandardConstants;
 
 public class AltibaseConstants {
@@ -32,27 +34,27 @@ public class AltibaseConstants {
     public static final int PACKAGE_TYPE_SPEC = 6;
     public static final int PACKAGE_TYPE_BODY = 7;
 
-    public static final int TYPE_BIGINT = -5;
-    public static final int TYPE_BINARY = -2;
-    public static final int TYPE_BIT = -7;
+    public static final int TYPE_BIGINT = Types.BIGINT;
+    public static final int TYPE_BINARY = Types.BINARY;
+    public static final int TYPE_BIT = Types.BIT;
     public static final int TYPE_BLOB = 30;
     public static final int TYPE_BYTE = 20001;
-    public static final int TYPE_CHAR = 1;
+    public static final int TYPE_CHAR = Types.CHAR;
     public static final int TYPE_CLOB = 40;
     public static final int TYPE_DATE = 9;
-    public static final int TYPE_DOUBLE = 8;
+    public static final int TYPE_DOUBLE = Types.DOUBLE;
     public static final int TYPE_ECHAR = 60;
     public static final int TYPE_EVARCHAR = 61;
-    public static final int TYPE_FLOAT = 6;
+    public static final int TYPE_FLOAT = Types.FLOAT;
     public static final int TYPE_GEOMETRY = 10003;
-    public static final int TYPE_INTEGER = 4;
+    public static final int TYPE_INTEGER = Types.INTEGER;
     public static final int TYPE_NCHAR = -8;
     public static final int TYPE_NIBBLE = 20002;
     public static final int TYPE_NUMBER = 10002;
-    public static final int TYPE_NUMERIC = 2;
+    public static final int TYPE_NUMERIC = Types.NUMERIC;
     public static final int TYPE_NVARCHAR = -9;
-    public static final int TYPE_REAL = 7;
-    public static final int TYPE_SMALLINT = 5;
+    public static final int TYPE_REAL = Types.REAL;
+    public static final int TYPE_SMALLINT = Types.SMALLINT;
     public static final int TYPE_VARBIT = -100;
     public static final int TYPE_VARBYTE = 20003;
     public static final int TYPE_VARCHAR = 12;
