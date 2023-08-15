@@ -79,6 +79,7 @@ public class Spreadsheet extends LightGrid implements Listener {
     @Nullable
     private final IGridController gridController;
 
+    private boolean accessibilityEnabled;
     private Clipboard clipboard;
 
     public Spreadsheet(
@@ -374,7 +375,12 @@ public class Spreadsheet extends LightGrid implements Listener {
 
     @Override
     public void refreshData(boolean refreshColumns, boolean keepState, boolean fitValue) {
+        // Disable accessibility support.
+        // It will automatically turn on once we detect ACC events
+        accessibilityEnabled = false;
+        // Cancel all editors
         cancelInlineEditor();
+
         super.refreshData(refreshColumns, keepState, fitValue);
         super.redraw();
     }
@@ -534,4 +540,13 @@ public class Spreadsheet extends LightGrid implements Listener {
     private void hookAccessibility() {
         SpreadsheetAccessibleAdapter.install(this);
     }
+
+    boolean isAccessibilityEnabled() {
+        return accessibilityEnabled;
+    }
+
+    void setAccessibilityEnabled(boolean enabled) {
+        this.accessibilityEnabled = enabled;
+    }
+
 }

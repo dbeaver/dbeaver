@@ -1928,9 +1928,7 @@ public class DataSourceDescriptor
         }
 
         if (networkHandler != null) {
-            if (authType == DBWTunnel.AuthCredentials.CREDENTIALS) {
-                networkHandler.setUserName(authInfo.getUserName());
-            }
+            networkHandler.setUserName(authInfo.getUserName());
             networkHandler.setPassword(authInfo.getUserPassword());
             networkHandler.setSavePassword(authInfo.isSavePassword());
             actualConfig.updateHandler(networkHandler);
@@ -1989,7 +1987,7 @@ public class DataSourceDescriptor
             authType == DBWTunnel.AuthCredentials.PASSWORD
                 ? RegistryMessages.dialog_connection_auth_passphrase
                 : RegistryMessages.dialog_connection_auth_password, password,
-            authType != DBWTunnel.AuthCredentials.CREDENTIALS,
+            false,
             canSavePassword
         );
         return authInfo;
