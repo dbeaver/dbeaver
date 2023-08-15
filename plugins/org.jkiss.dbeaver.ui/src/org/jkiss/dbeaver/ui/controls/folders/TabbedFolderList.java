@@ -1021,7 +1021,7 @@ public class TabbedFolderList extends Composite {
 
     public void handleTraverse(TraverseEvent e) {
         if (e.detail == SWT.TRAVERSE_PAGE_PREVIOUS || e.detail == SWT.TRAVERSE_PAGE_NEXT) {
-            if ((e.stateMask & SWT.ALT) != SWT.ALT) {
+            if ((e.stateMask & SWT.CTRL) != SWT.CTRL && (e.stateMask & SWT.ALT) != SWT.ALT) {
                 // Only in case of CTRL+ALT+PG
                 return;
             }

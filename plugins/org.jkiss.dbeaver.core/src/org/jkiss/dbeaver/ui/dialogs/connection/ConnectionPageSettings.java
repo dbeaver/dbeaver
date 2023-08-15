@@ -292,7 +292,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                         }
                     }
 
-                    @Override
+                    //@Override
                     public void itemsCount(CTabFolderEvent event) {
                         tabFolderChevron.setVisible(canShowChevron(allPages));
                     }
