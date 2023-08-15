@@ -2114,7 +2114,11 @@ public class UIUtils {
             return UIStyles.isDarkTheme() ? COLOR_WHITE_DARK : COLOR_WHITE;
         }
         return COLOR_BLACK;
-    }  
+    }
+
+    public static Color getInvertedColor(Color color) {
+        return new Color(255 - color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
+    }
 
     public static void openWebBrowser(String url)
     {

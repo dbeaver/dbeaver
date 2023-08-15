@@ -49,41 +49,60 @@ public class SQLTokenAdapter extends Token {
     }
 
     private static TextAttribute makeTextAttribute(TPToken token, SQLRuleScanner scanner) {
-        //  && !UIStyles.isDarkHighContrastTheme()
         String colorKey;
         int style;
         if (token instanceof TPTokenDefault && token.getData() instanceof SQLTokenType) {
-            switch ((SQLTokenType)token.getData()) {
+            switch ((SQLTokenType) token.getData()) {
                 case T_KEYWORD:
                 case T_BLOCK_BEGIN:
                 case T_BLOCK_END:
                 case T_BLOCK_HEADER:
-                    colorKey = SQLConstants.CONFIG_COLOR_KEYWORD; style = scanner.getKeywordStyle(); break;
+                    colorKey = SQLConstants.CONFIG_COLOR_KEYWORD;
+                    style = scanner.getKeywordStyle();
+                    break;
                 case T_STRING:
-                    colorKey = SQLConstants.CONFIG_COLOR_STRING; style = scanner.getKeywordStyle(); break;
+                    colorKey = SQLConstants.CONFIG_COLOR_STRING;
+                    style = scanner.getKeywordStyle();
+                    break;
                 case T_QUOTED:
-                    colorKey = SQLConstants.CONFIG_COLOR_DATATYPE; style = scanner.getKeywordStyle(); break;
                 case T_TYPE:
-                    colorKey = SQLConstants.CONFIG_COLOR_DATATYPE; style = scanner.getKeywordStyle(); break;
+                    colorKey = SQLConstants.CONFIG_COLOR_DATATYPE;
+                    style = scanner.getKeywordStyle();
+                    break;
                 case T_NUMBER:
-                    colorKey = SQLConstants.CONFIG_COLOR_NUMBER; style = SWT.NORMAL; break;
+                    colorKey = SQLConstants.CONFIG_COLOR_NUMBER;
+                    style = SWT.NORMAL;
+                    break;
                 case T_COMMENT:
-                    colorKey = SQLConstants.CONFIG_COLOR_COMMENT; style = SWT.NORMAL; break;
+                    colorKey = SQLConstants.CONFIG_COLOR_COMMENT;
+                    style = SWT.NORMAL;
+                    break;
                 case T_DELIMITER:
-                    colorKey = SQLConstants.CONFIG_COLOR_DELIMITER; style = SWT.NORMAL; break;
+                    colorKey = SQLConstants.CONFIG_COLOR_DELIMITER;
+                    style = SWT.NORMAL;
+                    break;
                 case T_BLOCK_TOGGLE:
-                    colorKey = SQLConstants.CONFIG_COLOR_DELIMITER; style = scanner.getKeywordStyle(); break;
+                    colorKey = SQLConstants.CONFIG_COLOR_DELIMITER;
+                    style = scanner.getKeywordStyle();
+                    break;
                 case T_CONTROL:
                 case T_SET_DELIMITER:
-                    colorKey = SQLConstants.CONFIG_COLOR_COMMAND; style = scanner.getKeywordStyle(); break;
+                    colorKey = SQLConstants.CONFIG_COLOR_COMMAND;
+                    style = scanner.getKeywordStyle();
+                    break;
                 case T_PARAMETER:
                 case T_VARIABLE:
-                    colorKey = SQLConstants.CONFIG_COLOR_PARAMETER; style = scanner.getKeywordStyle(); break;
+                    colorKey = SQLConstants.CONFIG_COLOR_PARAMETER;
+                    style = scanner.getKeywordStyle();
+                    break;
                 default:
-                    colorKey = SQLConstants.CONFIG_COLOR_TEXT; style = SWT.NORMAL; break;
+                    colorKey = SQLConstants.CONFIG_COLOR_TEXT;
+                    style = SWT.NORMAL;
+                    break;
             }
         } else {
-            colorKey = SQLConstants.CONFIG_COLOR_TEXT; style = SWT.NORMAL;
+            colorKey = SQLConstants.CONFIG_COLOR_TEXT;
+            style = SWT.NORMAL;
         }
 
         Color color = scanner.getColor(colorKey);
@@ -91,7 +110,7 @@ public class SQLTokenAdapter extends Token {
             if (SQLConstants.CONFIG_COLOR_TEXT.equals(colorKey)) {
                 color = UIUtils.COLOR_WHITE;
             } else {
-                color = new Color(255 - color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
+                color = UIUtils.getInvertedColor(color);
             }
         }
         return new TextAttribute(color, null, style);
