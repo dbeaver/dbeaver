@@ -678,6 +678,6 @@ public class SQLConstants {
     public static final String DEFAULT_CONTROL_COMMAND_PREFIX = "@";
 
     public final static char[] BRACKETS = {'{', '}', '(', ')', '[', ']', '<', '>'};
-
+    public static final String COLUMN_ASTERISK = "*";
 
 }

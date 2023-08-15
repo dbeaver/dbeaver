@@ -56,12 +56,15 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
     }
 
     @Override
-    public DBSObjectType[] getSupportedObjectTypes()
-    {
-        return new DBSObjectType[] {
-            RelationalObjectType.TYPE_TABLE,
-            RelationalObjectType.TYPE_PROCEDURE
+    public DBSObjectType[] getSupportedObjectTypes() {
+        if (dataSource.getInfo().supportsStoredCode()) {
+            return new DBSObjectType[] {
+                RelationalObjectType.TYPE_TABLE,
+                RelationalObjectType.TYPE_PROCEDURE
             };
+        } else {
+            return new DBSObjectType[] { RelationalObjectType.TYPE_TABLE };
+        }
     }
 
     public DBSObjectType[] getHyperlinkObjectTypes()

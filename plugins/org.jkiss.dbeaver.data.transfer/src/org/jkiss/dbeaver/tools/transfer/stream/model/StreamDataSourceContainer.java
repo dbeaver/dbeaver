@@ -471,4 +471,9 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     public void setDriverSubstitution(@Nullable DBPDriverSubstitutionDescriptor driverSubstitution) {
         // do nothing
     }
+
+    @Override
+    public void dispose() {
+        virtualModel.dispose();
+    }
 }

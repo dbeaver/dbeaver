@@ -77,4 +77,12 @@ public interface DBSDictionary
         boolean sortAsc
     ) throws DBException;
 
+    @NotNull
+    DBSDictionaryAccessor getDictionaryAccessor(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable List<DBDAttributeValue> precedingKeys,
+        @NotNull DBSEntityAttribute keyColumn,
+        boolean sortAsc,
+        boolean sortByDesc
+    ) throws DBException;
 }
