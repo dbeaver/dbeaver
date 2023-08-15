@@ -703,7 +703,7 @@ public class ResultSetViewer extends Viewer
         if (filtersPanel == null) {
             return defaultBackground;
         }
-        return UIStyles.getDefaultTextBackground();
+        return UIStyles.getDefaultWidgetBackground();
     }
 
     @NotNull
