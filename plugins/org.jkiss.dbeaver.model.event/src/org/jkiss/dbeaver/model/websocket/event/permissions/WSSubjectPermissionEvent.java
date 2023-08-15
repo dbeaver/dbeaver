@@ -57,4 +57,8 @@ public class WSSubjectPermissionEvent extends WSAbstractEvent {
     public String getSubjectId() {
         return subjectId;
     }
+
+    public SMSubjectType getSubjectType() {
+        return subjectType;
+    }
 }
