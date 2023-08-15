@@ -72,7 +72,6 @@ import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.*;
@@ -587,14 +586,6 @@ public class ResultSetViewer extends Viewer
             return;
         }
         DataFilterRegistry.getInstance().saveDataFilter(dataContainer, model.getDataFilter());
-
-        if (filtersPanel != null) {
-            DBeaverNotifications.showNotification(
-                "rsv.filter.saved",
-                "Data filter was saved",
-                filtersPanel.getFilterText(),
-                DBPMessageType.INFORMATION, null);
-        }
     }
 
     public void switchFilterFocus() {
