@@ -261,8 +261,8 @@ public class ResultSetViewer extends Viewer
 
         loadPresentationSettings();
 
-        this.defaultBackground = UIStyles.getDefaultTextBackground();
-        this.defaultForeground = UIStyles.getDefaultTextForeground();
+        this.defaultBackground = UIStyles.getDefaultWidgetBackground();
+        this.defaultForeground = UIStyles.isDarkHighContrastTheme() ? UIUtils.COLOR_WHITE : UIStyles.getDefaultTextForeground();
 
         long decoratorFeatures = decorator.getDecoratorFeatures();
 
