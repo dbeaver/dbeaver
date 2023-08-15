@@ -331,7 +331,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     ) {
         Color color = ruleManager.getColor(colorId);
         if (UIStyles.isDarkHighContrastTheme()) {
-            color = new Color(255 - color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
+            color = UIUtils.getInvertedColor(color);
         }
         addContentTypeDamageRepairer(reconciler, contentType, new SingleTokenScanner(new TextAttribute(color)));
     }
