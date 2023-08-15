@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenchPreferencePage {
     private static final String SOUND_BEEP_LABEL = "System beep";
@@ -253,9 +254,11 @@ public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenc
             controller.sortByColumn(0, SWT.UP);
 
             viewer.setContentProvider(new ListContentProvider());
-            viewer.setInput(NotificationRegistry.getInstance().getNotifications());
-            UIUtils.asyncExec(() -> UIUtils.packColumns(viewer.getTable(), true));
+            viewer.setInput(NotificationRegistry.getInstance().getNotifications().stream()
+                .filter(descriptor -> !descriptor.isHidden())
+                .collect(Collectors.toList()));
 
+            UIUtils.asyncExec(() -> UIUtils.packColumns(viewer.getTable(), true));
             ColumnViewerToolTipSupport.enableFor(viewer);
         }
 

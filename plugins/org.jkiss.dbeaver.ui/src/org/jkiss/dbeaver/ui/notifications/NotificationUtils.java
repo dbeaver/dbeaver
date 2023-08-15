@@ -22,6 +22,8 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.ui.registry.NotificationDescriptor;
+import org.jkiss.dbeaver.ui.registry.NotificationRegistry;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -78,13 +80,19 @@ public abstract class NotificationUtils {
 
     @NotNull
     public static NotificationSettings getNotificationSettings(@NotNull String id) {
+        final NotificationDescriptor notification = NotificationRegistry.getInstance().getNotification(id);
+
+        if (notification == null) {
+            throw new IllegalArgumentException("Can't find notification '" + id + "'");
+        }
+
         final String enablePopupKey = NOTIFICATIONS_SETTINGS_PREFIX + id + NOTIFICATIONS_KEY_ENABLE_POPUP;
         final String enableSoundKey = NOTIFICATIONS_SETTINGS_PREFIX + id + NOTIFICATIONS_KEY_ENABLE_SOUND;
         final String soundFileKey = NOTIFICATIONS_SETTINGS_PREFIX + id + NOTIFICATIONS_KEY_SOUND_FILE;
 
         final DBPPreferenceStore preferences = ModelPreferences.getPreferences();
         preferences.setDefault(enablePopupKey, true);
-        preferences.setDefault(enableSoundKey, true);
+        preferences.setDefault(enableSoundKey, notification.isSoundEnabled());
 
         final NotificationSettings settings = new NotificationSettings();
         settings.setShowPopup(preferences.getBoolean(enablePopupKey));
@@ -95,13 +103,19 @@ public abstract class NotificationUtils {
     }
 
     public static void setNotificationSettings(@NotNull String id, @NotNull NotificationSettings settings) {
+        final NotificationDescriptor notification = NotificationRegistry.getInstance().getNotification(id);
+
+        if (notification == null) {
+            throw new IllegalArgumentException("Can't find notification '" + id + "'");
+        }
+
         final String enablePopupKey = NOTIFICATIONS_SETTINGS_PREFIX + id + NOTIFICATIONS_KEY_ENABLE_POPUP;
         final String enableSoundKey = NOTIFICATIONS_SETTINGS_PREFIX + id + NOTIFICATIONS_KEY_ENABLE_SOUND;
         final String soundFileKey = NOTIFICATIONS_SETTINGS_PREFIX + id + NOTIFICATIONS_KEY_SOUND_FILE;
 
         final DBPPreferenceStore preferences = ModelPreferences.getPreferences();
         preferences.setDefault(enablePopupKey, true);
-        preferences.setDefault(enableSoundKey, true);
+        preferences.setDefault(enableSoundKey, notification.isSoundEnabled());
 
         preferences.setValue(enablePopupKey, settings.isShowPopup());
         preferences.setValue(enableSoundKey, settings.isPlaySound());

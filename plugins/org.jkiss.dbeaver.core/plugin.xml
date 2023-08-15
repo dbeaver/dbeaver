@@ -1306,7 +1306,7 @@
         <notification id="rollback.idle" name="Transaction rollback after long idle period"/>
         <notification id="reconnect.success" name="Datasource invalidation success"/>
         <notification id="reconnect.failure" name="Datasource invalidation failure"/>
-        <notification id="agent.notify" name="Long-time operations" description="This is a notification for long-time operations.&#10;It will be shown for all operations that have exceeded the specified timeout." isSoundEnabled="true"/>
+        <notification id="agent.notify" name="Long-time operations" description="This is a notification for long-time operations.&#10;It will be shown for all operations that have exceeded the specified timeout." soundEnabled="true"/>
     </extension>
 
 </plugin>

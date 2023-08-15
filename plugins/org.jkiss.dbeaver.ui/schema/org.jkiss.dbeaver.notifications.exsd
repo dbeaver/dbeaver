@@ -79,7 +79,7 @@
                </appinfo>
             </annotation>
          </attribute>
-         <attribute name="isSoundEnabled" type="boolean" use="default" value="true">
+         <attribute name="soundEnabled" type="boolean" use="default" value="true">
             <annotation>
                <documentation>
                   

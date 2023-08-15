@@ -29,6 +29,7 @@ public class NotificationDescriptor extends AbstractDescriptor {
     private final String name;
     private final String description;
     private final boolean soundEnabled;
+    private final boolean hidden;
 
     NotificationDescriptor(@NotNull IConfigurationElement config) {
         super(config);
@@ -36,7 +37,8 @@ public class NotificationDescriptor extends AbstractDescriptor {
         this.id = config.getAttribute("id");
         this.name = config.getAttribute("name");
         this.description = config.getAttribute("description");
-        this.soundEnabled = CommonUtils.getBoolean(config.getAttribute("isSoundEnabled"));
+        this.soundEnabled = CommonUtils.getBoolean(config.getAttribute("soundEnabled"));
+        this.hidden = CommonUtils.getBoolean(config.getAttribute("hidden"));
     }
 
     @NotNull
@@ -56,5 +58,9 @@ public class NotificationDescriptor extends AbstractDescriptor {
 
     public boolean isSoundEnabled() {
         return soundEnabled;
+    }
+
+    public boolean isHidden() {
+        return hidden;
     }
 }

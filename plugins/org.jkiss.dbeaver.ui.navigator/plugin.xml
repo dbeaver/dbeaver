@@ -1018,6 +1018,10 @@
                 group="%confirm.object.editor.group.name"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.notifications">
+        <notification id="navigator.projects.refresh" name="Projects were synchronized with the file system" hidden="true"/>
+    </extension>
+
     <extension point="org.eclipse.ui.commands">
         <category id="org.jkiss.dbeaver.entity.propsTab" name="%category.org.jkiss.dbeaver.entity.propsTab.name" description="%category.org.jkiss.dbeaver.entity.propsTab.description"/>
         <command id="org.jkiss.dbeaver.entity.propsTab.nextPage" name="%command.org.jkiss.dbeaver.entity.propsTab.nextPage.name" description="%command.org.jkiss.dbeaver.entity.propsTab.nextPage.description" categoryId="org.jkiss.dbeaver.entity.propsTab" />
