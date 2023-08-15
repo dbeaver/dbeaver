@@ -623,16 +623,18 @@
 
             <nativeClients>
                 <client id="postgresql_client" label="PostgreSQL Binaries">
-                    <dist os="win32" targetPath="clients/postgresql/win/14" remotePath="repo:/drivers/postgresql/client/win/14" resourcePath="clients/postgresql/win/14">
+                    <dist os="win32" targetPath="clients/postgresql/win/15" remotePath="repo:/drivers/postgresql/client/win/15" resourcePath="clients/postgresql/win/15">
                         <file type="exec" name="psql.exe"/>
                         <file type="exec" name="pg_dump.exe"/>
                         <file type="exec" name="pg_dumpall.exe"/>
                         <file type="exec" name="pg_restore.exe"/>
-                        <file type="lib" name="libcrypto-1_1-x64.dll"/>
+                        <file type="lib" name="libcrypto-3-x64.dll"/>
                         <file type="lib" name="libiconv-2.dll"/>
                         <file type="lib" name="libintl-9.dll"/>
+                        <file type="lib" name="libzstd.dll"/>
+                        <file type="lib" name="liblz4.dll"/>
                         <file type="lib" name="libpq.dll"/>
-                        <file type="lib" name="libssl-1_1-x64.dll"/>
+                        <file type="lib" name="libssl-3-x64.dll"/>
                         <file type="lib" name="libwinpthread-1.dll"/>
                         <file type="lib" name="zlib1.dll"/>
                     </dist>
