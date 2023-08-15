@@ -205,7 +205,7 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
         var propertyValue = configuration.getSecureProperty(property);
         if (!CommonUtils.isEmpty(propertyValue)) {
             try {
-                return Files.readAllBytes(Path.of(property));
+                return Files.readAllBytes(Path.of(propertyValue));
             } catch (IOException e) {
                 throw new DBException("Error reading file '" + property + "' data", e);
             }
