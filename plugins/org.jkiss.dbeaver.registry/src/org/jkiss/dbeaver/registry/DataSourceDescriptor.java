@@ -670,6 +670,8 @@ public class DataSourceDescriptor
     }
 
     public void setVirtualModel(@NotNull DBVModel virtualModel) {
+        this.virtualModel.dispose();
+
         if (virtualModel.getId().equals(getId())) {
             // DS-specific model
             this.virtualModel = virtualModel;
