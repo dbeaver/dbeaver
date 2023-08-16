@@ -47,7 +47,6 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.contexts.IContextService;
@@ -2120,13 +2119,12 @@ public class UIUtils {
         return new Color(255 - color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
     }
 
-    public static void openWebBrowser(String url)
-    {
+    public static void openWebBrowser(String url) {
         url = url.trim();
         if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("ftp://")) {
             url = "http://" + url;
         }
-        Program.launch(url);
+        ShellUtils.launchProgram(url);
     }
 
     public static void setBackgroundForAll(Control control, Color color) {
