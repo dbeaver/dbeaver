@@ -98,7 +98,8 @@ public class UIUtils {
 
     private static final String INLINE_WIDGET_EDITOR_ID = "org.jkiss.dbeaver.ui.InlineWidgetEditor";
     private static final Color COLOR_BLACK = new Color(null, 0, 0, 0);
-    private static final Color COLOR_WHITE = new Color(null, 255, 255, 255);
+    public static final Color COLOR_WHITE = new Color(null, 255, 255, 255);
+    public static final Color COLOR_GREEN_CONTRAST = new Color(null, 23, 135, 58);
     private static final Color COLOR_WHITE_DARK = new Color(null, 208, 208, 208);
     private static final SharedTextColors SHARED_TEXT_COLORS = new SharedTextColors();
     private static final SharedFonts SHARED_FONTS = new SharedFonts();
@@ -2113,7 +2114,11 @@ public class UIUtils {
             return UIStyles.isDarkTheme() ? COLOR_WHITE_DARK : COLOR_WHITE;
         }
         return COLOR_BLACK;
-    }  
+    }
+
+    public static Color getInvertedColor(Color color) {
+        return new Color(255 - color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
+    }
 
     public static void openWebBrowser(String url)
     {

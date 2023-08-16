@@ -95,6 +95,12 @@
         </handler>
     </extension>
 
+    <extension point="org.eclipse.e4.ui.css.swt.theme">
+        <stylesheet uri="css/e4-high_contrast_dbeaver_prefstyle.css">
+            <themeid refid="org.eclipse.e4.ui.css.theme.high-contrast"/>
+        </stylesheet>
+    </extension>
+
     <extension point="org.eclipse.ui.themes">
         <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.dbeaver.ui.fonts.label" id="org.jkiss.dbeaver.ui.fonts">
             <description>%themeElementCategory.org.jkiss.dbeaver.ui.fonts.description</description>
