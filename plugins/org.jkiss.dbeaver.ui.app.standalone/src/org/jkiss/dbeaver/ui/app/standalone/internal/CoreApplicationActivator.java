@@ -46,10 +46,7 @@ import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class CoreApplicationActivator extends AbstractUIPlugin {
 
@@ -85,16 +82,18 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
 
         // Add bundle load logger
         if (!Log.isQuietMode()) {
+            Set<String> activatedBundles = new HashSet<>();
             context.registerService(EventHook.class, (event, contexts) -> {
                 String message = null;
                 Bundle bundle = event.getBundle();
                 if (event.getType() == BundleEvent.STARTED) {
                     if (bundle.getState() == Bundle.ACTIVE) {
                         message = "> Start " + getBundleName(bundle) + " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
+                        activatedBundles.add(bundle.getSymbolicName());
                     }
                 } else if (event.getType() == BundleEvent.STOPPING) {
-                    if (bundle.getState() != BundleEvent.STOPPING && bundle.getState() != BundleEvent.UNINSTALLED) {
-                        message = "< Stop " + getBundleName(bundle) + " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
+                    if (activatedBundles.remove(bundle.getSymbolicName())) {
+                        //message = "< Stop " + getBundleName(bundle) + " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
                     }
                 }
                 if (message != null) {
