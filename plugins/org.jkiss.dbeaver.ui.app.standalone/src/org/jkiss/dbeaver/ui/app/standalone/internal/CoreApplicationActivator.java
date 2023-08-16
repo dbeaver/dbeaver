@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone.internal;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.internal.security.auth.AuthPlugin;
 import org.eclipse.equinox.internal.security.storage.SecurePreferencesMapper;
 import org.eclipse.equinox.internal.security.storage.StorageUtils;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.osgi.internal.framework.BundleContextImpl;
 import org.eclipse.osgi.internal.framework.EquinoxConfiguration;
 import org.eclipse.osgi.internal.framework.EquinoxContainer;
@@ -34,8 +34,8 @@ import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication;
 import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -82,19 +82,6 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
             String installPath = SystemVariablesResolver.getInstallPath();
             System.setProperty("jna.boot.library.path", installPath);
         }
-
-        // Set notifications handler
-        DBeaverNotifications.setHandler(new DBeaverNotifications.NotificationHandler() {
-            @Override
-            public void sendNotification(DBPDataSource dataSource, String id, String text, DBPMessageType messageType, Runnable feedback) {
-                NotificationUtils.sendNotification(dataSource, id, text, messageType, feedback);
-            }
-
-            @Override
-            public void sendNotification(String id, String title, String text, DBPMessageType messageType, Runnable feedback) {
-                NotificationUtils.sendNotification(id, title, text, messageType, feedback);
-            }
-        });
 
         // Add bundle load logger
         if (!Log.isQuietMode()) {
