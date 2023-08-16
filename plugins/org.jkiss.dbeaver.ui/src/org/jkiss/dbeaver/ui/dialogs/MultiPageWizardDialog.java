@@ -567,6 +567,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         if (runningOperations > 0) {
             return false;
         }
+        if (wizard != null) {
+            wizard.dispose();
+        }
         return super.close();
     }
 

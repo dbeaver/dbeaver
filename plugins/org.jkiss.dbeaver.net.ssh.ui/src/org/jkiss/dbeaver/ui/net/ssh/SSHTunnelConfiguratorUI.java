@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.net.ssh;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -47,9 +44,9 @@ import org.jkiss.dbeaver.model.net.ssh.SSHImplementationAbstract;
 import org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationDescriptor;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.runtime.AbstractTrackingJob;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.ShellUtils;
@@ -59,7 +56,6 @@ import org.jkiss.dbeaver.ui.controls.TextWithOpen;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.HelpUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
@@ -282,7 +278,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
         final String[] tunnelVersions = new String[2];
 
-        final TunnelConnectionTestJob job = new TunnelConnectionTestJob() {
+        var job = new AbstractTrackingJob("Test tunnel connection") {
             @Override
             protected void execute(@NotNull DBRProgressMonitor monitor) throws Throwable {
                 monitor.beginTask("Instantiate SSH tunnel", 2);
@@ -356,22 +352,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         };
 
         try {
-            UIUtils.runInProgressDialog(monitor -> {
-                job.setOwnerMonitor(monitor);
-                job.schedule();
-
-                while (job.getState() == Job.WAITING || job.getState() == Job.RUNNING) {
-                    if (monitor.isCanceled()) {
-                        job.cancel();
-                        throw new InvocationTargetException(null);
-                    }
-                    RuntimeUtils.pause(50);
-                }
-
-                if (job.getConnectError() != null) {
-                    throw new InvocationTargetException(job.getConnectError());
-                }
-            });
+            AbstractTrackingJob.executeInProgressMonitor(job);
 
             MessageDialog.openInformation(credentialsPanel.getShell(), ModelMessages.dialog_connection_wizard_start_connection_monitor_success,
                 "Connected!\n\nClient version: " + tunnelVersions[0] + "\nServer version: " + tunnelVersions[1]);
@@ -716,40 +697,4 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         }
     }
 
-    private static abstract class TunnelConnectionTestJob extends AbstractJob {
-        private DBRProgressMonitor ownerMonitor;
-        protected Throwable connectError;
-
-        protected TunnelConnectionTestJob() {
-            super("Test tunnel connection");
-            setUser(false);
-            setSystem(true);
-        }
-
-        @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
-            if (ownerMonitor != null) {
-                monitor = ownerMonitor;
-            }
-
-            try {
-                execute(monitor);
-            } catch (Throwable e) {
-                connectError = e;
-            }
-
-            return Status.OK_STATUS;
-        }
-
-        public void setOwnerMonitor(@Nullable DBRProgressMonitor ownerMonitor) {
-            this.ownerMonitor = ownerMonitor;
-        }
-
-        @Nullable
-        public Throwable getConnectError() {
-            return connectError;
-        }
-
-        protected abstract void execute(@NotNull DBRProgressMonitor monitor) throws Throwable;
-    }
 }
