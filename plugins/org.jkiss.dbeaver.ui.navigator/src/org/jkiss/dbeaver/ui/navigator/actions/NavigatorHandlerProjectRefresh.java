@@ -41,7 +41,7 @@ public class NavigatorHandlerProjectRefresh extends NavigatorHandlerObjectBase {
                     throw new InvocationTargetException(e);
                 }
                 DBeaverNotifications.showNotification(
-                    "projects_refresh",
+                    "navigator.projects.refresh",
                     "Projects refresh",
                     "Project list was synchronized with local file system",
                     DBPMessageType.INFORMATION,

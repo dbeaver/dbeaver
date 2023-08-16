@@ -1511,4 +1511,8 @@
         </dataSourceConfigurator>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.notifications">
+        <notification id="rsv.filter.saved" name="Result set filter was saved" hidden="true"/>
+    </extension>
+
 </plugin>

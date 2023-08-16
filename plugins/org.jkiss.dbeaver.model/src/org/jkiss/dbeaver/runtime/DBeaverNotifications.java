@@ -29,15 +29,12 @@ public class DBeaverNotifications
 
     public static final String NT_COMMIT = "commit";
     public static final String NT_ROLLBACK = "rollback";
-    public static final String NT_RECONNECT = "reconnect";
-    public static final String NT_GENERAL = "generalInfo";
+    public static final String NT_ROLLBACK_IDLE = "rollback.idle";
+    public static final String NT_RECONNECT_SUCCESS = "reconnect.success";
+    public static final String NT_RECONNECT_FAILURE = "reconnect.failure";
 
     @NotNull
     private static NotificationHandler notificationHandler = new ConsoleHandler();
-
-    public static void showNotification(DBPDataSource dataSource, String id, String text) {
-        showNotification(dataSource, id, text, null, null);
-    }
 
     public static void showNotification(DBPDataSource dataSource, String id, String text, DBPMessageType messageType) {
         showNotification(dataSource, id, text, messageType, null);
