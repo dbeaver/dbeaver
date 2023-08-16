@@ -16,17 +16,25 @@
  */
 package org.jkiss.dbeaver.model.sql.translate;
 
+import net.sf.jsqlparser.expression.JdbcParameter;
+import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
+import net.sf.jsqlparser.statement.select.Fetch;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +45,8 @@ import java.util.Locale;
  */
 public class SQLQueryTranslator implements SQLTranslator {
 
+    public static final String DIALECT_NAME_ORACLE = "oracle";
+    public static final String DIALECT_NAME_SQLSERVER = "sqlserver";
     @NotNull
     private SQLTranslateContext sqlTranslateContext;
 
@@ -84,7 +94,10 @@ public class SQLQueryTranslator implements SQLTranslator {
             sql.append(element.getText());
             sql.append(scriptDelimiter).append("\n");
         }
-        return sql.toString();
+        if (sql.length() > 0) {
+            sql.setLength(sql.length() - 1);
+        }
+        return SQLUtils.removeQueryDelimiter(targetDialect, sql.toString());
     }
 
     /**
@@ -128,10 +141,11 @@ public class SQLQueryTranslator implements SQLTranslator {
 
         List<SQLScriptElement> extraQueries = null;
 
+        boolean defChanged = false;
+        SQLDialect targetDialect = sqlTranslateContext.getTargetDialect();
+        String dialectName = targetDialect.getDialectName().toLowerCase();
         if (statement instanceof CreateTable) {
-            boolean defChanged = false;
             CreateTable createTable = (CreateTable) statement;
-            SQLDialect targetDialect = sqlTranslateContext.getTargetDialect();
             SQLDialectDDLExtension extendedDialect = null;
             if (targetDialect instanceof SQLDialectDDLExtension) {
                 extendedDialect = (SQLDialectDDLExtension) targetDialect;
@@ -152,8 +166,7 @@ public class SQLQueryTranslator implements SQLTranslator {
                         newDataType = (extendedDialect != null) ? extendedDialect.getBlobDataType() : "blob";
                         break;
                     case "TEXT":
-                        String dialectName = targetDialect.getDialectName().toLowerCase();
-                        if (extendedDialect != null && (dialectName.equals("oracle") || dialectName.equals("sqlserver"))) {
+                        if (extendedDialect != null && isOracleOrSqlServerDialect(dialectName)) {
                             newDataType = extendedDialect.getClobDataType();
                         }
                         break;
@@ -222,23 +235,62 @@ public class SQLQueryTranslator implements SQLTranslator {
                     }
                 }
             }
-            if (defChanged) {
-                String newQueryText = SQLFormatUtils.formatSQL(null,
-                    sqlTranslateContext.getSyntaxManager(),
-                    createTable.toString());
-
-                query.setText(newQueryText);
-
-                if (extraQueries == null) {
-                    extraQueries = new ArrayList<>();
+            if (dialectName.equals(DIALECT_NAME_ORACLE) && !CommonUtils.isEmpty(createTable.getIndexes())) {
+                for (var index : createTable.getIndexes()) {
+                    if (index instanceof ForeignKeyIndex) {
+                        ForeignKeyIndex fkIndex = (ForeignKeyIndex) index;
+                        ReferentialAction ra = fkIndex.getReferentialAction(ReferentialAction.Type.DELETE);
+                        if (ra != null && ReferentialAction.Action.NO_ACTION.equals(ra.getAction())) {
+                            fkIndex.removeReferentialAction(ReferentialAction.Type.DELETE);
+                            defChanged = true;
+                        }
+                    }
                 }
-                extraQueries.add(query);
             }
+        } else if (isOracleOrSqlServerDialect(dialectName) && statement instanceof Select) {
+            var body = ((Select) statement).getSelectBody();
+            if (body instanceof PlainSelect) {
+                var plSelect = (PlainSelect) body;
+                var limit = plSelect.getLimit();
+                if (limit != null) {
+                    var fetch = new Fetch();
+                    if (limit.getRowCount() instanceof JdbcParameter) {
+                        fetch.setFetchJdbcParameter((JdbcParameter) limit.getRowCount());
+                    } else if (limit.getRowCount() instanceof Number) {
+                        fetch.setRowCount(((Number) limit.getRowCount()).longValue());
+                    }
+                    plSelect.setFetch(fetch);
+                    plSelect.setLimit(null);
+                    defChanged = true;
+
+                }
+                var offset = plSelect.getOffset();
+                if (offset != null) {
+                    offset.setOffsetParam("ROWS");
+                    defChanged = true;
+                }
+            }
+        }
+        if (defChanged) {
+            String newQueryText = SQLFormatUtils.formatSQL(null,
+                    sqlTranslateContext.getSyntaxManager(),
+                    statement.toString());
+
+            query.setText(newQueryText);
+
+            if (extraQueries == null) {
+                extraQueries = new ArrayList<>();
+            }
+            extraQueries.add(query);
         }
         if (extraQueries == null) {
             return Collections.singletonList(query);
         }
         return extraQueries;
+    }
+
+    private boolean isOracleOrSqlServerDialect(String dialectName) {
+        return dialectName.equals(DIALECT_NAME_ORACLE) || dialectName.equals(DIALECT_NAME_SQLSERVER);
     }
 
     /**
@@ -258,5 +310,17 @@ public class SQLQueryTranslator implements SQLTranslator {
      */
     public void setSqlTranslateContext(@NotNull SQLTranslateContext sqlTranslateContext) {
         this.sqlTranslateContext = sqlTranslateContext;
+    }
+
+    @NotNull
+    public static DBPPreferenceStore getDefaultPreferenceStore() {
+        DBPPreferenceStore prefStore = new SimplePreferenceStore() {
+            @Override
+            public void save() throws IOException {
+
+            }
+        };
+        prefStore.setValue(SQLModelPreferences.SQL_FORMAT_FORMATTER, "default");
+        return prefStore;
     }
 }
