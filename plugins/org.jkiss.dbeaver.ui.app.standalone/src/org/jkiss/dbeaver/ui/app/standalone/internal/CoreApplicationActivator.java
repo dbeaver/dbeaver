@@ -16,16 +16,24 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone.internal;
 
+import org.eclipse.equinox.internal.security.auth.AuthPlugin;
+import org.eclipse.equinox.internal.security.storage.SecurePreferencesMapper;
+import org.eclipse.equinox.internal.security.storage.StorageUtils;
 import org.eclipse.osgi.internal.framework.BundleContextImpl;
+import org.eclipse.osgi.internal.framework.EquinoxConfiguration;
 import org.eclipse.osgi.internal.framework.EquinoxContainer;
 import org.eclipse.osgi.internal.hookregistry.ClassLoaderHook;
 import org.eclipse.osgi.internal.hookregistry.HookRegistry;
+import org.eclipse.osgi.service.environment.EnvironmentInfo;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
+import org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication;
 import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -33,7 +41,11 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.hooks.bundle.EventHook;
 
 import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -43,6 +55,11 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.ui.app.standalone";
 
     private static final boolean PATCH_ECLIPSE_CLASSES = false;
+
+    private static final String DBEAVER_SECURE_DIR = "secure"; //$NON-NLS-1$
+    private static final String DBEAVER_SECURE_FILE = "secure_storage"; //$NON-NLS-1$
+    public static final String ARG_ECLIPSE_KEYRING = "-eclipse.keyring"; //$NON-NLS-1$
+
 
     // The shared instance
     private static CoreApplicationActivator plugin;
@@ -57,19 +74,6 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
         if (PATCH_ECLIPSE_CLASSES) {
             activateHooks(context);
         }
-
-        // Set notifications handler
-        DBeaverNotifications.setHandler(new DBeaverNotifications.NotificationHandler() {
-            @Override
-            public void sendNotification(DBPDataSource dataSource, String id, String text, DBPMessageType messageType, Runnable feedback) {
-                NotificationUtils.sendNotification(dataSource, id, text, messageType, feedback);
-            }
-
-            @Override
-            public void sendNotification(String id, String title, String text, DBPMessageType messageType, Runnable feedback) {
-                NotificationUtils.sendNotification(id, title, text, messageType, feedback);
-            }
-        });
 
         // Add bundle load logger
         if (!Log.isQuietMode()) {
@@ -91,6 +95,21 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
             }, null);
             //context.addBundleListener(new BundleLoadListener());
         }
+
+        useCustomSecretStorage();
+
+        // Set notifications handler
+        DBeaverNotifications.setHandler(new DBeaverNotifications.NotificationHandler() {
+            @Override
+            public void sendNotification(DBPDataSource dataSource, String id, String text, DBPMessageType messageType, Runnable feedback) {
+                NotificationUtils.sendNotification(dataSource, id, text, messageType, feedback);
+            }
+
+            @Override
+            public void sendNotification(String id, String title, String text, DBPMessageType messageType, Runnable feedback) {
+                NotificationUtils.sendNotification(id, title, text, messageType, feedback);
+            }
+        });
 
         plugin = this;
     }
@@ -127,6 +146,44 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
 
     public static CoreApplicationActivator getDefault() {
         return plugin;
+    }
+
+
+    private void migrateFromEclipseStorage(Path storagePath) throws Exception {
+        Path oldLocation = Path.of(StorageUtils.getDefaultLocation().toURI());
+
+        Files.createDirectories(storagePath.getParent());
+        Files.copy(oldLocation, storagePath, StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    private void useCustomSecretStorage() throws Exception {
+        Path storagePath =
+            Path.of(RuntimeUtils.getWorkingDirectory(DBeaverApplication.DBEAVER_DATA_DIR))
+                .resolve(DBEAVER_SECURE_DIR)
+                .resolve(DBEAVER_SECURE_FILE);
+
+        if (!Files.exists(storagePath)) {
+            if (Files.exists(Path.of(StorageUtils.getDefaultLocation().toURI()))) {
+                migrateFromEclipseStorage(storagePath);
+            } else {
+                Files.createDirectories(storagePath.getParent());
+                Files.createFile(storagePath);
+            }
+        }
+
+        EnvironmentInfo environmentInfoService = AuthPlugin.getDefault().getEnvironmentInfoService();
+        if (environmentInfoService instanceof EquinoxConfiguration) {
+            String[] nonFrameworkArgs = environmentInfoService.getNonFrameworkArgs();
+            if (Files.exists(storagePath) && !ArrayUtils.contains(nonFrameworkArgs, ARG_ECLIPSE_KEYRING)) {
+                // Equinox reads the eclipse.keyring from arguments
+                // It is a dirty hack but there are no other options.
+                String[] updatedArgs = Arrays.copyOf(nonFrameworkArgs, nonFrameworkArgs.length + 2);
+                updatedArgs[updatedArgs.length - 2] = ARG_ECLIPSE_KEYRING;
+                updatedArgs[updatedArgs.length - 1] = storagePath.toString();
+                ((EquinoxConfiguration) environmentInfoService).setAppArgs(updatedArgs);
+                SecurePreferencesMapper.clearDefault();
+            }
+        }
     }
 
 }
