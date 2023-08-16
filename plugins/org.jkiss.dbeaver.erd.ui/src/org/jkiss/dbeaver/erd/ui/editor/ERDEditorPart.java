@@ -1018,22 +1018,23 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
             toolBarManager.add(ActionUtils.makeCommandContribution(getSite(), ERDUIConstants.CMD_SAVE_AS));
         }
+        fillConfigurationContribution(toolBarManager);
+    }
+    
+    protected void fillConfigurationContribution(IContributionManager toolBarManager) {
         toolBarManager.add(new Separator("configuration"));
-        {
-            Action configAction = new Action(ERDUIMessages.erd_editor_control_action_configuration) {
-                @Override
-                public void run()
-                {
-                    UIUtils.showPreferencesFor(
-                        getSite().getShell(),
-                        ERDEditorPart.this,
-                        ERDPreferencePage.PAGE_ID);
-                    getDiagram().setAttributeStyles(ERDViewStyle.getDefaultStyles(ERDUIActivator.getDefault().getPreferences()));
-                }
-            };
-            configAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.PANEL_CUSTOMIZE));
-            toolBarManager.add(configAction);
-        }
+        Action configAction = new Action(ERDUIMessages.erd_editor_control_action_configuration) {
+            @Override
+            public void run() {
+                UIUtils.showPreferencesFor(
+                    getSite().getShell(),
+                    ERDEditorPart.this,
+                    ERDPreferencePage.PAGE_ID);
+                getDiagram().setAttributeStyles(ERDViewStyle.getDefaultStyles(ERDUIActivator.getDefault().getPreferences()));
+            }
+        };
+        configAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
+        toolBarManager.add(configAction);
     }
 
     protected abstract void loadDiagram(boolean refreshMetadata);
