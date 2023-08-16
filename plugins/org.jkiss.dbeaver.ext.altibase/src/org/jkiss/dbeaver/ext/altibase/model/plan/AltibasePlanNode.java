@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.altibase.model.plan;
 
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataSource;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeKind;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
@@ -84,16 +85,16 @@ public class AltibasePlanNode extends AbstractExecutionPlanNode  {
     /**
      * Load plan from saved execution plan
      */
-    public AltibasePlanNode(AltibaseDataSource dataSource, IntKeyMap<AltibasePlanNode> prevNodes, Map<String, String> attributes) {
+    public AltibasePlanNode(AltibaseDataSource dataSource, IntKeyMap<AltibasePlanNode> prevNodes, Map<String, Object> attributes) {
         this.dataSource = dataSource;
 
-        this.id = getIntFromMap(attributes, "id");
-        this.depth = getIntFromMap(attributes, "depth");
-        this.plan = getStringFromMap(attributes, "plan");
+        this.id = JSONUtils.getInteger(attributes, "id");
+        this.depth = JSONUtils.getInteger(attributes, "depth");
+        this.plan = JSONUtils.getString(attributes, "plan");
 
         setOperation();
 
-        Integer parentIdFromMap =  getIntFromMap(attributes, "parent_id");
+        Integer parentIdFromMap =  JSONUtils.getInteger(attributes, "parent_id");
 
         if (parentIdFromMap != null) {
             parent = prevNodes.get(parentIdFromMap);
@@ -117,28 +118,6 @@ public class AltibasePlanNode extends AbstractExecutionPlanNode  {
         } else {
             operation = plan.trim();
             options = "";
-        }
-    }
-
-    /**
-     * Return String type value matches to key (name).
-     */
-    private String getStringFromMap(Map<String, String> attributes, String name) {
-        return attributes.containsKey(name) ? attributes.get(name) : "";
-    }
-
-    /**
-     * Return int type value matches to key (name).
-     */
-    private int getIntFromMap(Map<String, String> attributes, String name) {
-        if (attributes.containsKey(name)) {
-            try {
-                return Integer.parseInt(attributes.get(name));
-            } catch (Exception e) {
-                return 0;
-            }       
-        } else {
-            return 0;
         }
     }
 

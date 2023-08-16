@@ -60,6 +60,7 @@ public class AltibaseConstants {
     public static final int TYPE_VARCHAR = 12;
 
     public static final String TYPE_NAME_GEOMETRY = "GEOMETRY";
+    public static final String TYPE_NAME_BLOB = "BLOB";
     public static final String TYPE_NAME_CLOB = "CLOB";
     public static final String TYPE_NAME_DATE = "DATE";
     public static final String TYPE_NAME_BYTE = "BYTE"; // for reflection
@@ -70,7 +71,6 @@ public class AltibaseConstants {
     public static final String NO_DBMS_METADATA = "-- [WARNING] Without DBMS_METADATA package, " 
             + "the generated DDL may not be correct." + NEW_LINE;
     
-
     /*
      * Preference page
      */

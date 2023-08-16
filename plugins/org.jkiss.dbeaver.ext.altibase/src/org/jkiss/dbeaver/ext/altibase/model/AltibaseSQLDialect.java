@@ -543,6 +543,11 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
     }
 
     @Override
+    public String getBlobDataType() {
+        return AltibaseConstants.TYPE_NAME_BLOB;
+    }
+    
+    @Override
     public String getClobDataType() {
         return AltibaseConstants.TYPE_NAME_CLOB;
     }
@@ -614,6 +619,4 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
         
         System.out.println();
     }
-
-
 }

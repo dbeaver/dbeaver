@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.altibase.model.plan;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
@@ -41,9 +40,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Altibase execution plan node
@@ -115,19 +112,6 @@ public class AltibaseQueryPlanner extends AbstractExecutionPlanSerializer implem
                 nodeJson.add(PROP_ATTRIBUTES, attributes);
             }
         });
-    }
-
-    private Map<String, String> getNodeAttributes(JsonObject nodeObject) {
-        Map<String, String> attributes = new HashMap<>(44);
-
-        JsonArray attrs =  nodeObject.getAsJsonArray(AbstractExecutionPlanSerializer.PROP_ATTRIBUTES);
-        for (JsonElement attr : attrs) {
-            for (Map.Entry<String, JsonElement> p : attr.getAsJsonObject().entrySet()) {
-                attributes.put(p.getKey(), p.getValue().getAsString());
-            }
-        }
-
-        return attributes;
     }
 
     @Override

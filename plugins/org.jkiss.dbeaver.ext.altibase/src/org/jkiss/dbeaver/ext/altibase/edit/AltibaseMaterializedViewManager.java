@@ -49,13 +49,13 @@ public class AltibaseMaterializedViewManager extends GenericViewManager {
     protected String getDropViewType(GenericTableBase table) {
         return AltibaseConstants.OBJ_TYPE_MATERIALIZED_VIEW;
     }
-    
+
     @Override
     protected GenericTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, 
             Object container, Object copyFrom, Map<String, Object> options) {
         GenericStructContainer structContainer = (GenericStructContainer) container;
         String tableName = getNewChildName(monitor, structContainer, SQLTableManager.BASE_MATERIALIZED_VIEW_NAME);
-        GenericTableBase viewImpl = structContainer.getDataSource().getMetaModel().createTableImpl(
+        GenericTableBase viewImpl = structContainer.getDataSource().getMetaModel().createTableOrViewImpl(
                 structContainer, tableName,
                 AltibaseConstants.OBJ_TYPE_MATERIALIZED_VIEW,
                 null);

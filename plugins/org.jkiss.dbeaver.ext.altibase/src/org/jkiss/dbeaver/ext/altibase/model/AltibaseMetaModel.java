@@ -137,7 +137,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public GenericTableBase createTableImpl(
+    public GenericTableBase createTableOrViewImpl(
             GenericStructContainer container,
             @Nullable String tableName,
             @Nullable String tableType,
@@ -165,7 +165,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
                 tableType,
                 dbResult);
     }
-    
+
     /**
      * Get a specific Index DDL
      */

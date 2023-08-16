@@ -28,18 +28,17 @@ import org.jkiss.dbeaver.model.text.parser.TPToken;
 import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
 import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 
-import java.util.List;
-
 /**
 * Altibase dialect rules
 */
 class AltibaseDialectRules implements TPRuleProvider {
 
     @Override
-    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
+    public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position) {
         if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
-            rules.add(new QStringRule());
+            return new TPRule[]{ new QStringRule() };
         }
+        return new TPRule[0];
     }
 
     private static class QStringRule implements TPPredicateRule {
