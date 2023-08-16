@@ -10,10 +10,6 @@
  *******************************************************************************/
 package org.jkiss.dbeaver.ui.notifications;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.LegacyActionTools;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.osgi.util.NLS;
@@ -25,12 +21,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,8 +30,6 @@ import java.util.List;
  * @author Mik Kersten
  */
 public class DBeaverNotificationPopup extends AbstractWorkbenchNotificationPopup {
-
-    private static final Log log = Log.getLog(DBeaverNotificationPopup.class);
 
     private static final int NUM_NOTIFICATIONS_TO_DISPLAY = 4;
 
@@ -57,10 +45,6 @@ public class DBeaverNotificationPopup extends AbstractWorkbenchNotificationPopup
     protected void createContentArea(Composite parent) {
         int count = 0;
         for (final AbstractNotification notification : notifications) {
-            final AbstractUiNotification uiNotification = notification instanceof AbstractUiNotification
-                ? (AbstractUiNotification) notification
-                : null;
-
             Composite notificationComposite = new Composite(parent, SWT.NO_FOCUS);
             GridDataFactory.fillDefaults().grab(true, true).align(SWT.FILL, SWT.FILL).applyTo(notificationComposite);
             notificationComposite.setLayout(new GridLayout(2, false));
@@ -69,8 +53,8 @@ public class DBeaverNotificationPopup extends AbstractWorkbenchNotificationPopup
             if (count < NUM_NOTIFICATIONS_TO_DISPLAY) {
                 final Label notificationLabelIcon = new Label(notificationComposite, SWT.NO_FOCUS);
                 notificationLabelIcon.setBackground(parent.getBackground());
-                if (uiNotification != null) {
-                    notificationLabelIcon.setImage(uiNotification.getNotificationKindImage());
+                if (notification instanceof AbstractUiNotification) {
+                    notificationLabelIcon.setImage(((AbstractUiNotification) notification).getNotificationKindImage());
                 }
 
                 final ScalingHyperlink itemLink = new ScalingHyperlink(notificationComposite, SWT.BEGINNING | SWT.NO_FOCUS);
@@ -78,15 +62,15 @@ public class DBeaverNotificationPopup extends AbstractWorkbenchNotificationPopup
                 itemLink.setForeground(HYPERLINK_WIDGET_COLOR);
                 itemLink.registerMouseTrackListener();
                 itemLink.setText(LegacyActionTools.escapeMnemonics(notification.getLabel()));
-                if (uiNotification != null) {
-                    itemLink.setImage(uiNotification.getNotificationImage());
+                if (notification instanceof AbstractUiNotification) {
+                    itemLink.setImage(((AbstractUiNotification) notification).getNotificationImage());
                 }
                 itemLink.setBackground(parent.getBackground());
                 itemLink.addHyperlinkListener(new HyperlinkAdapter() {
                     @Override
                     public void linkActivated(HyperlinkEvent e) {
-                        if (uiNotification != null) {
-                            uiNotification.open();
+                        if (notification instanceof AbstractUiNotification) {
+                            ((AbstractUiNotification) notification).open();
                         }
                         IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
                         if (window != null) {
@@ -117,13 +101,6 @@ public class DBeaverNotificationPopup extends AbstractWorkbenchNotificationPopup
                         .align(SWT.FILL, SWT.FILL)
                         .applyTo(descriptionLabel);
                 }
-
-                if (uiNotification != null && ModelPreferences.getPreferences().getBoolean(ModelPreferences.NOTIFICATIONS_SOUND_ENABLED)) {
-                    final NotificationSoundProvider soundProvider = uiNotification.getNotificationSoundProvider();
-                    if (soundProvider != null) {
-                        scheduleNotificationSound(soundProvider);
-                    }
-                }
             } else {
                 int numNotificationsRemain = notifications.size() - count;
                 ScalingHyperlink remainingLink = new ScalingHyperlink(notificationComposite, SWT.NO_FOCUS);
@@ -150,34 +127,6 @@ public class DBeaverNotificationPopup extends AbstractWorkbenchNotificationPopup
             }
             count++;
         }
-    }
-
-    private static void scheduleNotificationSound(@NotNull NotificationSoundProvider provider) {
-        final NotificationSound sound;
-
-        try {
-            sound = provider.create();
-        } catch (DBException e) {
-            log.debug("Unable to play notification sound", e);
-            return;
-        }
-
-        final AbstractJob job = new AbstractJob("Play notification sound") {
-            @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
-                sound.play(ModelPreferences.getPreferences().getFloat(ModelPreferences.NOTIFICATIONS_SOUND_VOLUME) / 100.0f);
-                return Status.OK_STATUS;
-            }
-        };
-        job.addJobChangeListener(new JobChangeAdapter() {
-            @Override
-            public void done(IJobChangeEvent event) {
-                sound.close();
-            }
-        });
-        job.setUser(false);
-        job.setSystem(true);
-        job.schedule();
     }
 
     @Override

@@ -11,23 +11,18 @@
 package org.jkiss.dbeaver.ui.notifications;
 
 import org.eclipse.swt.graphics.Image;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
 /**
  * Copied from Mylyn sources
  */
 public abstract class AbstractUiNotification extends AbstractNotification {
-    public AbstractUiNotification(@NotNull String id) {
-        super(id);
+    public AbstractUiNotification(String eventId) {
+        super(eventId);
     }
 
     public abstract Image getNotificationImage();
 
     public abstract Image getNotificationKindImage();
-
-    @Nullable
-    public abstract NotificationSoundProvider getNotificationSoundProvider();
 
     public abstract void open();
 }
