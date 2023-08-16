@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHPortForwardConfiguration;
@@ -138,18 +139,7 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         savedConnectionInfo = connectionInfo;
 
         connectionInfo = new DBPConnectionConfiguration(connectionInfo);
-        // Replace database host/port and URL
-        if (CommonUtils.isEmpty(sshLocalHost)) {
-            connectionInfo.setHostName(SSHConstants.LOCALHOST_NAME);
-        } else {
-            connectionInfo.setHostName(sshLocalHost);
-        }
-        connectionInfo.setHostPort(Integer.toString(sshLocalPort));
-        if (configuration.getDriver() != null) {
-            // Driver can be null in case of orphan tunnel config (e.g. in network profile)
-            String newURL = configuration.getDriver().getConnectionURL(connectionInfo);
-            connectionInfo.setUrl(newURL);
-        }
+        DBWUtils.updateConfigWithTunnelInfo(configuration, connectionInfo, sshLocalHost, sshLocalPort);
         return connectionInfo;
     }
 

@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -68,9 +69,17 @@ public class NNAHDataSourceTunnel extends NavigatorNodeActionHandlerAbstract {
     public void handleNodeAction(INavigatorModelView view, DBNNode node, Event event, boolean defaultAction) {
         if (node instanceof DBNDatabaseNode) {
             DBPDataSourceContainer dataSourceContainer = ((DBNDatabaseNode) node).getDataSourceContainer();
+
+            String nhId = null;
+            for (DBWHandlerConfiguration nhc : dataSourceContainer.getConnectionConfiguration().getHandlers()) {
+                if (nhc.isEnabled() && nhc.getHandlerDescriptor().getType() == DBWHandlerType.TUNNEL) {
+                    nhId = nhc.getId();
+                    break;
+                }
+            }
             UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
             if (serviceConnections != null) {
-                serviceConnections.openConnectionEditor(dataSourceContainer, "ConnectionPageNetworkHandler.ssh_tunnel");
+                serviceConnections.openConnectionEditor(dataSourceContainer, "ConnectionPageNetworkHandler." + nhId);
             }
         }
     }
