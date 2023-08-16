@@ -563,8 +563,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         super.configureSourceViewerDecorationSupport(support);
 
         if (UIStyles.isDarkHighContrastTheme()) {
-            // it effectively works like switching current line highlighting off
-            support.setCursorLinePainterPreferenceKeys(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_CURRENT_LINE, ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_FORE);
+            support.setCursorLinePainterPreferenceKeys(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_CURRENT_LINE, ThemeConstants.COLOR_SQL_RESULT_LINES_SELECTED);
         }
     }
 

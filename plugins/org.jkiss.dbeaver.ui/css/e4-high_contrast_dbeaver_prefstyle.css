@@ -12,8 +12,3 @@ CTabItem:selected {
 {
     background-color: '#COLOR_WIDGET_BACKGROUND';
 }
-
-IEclipsePreferences#org-eclipse-ui-editors:org-eclipse-ui-themes { /* pseudo attribute added to allow contributions without replacing this node, see Bug 466075 */
-    preferences:
-        'currentLineColor=23,135,58'
-}
