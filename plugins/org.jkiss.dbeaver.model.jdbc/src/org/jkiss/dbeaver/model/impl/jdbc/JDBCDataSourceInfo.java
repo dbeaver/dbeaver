@@ -89,7 +89,7 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
             try {
                 this.readOnly = metaData.isReadOnly();
             } catch (Throwable e) {
-                log.debug(e.getMessage());
+                debugError(e);
                 this.readOnly = false;
             }
         } else {
@@ -98,13 +98,13 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
         try {
             this.databaseProductName = metaData.getDatabaseProductName();
         } catch (Throwable e) {
-            log.debug(e.getMessage());
+            debugError(e);
             this.databaseProductName = "?"; //$NON-NLS-1$
         }
         try {
             this.databaseProductVersion = metaData.getDatabaseProductVersion();
         } catch (Throwable e) {
-            log.debug(e.getMessage());
+            debugError(e);
             this.databaseProductVersion = "?"; //$NON-NLS-1$
         }
         try {
@@ -113,13 +113,13 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
                 this.driverName = name;
             }
         } catch (Throwable e) {
-            log.debug(e.getMessage());
+            debugError(e);
             this.driverName = "?"; //$NON-NLS-1$
         }
         try {
             this.driverVersion = metaData.getDriverVersion();
         } catch (Throwable e) {
-            log.debug(e.getMessage());
+            debugError(e);
             this.driverVersion = "?"; //$NON-NLS-1$
         }
         try {
@@ -135,31 +135,31 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
         try {
             this.schemaTerm = makeTermString(metaData.getSchemaTerm(), TERM_SCHEMA);
         } catch (Throwable e) {
-            log.debug(e.getMessage());
+            debugError(e);
             this.schemaTerm = TERM_SCHEMA;
         }
         try {
             this.procedureTerm = makeTermString(metaData.getProcedureTerm(), TERM_PROCEDURE);
         } catch (Throwable e) {
-            log.debug(e.getMessage());
+            debugError(e);
             this.procedureTerm = TERM_PROCEDURE;
         }
         try {
             this.catalogTerm = makeTermString(metaData.getCatalogTerm(), TERM_CATALOG);
         } catch (Throwable e) {
-            log.debug(e.getMessage());
+            debugError(e);
             this.catalogTerm = TERM_CATALOG;
         }
         try {
             supportsBatchUpdates = metaData.supportsBatchUpdates();
         } catch (Throwable e) {
-            log.debug(e.getMessage());
+            debugError(e);
         }
 
         try {
             supportsTransactions = metaData.supportsTransactions();
         } catch (Throwable e) {
-            log.debug(e.getMessage());
+            debugError(e);
             supportsTransactions = true;
         }
 
@@ -172,7 +172,7 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
                     }
                 }
             } catch (Throwable e) {
-                log.debug(e.getMessage());
+                debugError(e);
             }
             if (!supportedIsolations.contains(JDBCTransactionIsolation.NONE)) {
                 supportedIsolations.add(0, JDBCTransactionIsolation.NONE);
@@ -379,4 +379,13 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
     {
         return supportsBatchUpdates;
     }
+
+    private static void debugError(Throwable e) {
+        if (e.getMessage() == null) {
+            log.debug(e.getClass().getName());
+        } else {
+            log.debug(e.getClass().getName() + ": " + e.getMessage());
+        }
+    }
+
 }

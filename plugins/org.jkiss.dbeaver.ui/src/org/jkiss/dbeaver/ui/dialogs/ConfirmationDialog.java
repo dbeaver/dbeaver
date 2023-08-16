@@ -95,7 +95,9 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
                 if (kind == QUESTION || kind == QUESTION_WITH_CANCEL) {
                     return IDialogConstants.NO_ID;
                 } else {
-                    return IDialogConstants.CANCEL_ID;
+                    // These dialog all have OK and maybe CANCEL buttons.
+                    // It makes no sense to return CANCEL_ID here as it's not a valid decision like YES or NO
+                    return IDialogConstants.OK_ID;
                 }
             }
         }

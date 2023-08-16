@@ -256,20 +256,25 @@ public class EditConnectionWizard extends ConnectionWizard {
         DBPDataSourceRegistry registry = originalDataSource.getRegistry();
         DataSourceDescriptor dsCopy = new DataSourceDescriptor(originalDataSource, registry);
         DataSourceDescriptor dsChanged = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
-        saveSettings(dsChanged);
+        try {
+            saveSettings(dsChanged);
 
-        if (dsCopy.equalSettings(dsChanged)) {
-            // No changes
-            return true;
-        }
+            if (dsCopy.equalSettings(dsChanged)) {
+                // No changes
+                return true;
+            }
 
-        // Check locked datasources
-        if (!CommonUtils.isEmpty(dataSource.getLockPasswordHash())) {
-            if (!isOnlyUserCredentialChanged(dsCopy, dsChanged)) {
-                if (!checkLockPassword()) {
-                    return false;
+            // Check locked datasources
+            if (!CommonUtils.isEmpty(dataSource.getLockPasswordHash())) {
+                if (!isOnlyUserCredentialChanged(dsCopy, dsChanged)) {
+                    if (!checkLockPassword()) {
+                        return false;
+                    }
                 }
             }
+        } finally {
+            dsCopy.dispose();
+            dsChanged.dispose();
         }
 
 
@@ -399,4 +404,10 @@ public class EditConnectionWizard extends ConnectionWizard {
 */
     }
 
+    @Override
+    public void dispose() {
+        super.dispose();
+        // Dispose temp datasource
+        this.dataSource.dispose();
+    }
 }

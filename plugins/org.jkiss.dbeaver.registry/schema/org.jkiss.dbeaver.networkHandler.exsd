@@ -90,6 +90,13 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="pinned" type="boolean">
+            <annotation>
+               <documentation>
+
+               </documentation>
+            </annotation>
+         </attribute>
          <attribute name="handlerClass" type="string">
             <annotation>
                <documentation>

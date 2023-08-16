@@ -45,7 +45,6 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -516,11 +515,13 @@ public class PropertyTreeViewer extends TreeViewer {
                                     return;
                                 }
                                 if (lastNode.parent != null) lastNode = lastNode.parent;
-                                addProperty(lastNode, new PropertyDescriptor(lastNode.category, "prop" + lastNode.children.size(), "", "", false, String.class, "", null), true);
+                                //addProperty(lastNode, new PropertyDescriptor(lastNode.category, "prop" + lastNode.children.size(), "", "", false, String.class, "", null), true);
                                 allItems = treeControl.getItems();
-                                TreeItem newItem = allItems[allItems.length - 1];
-                                treeControl.setSelection(newItem);
-                                selectedColumn = UIUtils.getColumnAtPos(newItem, e.x, e.y);
+                                if (allItems.length > 0) {
+                                    TreeItem newItem = allItems[allItems.length - 1];
+                                    treeControl.setSelection(newItem);
+                                    selectedColumn = UIUtils.getColumnAtPos(newItem, e.x, e.y);
+                                }
                             }
                         }
                     }

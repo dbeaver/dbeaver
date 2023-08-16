@@ -83,7 +83,7 @@ public class GreenplumMaterializedView extends PostgreMaterializedView {
                 distributionColumns = GreenplumUtils.getDistributionTableColumns(monitor, distributionColumns, this);
             }
 
-            GreenplumUtils.addObjectModifiersToDDL(monitor, ddl, this, distributionColumns, supportsReplicatedDistribution);
+            GreenplumUtils.addObjectModifiersToDDL(monitor, ddl, this, distributionColumns, supportsReplicatedDistribution, false);
         } catch (DBException e) {
             log.error("Error reading Greenplum table properties", e);
         }
