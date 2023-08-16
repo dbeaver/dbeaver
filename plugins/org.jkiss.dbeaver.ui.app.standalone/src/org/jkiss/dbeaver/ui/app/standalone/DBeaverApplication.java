@@ -168,12 +168,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     public Object start(IApplicationContext context) {
         instance = this;
 
-        if (Platform.getOS().equals(Platform.OS_WIN32)) {
-            // Set JNA library path (#19735)
-            String installPath = SystemVariablesResolver.getInstallPath();
-            System.setProperty("jna.boot.library.path", installPath);
-        }
-
         Location instanceLoc = Platform.getInstanceLocation();
 
         CommandLine commandLine = DBeaverCommandLine.getCommandLine();
