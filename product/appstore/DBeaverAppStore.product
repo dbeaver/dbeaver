@@ -62,10 +62,8 @@
         <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2"/>
         <!-- This is important because simpleconfigurator conflicts with update.configurator -->
         <plugin id="org.eclipse.update.configurator" autoStart="false" startLevel="10"/>
-        <!-- Start core plugins before others -->
-        <plugin id="org.eclipse.equinox.security" autoStart="true" startLevel="3" />
-        <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="3" />
-        <plugin id="org.jkiss.dbeaver.ui.app.standalone" autoStart="true" startLevel="3" />
+        <!-- Start egit later than others because of secure storage activation-->
+        <plugin id="org.eclipse.egit.core" autoStart="false"  startLevel="5" />
     </configurations>
 
 </product>

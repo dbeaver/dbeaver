@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.internal.security.auth.AuthPlugin;
 import org.eclipse.equinox.internal.security.storage.SecurePreferencesMapper;
 import org.eclipse.equinox.internal.security.storage.StorageUtils;
+import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.osgi.internal.framework.BundleContextImpl;
 import org.eclipse.osgi.internal.framework.EquinoxConfiguration;
 import org.eclipse.osgi.internal.framework.EquinoxContainer;
@@ -191,6 +192,8 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
                 SecurePreferencesMapper.clearDefault();
             }
         }
+
+        SecurePreferencesFactory.getDefault();
     }
 
 }
