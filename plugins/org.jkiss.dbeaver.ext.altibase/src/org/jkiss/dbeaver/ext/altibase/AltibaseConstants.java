@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.altibase;
 
-import java.sql.Types;
-
 import org.jkiss.utils.StandardConstants;
+
+import java.sql.Types;
 
 public class AltibaseConstants {
     
