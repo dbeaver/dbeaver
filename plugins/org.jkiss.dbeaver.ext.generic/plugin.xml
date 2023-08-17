@@ -1282,7 +1282,8 @@
                 <driver
                     id="pervasive_jdbc"
                     label="Pervasive SQL"
-                    iconBig="icons/pervasive_icon_big@2x.png"
+                    icon="icons/pervasive_icon.png"
+                    iconBig="icons/pervasive_icon_big.png"
                     class="com.pervasive.jdbc.v2.Driver"
                     sampleURL="jdbc:pervasive://{host}:{port}/{database}?transport=tcp"
                     defaultPort="1583"
