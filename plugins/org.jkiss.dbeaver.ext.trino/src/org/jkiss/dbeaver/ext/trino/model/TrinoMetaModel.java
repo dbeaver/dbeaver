@@ -16,12 +16,20 @@
  */
 package org.jkiss.dbeaver.ext.trino.model;
 
+import java.sql.SQLException;
+import java.util.Map;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -42,4 +50,29 @@ public class TrinoMetaModel extends GenericMetaModel {
     ) {
         return new TrinoDataTypeCache(container);
     }
-}
+    
+    @Override
+    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+        GenericDataSource dataSource = sourceObject.getDataSource();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read trino view source")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT view_definition FROM " +
+                	DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + "." +
+                	"information_schema.views \n" +
+                    "WHERE table_schema = ? AND table_name = ?\n"))
+            {
+                dbStat.setString(1, sourceObject.getSchema().getName());
+                dbStat.setString(2, sourceObject.getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                    	return dbResult.getString(1);
+                    } else {
+                        return "-- View definition not found in system catalog";
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, dataSource);
+        }
+    }	
+}   
