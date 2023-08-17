@@ -78,7 +78,7 @@ class EndIdleTransactionsJob extends DataSourceUpdaterJob {
         }
         DBeaverNotifications.showNotification(
             dataSource,
-            DBeaverNotifications.NT_ROLLBACK,
+            DBeaverNotifications.NT_ROLLBACK_IDLE,
             "Transactions have been rolled back after long idle period",
             DBPMessageType.ERROR);
 

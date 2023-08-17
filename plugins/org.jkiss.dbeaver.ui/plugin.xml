@@ -2,6 +2,7 @@
 <?eclipse version="3.4"?>
 <plugin>
     <extension-point id="org.jkiss.dbeaver.confirmations" name="UI confirmations" schema="schema/org.jkiss.dbeaver.confirmations.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.notifications" name="UI notifications" schema="schema/org.jkiss.dbeaver.notifications.exsd"/>
 
    <extension point="org.eclipse.core.expressions.definitions">
       <definition id="DBeaverPerspectiveActive">
@@ -93,6 +94,12 @@
                 </and>
             </activeWhen>
         </handler>
+    </extension>
+
+    <extension point="org.eclipse.e4.ui.css.swt.theme">
+        <stylesheet uri="css/e4-high_contrast_dbeaver_prefstyle.css">
+            <themeid refid="org.eclipse.e4.ui.css.theme.high-contrast"/>
+        </stylesheet>
     </extension>
 
     <extension point="org.eclipse.ui.themes">

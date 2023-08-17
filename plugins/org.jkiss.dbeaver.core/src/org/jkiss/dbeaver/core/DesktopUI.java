@@ -161,10 +161,11 @@ public class DesktopUI implements DBPPlatformUI {
             return;
         }
         if (TrayIconHandler.isSupported()) {
+            Display.getCurrent().beep();
             getInstance().trayItem.notify(message, status);
         } else {
             DBeaverNotifications.showNotification(
-                "agentNotify",
+                "agent.notify",
                 "Agent Notification",
                 message,
                 status == IStatus.INFO ? DBPMessageType.INFORMATION :
