@@ -123,7 +123,10 @@ public class MappingRulesDialog extends BaseDialog {
             1,
             Integer.MAX_VALUE);
 
-        saveSettings = UIUtils.createCheckbox(mappingGroup, DTUIMessages.mappings_rules_dialog_save_settings_checkbox, true);
+        saveSettings = UIUtils.createCheckbox(
+            mappingGroup,
+            DTUIMessages.mappings_rules_dialog_save_settings_checkbox,
+            store.contains(DTConstants.PREF_SAVE_LOCAL_SETTINGS) ? store.getBoolean(DTConstants.PREF_SAVE_LOCAL_SETTINGS) : true);
         GridData gd2 = new GridData();
         gd2.horizontalSpan = 2;
         saveSettings.setLayoutData(gd2);
@@ -203,8 +206,9 @@ public class MappingRulesDialog extends BaseDialog {
             if (changeDataTypeLength) {
                 store.setValue(DTConstants.PREF_MAX_TYPE_LENGTH, typeLengthSpinner.getSelection());
             }
-            PrefUtils.savePreferenceStore(store);
         }
+        store.setValue(DTConstants.PREF_SAVE_LOCAL_SETTINGS, saveSettings.getSelection());
+        PrefUtils.savePreferenceStore(store);
     }
 
     @Nullable
