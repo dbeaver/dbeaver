@@ -14,22 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event.session;
+package org.jkiss.dbeaver.ui.notifications;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.websocket.event.WSEventType;
+import org.jkiss.dbeaver.DBException;
 
-public class WSSocketConnectedEvent extends WSAbstractSessionEvent {
-
-    private final String applicationRunId;
-
-    public WSSocketConnectedEvent(@NotNull String applicationRunId) {
-        super(WSEventType.SESSION_WEBSOCKET_CONNECTED);
-        this.applicationRunId = applicationRunId;
-    }
-
+public interface NotificationSoundProvider {
     @NotNull
-    public String getApplicationRunId() {
-        return applicationRunId;
-    }
+    NotificationSound create() throws DBException;
 }

@@ -17,12 +17,10 @@
  */
 package org.jkiss.dbeaver.tasks.ui.nativetool;
 
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -234,15 +232,6 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
     protected void showLogPage() {
         if (getContainer().getCurrentPage() != logPage) {
             getContainer().showPage(logPage);
-        }
-    }
-
-    protected void notifyToolFinish(String toolName, long workTime) {
-        // Make a sound
-        Display.getCurrent().beep();
-        // Notify agent
-        if (workTime > DBWorkbench.getPlatformUI().getLongOperationTimeout() * 1000) {
-            DBWorkbench.getPlatformUI().notifyAgent(toolName, IStatus.INFO);
         }
     }
 

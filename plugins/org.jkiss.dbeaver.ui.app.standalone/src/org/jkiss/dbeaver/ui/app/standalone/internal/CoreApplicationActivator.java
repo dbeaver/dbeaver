@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone.internal;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.osgi.internal.framework.BundleContextImpl;
 import org.eclipse.osgi.internal.framework.EquinoxContainer;
 import org.eclipse.osgi.internal.hookregistry.ClassLoaderHook;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
+import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -56,6 +58,12 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
 
         if (PATCH_ECLIPSE_CLASSES) {
             activateHooks(context);
+        }
+
+        if (Platform.getOS().equals(Platform.OS_WIN32)) {
+            // Set JNA library path (#19735)
+            String installPath = SystemVariablesResolver.getInstallPath();
+            System.setProperty("jna.boot.library.path", installPath);
         }
 
         // Set notifications handler

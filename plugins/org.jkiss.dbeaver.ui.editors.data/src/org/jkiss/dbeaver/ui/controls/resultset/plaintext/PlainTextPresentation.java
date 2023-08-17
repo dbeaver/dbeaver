@@ -126,8 +126,14 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
 
     @Override
     protected void applyThemeSettings(ITheme currentTheme) {
-        curLineColor = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
         text.setFont(currentTheme.getFontRegistry().get(UIFonts.DBEAVER_FONTS_MONOSPACE));
+        if (UIStyles.isDarkHighContrastTheme()) {
+            text.setBackground(UIStyles.getDefaultWidgetBackground());
+            text.setForeground(UIUtils.COLOR_WHITE);
+            curLineColor = UIUtils.COLOR_GREEN_CONTRAST;
+        } else {
+            curLineColor = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
+        }
     }
 
     private void onCursorChange(int offset) {

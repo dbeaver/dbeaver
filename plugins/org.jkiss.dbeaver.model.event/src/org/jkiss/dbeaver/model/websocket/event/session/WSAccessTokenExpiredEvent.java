@@ -16,20 +16,10 @@
  */
 package org.jkiss.dbeaver.model.websocket.event.session;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
-public class WSSocketConnectedEvent extends WSAbstractSessionEvent {
-
-    private final String applicationRunId;
-
-    public WSSocketConnectedEvent(@NotNull String applicationRunId) {
-        super(WSEventType.SESSION_WEBSOCKET_CONNECTED);
-        this.applicationRunId = applicationRunId;
-    }
-
-    @NotNull
-    public String getApplicationRunId() {
-        return applicationRunId;
+public class WSAccessTokenExpiredEvent extends WSAbstractSessionEvent {
+    public WSAccessTokenExpiredEvent() {
+        super(WSEventType.ACCESS_TOKEN_EXPIRED);
     }
 }

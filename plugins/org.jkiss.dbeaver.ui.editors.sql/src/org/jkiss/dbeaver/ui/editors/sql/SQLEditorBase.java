@@ -68,6 +68,7 @@ import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.parser.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.editors.AbstractStorageEditorInput;
 import org.jkiss.dbeaver.ui.editors.BaseTextEditorCommands;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -560,6 +561,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 */
 
         super.configureSourceViewerDecorationSupport(support);
+
+        if (UIStyles.isDarkHighContrastTheme()) {
+            support.setCursorLinePainterPreferenceKeys(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_CURRENT_LINE, ThemeConstants.COLOR_SQL_RESULT_LINES_SELECTED);
+        }
     }
 
     public ICharacterPairMatcher getCharacterPairMatcher() {
