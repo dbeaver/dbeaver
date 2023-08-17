@@ -19,6 +19,6 @@ package org.jkiss.dbeaver.model.security;
 public interface SMObjects {
     String PROJECT_OBJECT_TYPE_ID = "project";
 
-    SMObjectType DATASOURCE = new SMObjectType("datasource");
-    SMObjectType PROJECT = new SMObjectType(PROJECT_OBJECT_TYPE_ID);
+    SMObjectType DATASOURCE = SMObjectType.datasource;
+    SMObjectType PROJECT = SMObjectType.project;
 }
