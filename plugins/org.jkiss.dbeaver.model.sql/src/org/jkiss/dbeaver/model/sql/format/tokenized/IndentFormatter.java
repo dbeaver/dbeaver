@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -131,7 +132,7 @@ class IndentFormatter {
             result += insertReturnAndIndent(argList, index + 1, indent);
         } else {
             if (blockHeaderStrings != null && ArrayUtils.contains(blockHeaderStrings, tokenString) || (SQLUtils.isBlockStartKeyword(dialect, tokenString) &&
-                            !SQLConstants.KEYWORD_SELECT.equalsIgnoreCase(getPrevSpecialKeyword(argList, index, false)))) { // If SELECT is previous keyword, then we are already inside the block
+                !SQLConstants.KEYWORD_SELECT.equalsIgnoreCase(getPrevSpecialKeyword(argList, index, false)))) { // If SELECT is previous keyword, then we are already inside the block
                 if (index > 0) {
                     result += insertReturnAndIndent(argList, index, indent - 1);
                 }
@@ -402,7 +403,13 @@ class IndentFormatter {
         if (functionBracket.contains(Boolean.TRUE))
             return 0;
         try {
-            String s = GeneralUtils.getDefaultLineSeparator();
+            String s;
+            boolean isWindows = RuntimeUtils.isWindows();
+            if (isWindows) {
+                s = GeneralUtils.getDefaultLineSeparator();
+            } else {
+                s = "\t\n";
+            }
             if (argIndex > 0) {
                 final FormatterToken prevToken = argList.get(argIndex - 1);
                 if (prevToken.getType() == TokenType.COMMENT &&
@@ -414,7 +421,9 @@ class IndentFormatter {
                 s = "";
             }
             for (int index = 0; index < argIndent; index++) {
-                s += formatterCfg.getIndentString();
+                if (isWindows) {
+                    s += formatterCfg.getIndentString();
+                }
             }
 
             FormatterToken token = argList.get(argIndex);
