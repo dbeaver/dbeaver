@@ -89,4 +89,10 @@ public class AltibaseUtils {
         
         return ddl.substring(0, last);
     }
+    
+    public static StringBuilder getMultiLineCommentedString(StringBuilder sb) {
+        return new StringBuilder("/*").append(AltibaseConstants.NEW_LINE).append(sb)
+                .append(AltibaseConstants.NEW_LINE).append("*/");
+        
+    }
 }
