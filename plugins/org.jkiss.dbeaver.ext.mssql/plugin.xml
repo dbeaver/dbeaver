@@ -189,6 +189,13 @@
                     <file type="jar" path="drivers/mssql/new" bundle="drivers.mssql.new"/>
                     <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/new/auth/x64" optional="true" bundle="drivers.mssql.new"/>
                     <file type="license" path="drivers/mssql/new/LICENSE.txt" bundle="drivers.mssql.new"/>
+
+                    <provider-properties>
+                        <propertyGroup label="Advanced">
+                            <property id="@dbeaver-show-all-schemas@" label="Show all schemas" type="boolean" description="Shows all database schemas. If disabled shows only non-empty schemas."/>
+                            <property id="sslTrustServerCertificate" label="Trust Server Certificate" type="boolean" description="Trust Server Certificate"/>
+                        </propertyGroup>
+                    </provider-properties>
                 </driver>
 
                 <driver
