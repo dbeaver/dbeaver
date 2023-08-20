@@ -415,6 +415,9 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                 column.getColumn().setText(DTUIMessages.stream_consumer_page_mapping_mapping_column_name);
             }
 
+            createButton(group, IDialogConstants.SELECT_ALL_ID, "Select All", true);
+            createButton(group, IDialogConstants.DESELECT_ALL_ID, "Deselect All", true);
+
             errorLabel = new CLabel(group, SWT.NONE);
             errorLabel.setText(DTUIMessages.stream_consumer_page_mapping_label_error_no_columns_selected_text);
             errorLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_ERROR));
@@ -434,6 +437,28 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
         protected void createButtonsForButtonBar(Composite parent) {
             createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
             createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+        }
+
+
+
+        @Override
+        protected void buttonPressed(int buttonId) {
+            if (buttonId == IDialogConstants.SELECT_ALL_ID || buttonId == IDialogConstants.DESELECT_ALL_ID) {
+                StreamMappingType mappingType;
+                if (buttonId == IDialogConstants.SELECT_ALL_ID) {
+                    mappingType = StreamMappingType.export;
+                } else {
+                    mappingType = StreamMappingType.skip;
+                }
+                List<StreamMappingContainer> list = (List<StreamMappingContainer>) viewer.getInput();
+                for (StreamMappingContainer container : list) {
+                    List<StreamMappingAttribute> attrs = container.getAttributes(new VoidProgressMonitor());
+                    attrs.forEach(x->x.setMappingType(mappingType));
+                }
+            }
+            viewer.refresh();
+            updateCompletion();
+            super.buttonPressed(buttonId);
         }
 
         @Override
