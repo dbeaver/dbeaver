@@ -32,6 +32,7 @@ public class DBeaverNotifications
     public static final String NT_ROLLBACK_IDLE = "rollback.idle";
     public static final String NT_RECONNECT_SUCCESS = "reconnect.success";
     public static final String NT_RECONNECT_FAILURE = "reconnect.failure";
+    public static final String NT_GENERIC = "generic";
 
     @NotNull
     private static NotificationHandler notificationHandler = new ConsoleHandler();
