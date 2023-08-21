@@ -418,32 +418,32 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
 
             Composite panel = new Composite(group, SWT.NONE);
             panel.setLayout(new FillLayout());
-			Button selectAllButton = new Button(panel, SWT.NONE);
-			selectAllButton.setText("Select All");
-			selectAllButton.addSelectionListener(new SelectionAdapter() {
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-					for (StreamMappingContainer container : mappings) {
-						List<StreamMappingAttribute> attrs = container.getAttributes(new VoidProgressMonitor());
-						attrs.forEach(x -> x.setMappingType(StreamMappingType.export));
-					}
-					viewer.refresh();
-					updateCompletion();
-				}
-			});
-			Button deselectAllButton = new Button(panel, SWT.NONE);
-			deselectAllButton.setText("Deselect All");
-			deselectAllButton.addSelectionListener(new SelectionAdapter() {
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-					for (StreamMappingContainer container : mappings) {
-						List<StreamMappingAttribute> attrs = container.getAttributes(new VoidProgressMonitor());
-						attrs.forEach(x -> x.setMappingType(StreamMappingType.skip));
-					}
-					viewer.refresh();
-					updateCompletion();
-				}
-			});
+            Button selectAllButton = new Button(panel, SWT.NONE);
+            selectAllButton.setText("Select All");
+            selectAllButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    for (StreamMappingContainer container : mappings) {
+                        List<StreamMappingAttribute> attrs = container.getAttributes(new VoidProgressMonitor());
+                        attrs.forEach(x -> x.setMappingType(StreamMappingType.export));
+                    }
+                    viewer.refresh();
+                    updateCompletion();
+                }
+            });
+            Button deselectAllButton = new Button(panel, SWT.NONE);
+            deselectAllButton.setText("Deselect All");
+            deselectAllButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    for (StreamMappingContainer container : mappings) {
+                        List<StreamMappingAttribute> attrs = container.getAttributes(new VoidProgressMonitor());
+                        attrs.forEach(x -> x.setMappingType(StreamMappingType.skip));
+                    }
+                    viewer.refresh();
+                    updateCompletion();
+                }
+            });
 
             errorLabel = new CLabel(group, SWT.NONE);
             errorLabel.setText(DTUIMessages.stream_consumer_page_mapping_label_error_no_columns_selected_text);
