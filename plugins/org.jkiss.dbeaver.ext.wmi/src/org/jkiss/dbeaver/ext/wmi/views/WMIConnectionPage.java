@@ -43,7 +43,7 @@ public class WMIConnectionPage extends ConnectionPageWithAuth
     private Combo namespaceCombo;
     private Combo localeCombo;
 
-    private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/wmi_icon_big.png"); //$NON-NLS-1$
+    private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/wmi_logo.png"); //$NON-NLS-1$
 
     public WMIConnectionPage()
     {

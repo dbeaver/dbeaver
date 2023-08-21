@@ -22,6 +22,7 @@
                         label="SQLite"
                         icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/sqlite_icon.png"
                         iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/sqlite_icon_big.png"
+                        logoImage="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/sqlite_logo.png"
                         class="org.sqlite.JDBC"
                         sampleURL="jdbc:sqlite:{file}"
                         defaultPort=""
