@@ -23,6 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
@@ -415,8 +416,34 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                 column.getColumn().setText(DTUIMessages.stream_consumer_page_mapping_mapping_column_name);
             }
 
-            createButton(group, IDialogConstants.SELECT_ALL_ID, "Select All", true);
-            createButton(group, IDialogConstants.DESELECT_ALL_ID, "Deselect All", true);
+            Composite panel = new Composite(group, SWT.NONE);
+            panel.setLayout(new FillLayout());
+			Button selectAllButton = new Button(panel, SWT.NONE);
+			selectAllButton.setText("Select All");
+			selectAllButton.addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					for (StreamMappingContainer container : mappings) {
+						List<StreamMappingAttribute> attrs = container.getAttributes(new VoidProgressMonitor());
+						attrs.forEach(x -> x.setMappingType(StreamMappingType.export));
+					}
+					viewer.refresh();
+					updateCompletion();
+				}
+			});
+			Button deselectAllButton = new Button(panel, SWT.NONE);
+			deselectAllButton.setText("Deselect All");
+			deselectAllButton.addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					for (StreamMappingContainer container : mappings) {
+						List<StreamMappingAttribute> attrs = container.getAttributes(new VoidProgressMonitor());
+						attrs.forEach(x -> x.setMappingType(StreamMappingType.skip));
+					}
+					viewer.refresh();
+					updateCompletion();
+				}
+			});
 
             errorLabel = new CLabel(group, SWT.NONE);
             errorLabel.setText(DTUIMessages.stream_consumer_page_mapping_label_error_no_columns_selected_text);
@@ -441,25 +468,6 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
 
 
 
-        @Override
-        protected void buttonPressed(int buttonId) {
-            if (buttonId == IDialogConstants.SELECT_ALL_ID || buttonId == IDialogConstants.DESELECT_ALL_ID) {
-                StreamMappingType mappingType;
-                if (buttonId == IDialogConstants.SELECT_ALL_ID) {
-                    mappingType = StreamMappingType.export;
-                } else {
-                    mappingType = StreamMappingType.skip;
-                }
-                List<StreamMappingContainer> list = (List<StreamMappingContainer>) viewer.getInput();
-                for (StreamMappingContainer container : list) {
-                    List<StreamMappingAttribute> attrs = container.getAttributes(new VoidProgressMonitor());
-                    attrs.forEach(x->x.setMappingType(mappingType));
-                }
-            }
-            viewer.refresh();
-            updateCompletion();
-            super.buttonPressed(buttonId);
-        }
 
         @Override
         protected void okPressed() {
