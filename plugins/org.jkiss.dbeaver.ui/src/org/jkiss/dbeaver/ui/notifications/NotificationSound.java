@@ -14,13 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ui.notifications;
 
-package org.jkiss.dbeaver.model.auth;
+public interface NotificationSound extends AutoCloseable {
+    /**
+     * Plays the notification sound with the given volume and blocks the thread until finished.
+     *
+     * @param volume notification volume in a range of {@code 0.0} to {@code 1.0}, inclusive.
+     */
+    void play(float volume);
 
-/**
- * Federated session
- */
-public interface SMSessionFederated extends SMSession {
-
-
+    /**
+     * Releases any system resources allocated by this notification sound.
+     */
+    @Override
+    void close();
 }

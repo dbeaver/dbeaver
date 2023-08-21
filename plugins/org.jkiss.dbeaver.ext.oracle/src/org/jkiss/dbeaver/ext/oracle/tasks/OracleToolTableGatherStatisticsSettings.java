@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.oracle.tasks;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -39,8 +41,8 @@ public class OracleToolTableGatherStatisticsSettings extends SQLToolExecuteSetti
     }
 
     @Override
-    public void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config) {
-        super.loadConfiguration(runnableContext, config);
+    public void loadConfiguration(@NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config, @NotNull DBPProject project) {
+        super.loadConfiguration(runnableContext, config, project);
         samplePercent = JSONUtils.getInteger(config, "sample_percent");
     }
 
