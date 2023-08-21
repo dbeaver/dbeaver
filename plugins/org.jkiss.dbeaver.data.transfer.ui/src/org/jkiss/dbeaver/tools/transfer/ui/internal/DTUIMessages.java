@@ -129,6 +129,8 @@ public class DTUIMessages extends NLS {
 	public static String stream_consumer_page_mapping_name_column_name;
 	public static String stream_consumer_page_mapping_mapping_column_name;
 	public static String stream_consumer_page_mapping_label_error_no_columns_selected_text;
+	public static String data_transfer_task_configurator_dialog_button_deselect_all;
+	public static String data_transfer_task_configurator_dialog_button_select_all;
 
 	public static String data_transfer_task_configurator_group_label_export_tables;
 	public static String data_transfer_task_configurator_group_label_import_into;

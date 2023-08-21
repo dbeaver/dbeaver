@@ -419,7 +419,7 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
             Composite panel = new Composite(group, SWT.NONE);
             panel.setLayout(new FillLayout());
             Button selectAllButton = new Button(panel, SWT.NONE);
-            selectAllButton.setText("Select All");
+            selectAllButton.setText(DTUIMessages.data_transfer_task_configurator_dialog_button_select_all);
             selectAllButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -432,7 +432,7 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                 }
             });
             Button deselectAllButton = new Button(panel, SWT.NONE);
-            deselectAllButton.setText("Deselect All");
+            deselectAllButton.setText(DTUIMessages.data_transfer_task_configurator_dialog_button_deselect_all);
             deselectAllButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
