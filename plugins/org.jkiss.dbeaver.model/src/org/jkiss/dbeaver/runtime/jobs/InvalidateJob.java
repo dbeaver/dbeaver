@@ -190,7 +190,7 @@ public class InvalidateJob extends DataSourceJob
                     if (showErrors) {
                         DBeaverNotifications.showNotification(
                             dataSource,
-                            DBeaverNotifications.NT_RECONNECT,
+                            DBeaverNotifications.NT_RECONNECT_FAILURE,
                             "Datasource invalidate failed",
                             DBPMessageType.ERROR,
                             feedback);
@@ -198,7 +198,7 @@ public class InvalidateJob extends DataSourceJob
                 } else {
                     DBeaverNotifications.showNotification(
                         dataSource,
-                        DBeaverNotifications.NT_RECONNECT,
+                        DBeaverNotifications.NT_RECONNECT_SUCCESS,
                         "Datasource was invalidated\n\n" +
                             "Live connection count: " + goodContextsNumber + "/" + totalContexts,
                         DBPMessageType.INFORMATION);

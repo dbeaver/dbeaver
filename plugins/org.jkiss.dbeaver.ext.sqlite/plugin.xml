@@ -25,6 +25,7 @@
                         logoImage="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/sqlite_logo.png"
                         class="org.sqlite.JDBC"
                         sampleURL="jdbc:sqlite:{file}"
+                        supportedConfigurationTypes="MANUAL,URL"
                         defaultPort=""
                         webURL="https://github.com/xerial/sqlite-jdbc"
                         propertiesURL="https://www.sqlite.org/pragma.html"
