@@ -466,9 +466,6 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
             createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
         }
 
-
-
-
         @Override
         protected void okPressed() {
             final StreamConsumerSettings settings = getWizard().getPageSettings(StreamConsumerPageSettings.this, StreamConsumerSettings.class);
