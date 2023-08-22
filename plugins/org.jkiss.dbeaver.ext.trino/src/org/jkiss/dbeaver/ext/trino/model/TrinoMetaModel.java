@@ -54,7 +54,7 @@ public class TrinoMetaModel extends GenericMetaModel {
     @Override
     public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read trino view source")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Trino view source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT view_definition FROM " +
                 	DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + "." +
