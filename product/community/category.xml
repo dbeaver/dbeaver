@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+    <description name="DBeaver Update Site" url="https://dbeaver.io/update/latest">DBeaver CE Update Site</description>
+
+    <category-def name="org.jkiss.dbeaver" label="DBeaver CE">
+        <description>Universal Database Manager</description>
+    </category-def>
+
+    <feature id="org.jkiss.dbeaver.ui.feature">
+        <category name="org.jkiss.dbeaver"/>
+    </feature>
+    <feature id="org.jkiss.dbeaver.runtime.feature">
+        <category name="org.jkiss.dbeaver"/>
+    </feature>
+    <feature id="org.jkiss.dbeaver.db.feature">
+        <category name="org.jkiss.dbeaver"/>
+    </feature>
+    <feature id="org.jkiss.dbeaver.db.ui.feature">
+        <category name="org.jkiss.dbeaver"/>
+    </feature>
+
+</site>

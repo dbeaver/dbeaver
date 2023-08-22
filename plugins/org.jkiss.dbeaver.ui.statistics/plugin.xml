@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry" class="org.jkiss.dbeaver.ui.statistics.StatisticsAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.runtime.features.DBRFeatureTracker"/>
+        </factory>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.workbenchHandler">
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.statistics.WorkbenchInitializerDataShareConfirm" priority="5"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.preferencePages">
+        <page category="org.eclipse.ui.preferencePages.Workbench"
+              id="org.jkiss.dbeaver.preferences.main.usageStatistics"
+              class="org.jkiss.dbeaver.ui.statistics.PrefPageUsageStatistics"
+              name="%page.org.jkiss.dbeaver.preferences.main.usageStatistics"/>
+    </extension>
+
+</plugin>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.expressions">
+        <namespace id="geo" class="org.jkiss.dbeaver.model.gis.GisExpressionFunctions" description="GIS functions"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <!-- Spatial transformer -->
+        <transformer
+            class="org.jkiss.dbeaver.data.gis.handlers.GeometryAttributeTransformer"
+            id="GeometryAttributeTransformer"
+            name="%transformer.org.jkiss.dbeaver.data.gis.handlers.GeometryAttributeTransformer.name"
+            description="%transformer.org.jkiss.dbeaver.data.gis.handlers.GeometryAttributeTransformer.description"
+            applyByDefault="false"
+            custom="true">
+            <type kind="STRING"/>
+            <type kind="BINARY"/>
+            <propertyGroup label="%property-group.org.jkiss.dbeaver.dataTypeProvider.label">
+                <property id="srid" label="SRID" type="string" description="%property-group.org.jkiss.dbeaver.dataTypeProvider.srid.description" defaultValue="4326" required="false" validValues=""/>
+                <property id="invertCoordinates" label="%property-group.org.jkiss.dbeaver.dataTypeProvider.invertCoordinates.label" type="boolean" description="%property-group.org.jkiss.dbeaver.dataTypeProvider.invertCoordinates.description" defaultValue="false" required="false"/>
+                <property id="leadingSrid" label="%property-group.org.jkiss.dbeaver.dataTypeProvider.leadingSrid.label" type="boolean" description="%property-group.org.jkiss.dbeaver.dataTypeProvider.leadingSrid.description" defaultValue="false" required="false"/>
+            </propertyGroup>
+        </transformer>
+
+    </extension>
+
+</plugin>

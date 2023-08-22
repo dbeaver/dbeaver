@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.jkiss.dbeaver</groupId>
+        <artifactId>dbeaver</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+    </parent>
+    <artifactId>plugins</artifactId>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>org.jkiss.dbeaver.model</module>
+        <module>org.jkiss.dbeaver.model.ai</module>
+        <module>org.jkiss.dbeaver.model.event</module>
+        <module>org.jkiss.dbeaver.model.jdbc</module>
+        <module>org.jkiss.dbeaver.model.sm</module>
+        <module>org.jkiss.dbeaver.model.sql</module>
+        <module>org.jkiss.dbeaver.model.lsm</module>
+        <module>org.jkiss.dbeaver.registry</module>
+        <module>org.jkiss.dbeaver.dpi.app</module>
+        <module>org.jkiss.dbeaver.dpi.model</module>
+
+        <module>org.jkiss.dbeaver.cmp.simple</module>
+        <module>org.jkiss.dbeaver.erd.model</module>
+
+        <module>org.jkiss.dbeaver.ext.generic</module>
+
+        <module>org.jkiss.dbeaver.ext.athena</module>
+        <module>org.jkiss.dbeaver.ext.bigquery</module>
+        <module>org.jkiss.dbeaver.ext.clickhouse</module>
+        <module>org.jkiss.dbeaver.ext.databricks</module>
+        <module>org.jkiss.dbeaver.ext.db2</module>
+        <module>org.jkiss.dbeaver.ext.db2.zos</module>
+        <module>org.jkiss.dbeaver.ext.db2.i</module>
+        <module>org.jkiss.dbeaver.ext.derby</module>
+        <module>org.jkiss.dbeaver.ext.duckdb</module>
+        <module>org.jkiss.dbeaver.ext.elasticsearch</module>
+        <module>org.jkiss.dbeaver.ext.exasol</module>
+        <module>org.jkiss.dbeaver.ext.opendistro</module>
+        <module>org.jkiss.dbeaver.ext.firebird</module>
+        <module>org.jkiss.dbeaver.ext.greenplum</module>
+        <module>org.jkiss.dbeaver.ext.h2</module>
+        <module>org.jkiss.dbeaver.ext.h2gis</module>
+        <module>org.jkiss.dbeaver.ext.hana</module>
+        <module>org.jkiss.dbeaver.ext.hive</module>
+        <module>org.jkiss.dbeaver.ext.hsqldb</module>
+        <module>org.jkiss.dbeaver.ext.informix</module>
+        <module>org.jkiss.dbeaver.ext.mssql</module>
+        <module>org.jkiss.dbeaver.ext.mysql</module>
+        <module>org.jkiss.dbeaver.ext.netezza</module>
+        <module>org.jkiss.dbeaver.ext.oceanbase</module>
+        <module>org.jkiss.dbeaver.ext.ocient</module>
+        <module>org.jkiss.dbeaver.ext.oracle</module>
+        <module>org.jkiss.dbeaver.ext.phoenix</module>
+
+        <module>org.jkiss.dbeaver.ext.postgresql</module>
+
+        <module>org.jkiss.dbeaver.ext.snowflake.core</module>
+        <module>org.jkiss.dbeaver.ext.spanner</module>
+        <module>org.jkiss.dbeaver.ext.sqlite</module>
+        <module>org.jkiss.dbeaver.ext.vertica</module>
+        <module>org.jkiss.dbeaver.ext.teradata</module>
+        <module>org.jkiss.dbeaver.ext.tidb</module>
+        <module>org.jkiss.dbeaver.ext.trino</module>
+        <module>org.jkiss.dbeaver.ext.kognitio</module>
+        <module>org.jkiss.dbeaver.ext.datavirtuality</module>
+        <module>org.jkiss.dbeaver.ext.denodo</module>
+
+        <module>org.jkiss.dbeaver.tasks.native</module>
+		
+		<module>org.jkiss.dbeaver.data.generate</module>
+        <module>org.jkiss.dbeaver.data.generate.ui</module>
+
+
+        <module>org.jkiss.dbeaver.data.office</module>
+        <module>org.jkiss.dbeaver.data.transfer</module>
+        <module>org.jkiss.dbeaver.data.gis</module>
+        <module>org.jkiss.dbeaver.net.ssh</module>
+        <module>org.jkiss.dbeaver.net.ssh.jsch</module>
+        <module>org.jkiss.dbeaver.net.ssh.sshj</module>
+        <module>org.jkiss.dbeaver.slf4j</module>
+        <module>org.jkiss.dbeaver.team.git</module>
+
+        <module>org.jkiss.dbeaver.headless</module>
+		
+		<module>org.jkiss.dbeaver.ext.yashandb</module>
+    	<module>org.jkiss.dbeaver.ext.dm</module>
+
+    </modules>
+
+    <profiles>
+        <profile>
+            <id>desktop</id>
+            <activation><property><name>!headless-platform</name></property></activation>
+            <!-- Desktop (swt/jface) components -->
+            <modules>
+                <module>org.jkiss.dbeaver.core</module>
+                <module>org.jkiss.dbeaver.ui.app.standalone</module>
+                <module>org.jkiss.dbeaver.ui.app.eclipse</module>
+                <module>org.jkiss.dbeaver.ui.app.winstore</module>
+
+                <module>org.jkiss.dbeaver.ext.athena.ui</module>
+                <module>org.jkiss.dbeaver.ext.bigquery.ui</module>
+                <module>org.jkiss.dbeaver.ext.clickhouse.ui</module>
+                <module>org.jkiss.dbeaver.ext.exasol.ui</module>
+                <module>org.jkiss.dbeaver.ext.db2.ui</module>
+
+                <module>org.jkiss.dbeaver.ext.generic.ui</module>
+                <module>org.jkiss.dbeaver.ext.hana.ui</module>
+                <module>org.jkiss.dbeaver.ext.mssql.ui</module>
+                <module>org.jkiss.dbeaver.ext.mysql.ui</module>
+                <module>org.jkiss.dbeaver.ext.oceanbase.ui</module>
+                <module>org.jkiss.dbeaver.ext.oracle.ui</module>
+
+                <module>org.jkiss.dbeaver.ext.postgresql.ui</module>
+                <module>org.jkiss.dbeaver.ext.postgresql.debug.core</module>
+                <module>org.jkiss.dbeaver.ext.postgresql.debug.ui</module>
+                <module>org.jkiss.dbeaver.ext.sqlite.ui</module>
+                <module>org.jkiss.dbeaver.ext.spanner.ui</module>
+                <module>org.jkiss.dbeaver.ext.snowflake.ui</module>
+                <module>org.jkiss.dbeaver.ext.vertica.ui</module>
+                <module>org.jkiss.dbeaver.ext.tidb.ui</module>
+
+                <module>org.jkiss.dbeaver.ext.wmi</module>
+
+                <module>org.jkiss.dbeaver.ui</module>
+                <module>org.jkiss.dbeaver.ui.editors.acl</module>
+                <module>org.jkiss.dbeaver.ui.editors.base</module>
+                <module>org.jkiss.dbeaver.ui.editors.connection</module>
+                <module>org.jkiss.dbeaver.ui.editors.content</module>
+                <module>org.jkiss.dbeaver.ui.editors.data</module>
+                <module>org.jkiss.dbeaver.ui.editors.entity</module>
+                <module>org.jkiss.dbeaver.ui.editors.hex</module>
+                <module>org.jkiss.dbeaver.ui.editors.image</module>
+                <module>org.jkiss.dbeaver.ui.editors.json</module>
+                <module>org.jkiss.dbeaver.ui.editors.sql</module>
+                <module>org.jkiss.dbeaver.ui.editors.sql.ai</module>
+                <module>org.jkiss.dbeaver.ui.editors.sql.terminal</module>
+                <module>org.jkiss.dbeaver.ui.editors.session</module>
+                <module>org.jkiss.dbeaver.ui.editors.xml</module>
+                <module>org.jkiss.dbeaver.ui.navigator</module>
+                <module>org.jkiss.dbeaver.ui.charts</module>
+                <module>org.jkiss.dbeaver.ui.dashboard</module>
+                <module>org.jkiss.dbeaver.ui.search</module>
+                <module>org.jkiss.dbeaver.ui.statistics</module>
+
+                <module>org.jkiss.dbeaver.erd.ui</module>
+                <module>org.jkiss.dbeaver.tasks.native.ui</module>
+                <module>org.jkiss.dbeaver.tasks.ui</module>
+                <module>org.jkiss.dbeaver.tasks.ui.view</module>
+                <module>org.jkiss.dbeaver.tasks.sql.ui</module>
+
+                <module>org.jkiss.dbeaver.data.office.ui</module>
+                <module>org.jkiss.dbeaver.ext.sample.database</module>
+                <module>org.jkiss.dbeaver.ext.ui.locks</module>
+                <module>org.jkiss.dbeaver.ext.ui.svg</module>
+                <module>org.jkiss.dbeaver.ext.ui.tipoftheday</module>
+                <module>org.jkiss.dbeaver.ext.import_config</module>
+                <module>org.jkiss.dbeaver.ext.format.sqlworkbenchj</module>
+                <module>org.jkiss.dbeaver.cmp.simple.ui</module>
+
+                <module>org.jkiss.dbeaver.debug.core</module>
+                <module>org.jkiss.dbeaver.debug.ui</module>
+
+                <module>org.jkiss.dbeaver.data.transfer.ui</module>
+                <module>org.jkiss.dbeaver.data.gis.view</module>
+                <module>org.jkiss.dbeaver.net.ssh.ui</module>
+
+                <module>org.jkiss.dbeaver.team.git.ui</module>
+				
+				<module>org.jkiss.dbeaver.ext.yashandb.ui</module>
+				<module>org.jkiss.dbeaver.ext.dm.ui</module>
+            </modules>
+        </profile>
+    </profiles>
+
+</project>

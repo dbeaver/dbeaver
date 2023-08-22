@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?eclipse version="3.2"?>
+
+
+<!--
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2023 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+  -->
+
+<plugin>
+
+    <extension point="org.eclipse.core.runtime.applications" id="application" name="Test Application">
+        <application visible="true">
+            <run class="org.jkiss.dbeaver.headless.DBeaverHeadlessApplication"/>
+        </application>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.products" id="product">
+        <product application="org.jkiss.dbeaver.headless.application" description="Headless product for unit tests" name="DBeaver Test Product">
+        </product>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.runtime.DBWorkbench" class="org.jkiss.dbeaver.headless.DBeaverTestPlatformAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.app.DBPPlatform"/>
+            <adapter type="org.jkiss.dbeaver.runtime.ui.DBPPlatformUI"/>
+        </factory>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.application">
+        <application id="headless-test-app" family="DB" name="DBeaver Headless Test Application" description="DBeaver Headless Test Application"/>
+    </extension>
+
+</plugin>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension-point id="org.jkiss.dbeaver.dataSourceView" name="%extension-point.org.jkiss.dbeaver.dataSourceView.name" schema="schema/org.jkiss.dbeaver.dataSourceView.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.ui.propertyConfigurator" name="%extension-point.org.jkiss.dbeaver.ui.propertyConfigurator.name" schema="schema/org.jkiss.dbeaver.ui.propertyConfigurator.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.ui.dataSourceConfigurator" name="%extension-point.org.jkiss.dbeaver.ui.dataSourceConfigurator.name" schema="schema/org.jkiss.dbeaver.ui.dataSourceConfigurator.exsd"/>
+
+    <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative" uiClass="org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.ui.dataSourceConfigurator">
+        <dataSourceConfigurator>
+<!--
+            <dataSourcePage class="org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageGeneral"/>
+            <dataSourcePage class="org.jkiss.dbeaver.ui.preferences.PrefPageMetaData"/>
+            <dataSourcePage class="org.jkiss.dbeaver.ui.preferences.PrefPageErrorHandle"/>
+-->
+        </dataSourceConfigurator>
+    </extension>
+
+    <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.core.driver.manager" name="%command.org.jkiss.dbeaver.core.driver.manager.name" description="%command.org.jkiss.dbeaver.core.driver.manager.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.connection.changeCurrentPassword" name="%command.org.jkiss.dbeaver.connection.changeCurrentPassword.name" description="%command.org.jkiss.dbeaver.connection.changeCurrentPassword.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.core.driver.manager" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/driver_manager.png"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.core.driver.manager" class="org.jkiss.dbeaver.ui.actions.driver.DriverManagerDialogHandler">
+            <enabledWhen>
+                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="driver-manager"/>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.connection.changeCurrentPassword" class="org.jkiss.dbeaver.ui.actions.ChangePasswordDialogHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.navigator.DBNDataSource">
+                            <test property="org.jkiss.dbeaver.ui.connection.canChangePassword" forcePluginActivation="true"/>
+                        </adapt>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
+            <menu label="%command.org.jkiss.dbeaver.connection.security.name">
+                <command commandId="org.jkiss.dbeaver.connection.changeCurrentPassword">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+            </menu>
+        </menuContribution>
+
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+                class="org.jkiss.dbeaver.ui.actions.ChangeUserPasswordPropertyTester"
+                id="org.jkiss.dbeaver.ui.actions.ChangeUserPasswordPropertyTester"
+                namespace="org.jkiss.dbeaver.ui.connection"
+                properties="canChangePassword"
+                type="org.jkiss.dbeaver.model.navigator.DBNDataSource">
+        </propertyTester>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.productFeature">
+        <feature id="database"/>
+        <feature parent="database" id="administration"/>
+        <feature parent="database/administration" id="advanced"/>
+    </extension>
+
+</plugin>

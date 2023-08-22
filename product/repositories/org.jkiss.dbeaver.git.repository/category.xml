@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+    <description name="DBeaver - Git integration" url="https://dbeaver.io/update/git/latest">DBeaver - Git integration</description>
+
+    <feature id="org.jkiss.dbeaver.git.feature">
+        <category name="org.jkiss.dbeaver.git.category"/>
+    </feature>
+    <category-def name="org.jkiss.dbeaver.git.category" label="DBeaver Git Support"/>
+</site>

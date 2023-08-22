@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+    <extension
+        point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+            class="org.jkiss.dbeaver.ext.dm.DmDataSourceProvider"
+            description="DM connector"
+            icon="icons/dm_icon.png"
+            id="dm"
+            label="DM"
+            dialect="dm">
+            <tree
+                  icon="icons/dm_icon.png"
+                  label="DM data source"
+                  path="dm">
+				<folder
+          description="Database schemas"
+          icon="#folder_schema"
+          label="模式"
+          type="org.jkiss.dbeaver.ext.dm.model.DmSchema">
+                <items
+                      icon="#schema"
+                      label="模式"
+                      path="schema"
+                      property="schemas">
+                   <folder
+                         description="Tables"
+                         icon="#folder_table"
+                         label="表"
+                         type="org.jkiss.dbeaver.ext.dm.model.DmTable">
+                      <items
+                            icon="#table"
+                            label="表"
+                            property="tables">
+                         <folder
+                               description="Table Columns"
+                               icon="#columns"
+                               label="列"
+                               type="org.jkiss.dbeaver.ext.dm.model.DmTableColumn">
+                            <items
+                                  icon="#column"
+                                  label="列"
+                                  path="column"
+                                  property="attributes">
+                            </items>
+                         </folder>
+                         <!--<folder
+                               description="Table Keys"
+                               icon="#foreign-keys"
+                               label="键"
+                               type="org.jkiss.dbeaver.ext.dm.model.dmTableKey">
+                            <items
+                                  icon="#foreign-keys"
+                                  label="键"></items>
+                         </folder>-->
+                         <folder
+                               description="Table constraints"
+                               icon="#constraints"
+                               label="约束"
+                               type="org.jkiss.dbeaver.ext.dm.model.DmTableConstraint">
+                            <items
+                                  icon="#unique-key"
+                                  label="约束"
+                                  path="constraint"
+                                  property="constraints">
+                               <items
+                                     inline="true"
+                                     label="约束列"
+                                     navigable="false"
+                                     path="column"
+                                     property="attributeReferences"
+                                     virtual="true">
+                               </items>
+                            </items>
+                         </folder>
+                         <folder
+                               description="Table Indexes"
+                               icon="#indexes"
+                               label="索引"
+                               type="org.jkiss.dbeaver.ext.dm.model.DmTableIndex">
+                            <items
+                                  icon="#index"
+                                  label="索引"
+                                  path="index"
+                                  property="indexes">
+                               <items
+                                     inline="true"
+                                     itemLabel="列"
+                                     label="索引列"
+                                     navigable="false"
+                                     path="column"
+                                     property="attributeReferences">
+                               </items>
+                            </items>
+                         </folder>
+                         <folder
+                               icon="#references"
+                               label="引用"
+                               virtual="true">
+                            <items
+                                  icon="#reference"
+                                  label="%tree.reference_key.node.name"
+                                  path="referenceKey"
+                                  property="references"
+                                  virtual="true">
+                               <items
+                                     inline="true"
+                                     itemLabel="%tree.column.node.name"
+                                     label="%tree.reference_key_columns.node.name"
+                                     navigable="false"
+                                     path="column"
+                                     property="attributeReferences"
+                                     virtual="true">
+                               </items>
+                            </items>
+                         </folder>
+                         <folder
+                               description="Table foreign keys"
+                               icon="#foreign-keys"
+                               label="外键"
+                               type="org.jkiss.dbeaver.ext.dm.model.DmTableForeignKey">
+                            <items
+                                  icon="#foreign-key"
+                                  label="%tree.foreign_key.node.name"
+                                  path="association"
+                                  property="associations">
+                               <items
+                                     inline="true"
+                                     itemLabel="%tree.column.node.name"
+                                     label="%tree.foreign_key_columns.node.name"
+                                     navigable="false"
+                                     path="column"
+                                     property="attributeReferences">
+                               </items>
+                            </items>
+                         </folder> 
+                      </items>
+                   </folder>
+                   <folder
+                         description="Views"
+                         icon="#folder_view"
+                         label="视图"
+                         type="org.jkiss.dbeaver.ext.dm.model.DmView">
+                      <items
+                            icon="#view"
+                            label="视图"
+                            path="view"
+                            property="views">
+                         <folder
+                               icon="#column"
+                               label="列"
+                               type="org.jkiss.dbeaver.ext.dm.model.DmTableColumn">
+                            <items
+                                  icon="#column"
+                                  itemLabel="列"
+                                  label="列"
+                                  path="column"
+                                  property="attributes">
+                            </items>
+                         </folder>
+                      </items>
+                   </folder>
+                   <folder
+                         description="Sequences"
+                         icon="#sequences"
+                         label="序列"
+                         type="org.jkiss.dbeaver.ext.dm.model.DmSequence">
+                      <items
+                            icon="#sequence"
+                            label="序列"
+                            path="sequence"
+                            property="sequences">
+                      </items>
+                   </folder>
+                   <folder
+                         description="Materialized Views"
+                         icon="#folder_view"
+                         label="物化视图"
+                         type="org.jkiss.dbeaver.ext.dm.model.DmMaterializedView">
+                      <items
+                            icon="#view"
+                            label="物化视图"
+                            path="view"
+                            property="materializedViews">
+                      </items>
+                   </folder>
+                   <folder
+                         description="Procedures"
+                         icon="#procedures"
+                         label="存储过程"
+                         type="org.jkiss.dbeaver.ext.dm.model.DmProcedureStandalone">
+                      <items
+                            icon="#procedure"
+                            itemLabel="存储过程"
+                            label="存储过程"
+                            path="procedure"
+                            property="procedures"></items>
+                   </folder>
+                   <folder
+                         label="触发器"
+                         type="org.jkiss.dbeaver.ext.dm.model.DmTableTrigger"
+                         icon="#triggers"
+                         description="Table triggers">
+                      <items
+                            icon="#trigger"
+                            label="触发器"
+                            path="tabletrigger"
+                            property="tableTriggers">
+                         <items
+                               inline="false"
+                               itemLabel="列"
+                               label="列"
+                               navigable="false"
+                               path="column"
+                               property="columns">
+                         </items>
+                      </items>
+                   </folder>
+                   <folder
+                         description="Packages"
+                         icon="#packages"
+                         label="包"
+                         type="org.jkiss.dbeaver.ext.dm.model.DmPackage">
+                      <items
+                            icon="#package"
+                            label="包"
+                            path="package"
+                            property="packages">
+                      </items>
+                   </folder>
+                   <folder
+                         description="Synonyms"
+                         icon="#synonyms"
+                         label="同义词"
+                         type="org.jkiss.dbeaver.ext.dm.model.DmSynonym">
+                      <items
+                            icon="#synonym"
+                            label="同义词"
+                            property="synonyms">
+                      </items>
+                   </folder>
+                   <folder
+                         description="Types"
+                         icon="#data_types"
+                         label="数据类型"
+                         type="org.jkiss.dbeaver.ext.dm.model.DmDataType">
+                      <items
+                            icon="#data_type"
+                            label="数据类型"
+                            path="type"
+                            property="dataTypes">
+                      </items>
+                   </folder>
+                   <folder
+                         description="数据回收站"
+                         icon="#recycle_bin"
+                         label="数据回收站"
+                         type="org.jkiss.dbeaver.ext.dm.model.DmTable">
+                      <items
+                            icon="#table"
+                            label="表"
+                            path="recycle"
+                            property="recycles">
+                      </items>
+                   </folder>
+                </items>
+             </folder>
+  <folder label="%tree.security.node.name" icon="#security" description="Security management">          
+    <folder
+          icon="#folder_role"
+          label="角色"
+          type="org.jkiss.dbeaver.ext.dm.model.DmRole">
+       <items
+             icon="#user_group"
+             label="角色"
+             path="roles"
+             property="roles">
+       </items>
+    </folder>
+    <folder
+          icon="#folder_user"
+          label="用户"
+          type="org.jkiss.dbeaver.ext.dm.model.DmPrivUser">
+       <items
+             icon="#user"
+             label="用户"
+             path="users"
+             property="users">
+       </items>
+    </folder>
+   </folder>
+   <folder label="%tree.storage.node.name" icon="#storage" description="Storage management">
+    <folder
+          icon="#tablespaces"
+          label="表空间"
+          type="org.jkiss.dbeaver.ext.dm.model.DmTablespace">
+       <items
+             icon="#tablespace"
+             label="表空间"
+             property="tablespaces">
+          <folder
+                icon="#files"
+                label="文件"
+                type="org.jkiss.dbeaver.ext.dm.model.DmDataFile">
+             <items
+                   icon="#file"
+                   label="文件"
+                   path="file"
+                   property="files">
+             </items>
+          </folder>
+       </items>
+    </folder>
+    </folder>
+    <folder
+          description="Maintenance/Settings"
+          icon="#folder_admin"
+          label="管理员">
+       <treeContribution
+             category="connectionEditor">
+       </treeContribution>
+    </folder> 
+            </tree>
+            <!-- categories="epointtools" 属性指定了该数据库保存在哪个集合中-->
+            <drivers managable="true">
+                <driver
+                    id="dm_thin"
+                    label="DM"
+                    class="dm.jdbc.driver.DmDriver"
+                    sampleURL="jdbc:dm://{host}:{port}/{database}"
+                    useURL="false"
+                    defaultPort="5236"
+                    icon="icons/dm_icon.png"
+                    iconBig="icons/dm_icon_big.png"
+                    description="DM thin driver"
+                    promoted="1"
+                    rank="5"
+                    categories="epointtools">
+                   <file
+                         path="platform:/plugin/org.jkiss.dbeaver.ext.dm/driver/DmJdbcDriver17.jar"
+                         type="jar">
+                   </file>
+                   <!--DM添加limit支持参数-->
+               <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                </driver>
+            </drivers>
+          <drivers managable="true">
+                <driver
+                    id="dm_thin"
+                    label="DM8"
+                    class="dm.jdbc.driver.DmDriver"
+                    sampleURL="jdbc:dm://{host}:{port}/{database}"
+                    useURL="false"
+                    defaultPort="5236"
+                    icon="icons/dm_icon.png"
+                    iconBig="icons/dm_icon_big.png"
+                    description="DM thin driver"
+                    promoted="1"
+                    rank="6"
+                    categories="epointtools">
+                   <file
+                         path="platform:/plugin/org.jkiss.dbeaver.ext.dm/driver/DmJdbcDriver18-1.0.jar"
+                         type="jar">
+                   </file>
+                   <!--DM添加limit支持参数-->
+                   <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                </driver>
+            </drivers>
+            
+             <nativeClients>
+                 <client id="dm7_client" label="DM7 Binaries">
+                  <dist
+                        os="win32"
+                        resourcePath="/exe/DM"
+                        targetPath="/exe/DM">
+                       <file
+                             name="dexp.exe"
+                             type="exec">
+                       </file>
+                        <file
+                              name="dimp.exe"
+                              type="exec"/>
+                    </dist>           
+                </client>
+                <client id="dm8_client" label="DM8 Binaries">
+                  <dist
+                        os="win32"
+                        resourcePath="/exe/DM8"
+                        targetPath="/exe/DM8">
+                       <file
+                             name="dexp.exe"
+                             type="exec">
+                       </file>
+                        <file
+                              name="dimp.exe"
+                              type="exec"/>
+                    </dist>           
+                </client>
+            </nativeClients>
+            
+        </datasource>
+    </extension>
+    <!--该类用于Manager 操作类和右键操作相关联-->
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.dm.edit.DmDataTypeManager" objectType="org.jkiss.dbeaver.ext.dm.model.DmDataType"/>
+        <manager class="org.jkiss.dbeaver.ext.dm.edit.DmTableManager" objectType="org.jkiss.dbeaver.ext.dm.model.DmTable"/>
+        <manager class="org.jkiss.dbeaver.ext.dm.edit.DmTableColumnManager" objectType="org.jkiss.dbeaver.ext.dm.model.DmTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.dm.edit.DmForeignKeyManager" objectType="org.jkiss.dbeaver.ext.dm.model.DmTableForeignKey"/>
+        <manager class="org.jkiss.dbeaver.ext.dm.edit.DmConstraintManager" objectType="org.jkiss.dbeaver.ext.dm.model.DmTableConstraint"/>
+        <manager class="org.jkiss.dbeaver.ext.dm.edit.DmIndexManager" objectType="org.jkiss.dbeaver.ext.dm.model.DmTableIndex"/>
+        <manager class="org.jkiss.dbeaver.ext.dm.edit.DmViewManager" objectType="org.jkiss.dbeaver.ext.dm.model.DmView"/>
+        <manager class="org.jkiss.dbeaver.ext.dm.edit.DmMaterializedViewManager" />
+        <manager class="org.jkiss.dbeaver.ext.dm.edit.DmProcedureManager" objectType="org.jkiss.dbeaver.ext.dm.model.DmProcedureStandalone"/>
+        <manager class="org.jkiss.dbeaver.ext.dm.edit.DmPackageManager" objectType="org.jkiss.dbeaver.ext.dm.model.DmPackage"/>
+        <manager class="org.jkiss.dbeaver.ext.dm.edit.DmTableTriggerManager" objectType="org.jkiss.dbeaver.ext.dm.model.DmTableTrigger"/>
+        <manager class="org.jkiss.dbeaver.ext.dm.edit.DmSequenceManager" objectType="org.jkiss.dbeaver.ext.dm.model.DmSequence"/>
+        <manager class="org.jkiss.dbeaver.ext.dm.edit.DmSchemaManager" objectType="org.jkiss.dbeaver.ext.dm.model.DmSchema"/>
+        <manager class="org.jkiss.dbeaver.ext.dm.edit.DmTableSpaceManager" objectType="org.jkiss.dbeaver.ext.dm.model.DmTablespace"/>
+        <manager class="org.jkiss.dbeaver.ext.dm.edit.DmDataFileManager" objectType="org.jkiss.dbeaver.ext.dm.model.DmDataFile"/>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+            class="org.jkiss.dbeaver.ext.dm.data.DmValueHandlerProvider"
+            description="DM data types provider"
+            id="org.jkiss.dbeaver.ext.dm.data.DmValueHandlerProvider"
+            label="DM data types provider">
+
+            <datasource id="dm"/>
+
+        </provider>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.model.navigator.DBNNode" class="org.jkiss.dbeaver.ext.dm.model.DmObjectAdapter">
+            <adapter type="org.jkiss.dbeaver.ext.dm.model.source.DmSourceObject"/>
+            <adapter type="org.jkiss.dbeaver.ext.dm.model.DmProcedurePackaged"/>
+            <adapter type="org.jkiss.dbeaver.ext.dm.model.DmSchedulerJob"/>
+        </factory>
+        <factory adaptableType="org.jkiss.dbeaver.ext.dm.model.DmSQLDialect" class="org.jkiss.dbeaver.ext.dm.sql.DmDialectAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.text.parser.TPRuleProvider"/>
+        </factory>
+    </extension>
+
+    <extension point="org.eclipse.ui.bindings">
+        <key commandId="org.jkiss.dbeaver.ext.dm.code.compile" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+F9"/>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.ext.dm.internal.DmPreferencesInitializer"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="dm" parent="basic" class="org.jkiss.dbeaver.ext.dm.model.DmSQLDialect" label="Dm" description="DM SQL dialect." icon="icons/dm_icon.png">
+        </dialect>
+    </extension>
+    
+    <extension
+          point="org.jkiss.dbeaver.task">
+        <category id="dm" name="DM" description="DM schema task" icon="icons/dm_icon.png"/>
+
+        <task id="dmExport" name="dm export" description="DM schema export task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="dm" handler="org.jkiss.dbeaver.ext.dm.tasks.DmSchemaExportHandler">
+            <objectType name="org.jkiss.dbeaver.ext.dm.model.DmSchema"/>
+            <objectType name="org.jkiss.dbeaver.ext.dm.model.DmTableBase"/>
+        </task>
+        <task id="dmImport" name="dm import" description="DM schame import task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="dm" handler="org.jkiss.dbeaver.ext.dm.tasks.DmSchemaImportHandler">
+            <objectType name="org.jkiss.dbeaver.ext.dm.model.DmSchema"/>
+        </task>
+        <task id="dmToolTruncateTable" name="Truncate table" description="清空表数据" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="dm" handler="org.jkiss.dbeaver.ext.dm.tasks.DmToolTableTruncate">
+            <datasource id="dm"/>
+            <objectType name="org.jkiss.dbeaver.ext.dm.model.DmTable"/>
+        </task>
+    </extension>
+
+
+</plugin>

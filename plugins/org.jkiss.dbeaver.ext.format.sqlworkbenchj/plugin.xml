@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.sqlFormatter">
+        <formatter
+                id="sqlworkbenchj"
+                class="org.jkiss.dbeaver.ext.format.sqlworkbenchj.SQLWorkbenchJFormatter"
+                label="SQL Workbench/J formatter"
+                description="Formatter from SQL Workbench/J"/>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.ext.format.sqlworkbenchj.SQLWorkbenchJFormatter" class="org.jkiss.dbeaver.ext.format.sqlworkbenchj.SQLWorkbenchJAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.ui.editors.sql.preferences.format.SQLFormatterConfigurator"/>
+        </factory>
+    </extension>
+
+</plugin>

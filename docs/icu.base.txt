@@ -1,0 +1,15 @@
+to replace com.ibm.icu:
+
+1. download com.ibm.icu.base package
+2. extract plugins to some place
+3. change com.ibm.icu.base to com.ibm.icu in Manifest.MF files and directory names
+4. pack directories back to jars
+5. remove old com.ibm.icu plugins from eclipse plugin folder
+6. copy new jar to eclipse plugin folder
+7. done
+
+note:
+
+archived jars of com.ibm.icu.base modules should have names like:
+com.ibm.icu.source_4.2.1.v20100412.jar
+com.ibm.icu_4.2.1.v20100412.jar

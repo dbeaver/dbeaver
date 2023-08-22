@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.core.compare.simple" name="%command.org.jkiss.dbeaver.core.compare.simple.name" description="%command.org.jkiss.dbeaver.core.compare.simple.description" categoryId="org.jkiss.dbeaver.core.util"/>
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.definitions">
+        <definition id="org.jkiss.dbeaver.cmp.comparable">
+            <with variable="selection">
+                <count value="+"/>
+                <iterate operator="and">
+                    <adapt type="org.jkiss.dbeaver.model.navigator.DBNDatabaseNode"/>
+                </iterate>
+            </with>
+        </definition>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.core.compare.simple" class="org.jkiss.dbeaver.tools.compare.simple.ui.CompareObjectsHandler">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.cmp.comparable"/></enabledWhen>
+        </handler>
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=compare">
+            <menu id="dbeaver-compare" label="%menu.compare.label" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/compare.png">
+                <visibleWhen><reference definitionId="org.jkiss.dbeaver.cmp.comparable"/></visibleWhen>
+
+                <separator name="additions" visible="false"/>
+                <command commandId="org.jkiss.dbeaver.core.compare.simple">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+
+                <!--<dynamic id="org.jkiss.dbeaver.core.menu.compare" class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLGeneratorContributorr"/>-->
+            </menu>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=tools">
+            <menu id="dbeaver-compare-main" label="%menu.compare.label" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/compare.png">
+                <visibleWhen><reference definitionId="org.jkiss.dbeaver.cmp.comparable"/></visibleWhen>
+
+                <separator name="additions" visible="false"/>
+                <command commandId="org.jkiss.dbeaver.core.compare.simple">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+            </menu>
+        </menuContribution>
+
+    </extension>
+
+
+</plugin>

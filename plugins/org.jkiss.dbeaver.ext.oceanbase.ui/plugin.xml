@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<!--
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2023 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+  -->
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <editorContribution
+                editorId="org.jkiss.dbeaver.ext.mysql.ui.editors.MySQLSessionEditor"
+                category="connectionEditor" label="%editor.session_manager.name"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
+            <supports dataSource="oceanbase"/>
+        </editorContribution>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.oceanbase.dataSourceWizardView"
+                dataSource="oceanbase"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.oceanbase.ui.views.OceanbaseConnectionPage"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.oceanbase/icons/ob_icon.png"/>
+        <view
+                id="org.jkiss.dbeaver.ext.oceanbase.dataSourceEditorView"
+                dataSource="oceanbase"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.oceanbase.ui.views.OceanbaseConnectionPage"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.oceanbase/icons/ob_icon.png"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator
+            class="org.jkiss.dbeaver.ext.oceanbase.model.auth.OceanbaseAuthModelDatabaseNative"
+            uiClass="org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator"/>
+    </extension>
+
+</plugin>
+

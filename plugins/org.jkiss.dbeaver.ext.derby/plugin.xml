@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="derby" class="org.jkiss.dbeaver.ext.derby.model.DerbyMetaModel"
+              driverClass="org.apache.derby.jdbc.ClientDriver,org.apache.derby.jdbc.EmbeddedDriver,org.apache.derby.client.ClientAutoloadedDriver"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="derby" parent="generic" class="org.jkiss.dbeaver.ext.derby.model.DerbySQLDialect" label="Derby"
+                 description="Derby SQL dialect." icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/derby_icon.png">
+        </dialect>
+    </extension>
+
+</plugin>

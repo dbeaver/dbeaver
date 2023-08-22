@@ -1,0 +1,289 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2023 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ui.controls.autorefresh;
+
+import org.eclipse.jface.action.ContributionItem;
+import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
+
+public class AutoRefreshControl {
+
+    private Control parent;
+    private String controlId;
+    private DBRRunnableWithProgress runnable;
+    private AutoRefreshJob autoRefreshJob;
+    private RefreshSettings refreshSettings;
+    private volatile boolean autoRefreshEnabled = false;
+
+    private ToolItem autoRefreshButton;
+    private DBPImage defRefreshIcon;
+    private Menu schedulerMenu;
+    private String defRefreshText;
+    private Supplier<String> hintSupplier;
+
+    public AutoRefreshControl(Control parent, String controlId, DBRRunnableWithProgress runnable) {
+        this.parent = parent;
+        this.controlId = controlId;
+        this.runnable = runnable;
+
+        parent.addDisposeListener(e -> {
+            if (schedulerMenu != null) {
+                schedulerMenu.dispose();
+                schedulerMenu = null;
+            }
+        });
+    }
+
+    String getControlId() {
+        return controlId;
+    }
+
+    public DBRRunnableWithProgress getRunnable() {
+        return runnable;
+    }
+
+    public void setHintSupplier(Supplier<String> hintSupplier) {
+        this.hintSupplier = hintSupplier;
+    }
+
+    private synchronized RefreshSettings getRefreshSettings() {
+        if (refreshSettings == null) {
+            refreshSettings = new RefreshSettings(controlId);
+            refreshSettings.loadSettings();
+        }
+        return refreshSettings;
+    }
+
+    private synchronized void setRefreshSettings(RefreshSettings refreshSettings) {
+        this.refreshSettings = refreshSettings;
+        this.refreshSettings.saveSettings();
+    }
+
+    synchronized boolean isAutoRefreshEnabled() {
+        return autoRefreshEnabled;
+    }
+
+    public synchronized void enableAutoRefresh(boolean enable) {
+        this.autoRefreshEnabled = enable;
+        scheduleAutoRefresh(false);
+        updateAutoRefreshToolbar();
+    }
+
+    public synchronized void enableControls(boolean enable) {
+        if (autoRefreshButton != null) {
+            autoRefreshButton.setEnabled(enable);
+        }
+    }
+
+    public synchronized void scheduleAutoRefresh(boolean afterError) {
+        if (autoRefreshJob != null) {
+            autoRefreshJob.cancel();
+            autoRefreshJob = null;
+        }
+        if (!this.autoRefreshEnabled || parent.isDisposed()) {
+            return;
+        }
+        RefreshSettings settings = getRefreshSettings();
+        if (afterError && settings.isStopOnError()) {
+            enableAutoRefresh(false);
+            return;
+        }
+        autoRefreshJob = new AutoRefreshJob(this);
+        autoRefreshJob.schedule((long)settings.getRefreshInterval() * 1000);
+    }
+
+    public void cancelRefresh() {
+        // Cancel any auto-refresh activities
+        final AutoRefreshJob refreshJob = this.autoRefreshJob;
+        if (refreshJob != null) {
+            refreshJob.cancel();
+            this.autoRefreshJob = null;
+        }
+    }
+
+    public ToolItem populateRefreshButton(ToolBar toolbar) {
+        return populateRefreshButton(toolbar, null, UIMessages.sql_editor_resultset_filter_panel_btn_config_refresh, UIIcon.CLOCK_START, createDefaultRefreshAction());
+    }
+
+    public ToolItem populateRefreshButton(ToolBar toolbar, String itemText, String defTooltip, DBPImage defImage, Runnable defAction) {
+        if (autoRefreshButton != null && !autoRefreshButton.isDisposed()) {
+            autoRefreshButton.dispose();
+        }
+        this.defRefreshText = defTooltip;
+        this.defRefreshIcon = defImage;
+        autoRefreshButton = new ToolItem(toolbar, SWT.DROP_DOWN | SWT.NO_FOCUS);
+        autoRefreshButton.setImage(DBeaverIcons.getImage(defRefreshIcon));
+        if (itemText != null) {
+            autoRefreshButton.setText(itemText);
+        }
+        autoRefreshButton.addSelectionListener(new AutoRefreshMenuListener(autoRefreshButton, defAction));
+        updateAutoRefreshToolbar();
+
+        return autoRefreshButton;
+    }
+
+    public void populateRefreshButton(IContributionManager contributionManager) {
+        contributionManager.add(new ContributionItem() {
+            @Override
+            public void fill(ToolBar parent, int index) {
+                populateRefreshButton(parent);
+            }
+        });
+    }
+
+    private Runnable createDefaultRefreshAction() {
+        return this::runCustomized;
+    }
+
+    private void updateAutoRefreshToolbar() {
+        if (autoRefreshButton != null && !autoRefreshButton.isDisposed()) {
+            if (isAutoRefreshEnabled()) {
+                autoRefreshButton.setImage(DBeaverIcons.getImage(UIIcon.CLOCK_STOP));
+                autoRefreshButton.setToolTipText(UIMessages.sql_editor_resultset_filter_panel_btn_stop_refresh);
+            } else {
+                autoRefreshButton.setImage(DBeaverIcons.getImage(defRefreshIcon));
+                autoRefreshButton.setToolTipText(defRefreshText);
+            }
+        }
+    }
+
+    private void runCustomized() {
+        AutoRefreshConfigDialog dialog = new AutoRefreshConfigDialog(parent.getShell(), getRefreshSettings());
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            setRefreshSettings(dialog.getRefreshSettings());
+            enableAutoRefresh(true);
+        }
+    }
+
+    private static final int[] AUTO_REFRESH_DEFAULTS = new int[]{1, 5, 10, 15, 30, 60};
+
+    private class AutoRefreshMenuListener extends SelectionAdapter {
+        private final ToolItem dropdown;
+        private final Runnable defaultAction;
+
+        AutoRefreshMenuListener(ToolItem item, Runnable defaultAction) {
+            this.dropdown = item;
+            this.defaultAction = defaultAction;
+        }
+
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+            if (e.detail == SWT.ARROW) {
+                ToolItem item = (ToolItem) e.widget;
+                Rectangle rect = item.getBounds();
+                Point pt = item.getParent().toDisplay(new Point(rect.x, rect.y));
+
+                if (schedulerMenu != null) {
+                    schedulerMenu.dispose();
+                }
+                schedulerMenu = new Menu(dropdown.getParent().getShell());
+                {
+                    MenuItem mi = new MenuItem(schedulerMenu, SWT.NONE);
+                    mi.setText(UIMessages.sql_editor_resultset_filter_panel_menu_customize);
+                    mi.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            runCustomized();
+                        }
+                    });
+
+                    mi = new MenuItem(schedulerMenu, SWT.NONE);
+                    mi.setText(UIMessages.sql_editor_resultset_filter_panel_menu_stop);
+                    mi.setEnabled(isAutoRefreshEnabled());
+                    mi.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            enableAutoRefresh(false);
+                        }
+                    });
+                    new MenuItem(schedulerMenu, SWT.SEPARATOR);
+
+                    List<Integer> presetList = new ArrayList<>();
+                    for (int t : AUTO_REFRESH_DEFAULTS) presetList.add(t);
+
+                    int defaultInterval = getRefreshSettings().getRefreshInterval();
+                    if (defaultInterval > 0 && !presetList.contains(defaultInterval)) {
+                        presetList.add(0, defaultInterval);
+                    }
+
+                    for (int i = 0; i < presetList.size(); i++) {
+                        final Integer timeout = presetList.get(i);
+                        mi = new MenuItem(schedulerMenu, SWT.PUSH);
+                        String text = i == 0 ?
+                            NLS.bind(UIMessages.sql_editor_resultset_filter_panel_menu_refresh_interval, timeout) :
+                            NLS.bind(UIMessages.sql_editor_resultset_filter_panel_menu_refresh_interval_1, timeout);
+                        mi.setText(text);
+                        if (isAutoRefreshEnabled() && timeout == defaultInterval) {
+                            schedulerMenu.setDefaultItem(mi);
+                        }
+                        mi.addSelectionListener(new SelectionAdapter() {
+                            @Override
+                            public void widgetSelected(SelectionEvent e) {
+                                runPreset(timeout);
+                            }
+                        });
+                    }
+                }
+                if (hintSupplier != null) {
+                    String hintText = hintSupplier.get();
+                    if (!CommonUtils.isEmpty(hintText)) {
+                        new MenuItem(schedulerMenu, SWT.SEPARATOR);
+                        // We need hint item not just for hint. It also fills last menu element to avoid accidental miss-click in dropdown falls up
+                        MenuItem hintItem = new MenuItem(schedulerMenu, SWT.PUSH);
+                        hintItem.setText(hintText);
+                        hintItem.setEnabled(false);
+                    }
+                }
+
+                schedulerMenu.setLocation(pt.x, pt.y + rect.height);
+                schedulerMenu.setVisible(true);
+            } else {
+                if (isAutoRefreshEnabled()) {
+                    enableAutoRefresh(false);
+                } else {
+                    defaultAction.run();
+                }
+            }
+        }
+
+        private void runPreset(int interval) {
+            RefreshSettings settings = new RefreshSettings(getRefreshSettings());
+            settings.setRefreshInterval(interval);
+            setRefreshSettings(settings);
+            enableAutoRefresh(true);
+        }
+    }
+
+
+}

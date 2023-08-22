@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="teradata" class="org.jkiss.dbeaver.ext.teradata.model.TeradataMetaModel" driverClass="com.ncr.teradata.TeraDriver,com.teradata.jdbc.TeraDriver" dialect="teradata"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="teradata" parent="generic" class="org.jkiss.dbeaver.ext.teradata.model.TeradataSQLDialect" label="Teradata" description="Teradata SQL dialect." icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/teradata_icon.png">
+        </dialect>
+    </extension>
+
+</plugin>

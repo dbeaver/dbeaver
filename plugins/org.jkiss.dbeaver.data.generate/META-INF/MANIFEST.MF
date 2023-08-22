@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Vendor: DBeaver Corp
+Bundle-Name: DBeaver Generate Data Support
+Bundle-SymbolicName: org.jkiss.dbeaver.data.generate; singleton:=true
+Bundle-Version: 1.0.134.qualifier
+Bundle-Release-Date: 20230724
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: org.jkiss.dbeaver.mockdata.engine.internal.MockDataActivator
+Bundle-ClassPath: .,lib/dk.brics.automaton_1.11.0.8.jar
+Require-Bundle: org.eclipse.core.runtime,org.jkiss.dbeaver.model,org.jkiss.dbeaver.registry
+Export-Package: org.jkiss.dbeaver.mockdata.engine,
+ org.jkiss.dbeaver.mockdata.engine.model
+Automatic-Module-Name: org.jkiss.dbeaver.data.generate
+Bundle-Localization: OSGI-INF/l10n/bundle

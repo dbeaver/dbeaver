@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver Test Plug-in
+Bundle-SymbolicName: org.jkiss.dbeaver.model.lsm.test;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Release-Date: 20230410
+Require-Bundle: org.jkiss.dbeaver.model.lsm,
+ org.jkiss.bundle.antlr4,
+ org.junit,
+ org.mockito.mockito-core
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-Vendor: DBeaver Corp
+Automatic-Module-Name: org.jkiss.dbeaver.model.lsm.test

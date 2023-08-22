@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.jkiss.dbeaver</groupId>
+        <artifactId>dbeaver</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+    </parent>
+    <artifactId>features</artifactId>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>org.jkiss.dbeaver.runtime.feature</module>
+        <module>org.jkiss.dbeaver.db.feature</module>
+    </modules>
+
+    <profiles>
+        <profile>
+            <id>desktop</id>
+            <activation><property><name>!headless-platform</name></property></activation>
+            <!-- Desktop (swt/jface) components -->
+            <modules>
+                <module>org.jkiss.dbeaver.rcp.feature</module>
+                <module>org.jkiss.dbeaver.ui.feature</module>
+                <module>org.jkiss.dbeaver.ui.extra.feature</module>
+                <module>org.jkiss.dbeaver.debug.feature</module>
+
+                <module>org.jkiss.dbeaver.db.ui.feature</module>
+                <module>org.jkiss.dbeaver.git.feature</module>
+                <module>org.jkiss.dbeaver.ext.ai.feature</module>
+                <module>org.jkiss.dbeaver.ext.office.feature</module>
+                <module>org.jkiss.dbeaver.ext.ui.svg.feature</module>
+
+                <module>org.jkiss.dbeaver.ide.feature</module>
+                <module>org.jkiss.dbeaver.app.base.feature</module>
+                <module>org.jkiss.dbeaver.app.local.feature</module>
+                <module>org.jkiss.dbeaver.standalone.feature</module>
+                <module>org.jkiss.dbeaver.appstore.feature</module>
+                <module>org.jkiss.dbeaver.ce.feature</module>
+            </modules>
+        </profile>
+    </profiles>
+
+</project>

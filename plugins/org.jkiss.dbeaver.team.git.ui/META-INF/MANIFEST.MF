@@ -1,0 +1,27 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Vendor: DBeaver Corp
+Bundle-Name: DBeaver Git integration UI
+Bundle-SymbolicName: org.jkiss.dbeaver.team.git.ui;singleton:=true
+Bundle-Version: 1.0.98.qualifier
+Bundle-Release-Date: 20230724
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-ClassPath: .
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.eclipse.core.runtime,
+ org.jkiss.dbeaver.model;visibility:=reexport,
+ org.jkiss.dbeaver.registry;visibility:=reexport,
+ org.jkiss.utils;visibility:=reexport,
+ org.eclipse.ui,
+ org.eclipse.team.ui,
+ org.eclipse.egit.core,
+ org.eclipse.egit.ui,
+ org.eclipse.core.resources,
+ org.eclipse.core.expressions,
+ org.jkiss.dbeaver.team.git,
+ org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.ui.editors.base,
+ org.jkiss.dbeaver.ui.navigator
+Bundle-Localization: OSGI-INF/l10n/bundle
+Bundle-Activator: org.jkiss.dbeaver.team.git.ui.Activator
+Automatic-Module-Name: org.jkiss.dbeaver.team.git.ui

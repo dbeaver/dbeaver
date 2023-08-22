@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Vendor: DBeaver Corp
+Bundle-Name: DBeaver SSH implementation (SSHJ)
+Bundle-SymbolicName: org.jkiss.dbeaver.net.ssh.sshj;singleton:=true
+Bundle-Version: 1.0.131.qualifier
+Bundle-Release-Date: 20230724
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: .
+Require-Bundle: org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.net.ssh,
+ org.jkiss.bundle.sshj,
+ com.jcraft.jsch
+Import-Package: org.slf4j,
+ org.slf4j.helpers
+Automatic-Module-Name: org.jkiss.dbeaver.net.ssh.sshj

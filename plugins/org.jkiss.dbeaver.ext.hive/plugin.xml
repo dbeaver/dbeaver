@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="hive" class="org.jkiss.dbeaver.ext.hive.model.HiveMetaModel" driverClass="org.apache.hive.jdbc.HiveDriver" dialect="hive"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.hive.model.HiveDataSourceProvider"
+                description="Hive datasource"
+                id="hive"
+                parent="generic"
+                label="Hive"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/hive_icon.png"
+                dialect="hive">
+            <drivers managable="true">
+
+            <driver
+                    id="apache_hive2"
+                    label="Apache Hive"
+                    icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/hive_icon.png"
+                    iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/hive_icon_big.png"
+                    class="org.apache.hive.jdbc.HiveDriver"
+                    sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
+                    defaultPort="10000"
+                    description="Apache Hive JDBC"
+                    webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
+                    category="Hadoop"
+                    categories="hadoop">
+                <replace provider="generic" driver="apache_hive2"/>
+
+                <file type="jar" path="https://github.com/timveil/hive-jdbc-uber-jar/releases/download/v1.9-2.6.5/hive-jdbc-uber-2.6.5.0-292.jar" bundle="!drivers.hive"/>
+                <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.hive"/>
+                <file type="jar" path="drivers/hive" bundle="drivers.hive"/>
+                <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.hive"/>
+
+                <parameter name="supports-delimiter-in-views" value="false"/>
+                <parameter name="supports-limits" value="false"/>
+                <parameter name="supports-references" value="false"/>
+                <parameter name="query-get-active-db" value="SELECT CURRENT_DATABASE()"/>
+                <parameter name="query-set-active-db" value="USE ?"/>
+            </driver>
+
+            <treeInjection path="generic/catalog/schema/table"
+                           changeFolderType="org.jkiss.dbeaver.ext.hive.model.HiveTable"/>
+            <treeInjection path="generic/catalog/schema/table/attribute"
+                           changeFolderType="org.jkiss.dbeaver.ext.hive.model.HiveTableColumn"/>
+            <treeInjection path="generic/catalog/schema/table/index"
+                           changeFolderType="org.jkiss.dbeaver.ext.hive.model.HiveIndex"/>
+            </drivers>
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="hive" parent="generic" class="org.jkiss.dbeaver.ext.hive.model.HiveSQLDialect" label="Hive" description="Apache Hive SQL dialect." icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/hive_icon.png">
+        </dialect>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.hive.model.edit.HiveTableManager"    objectType="org.jkiss.dbeaver.ext.hive.model.HiveTable"/>
+        <manager class="org.jkiss.dbeaver.ext.hive.model.edit.HiveTableColumnManager"    objectType="org.jkiss.dbeaver.ext.hive.model.HiveTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.hive.model.edit.HiveIndexManager"    objectType="org.jkiss.dbeaver.ext.hive.model.HiveIndex"/>
+    </extension>
+
+</plugin>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.eclipse.ui.menus">
+        <!-- Results viewer status bar additions -->
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.controls.resultset.status?after=additions">
+            <command commandId="com.dbeaver.ui.mockdata.resultset.mockdata"/>
+        </menuContribution>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="com.dbeaver.ui.mockdata.resultset.mockdata" class="org.jkiss.dbeaver.mockdata.ui.handlers.ResultSetMockDataHandler">
+            <enabledWhen>
+                <or>
+                    <with variable="activeEditor">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+                    </with>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+                        </iterate>
+                    </with>
+                </or>
+            </enabledWhen>
+        </handler>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.tools">
+        <tools>
+            <tool
+                    class="org.jkiss.dbeaver.mockdata.ui.MockDataGenerateTool"
+                    description="Mock Data"
+                    id="org.jkiss.dbeaver.mockdata.ui.MockDataGenerateTool"
+                    label="%command.mockdata.name"
+                    icon="icons/mock_data.png"
+                    singleton="false">
+
+                <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator" forceCheck="true"/>
+            </tool>
+        </tools>
+    </extension>
+
+    <extension point="org.eclipse.ui.commands">
+        <command id="com.dbeaver.ui.mockdata.resultset.mockdata" name="%command.mockdata.name" description="%command.mockdata.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commandImages">
+        <image commandId="com.dbeaver.ui.mockdata.resultset.mockdata" icon="icons/mock_data.png"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=results_export">
+            <command
+                    commandId="com.dbeaver.ui.mockdata.resultset.mockdata"
+                    label="%command.mockdata.name">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
+    </extension>
+
+</plugin>

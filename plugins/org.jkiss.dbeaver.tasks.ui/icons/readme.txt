@@ -1,0 +1,1 @@
+Icons left here for backward compatibility

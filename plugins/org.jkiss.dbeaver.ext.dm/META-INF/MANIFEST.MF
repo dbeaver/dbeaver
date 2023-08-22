@@ -1,0 +1,35 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver DM Support
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.dm;singleton:=true
+Bundle-Version: 2.1.195.qualifier
+Bundle-Release-Date: 20230724
+Bundle-Activator: org.jkiss.dbeaver.ext.dm.internal.DmActivator
+Require-Bundle: org.eclipse.core.runtime,
+ com.github.jsqlparser,
+ com.google.gson,
+ com.sun.jna.platform,
+ org.jkiss.dbeaver.data.gis,
+ org.jkiss.dbeaver.model;visibility:=reexport,
+ org.jkiss.dbeaver.model.jdbc;visibility:=reexport,
+ org.jkiss.dbeaver.model.sql,
+ org.jkiss.dbeaver.registry,
+ org.jkiss.dbeaver.tasks.native;visibility:=reexport
+Export-Package: org.jkiss.dbeaver.ext.dm,
+ org.jkiss.dbeaver.ext.dm.data,
+ org.jkiss.dbeaver.ext.dm.edit,
+ org.jkiss.dbeaver.ext.dm.internal,
+ org.jkiss.dbeaver.ext.dm.model,
+ org.jkiss.dbeaver.ext.dm.model.lock,
+ org.jkiss.dbeaver.ext.dm.model.session,
+ org.jkiss.dbeaver.ext.dm.model.source,
+ org.jkiss.dbeaver.ext.dm.model.utils,
+ org.jkiss.dbeaver.ext.dm.plan,
+ org.jkiss.dbeaver.ext.dm.sql,
+ org.jkiss.dbeaver.ext.dm.tasks
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-Vendor: DBeaver Corp
+Bundle-ClassPath: .
+Import-Package: com.google.gson
+Automatic-Module-Name: org.jkiss.dbeaver.ext.dm

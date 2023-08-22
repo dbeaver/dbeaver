@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?NLS TYPE="org.eclipse.help.toc"?>
+
+<!--
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2023 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+  -->
+
+<toc label="DBeaver Help">
+	<topic label="About DBeaver" href="docs/help/html/about.html">
+	</topic>
+    <topic label="Manage connections">
+        <topic href="docs/help/html/dialogs/driver-manager.html" label="Manage drivers"/>
+        <topic href="docs/help/html/dialogs/driver-editor.html" label="Driver editor dialog"/>
+        <topic label="Connection wizard">
+            <topic href="docs/help/html/dialogs/con-wizard-driver.html" label="Driver selection"/>
+            <topic href="docs/help/html/dialogs/con-wizard-settings.html" label="Connection settings"/>
+            <topic href="docs/help/html/dialogs/con-wizard-final.html" label="Additional settings"/>
+        </topic>
+    </topic>
+    <topic label="Work with data">
+        <topic href="docs/help/html/editors/sql-editor.html" label="SQL Editor"/>
+        <topic href="docs/help/html/editors/result-set.html" label="Result Set"/>
+    </topic>
+    <topic label="Work with metadata">
+        <topic href="docs/help/html/views/database-navigator.html" label="Database Navigator"/>
+        <topic href="docs/help/html/editors/entity-editor.html" label="Entity Editor"/>
+    </topic>
+    <topic label="Projects">
+        <topic href="docs/help/html/views/project-navigator.html" label="Project Navigator"/>
+        <topic href="docs/help/html/views/project-explorer.html" label="Project Explorer"/>
+    </topic>
+    <topic label="Miscellaneous">
+        <topic href="docs/help/html/views/query-manager.html" label="Query Manager"/>
+    </topic>
+</toc>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+    <extension-point id="org.jkiss.dbeaver.pluginService" name="%extension-point.org.jkiss.dbeaver.pluginService.name" schema="schema/org.jkiss.dbeaver.pluginService.exsd"/>
+
+    <!-- Non UI extensions -->
+    <extension-point id="org.jkiss.dbeaver.objectManager" name="%extension-point.org.jkiss.dbeaver.objectManager.name" schema="schema/org.jkiss.dbeaver.objectManager.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.mavenRepository" name="%extension-point.org.jkiss.dbeaver.mavenRepository.name" schema="schema/org.jkiss.dbeaver.mavenRepository.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataSourceProvider" name="%extension-point.org.jkiss.dbeaver.dataSourceProvider.name" schema="schema/org.jkiss.dbeaver.dataSourceProvider.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataSourceStorage" name="%extension-point.org.jkiss.dbeaver.dataSourceStorage.name" schema="schema/org.jkiss.dbeaver.dataSourceStorage.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataSourceAuth" name="%extension-point.org.jkiss.dbeaver.dataSourceAuth.name" schema="schema/org.jkiss.dbeaver.dataSourceAuth.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataSourceHandler" name="%extension-point.org.jkiss.dbeaver.dataSourceHandler.name" schema="schema/org.jkiss.dbeaver.dataSourceHandler.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.driverManager" name="%extension-point.org.jkiss.dbeaver.driverManager.name" schema="schema/org.jkiss.dbeaver.driverManager.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.resourceType" name="%extension-point.org.jkiss.dbeaver.resourceType.name" schema="schema/org.jkiss.dbeaver.resourceType.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.resourceHandler" name="%extension-point.org.jkiss.dbeaver.resourceHandler.name" schema="schema/org.jkiss.dbeaver.resourceHandler.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.networkHandler" name="%extension-point.org.jkiss.dbeaver.networkHandler.name" schema="schema/org.jkiss.dbeaver.networkHandler.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.resources" name="%extension-point.org.jkiss.dbeaver.resources.name" schema="schema/org.jkiss.dbeaver.resources.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.product.bundles" name="%extension-point.org.jkiss.dbeaver.product.bundles.name" schema="schema/org.jkiss.dbeaver.product.bundles.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.fileSystem" name="%extension-point.org.jkiss.dbeaver.fileSystem.name" schema="schema/org.jkiss.dbeaver.fileSystem.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.language" name="%extension-point.org.jkiss.dbeaver.language.name" schema="schema/org.jkiss.dbeaver.language.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.task" name="%extension-point.org.jkiss.dbeaver.task.name" schema="schema/org.jkiss.dbeaver.task.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.productFeature" name="%extension-point.org.jkiss.dbeaver.productFeature.name" schema="schema/org.jkiss.dbeaver.productFeature.exsd"/>
+
+    <extension point="org.jkiss.dbeaver.language">
+        <language code="en" label="%language.en.label"/>
+        <language code="zh" label="%language.zh.label"/>
+        <language code="ru" label="%language.ru.label"/>
+        <language code="fr" label="%language.fr.label"/>
+        <language code="de" label="%language.de.label"/>
+        <language code="it" label="%language.it.label"/>
+        <language code="ja" label="%language.ja.label"/>
+        <language code="es" label="%language.es.label"/>
+        <language code="pt_BR" label="%language.pt_BR.label"/>
+        <language code="ko" label="%language.ko.label"/>
+        <language code="tw" label="%language.tw.label"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.driverManager">
+        <category id="sql" name="%driver.category.sql.name" description="%driver.category.sql.description" icon="#folder_database" rank="4" promoted="true"/>
+        <category id="nosql" name="%driver.category.nosql.name" description="%driver.category.nosql.description" icon="#folder_database" rank="5" promoted="true"/>
+        <category id="analytic" name="%driver.category.analytical.name" description="%driver.category.analytical.description" icon="#folder_database" rank="10" promoted="true"/>
+        <category id="timeseries" name="%driver.category.timeseries.name" description="%driver.category.timeseries.description" icon="#folder_database" rank="11" promoted="true"/>
+        <category id="embedded" name="%driver.category.embedded.name" description="%driver.category.embedded.description" icon="#folder_database" rank="15" promoted="true"/>
+        <category id="hadoop" name="%driver.category.hadoop.name" description="%driver.category.hadoop.description" icon="#folder_database" rank="20" promoted="true"/>
+        <category id="fulltext" name="%driver.category.fulltext.name" description="%driver.category.fulltext.description" icon="#folder_database" rank="22" promoted="true"/>
+        <category id="graph" name="%driver.category.graph.name" description="%driver.category.graph.description" icon="#folder_database" rank="23" promoted="true"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.networkHandler">
+        <handler
+            type="proxy"
+            id="socks_proxy"
+            codeName="Proxy"
+            label="%handler.socks_proxy.label"
+            description="%handler.socks_proxy.description"
+            desktop="true"
+            secured="true"
+            order="10"
+            handlerClass="org.jkiss.dbeaver.model.impl.net.SocksProxyImpl"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasourceOrigin id="local" label="Local configuration" class="org.jkiss.dbeaver.registry.DataSourceOriginProviderLocal"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceAuth">
+        <authModel
+            id="native"
+            label="Database Native"
+            description="Database native authentication"
+            class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative"
+            default="true">
+
+            <propertyGroup label="Database user">
+                <property id="user" label="User" type="string"/>
+                <property id="password" label="Password" type="string" features="password"/>
+            </propertyGroup>
+
+        </authModel>
+    </extension>
+
+    <extension point="org.eclipse.core.contenttype.contentTypes">
+        <content-type
+                file-extensions="bm"
+                id="org.jkiss.dbeaver.bookmark"
+                name="Database Bookmarks"
+                priority="normal"
+                describer="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarkContentTypeDescriber"/>
+
+        <content-type file-extensions="lnk" id="org.jkiss.dbeaver.shortcut" name="Windows shortcuts" priority="normal">
+            <describer class="org.eclipse.core.runtime.content.BinarySignatureDescriber">
+                <!-- http://msdn.microsoft.com/en-us/library/dd871305%28PROT.10%29.aspx -->
+                <parameter name="signature" value="4C,00,00,00,01,14,02,00,00,00,00,00,C0,00,00,00,00,00,00,46"/>
+                <parameter name="offset" value="0"/>
+            </describer>
+        </content-type>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.resourceType">
+        <type id="default"/>
+        <type id="project">
+            <resourceTypeBinding resourceType="org.eclipse.core.resources.IProject"/>
+        </type>
+        <type id="bookmark" name="Navigator bookmarks" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/bookmark_folder.png" managable="true">
+            <root folder="Bookmarks"/>
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.bookmark"/>
+        </type>
+        <type id="shortcut">
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.shortcut"/>
+        </type>
+    </extension>
+
+</plugin>

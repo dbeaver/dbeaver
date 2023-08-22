@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+
+<plugin>
+    <extension-point id="com.dbeaver.ai.engine" name="AI integrations" schema="schema/com.dbeaver.ai.engine.exsd"/>
+
+    <extension point="com.dbeaver.ai.engine">
+        <completionEngine id="openai" label="OpenAI" class="org.jkiss.dbeaver.model.ai.gpt3.GPTCompletionEngine"/>
+    </extension>
+
+</plugin>

@@ -1,0 +1,178 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2010-2023 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ext.db2.manager;
+
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
+import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * DB2 Sequence Manager
+ *
+ * @author Denis Forveille
+ */
+public class DB2SequenceManager extends SQLObjectEditor<DB2Sequence, DB2Schema> {
+
+    private static final String SQL_CREATE = "CREATE SEQUENCE ";
+    private static final String SQL_ALTER = "ALTER SEQUENCE ";
+    private static final String SQL_DROP = "DROP SEQUENCE %s";
+    private static final String SQL_COMMENT = "COMMENT ON SEQUENCE %s IS '%s'";
+
+    private static final String SPACE = "\n   ";
+
+    @Override
+    public long getMakerOptions(DBPDataSource dataSource)
+    {
+        return FEATURE_EDITOR_ON_CREATE;
+    }
+
+    @Override
+    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options) throws DBException
+    {
+        if (CommonUtils.isEmpty(command.getObject().getName())) {
+            throw new DBException("Sequence name cannot be empty");
+        }
+    }
+
+    @Nullable
+    @Override
+    public DBSObjectCache<? extends DBSObject, DB2Sequence> getObjectsCache(DB2Sequence object)
+    {
+        return object.getSchema().getSequenceCache();
+    }
+
+    @Override
+    protected DB2Sequence createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
+                                               final Object container,
+                                               Object copyFrom, Map<String, Object> options)
+    {
+        DB2Schema schema = (DB2Schema) container;
+        return new DB2Sequence(schema, "NEW_SEQUENCE");
+    }
+
+    @Override
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
+    {
+        String sql = buildStatement(command.getObject(), false);
+        actions.add(new SQLDatabasePersistAction("Create Sequence", sql));
+
+        String comment = buildComment(command.getObject());
+        if (comment != null) {
+            actions.add(new SQLDatabasePersistAction("Comment on Sequence", comment));
+        }
+    }
+
+    @Override
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    {
+        String sql = buildStatement(command.getObject(), true);
+        actionList.add(new SQLDatabasePersistAction("Alter Sequence", sql));
+
+        String comment = buildComment(command.getObject());
+        if (comment != null) {
+            actionList.add(new SQLDatabasePersistAction("Comment on Sequence", comment));
+        }
+    }
+
+    @Override
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    {
+        String sql = String.format(SQL_DROP, command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL));
+        DBEPersistAction action = new SQLDatabasePersistAction("Drop Sequence", sql);
+        actions.add(action);
+    }
+
+    // -------
+    // Helpers
+    // -------
+    private String buildStatement(DB2Sequence sequence, Boolean forUpdate)
+    {
+
+        StringBuilder sb = new StringBuilder(256);
+        if (forUpdate) {
+            sb.append(SQL_ALTER);
+        } else {
+            sb.append(SQL_CREATE);
+        }
+        sb.append(sequence.getFullyQualifiedName(DBPEvaluationContext.DDL)).append(SPACE);
+        if (!(forUpdate)) {
+            sb.append("AS ");
+            sb.append(sequence.getPrecision().getSqlKeyword()).append(SPACE);
+        }
+
+        if (sequence.getStart() != null) {
+            if (forUpdate) {
+                sb.append("RESTART WITH ").append(sequence.getStart()).append(SPACE);
+            } else {
+                sb.append("START WITH ").append(sequence.getStart()).append(SPACE);
+            }
+        }
+
+        if (sequence.getIncrementBy() != null) {
+            sb.append("INCREMENT BY ").append(sequence.getIncrementBy()).append(SPACE);
+        }
+        if (sequence.getMinValue() != null) {
+            sb.append("MINVALUE ").append(sequence.getMinValue()).append(SPACE);
+        }
+        if (sequence.getMaxValue() != null) {
+            sb.append("MAXVALUE ").append(sequence.getMaxValue()).append(SPACE);
+        }
+        if (sequence.getCycle()) {
+            sb.append("CYCLE ").append(SPACE);
+        } else {
+            sb.append("NO CYCLE ").append(SPACE);
+        }
+        if (sequence.getCache() != null && sequence.getCache() > 0) {
+            sb.append("CACHE ").append(sequence.getCache()).append(SPACE);
+        } else {
+            sb.append("NO CACHE ").append(SPACE);
+        }
+        if (sequence.getOrder()) {
+            sb.append("ORDER ").append(SPACE);
+        } else {
+            sb.append("NO ORDER ").append(SPACE);
+        }
+
+        return sb.toString();
+    }
+
+    private String buildComment(DB2Sequence sequence)
+    {
+        if ((sequence.getDescription() != null) && (sequence.getDescription().length() > 0)) {
+            return String.format(SQL_COMMENT, sequence.getFullyQualifiedName(DBPEvaluationContext.DDL), sequence.getDescription());
+        } else {
+            return null;
+        }
+    }
+
+}

@@ -1,0 +1,3 @@
+name=${dbeaver-product}
+id=org.jkiss.dbeaver.core.appstore
+version=${dbeaver-version}

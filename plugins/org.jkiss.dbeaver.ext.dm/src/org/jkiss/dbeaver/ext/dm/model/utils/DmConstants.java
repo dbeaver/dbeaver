@@ -1,0 +1,127 @@
+package org.jkiss.dbeaver.ext.dm.model.utils;
+
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+
+public class DmConstants {
+
+	public static final String CMD_COMPILE = "org.jkiss.dbeaver.ext.dm.code.compile";
+	
+	public static final String SCHEMA_SYS = "SYS";
+
+	public static final String VIEW_ALL_SOURCE = "ALL_SOURCE";
+
+	public static final String VIEW_DBA_SOURCE = "DBA_SOURCE";
+
+	public static final String VIEW_DBA_TAB_PRIVS = "DBA_TAB_PRIVS";
+
+	public static final String PROP_ALWAYS_USE_DBA_VIEWS = DBConstants.INTERNAL_PROP_PREFIX + "always-use-dba-views@";
+
+	public static final String PROP_CHECK_SCHEMA_CONTENT = DBConstants.INTERNAL_PROP_PREFIX + "check-schema-content@";
+
+	public static final String PROP_METADATA_USE_SYS_SCHEMA = DBConstants.INTERNAL_PROP_PREFIX + "meta-use-sys-schema@";
+
+	public static final String PROP_METADATA_USE_SIMPLE_CONSTRAINTS = DBConstants.INTERNAL_PROP_PREFIX
+			+ "meta-use-simple-constraints@";
+
+	public static final String PREF_DBMS_READ_ALL_SYNONYMS = "dm.read.all.synonyms";
+
+	public static final String USER_PUBLIC = "PUBLIC";
+
+	public static final String YES = "YES";
+
+	public static final String TYPE_NAME_XML = "XMLTYPE";
+
+	public static final String NLS_DEFAULT_VALUE = "Default";
+
+	public static final String PREF_KEY_DDL_FORMAT = "dm.ddl.format";
+	
+	public static final String EXTRA_AUTO_INCREMENT = "auto_increment"; //dm 支持自增
+
+	public static final int MAXIMUM_DBMS_OUTPUT_SIZE = 1000000;
+	
+	 public static final String PROP_SESSION_NLS_DATE_FORMAT = DBConstants.INTERNAL_PROP_PREFIX + "session-nls-date-format@";
+	 public static final String PROP_SESSION_TERRITORY = DBConstants.INTERNAL_PROP_PREFIX + "session-territory@";
+	 public static final String PROP_SESSION_LANGUAGE = DBConstants.INTERNAL_PROP_PREFIX + "session-language@";
+	 public static final String PROP_USE_META_OPTIMIZER = DBConstants.INTERNAL_PROP_PREFIX + "use-meta-optimizer@";
+
+	public static final DBSEntityConstraintType CONSTRAINT_WITH_CHECK_OPTION = new DBSEntityConstraintType("V",
+			"With Check Option", null, false, false, false, false);
+	public static final DBSEntityConstraintType CONSTRAINT_WITH_READ_ONLY = new DBSEntityConstraintType("O",
+			"With Read Only", null, false, false, false, false);
+	public static final DBSEntityConstraintType CONSTRAINT_HASH_EXPRESSION = new DBSEntityConstraintType("H",
+			"Hash expression", null, false, false, false, false);
+	public static final DBSEntityConstraintType CONSTRAINT_REF_COLUMN = new DBSEntityConstraintType("F",
+			"Constraint that involves a REF column", null, false, false, false, false);
+	public static final DBSEntityConstraintType CONSTRAINT_SUPPLEMENTAL_LOGGING = new DBSEntityConstraintType("S",
+			"Supplemental logging", null, false, false, false, false);
+
+	public static final DBSIndexType INDEX_TYPE_NORMAL = new DBSIndexType("NORMAL", "Normal");
+	public static final DBSIndexType INDEX_TYPE_BITMAP = new DBSIndexType("BITMAP", "Bitmap");
+	public static final DBSIndexType INDEX_TYPE_FUNCTION_BASED_NORMAL = new DBSIndexType("FUNCTION-BASED NORMAL",
+			"Function-based Normal");
+	public static final DBSIndexType INDEX_TYPE_FUNCTION_BASED_BITMAP = new DBSIndexType("FUNCTION-BASED BITMAP",
+			"Function-based Bitmap");
+	public static final DBSIndexType INDEX_TYPE_DOMAIN = new DBSIndexType("DOMAIN", "Domain");
+
+	public static final DBDPseudoAttribute PSEUDO_ATTR_ROWID = new DBDPseudoAttribute(DBDPseudoAttributeType.ROWID,
+			"ROWID", "$alias.ROWID", null, "Unique row identifier", true);
+
+	public static final String PREF_SUPPORT_ROWID = "dm.support.rowid";
+	public static final String PROP_ALWAYS_SHOW_DBA = DBConstants.INTERNAL_PROP_PREFIX + "always-show-dba@";
+    public static final String PROP_USE_RULE_HINT = DBConstants.INTERNAL_PROP_PREFIX + "use-rule-hint@";
+	
+	public static final String[] SYSTEM_SCHEMAS = {
+			"SYS",
+			"SYSAUDITOR",
+			"SYSDBA",
+			"SYSSSO"
+	};
+	
+	public static final String PROP_OBJECT_DEFINITION = "objectDefinitionText";
+    public static final String PROP_OBJECT_BODY_DEFINITION = "extendedDefinitionText";
+    public static final String PREF_EXPLAIN_TABLE_NAME = "dm.explain.table";
+    
+    public static final String PLAN_TABLE_DEFINITION =
+            "create global temporary table ${TABLE_NAME} (\n" +
+                "statement_id varchar2(30),\n" +
+                "plan_id number,\n" +
+                "timestamp date,\n" +
+                "remarks varchar2(4000),\n" +
+                "operation varchar2(30),\n" +
+                "options varchar2(255),\n" +
+                "object_node varchar2(128),\n" +
+                "object_owner varchar2(30),\n" +
+                "object_name varchar2(30),\n" +
+                "object_alias varchar2(65),\n" +
+                "object_instance numeric,\n" +
+                "object_type varchar2(30),\n" +
+                "optimizer varchar2(255),\n" +
+                "search_columns number,\n" +
+                "id numeric,\n" +
+                "parent_id numeric,\n" +
+                "depth numeric,\n" +
+                "position numeric,\n" +
+                "cost numeric,\n" +
+                "cardinality numeric,\n" +
+                "bytes numeric,\n" +
+                "other_tag varchar2(255),\n" +
+                "partition_start varchar2(255),\n" +
+                "partition_stop varchar2(255),\n" +
+                "partition_id numeric,\n" +
+                "other long,\n" +
+                "distribution varchar2(30),\n" +
+                "cpu_cost numeric,\n" +
+                "io_cost numeric,\n" +
+                "temp_space numeric,\n" +
+                "access_predicates varchar2(4000),\n" +
+                "filter_predicates varchar2(4000),\n" +
+                "projection varchar2(4000),\n" +
+                "time numeric,\n" +
+                "qblock_name varchar2(30),\n" +
+                "other_xml clob\n" +
+                ") on commit preserve rows";
+}

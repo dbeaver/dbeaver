@@ -1,0 +1,62 @@
+<!--
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2023 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+  -->
+
+<contexts>
+    <context id="driver-manager">
+        <topic href="Driver-Manager" label="Driver Manager"/>
+    </context>
+    <context id="driver-editor">
+        <topic href="Driver-Editor" label="Driver Editor"/>
+    </context>
+    <context id="con-wizard-driver">
+        <topic href="Connect-to-database" label="Choose driver for connection"/>
+    </context>
+    <context id="con-wizard-settings">
+        <topic href="Connect-to-database" label="Connection settings"/>
+    </context>
+    <context id="con-wizard-final">
+        <topic href="Connect-to-database" label="Additional connection settings"/>
+    </context>
+
+    <context id="sql-editor">
+        <topic href="SQL-Editor" label="SQL Editor"/>
+    </context>
+    <context id="result-set-viewer">
+        <topic href="Data-Editor" label="Result Set Viewer"/>
+    </context>
+    <context id="data-filter">
+        <topic href="Data-Filter" label="Data Order/Filter Dialog"/>
+    </context>
+
+    <context id="entity-editor">
+        <topic href="Entity-Editor" label="Entity Editor"/>
+    </context>
+
+    <context id="view-database-navigator">
+        <topic href="Database-Navigator" label="Database Navigator"/>
+    </context>
+    <context id="view-project-explorer">
+        <topic href="Project-Explorer" label="Project Explorer"/>
+    </context>
+    <context id="view-project-navigator">
+        <topic href="Project-Navigator" label="Project Navigator"/>
+    </context>
+    <context id="view-query-manager">
+        <topic href="Query-Manager" label="Query Manager"/>
+    </context>
+
+</contexts>

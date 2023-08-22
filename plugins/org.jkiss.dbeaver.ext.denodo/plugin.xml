@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="denodo" class="org.jkiss.dbeaver.ext.denodo.model.DenodoMetaModel" driverClass="com.denodo.vdp.jdbc.Driver"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+
+        <!-- Denodo Platform -->
+        <datasource
+                class="org.jkiss.dbeaver.ext.denodo.DenodoDataSourceProvider"
+                description="Denodo data source"
+                id="denodo"
+                parent="generic"
+                label="Denodo"
+                icon="icons/denodo_icon.png"
+                dialect="basic">
+            <drivers managable="true">
+                <driver
+                        id="denodo8_jdbc"
+                        label="Denodo 8"
+                        class="com.denodo.vdp.jdbc.Driver"
+                        icon="icons/denodo_icon.png"
+                        iconBig="icons/denodo_icon_big.png"
+                        sampleURL="jdbc:denodo://{host}:{port}/{database}"
+                        defaultPort="9999"
+                        defaultDatabase="admin"
+                        defaultUser="admin"
+                        defaultPassword="admin"
+                        description="Denodo Virtual DataPort JDBC driver"
+                        webURL="https://community.denodo.com/docs/html/browse/latest/vdp/developer/access_through_jdbc/access_through_jdbc"
+                        categories="sql,analytic">
+                    <file type="jar" path="https://community.denodo.com/drivers/jdbc/8.0/denodo-vdp-jdbcdriver"/>
+                </driver>
+            </drivers>
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="denodo" parent="generic" class="org.jkiss.dbeaver.ext.denodo.model.DenodoSQLDialect" label="Denodo" description="Denodo SQL dialect." icon="icons/denodo_icon.png">
+        </dialect>
+    </extension>
+
+</plugin>

@@ -1,0 +1,36 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver PostgreSQL Model
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.postgresql;singleton:=true
+Bundle-Version: 2.1.183.qualifier
+Bundle-Release-Date: 20230724
+Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
+ org.jkiss.dbeaver.model.jdbc;visibility:=reexport,
+ org.jkiss.dbeaver.model.sql,
+ org.jkiss.dbeaver.ext.generic,
+ org.jkiss.dbeaver.data.gis;visibility:=reexport,
+ org.jkiss.bundle.gis;visibility:=reexport,
+ org.jkiss.dbeaver.registry,
+ org.jkiss.dbeaver.tasks.native;visibility:=reexport,
+ com.google.gson,
+ com.sun.jna.platform,
+ org.jkiss.dbeaver.model.sql
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-Vendor: DBeaver Corp
+Bundle-ClassPath: .
+Export-Package: org.jkiss.dbeaver.ext.postgresql,
+ org.jkiss.dbeaver.ext.postgresql.edit,
+ org.jkiss.dbeaver.ext.postgresql.model,
+ org.jkiss.dbeaver.ext.postgresql.model.data,
+ org.jkiss.dbeaver.ext.postgresql.model.fdw,
+ org.jkiss.dbeaver.ext.postgresql.model.impls,
+ org.jkiss.dbeaver.ext.postgresql.model.jdbc,
+ org.jkiss.dbeaver.ext.postgresql.model.lock,
+ org.jkiss.dbeaver.ext.postgresql.model.net,
+ org.jkiss.dbeaver.ext.postgresql.model.plan,
+ org.jkiss.dbeaver.ext.postgresql.model.session,
+ org.jkiss.dbeaver.ext.postgresql.tasks
+Bundle-Localization: OSGI-INF/l10n/bundle
+Automatic-Module-Name: org.jkiss.dbeaver.ext.postgresql
+

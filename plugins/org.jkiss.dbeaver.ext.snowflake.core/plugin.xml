@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="snowflake" class="org.jkiss.dbeaver.ext.snowflake.model.SnowflakeMetaModel" driverClass="net.snowflake.client.jdbc.SnowflakeDriver"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+
+        <!-- Snowflake -->
+
+        <datasource
+                class="org.jkiss.dbeaver.ext.snowflake.SnowflakeDataSourceProvider"
+                description="%datasource.snowflake.description"
+                id="snowflake"
+                parent="generic"
+                label="Snowflake"
+                icon="icons/snowflake_icon.png"
+                dialect="basic">
+            <drivers managable="true">
+
+                <driver
+                        id="snowflake_jdbc"
+                        label="Snowflake"
+                        class="net.snowflake.client.jdbc.SnowflakeDriver"
+                        icon="icons/snowflake_icon.png"
+                        iconBig="icons/snowflake_icon_big.png"
+                        sampleURL="jdbc:snowflake://{host}[:port]/?[db={database}]"
+                        defaultPort="443"
+                        description="Snowflake JDBC driver"
+                        webURL="https://docs.snowflake.net/manuals/user-guide/jdbc-configure.html"
+                        categories="sql,analytic"
+                        singleConnection="true">
+                    <replace provider="generic" driver="snowflake_generic"/>
+                    <file type="jar" path="maven:/net.snowflake:snowflake-jdbc:RELEASE[3.13.6]" bundle="!drivers.snowflake"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.snowflake"/>
+                    <file type="jar" path="drivers/snowflake" bundle="drivers.snowflake"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.snowflake"/>
+
+                    <parameter name="supports-indexes" value="false"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_DATABASE()"/>
+                    <parameter name="query-set-active-db" value="USE DATABASE &quot;?&quot;"/>
+                    <parameter name="active-entity-type" value="catalog"/>
+
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                </driver>
+
+                <provider-properties drivers="*">
+                    <propertyGroup label="Settings">
+                        <property id="warehouse" label="Warehouse" type="string" description="Snowflake warehouse name"/>
+                        <property id="schema" label="Schema" type="string" description="Default schema name"/>
+                    </propertyGroup>
+                </provider-properties>
+
+            </drivers>
+
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="snowflake" parent="generic" class="org.jkiss.dbeaver.ext.snowflake.model.SnowflakeSQLDialect" label="Snowflake" description="Snowflake SQL dialect." icon="icons/snowflake_icon.png">
+        </dialect>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.ext.snowflake.internal.SnowflakePreferencesInitializer"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceAuth">
+        <authModel
+            id="snowflake_snowflake"
+            label="Database native"
+            description="Snowflake internal authentication (name/password)"
+            class="org.jkiss.dbeaver.ext.snowflake.model.auth.SnowflakeAuthModelSnowflake"
+            default="true">
+            <replace model="native"/>
+            <datasource id="snowflake"/>
+            <datasource id="snowflake_ee"/>
+        </authModel>
+    </extension>
+
+</plugin>

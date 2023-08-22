@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+
+        <!-- Open Distro Elasticsearch -->
+
+        <datasource
+                class="org.jkiss.dbeaver.ext.opendistro.ElasticsearchDataSourceProvider"
+                description="%datasource.opendistro.description"
+                id="open-distro-elasticsearch"
+                parent="generic"
+                label="Open Distro Elasticsearch"
+                icon="icons/opendistro_icon.png"
+                dialect="basic">
+            <drivers managable="true">
+
+                <driver
+                        id="open_distro_elastic_search_jdbc"
+                        label="Open Distro Elasticsearch"
+                        class="com.amazon.opendistroforelasticsearch.jdbc.Driver"
+                        icon="icons/opendistro_icon.png"
+                        iconBig="icons/opendistro_icon_big.png"
+                        sampleURL="jdbc:elasticsearch://https://{host}:{port}/"
+                        defaultPort="443"
+                        description="Opendistro Elasticsearch JDBC driver"
+                        webURL="https://opendistro.github.io/for-elasticsearch-docs/docs/sql/jdbc/"
+                        categories="fulltext">
+                    <replace provider="generic" driver="opendistro_generic"/>
+                    <file type="jar" path="maven:/com.amazon.opendistroforelasticsearch.client:opendistro-sql-jdbc:1.1.0.0"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
+                    <parameter name="omit-catalog" value="true"/>
+                    <parameter name="use-search-string-escape" value="true"/>
+                </driver>
+
+            </drivers>
+
+        </datasource>
+    </extension>
+
+</plugin>

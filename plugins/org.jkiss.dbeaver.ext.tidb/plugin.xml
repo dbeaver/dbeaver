@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<!--
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2022 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+  -->
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+            class="org.jkiss.dbeaver.ext.tidb.TiDBDataSourceProvider"
+            description="TiDB"
+            id="tidb"
+            parent="mysql"
+            dialect="tidb"
+            label="TiDB">
+
+            <treeInjection path="mysql/database" replaceChildren="true">
+                 <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
+                    <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
+                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
+                            <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column"/>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="Table constraints">
+                            <items label="%tree.constraint.node.name" path="constraint" property="constraints" icon="#unique-key">
+                                <items label="%tree.constraint_columns.node.name" path="column" property="attributeReferences" navigable="false" inline="true" visibleIf="object.constraintType!='CHECK'"/>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys" visibleIf="object.dataSource.isServerVersionAtLeast(6,6)">
+                            <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
+                                <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                </items>
+                            </items>
+                        </folder>
+                        <folder label="%tree.references.node.name" icon="#references" description="Table references" virtual="true">
+                            <items label="%tree.reference_key.node.name" path="referenceKey" property="references" icon="#reference" virtual="true">
+                                <items label="%tree.reference_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true"/>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes">
+                            <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                <items label="Index columns" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true"/>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLPartition" label="%tree.partitions.node.name" icon="#partitions" description="Table partitions">
+                            <items label="%tree.partition.node.name" path="partition" property="partitions" icon="#partition">
+                                <items label="%tree.subpartitions.node.name" itemLabel="%tree.subpartition.node.name" path="subpartition" property="subPartitions" navigable="false" inline="true"/>
+                            </items>
+                        </folder>
+                    </items>
+                </folder>
+                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLView" label="%tree.views.node.name" icon="#folder_view" description="%tree.views.node.tip">
+                    <items label="%tree.view.node.name" path="view" property="views" icon="#view">
+                        <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributes" icon="#column"/>
+                    </items>
+                </folder>
+                <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip" virtual="true">
+                    <items label="%tree.index.node.name" path="index" property="indexes" icon="#index" virtual="true">
+                        <items label="Index columns" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true"/>
+                    </items>
+                </folder>
+                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLSequence" label="%tree.sequences.node.name" icon="#sequences" description="%tree.sequences.node.tip" visibleIf="object.dataSource.supportsSequences()">
+                    <items label="%tree.sequences.node.name" path="sequence" property="sequences" icon="#sequence">
+                    </items>
+                </folder>
+            </treeInjection>
+
+            <drivers managable="true">
+                 <driver
+                    id="tidb"
+                    label="TiDB"
+                    icon="icons/tidb_icon.png"
+                    iconBig="icons/tidb_icon_big.png"
+                    class="com.mysql.cj.jdbc.Driver"
+                    sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
+                    defaultPort="4000"
+                    defaultUser="root"
+                    webURL="https://pingcap.com/"
+                    propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
+                    description="TiDB Driver (MySQL Connector/J 8.0)"
+                    promoted="1"
+                    categories="sql">
+
+                    <file type="jar" path="maven:/com/mysql:mysql-connector-j:RELEASE" bundle="!drivers.mysql"/>
+                    <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt" bundle="!drivers.mysql"/>
+                    <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
+                    <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
+
+                    <property name="rewriteBatchedStatements" value="true"/>
+
+                    <parameter name="serverType" value="tidb"/>
+                    <property name="loginTimeout" value="20000"/>
+                    <property name="connectTimeout" value="20000"/>
+
+                    <property name="enabledTLSProtocols" value="TLSv1.2,TLSv1.3"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                    <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
+                    <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
+                </driver>
+
+            </drivers>
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+            class="org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider"
+            description="TiDB data types provider"
+            id="org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider"
+            label="TiDB data types provider">
+            <datasource id="tidb"/>
+            <type standard="TIMESTAMP"/>
+        </provider>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="tidb" parent="mysql" class="org.jkiss.dbeaver.ext.tidb.mysql.model.TiDBDialect" label="TiDB" description="TiDB dialect" icon="icons/tidb_icon.png">
+        </dialect>
+    </extension>
+</plugin>
+

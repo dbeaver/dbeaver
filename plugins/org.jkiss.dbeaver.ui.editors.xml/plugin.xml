@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataManager">
+        <streamManager class="org.jkiss.dbeaver.ui.data.managers.stream.XMLStreamValueManager" id="xml" label="XML" primaryMime="text/xml"
+                       description="XML" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/xml.png"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.editors">
+        <editor
+              class="org.jkiss.dbeaver.ui.editors.xml.XMLEditor"
+              default="true"
+              extensions="xml"
+              icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/xml.png"
+              id="org.jkiss.dbeaver.ui.editors.xml.XMLEditor"
+              name="XML">
+            <contentTypeBinding contentTypeId="org.eclipse.core.runtime.xml"/>
+        </editor>
+    </extension>
+
+    <extension point="org.eclipse.ui.themes">
+
+        <!-- Colors for the XML editor -->
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.xml.label" id="org.jkiss.dbeaver.ui.presentation.xml">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.xml.description</description>
+        </themeElementCategory>
+
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.xml.editor.color.tag.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.xml"
+                id="org.jkiss.dbeaver.xml.editor.color.tag"
+                value="COLOR_BLUE">
+            <description>%colorDefinition.org.jkiss.dbeaver.xml.editor.color.tag.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.xml.editor.color.text.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.xml"
+                id="org.jkiss.dbeaver.xml.editor.color.text"
+                value="COLOR_BLACK">
+            <description>%colorDefinition.org.jkiss.dbeaver.xml.editor.color.text.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.xml.editor.color.comment.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.xml"
+                id="org.jkiss.dbeaver.xml.editor.color.comment"
+                value="COLOR_RED">
+            <description>%colorDefinition.org.jkiss.dbeaver.xml.editor.color.comment.description</description>
+        </colorDefinition>
+
+    </extension>
+
+</plugin>

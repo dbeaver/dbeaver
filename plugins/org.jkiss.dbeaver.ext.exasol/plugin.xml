@@ -1,0 +1,546 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.exasol.ExasolDataSourceProvider"
+                description="%datasource.exasol.description"
+                icon="icons/exasol_icon.png"
+                id="exasol"
+                label="%datasource.exasol.label"
+                dialect="exasol">
+            <tree icon="icons/exasol_icon.png" label="Exasol data source" path="exasol">
+                <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema" label="%tree.schemas.node.name"
+                        icon="#folder_schema" description="%tree.schemas.node.description">
+                    <items label="%tree.schema.node.name" path="schema" property="schemas" icon="#schema">
+                        <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolTable" label="%tree.tables.node.name"
+                                icon="#folder_table" description="%tree.tables.node.description">
+                            <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
+                                <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn"
+                                        label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.description">
+                                    <items label="%tree.column.node.name" path="attribute" property="attributes"
+                                           icon="#column">
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey"
+                                        label="%tree.constraints.node.name" icon="#constraints"
+                                        description="%tree.constraints.node.description">
+                                    <items label="%tree.constraint.node.name" path="constraint" property="constraints"
+                                           icon="#unique-key">
+                                        <items label="%tree.constraint_columns.node.name" path="column"
+                                               property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey"
+                                        label="%tree.foreign_keys.node.name" icon="#foreign-keys"
+                                        description="%tree.foreign_keys.node.description">
+                                    <items label="%tree.foreign_key.node.name" path="association"
+                                           property="associations" icon="#foreign-key">
+                                        <items label="%tree.foreign_key_columns.node.name"
+                                               itemLabel="%tree.column.node.name" path="column"
+                                               property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder
+                                      description="%tree.partition_columns.node.description"
+                                      icon="#folder_table"
+                                      label="%tree.partition_columns.node.name"
+                                      type="org.jkiss.dbeaver.ext.exasol.model.ExasolTablePartitionColumn"
+                                      visibleIf="connected &amp;&amp; dataSource.hasPartitionColumns"
+                                      >
+                                    <items
+                                         icon="#partition"
+                                         label="%tree.partition_column.node.name"
+                                         path="partition"
+                                         property="partitions"
+                                         navigable="true"
+                                         >
+                                   </items>
+                                </folder>
+                                <folder
+                                      description="%tree.indexes.node.description"
+                                      icon="#indexes"
+                                      label="%tree.indexes.node.name"
+                                      type="org.jkiss.dbeaver.ext.exasol.model.ExasolTableIndex">
+                                   <items
+                                         icon="#index"
+                                         label="%tree.index.node.name"
+                                         path="index"
+                                         property="indexes">
+                                      <items
+                                            icon="#column"
+                                            inline="true"
+                                            itemLabel="%tree.column.node.name"
+                                            label="%tree.index_columns.node.name"
+                                            navigable="false"
+                                            path="column"
+                                            property="attributeReferences"
+                                            virtual="true">
+                                      </items>
+                                   </items>
+                                </folder>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolView" label="%tree.views.node.name"
+                                icon="#folder_view" description="%tree.views.node.description">
+                            <items label="%tree.view.node.name" path="view" property="views" icon="#view">
+                                <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column"
+                                       property="attributes" icon="#column">
+                                </items>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolScript" label="%tree.scripts.node.name"
+                                icon="#procedures" description="%tree.scripts.node.description">
+                            <folder
+                                  icon="#procedures"
+                                  label="%tree.scripts.adapter.node.name"
+                                  type="org.jkiss.dbeaver.ext.exasol.model.ExasolScript">
+                               <items
+                                     icon="#procedure"
+                                     label="%tree.script.node.name"
+                                     path="adapter"
+                                     property="adapter">
+                               </items>
+                            </folder>
+                            <folder
+                                  icon="#procedures"
+                                  label="%tree.scripts.script.node.name"
+                                  type="org.jkiss.dbeaver.ext.exasol.model.ExasolScript">
+                               <items
+                                     icon="#procedure"
+                                     label="%tree.script.node.name"
+                                     path="procedure"
+                                     property="procedures">
+                               </items>
+                            </folder>
+                            <folder
+                                  icon="#procedures"
+                                  label="%tree.scripts.udf.node.name"
+                                  type="org.jkiss.dbeaver.ext.exasol.model.ExasolScript">
+                               <items
+                                     icon="#procedure"
+                                     label="%tree.script.node.name"
+                                     path="udf"
+                                     property="udfs">
+                               </items>
+                            </folder>
+                        </folder>
+                        <folder
+                              description="%tree.functions.node.description"
+                              icon="#procedures"
+                              label="%tree.functions.node.name"
+                              type="org.jkiss.dbeaver.ext.exasol.model.ExasolFunction">
+                           <items
+                                 icon="#procedure"
+                                 label="%tree.function.node.name"
+                                 path="function"
+                                 property="functions">
+                           </items>
+                        </folder>
+                    </items>
+                </folder>
+                <folder
+                      description="%tree.virtualschemas.node.description"
+                      icon="#folder_schema"
+                      label="%tree.virtualschemas.node.name"
+                      type="org.jkiss.dbeaver.ext.exasol.model.ExasolVirtualSchema"
+                      visibleIf="connected &amp;&amp; dataSource.atLeastV6">
+                   <items
+                         icon="#schema"
+                         label="%tree.virtualschema.node.name"
+                         path="virtualschema"
+                         property="virtualSchemas">
+                      <folder
+                            description="%tree.tables.node.description"
+                            icon="#folder_table"
+                            label="%tree.tables.node.name"
+                            type="org.jkiss.dbeaver.ext.exasol.model.ExasolTable">
+                         <items
+                               icon="#table"
+                               label="%tree.table.node.name"
+                               path="table"
+                               property="tables">
+                            <folder
+                                  description="%tree.columns.node.description"
+                                  icon="#columns"
+                                  label="%tree.columns.node.name"
+                                  type="org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn">
+                               <items
+                                     icon="#column"
+                                     label="%tree.column.node.name"
+                                     path="attribute"
+                                     property="attributes">
+                               </items>
+                            </folder>
+                            <folder
+                                  description="%tree.constraints.node.description"
+                                  icon="#constraints"
+                                  label="%tree.constraints.node.name"
+                                  type="org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey">
+                               <items
+                                     icon="#unique-key"
+                                     label="%tree.constraint.node.name"
+                                     path="constraint"
+                                     property="constraints">
+                                  <items
+                                        inline="true"
+                                        label="%tree.constraint_columns.node.name"
+                                        navigable="false"
+                                        path="column"
+                                        property="attributeReferences">
+                                  </items>
+                               </items>
+                            </folder>
+                            <folder
+                                  description="%tree.foreign_keys.node.description"
+                                  icon="#foreign-keys"
+                                  label="%tree.foreign_keys.node.name"
+                                  type="org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey">
+                               <items
+                                     icon="#foreign-key"
+                                     label="%tree.foreign_key.node.name"
+                                     path="association"
+                                     property="associations">
+                                  <items
+                                        inline="true"
+                                        itemLabel="%tree.column.node.name"
+                                        label="%tree.foreign_key_columns.node.name"
+                                        navigable="false"
+                                        path="column"
+                                        property="attributeReferences">
+                                  </items>
+                               </items>
+                            </folder>
+                         </items>
+                      </folder>
+                      <items
+                            icon="#parameter"
+                            label="%tree.virtualschemaparameters.node.name"
+                            navigable="false"
+                            property="virtualSchemaParameters">
+                      </items>
+                   </items>
+                </folder>
+                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings">
+                    <treeContribution category="connectionEditor"/>
+                </folder>
+                <folder
+                      description="%tree.connections.node.description"
+                      icon="#folder_connections"
+                      label="%tree.connections.node.name"
+                      type="org.jkiss.dbeaver.ext.exasol.model.ExasolConnection">
+                   <items
+                         icon="icons/remoteServer.gif"
+                         label="%tree.connection.node.name"
+                         path="connection"
+                         property="connections">
+                   </items>
+                </folder>
+                <folder
+                      description="%tree.users.node.description"
+                      icon="#folder_user"
+                      label="%tree.users.node.name"
+                      type="org.jkiss.dbeaver.ext.exasol.model.security.ExasolUser">
+                   <items
+                         icon="#user"
+                         label="%tree.user.node.name"
+                         path="user"
+                         property="users">
+                      <items
+                            icon="icons/role.gif"
+                            label="%tree.roles.node.name"
+                            navigable="false"
+                            path="role"
+                            property="roles"
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForRolePrivs">
+                      </items>
+                      <items
+                            icon="#schema"
+                            label="%tree.schema.node.name"
+                            navigable="false"
+                            path="schema"
+                            property="schemas"
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForObjectPrivs">
+                      </items>
+                      <items
+                            icon="#table"
+                            label="%tree.table.node.name"
+                            navigable="false"
+                            path="table"
+                            property="tables"
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForObjectPrivs">
+                      </items>
+                      <items
+                            icon="#view"
+                            label="%tree.view.node.name"
+                            navigable="false"
+                            path="view"
+                            property="views"
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForObjectPrivs">
+                      </items>
+                      <items
+                            icon="icons/remoteServer.gif"
+                            label="%tree.connection.node.name"
+                            navigable="false"
+                            path="connection"
+                            property="connections"
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForConnections">
+                      </items>
+                      <items
+                            icon="#procedure"
+                            label="%tree.script.node.name"
+                            navigable="false"
+                            path="script"
+                            property="procedures"
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForObjectPrivs">
+                      </items>
+                      <items
+                            icon="#dbauth"
+                            label="%tree.sysgrant.node.name"
+                            navigable="false"
+                            path="systemgrant"
+                            property="systemgrants">
+                      </items>
+                   </items>
+                </folder>
+                <folder
+                      description="%tree.roles.node.description"
+                      icon="#folder_user"
+                      label="%tree.roles.node.name"
+                      type="org.jkiss.dbeaver.ext.exasol.model.security.ExasolRole"
+                      visibleIf="connected &amp;&amp; dataSource.authorizedForRolePrivs">
+                   <items
+                         icon="icons/role.gif"
+                         label="%tree.role.node.name"
+                         property="roles">
+                      <items
+                            icon="icons/role.gif"
+                            label="%tree.roles.node.name"
+                            navigable="false"
+                            path="role"
+                            property="roles"
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForRolePrivs">
+                      </items>
+                      <items
+                            icon="#schema"
+                            label="%tree.schema.node.name"
+                            navigable="false"
+                            path="schema"
+                            property="schemas"
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForObjectPrivs">
+                      </items>
+                      <items
+                            icon="#table"
+                            label="%tree.table.node.name"
+                            navigable="false"
+                            path="table"
+                            property="tables"
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForObjectPrivs">
+                      </items>
+                      <items
+                            icon="#view"
+                            label="%tree.view.node.name"
+                            navigable="false"
+                            path="view"
+                            property="views"
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForObjectPrivs">
+                      </items>
+                      <items
+                            icon="icons/remoteServer.gif"
+                            label="%tree.connection.node.name"
+                            navigable="false"
+                            path="connection"
+                            property="connections"
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForConnections">
+                      </items>
+                      <items
+                            icon="#procedure"
+                            label="%tree.script.node.name"
+                            navigable="false"
+                            path="script"
+                            property="procedures"
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForObjectPrivs">
+                      </items>
+                      <items
+                            icon="#dbauth"
+                            label="%tree.sysgrant.node.name"
+                            navigable="false"
+                            path="systemgrant"
+                            property="systemgrants">
+                      </items>
+                   </items>
+                </folder>
+                <folder
+                      description="%tree.prioritygroups.node.description"
+                      icon="#folder_database"
+                      label="%tree.prioritygroups.node.name"
+                      type="org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup"
+                      visibleIf="connected &amp;&amp; dataSource.hasPriorityGroups">
+                   <items
+                         icon="#database"
+                         label="%tree.prioritygroup.node.name"
+                         path="prioritygroup"
+                         property="priorityGroups">
+                   </items>
+                </folder>
+                <folder
+                      icon="#folder_database"
+                      label="%tree.consumergroups.node.name"
+                      type="org.jkiss.dbeaver.ext.exasol.model.ExasolConsumerGroup"
+                      visibleIf="connected &amp;&amp; dataSource.hasConsumerGroups">
+                   <items
+                         icon="#database"
+                         label="%tree.consumergroup.node.name"
+                         path="consumergroup"
+                         property="consumerGroups">
+                   </items>
+                </folder>
+                <folder
+                      description="%tree.security.node.description"
+                      icon="#folder_info"
+                      label="%tree.security.node.name"
+                      visibleIf="connected &amp;&amp; dataSource.hasPasswordPolicy">
+                   <folder
+                         description="%tree.security_policy.node.description"
+                         icon="#folder_info"
+                         label="%tree.security_policy.node.name"
+                         type="org.jkiss.dbeaver.ext.exasol.model.security.ExasolSecurityPolicy">
+                      <items
+                            icon="#database"
+                            label="%tree.security_policy.node.name"
+                            path="securitypolicy"
+                            property="securityPolicies">
+                      </items>
+                   </folder>
+                </folder>
+            </tree>
+            <drivers managable="true">
+                <driver
+                        id="exasol"
+                        label="%driver.exasol.label"
+                        class="com.exasol.jdbc.EXADriver"
+                        sampleURL="jdbc:exa:{host}[:{port}][;schema={database}]"
+                        icon="icons/exasol_icon.png"
+                        iconBig="icons/exasol_icon_big.png"
+                        useURL="false"
+                        defaultPort="8563"
+                        description="%driver.exasol.description"
+                        webURL="https://downloads.exasol.com/clients-and-drivers"
+                        categories="sql,analytic,columns">
+                    <file path="maven:/com.exasol:exasol-jdbc:RELEASE[7.1.16]" type="jar" bundle="!drivers.exasol"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.exasol"/>
+                    <file type="jar" path="drivers/exasol" bundle="drivers.exasol"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.exasol"/>
+
+                    <replace provider="generic" driver="exasol"/>
+                    <property name="querytimeout" value="3600"/>
+                    <property name="@dbeaver-default-dataformat.type.timestamp.pattern"
+                              value="yyyy-MM-dd-HH.mm.ss.ffffff"/>
+                </driver>
+            </drivers>
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolTableManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTable"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolTableColumnManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolScriptManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolScript"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolViewManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolView"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolFunctionManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolFunction"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolSchemaManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolConnectionManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolConnection"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolForeignKeyManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolPrimaryKeyManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolTableIndexManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTableIndex"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolUserManager" objectType="org.jkiss.dbeaver.ext.exasol.model.security.ExasolUser"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolRoleManager" objectType="org.jkiss.dbeaver.ext.exasol.model.security.ExasolRole"/>
+        <manager
+              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolPriorityGroupManager"
+              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup">
+        </manager>
+        <manager
+              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolConsumerGroupManager"
+              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolConsumerGroup">
+        </manager>
+        <manager
+              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolSecurityPolicyManager"
+              objectType="org.jkiss.dbeaver.ext.exasol.model.security.ExasolSecurityPolicy">
+        </manager>
+        <manager
+              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolTablePartitionColumnManager"
+              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTablePartitionColumn">
+        </manager>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.mavenRepository">
+        <repository id="exasol-maven-repo" name="Exasol Repository" url="https://maven.exasol.com/artifactory/exasol-releases" order="10">
+            <scope group="com.exasol"/>
+        </repository>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlCommand">
+        <command id="exasol.define" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandSet" label="Define" description="Defines variable"/>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.ext.exasol.ExasolSQLDialect" class="org.jkiss.dbeaver.ext.exasol.editors.ExasolDialectAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.text.parser.TPRuleProvider"/>
+        </factory>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dashboard">
+
+        <dashboard id="exasol.usageHourly" label="User activity" defaultView="timeseries" group="Standard" updatePeriod="3600000"
+                   calc="value" value="integer" fetch="stats" interval="hour" maxItems="48" maxAge="172800000" showByDefault="true" description="Shows users activity statistics">
+            <datasource id="exasol"/>
+            <query>
+                SELECT INTERVAL_START AS STAT_TIMESTAMP, USERS_AVG AS "Users Avg", USERS_MAX AS "Users Max", QUERIES_AVG AS "Queries Avg", QUERIES_MAX AS "Queries Max", IDLE AS "Idle"
+                FROM EXA_STATISTICS.EXA_USAGE_HOURLY
+                ORDER BY 1 DESC
+            </query>
+        </dashboard>
+
+        <dashboard id="exasol.usageLastDay" label="Connections" defaultView="timeseries" group="Standard" updatePeriod="2000"
+                   calc="value" value="integer" fetch="stats" interval="second" maxItems="120" maxAge="172800000" showByDefault="true" description="Shows connections statistics">
+            <datasource id="exasol"/>
+            <query>
+                SELECT MEASURE_TIME AS STAT_TIMESTAMP, USERS as "Established Connections", QUERIES as "Executing Connections"
+                FROM EXA_STATISTICS.EXA_USAGE_LAST_DAY
+                ORDER BY 1 DESC
+            </query>
+        </dashboard>
+
+    </extension>
+    <extension
+          point="org.jkiss.dbeaver.dataTypeProvider">
+       <provider
+             class="org.jkiss.dbeaver.ext.exasol.ExasolValueHandlerProvider"
+             description="Exasol data types provider"
+             id="org.jkiss.dbeaver.ext.exasol.ExasolValueHandlerProvider"
+             label="Exasol data types provider">
+
+            <datasource id="exasol"/>
+
+            <type name="DATE"/>
+            <type name="TIMESTAMP"/>
+            <type name="GEOMETRY"/>
+       </provider>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="exasol" parent="basic" class="org.jkiss.dbeaver.ext.exasol.ExasolSQLDialect" label="Exasol" description="Exasol SQL dialect." icon="icons/exasol_icon.png">
+        </dialect>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.task">
+        <category id="exasol" name="Exasol" description="Exasol database task" icon="icons/exasol_icon.png"/>
+        <category id="exasolTool" parent="exasol" name="Tools" description="Exasol database tools" icon="icons/exasol_icon.png"/>
+        <task id="exasolToolTruncateTable" name="Truncate table" description="Truncate table(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="exasolTool" handler="org.jkiss.dbeaver.ext.exasol.tasks.ExasolToolTableTruncate">
+            <datasource id="exasol"/>
+            <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolTable"/>
+        </task>
+    </extension>
+
+</plugin>

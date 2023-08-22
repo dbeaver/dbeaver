@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.athena.dataSourceWizardView"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                dataSource="athena"
+                label="%athena.dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.athena.ui.views.AthenaConnectionPage"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.athena/icons/athena_icon.png">
+        </view>
+        <view
+                class="org.jkiss.dbeaver.ext.athena.ui.views.AthenaConnectionPage"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.athena/icons/athena_icon.png"
+                id="org.jkiss.dbeaver.ext.athena.dataSourceEditorView"
+                dataSource="athena"
+                label="%athena.dialog.connection.header"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+        </view>
+    </extension>
+
+</plugin>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<!--
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+  -->
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.debug.ui.configurationPanels">
+        <panel id="org.jkiss.dbeaver.ext.postgresql.debug.function"
+               name="Function"
+               description="PL/pgSQL function"
+               class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PostgreDebugPanelFunction">
+            <datasource id="postgresql"/>
+        </panel>
+        <panel id="org.jkiss.dbeaver.ext.postgresql.debug.trigger"
+               name="Trigger"
+               description="PL/pgSQL table trigger">
+            <datasource id="postgresql"/>
+        </panel>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreSourceViewEditor" class="org.jkiss.dbeaver.debug.ui.actions.DebugActionAdapterFactory">
+            <adapter type="org.eclipse.debug.ui.actions.IToggleBreakpointsTarget"/>
+        </factory>
+        <factory adaptableType="org.jkiss.dbeaver.model.DBPDataSourceContainer" class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PostgreDebugUIAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.debug.ui.DBGEditorAdvisor"/>
+        </factory>
+        <factory adaptableType="java.lang.Object" class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PostgreDebugObjectAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.debug.DBGDebugObject"/>
+        </factory>
+    </extension>
+
+    <extension point="org.eclipse.ui.editorActions">
+        <!--
+            Breakpoin toggle contribution.
+            TODO: move to core debug. Dunno how because we need specific targetID
+        -->
+        <editorContribution id="org.jkiss.dbeaver.debug.ui.editorContribution" targetID="postgresql.source.view">
+            <action
+                    actionID="RulerDoubleClick"
+                    class="org.eclipse.debug.ui.actions.RulerToggleBreakpointActionDelegate"
+                    icon="platform:/plugin/org.eclipse.debug.ui/$nl$/icons/full/obj16/brkp_obj.png"
+                    id="org.jkiss.dbeaver.debug.ui.actions.ManageBreakpointRulerAction"
+                    label="%actions.ManageBreakpointRulerAction.label"
+                    style="push">
+            </action>
+        </editorContribution>
+    </extension>
+
+</plugin>

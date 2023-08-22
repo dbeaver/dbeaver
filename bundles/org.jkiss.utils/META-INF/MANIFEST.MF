@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver Utils
+Bundle-Vendor: DBeaver Corp
+Bundle-SymbolicName: org.jkiss.utils
+Bundle-Version: 2.1.193.qualifier
+Bundle-Release-Date: 20230724
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Require-Bundle: com.google.gson
+Export-Package: org.jkiss.code,
+ org.jkiss.utils,
+ org.jkiss.utils.csv,
+ org.jkiss.utils.io,
+ org.jkiss.utils.rest,
+ org.jkiss.utils.time,
+ org.jkiss.utils.xml
+Automatic-Module-Name: org.jkiss.utils

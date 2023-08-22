@@ -1,0 +1,35 @@
+DBeaver build
+=================================
+
+Prerequisites
+=================================
+
+Java SDK 1.8 or later (must be default JDK with binaries in PATH)
+Apache Maven 2 or later (must be in PATH)
+
+Prepare build
+=================================
+
+Checkout entire DBeaver module from GitHub:
+
+	git clone https://github.com/dbeaver/dbeaver.git dbeaver
+
+In the root folder run
+
+	mvn clean install
+
+It will build binaries for DBeaver standalone version and for Eclipse repository.
+Binaries (zip archives) are located in "product/community/target/products/" folder.
+
+Notes
+=================================
+
+1. https://bugs.eclipse.org/bugs/show_bug.cgi?id=355367
+
+You may see a lot of following warnings in build log:
+[WARNING] The following locally built units have been used to resolve project dependencies:
+
+Generally they are harmless but potentially can lead to usage of wrong dependencies from local Maven repository.
+To avoid them run mvn with the additional parameter:
+
+mvn clean install -Dtycho.localArtifacts=ignore

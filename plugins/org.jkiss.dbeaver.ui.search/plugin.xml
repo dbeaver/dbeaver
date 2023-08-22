@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+    <!-- Legacy action sets. We have to use them to manage Eclipse search framework. -->
+
+    <extension point="org.eclipse.ui.actionSets">
+        <actionSet
+            id="org.jkiss.dbeaver.search.searchActionSet"
+            label="DBeaver Search"
+            visible="true">
+            <!-- Some ancient Eclipse bug makes us to do this crazy things.
+            Redefine search menu placeholders. Otherwise it doesn't work. -->
+            <menu
+                label="%menu.search"
+                path="navigate"
+                id="org.eclipse.search.menu">
+                <groupMarker name="internalDialogGroup"/>   <!-- not to be used by clients  -->
+                <groupMarker name="dialogGroup"/>           <!-- to be used by clients      -->
+                <separator name="fileSearchContextMenuActionsGroup"/> <!-- to be used by clients      -->
+                <separator name="contextMenuActionsGroup"/> <!-- to be used by clients -->
+                <separator name="occurencesActionsGroup"/> <!-- to be used by clients -->
+                <separator name="extraSearchGroup"/> <!-- to be used by clients -->
+            </menu>
+
+            <action id="org.jkiss.dbeaver.search.OpenDataSearchPage"
+                definitionId="org.jkiss.dbeaver.search.OpenDataSearchPage"
+                menubarPath="org.eclipse.search.menu/dialogGroup"
+                label="%search.page.label.db.fulltext"
+                icon="icons/search/data.png"
+                class="org.jkiss.dbeaver.ui.search.data.OpenDataSearchPageAction"/>
+            <action id="org.jkiss.dbeaver.search.OpenMetadataSearchPage"
+                definitionId="org.jkiss.dbeaver.search.OpenMetadataSearchPage"
+                menubarPath="org.eclipse.search.menu/dialogGroup"
+                label="%search.page.label.db.metadata"
+                icon="icons/search/metadata.png"
+                class="org.jkiss.dbeaver.ui.search.metadata.OpenMetadataSearchPageAction"/>
+            <!-- This doesn't work anyway -->
+<!--
+            <action id="org.jkiss.dbeaver.search.OpenQuickSearch"
+                definitionId="org.jkiss.dbeaver.search.OpenQuickSearch"
+                menubarPath="org.eclipse.search.menu/dialogGroup"
+                label="Quick Search"
+                icon="icons/search/quick.png"
+                class="org.jkiss.dbeaver.ui.search.OpenQuickSearchAction"/>
+-->
+        </actionSet>
+    </extension>
+
+    <extension
+        point="org.eclipse.search.searchPages">
+        <page
+            class="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataPage"
+            enabled="true"
+            icon="icons/search/metadata.png"
+            id="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataPage"
+            label="%search.page.label.db.metadata">
+        </page>
+        <page
+            class="org.jkiss.dbeaver.ui.search.data.SearchDataPage"
+            enabled="true"
+            icon="icons/search/data.png"
+            id="org.jkiss.dbeaver.ui.search.data.SearchDataPage"
+            label="%search.page.label.db.fulltext">
+        </page>
+    </extension>
+    <extension
+        point="org.eclipse.search.searchResultViewPages">
+        <viewPage
+            class="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataResultsPage"
+            icon="icons/search/metadata.png"
+            id="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataResultsPage"
+            label="%search.result.view.page.metadata.result.name"
+            searchResultClass="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataResult">
+        </viewPage>
+        <viewPage
+            class="org.jkiss.dbeaver.ui.search.data.SearchDataResultsPage"
+            icon="icons/search/data.png"
+            id="org.jkiss.dbeaver.ui.search.data.SearchDataResultsPage"
+            label="%search.result.view.page.data.result.name"
+            searchResultClass="org.jkiss.dbeaver.ui.search.data.SearchDataResult">
+        </viewPage>
+    </extension>
+
+</plugin>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="h2" class="org.jkiss.dbeaver.ext.h2.model.H2MetaModel" driverClass="org.h2.Driver" dialect="h2"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.h2.H2DataSourceProvider"
+                description="H2"
+                id="h2"
+                parent="generic"
+                label="H2"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon.png"
+                dialect="h2">
+            <treeInjection path="generic/catalog/schema/table"
+                           changeFolderType="org.jkiss.dbeaver.ext.h2.model.H2Table"/>
+            <treeInjection path="generic/catalog/schema/table/uniqueKey"
+                           changeFolderType="org.jkiss.dbeaver.ext.h2.model.H2Constraint"/>
+            <treeInjection path="generic/catalog/schema/sequence"
+                           changeFolderType="org.jkiss.dbeaver.ext.h2.model.H2Sequence"/>
+
+            <drivers managable="true">
+
+                <driver
+                        id="h2_server"
+                        label="H2 Server"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon.png"
+                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon_big.png"
+                        category="H2"
+                        class="org.h2.Driver"
+                        sampleURL="jdbc:h2:tcp://{host}[:{port}]/{database}"
+                        defaultPort="9092"
+                        webURL="https://www.h2database.com/"
+                        description="H2 Server"
+                        categories="sql"
+                        dialect="h2">
+                    <replace provider="generic" driver="h2_server"/>
+
+                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[1.4.199]" bundle="!drivers.h2"/>
+                    <file type="license" path="https://raw.githubusercontent.com/h2database/h2database/master/LICENSE.txt" bundle="!drivers.h2"/>
+
+                    <file type="jar" path="drivers/h2" bundle="drivers.h2"/>
+                    <file type="license" path="drivers/h2/LICENSE.txt" bundle="drivers.h2"/>
+
+                    <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
+                    <parameter name="omit-catalog" value="true"/>
+                </driver>
+                <driver
+                        id="h2_embedded"
+                        label="H2 Embedded"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon.png"
+                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon_big.png"
+                        category="H2"
+                        class="org.h2.Driver"
+                        sampleURL="jdbc:h2:{file}"
+                        webURL="https://www.h2database.com/"
+                        embedded="true"
+                        description="H2 Embedded"
+                        categories="sql,embedded"
+                        dialect="h2">
+                    <replace provider="generic" driver="h2_embedded"/>
+
+                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[1.4.199]" bundle="!drivers.h2"/>
+                    <file type="license" path="https://raw.githubusercontent.com/h2database/h2database/master/LICENSE.txt" bundle="!drivers.h2"/>
+
+                    <file type="jar" path="drivers/h2" bundle="drivers.h2"/>
+                    <file type="license" path="drivers/h2/LICENSE.txt" bundle="drivers.h2"/>
+
+                    <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
+                    <parameter name="query-shutdown" value="shutdown"/>
+                    <parameter name="omit-catalog" value="true"/>
+                </driver>
+                <driver
+                        id="h2_embedded_v2"
+                        label="H2 Embedded V.2"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon.png"
+                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon_big.png"
+                        category="H2"
+                        class="org.h2.Driver"
+                        sampleURL="jdbc:h2:{file}"
+                        webURL="https://www.h2database.com/"
+                        embedded="true"
+                        description="H2 Embedded V.2"
+                        categories="sql,embedded"
+                        dialect="h2">
+
+                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[2.1.210]" bundle="!drivers.h2_v2"/>
+                    <file type="license" path="https://raw.githubusercontent.com/h2database/h2database/master/LICENSE.txt" bundle="!drivers.h2_v2"/>
+
+                    <file type="jar" path="drivers/h2_v2" bundle="drivers.h2_v2"/>
+                    <file type="license" path="drivers/h2_v2/LICENSE.txt" bundle="drivers.h2_v2"/>
+
+                    <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
+                    <parameter name="query-shutdown" value="shutdown"/>
+                    <parameter name="omit-catalog" value="true"/>
+                </driver>
+            </drivers>
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="h2" parent="generic" class="org.jkiss.dbeaver.ext.h2.model.H2SQLDialect" label="H2" description="H2 SQL dialect." icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon.png">
+        </dialect>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.h2.edit.H2RoutineAliasManager" objectType="org.jkiss.dbeaver.ext.h2.model.H2RoutineAlias"/>
+        <manager class="org.jkiss.dbeaver.ext.h2.edit.H2TableManager" objectType="org.jkiss.dbeaver.ext.h2.model.H2Table"/>
+        <manager class="org.jkiss.dbeaver.ext.h2.edit.H2ConstraintManager" objectType="org.jkiss.dbeaver.ext.h2.model.H2Constraint"/>
+        <manager class="org.jkiss.dbeaver.ext.h2.edit.H2SequenceManager" objectType="org.jkiss.dbeaver.ext.h2.model.H2Sequence"/>
+    </extension>
+
+</plugin>

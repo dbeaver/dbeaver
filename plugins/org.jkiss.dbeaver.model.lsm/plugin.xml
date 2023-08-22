@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+  <extension-point id="org.jkiss.dbeaver.lsm.dialectSyntax" name="Dialect Syntax Analyzer Provider" schema="schema/org.jkiss.dbeaver.lsm.dialectSyntax.exsd" />
+</plugin>

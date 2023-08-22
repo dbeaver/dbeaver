@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="duckdb_jdbc"
+              class="org.jkiss.dbeaver.ext.duckdb.model.DuckMetaModel"
+              driverClass="org.duckdb.DuckDBDriver"
+              dialect="generic"/>
+    </extension>
+
+</plugin>
