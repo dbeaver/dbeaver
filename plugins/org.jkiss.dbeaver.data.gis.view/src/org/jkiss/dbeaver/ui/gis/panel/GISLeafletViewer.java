@@ -756,6 +756,12 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
 
         ImageData imageData;
         if (RuntimeUtils.isWindows()) {
+            try {
+                // Some controls overlapping the map may be still in a disappearing process, so let's wait a little #20921
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                // ignore
+            }
             imageData = GISBrowserImageUtils.getControlScreenshotOnWindows(browser);
         } else {
             Image image = new Image(Display.getDefault(), browser.getBounds());
