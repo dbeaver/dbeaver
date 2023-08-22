@@ -31,6 +31,10 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
         this.configuration = configuration;
     }
 
+    public boolean isSecure() {
+        return true;
+    }
+
     protected DBPDataSourceContainer getDataSourceContainer() {
         return dataSourceContainer;
     }
@@ -58,6 +62,10 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
                 case DBPConnectionConfiguration.VARIABLE_CONN_TYPE:
                     return configuration.getConnectionType().getId();
             }
+            // We removed support of ${password} variable due to dbeaver/pro#1861
+            // if (DBPConnectionConfiguration.VARIABLE_PASSWORD.equals(name) && isSecure()) {
+            //     return configuration.getUserPassword();
+            // }
         }
         if (dataSourceContainer != null) {
             switch (name) {
