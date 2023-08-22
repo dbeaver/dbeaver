@@ -32,10 +32,7 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * DefaultCertificateStorage
@@ -138,14 +135,24 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             List<Certificate> certChain = new ArrayList<>();
             if (caCertData != null) {
-                Certificate caCert = cf.generateCertificate(new ByteArrayInputStream(caCertData));
-                keyStore.setCertificateEntry(CA_CERT_ALIAS, caCert);
+                Collection<? extends Certificate> certificates = cf.generateCertificates(new ByteArrayInputStream(
+                    caCertData));
+                int i = 0;
+                for (Certificate certificate : certificates) {
+                    keyStore.setCertificateEntry(i == 0 ? CA_CERT_ALIAS : CA_CERT_ALIAS + i, certificate);
+                    i++;
+                }
                 //certChain.add(caCert);
             }
             if (clientCertData != null) {
-                Certificate clientCert = cf.generateCertificate(new ByteArrayInputStream(clientCertData));
-                keyStore.setCertificateEntry(CLIENT_CERT_ALIAS, clientCert);
-                certChain.add(clientCert);
+                Collection<? extends Certificate> certificates = cf.generateCertificates(new ByteArrayInputStream(
+                    clientCertData));
+                int i = 0;
+                for (Certificate certificate : certificates) {
+                    keyStore.setCertificateEntry(i == 0 ? CLIENT_CERT_ALIAS : CLIENT_CERT_ALIAS + i, certificate);
+                    certChain.add(certificate);
+                    i++;
+                }
             }
             if (keyData != null) {
                 PrivateKey privateKey = loadPrivateKeyFromPEM(keyData);
