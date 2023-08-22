@@ -59,13 +59,8 @@ public class TrinoMetaModel extends GenericMetaModel {
         GenericDataSource dataSource = sourceObject.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Trino view source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT view_definition FROM " +
-                	DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + "." +
-                	"information_schema.views \n" +
-                    "WHERE table_schema = ? AND table_name = ?\n"))
+                "SHOW CREATE VIEW " + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL))) 
             {
-                dbStat.setString(1, sourceObject.getSchema().getName());
-                dbStat.setString(2, sourceObject.getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
                     	return dbResult.getString(1);
