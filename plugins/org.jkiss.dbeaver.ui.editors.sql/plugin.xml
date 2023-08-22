@@ -1449,7 +1449,4 @@
         </toolBar>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.notifications">
-        <notification id="sql.sourceCode.transform" name="Query was transformed from source code" hidden="true"/>
-    </extension>
 </plugin>
