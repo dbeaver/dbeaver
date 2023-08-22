@@ -48,7 +48,6 @@ public class PrefPageConnectionClient extends TargetPrefPage
         DBPConnectionConfiguration.VARIABLE_SERVER,
         DBPConnectionConfiguration.VARIABLE_DATABASE,
         DBPConnectionConfiguration.VARIABLE_USER,
-        DBPConnectionConfiguration.VARIABLE_PASSWORD,
         DBPConnectionConfiguration.VARIABLE_URL,
         DBPConnectionConfiguration.VARIABLE_CONN_TYPE,
         DBPConnectionConfiguration.VARIABLE_DATASOURCE,

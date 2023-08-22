@@ -96,11 +96,10 @@ public class VariablesHintLabel {
 
             for (String[] var : variables) {
                 String varName = var[0];
-                boolean isSecure = DBPConnectionConfiguration.VARIABLE_PASSWORD.equals(varName);
                 TableItem item = new TableItem(table, SWT.NONE);
                 item.setText(0, GeneralUtils.variablePattern(varName));
                 item.setText(1, var[1]);
-                item.setText(2, isSecure ? "********" : CommonUtils.notEmpty(resolver.get(varName)));
+                item.setText(2, CommonUtils.notEmpty(resolver.get(varName)));
             }
             UIUtils.packColumns(table);
             UIUtils.setControlContextMenu(table, manager -> UIUtils.fillDefaultTableContextMenu(manager, table));

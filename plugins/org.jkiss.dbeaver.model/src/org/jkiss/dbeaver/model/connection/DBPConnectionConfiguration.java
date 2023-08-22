@@ -45,7 +45,6 @@ public class DBPConnectionConfiguration implements DBPObject {
     public static final String VARIABLE_SERVER = "server";
     public static final String VARIABLE_DATABASE = "database";
     public static final String VARIABLE_USER = "user";
-    public static final String VARIABLE_PASSWORD = "password";
     public static final String VARIABLE_URL = "url";
     public static final String VARIABLE_CONN_TYPE = "connection.type";
     public static final String VARIABLE_DATASOURCE = "datasource";
@@ -76,12 +75,6 @@ public class DBPConnectionConfiguration implements DBPObject {
         {SystemVariablesResolver.VAR_APP_VERSION, "application version"},
         {SystemVariablesResolver.VAR_LOCAL_IP, "local IP address"},
     };
-
-    public static final String[][] INTERNAL_CONNECT_VARIABLES = ArrayUtils.concatArrays(
-        CONNECT_VARIABLES,
-        new String[][]{
-            {VARIABLE_PASSWORD, "database password (plain)"},
-        });
 
     private static final Log log = Log.getLog(DBPConnectionConfiguration.class);
 
