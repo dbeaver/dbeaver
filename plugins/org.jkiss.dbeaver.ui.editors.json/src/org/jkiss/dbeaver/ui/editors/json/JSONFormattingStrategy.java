@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.editors.json;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import org.eclipse.jface.text.formatter.ContextBasedFormattingStrategy;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.jkiss.utils.CommonUtils;
@@ -43,15 +45,15 @@ public class JSONFormattingStrategy extends ContextBasedFormattingStrategy {
         if (CommonUtils.isEmpty(content)) {
             return content;
         }
+        JsonElement jsonElement = JsonParser.parseString(content);
+
         Gson gson = new GsonBuilder()
             .serializeNulls()
             .disableHtmlEscaping()
             .setPrettyPrinting()
             .setLenient()
             .create();
-        String formattedJson = gson.toJson(
-            gson.fromJson(content, Object.class));
-        return formattedJson;
+        return gson.toJson(jsonElement);
     }
 
     @Override
