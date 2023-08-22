@@ -45,7 +45,7 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
 
     @Override
     public boolean supportsFunctionDefRead() {
-        return false;
+        return dataSource.isServerVersionAtLeast(12, 0);
     }
 
     @Override
