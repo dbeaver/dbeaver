@@ -74,7 +74,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             if (syntaxManager.getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE)) {
                 if (transformSourceCode(document, command)) {
                     DBeaverNotifications.showNotification(
-                        "sql.sourceCode.transform",
+                        DBeaverNotifications.NT_GENERIC,
                         "SQL transformation (click to undo)",
                         "SQL query was extracted from the source code",
                         DBPMessageType.INFORMATION,
