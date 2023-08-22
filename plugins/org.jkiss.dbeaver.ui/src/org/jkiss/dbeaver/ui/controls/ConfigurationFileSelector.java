@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * ConfigurationFileSelector
@@ -56,10 +57,11 @@ public class ConfigurationFileSelector extends TextWithOpenFile {
 
     @Override
     public String getText() {
-        if (this.isSensitiveData) {
+        String text = super.getText();
+        if (this.isSensitiveData && CommonUtils.isNotEmpty(text)) {
             return "******";
         } else {
-            return super.getText();
+            return text;
         }
     }
     
