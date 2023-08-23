@@ -87,6 +87,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
      * Initializes upon the initialization of the very first driver.
      */
     private static ClassLoader rootClassLoader;
+    private boolean showAllProperties;
+    private boolean origShowAllProperties;
 
     public static class DriverFileInfo {
         private final String id;
@@ -293,6 +295,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.webURL = copyFrom.webURL;
             this.propertiesWebURL = copyFrom.webURL;
             this.embedded = copyFrom.embedded;
+            this.showAllProperties = copyFrom.showAllProperties;
             this.singleConnection = copyFrom.singleConnection;
             this.clientRequired = copyFrom.clientRequired;
             this.supportsDriverProperties = copyFrom.supportsDriverProperties;
@@ -361,6 +364,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.singleConnection = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SINGLE_CONNECTION));
         this.origAnonymousAccess = this.anonymousAccess = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ANONYMOUS));
         this.origAllowsEmptyPassword = this.allowsEmptyPassword = CommonUtils.getBoolean("allowsEmptyPassword");
+        this.origShowAllProperties = this.showAllProperties =
+            CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SHOW_ALL_PROPERTIES));
         this.licenseRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_LICENSE_REQUIRED));
         this.supportsDistributedMode = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE), true);
         this.deprecationReason = config.getAttribute(RegistryConstants.ATTR_DEPRECATED);
@@ -844,6 +849,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     public void setEmbedded(boolean embedded) {
         this.embedded = embedded;
+    }
+
+    public boolean isShowAllProperties() {
+        return showAllProperties;
+    }
+
+    public void setShowAllProperties(boolean showAllProperties) {
+        this.showAllProperties = showAllProperties;
     }
 
     @Override
@@ -1633,6 +1646,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     public boolean isOrigEmbedded() {
         return origEmbedded;
+    }
+
+    public boolean isOrigShowAllProperties() {
+        return origShowAllProperties;
     }
 
     public boolean isOrigAnonymousAccess() {

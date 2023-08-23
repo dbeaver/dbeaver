@@ -62,7 +62,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
         } else {
             Object driverInstance = driver.getDriverInstance(monitor);
             if (driverInstance instanceof Driver) {
-                props = readDriverProperties(connectionInfo, (Driver) driverInstance);
+                props = readDriverProperties(connectionInfo, (Driver) driverInstance, driver.isShowAllProperties());
             }
         }
         if (props == null) {
@@ -71,12 +71,13 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
         return props.toArray(new DBPPropertyDescriptor[0]);
     }
 
-    private Collection<DBPPropertyDescriptor> readDriverProperties(
-        DBPConnectionConfiguration connectionInfo,
-        Driver driver)
+    private Collection<DBPPropertyDescriptor> readDriverProperties(DBPConnectionConfiguration connectionInfo,
+        Driver driver, boolean showAllProperties)
         throws DBException {
         Properties driverProps = new Properties();
-        //driverProps.putAll(connectionInfo.getProperties());
+        if (showAllProperties) {
+            driverProps.putAll(connectionInfo.getProperties());
+        }
         DriverPropertyInfo[] propDescs;
         try {
             propDescs = driver.getPropertyInfo(connectionInfo.getUrl(), driverProps);
