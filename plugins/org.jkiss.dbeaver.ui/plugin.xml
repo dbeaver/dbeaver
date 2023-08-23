@@ -126,4 +126,8 @@
         </fontDefinition>
        
     </extension>
+
+    <extension point="org.jkiss.dbeaver.notifications">
+        <notification id="generic" name="Generic notification" hidden="true"/>
+    </extension>
 </plugin>

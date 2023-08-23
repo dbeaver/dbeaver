@@ -142,6 +142,10 @@ public class TextWithOpen extends Composite {
         return text;
     }
 
+    public ToolBar getToolbar() {
+        return toolbar;
+    }
+
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
