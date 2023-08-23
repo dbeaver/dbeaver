@@ -343,7 +343,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                         totalBytesDumped += count;
                         long currentTime = System.currentTimeMillis();
                         if (currentTime - prevStatusUpdateTime > 300) {
-                            if (!(monitor instanceof PrintStreamProgressMonitor)) {
+                            if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
                                 monitor.subTask(numberFormat.format(totalBytesDumped) + " bytes");
                             }
                             prevStatusUpdateTime = currentTime;
