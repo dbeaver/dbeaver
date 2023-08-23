@@ -76,6 +76,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -371,7 +373,16 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
                 showMap = true;
                 actualSourceSRID = srid;
             } else {
-                Geometry geometry = value.getGeometry();
+                Geometry geometry = null;
+                if (targetValue instanceof Geometry) {
+                    geometry = (Geometry) targetValue;
+                } else if (targetValue instanceof org.cugos.wkg.Geometry) {
+                    try {
+                        geometry = new WKTReader().read(targetValue.toString());
+                    } catch (ParseException e) {
+                        log.debug("Unable to parse geometry for CRS transformation: " + e.getMessage());
+                    }
+                }
                 if (geometry != null) {
                     try {
                         GisTransformRequest request = new GisTransformRequest(geometry, srid, GisConstants.SRID_4326);
