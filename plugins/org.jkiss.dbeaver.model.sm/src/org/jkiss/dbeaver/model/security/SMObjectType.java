@@ -16,14 +16,7 @@
  */
 package org.jkiss.dbeaver.model.security;
 
-public class SMObjectType {
-    private final String objectType;
-
-    public SMObjectType(String objectType) {
-        this.objectType = objectType;
-    }
-
-    public String getObjectType() {
-        return objectType;
-    }
+public enum SMObjectType {
+    datasource,
+    project
 }
