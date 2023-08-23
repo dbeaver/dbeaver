@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.app.DBPDataFormatterRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -58,6 +57,7 @@ import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
@@ -73,7 +73,6 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
     private static final int LOB_ENCODING_BINARY = 2;
     private static final int LOB_ENCODING_NATIVE = 3;
 
-    private final List<StreamMappingContainer> mappings = new ArrayList<>();
     private PropertyTreeViewer propsEditor;
     private Combo lobExtractType;
     private Label lobEncodingLabel;
@@ -199,11 +198,12 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                     UIUtils.createDialogButton(columnsPanel, DTUIMessages.stream_consumer_page_mapping_button_configure, new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent event) {
-                            if (mappings.isEmpty()) {
+                            final StreamConsumerSettings settings = getWizard().getPageSettings(StreamConsumerPageSettings.this, StreamConsumerSettings.class);
+                            if (settings.getDataMappings().isEmpty()) {
                                 try {
                                     getWizard().getRunnableContext().run(true, true, monitor -> {
                                         refreshMappings(monitor);
-                                        UIUtils.asyncExec(() -> new ConfigureColumnsPopup(getShell()).open());
+                                        UIUtils.asyncExec(() -> new ConfigureColumnsPopup(getShell(), settings.getDataMappings().values()).open());
                                     });
                                 } catch (InvocationTargetException e) {
                                     DBWorkbench.getPlatformUI().showError(
@@ -215,7 +215,7 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                                     log.debug("Canceled by user", e);
                                 }
                             } else {
-                                new ConfigureColumnsPopup(getShell()).open();
+                                new ConfigureColumnsPopup(getShell(), settings.getDataMappings().values()).open();
                             }
                         }
                     });
@@ -317,10 +317,15 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
     private final class ConfigureColumnsPopup extends BaseDialog {
         private TreeViewer viewer;
         private CLabel errorLabel;
+        private List<StreamMappingContainer> mappings;
 
-        public ConfigureColumnsPopup(@NotNull Shell shell) {
+        public ConfigureColumnsPopup(@NotNull Shell shell, Collection<StreamMappingContainer> mappings) {
             super(shell, DTUIMessages.stream_consumer_page_mapping_title, null);
             this.setShellStyle(SWT.TITLE | SWT.MAX | SWT.RESIZE | SWT.APPLICATION_MODAL);
+            this.mappings = new ArrayList<>(mappings.size());
+            for (StreamMappingContainer container : mappings) {
+                this.mappings.add(new StreamMappingContainer(container));
+            }
         }
 
         @Override
@@ -491,8 +496,6 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
         final StreamConsumerSettings settings = getWizard().getPageSettings(StreamConsumerPageSettings.this, StreamConsumerSettings.class);
         final List<DataTransferPipe> pipes = getWizard().getSettings().getDataPipes();
 
-        mappings.clear();
-
         try {
             monitor.beginTask("Load mappings", pipes.size());
             for (DataTransferPipe pipe : pipes) {
@@ -509,8 +512,7 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                     // Create a copy to avoid direct modifications
                     mapping = new StreamMappingContainer(mapping);
                 }
-
-                mappings.add(mapping);
+                settings.addDataMapping(mapping);
                 monitor.worked(1);
             }
         } finally {
