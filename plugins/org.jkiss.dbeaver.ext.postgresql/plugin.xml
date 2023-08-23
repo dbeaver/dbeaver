@@ -609,6 +609,9 @@
                 </driver>
 
                 <provider-properties drivers="*">
+                    <propertyGroup label="Misc">
+                        <property id="@dbeaver-chosen-role@" label="User role" type="string" description="User role for connection" supportedConfigurationTypes="MANUAL,URL"/>
+                    </propertyGroup>
                     <propertyGroup label="Database list">
                         <property id="@dbeaver-show-non-default-db@" label="Show all databases" type="boolean" description="Show all databases on server. Otherwise show current database only."/>
                         <property id="@dbeaver-show-template-db@" label="Show template databases" type="boolean" description="Show template databases."/>
@@ -620,9 +623,6 @@
                     <propertyGroup label="SQL">
                         <property id="postgresql.dd.plain.string" label="Show $$ quote as String" type="boolean" description="Show $$ quote as String" supportedConfigurationTypes="MANUAL,URL"/>
                         <property id="postgresql.dd.tag.string" label="Show $tagName$ quote as String" type="boolean" description="Show $tagName$ quote as String" supportedConfigurationTypes="MANUAL,URL"/>
-                    </propertyGroup>
-                    <propertyGroup label="Misc">
-                        <property id="@dbeaver-chosen-role@" label="User role" type="string" description="User role for connection" supportedConfigurationTypes="MANUAL,URL"/>
                     </propertyGroup>
                 </provider-properties>
 
