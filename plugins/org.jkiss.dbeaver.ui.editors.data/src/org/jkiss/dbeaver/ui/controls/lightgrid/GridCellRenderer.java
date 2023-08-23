@@ -326,8 +326,9 @@ class GridCellRenderer extends AbstractRenderer {
         int start = 0;
         int index = 0;
 
-        outer:
         while (index < text.length()) {
+            boolean matched = false;
+
             for (String[] mapping : SPECIAL_CHARACTERS_MAP) {
                 final String expected = mapping[0];
                 final String replacement = mapping[1];
@@ -344,11 +345,13 @@ class GridCellRenderer extends AbstractRenderer {
 
                     index += expected.length();
                     start = index;
-                    continue outer;
+                    matched = true;
                 }
             }
 
-            index += 1;
+            if (!matched) {
+                index += 1;
+            }
         }
 
         if (start < text.length()) {
