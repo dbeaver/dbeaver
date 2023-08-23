@@ -46,6 +46,10 @@ public class TextWithOpen extends Composite {
     private final ToolBar toolbar;
 
     public TextWithOpen(Composite parent) {
+        this(parent, false);
+    }
+    
+    public TextWithOpen(Composite parent, boolean secured) {
         super(parent, SWT.NONE);
         final GridLayout gl = new GridLayout(2, false);
         gl.marginHeight = 0;
@@ -55,7 +59,10 @@ public class TextWithOpen extends Composite {
         setLayout(gl);
 
         boolean useTextEditor = isShowFileContentEditor();
-        text = new Text(this, SWT.BORDER | (useTextEditor ? SWT.MULTI | SWT.V_SCROLL : SWT.SINGLE));
+        text = new Text(this, SWT.BORDER | ((useTextEditor && !secured) ? SWT.MULTI | SWT.V_SCROLL : SWT.SINGLE));
+        if (secured) {
+            text.setEchoChar('*');
+        }
         GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER);
         if (useTextEditor) {
             gd.heightHint = text.getLineHeight();
@@ -66,11 +73,11 @@ public class TextWithOpen extends Composite {
         if (useTextEditor) {
             final ToolItem toolItem = new ToolItem(toolbar, SWT.NONE);
             toolItem.setImage(DBeaverIcons.getImage(UIIcon.TEXTFIELD));
-            toolItem.setToolTipText("Edit text");
+            toolItem.setToolTipText(secured ? "Set text" : "Edit text");
             toolItem.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    String newText = EditTextDialog.editText(getShell(), "Edit text", getText());
+                    String newText = EditTextDialog.editText(getShell(), secured ? "Set text" : "Edit text", secured ? "" : getText());
                     if (newText != null) {
                         setText(newText);
                     }

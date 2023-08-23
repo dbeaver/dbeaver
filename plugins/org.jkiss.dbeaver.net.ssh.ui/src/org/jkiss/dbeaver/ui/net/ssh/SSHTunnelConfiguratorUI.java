@@ -52,7 +52,6 @@ import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ConfigurationFileSelector;
-import org.jkiss.dbeaver.ui.controls.TextWithOpen;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.HelpUtils;
@@ -564,10 +563,9 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             privateKeyLabel = UIUtils.createControlLabel(this, SSHUIMessages.model_ssh_configurator_label_private_key);
             privateKeyLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            privateKeyText = new ConfigurationFileSelector(this, SSHUIMessages.model_ssh_configurator_dialog_choose_private_key, new String[]{"*", "*.ssh", "*.pem", "*.*"});
+            privateKeyText = new ConfigurationFileSelector(this, SSHUIMessages.model_ssh_configurator_dialog_choose_private_key, new String[]{"*", "*.ssh", "*.pem", "*.*"}, false, DBWorkbench.isDistributed());
             privateKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             if (DBWorkbench.isDistributed()) {
-                privateKeyText.setSensitiveData(true);
                 privateKeyText.getTextControl().setEditable(false);
             }
 
@@ -639,25 +637,13 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             configuration.setProperty(prefix + DBWHandlerConfiguration.PROP_HOST, hostNameText.getText().trim());
             configuration.setProperty(prefix + DBWHandlerConfiguration.PROP_PORT, CommonUtils.toInt(hostPortText.getText().trim()));
             configuration.setProperty(prefix + SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.values()[authMethodCombo.getSelectionIndex()].name());
-
-
-
+            String privateKey = privateKeyText.getText().trim();
+            if (CommonUtils.isEmpty(privateKey)) {
+                privateKey = null;
+            }
             if (DBWorkbench.isDistributed()) {
-                String privateKey = null;
-                if (privateKeyText.isSensitiveData()) {
-                    privateKey = privateKeyText.getSensitiveData().trim();
-                } else {
-                    privateKey = privateKeyText.getText().trim();
-                }
-                if (CommonUtils.isEmpty(privateKey)) {
-                    privateKey = null;
-                }
                 configuration.setSecureProperty(prefix + SSHConstants.PROP_KEY_VALUE, privateKey);
             } else {
-                String privateKey = privateKeyText.getText().trim();
-                if (CommonUtils.isEmpty(privateKey)) {
-                    privateKey = null;
-                }
                 configuration.setProperty(prefix + SSHConstants.PROP_KEY_PATH, privateKey);
             }
 

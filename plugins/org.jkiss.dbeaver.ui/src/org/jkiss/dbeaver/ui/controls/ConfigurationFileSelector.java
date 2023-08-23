@@ -18,60 +18,27 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * ConfigurationFileSelector
  */
 public class ConfigurationFileSelector extends TextWithOpenFile {
 
-    private boolean isSensitiveData;
-    private String sensitiveText;
-    
     public ConfigurationFileSelector(Composite parent, String title, String[] filterExt) {
         super(parent, title, filterExt);
-        this.isSensitiveData = false;
     }
 
     public ConfigurationFileSelector(Composite parent, String title, String[] filterExt, boolean binaryFile) {
         super(parent, title, filterExt, binaryFile);
-        this.isSensitiveData = false;
     }
 
-    public boolean isSensitiveData() {
-        return this.isSensitiveData;
+    public ConfigurationFileSelector(Composite parent, String title, String[] filterExt, boolean binaryFile, boolean secured) {
+        super(parent, title, filterExt, binaryFile, secured);
     }
-    
-    public void setSensitiveData(boolean value) {
-        this.isSensitiveData = value;
-    }
-    
-    public String getSensitiveData() {
-        return this.sensitiveText;
-    }
-    
+
     @Override
     protected boolean isShowFileContentEditor() {
         return DBWorkbench.isDistributed();
     }
 
-    @Override
-    public String getText() {
-        String text = super.getText();
-        if (this.isSensitiveData && CommonUtils.isNotEmpty(text)) {
-            return "******";
-        } else {
-            return text;
-        }
-    }
-    
-    @Override
-    public void setText(String str) {
-        if (this.isSensitiveData) {
-            this.sensitiveText = str;
-            super.setText("******");
-        } else {
-            super.setText(str);
-        }
-    }
 }
