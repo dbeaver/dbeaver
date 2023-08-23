@@ -563,7 +563,12 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             privateKeyLabel = UIUtils.createControlLabel(this, SSHUIMessages.model_ssh_configurator_label_private_key);
             privateKeyLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            privateKeyText = new ConfigurationFileSelector(this, SSHUIMessages.model_ssh_configurator_dialog_choose_private_key, new String[]{"*", "*.ssh", "*.pem", "*.*"}, false, DBWorkbench.isDistributed());
+            privateKeyText = new ConfigurationFileSelector(
+                this,
+                SSHUIMessages.model_ssh_configurator_dialog_choose_private_key, new String[]{"*", "*.ssh", "*.pem", "*.*"},
+                false,
+                DBWorkbench.isDistributed()
+            );
             privateKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             if (DBWorkbench.isDistributed()) {
                 privateKeyText.getTextControl().setEditable(false);
