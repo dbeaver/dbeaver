@@ -30,22 +30,13 @@ public class SQLFormatUtils {
     public static String formatSQL(DBPDataSource dataSource, String query) {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dataSource.getSQLDialect(), dataSource.getContainer().getPreferenceStore());
-        return formatSQL(dataSource, syntaxManager, query);
+        return formatSQL(dataSource, syntaxManager, query, null);
     }
 
     public static String formatSQL(DBPDataSource dataSource, String query, @Nullable String indent) {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dataSource.getSQLDialect(), dataSource.getContainer().getPreferenceStore());
         return formatSQL(dataSource, syntaxManager, query, indent);
-    }
-
-    public static String formatSQL(@Nullable DBPDataSource dataSource, @NotNull SQLSyntaxManager syntaxManager, String query) {
-        SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(dataSource, syntaxManager);
-        SQLFormatter formatter = SQLFormatterConfigurationRegistry.getInstance().createFormatter(configuration);
-        if (formatter == null) {
-            return query;
-        }
-        return formatter.format(query, configuration);
     }
 
     public static String formatSQL(@Nullable DBPDataSource dataSource, @NotNull SQLSyntaxManager syntaxManager, String query,

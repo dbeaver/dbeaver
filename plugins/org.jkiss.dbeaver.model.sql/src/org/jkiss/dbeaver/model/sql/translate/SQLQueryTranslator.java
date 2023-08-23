@@ -225,7 +225,8 @@ public class SQLQueryTranslator implements SQLTranslator {
             if (defChanged) {
                 String newQueryText = SQLFormatUtils.formatSQL(null,
                     sqlTranslateContext.getSyntaxManager(),
-                    createTable.toString());
+                    createTable.toString(),
+                    null);
 
                 query.setText(newQueryText);
 
