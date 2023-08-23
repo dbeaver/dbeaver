@@ -53,6 +53,10 @@
         </dialect>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="bigquery" class="org.jkiss.dbeaver.ext.bigquery.model.BigQueryMetaModel" driverClass="com.simba.googlebigquery.jdbc42.Driver"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.dataSourceAuth">
         <authModel
                 id="google_bigquery"
