@@ -136,8 +136,7 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
             List<Certificate> certChain = new ArrayList<>();
             if (caCertData != null) {
                 List<? extends Certificate> certificates =
-                    new ArrayList<>(cf.generateCertificates(new ByteArrayInputStream(
-                    caCertData)));
+                    new ArrayList<>(cf.generateCertificates(new ByteArrayInputStream(caCertData)));
                 for (int i = 0; i < certificates.size(); i++) {
                     keyStore.setCertificateEntry(i == 0 ? CA_CERT_ALIAS : CA_CERT_ALIAS + i, certificates.get(i));
                 }
