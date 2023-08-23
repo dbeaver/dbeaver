@@ -135,23 +135,21 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             List<Certificate> certChain = new ArrayList<>();
             if (caCertData != null) {
-                Collection<? extends Certificate> certificates = cf.generateCertificates(new ByteArrayInputStream(
-                    caCertData));
-                int i = 0;
-                for (Certificate certificate : certificates) {
-                    keyStore.setCertificateEntry(i == 0 ? CA_CERT_ALIAS : CA_CERT_ALIAS + i, certificate);
-                    i++;
+                List<? extends Certificate> certificates =
+                    new ArrayList<>(cf.generateCertificates(new ByteArrayInputStream(
+                    caCertData)));
+                for (int i = 0; i < certificates.size(); i++) {
+                    keyStore.setCertificateEntry(i == 0 ? CA_CERT_ALIAS : CA_CERT_ALIAS + i, certificates.get(i));
                 }
                 //certChain.add(caCert);
             }
             if (clientCertData != null) {
-                Collection<? extends Certificate> certificates = cf.generateCertificates(new ByteArrayInputStream(
-                    clientCertData));
-                int i = 0;
-                for (Certificate certificate : certificates) {
-                    keyStore.setCertificateEntry(i == 0 ? CLIENT_CERT_ALIAS : CLIENT_CERT_ALIAS + i, certificate);
-                    certChain.add(certificate);
-                    i++;
+                List<? extends Certificate> certificates
+                    = new ArrayList<>(cf.generateCertificates(new ByteArrayInputStream(clientCertData)));
+                for (int i = 0; i < certificates.size(); i++) {
+                    keyStore.setCertificateEntry(i == 0 ? CLIENT_CERT_ALIAS : CLIENT_CERT_ALIAS + i,
+                        certificates.get(i));
+                    certChain.add(certificates.get(i));
                 }
             }
             if (keyData != null) {
