@@ -71,9 +71,11 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
         return props.toArray(new DBPPropertyDescriptor[0]);
     }
 
-    private Collection<DBPPropertyDescriptor> readDriverProperties(DBPConnectionConfiguration connectionInfo,
-        Driver driver, boolean showAllProperties)
-        throws DBException {
+    private Collection<DBPPropertyDescriptor> readDriverProperties(
+        DBPConnectionConfiguration connectionInfo,
+        Driver driver,
+        boolean showAllProperties
+    ) throws DBException {
         Properties driverProps = new Properties();
         if (showAllProperties) {
             driverProps.putAll(connectionInfo.getProperties());
