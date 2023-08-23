@@ -117,8 +117,8 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
             if (driver.isEmbedded()) {
                 xml.addAttribute(RegistryConstants.ATTR_EMBEDDED, driver.isEmbedded());
             }
-            if (driver.isShowAllProperties()) {
-                xml.addAttribute(RegistryConstants.ATTR_SHOW_ALL_PROPERTIES, driver.isShowAllProperties());
+            if (driver.isAdvancedPropertiesRead()) {
+                xml.addAttribute(RegistryConstants.ATTR_ADVANCED_PROPERTIES_READ, driver.isAdvancedPropertiesRead());
             }
             if (driver.isAnonymousAccess()) {
                 xml.addAttribute(RegistryConstants.ATTR_ANONYMOUS, driver.isAnonymousAccess());
@@ -296,7 +296,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         curDriver.setDriverDefaultServer(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_DEFAULT_SERVER), curDriver.getDefaultServer()));
                         curDriver.setDriverDefaultUser(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_DEFAULT_USER), curDriver.getDefaultUser()));
                         curDriver.setEmbedded(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_EMBEDDED), curDriver.isEmbedded()));
-                        curDriver.setShowAllProperties(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_ALL_PROPERTIES), curDriver.isShowAllProperties()));
+                        curDriver.setAdvancedPropertiesRead(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ADVANCED_PROPERTIES_READ), curDriver.isAdvancedPropertiesRead()));
                         curDriver.setAnonymousAccess(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ANONYMOUS), curDriver.isAnonymousAccess()));
                         curDriver.setAllowsEmptyPassword(CommonUtils.getBoolean(atts.getValue("allowsEmptyPassword"), curDriver.isAllowsEmptyPassword()));
                         curDriver.setInstantiable(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_INSTANTIABLE), curDriver.isInstantiable()));

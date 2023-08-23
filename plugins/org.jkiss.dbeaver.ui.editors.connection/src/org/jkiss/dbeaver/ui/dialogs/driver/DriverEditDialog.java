@@ -110,7 +110,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
     private Button anonymousDriverCheck;
     private Button allowsEmptyPasswordCheck;
     private Button nonInstantiableCheck;
-    private Button putAllPropertiesCheck;
+    private Button advancedPropertiesReadCheck;
 
     private boolean showAddFiles = false;
 
@@ -309,11 +309,11 @@ public class DriverEditDialog extends HelpEnabledDialog {
         optionsPanel.setLayoutData(gd);
         optionsPanel.setLayout(new RowLayout());
         embeddedDriverCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_embedded_label, UIConnectionMessages.dialog_edit_driver_embedded_tip, driver.isEmbedded(), 1);
-        putAllPropertiesCheck = UIUtils.createCheckbox(
+        advancedPropertiesReadCheck = UIUtils.createCheckbox(
             optionsPanel,
-            UIConnectionMessages.dialog_edit_driver_show_all_properties_label,
-            UIConnectionMessages.dialog_edit_driver_show_all_properties_tip,
-            driver.isShowAllProperties(),
+            UIConnectionMessages.dialog_edit_driver_advanced_properties_read_label,
+            UIConnectionMessages.dialog_edit_driver_advanced_properties_read_tip,
+            driver.isAdvancedPropertiesRead(),
             1
         );
         anonymousDriverCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_anonymous_label, UIConnectionMessages.dialog_edit_driver_anonymous_tip, driver.isAnonymousAccess(), 1);
@@ -793,7 +793,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         driverPortText.setText(CommonUtils.notEmpty(original ? driver.getOrigDefaultPort() : driver.getDefaultPort()));
         driverDatabaseText.setText(CommonUtils.notEmpty(original ? driver.getOrigDefaultDatabase() : driver.getDefaultDatabase()));
         driverUserText.setText(CommonUtils.notEmpty(original ? driver.getOrigDefaultUser() : driver.getDefaultUser()));
-        putAllPropertiesCheck.setSelection(original ? driver.isOrigShowAllProperties() : driver.isShowAllProperties());
+        advancedPropertiesReadCheck.setSelection(original ? driver.isOrigAdvancedPropertiesRead() : driver.isAdvancedPropertiesRead());
         embeddedDriverCheck.setSelection(original ? driver.isOrigEmbedded() : driver.isEmbedded());
         anonymousDriverCheck.setSelection(original ? driver.isOrigAnonymousAccess() : driver.isAnonymousAccess());
         allowsEmptyPasswordCheck.setSelection(original ? driver.isOrigAllowsEmptyPassword() : driver.isAllowsEmptyPassword());
@@ -853,7 +853,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         driver.setDriverDefaultDatabase(driverDatabaseText.getText());
         driver.setDriverDefaultUser(driverUserText.getText());
         driver.setEmbedded(embeddedDriverCheck.getSelection());
-        driver.setShowAllProperties(putAllPropertiesCheck.getSelection());
+        driver.setAdvancedPropertiesRead(advancedPropertiesReadCheck.getSelection());
         driver.setAnonymousAccess(anonymousDriverCheck.getSelection());
         driver.setAllowsEmptyPassword(allowsEmptyPasswordCheck.getSelection());
         driver.setInstantiable(!nonInstantiableCheck.getSelection());
