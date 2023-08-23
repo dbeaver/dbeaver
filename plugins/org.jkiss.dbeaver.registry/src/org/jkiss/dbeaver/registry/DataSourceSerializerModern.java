@@ -459,7 +459,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             for (Map.Entry<String, Map<String, Object>> ctMap : JSONUtils.getNestedObjects(jsonMap, "external-configurations")) {
                 String id = ctMap.getKey();
                 Map<String, Object> configMap = ctMap.getValue();
-                externalConfigurations.put(id, new DBPExternalConfiguration(id, configMap));
+                externalConfigurations.put(id, new DBPExternalConfiguration(id, () -> configMap));
             }
 
             // Virtual models
