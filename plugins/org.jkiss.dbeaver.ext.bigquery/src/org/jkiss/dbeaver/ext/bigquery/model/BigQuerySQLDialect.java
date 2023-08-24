@@ -16,12 +16,16 @@
  */
 package org.jkiss.dbeaver.ext.bigquery.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 
 /**
  * BigQuery SQL dialect
  */
 public class BigQuerySQLDialect extends GenericSQLDialect {
+
+    private static String[] EXEC_KEYWORDS = {"CALL"};
+
     public BigQuerySQLDialect() {
         super("BigQuery", "google_bigquery");
     }
@@ -29,5 +33,11 @@ public class BigQuerySQLDialect extends GenericSQLDialect {
     @Override
     public char getStringEscapeCharacter() {
         return '\\';
+    }
+
+    @NotNull
+    @Override
+    public String[] getExecuteKeywords() {
+        return EXEC_KEYWORDS;
     }
 }
