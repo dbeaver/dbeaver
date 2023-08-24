@@ -104,6 +104,10 @@ public class ClickhouseTypeParser {
         final var type = parser.type().anyType();
         final DBSDataType resolved;
 
+        if (parser.getNumberOfSyntaxErrors() > 0) {
+            return null;
+        }
+
         if (type.simpleType() != null) {
             resolved = DBUtils.resolveDataType(monitor, dataSource, type.simpleType().getText());
         } else if (type.markerType() != null) {
