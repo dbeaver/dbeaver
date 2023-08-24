@@ -33,10 +33,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
-import org.jkiss.dbeaver.model.qm.meta.QMMConnectionInfo;
-import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
-import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
-import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
+import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -44,7 +41,6 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Query Manager utils
@@ -228,6 +224,16 @@ public class QMUtils {
         }
 
         return sessionPersistent.getAttribute(QMConstants.QM_SESSION_ID_ATTR);
+    }
+
+    /**
+     * Return close time for events that were ended
+     */
+    public static long getObjectEventTime(QMMObject object, QMEventAction action) {
+        if (action == QMEventAction.END) {
+            return object.getCloseTime();
+        }
+        return object.getOpenTime();
     }
 
     public static class ListCursorImpl implements QMEventCursor {
