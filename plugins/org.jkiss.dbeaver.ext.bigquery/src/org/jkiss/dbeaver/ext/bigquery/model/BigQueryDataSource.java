@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +39,17 @@ public class BigQueryDataSource extends GenericDataSource {
         @NotNull GenericMetaModel metaModel
     ) throws DBException {
         super(monitor, container, metaModel, new BigQuerySQLDialect());
+    }
+
+    @Override
+    protected String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
+        String connectionURL = super.getConnectionURL(connectionInfo);
+        if (CommonUtils.isNotEmpty(connectionURL) && connectionURL.contains("OAuthPvtKeyPath={server};")) {
+            // Backward compatibility. We do not want to use this incorrect pattern as a URL. Better to create a new URL.
+            DBPDriver driver = getContainer().getDriver();
+            return driver.getDataSourceProvider().getConnectionURL(driver, connectionInfo);
+        }
+        return connectionURL;
     }
 
     @Override
