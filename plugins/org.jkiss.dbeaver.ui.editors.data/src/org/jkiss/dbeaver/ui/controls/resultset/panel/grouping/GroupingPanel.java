@@ -235,7 +235,7 @@ public class GroupingPanel implements IResultSetPanel {
     static class ClearGroupingAction extends GroupingAction {
         ClearGroupingAction(GroupingResultsContainer resultsContainer) {
             super(resultsContainer, ResultSetMessages.controls_resultset_grouping_clear,
-                DBeaverIcons.getImageDescriptor(UIIcon.REMOVE_GROUPING));
+                DBeaverIcons.getImageDescriptor(UIIcon.CLEAR_GROUPING));
         }
 
         @Override

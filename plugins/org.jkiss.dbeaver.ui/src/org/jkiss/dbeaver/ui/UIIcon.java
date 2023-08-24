@@ -143,9 +143,7 @@ public class UIIcon {
     public static final DBIcon REMOVE = new DBIcon("remove", "remove.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon RENAME = new DBIcon("rename", "rename.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PALETTE = new DBIcon("palette", "misc/palette.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon REMOVE_GROUPING = new DBIcon("remove_grouping", "misc/remove_grouping.png"); //$NON-NLS-1$ //$NON-NLS-2$
-
-
+    public static final DBIcon CLEAR_GROUPING = new DBIcon("clear_grouping", "misc/clear_grouping.png"); //$NON-NLS-1$// $NON-NLS-2$
     public static final DBIcon ROW_ADD = new DBIcon("row_add", "sql/row_add.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ROW_COPY = new DBIcon("row_copy", "sql/row_copy.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ROW_EDIT = new DBIcon("row_edit", "sql/row_edit.png"); //$NON-NLS-1$ //$NON-NLS-2$
