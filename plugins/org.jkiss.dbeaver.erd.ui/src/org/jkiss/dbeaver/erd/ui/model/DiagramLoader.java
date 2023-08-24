@@ -159,7 +159,7 @@ public class DiagramLoader extends ERDPersistedState {
         if (entitiesElem != null) {
             final List<Element> dataSourceElements = XMLUtils.getChildElementList(entitiesElem, TAG_DATA_SOURCE);
             final Map<String, DBPDataSourceContainer> containers = new LinkedHashMap<>();
-            
+
             // Collect data sources
             for (Element element : dataSourceElements) {
                 final String id = element.getAttribute(ATTR_ID);
@@ -185,6 +185,7 @@ public class DiagramLoader extends ERDPersistedState {
 
                     if (dialog.open() == IDialogConstants.OK_ID) {
                         containers.putAll(dialog.containers);
+                        diagram.setDirty(true);
                     }
                 });
             }
