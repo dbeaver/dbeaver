@@ -105,6 +105,7 @@ public class ClickhouseTypeParser {
         final DBSDataType resolved;
 
         if (parser.getNumberOfSyntaxErrors() > 0) {
+            log.debug("Rejecting invalid or unsupported type: " + typeName);
             return null;
         }
 
