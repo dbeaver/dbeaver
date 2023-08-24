@@ -22,6 +22,8 @@ package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.*;
@@ -52,6 +54,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Typical scenario for debug session <br/>
@@ -78,17 +82,17 @@ public class PostgreDebugSession extends DBGJDBCSession {
 
     private int functionOid = -1;
     private int sessionId = -1;
-    private int localPortNumber = -1;
 
     private PostgreDebugAttachKind attachKind = PostgreDebugAttachKind.UNKNOWN;
     private DBGSessionInfo sessionInfo;
+    
+    private volatile Job localWorkerJob = null;
 
     private PostgreDebugBreakpointDescriptor bpGlobal;
-    private volatile JDBCCallableStatement localStatement;
 
-    private static final int LOCAL_WAIT = 50; // 0.5 sec
+    private static final int LOCAL_WAIT_MS = 500; // 0.5 sec
 
-    private static final int LOCAL_TIMEOT = 1000 * LOCAL_WAIT; // 50 sec
+    private static final int LOCAL_TIMEOT_MS = 50 * (2 * LOCAL_WAIT_MS); // 50 sec
 
     private static final String MAGIC_PORT = "PLDBGBREAK";
 
@@ -192,41 +196,22 @@ public class PostgreDebugSession extends DBGJDBCSession {
         }
     }
 
-    private boolean localPortRcv(SQLWarning warn) {
-
-        if (warn != null) {
-
-            String notice = warn.getMessage();
-
-            log.debug("Start local port waiting....");
-
-            while (notice != null) {
-
-                if (notice.startsWith(MAGIC_PORT)) {
-
-                    try {
-                        localPortNumber = Integer.valueOf(notice.substring(MAGIC_PORT.length() + 1).trim());
-                        log.debug(String.format("Catch local port number %d", localPortNumber));
-                    } catch (Exception e) {
-                        log.debug(String.format("Error catching local port number %s", e.getMessage()));
-                        return false;
-                    }
-
-                    return true;
-                }
-
-                warn = warn.getNextWarning();
-
-                notice = warn == null ? null : warn.getMessage();
-                log.debug(String.format("Next warning %s", (notice == null ? "[NULL]" : notice)));
-
+    @Nullable
+    private Integer tryParsePortNumber(@Nullable String notice) {
+        if (notice != null && notice.startsWith(MAGIC_PORT)) {
+            try {
+                Integer result = Integer.valueOf(notice.substring(MAGIC_PORT.length() + 1).trim());
+                log.debug(String.format("Catch local port number %d", result));
+                return result;
+            } catch (Exception e) {
+                log.debug(String.format("Error catching local port number %s", e.getMessage()));
+                return null;
             }
         }
-
-        return false;
+        return null;
     }
 
-    private int attachToPort(DBRProgressMonitor monitor) throws DBGException {
+    private int attachToPort(@NotNull DBRProgressMonitor monitor, int localPortNumber) throws DBGException {
         // Use controller connection
         String sql = SQL_ATTACH_TO_PORT.replaceAll("\\?portnumber", String.valueOf(localPortNumber));
         log.debug(String.format("Attach to local port number %d", localPortNumber));
@@ -274,45 +259,70 @@ public class PostgreDebugSession extends DBGJDBCSession {
     /**
      * Wait for port number passed from main executed statement
      */
-    private void waitPortNumber() throws DBGException {
-
-        int totalWait = 0;
-        boolean hasStatement = false;
-        log.debug(String.format("Waiting for port number with timeout %d", LOCAL_TIMEOT));
-        while (totalWait < LOCAL_TIMEOT) {
-            try {
-                CallableStatement statement = this.localStatement;
-                if (statement != null) {
-                    hasStatement = true;
-                    if (localPortRcv(statement.getWarnings())) {
-                        log.debug("Local port recived");
-                        break;
-                    }
-                } else if (hasStatement) {
-                    // Statement has been closed
-                    log.debug("Statement has been closed");
-                    break;
+    @NotNull
+    private Integer waitPortNumber(@NotNull CompletableFuture<JDBCCallableStatement> asyncStatement) throws DBGException {
+        int totalWaitMs = 0;
+        log.debug(String.format("Waiting for port number with timeout %d", LOCAL_TIMEOT_MS));
+        try {
+            CallableStatement statement = asyncStatement.get();
+            
+            log.debug("Start local port waiting....");
+            SQLWarning warn = null;
+            while (!statement.isClosed() && totalWaitMs < LOCAL_TIMEOT_MS && warn == null) {
+                warn = statement.getWarnings(); // poll the the first warn on the statement itself
+                if (warn == null) {
+                    Thread.sleep(LOCAL_WAIT_MS);
+                    totalWaitMs += LOCAL_WAIT_MS;
                 }
-                // Please forgive me !
-                Thread.sleep(LOCAL_WAIT);
-                log.debug("Thread waked up");
-
-            } catch (SQLException | InterruptedException e) {
-                log.debug(String.format("Error rcv port number %s", e.getMessage()));
-                throw new DBGException("Error rcv port number", e);
             }
-
-            totalWait += LOCAL_WAIT;
-
+            
+            if (warn != null) {
+                log.debug("First warning received");
+                do {
+                    log.debug(String.format("Parsing warning %s", warn.getMessage()));
+                    Integer localPort = tryParsePortNumber(warn.getMessage());
+                    if (localPort !=  null) {
+                        log.debug("Local port obtained");
+                        return localPort;
+                    } else {
+                        // we cannot use clearWarnings() for two reasons:
+                        // 1. warnings added between calls to getWarnings() and clearWarnings() may be missed, 
+                        //    so Postgresql JDBC Driver repository recommends to poll on getNextWarning() 
+                        //    (see https://github.com/pgjdbc/pgjdbc/blob/5c9928d81e4a337518c1e1104ea17f4b29269320/pgjdbc/src/main/java/org/postgresql/jdbc/PgStatement.java#L652)
+                        // 2. clearWarnings() cannot be used to release handled warns' memory even while polling with the getNextWarning(),
+                        //    because the chain of warnings will be disrupted after the clearWarnings() call due to its implementation flaw,
+                        //    making the following warnings unobservable with getNextWarning(), and so forcing us to getWarnings() again,
+                        //    but see the previous point above.
+                        log.debug(String.format("Waiting for the next warning %s", warn.getMessage()));
+                        SQLWarning nextWarn = null;
+                        while (!statement.isClosed() && totalWaitMs < LOCAL_TIMEOT_MS && nextWarn == null) {
+                            nextWarn = warn.getNextWarning(); // poll for the consequent warns on the last processed in a chain
+                            if (nextWarn == null) {
+                                Thread.sleep(LOCAL_WAIT_MS);
+                                totalWaitMs += LOCAL_WAIT_MS;
+                            }
+                        }
+                        warn = nextWarn;
+                    }
+                } while (!statement.isClosed() && totalWaitMs < LOCAL_TIMEOT_MS);
+            }
+        } catch (InterruptedException | ExecutionException | SQLException e) {
+            log.debug(String.format("Error rcv port number %s", e.getMessage()));
+            throw new DBGException("Error rcv port number", e);
         }
 
-        if (localPortNumber < 0) {
-            log.debug(String.format("Unable to rcv port number %d", localPortNumber));
-            throw new DBGException("Unable to rcv port number");
-        }
+        log.debug("Unable to rcv port number");
+        throw new DBGException("Unable to rcv port number");
     }
 
-    protected void runLocalProc(JDBCExecutionContext connection, PostgreProcedure function, List<String> paramValues, String name) throws DBGException {
+    @NotNull
+    protected Job runLocalProc(
+        @NotNull JDBCExecutionContext connection,
+        @NotNull PostgreProcedure function,
+        @NotNull List<String> paramValues,
+        @NotNull String name,
+        @NotNull CompletableFuture<JDBCCallableStatement> asyncStatement
+    ) throws DBGException {
         List<PostgreProcedureParameter> parameters = function.getInputParameters();
         log.debug("Run local proc");
         if (parameters.size() != paramValues.size()) {
@@ -324,6 +334,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 try (JDBCSession session = connection.openSession(monitor, DBCExecutionPurpose.USER, "Run SQL command")) {
+                    JDBCCallableStatement statement = null;
                     try {
                         StringBuilder query = new StringBuilder();
                         query.append("{ CALL ").append(function.getFullyQualifiedName(DBPEvaluationContext.DML)).append("(");
@@ -334,7 +345,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
                         }
                         query.append(") }");
                         log.debug(String.format("Prepared local call %s", query));
-                        localStatement = session.prepareCall(query.toString());
+                        statement = session.prepareCall(query.toString());
 
 /*
                         for (int i = 0; i < parameters.size(); i++) {
@@ -344,11 +355,16 @@ public class PostgreDebugSession extends DBGJDBCSession {
                             valueHandler.bindValueObject(session, localStatement, parameter, i, paramValue);
                         }
 */
-                        localStatement.execute();
+                        asyncStatement.complete(statement);
+                        statement.execute();
                         // And Now His Watch Is Ended
                         log.debug("Local statement executed (ANHWIE)");
                         fireEvent(new DBGEvent(this, DBGEvent.RESUME, DBGEvent.STEP_RETURN));
                     } catch (Exception e) {
+                        if (!asyncStatement.isDone()) {
+                            asyncStatement.cancel(false);
+                        }
+                        
                         log.debug("Error execute local statement: " + e.getMessage());
                         String sqlState = e instanceof SQLException ? ((SQLException) e).getSQLState() : null;
                         if (!PostgreConstants.EC_QUERY_CANCELED.equals(sqlState)) {
@@ -357,9 +373,8 @@ public class PostgreDebugSession extends DBGJDBCSession {
                         }
                     } finally {
                         try {
-                            if (localStatement != null) {
-                                localStatement.close();
-                                localStatement = null;
+                            if (statement != null) {
+                                statement.close();
                             }
                         } catch (Exception e1) {
                             log.debug("Error clearing local statment");
@@ -375,6 +390,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
             }
         };
         job.schedule();
+        return job;
     }
 
     private void attachLocal(DBRProgressMonitor monitor, PostgreProcedure function, List<String> parameters) throws DBGException {
@@ -388,11 +404,12 @@ public class PostgreDebugSession extends DBGJDBCSession {
 
             String taskName = "PostgreSQL Debug - Local session " + sessionInfo.getID();
 
-            runLocalProc(connection, function, parameters, taskName);
+            CompletableFuture<JDBCCallableStatement> asyncStatement =  new CompletableFuture<JDBCCallableStatement>();
+            localWorkerJob = runLocalProc(connection, function, parameters, taskName, asyncStatement);
 
-            waitPortNumber();
+            Integer portNumber = waitPortNumber(asyncStatement);
 
-            sessionId = attachToPort(monitor);
+            sessionId = attachToPort(monitor, portNumber);
             log.debug(String.format("Attached local session UD = %d", sessionId));
             getController().fireEvent(new DBGEvent(this, DBGEvent.SUSPEND, DBGEvent.MODEL_SPECIFIC));
         } catch (DBException e) {
@@ -442,7 +459,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
      * procedure
      */
     public void attach(DBRProgressMonitor monitor, Map<String, Object> configuration) throws DBException {
-        if (!checkDebugPlagin(monitor)) {
+        if (!checkDebugPlugin(monitor)) {
             throw new DBGException("PostgreSQL debug plugin is not installed on the server.\n" +
                 "Refer to this WIKI article for installation instructions:\n" +
                 "https://github.com/dbeaver/dbeaver/wiki/PGDebugger#installation");
@@ -474,7 +491,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
         return PostgreDebugConstants.ATTACH_KIND_GLOBAL.equals(String.valueOf(configuration.get(PostgreDebugConstants.ATTR_ATTACH_KIND)));
     }
 
-    private boolean checkDebugPlagin(DBRProgressMonitor monitor) {
+    private boolean checkDebugPlugin(DBRProgressMonitor monitor) {
         try (JDBCSession session = getControllerConnection().openSession(monitor, DBCExecutionPurpose.UTIL, "Check debug plugin installation")) {
             String version = JDBCUtils.executeQuery(session, SQL_CHECK_PLUGIN);
             log.debug("Debug plugin is installed:\n" + version);
@@ -486,7 +503,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
     }
 
     private void detachLocal(DBRProgressMonitor monitor, JDBCExecutionContext connection) throws DBGException {
-        if (localStatement == null) {
+        if (localWorkerJob == null || Status.OK_STATUS.equals(localWorkerJob.getResult())) {
             // Execution already terminated
             return;
         }
