@@ -68,16 +68,13 @@ public class OracleUtils {
         OracleDDLFormat ddlFormat,
         Map<String, Object> options) throws DBException
     {
+        if (monitor.isCanceled()) {
+            return "";
+        }
         String objectFullName = DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL);
 
         OracleSchema schema = object.getContainer();
-/*
-        if (object instanceof OracleSchemaObject) {
-            schema = ((OracleSchemaObject)object).getSchema();
-        } else if (object instanceof OracleTableBase) {
-            schema = ((OracleTableBase)object).getContainer();
-        }
-*/
+
         final OracleDataSource dataSource = object.getDataSource();
 
         monitor.subTask("Load sources for " + objectType + " '" + objectFullName + "'...");
@@ -94,9 +91,6 @@ public class OracleUtils {
             if (dataSource.isAtLeastV9()) {
                 try {
                     // Do not add semicolon in the end
-//                    JDBCUtils.executeProcedure(
-//                        session,
-//                        "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SQLTERMINATOR',true); end;");
                     JDBCUtils.executeProcedure(
                         session,
                         "begin\n" +
@@ -111,6 +105,10 @@ public class OracleUtils {
                 } catch (SQLException e) {
                     log.error("Can't apply DDL transform parameters", e);
                 }
+            }
+
+            if (monitor.isCanceled()) {
+                return "";
             }
 
             String ddl;
@@ -145,6 +143,7 @@ public class OracleUtils {
             }
             ddl = ddl.trim();
 
+            if (monitor.isCanceled()) return ddl;
 
             if (!CommonUtils.isEmpty(object.getConstraints(monitor)) && 
                 !CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS) &&
@@ -152,19 +151,27 @@ public class OracleUtils {
                 ddl += invokeDBMSMetadataGetDependentDDL(session, schema, object, DBMSMetaDependentObjectType.REF_CONSTRAINT);
             }
 
+            if (monitor.isCanceled()) return ddl;
+
             if (!CommonUtils.isEmpty(object.getTriggers(monitor))) {
                 ddl += invokeDBMSMetadataGetDependentDDL(session, schema, object, DBMSMetaDependentObjectType.TRIGGER);
             }
+
+            if (monitor.isCanceled()) return ddl;
 
             if (!CommonUtils.isEmpty(object.getIndexes(monitor))) {
                 // Add index info to main DDL. For some reasons, GET_DDL returns columns, constraints, but not indexes
                 ddl += invokeDBMSMetadataGetDependentDDL(session, schema, object, DBMSMetaDependentObjectType.INDEX);
             }
 
+            if (monitor.isCanceled()) return ddl;
+
             if (ddlFormat == OracleDDLFormat.FULL) {
                 // Add grants info to main DDL
                 ddl += invokeDBMSMetadataGetDependentDDL(session, schema, object, DBMSMetaDependentObjectType.OBJECT_GRANT);
             }
+
+            if (monitor.isCanceled()) return ddl;
 
             if (ddlFormat != OracleDDLFormat.COMPACT) {
                 // Add object and objects columns info to main DDL
