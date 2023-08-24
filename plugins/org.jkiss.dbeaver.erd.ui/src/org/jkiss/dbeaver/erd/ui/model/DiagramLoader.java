@@ -712,8 +712,6 @@ public class DiagramLoader extends ERDPersistedState {
             UIUtils.createLabel(composite, "This diagram refers data sources that don't exist.\n\nPlease specify new data sources:");
 
             final TableViewer viewer = new TableViewer(composite, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
-            viewer.setContentProvider(new ListContentProvider());
-            viewer.setInput(ids);
 
             final Table table = viewer.getTable();
             table.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).hint(600, SWT.DEFAULT).create());
@@ -777,6 +775,11 @@ public class DiagramLoader extends ERDPersistedState {
             });
 
             controller.createColumns(false);
+
+            viewer.setContentProvider(new ListContentProvider());
+            viewer.setInput(ids);
+
+            UIUtils.asyncExec(() -> UIUtils.packColumns(viewer.getTable(), true));
 
             updateCompletion();
 
