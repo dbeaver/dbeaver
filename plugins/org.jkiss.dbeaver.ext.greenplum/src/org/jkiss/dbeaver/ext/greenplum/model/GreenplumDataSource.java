@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.osgi.framework.Version;
 
@@ -103,11 +102,5 @@ public class GreenplumDataSource extends PostgreDataSource {
             supportsRelstorageColumn = PostgreUtils.isMetaObjectExists(session, "pg_class", "relstorage");
         }
         return supportsRelstorageColumn;
-    }
-
-    @Association
-    public boolean supportsExternalTables() {
-        // External tables turned into foreign tables from version 7
-        return !isGreenplumVersionAtLeast(7, 0);
     }
 }
