@@ -34,4 +34,9 @@ public class VerticaUIMessages extends NLS {
     public static String connection_page_group_performance;
     public static String connection_page_group_checkbox_disable_comments;
     public static String connection_page_group_checkbox_disable_comments_tip;
+    public static String connection_page_setting_sql;
+    public static String connection_page_sql_dd_label;
+    public static String connection_page_sql_dd_string;
+    public static String connection_page_sql_dd_code_block;
+
 }
