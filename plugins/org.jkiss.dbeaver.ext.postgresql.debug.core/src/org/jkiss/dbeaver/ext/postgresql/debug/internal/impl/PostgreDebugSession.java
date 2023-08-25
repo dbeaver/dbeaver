@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ext.postgresql.debug.core.PostgreSqlDebugCore;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedureKind;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedureParameter;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -337,13 +338,21 @@ public class PostgreDebugSession extends DBGJDBCSession {
                     JDBCCallableStatement statement = null;
                     try {
                         StringBuilder query = new StringBuilder();
-                        query.append("{ CALL ").append(function.getFullyQualifiedName(DBPEvaluationContext.DML)).append("(");
+                        if (function.getKind().equals(PostgreProcedureKind.p)) {
+                            query.append("{ CALL ");
+                        } else {
+                            query.append("SELECT ");
+                        }
+                        query.append(function.getFullyQualifiedName(DBPEvaluationContext.DML)).append("(");
                         for (int i = 0; i < parameters.size(); i++) {
                             if (i > 0) query.append(",");
                             String paramValue = paramValues.get(i);
                             query.append(paramValue);
                         }
-                        query.append(") }");
+                        query.append(")");
+                        if (function.getKind().equals(PostgreProcedureKind.p)) {
+                            query.append(" }");
+                        }
                         log.debug(String.format("Prepared local call %s", query));
                         statement = session.prepareCall(query.toString());
 
