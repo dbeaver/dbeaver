@@ -22,10 +22,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -37,10 +39,26 @@ public class DatabaseURL {
 
     private static final Log log = Log.getLog(DatabaseURL.class);
 
-    private static final char URL_GROUP_START = '{'; //$NON-NLS-1$
-    private static final char URL_GROUP_END = '}'; //$NON-NLS-1$
-    private static final char URL_OPTIONAL_START = '['; //$NON-NLS-1$
-    private static final char URL_OPTIONAL_END = ']'; //$NON-NLS-1$
+    private static final char URL_GROUP_START = '{'; // $NON-NLS-1$
+    private static final char URL_GROUP_END = '}'; // $NON-NLS-1$
+    private static final char URL_OPTIONAL_START = '['; // $NON-NLS-1$
+    private static final char URL_OPTIONAL_END = ']'; // $NON-NLS-1$
+
+    private static final char[] URL_TEMPLATE_SEPARATOR_CHARS = new char[]{
+        URL_GROUP_START, URL_GROUP_END, URL_OPTIONAL_START, URL_OPTIONAL_END
+    };
+    
+    private static final Map<String, Function<DBPConnectionConfiguration, String>> accessorByName = Map.of(
+        DBConstants.PROP_HOST, c -> CommonUtils.nullIfEmpty(c.getHostName()),
+        DBConstants.PROP_PORT, c -> CommonUtils.nullIfEmpty(c.getHostPort()),
+        DBConstants.PROP_SERVER, c -> CommonUtils.nullIfEmpty(c.getServerName()),
+        DBConstants.PROP_DATABASE, c -> CommonUtils.nullIfEmpty(c.getDatabaseName()),
+        DBConstants.PROP_FOLDER, c -> CommonUtils.nullIfEmpty(c.getDatabaseName()),
+        DBConstants.PROP_FILE, c -> CommonUtils.nullIfEmpty(c.getDatabaseName()),
+        DBConstants.PROP_USER, c -> CommonUtils.notEmpty(c.getUserName()),
+        DBConstants.PROP_PASSWORD, c -> CommonUtils.notEmpty(c.getUserPassword())
+    );
+    private static final Function<DBPConnectionConfiguration, String> defaultValueAccessor = c -> null; 
 
     public static String generateUrlByTemplate(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
         String urlTemplate = driver.getSampleURL();
@@ -52,8 +70,7 @@ public class DatabaseURL {
             CommonUtils.isEmpty(connectionInfo.getHostPort()) &&
             CommonUtils.isEmpty(connectionInfo.getHostName()) &&
             CommonUtils.isEmpty(connectionInfo.getServerName()) &&
-            CommonUtils.isEmpty(connectionInfo.getDatabaseName()))
-        {
+            CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
             // No parameters, just URL - so URL it is
             return connectionInfo.getUrl();
         }
@@ -61,45 +78,323 @@ public class DatabaseURL {
             if (CommonUtils.isEmptyTrimmed(urlTemplate)) {
                 return connectionInfo.getUrl();
             }
-            MetaURL metaURL = parseSampleURL(urlTemplate);
-            StringBuilder url = new StringBuilder();
-            for (String component : metaURL.getUrlComponents()) {
-                String newComponent = component;
-                if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_HOST), connectionInfo.getHostName());
-                }
-                if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_PORT), connectionInfo.getHostPort());
-                }
-                if (!CommonUtils.isEmpty(connectionInfo.getServerName())) {
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_SERVER), connectionInfo.getServerName());
-                }
-                if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_DATABASE), connectionInfo.getDatabaseName());
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_FOLDER), connectionInfo.getDatabaseName());
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_FILE), connectionInfo.getDatabaseName());
-                }
-                newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_USER), CommonUtils.notEmpty(connectionInfo.getUserName()));
-                newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_PASSWORD), CommonUtils.notEmpty(connectionInfo.getUserPassword()));
-
-                if (newComponent.startsWith("[")) { //$NON-NLS-1$
-                    if (!newComponent.equals(component)) {
-                        url.append(newComponent.substring(1, newComponent.length() - 1));
-                    }
-                } else {
-                    url.append(newComponent);
-                }
-            }
-            return url.toString();
+            UrlTemplateInfo templateInfo = parseUrlTemplate(urlTemplate);
+            UrlTemplateInstance url = new UrlTemplateInstance(templateInfo);
+            url.populateParams(paramName -> accessorByName.getOrDefault(paramName, defaultValueAccessor).apply(connectionInfo));
+            String urlString = url.prepareUrlString();
+            return urlString;
         } catch (DBException e) {
             log.error(e);
             return null;
         }
     }
 
-    private static String makePropPattern(String prop)
-    {
-        return "{" + prop + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+    public static class UrlTemplateInfo {
+        private final Map<String, UrlTemplateParameterNode> allParamsByName;
+        private final Map<String, UrlTemplateParameterNode> requiredParamsByName;
+        private final UrlTemplateNode root;
+        private final int maxOptsSeqNodeId;
+        private final int maxParamId;
+
+        public UrlTemplateInfo(UrlTemplateNode root, int maxParamId, int maxOptsSeqNodeId,
+            Map<String, UrlTemplateParameterNode> paramsByName, Map<String, UrlTemplateParameterNode> requiredParamsByName) {
+            this.allParamsByName = paramsByName;
+            this.requiredParamsByName = requiredParamsByName;
+            this.root = root;
+            this.maxOptsSeqNodeId = maxOptsSeqNodeId;
+            this.maxParamId = maxParamId;
+        }
+
+        public Set<String> getAvailableProperties() {
+            return Collections.unmodifiableSet(allParamsByName.keySet());
+        }
+
+        public Set<String> getRequiredProperties() {
+            return Collections.unmodifiableSet(requiredParamsByName.keySet());
+        }
+    }
+
+    public static class UrlTemplateInstance {
+        private final UrlTemplateInfo template;
+        private final int[] paramsSpecifiedByOptsNodeId;
+        private final String[] valueByParamId;
+
+        public UrlTemplateInstance(UrlTemplateInfo template) {
+            this.template = template;
+            this.paramsSpecifiedByOptsNodeId = new int[template.maxOptsSeqNodeId];
+            this.valueByParamId = new String[template.maxParamId];
+        }
+
+        public boolean setParam(String name, String value) {
+            UrlTemplateParameterNode node = template.allParamsByName.get(name);
+            if (node != null) {
+                applyParamValue(node, value);
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        private void applyParamValue(UrlTemplateParameterNode node, String value) {
+            if (value != null) {
+                if (valueByParamId[node.paramId] == null) {
+                    node.dependantOptSeqIds.forEach(n -> paramsSpecifiedByOptsNodeId[n]++);
+                }
+            } else {
+                if (valueByParamId[node.paramId] != null) {
+                    node.dependantOptSeqIds.forEach(n -> paramsSpecifiedByOptsNodeId[n]--);
+                }
+            }
+            valueByParamId[node.paramId] = value;
+        }
+
+        public void populateParams(Function<String, String> paramValueProvider) {
+            for (UrlTemplateParameterNode node : template.allParamsByName.values()) {
+                String value = paramValueProvider.apply(node.name);
+                applyParamValue(node, value);
+            }
+        }
+
+        public String prepareUrlString() {
+            StringBuilder sb = new StringBuilder();
+            template.root.apply(new UrlTemplateNodeVisitor() {
+                @Override
+                public void visitSequence(UrlTemplateSequenceNode seq) {
+                    seq.nodes.forEach(n -> n.apply(this));
+                }
+
+                @Override
+                public void visitOptionalSequence(UrlTemplateOptionalSequenceNode seq) {
+                    if (paramsSpecifiedByOptsNodeId[seq.optsSeqNodeId] > 0) {
+                        seq.nodes.forEach(n -> n.apply(this));
+                    }
+                }
+
+                @Override
+                public void visitFixed(UrlTemplateFixedNode fixed) {
+                    sb.append(fixed.text);
+                }
+
+                @Override
+                public void visitParameter(UrlTemplateParameterNode param) {
+                    String value = valueByParamId[param.paramId];
+                    if (value != null) {
+                        sb.append(value);
+                    }
+                }
+            });
+            return sb.toString();
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            template.root.apply(new UrlTemplateNodeVisitor() {
+                @Override
+                public void visitSequence(UrlTemplateSequenceNode seq) {
+                    seq.nodes.forEach(n -> n.apply(this));
+                }
+
+                @Override
+                public void visitOptionalSequence(UrlTemplateOptionalSequenceNode seq) {
+                    sb.append(URL_OPTIONAL_START);
+                    seq.nodes.forEach(n -> n.apply(this));
+                    sb.append(URL_OPTIONAL_END);
+                }
+
+                @Override
+                public void visitFixed(UrlTemplateFixedNode fixed) {
+                    sb.append(fixed.text);
+                }
+
+                @Override
+                public void visitParameter(UrlTemplateParameterNode param) {
+                    sb.append(URL_GROUP_START).append(param.name).append(":");
+                    String value = valueByParamId[param.paramId];
+                    if (value == null) {
+                        sb.append("NULL");
+                    } else {
+                        sb.append("\"").append(value.replace("\"", "\\\"")).append("\"");
+                    }
+                    sb.append(URL_GROUP_END);
+                }
+            });
+            return super.toString() + "(" + sb.toString() + ")";
+        }
+    }
+
+    private interface UrlTemplateNodeVisitor {
+
+        void visitSequence(UrlTemplateSequenceNode seq);
+
+        void visitOptionalSequence(UrlTemplateOptionalSequenceNode seq);
+
+        void visitFixed(UrlTemplateFixedNode fixed);
+
+        void visitParameter(UrlTemplateParameterNode param);
+    }
+
+    private abstract static class UrlTemplateNode {
+
+        public abstract void apply(UrlTemplateNodeVisitor visitor);
+
+        @Override
+        public final String toString() {
+            StringBuilder sb = new StringBuilder();
+            this.apply(new UrlTemplateNodeVisitor() {
+                @Override
+                public void visitSequence(UrlTemplateSequenceNode seq) {
+                    seq.nodes.forEach(n -> n.apply(this));
+                }
+
+                @Override
+                public void visitOptionalSequence(UrlTemplateOptionalSequenceNode seq) {
+                    sb.append(URL_OPTIONAL_START);
+                    seq.nodes.forEach(n -> n.apply(this));
+                    sb.append(URL_OPTIONAL_END);
+                }
+
+                @Override
+                public void visitFixed(UrlTemplateFixedNode fixed) {
+                    sb.append(fixed.text);
+                }
+
+                @Override
+                public void visitParameter(UrlTemplateParameterNode param) {
+                    sb.append(URL_GROUP_START).append(param.name).append(URL_GROUP_END);
+                }
+            });
+            return super.toString() + "(" + sb.toString() + ")";
+        }
+    }
+
+    private static class UrlTemplateSequenceNode extends UrlTemplateNode {
+
+        public final List<UrlTemplateNode> nodes;
+
+        public UrlTemplateSequenceNode(UrlTemplateNode... nodes) {
+            this.nodes = nodes == null || nodes.length == 0 ? new ArrayList<>() : List.copyOf(Arrays.asList(nodes));
+        }
+
+        @Override
+        public void apply(UrlTemplateNodeVisitor visitor) {
+            visitor.visitSequence(this);
+        }
+    }
+
+    private static class UrlTemplateOptionalSequenceNode extends UrlTemplateSequenceNode {
+
+        public final int optsSeqNodeId;
+
+        public UrlTemplateOptionalSequenceNode(int optsSeqNodeId, UrlTemplateNode... nodes) {
+            super(nodes);
+            this.optsSeqNodeId = optsSeqNodeId;
+        }
+
+        @Override
+        public void apply(UrlTemplateNodeVisitor visitor) {
+            visitor.visitOptionalSequence(this);
+        }
+    }
+
+    private static class UrlTemplateFixedNode extends UrlTemplateNode {
+
+        public final String text;
+
+        public UrlTemplateFixedNode(String text) {
+            this.text = text;
+        }
+
+        @Override
+        public void apply(UrlTemplateNodeVisitor visitor) {
+            visitor.visitFixed(this);
+        }
+    }
+
+    private static class UrlTemplateParameterNode extends UrlTemplateNode {
+
+        public final int paramId;
+        public final String name;
+        public final Set<Integer> dependantOptSeqIds;
+
+        public UrlTemplateParameterNode(int paramId, String name, Set<Integer> dependantOptSeqIds) {
+            this.paramId = paramId;
+            this.name = name;
+            this.dependantOptSeqIds = dependantOptSeqIds;
+        }
+
+        @Override
+        public void apply(UrlTemplateNodeVisitor visitor) {
+            visitor.visitParameter(this);
+        }
+    }
+
+    public static UrlTemplateInfo parseUrlTemplate(String text) throws DBException {
+        Map<String, UrlTemplateParameterNode> paramsByName = new HashMap<>();
+        Map<String, UrlTemplateParameterNode> requiredParamsByName = new HashMap<>();
+        Stack<UrlTemplateSequenceNode> stack = new Stack<>();
+        Stack<Integer> currentOptSeqIds = new Stack<>();
+        stack.push(new UrlTemplateSequenceNode());
+        int optGroupsCount = 0;
+
+        // TODO consider escaping
+
+        int fixedStart = 0;
+        for (int pos = 0; pos < text.length(); pos++) {
+            char c = text.charAt(pos);
+            if (ArrayUtils.contains(URL_TEMPLATE_SEPARATOR_CHARS, c)) {
+                if (pos > fixedStart) {
+                    stack.peek().nodes.add(new UrlTemplateFixedNode(text.substring(fixedStart, pos)));
+                }
+                fixedStart = pos + 1;
+            }
+            switch (c) {
+                case URL_GROUP_START: {
+                    int start = pos + 1;
+                    do {
+                        pos++;
+                        if (pos >= text.length()) {
+                            throw new DBException("Bad URL template (Incomplete parameter group name at " + start + "): " + text);
+                        }
+                        c = text.charAt(pos);
+                    } while (c != URL_GROUP_END);
+                    if (pos - 1 <= start) {
+                        throw new DBException("Bad URL template (Missing parameter group name at " + start + "): " + text);
+                    }
+                    String paramName = text.substring(start, pos);
+                    UrlTemplateParameterNode param = paramsByName.computeIfAbsent(
+                	    paramName, name -> new UrlTemplateParameterNode(paramsByName.size(), name, Set.copyOf(currentOptSeqIds))
+            	    );
+                    if (stack.size() <= 1) {
+                        requiredParamsByName.putIfAbsent(paramName, param);
+                    }
+                    stack.peek().nodes.add(param);
+                    fixedStart = pos + 1;
+                } break;
+                case URL_OPTIONAL_START: {
+                    int optSeqId = optGroupsCount++;
+                    currentOptSeqIds.push(optSeqId);
+                    stack.push(new UrlTemplateOptionalSequenceNode(optSeqId));
+                } break;
+                case URL_OPTIONAL_END: {
+                    if (stack.size() < 2) {
+                        throw new DBException("Bad URL template (Unexpected optional group end at " + pos + "): " + text);
+                    }
+                    currentOptSeqIds.pop();
+                    var child = stack.pop();
+                    stack.peek().nodes.add(child);
+                } break;
+            }
+        }
+        
+        if (stack.size() > 1) {
+            throw new DBException("Bad URL template (Incomplete optional group): " + text);
+        }
+        if (fixedStart < text.length()) {
+            stack.peek().nodes.add(new UrlTemplateFixedNode(text.substring(fixedStart)));
+        }
+
+        return new UrlTemplateInfo(stack.peek(), paramsByName.size(), optGroupsCount, paramsByName, requiredParamsByName);
     }
 
     public static class MetaURL {

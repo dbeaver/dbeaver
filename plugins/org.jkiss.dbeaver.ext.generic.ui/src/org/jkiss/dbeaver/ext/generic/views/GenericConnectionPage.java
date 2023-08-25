@@ -73,7 +73,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
     private Text urlText;
 
     private boolean isCustom;
-    private DatabaseURL.MetaURL metaURL;
+    private DatabaseURL.UrlTemplateInfo metaURL;
     private Collection<String> controlGroupsByUrl;
     private Composite settingsGroup;
 
@@ -503,7 +503,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         if (!CommonUtils.isEmpty(driver.getSampleURL())) {
             isCustom = false;
             try {
-                metaURL = DatabaseURL.parseSampleURL(driver.getSampleURL());
+                metaURL = DatabaseURL.parseUrlTemplate(driver.getSampleURL());
             } catch (DBException e) {
                 setErrorMessage(e.getMessage());
             }
