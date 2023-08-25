@@ -46,6 +46,7 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
     private ERDModelAdapter modelAdapter;
     private final ERDDecorator decorator;
     private boolean needsAutoLayout;
+    private boolean dirty;
 
     private final Map<ERDNote, NodeVisualInfo> noteVisuals = new IdentityHashMap<>();
     private final Map<DBSEntity, NodeVisualInfo> entityVisuals = new IdentityHashMap<>();
@@ -190,5 +191,13 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
             return vi1 != null && vi2 != null ? vi1.zOrder - vi2.zOrder : 0;
         });
         return children;
+    }
+
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
     }
 }
