@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>23.1.5</dbeaver-version>
+        <dbeaver-version>23.2.0</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
         <tycho-version>3.0.1</tycho-version>
         <eclipse-version>2023-06</eclipse-version>
