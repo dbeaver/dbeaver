@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.PrintStreamProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
@@ -342,7 +343,9 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                         totalBytesDumped += count;
                         long currentTime = System.currentTimeMillis();
                         if (currentTime - prevStatusUpdateTime > 300) {
-                            monitor.subTask(numberFormat.format(totalBytesDumped) + " bytes");
+                            if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+                                monitor.subTask(numberFormat.format(totalBytesDumped) + " bytes");
+                            }
                             prevStatusUpdateTime = currentTime;
                         }
                         output.write(buffer, 0, count);

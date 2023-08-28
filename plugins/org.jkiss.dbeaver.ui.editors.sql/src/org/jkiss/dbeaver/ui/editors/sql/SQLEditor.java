@@ -2917,6 +2917,9 @@ public class SQLEditor extends SQLEditorBase implements
             bottomLeft = DBIcon.OVER_RED_LAMP;
         }
 
+        if (baseEditorImage == null) {
+            baseEditorImage = getTitleImage();
+        }
         if (bottomLeft != null || bottomRight != null) {
             DBPImage image = new DBIconComposite(new DBIconBinary(null, baseEditorImage), false, null, null, bottomLeft, bottomRight);
             editorImage = DBeaverIcons.getImage(image, false);
