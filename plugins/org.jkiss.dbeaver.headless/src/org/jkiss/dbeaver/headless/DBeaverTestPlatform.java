@@ -153,7 +153,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
 
         workspace.dispose();
 
-        DataSourceProviderRegistry.getInstance().dispose();
+        DataSourceProviderRegistry.dispose();
 
         // Remove temp folder
         if (tempFolder != null) {
