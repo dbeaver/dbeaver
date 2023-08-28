@@ -14,11 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.security;
+package org.jkiss.dbeaver.ui.notifications;
 
-public interface SMObjects {
-    String PROJECT_OBJECT_TYPE_ID = "project";
+public interface NotificationSound extends AutoCloseable {
+    /**
+     * Plays the notification sound with the given volume and blocks the thread until finished.
+     *
+     * @param volume notification volume in a range of {@code 0.0} to {@code 1.0}, inclusive.
+     */
+    void play(float volume);
 
-    SMObjectType DATASOURCE = new SMObjectType("datasource");
-    SMObjectType PROJECT = new SMObjectType(PROJECT_OBJECT_TYPE_ID);
+    /**
+     * Releases any system resources allocated by this notification sound.
+     */
+    @Override
+    void close();
 }

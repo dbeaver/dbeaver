@@ -40,7 +40,7 @@ public class FireBirdPlanNode extends AbstractExecutionPlanNode {
 		this.nested = new ArrayList<>();
 	}
 
-	@Property
+    @Property(order = 1, viewable = true)
 	@Override
 	public String getNodeName() {
 		return plan;

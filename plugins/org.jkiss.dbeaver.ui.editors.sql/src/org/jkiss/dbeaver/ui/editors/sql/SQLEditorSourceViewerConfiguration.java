@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLCommentAutoIndentStrategy;
@@ -328,7 +329,11 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         @NotNull String contentType,
         @NotNull String colorId
     ) {
-        addContentTypeDamageRepairer(reconciler, contentType, new SingleTokenScanner(new TextAttribute(ruleManager.getColor(colorId))));
+        Color color = ruleManager.getColor(colorId);
+        if (UIStyles.isDarkHighContrastTheme()) {
+            color = UIUtils.getInvertedColor(color);
+        }
+        addContentTypeDamageRepairer(reconciler, contentType, new SingleTokenScanner(new TextAttribute(color)));
     }
 
     private void addContentTypeDamageRepairer(

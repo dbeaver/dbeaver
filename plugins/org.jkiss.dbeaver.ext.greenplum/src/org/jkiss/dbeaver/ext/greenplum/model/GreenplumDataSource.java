@@ -54,13 +54,17 @@ public class GreenplumDataSource extends PostgreDataSource {
         super.initialize(monitor);
 
         // Read server version
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read Greenplum server version")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read Greenplum server special info")) {
             String versionStr = JDBCUtils.queryString(session, "SELECT VERSION()");
             if (versionStr != null) {
                 Matcher matcher = Pattern.compile("Greenplum Database ([0-9\\.]+)").matcher(versionStr);
                 if (matcher.find()) {
                     gpVersion = new Version(matcher.group(1));
                 }
+            }
+
+            if (hasAccessToExttable == null) {
+                hasAccessToExttable = PostgreUtils.isMetaObjectExists(session, "pg_exttable", "*");
             }
         } catch (Throwable e) {
             log.debug("Error reading GP server version", e);
@@ -80,16 +84,13 @@ public class GreenplumDataSource extends PostgreDataSource {
         } else return gpVersion.getMajor() != major || gpVersion.getMinor() >= minor;
     }
 
-    boolean isHasAccessToExttable(@NotNull JDBCSession session) {
-        if (hasAccessToExttable == null) {
-            hasAccessToExttable = PostgreUtils.isMetaObjectExists(session, "pg_exttable", "*");
-        }
+    boolean isHasAccessToExttable() {
         return hasAccessToExttable;
     }
 
     boolean isServerSupportFmterrtblColumn(@NotNull JDBCSession session) {
         if (supportsFmterrtblColumn == null) {
-            if (!isHasAccessToExttable(session)) {
+            if (!isHasAccessToExttable()) {
                 supportsFmterrtblColumn = false;
             } else {
                 supportsFmterrtblColumn = PostgreUtils.isMetaObjectExists(session, "pg_exttable", "fmterrtbl");
@@ -98,7 +99,7 @@ public class GreenplumDataSource extends PostgreDataSource {
         return supportsFmterrtblColumn;
     }
 
-    boolean isServerSupportRelstorageColumn(@NotNull JDBCSession session) {
+    boolean isServerSupportsRelstorageColumn(@NotNull JDBCSession session) {
         if (supportsRelstorageColumn == null) {
             supportsRelstorageColumn = PostgreUtils.isMetaObjectExists(session, "pg_class", "relstorage");
         }
@@ -107,7 +108,8 @@ public class GreenplumDataSource extends PostgreDataSource {
 
     @Association
     public boolean supportsExternalTables() {
-        // External tables turned into foreign tables from version 7
-        return !isGreenplumVersionAtLeast(7, 0);
+        // External tables turned into foreign tables from version 7.
+        // Let's check ability to use pg_exttable to show external tables correctly
+        return isHasAccessToExttable();
     }
 }

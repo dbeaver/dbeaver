@@ -453,4 +453,12 @@ public class CustomFormEditor {
     public boolean hasEditors() {
         return !editorMap.isEmpty();
     }
+
+    public void clearEditors() {
+        this.editorMap.clear();
+        if (curButtonsContainer != null) {
+            curButtonsContainer.dispose();
+            curButtonsContainer = null;
+        }
+    }
 }

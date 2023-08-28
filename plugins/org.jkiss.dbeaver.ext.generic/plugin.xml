@@ -1504,6 +1504,7 @@
                         category="Db2"
                         class="com.ibm.db2.jcc.DB2Driver"
                         sampleURL="jdbc:db2://{host}[:{port}]/{database}"
+                        supportedConfigurationTypes="MANUAL,URL"
                         defaultPort="50000"
                         webURL="https://www.ibm.com/software/data/db2/express/download.html"
                         description="DB2 LUW driver for older DB2 versions (8.x)">

@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model.auth;
 /**
  * Federated session
  */
-public interface SMSessionFederated extends SMSession {
+public interface SMSessionExternal extends SMSession {
 
 
 }
