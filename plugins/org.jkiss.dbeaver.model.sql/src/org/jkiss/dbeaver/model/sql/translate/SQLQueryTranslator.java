@@ -16,15 +16,11 @@
  */
 package org.jkiss.dbeaver.model.sql.translate;
 
-import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
-import net.sf.jsqlparser.statement.select.Fetch;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
@@ -45,8 +41,6 @@ import java.util.Locale;
  */
 public class SQLQueryTranslator implements SQLTranslator {
 
-    public static final String DIALECT_NAME_ORACLE = "oracle";
-    public static final String DIALECT_NAME_SQLSERVER = "sqlserver";
     @NotNull
     private SQLTranslateContext sqlTranslateContext;
 
@@ -94,10 +88,7 @@ public class SQLQueryTranslator implements SQLTranslator {
             sql.append(element.getText());
             sql.append(scriptDelimiter).append("\n");
         }
-        if (sql.length() > 0) {
-            sql.setLength(sql.length() - 1);
-        }
-        return SQLUtils.removeQueryDelimiter(targetDialect, sql.toString());
+        return sql.toString();
     }
 
     /**
@@ -143,7 +134,6 @@ public class SQLQueryTranslator implements SQLTranslator {
 
         boolean defChanged = false;
         SQLDialect targetDialect = sqlTranslateContext.getTargetDialect();
-        String dialectName = targetDialect.getDialectName().toLowerCase();
         if (statement instanceof CreateTable) {
             CreateTable createTable = (CreateTable) statement;
             SQLDialectDDLExtension extendedDialect = null;
@@ -166,7 +156,8 @@ public class SQLQueryTranslator implements SQLTranslator {
                         newDataType = (extendedDialect != null) ? extendedDialect.getBlobDataType() : "blob";
                         break;
                     case "TEXT":
-                        if (extendedDialect != null && isOracleOrSqlServerDialect(dialectName)) {
+                        String dialectName = targetDialect.getDialectName().toLowerCase();
+                        if (extendedDialect != null && (dialectName.equals("oracle") || dialectName.equals("sqlserver"))) {
                             newDataType = extendedDialect.getClobDataType();
                         }
                         break;
@@ -235,7 +226,10 @@ public class SQLQueryTranslator implements SQLTranslator {
                     }
                 }
             }
-            if (dialectName.equals(DIALECT_NAME_ORACLE) && !CommonUtils.isEmpty(createTable.getIndexes())) {
+            if (extendedDialect != null &&
+                !extendedDialect.supportsNoActionIndex() &&
+                !CommonUtils.isEmpty(createTable.getIndexes())
+            ) {
                 for (var index : createTable.getIndexes()) {
                     if (index instanceof ForeignKeyIndex) {
                         ForeignKeyIndex fkIndex = (ForeignKeyIndex) index;
@@ -245,29 +239,6 @@ public class SQLQueryTranslator implements SQLTranslator {
                             defChanged = true;
                         }
                     }
-                }
-            }
-        } else if (isOracleOrSqlServerDialect(dialectName) && statement instanceof Select) {
-            var body = ((Select) statement).getSelectBody();
-            if (body instanceof PlainSelect) {
-                var plSelect = (PlainSelect) body;
-                var limit = plSelect.getLimit();
-                if (limit != null) {
-                    var fetch = new Fetch();
-                    if (limit.getRowCount() instanceof JdbcParameter) {
-                        fetch.setFetchJdbcParameter((JdbcParameter) limit.getRowCount());
-                    } else if (limit.getRowCount() instanceof Number) {
-                        fetch.setRowCount(((Number) limit.getRowCount()).longValue());
-                    }
-                    plSelect.setFetch(fetch);
-                    plSelect.setLimit(null);
-                    defChanged = true;
-
-                }
-                var offset = plSelect.getOffset();
-                if (offset != null) {
-                    offset.setOffsetParam("ROWS");
-                    defChanged = true;
                 }
             }
         }
@@ -287,10 +258,6 @@ public class SQLQueryTranslator implements SQLTranslator {
             return Collections.singletonList(query);
         }
         return extraQueries;
-    }
-
-    private boolean isOracleOrSqlServerDialect(String dialectName) {
-        return dialectName.equals(DIALECT_NAME_ORACLE) || dialectName.equals(DIALECT_NAME_SQLSERVER);
     }
 
     /**

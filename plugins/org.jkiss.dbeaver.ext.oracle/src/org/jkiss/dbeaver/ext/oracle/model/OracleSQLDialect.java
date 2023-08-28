@@ -750,6 +750,11 @@ public class OracleSQLDialect extends JDBCSQLDialect
     }
 
     @Override
+    public boolean supportsNoActionIndex() {
+        return false;
+    }
+
+    @Override
     public boolean needsDefaultDataTypes() {
         return false;
     }

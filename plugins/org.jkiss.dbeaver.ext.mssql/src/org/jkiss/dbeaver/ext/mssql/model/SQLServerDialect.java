@@ -418,6 +418,11 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
     }
 
     @Override
+    public boolean supportsNoActionIndex() {
+        return true;
+    }
+
+    @Override
     public boolean needsDefaultDataTypes() {
         return false;
     }
