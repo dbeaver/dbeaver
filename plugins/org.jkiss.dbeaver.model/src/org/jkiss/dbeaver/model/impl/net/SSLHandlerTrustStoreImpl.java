@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
+import org.jkiss.dbeaver.model.impl.AbstractDataSource;
 import org.jkiss.dbeaver.model.impl.app.CertificateGenHelper;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -67,7 +68,7 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
     /**
      * Creates certificates and adds them into trust store
      */
-    public static void initializeTrustStore(DBRProgressMonitor monitor, DBPDataSource dataSource, DBWHandlerConfiguration sslConfig) throws DBException, IOException {
+    public static void initializeTrustStore(DBRProgressMonitor monitor, AbstractDataSource dataSource, DBWHandlerConfiguration sslConfig) throws DBException, IOException {
         final DBACertificateStorage securityManager = DBWorkbench.getPlatform().getCertificateStorage();
 
         final String selfSignedCert = sslConfig.getStringProperty(PROP_SSL_SELF_SIGNED_CERT);

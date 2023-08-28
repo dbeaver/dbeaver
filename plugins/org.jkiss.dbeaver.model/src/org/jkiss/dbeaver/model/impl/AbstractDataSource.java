@@ -23,8 +23,14 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DPIContainer;
 import org.jkiss.dbeaver.model.DPIElement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,6 +41,7 @@ public abstract class AbstractDataSource implements DBPDataSource, DBSObject {
     @NotNull
     protected final DBPDataSourceContainer container;
     private final Map<String, Object> contextAttributes = new LinkedHashMap<>();
+    protected List<Path> tempFiles;
 
     public AbstractDataSource(@NotNull DBPDataSourceContainer container) {
         this.container = container;
@@ -105,4 +112,30 @@ public abstract class AbstractDataSource implements DBPDataSource, DBSObject {
         contextAttributes.remove(attributeName);
     }
 
+    protected String saveCertificateToFile(String rootCertProp) throws IOException {
+        Path certPath = Files.createTempFile(
+            DBWorkbench.getPlatform().getCertificateStorage().getStorageFolder(),
+            getContainer().getDriver().getId() + "-" + getContainer().getId(),
+            ".cert");
+        Files.writeString(certPath, rootCertProp);
+        trackTempFile(certPath);
+        return certPath.toAbsolutePath().toString();
+    }
+
+    protected String saveTrustStoreToFile(byte[] trustStoreData) throws IOException {
+        Path trustStorePath = Files.createTempFile(
+            DBWorkbench.getPlatform().getCertificateStorage().getStorageFolder(),
+            getContainer().getDriver().getId() + "-" + getContainer().getId(),
+            ".jks");
+        Files.write(trustStorePath, trustStoreData);
+        trackTempFile(trustStorePath);
+        return trustStorePath.toAbsolutePath().toString();
+    }
+
+    public void trackTempFile(Path file) {
+        if (this.tempFiles == null) {
+            this.tempFiles = new ArrayList<>();
+        }
+        this.tempFiles.add(file);
+    }
 }
