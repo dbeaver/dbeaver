@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -337,13 +338,21 @@ public class PostgreDebugSession extends DBGJDBCSession {
                     JDBCCallableStatement statement = null;
                     try {
                         StringBuilder query = new StringBuilder();
-                        query.append("{ CALL ").append(function.getFullyQualifiedName(DBPEvaluationContext.DML)).append("(");
+                        if (function.getProcedureType() == DBSProcedureType.PROCEDURE) {
+                            query.append("{ CALL ");
+                        } else {
+                            query.append("SELECT ");
+                        }
+                        query.append(function.getFullyQualifiedName(DBPEvaluationContext.DML)).append("(");
                         for (int i = 0; i < parameters.size(); i++) {
                             if (i > 0) query.append(",");
                             String paramValue = paramValues.get(i);
                             query.append(paramValue);
                         }
-                        query.append(") }");
+                        query.append(")");
+                        if (function.getProcedureType() == DBSProcedureType.PROCEDURE) {
+                            query.append(" }");
+                        }
                         log.debug(String.format("Prepared local call %s", query));
                         statement = session.prepareCall(query.toString());
 
