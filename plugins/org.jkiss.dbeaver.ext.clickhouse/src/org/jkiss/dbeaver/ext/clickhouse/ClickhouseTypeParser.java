@@ -104,6 +104,11 @@ public class ClickhouseTypeParser {
         final var type = parser.type().anyType();
         final DBSDataType resolved;
 
+        if (parser.getNumberOfSyntaxErrors() > 0) {
+            log.debug("Rejecting invalid or unsupported type: " + typeName);
+            return null;
+        }
+
         if (type.simpleType() != null) {
             resolved = DBUtils.resolveDataType(monitor, dataSource, type.simpleType().getText());
         } else if (type.markerType() != null) {

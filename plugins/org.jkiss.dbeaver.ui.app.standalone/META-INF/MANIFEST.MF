@@ -5,8 +5,8 @@ Bundle-Name: DBeaver Application Standalone
 Bundle-SymbolicName: org.jkiss.dbeaver.ui.app.standalone;singleton:=true
 Bundle-Activator: org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator
 Bundle-ActivationPolicy: lazy
-Bundle-Version: 23.1.5.qualifier
-Bundle-Release-Date: 20230821
+Bundle-Version: 23.2.0.qualifier
+Bundle-Release-Date: 20230904
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: org.jkiss.dbeaver.ui.app.standalone,
  org.jkiss.dbeaver.ui.app.standalone.rpc,
