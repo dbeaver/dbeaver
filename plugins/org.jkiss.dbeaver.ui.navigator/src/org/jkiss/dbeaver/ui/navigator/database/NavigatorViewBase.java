@@ -20,9 +20,13 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.accessibility.Accessible;
+import org.eclipse.swt.accessibility.AccessibleAdapter;
+import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.part.ViewPart;
@@ -32,10 +36,14 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
@@ -43,6 +51,7 @@ import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
@@ -211,6 +220,8 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
             }
         });
 
+        addAccessibilityListener(navigatorTree);
+
         // Hook context menu
         NavigatorUtils.addContextMenu(this.getSite(), navigatorTree.getViewer());
         // Add drag and drop support
@@ -343,6 +354,75 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
 
     protected void redrawTree() {
         tree.getViewer().refresh();
+    }
+
+    private void addAccessibilityListener(@NotNull DatabaseNavigatorTree navigatorTree) {
+        Tree tree = navigatorTree.getViewer().getTree();
+        if (tree == null) {
+            return;
+        }
+        Accessible accessible = tree.getAccessible();
+        accessible.addAccessibleListener(new AccessibleAdapter() {
+            @Override
+            public void getName(AccessibleEvent e) {
+                TreeViewer viewer = navigatorTree.getViewer();
+                IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+                if (selection.size() > 1) {
+                    return;
+                }
+                Object firstElement = selection.getFirstElement();
+                if (firstElement instanceof DBNDataSource) {
+                    DBNDataSource dbnDataSource = (DBNDataSource) firstElement;
+                    DBPDataSourceContainer sourceContainer = dbnDataSource.getDataSourceContainer();
+                    e.result = UINavigatorMessages.navigator_view_base_acc_node_connection_name + dbnDataSource.getNodeName() + "." +
+                        (sourceContainer.isConnected() ? UINavigatorMessages.navigator_view_base_acc_node_connection_status_connected :
+                            UINavigatorMessages.navigator_view_base_acc_node_connection_status_disconnected +
+                            (CommonUtils.isNotEmpty(sourceContainer.getConnectionError()) ?
+                                UINavigatorMessages.navigator_view_base_acc_node_connection_last_error +
+                                    sourceContainer.getConnectionError() : ""));
+                } else if (firstElement instanceof DBNDatabaseFolder) {
+                    e.result = UINavigatorMessages.navigator_view_base_acc_node_folder + ((DBNDatabaseFolder) firstElement).getName();
+                } else if (firstElement instanceof DBNLocalFolder) {
+                    e.result = UINavigatorMessages.navigator_view_base_acc_node_connection_folder +
+                        ((DBNLocalFolder) firstElement).getName();
+                } else if (firstElement instanceof DBNDatabaseItem) {
+                    DBNDatabaseItem element = (DBNDatabaseItem) firstElement;
+                    DBSObject object = element.getObject();
+                    if (object != null) {
+                        String objectName = object.getName();
+                        if (object instanceof DBSView) {
+                            e.result = UINavigatorMessages.navigator_view_base_acc_node_view +
+                                ((DBSView) object).getFullyQualifiedName(DBPEvaluationContext.DDL);
+                        } else if (object instanceof DBSTable) {
+                            e.result = UINavigatorMessages.navigator_view_base_acc_node_table +
+                                ((DBSTable) object).getFullyQualifiedName(DBPEvaluationContext.DDL);
+                        } else if (object instanceof DBSSequence) {
+                            e.result = UINavigatorMessages.navigator_view_base_acc_node_sequence + objectName;
+                        } else if (object instanceof DBSTableColumn) {
+                            e.result = UINavigatorMessages.navigator_view_base_acc_node_column + objectName;
+                        } else if (object instanceof DBSEntityConstraint) {
+                            e.result = ((DBSEntityConstraint) object).getConstraintType().getLocalizedName() + objectName;
+                        } else if (object instanceof DBSProcedure) {
+                            e.result = ((DBSProcedure) object).getProcedureType().name() +
+                                ((DBSProcedure) object).getFullyQualifiedName(DBPEvaluationContext.DDL);
+                        } else if (object instanceof DBSTrigger) {
+                            e.result = UINavigatorMessages.navigator_view_base_acc_node_trigger + objectName;
+                        } else if (object instanceof DBSSchema) {
+                            e.result = UINavigatorMessages.navigator_view_base_acc_node_schema + objectName;
+                        } else if (object instanceof DBSCatalog) {
+                            e.result = UINavigatorMessages.navigator_view_base_acc_node_catalog + objectName;
+                        } else {
+                            e.result = UINavigatorMessages.navigator_view_base_acc_node_name + objectName;
+                        }
+                    }
+                } else if (firstElement instanceof DBNResource) {
+                    DBNResource element = (DBNResource) firstElement;
+                    e.result = element.getNodeType() + element.getNodeName();
+                } else if (firstElement instanceof DBNNode) {
+                    e.result = UINavigatorMessages.navigator_view_base_acc_node_name + ((DBNNode) firstElement).getNodeName();
+                }
+            }
+        });
     }
 
 }
