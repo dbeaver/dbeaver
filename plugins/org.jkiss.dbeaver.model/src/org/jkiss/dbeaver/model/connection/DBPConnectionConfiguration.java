@@ -80,7 +80,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     public static final String[][] INTERNAL_CONNECT_VARIABLES = ArrayUtils.concatArrays(
         CONNECT_VARIABLES,
         new String[][]{
-            {VARIABLE_PASSWORD, "database password (plain)"},
+            // {VARIABLE_PASSWORD, "database password (plain)"},  see dbeaver/pro#1861
         });
 
     private static final Log log = Log.getLog(DBPConnectionConfiguration.class);

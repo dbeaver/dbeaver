@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
+import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -34,6 +35,7 @@ import org.osgi.framework.Bundle;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Command line processing.
@@ -232,7 +234,15 @@ public class DBeaverCommandLine
 
     static CommandLine getCommandLine() {
         try {
-            return new DefaultParser().parse(ALL_OPTIONS, Platform.getApplicationArgs(), false);
+            List<String> applicationArgs = Arrays.stream(Platform.getApplicationArgs()).collect(Collectors.toList());
+            int index = applicationArgs.indexOf(CoreApplicationActivator.ARG_ECLIPSE_KEYRING);
+            if (index >= 0) {
+                applicationArgs.remove(index);
+                if (applicationArgs.size() > index) {
+                    applicationArgs.remove(index);
+                }
+            }
+            return new DefaultParser().parse(ALL_OPTIONS, applicationArgs.toArray(new String[0]), false);
         } catch (Exception e) {
             log.warn("Error parsing command line: " + e.getMessage());
             return null;

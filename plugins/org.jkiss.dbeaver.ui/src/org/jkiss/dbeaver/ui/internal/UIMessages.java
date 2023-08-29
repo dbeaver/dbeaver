@@ -107,6 +107,10 @@ public class UIMessages extends NLS {
 
     public static String utils_actions_copy_label;
     public static String utils_actions_copy_all_label;
+    public static String text_with_open_dialog_set_text;
+    public static String text_with_open_dialog_edit_text;
+    public static String text_with_open_dialog_browse;
+    public static String text_with_open_dialog_edit_file;
 
     static {
         // initialize resource bundle
