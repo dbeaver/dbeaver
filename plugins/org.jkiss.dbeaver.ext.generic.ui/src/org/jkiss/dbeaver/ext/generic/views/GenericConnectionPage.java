@@ -358,10 +358,13 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
     @Override
     public Image getImage() {
         DBPDriver driver = getSite().getDriver();
-        DBPImage iconBig = driver.getIconBig();
-        if (iconBig != null) {
+        DBPImage icon = driver.getLogoImage();
+        if (icon == null) {
+            icon = driver.getIconBig();
+        }
+        if (icon != null) {
             try {
-                Image image = DBeaverIcons.getImage(iconBig);
+                Image image = DBeaverIcons.getImage(icon);
                 if (image.getImageData().width >= 64) {
                     return image;
                 }
@@ -369,7 +372,6 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
                 log.error(e);
             }
         }
-
         return super.getImage();
     }
 
