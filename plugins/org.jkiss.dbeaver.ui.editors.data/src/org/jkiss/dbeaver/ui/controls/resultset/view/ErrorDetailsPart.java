@@ -92,21 +92,21 @@ class ErrorDetailsPart {
 			imageLabel.setLayoutData(gridData);
 		}
 
-		Text text = new Text(parent, SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
+        Text text = new Text(parent, SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
 		text.setBackground(bgColor);
 		text.setForeground(fgColor);
 
 		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		text.setText(reason.getMessage());
 
-		text.addListener(SWT.Resize, e -> {
-			final Point size = text.getSize();
-			if (size.y > 100) {
-				// Can't use the setSize here - will revalidate every time the parent is resized
-				((GridData) text.getLayoutData()).heightHint = 100;
-				parent.layout(true);
-			}
-		});
+        text.addListener(SWT.Resize, e -> {
+        	final Point size = text.getSize();
+        	if (size.y > 100) {
+        		// Can't use the setSize here - will revalidate every time the parent is resized
+        		((GridData) text.getLayoutData()).heightHint = 100;
+        		parent.layout(true);
+        	}
+        });
 
 		Composite buttonParent = new Composite(parent, SWT.NONE);
 		buttonParent.setBackground(parent.getBackground());
