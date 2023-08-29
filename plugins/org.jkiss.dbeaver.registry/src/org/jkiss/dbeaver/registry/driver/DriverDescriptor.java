@@ -87,8 +87,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
      * Initializes upon the initialization of the very first driver.
      */
     private static ClassLoader rootClassLoader;
-    private boolean advancedPropertiesRead;
-    private boolean origAdvancedPropertiesRead;
+    private boolean propagateDriverProperties;
+    private boolean origPropagateDriverProperties;
 
     public static class DriverFileInfo {
         private final String id;
@@ -295,7 +295,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.webURL = copyFrom.webURL;
             this.propertiesWebURL = copyFrom.webURL;
             this.embedded = copyFrom.embedded;
-            this.advancedPropertiesRead = copyFrom.advancedPropertiesRead;
+            this.propagateDriverProperties = copyFrom.propagateDriverProperties;
             this.singleConnection = copyFrom.singleConnection;
             this.clientRequired = copyFrom.clientRequired;
             this.supportsDriverProperties = copyFrom.supportsDriverProperties;
@@ -364,8 +364,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.singleConnection = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SINGLE_CONNECTION));
         this.origAnonymousAccess = this.anonymousAccess = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ANONYMOUS));
         this.origAllowsEmptyPassword = this.allowsEmptyPassword = CommonUtils.getBoolean("allowsEmptyPassword");
-        this.origAdvancedPropertiesRead = this.advancedPropertiesRead =
-            CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ADVANCED_PROPERTIES_READ));
+        this.origPropagateDriverProperties = this.propagateDriverProperties =
+            CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_PROPAGATE_DRIVER_PROPERTIES));
         this.licenseRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_LICENSE_REQUIRED));
         this.supportsDistributedMode = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE), true);
         this.deprecationReason = config.getAttribute(RegistryConstants.ATTR_DEPRECATED);
@@ -851,12 +851,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.embedded = embedded;
     }
 
-    public boolean isAdvancedPropertiesRead() {
-        return advancedPropertiesRead;
+    public boolean isPropagateDriverProperties() {
+        return propagateDriverProperties;
     }
 
-    public void setAdvancedPropertiesRead(boolean advancedPropertiesRead) {
-        this.advancedPropertiesRead = advancedPropertiesRead;
+    public void setPropagateDriverProperties(boolean propagateDriverProperties) {
+        this.propagateDriverProperties = propagateDriverProperties;
     }
 
     @Override
@@ -1648,8 +1648,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return origEmbedded;
     }
 
-    public boolean isOrigAdvancedPropertiesRead() {
-        return origAdvancedPropertiesRead;
+    public boolean isOrigPropagateDriverProperties() {
+        return origPropagateDriverProperties;
     }
 
     public boolean isOrigAnonymousAccess() {
