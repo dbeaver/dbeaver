@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DPIContainer;
 import org.jkiss.dbeaver.model.DPIElement;
 import org.jkiss.dbeaver.model.DPIFactory;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
@@ -43,13 +44,14 @@ import java.util.Map;
 public class DPIClientProxy implements DPIClientObject, InvocationHandler {
 
     public static final Object SELF_REFERENCE = new Object();
+    public static final Object NULL_VALUE = new Object();
 
     private final DPIContext context;
     private final String objectId;
     private final String objectType;
     private final String objectToString;
     private final Integer objectHashCode;
-    private transient Object objectInstance;
+    private final transient Object objectInstance;
     private Map<String, Object> objectContainers;
     private Map<String, Object> objectProperties;
     private Map<Class<?>, Object> factoryObjects;
@@ -85,6 +87,33 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
     @Override
     public String dpiObjectType() {
         return objectType;
+    }
+
+    @NotNull
+    @Override
+    public DBPPropertyDescriptor[] dpiObjectProperties() {
+        return new DBPPropertyDescriptor[0];
+    }
+
+    @Override
+    public Object dpiPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String propertyName) {
+        Object value = objectProperties == null ? null : objectProperties.get(propertyName);
+        if (value == NULL_VALUE) {
+            return null;
+        } else if (value != null) {
+            return value;
+        }
+        if (monitor == null) {
+            // Not read yet
+            return null;
+        }
+        // Read lazy property
+        return null;
+    }
+
+    @Override
+    public Object dpiObjectMethod(@Nullable DBRProgressMonitor monitor, @NotNull String methodName, @Nullable Object[] arguments) throws DBException {
+        return null;
     }
 
     public Object getObjectInstance() {
@@ -124,7 +153,7 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
                     if (container == SELF_REFERENCE) {
                         return objectInstance;
                     }
-                    return container;
+                    return unwrapObjectValue(container);
                 }
             }
         }
@@ -134,7 +163,7 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
         if (isElement && objectProperties != null) {
             Object result = objectProperties.get(getElementKey(method, args));
             if (result != null) {
-                return result;
+                return unwrapObjectValue(result);
             }
         }
 
@@ -142,7 +171,7 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
         if (propAnnotation != null && objectProperties != null) {
             Object result = objectProperties.get(getPropertyKey(method, propAnnotation));
             if (result != null) {
-                return result;
+                return unwrapObjectValue(result);
             }
         }
 
@@ -158,7 +187,7 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
                 if (factoryObjects != null) {
                     Object cachedResult = factoryObjects.get(dpiFactoryClass);
                     if (cachedResult != null) {
-                        return cachedResult;
+                        return unwrapObjectValue(cachedResult);
                     }
                 }
             }
@@ -180,26 +209,34 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
             if (objectProperties == null) {
                 objectProperties = new HashMap<>();
             }
-            objectProperties.put(getPropertyKey(method, propAnnotation), result);
+            objectProperties.put(getPropertyKey(method, propAnnotation), wrapObjectValue(result));
         } else if (dpiFactoryClass != null) {
             // Cache factory result
             if (factoryObjects == null) {
                 factoryObjects = new HashMap<>();
             }
-            factoryObjects.put(dpiFactoryClass, result);
+            factoryObjects.put(dpiFactoryClass, wrapObjectValue(result));
         } else if (isElement) {
             if (objectProperties == null) {
                 objectProperties = new HashMap<>();
             }
-            objectProperties.put(getElementKey(method, args), result);
+            objectProperties.put(getElementKey(method, args), wrapObjectValue(result));
         } else if (containerAnno != null) {
             if (objectContainers == null) {
                 objectContainers = new HashMap<>();
             }
-            objectContainers.put(method.getName(), result);
+            objectContainers.put(method.getName(), wrapObjectValue(result));
         }
 
         return result;
+    }
+
+    private static Object wrapObjectValue(Object result) {
+        return result == null ? NULL_VALUE : result;
+    }
+
+    private static Object unwrapObjectValue(Object result) {
+        return result == NULL_VALUE ? null : result;
     }
 
     private static String getPropertyKey(Method method, Property propAnnotation) {
