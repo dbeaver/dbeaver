@@ -952,6 +952,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             return object;
         }
         try {
+            if (object instanceof DPIClientObject) {
+                return ((DPIClientObject) object).dpiPropertyValue(monitor, meta.getPropertyName());
+            }
             Method getter = meta.getPropertyReadMethod(object.getClass());
             if (getter == null) {
                 log.warn("Can't find property '" + propertyName + "' read method in '" + object.getClass().getName() + "'");

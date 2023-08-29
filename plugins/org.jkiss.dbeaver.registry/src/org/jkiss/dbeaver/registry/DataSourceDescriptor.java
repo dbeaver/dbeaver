@@ -1607,7 +1607,7 @@ public class DataSourceDescriptor
         connectionInfo.setUserPassword(null);
         ObjectPropertyDescriptor.extractAnnotations(
                 null,
-                connectionInfo.getAuthModel().createCredentials().getClass(),
+                ObjectPropertyDescriptor.getObjectClass(connectionInfo.getAuthModel().createCredentials()),
                 (o, p) -> true,
                 null
             ).stream()

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.dpi.model.client;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.dpi.model.DPIContext;
 import org.jkiss.dbeaver.dpi.model.DPIController;
 import org.jkiss.dbeaver.dpi.model.DPISerializer;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.DPIContainer;
 import org.jkiss.dbeaver.model.DPIElement;
 import org.jkiss.dbeaver.model.DPIFactory;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
@@ -42,6 +44,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DPIClientProxy implements DPIClientObject, InvocationHandler {
+    private static final Log log = Log.getLog(DPIClientProxy.class);
 
     public static final Object SELF_REFERENCE = new Object();
     public static final Object NULL_VALUE = new Object();
@@ -53,7 +56,8 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
     private final Integer objectHashCode;
     private final transient Object objectInstance;
     private Map<String, Object> objectContainers;
-    private Map<String, Object> objectProperties;
+    private DBPPropertyDescriptor[] propertyDescriptors;
+    private Map<String, Object> propertyValues;
     private Map<Class<?>, Object> factoryObjects;
 
     public DPIClientProxy(
@@ -64,14 +68,14 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
         @Nullable String objectToString,
         @Nullable Integer objectHashCode,
         @Nullable Map<String, Object> objectContainers,
-        @Nullable Map<String, Object> objectProperties) {
+        @Nullable Map<String, Object> propertyValues) {
         this.context = context;
         this.objectId = objectId;
         this.objectType = objectType;
         this.objectToString = objectToString;
         this.objectHashCode = objectHashCode;
         this.objectContainers = objectContainers;
-        this.objectProperties = objectProperties;
+        this.propertyValues = propertyValues;
 
         this.objectInstance = Proxy.newProxyInstance(
             context.getClassLoader(),
@@ -89,15 +93,14 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
         return objectType;
     }
 
-    @NotNull
     @Override
-    public DBPPropertyDescriptor[] dpiObjectProperties() {
-        return new DBPPropertyDescriptor[0];
+    public ClassLoader dpiClassLoader() {
+        return context.getClassLoader();
     }
 
     @Override
-    public Object dpiPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String propertyName) {
-        Object value = objectProperties == null ? null : objectProperties.get(propertyName);
+    public Object dpiPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String propertyName) throws DBException {
+        Object value = propertyValues == null ? null : propertyValues.get(propertyName);
         if (value == NULL_VALUE) {
             return null;
         } else if (value != null) {
@@ -108,12 +111,34 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
             return null;
         }
         // Read lazy property
-        return null;
+        DPIController controller = context.getDpiController();
+        if (controller == null) {
+            throw new DBException("No DPI controller in client context");
+        }
+        if (controller instanceof RestProxy) {
+            // Try to get property class
+            try {
+                Type returnType = null;
+                Class<?> localClass = dpiClassLoader().loadClass(dpiObjectType());
+                Method getter = DBXTreeItem.findPropertyReadMethod(localClass, propertyName);
+                if (getter != null) {
+                    returnType = getter.getGenericReturnType();
+                }
+                ((RestProxy) controller).setNextCallResultType(returnType);
+            } catch (ClassNotFoundException e) {
+                log.debug("Cannot resolve local class '" + dpiObjectType() + "'");
+            }
+        }
+        Object propValue = controller.readProperty(this.objectId, propertyName);
+
+        cachePropertyValue(propertyName, wrapObjectValue(propValue));
+
+        return propValue;
     }
 
     @Override
     public Object dpiObjectMethod(@Nullable DBRProgressMonitor monitor, @NotNull String methodName, @Nullable Object[] arguments) throws DBException {
-        return null;
+        return invokeRemoteMethod(methodName, arguments, null);
     }
 
     public Object getObjectInstance() {
@@ -127,18 +152,26 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        String methodName = method.getName();
         if (method.getDeclaringClass() == Object.class) {
-            if (method.getName().equals("toString") && objectToString != null) {
+            if (methodName.equals("toString") && objectToString != null) {
                 return objectToString;
-            } else if (method.getName().equals("hashCode") && objectHashCode != null) {
+            } else if (methodName.equals("hashCode") && objectHashCode != null) {
                 return objectHashCode;
             }
             return BeanUtils.handleObjectMethod(proxy, method, args);
         } else if (method.getDeclaringClass() == DPIClientObject.class) {
-            if (method.getName().equals("dpiObjectId")) {
-                return dpiObjectId();
-            } else if (method.getName().equals("dpiObjectType")) {
-                return dpiObjectType();
+            switch (methodName) {
+                case "dpiObjectId":
+                    return dpiObjectId();
+                case "dpiObjectType":
+                    return dpiObjectType();
+                case "dpiClassLoader":
+                    return dpiClassLoader();
+                case "dpiPropertyValue":
+                    return dpiPropertyValue((DBRProgressMonitor) args[0], (String) args[1]);
+                case "dpiObjectMethod":
+                    return dpiObjectMethod((DBRProgressMonitor) args[0], (String) args[1], (Object[]) args[2]);
             }
             return null;
         }
@@ -148,7 +181,7 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
             if (containerAnno.root()) {
                 return context.getRootObject();
             } else if (objectContainers != null) {
-                Object container = objectContainers.get(method.getName());
+                Object container = objectContainers.get(methodName);
                 if (container != null) {
                     if (container == SELF_REFERENCE) {
                         return objectInstance;
@@ -160,16 +193,16 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
 
         boolean isElement = DPISerializer.getMethodAnno(method, DPIElement.class) != null ||
             method.getDeclaringClass().getAnnotation(DPIElement.class) != null;
-        if (isElement && objectProperties != null) {
-            Object result = objectProperties.get(getElementKey(method, args));
+        if (isElement && propertyValues != null) {
+            Object result = propertyValues.get(getElementKey(method, args));
             if (result != null) {
                 return unwrapObjectValue(result);
             }
         }
 
         Property propAnnotation = method.getAnnotation(Property.class);
-        if (propAnnotation != null && objectProperties != null) {
-            Object result = objectProperties.get(getPropertyKey(method, propAnnotation));
+        if (propAnnotation != null && propertyValues != null) {
+            Object result = propertyValues.get(getPropertyKey(method, propAnnotation));
             if (result != null) {
                 return unwrapObjectValue(result);
             }
@@ -192,24 +225,13 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
                 }
             }
         }
+        Type returnType = dpiFactoryClass != null ? dpiFactoryClass : method.getGenericReturnType();
 
-        DPIController controller = context.getDpiController();
-        if (controller == null) {
-            throw new DBException("No DPI controller in client context");
-        }
-
-        if (controller instanceof RestProxy) {
-            Type returnType = dpiFactoryClass != null ? dpiFactoryClass : method.getGenericReturnType();
-            ((RestProxy) controller).setNextCallResultType(returnType);
-        }
-        Object result = controller.callMethod(this.objectId, method.getName(), args);
+        Object result = invokeRemoteMethod(methodName, args, returnType);
 
         if (propAnnotation != null) {
             // Cache property value
-            if (objectProperties == null) {
-                objectProperties = new HashMap<>();
-            }
-            objectProperties.put(getPropertyKey(method, propAnnotation), wrapObjectValue(result));
+            cachePropertyValue(getPropertyKey(method, propAnnotation), wrapObjectValue(result));
         } else if (dpiFactoryClass != null) {
             // Cache factory result
             if (factoryObjects == null) {
@@ -217,18 +239,34 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
             }
             factoryObjects.put(dpiFactoryClass, wrapObjectValue(result));
         } else if (isElement) {
-            if (objectProperties == null) {
-                objectProperties = new HashMap<>();
-            }
-            objectProperties.put(getElementKey(method, args), wrapObjectValue(result));
+            cachePropertyValue(getElementKey(method, args), wrapObjectValue(result));
         } else if (containerAnno != null) {
             if (objectContainers == null) {
                 objectContainers = new HashMap<>();
             }
-            objectContainers.put(method.getName(), wrapObjectValue(result));
+            objectContainers.put(methodName, wrapObjectValue(result));
         }
 
         return result;
+    }
+
+    private void cachePropertyValue(String propertyName, Object value) {
+        if (propertyValues == null) {
+            propertyValues = new HashMap<>();
+        }
+        propertyValues.put(propertyName, value);
+    }
+
+    private Object invokeRemoteMethod(@NotNull String methodName, @Nullable Object[] args, @Nullable Type returnType) throws DBException {
+        DPIController controller = context.getDpiController();
+        if (controller == null) {
+            throw new DBException("No DPI controller in client context");
+        }
+
+        if (controller instanceof RestProxy) {
+            ((RestProxy) controller).setNextCallResultType(returnType);
+        }
+        return controller.callMethod(this.objectId, methodName, args);
     }
 
     private static Object wrapObjectValue(Object result) {

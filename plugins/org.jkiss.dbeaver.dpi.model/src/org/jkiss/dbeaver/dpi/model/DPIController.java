@@ -57,4 +57,10 @@ public interface DPIController extends AutoCloseable {
         @RequestParameter("object") @NotNull String objectId,
         @RequestParameter("method") @NotNull String method,
         @RequestParameter("args") @Nullable Object[] args) throws DBException;
+
+    @RequestMapping
+    Object readProperty(
+        @RequestParameter("object") @NotNull String objectId,
+        @RequestParameter("property") @NotNull String propertyName) throws DBException;
+
 }

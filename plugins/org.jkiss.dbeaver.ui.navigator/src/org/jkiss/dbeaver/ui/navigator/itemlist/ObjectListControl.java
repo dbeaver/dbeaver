@@ -402,19 +402,22 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 if (!CommonUtils.isEmpty(items)) {
                     for (OBJECT_TYPE item : items) {
                         Object object = getObjectValue(item);
-                        if (object != null && !classList.contains(object.getClass())) {
-                            // Remove all base classes if we have sub class
-                            // But keep interfaces because we may have multiple implementations of e.g. DBPNamedObject
-                            // and we need to show "Name" instead of particular name props
-                            for (int i = 0; i < classList.size(); i++) {
-                                Class<?> c = classList.get(i);
-                                if (!c.isInterface() && c.isAssignableFrom(object.getClass())) {
-                                    classList.remove(i);
-                                } else {
-                                    i++;
+                        if (object != null) {
+                            Class<?> theClass = ObjectPropertyDescriptor.getObjectClass(object);
+                            if (!classList.contains(theClass)) {
+                                // Remove all base classes if we have sub class
+                                // But keep interfaces because we may have multiple implementations of e.g. DBPNamedObject
+                                // and we need to show "Name" instead of particular name props
+                                for (int i = 0; i < classList.size(); i++) {
+                                    Class<?> c = classList.get(i);
+                                    if (!c.isInterface() && c.isAssignableFrom(theClass)) {
+                                        classList.remove(i);
+                                    } else {
+                                        i++;
+                                    }
                                 }
+                                classList.add(theClass);
                             }
-                            classList.add(object.getClass());
                         }
                         if (isTree) {
                             Map<OBJECT_TYPE, Boolean> collectedSet = new IdentityHashMap<>();

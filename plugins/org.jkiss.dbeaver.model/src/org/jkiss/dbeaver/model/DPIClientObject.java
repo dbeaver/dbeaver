@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public interface DPIClientObject {
@@ -28,8 +27,7 @@ public interface DPIClientObject {
 
     String dpiObjectType();
 
-    @NotNull
-    DBPPropertyDescriptor[] dpiObjectProperties();
+    ClassLoader dpiClassLoader();
 
     Object dpiPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String propertyName)
         throws DBException;
