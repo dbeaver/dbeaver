@@ -435,7 +435,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
 
             IFile file = EditorUtils.getFileFromInput(input);
-            if (file != null) {
+            if (file != null && dataSourceContainer != null) {
                 DBNUtils.refreshNavigatorResource(dataSourceContainer.getProject(), file, container);
             } else {
                 // FIXME: this is a hack. We can't fire event on resource change so editor's state won't be updated in UI.
