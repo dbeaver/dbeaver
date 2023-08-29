@@ -30,47 +30,47 @@ import org.eclipse.swt.graphics.Point;
 final class SQLVariableCompletionProposal implements ICompletionProposal, ICompletionProposalExtension2 {
 
     private TemplateVariable variable;
-	/** The string to be displayed in the completion proposal popup */
-	private String displayString;
-	/** The replacement string */
-	private String replacementString;
-	/** The replacement position. */
-	private Position replacementPosition;
-	/** The cursor position after this proposal has been applied */
-	private int cursorPosition;
-	/** The image to be displayed in the completion proposal popup */
-	private Image image;
-	/** The context information of this proposal */
-	private IContextInformation contextInformation;
-	/** The additional info of this proposal */
-	private String additionalProposalInfo;
+    /** The string to be displayed in the completion proposal popup */
+    private String displayString;
+    /** The replacement string */
+    private String replacementString;
+    /** The replacement position. */
+    private Position replacementPosition;
+    /** The cursor position after this proposal has been applied */
+    private int cursorPosition;
+    /** The image to be displayed in the completion proposal popup */
+    private Image image;
+    /** The context information of this proposal */
+    private IContextInformation contextInformation;
+    /** The additional info of this proposal */
+    private String additionalProposalInfo;
 
     public SQLVariableCompletionProposal(TemplateVariable variable, String replacementString, Position replacementPosition, int cursorPosition) {
-		this(variable, replacementString, replacementPosition, cursorPosition, null, null, null, null);
-	}
+        this(variable, replacementString, replacementPosition, cursorPosition, null, null, null, null);
+    }
 
-	public SQLVariableCompletionProposal(TemplateVariable variable, String replacementString, Position replacementPosition, int cursorPosition, Image image, String displayString, IContextInformation contextInformation, String additionalProposalInfo) {
-		Assert.isNotNull(replacementString);
-		Assert.isTrue(replacementPosition != null);
+    public SQLVariableCompletionProposal(TemplateVariable variable, String replacementString, Position replacementPosition, int cursorPosition, Image image, String displayString, IContextInformation contextInformation, String additionalProposalInfo) {
+        Assert.isNotNull(replacementString);
+        Assert.isTrue(replacementPosition != null);
         this.variable = variable;
-		this.replacementString = replacementString;
-		this.replacementPosition = replacementPosition;
-		this.cursorPosition = cursorPosition;
-		this.image = image;
-		this.displayString = displayString;
-		this.contextInformation = contextInformation;
-		this.additionalProposalInfo = additionalProposalInfo;
-	}
+        this.replacementString = replacementString;
+        this.replacementPosition = replacementPosition;
+        this.cursorPosition = cursorPosition;
+        this.image = image;
+        this.displayString = displayString;
+        this.contextInformation = contextInformation;
+        this.additionalProposalInfo = additionalProposalInfo;
+    }
 
-	/*
-	 * @see ICompletionProposal#apply(IDocument)
-	 */
-	public void apply(IDocument document) {
-		try {
-			document.replace(replacementPosition.getOffset(), replacementPosition.getLength(), replacementString);
-		} catch (BadLocationException x) {
-			// ignore
-		}
+    /*
+     * @see ICompletionProposal#apply(IDocument)
+     */
+    public void apply(IDocument document) {
+        try {
+            document.replace(replacementPosition.getOffset(), replacementPosition.getLength(), replacementString);
+        } catch (BadLocationException x) {
+            // ignore
+        }
         // Reset variable settings
         if (variable instanceof SQLVariable) {
             SQLVariable sqlVariable = (SQLVariable) variable;
@@ -90,47 +90,47 @@ final class SQLVariableCompletionProposal implements ICompletionProposal, ICompl
         }
     }
 
-	public Point getSelection(IDocument document) {
-		return new Point(replacementPosition.getOffset() + cursorPosition, 0);
-	}
+    public Point getSelection(IDocument document) {
+        return new Point(replacementPosition.getOffset() + cursorPosition, 0);
+    }
 
-	public IContextInformation getContextInformation() {
-		return contextInformation;
-	}
+    public IContextInformation getContextInformation() {
+        return contextInformation;
+    }
 
-	public Image getImage() {
-		return image;
-	}
+    public Image getImage() {
+        return image;
+    }
 
-	public String getDisplayString() {
-		if (displayString != null)
-			return displayString;
-		return replacementString;
-	}
+    public String getDisplayString() {
+        if (displayString != null)
+            return displayString;
+        return replacementString;
+    }
 
-	public String getAdditionalProposalInfo() {
-		return additionalProposalInfo;
-	}
+    public String getAdditionalProposalInfo() {
+        return additionalProposalInfo;
+    }
 
-	public void apply(ITextViewer viewer, char trigger, int stateMask, int offset) {
-		apply(viewer.getDocument());
-	}
+    public void apply(ITextViewer viewer, char trigger, int stateMask, int offset) {
+        apply(viewer.getDocument());
+    }
 
-	public void selected(ITextViewer viewer, boolean smartToggle) {
-	}
+    public void selected(ITextViewer viewer, boolean smartToggle) {
+    }
 
-	public void unselected(ITextViewer viewer) {
-	}
+    public void unselected(ITextViewer viewer) {
+    }
 
-	public boolean validate(IDocument document, int offset, DocumentEvent event) {
-		try {
-			String content= document.get(replacementPosition.getOffset(), offset - replacementPosition.getOffset());
-			if (replacementString.startsWith(content))
-				return true;
-		} catch (BadLocationException e) {
-			// ignore concurrently modified document
-		}
-		return false;
-	}
+    public boolean validate(IDocument document, int offset, DocumentEvent event) {
+        try {
+            String content= document.get(replacementPosition.getOffset(), offset - replacementPosition.getOffset());
+            if (replacementString.startsWith(content))
+                return true;
+        } catch (BadLocationException e) {
+            // ignore concurrently modified document
+        }
+        return false;
+    }
 
 }

@@ -19,17 +19,17 @@ package org.jkiss.dbeaver.model.net.ssh;
 import org.eclipse.osgi.util.NLS;
 
 public class JSCHUIMessages extends NLS {
-	static final String BUNDLE_NAME = "org.jkiss.dbeaver.model.net.ssh.JSCHUIMessages"; //$NON-NLS-1$
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.model.net.ssh.JSCHUIMessages"; //$NON-NLS-1$
 
-	public static String ssh_file_corrupted_dialog_title;
-	public static String ssh_file_corrupted_dialog_message;
+    public static String ssh_file_corrupted_dialog_title;
+    public static String ssh_file_corrupted_dialog_message;
 
 
-	static {
-		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, JSCHUIMessages.class);
-	}
+    static {
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, JSCHUIMessages.class);
+    }
 
-	private JSCHUIMessages() {
-	}
+    private JSCHUIMessages() {
+    }
 }

@@ -218,7 +218,7 @@ public class ActionHistory {
         if (actionList != null) {
             for (Object[] tuple : actionList) {
                 @SuppressWarnings("unchecked")
-				List<Range> ranges = (List<Range>) tuple[1];
+                List<Range> ranges = (List<Range>) tuple[1];
                 disposeRanges(ranges);
             }
             actionList = null;

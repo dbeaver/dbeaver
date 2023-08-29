@@ -22,14 +22,14 @@ package org.jkiss.dbeaver.model.text.parser;
  */
 public interface TPTokenType {
 
-	/**
-	 * See TPTokenAbstract.T_ constants
-	 */
-	int getTokenType();
+    /**
+     * See TPTokenAbstract.T_ constants
+     */
+    int getTokenType();
 
-	/**
-	 * Usually some color ID associated with this type
-	 */
-	String getTypeId();
+    /**
+     * Usually some color ID associated with this type
+     */
+    String getTypeId();
 
 }

@@ -53,9 +53,9 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
     private ScriptsImportWizardPage pageMain;
 
     public ScriptsImportWizard() {
-	}
+    }
 
-	@Override
+    @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(CoreMessages.dialog_scripts_import_wizard_window_title);
         setNeedsProgressMonitor(true);
@@ -69,8 +69,8 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
         //addPage(new ProjectImportWizardPageFinal(data));
     }
 
-	@Override
-	public boolean performFinish() {
+    @Override
+    public boolean performFinish() {
         final ScriptsImportData importData = pageMain.getImportData();
         final ScriptsImporter importer = new ScriptsImporter(importData);
         try {
@@ -93,7 +93,7 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
             UIUtils.showMessageBox(getShell(), CoreMessages.dialog_scripts_import_wizard_dialog_message_title, importer.getImportedCount() + CoreMessages.dialog_scripts_import_wizard_dialog_message_success_imported, SWT.ICON_INFORMATION);
             return true;
         }
-	}
+    }
 
     private int importScripts(DBRProgressMonitor monitor, ScriptsImportData importData) throws IOException, CoreException
     {
@@ -115,7 +115,7 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
         final IProgressMonitor nullMonitor = new NullProgressMonitor();
         // Import scripts
         int imported = filesToImport.size();
-		monitor.beginTask(CoreMessages.dialog_scripts_import_wizard_monitor_import_scripts, imported);
+        monitor.beginTask(CoreMessages.dialog_scripts_import_wizard_monitor_import_scripts, imported);
         for (File file : filesToImport) {
             // Create dirs
             monitor.subTask(file.getName());
@@ -144,15 +144,15 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
             final IFile targetFile = targetDir.getFile(targetName);
             
             if (targetFile.exists()) {
-				if (importData.isOverwriteFiles()) {
-	                log.warn("Overwriting file '" + targetFile.getFullPath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-					targetFile.delete(true, true, RuntimeUtils.getNestedMonitor(monitor));
-				} else {
-	                log.warn("File '" + targetFile.getFullPath() + "' already exists - skipped"); //$NON-NLS-1$ //$NON-NLS-2$
-	                imported--;
-					continue;
-				}
-			}
+                if (importData.isOverwriteFiles()) {
+                    log.warn("Overwriting file '" + targetFile.getFullPath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+                    targetFile.delete(true, true, RuntimeUtils.getNestedMonitor(monitor));
+                } else {
+                    log.warn("File '" + targetFile.getFullPath() + "' already exists - skipped"); //$NON-NLS-1$ //$NON-NLS-2$
+                    imported--;
+                    continue;
+                }
+            }
             // Copy file
             try (FileInputStream in = new FileInputStream(file)) {
                 targetFile.create(in, true, nullMonitor);
@@ -174,9 +174,9 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
         File[] listFiles = inputDir.listFiles();
         if (listFiles == null) {
         	//!inputDir.exists()
-			return;
-		}
-		for (File file : listFiles) {
+            return;
+        }
+        for (File file : listFiles) {
             if (file.isDirectory()) {
                 collectFiles(file, masks, filesToImport);
             } else {

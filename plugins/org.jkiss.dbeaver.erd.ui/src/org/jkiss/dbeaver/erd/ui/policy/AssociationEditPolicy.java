@@ -29,10 +29,10 @@ import org.jkiss.dbeaver.erd.ui.part.AssociationPart;
 public class AssociationEditPolicy extends ComponentEditPolicy
 {
 
-	@Override
+    @Override
     protected Command createDeleteCommand(GroupRequest request)
-	{
-		return new AssociationDeleteCommand((AssociationPart)getHost());
-	}
-	
+    {
+        return new AssociationDeleteCommand((AssociationPart)getHost());
+    }
+    
 }

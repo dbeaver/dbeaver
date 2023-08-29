@@ -31,23 +31,23 @@ import org.locationtech.jts.geom.Geometry;
 import java.sql.SQLException;
 
 public class ExasolGeometryValueHandler extends GISGeometryValueHandler {
-	
-	@Override
-	protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index)
-			throws DBCException, SQLException {
-		return resultSet.getString(index);
-	}	
+
+    @Override
+    protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index)
+            throws DBCException, SQLException {
+        return resultSet.getString(index);
+    }
 
     protected void bindGeometryParameter(@NotNull JDBCSession session, @NotNull JDBCPreparedStatement statement, int paramIndex, @NotNull Geometry value) throws SQLException {
         statement.setString(paramIndex, value.toString()); // Just convert to string for Exasol (doesn't work with bytes)
     }
 
-	@NotNull
-	@Override
-	public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
-		if (value instanceof DBGeometry && format == DBDDisplayFormat.NATIVE) {
-			return value.toString();
-		}
-		return super.getValueDisplayString(column, value, format);
-	}
+    @NotNull
+    @Override
+    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
+        if (value instanceof DBGeometry && format == DBDDisplayFormat.NATIVE) {
+            return value.toString();
+        }
+        return super.getValueDisplayString(column, value, format);
+    }
 }

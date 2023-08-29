@@ -47,77 +47,77 @@ public class PostgreLock implements DBAServerLock {
      }
 
     @Property(viewable = true, order = 1)
-	public int getWait_pid() {
-		return wait_pid;
-	}
+    public int getWait_pid() {
+        return wait_pid;
+    }
 
     @Property(viewable = true, order = 2)
-	public String getWait_user() {
-		return wait_user;
-	}
+    public String getWait_user() {
+        return wait_user;
+    }
 
     @Property(viewable = true, order = 3)
-	public int getHold_pid() {
-		return hold_pid;
-	}
+    public int getHold_pid() {
+        return hold_pid;
+    }
 
     @Property(viewable = true, order = 4)
-	public String getHold_user() {
-		return hold_user;
-	}
+    public String getHold_user() {
+        return hold_user;
+    }
 
     @Property(viewable = true, order = 5)
-	public String getWait_statement() {
-		return wait_statement;
-	}
+    public String getWait_statement() {
+        return wait_statement;
+    }
 
     @Property(viewable = true, order = 6)
-	public String getStatement_in() {
-		return statement_in;
-	}
+    public String getStatement_in() {
+        return statement_in;
+    }
 
     
     
-	@Override
-	public String getTitle() {		
-		return String.valueOf(wait_pid);
-	}
+    @Override
+    public String getTitle() {
+        return String.valueOf(wait_pid);
+    }
 
-	@Override
-	public DBAServerLock getHoldBy() {
-		
-		return hold;
-	}
+    @Override
+    public DBAServerLock getHoldBy() {
 
-	public DBAServerLock getHold() {
-		return hold;
-	}
+        return hold;
+    }
 
-	@Override
-	public Integer getId() {
-		return wait_pid;
-	}
+    public DBAServerLock getHold() {
+        return hold;
+    }
+
+    @Override
+    public Integer getId() {
+        return wait_pid;
+    }
 
 
-	@Override
-	public List<DBAServerLock> waitThis() {
-		return this.waiters;
-	}
+    @Override
+    public List<DBAServerLock> waitThis() {
+        return this.waiters;
+    }
 
-	@Override
-	public Integer getHoldID() {
-		return hold_pid;
-	}
+    @Override
+    public Integer getHoldID() {
+        return hold_pid;
+    }
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public void setHoldBy(DBAServerLock lock) {
-		this.hold = lock;
-	}
+    @SuppressWarnings("unchecked")
+    @Override
+    public void setHoldBy(DBAServerLock lock) {
+        this.hold = lock;
+    }
 
-	@Override
-	public String toString() {
-		return String.format("Wait - %d (%s) Hold - %d (%s)", wait_pid,wait_user,hold_pid,hold_user);
-	}
+    @Override
+    public String toString() {
+        return String.format("Wait - %d (%s) Hold - %d (%s)", wait_pid,wait_user,hold_pid,hold_user);
+    }
 
 }

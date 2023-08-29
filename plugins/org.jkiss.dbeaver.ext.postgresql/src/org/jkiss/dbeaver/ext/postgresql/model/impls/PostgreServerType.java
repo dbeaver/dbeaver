@@ -76,7 +76,7 @@ public class PostgreServerType extends AbstractDescriptor {
     }
     
     public boolean isCloudServer() {
-	    return cloudServer;
+        return cloudServer;
     }
 
     public boolean supportsClient() {
@@ -84,7 +84,7 @@ public class PostgreServerType extends AbstractDescriptor {
     }
 
     public boolean needsPort() {
-	return needsPort;
+    return needsPort;
     }
 
     public boolean turnOffPreparedStatements() {

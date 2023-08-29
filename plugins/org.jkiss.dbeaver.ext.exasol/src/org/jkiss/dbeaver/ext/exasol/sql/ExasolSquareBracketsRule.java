@@ -31,13 +31,13 @@ import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 public class ExasolSquareBracketsRule implements TPPredicateRule {
     private final boolean partitionRule;
     private final TPToken stringToken, delimiterToken;
-	
+    
 
     public ExasolSquareBracketsRule(DBPDataSourceContainer dataSource, boolean partitionRule) {
         this.stringToken = new TPTokenDefault(SQLTokenType.T_STRING);
         this.delimiterToken = new SQLBlockToggleToken();
         this.partitionRule = partitionRule;
-	}
+    }
     
     @Override
     public TPToken evaluate(TPCharacterScanner scanner) {

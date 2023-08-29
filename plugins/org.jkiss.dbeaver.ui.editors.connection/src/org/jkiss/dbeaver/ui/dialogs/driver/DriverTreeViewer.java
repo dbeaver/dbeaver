@@ -341,9 +341,9 @@ public class DriverTreeViewer extends TreeViewer {
             }
             DBPImage defImage = DBIcon.TREE_PAGE;
             DBPImage icon = null;
-			if (obj instanceof DataSourceProviderDescriptor) {
+            if (obj instanceof DataSourceProviderDescriptor) {
                 icon = ((DataSourceProviderDescriptor) obj).getIcon();
-			    defImage = DBIcon.TREE_FOLDER;
+                defImage = DBIcon.TREE_FOLDER;
             } else if (obj instanceof DriverCategory) {
                 icon = ((DriverCategory)obj).getImage();
             } else if (obj instanceof DriverDescriptor) {

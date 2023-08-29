@@ -27,102 +27,102 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
 public class ExasolTablePartitionColumn extends AbstractTableIndexColumn {
 
-	
-	private ExasolTable table;
-	private int ordinalPosition;
-	private ExasolTableColumn tableColumn;
-	private static final Log log = Log.getLog(ExasolTablePartitionColumn.class);
-	
-	
-	public ExasolTablePartitionColumn(ExasolTable table, ExasolTableColumn tableColumn, int ordinalPosition)
-	{
-		this.table = table;
-		this.tableColumn = tableColumn;
-		this.ordinalPosition = ordinalPosition;
-	}
-	
-	public ExasolTablePartitionColumn(ExasolTable table) {
-		this.table = table;
-	}
-	
-	public ExasolTable getTable() {
-		return table;
-	}
-	
-	@Override
-	@Property(viewable = false)
-	public DBSTableIndex getIndex() {
-		return null;
-	}
-	
-	@Override
+
+    private ExasolTable table;
+    private int ordinalPosition;
+    private ExasolTableColumn tableColumn;
+    private static final Log log = Log.getLog(ExasolTablePartitionColumn.class);
+
+
+    public ExasolTablePartitionColumn(ExasolTable table, ExasolTableColumn tableColumn, int ordinalPosition)
+    {
+        this.table = table;
+        this.tableColumn = tableColumn;
+        this.ordinalPosition = ordinalPosition;
+    }
+
+    public ExasolTablePartitionColumn(ExasolTable table) {
+        this.table = table;
+    }
+
+    public ExasolTable getTable() {
+        return table;
+    }
+
+    @Override
+    @Property(viewable = false)
+    public DBSTableIndex getIndex() {
+        return null;
+    }
+
+    @Override
     @Property(viewable = true, updatable=true, editable=true, order = 2)
-	public int getOrdinalPosition() {
-		return ordinalPosition;
-	}
-	
-	public void setOrdinalPosition(int ordinalPosition) {
-		this.ordinalPosition = ordinalPosition;
-	}
+    public int getOrdinalPosition() {
+        return ordinalPosition;
+    }
 
-	@Override
+    public void setOrdinalPosition(int ordinalPosition) {
+        this.ordinalPosition = ordinalPosition;
+    }
+
+    @Override
     @Property(viewable = false)
-	public boolean isAscending() {
-		return false;
-	}
+    public boolean isAscending() {
+        return false;
+    }
 
-	@Override
+    @Override
     @Property(viewable = true, editable = true, order = 1, listProvider = TableColumListProvider.class)
-	public ExasolTableColumn getTableColumn() {
-		return tableColumn;
-	}
-	
-	public void setTableColumn(ExasolTableColumn tableColumn) {
-		if (tableColumn == null) {
-			throw new IllegalArgumentException();
-		}
-		this.tableColumn = tableColumn;
-	}
+    public ExasolTableColumn getTableColumn() {
+        return tableColumn;
+    }
 
-	@Override
+    public void setTableColumn(ExasolTableColumn tableColumn) {
+        if (tableColumn == null) {
+            throw new IllegalArgumentException();
+        }
+        this.tableColumn = tableColumn;
+    }
+
+    @Override
     @Property(viewable = false)
-	public String getDescription() {
-		return tableColumn.getDescription();
-	}
+    public String getDescription() {
+        return tableColumn.getDescription();
+    }
 
-	@Override
-	public ExasolTable getParentObject() {
-		return this.table;
-	}
+    @Override
+    public ExasolTable getParentObject() {
+        return this.table;
+    }
 
-	@Override
-	public ExasolDataSource getDataSource() {
-		return table.getDataSource();
-	}
+    @Override
+    public ExasolDataSource getDataSource() {
+        return table.getDataSource();
+    }
 
-	@Override
+    @Override
     @Property(viewable = false)
-	public String getName() {
-		return tableColumn.getName();
-	}
-	
-	public static class TableColumListProvider implements IPropertyValueListProvider<ExasolTablePartitionColumn> {
+    public String getName() {
+        return tableColumn.getName();
+    }
 
-		@Override
-		public boolean allowCustomValue() {
-			return true;
-		}
+    public static class TableColumListProvider implements IPropertyValueListProvider<ExasolTablePartitionColumn> {
 
-		@Override
-		public Object[] getPossibleValues(ExasolTablePartitionColumn object) {
-			try {
-				return ((ExasolTable) object.getTable()).getAvailableColumns(new VoidProgressMonitor()).toArray();
-			} catch (DBException e) {
-				log.error("Failed to get list of available columns",e);
-				return new Object[0];
-			}
-		}
-		
-	}
+        @Override
+        public boolean allowCustomValue() {
+            return true;
+        }
+
+        @Override
+        public Object[] getPossibleValues(ExasolTablePartitionColumn object) {
+            try {
+                return ((ExasolTable) object.getTable()).getAvailableColumns(new VoidProgressMonitor()).toArray();
+            } catch (DBException e) {
+                log.error("Failed to get list of available columns",e);
+                return new Object[0];
+            }
+        }
+
+    }
 
 }

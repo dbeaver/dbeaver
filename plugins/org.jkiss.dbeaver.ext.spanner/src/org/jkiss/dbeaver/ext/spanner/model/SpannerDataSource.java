@@ -38,23 +38,23 @@ public class SpannerDataSource extends GenericDataSource {
     }
 
     @Override
-	protected String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
-		String url = super.getConnectionURL(connectionInfo);
-		if (url != null && url.startsWith("jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s")) {
-			// Official driver.
-			return String.format(url, connectionInfo.getServerName(), connectionInfo.getHostName(), connectionInfo.getDatabaseName());
-		}
-		return url;
-	}
+    protected String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
+        String url = super.getConnectionURL(connectionInfo);
+        if (url != null && url.startsWith("jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s")) {
+            // Official driver.
+            return String.format(url, connectionInfo.getServerName(), connectionInfo.getHostName(), connectionInfo.getDatabaseName());
+        }
+        return url;
+    }
 
     @Override
     protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         Map<String, String> props = new HashMap<>();
         if (driver.getId().equals(SpannerDataSourceProvider.COMMUNITY_DRIVER_ID)) {
-	        props.put(SpannerConstants.DRIVER_PROP_PROJECT_ID, connectionInfo.getServerName());
-	        props.put(SpannerConstants.DRIVER_PROP_INSTANCE_ID, connectionInfo.getHostName());
-	        props.put(SpannerConstants.DRIVER_PROP_DATABASE_ID, connectionInfo.getDatabaseName());
-	        props.put(SpannerConstants.DRIVER_PROP_PVTKEYPATH, connectionInfo.getProviderProperty(SpannerConstants.DRIVER_PROP_PVTKEYPATH));
+            props.put(SpannerConstants.DRIVER_PROP_PROJECT_ID, connectionInfo.getServerName());
+            props.put(SpannerConstants.DRIVER_PROP_INSTANCE_ID, connectionInfo.getHostName());
+            props.put(SpannerConstants.DRIVER_PROP_DATABASE_ID, connectionInfo.getDatabaseName());
+            props.put(SpannerConstants.DRIVER_PROP_PVTKEYPATH, connectionInfo.getProviderProperty(SpannerConstants.DRIVER_PROP_PVTKEYPATH));
         } else if (connectionInfo.getProviderProperty(SpannerConstants.DRIVER_PROP_PVTKEYPATH) != null) {
             props.put(SpannerConstants.DRIVER_PROP_CREDENTIALS_FILE, connectionInfo.getProviderProperty(SpannerConstants.DRIVER_PROP_PVTKEYPATH));
         }

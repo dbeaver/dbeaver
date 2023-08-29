@@ -29,16 +29,16 @@ import org.eclipse.gef.requests.CreationFactory;
 public class DataEditDropTargetListener extends TemplateTransferDropTargetListener
 {
 
-	public DataEditDropTargetListener(EditPartViewer viewer)
-	{
-		super(viewer);
-	}
+    public DataEditDropTargetListener(EditPartViewer viewer)
+    {
+        super(viewer);
+    }
 
-	@Override
+    @Override
     protected CreationFactory getFactory(Object template)
-	{
-		return new DataElementFactory(template);
-	}
+    {
+        return new DataElementFactory(template);
+    }
 
 }
 

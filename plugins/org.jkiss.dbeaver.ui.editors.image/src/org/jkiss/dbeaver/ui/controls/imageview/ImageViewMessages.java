@@ -19,19 +19,19 @@ package org.jkiss.dbeaver.ui.controls.imageview;
 import org.eclipse.osgi.util.NLS;
 
 public class ImageViewMessages extends NLS {
-	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.controls.imageview.ImageViewMessages"; //$NON-NLS-1$
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.controls.imageview.ImageViewMessages"; //$NON-NLS-1$
 
-	public static String controls_imageview_fit_window;
-	public static String controls_imageview_original_size;
-	public static String controls_imageview_rotate;
-	public static String controls_imageview_zoom_in;
-	public static String controls_imageview_zoom_out;
+    public static String controls_imageview_fit_window;
+    public static String controls_imageview_original_size;
+    public static String controls_imageview_rotate;
+    public static String controls_imageview_zoom_in;
+    public static String controls_imageview_zoom_out;
 
-	static {
-		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, ImageViewMessages.class);
-	}
+    static {
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, ImageViewMessages.class);
+    }
 
-	private ImageViewMessages() {
-	}
+    private ImageViewMessages() {
+    }
 }

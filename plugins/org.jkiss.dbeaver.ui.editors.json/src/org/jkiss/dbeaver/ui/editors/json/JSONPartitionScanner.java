@@ -20,17 +20,17 @@ import org.eclipse.jface.text.rules.*;
 
 
 public class JSONPartitionScanner extends RuleBasedPartitionScanner {
-	public static final String JSON_PARTITIONING= "__json_partitioning"; //$NON-NLS-1$
-	public final static String JSON_STRING = "__json_string"; //$NON-NLS-1$
+    public static final String JSON_PARTITIONING= "__json_partitioning"; //$NON-NLS-1$
+    public final static String JSON_STRING = "__json_string"; //$NON-NLS-1$
 
-	public JSONPartitionScanner() {
-		IToken jsonStringToken = new Token(JSONPartitionScanner.JSON_STRING);
+    public JSONPartitionScanner() {
+        IToken jsonStringToken = new Token(JSONPartitionScanner.JSON_STRING);
 
-		IPredicateRule[] rules = new IPredicateRule[1];
+        IPredicateRule[] rules = new IPredicateRule[1];
 
-		rules[0] = new MultiLineRule("\"", "\"", jsonStringToken, '\\'); //$NON-NLS-2$ //$NON-NLS-1$
-		//rules[0] = new MultiLineRule("'", "'", jsonString, '\\'); //$NON-NLS-2$ //$NON-NLS-1$
+        rules[0] = new MultiLineRule("\"", "\"", jsonStringToken, '\\'); //$NON-NLS-2$ //$NON-NLS-1$
+        //rules[0] = new MultiLineRule("'", "'", jsonString, '\\'); //$NON-NLS-2$ //$NON-NLS-1$
 
-		setPredicateRules(rules);
-	}
+        setPredicateRules(rules);
+    }
 }

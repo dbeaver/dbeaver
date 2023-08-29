@@ -106,7 +106,7 @@ public class CompositeSelectionProvider implements ISelectionProvider {
                          newProvider.addSelectionChangedListener(listener);
                     }
 
-	                newSelection = newProvider.getSelection();
+                    newSelection = newProvider.getSelection();
                 } else {
                 	newSelection = this.selection;
                 }

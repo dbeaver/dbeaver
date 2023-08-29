@@ -24,16 +24,16 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class ExasolViewGrant extends ExasolBaseObjectGrant {
 
-	public ExasolViewGrant(ExasolBaseObjectGrant grant) throws DBException
-	{
-		super(grant);
-	}
-	
-	@Property(viewable = true, order = 10)
-	public ExasolView getView(DBRProgressMonitor monitor) throws DBException
-	{
-		return super.getSchema().getView(monitor, super.getObjectName());
-	}
-		
+    public ExasolViewGrant(ExasolBaseObjectGrant grant) throws DBException
+    {
+        super(grant);
+    }
+
+    @Property(viewable = true, order = 10)
+    public ExasolView getView(DBRProgressMonitor monitor) throws DBException
+    {
+        return super.getSchema().getView(monitor, super.getObjectName());
+    }
+
 
 }

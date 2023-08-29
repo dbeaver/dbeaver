@@ -236,13 +236,13 @@ public class DirectedGraphLayoutVisitor {
                 int y = vn.y;
                 bends.add(new AbsoluteBendpoint(x, y));
 /*
-				if (connEdge.isFeedback()) {
-					bends.add(new AbsoluteBendpoint(x, y + vn.height));
-					bends.add(new AbsoluteBendpoint(x, y));
-				} else {
-					bends.add(new AbsoluteBendpoint(x, y));
-					bends.add(new AbsoluteBendpoint(x, y + vn.height));
-				}
+                if (connEdge.isFeedback()) {
+                    bends.add(new AbsoluteBendpoint(x, y + vn.height));
+                    bends.add(new AbsoluteBendpoint(x, y));
+                } else {
+                    bends.add(new AbsoluteBendpoint(x, y));
+                    bends.add(new AbsoluteBendpoint(x, y + vn.height));
+                }
 */
             }
             conn.setRoutingConstraint(bends);

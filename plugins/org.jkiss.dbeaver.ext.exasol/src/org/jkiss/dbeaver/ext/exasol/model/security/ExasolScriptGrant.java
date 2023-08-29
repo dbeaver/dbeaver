@@ -23,71 +23,71 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class ExasolScriptGrant extends ExasolBaseObjectGrant {
-	
+    
 
-	public ExasolScriptGrant(ExasolBaseObjectGrant grant) throws DBException
-	{
-		super(grant);
-	}
-	
-	@Property(viewable = true, order = 10)
-	public ExasolScript getProcedure(DBRProgressMonitor monitor) throws DBException
-	{
-		return super.getSchema().getProcedure(monitor, super.getObjectName());
-	}
-	
-	@Override
-	@Property(viewable = true, order = 70)
-	public Boolean getExecuteAuth()
-	{
-		return super.getExecuteAuth();
-	}
-	
-	//
-	// don't show these properties for scripts
-	//
-	
-	@Override
-	@Property(hidden = true)
-	public Boolean getAlterAuth()
-	{
-		return super.getAlterAuth();
-	}
-	
-	@Override
-	@Property(hidden = true)
-	public Boolean getDeleteAuth()
-	{
-		return super.getDeleteAuth();
-	}
-	
-	@Override
-	@Property(hidden = true)
-	public Boolean getSelectAuth()
-	{
-		return super.getSelectAuth();
-	}
-	
-	@Override
-	@Property(hidden = true)
-	public Boolean getInsertAuth()
-	{
-		return super.getInsertAuth();
-	}
-	
-	@Override
-	@Property(hidden = true)
-	public Boolean getUpdateAuth()
-	{
-		return super.getUpdateAuth();
-	}
-	
-	@Override
-	@Property(hidden = true)
-	public Boolean getReferencesAuth()
-	{
-		return super.getReferencesAuth();
-	}
+    public ExasolScriptGrant(ExasolBaseObjectGrant grant) throws DBException
+    {
+        super(grant);
+    }
+    
+    @Property(viewable = true, order = 10)
+    public ExasolScript getProcedure(DBRProgressMonitor monitor) throws DBException
+    {
+        return super.getSchema().getProcedure(monitor, super.getObjectName());
+    }
+    
+    @Override
+    @Property(viewable = true, order = 70)
+    public Boolean getExecuteAuth()
+    {
+        return super.getExecuteAuth();
+    }
+    
+    //
+    // don't show these properties for scripts
+    //
+    
+    @Override
+    @Property(hidden = true)
+    public Boolean getAlterAuth()
+    {
+        return super.getAlterAuth();
+    }
+    
+    @Override
+    @Property(hidden = true)
+    public Boolean getDeleteAuth()
+    {
+        return super.getDeleteAuth();
+    }
+    
+    @Override
+    @Property(hidden = true)
+    public Boolean getSelectAuth()
+    {
+        return super.getSelectAuth();
+    }
+    
+    @Override
+    @Property(hidden = true)
+    public Boolean getInsertAuth()
+    {
+        return super.getInsertAuth();
+    }
+    
+    @Override
+    @Property(hidden = true)
+    public Boolean getUpdateAuth()
+    {
+        return super.getUpdateAuth();
+    }
+    
+    @Override
+    @Property(hidden = true)
+    public Boolean getReferencesAuth()
+    {
+        return super.getReferencesAuth();
+    }
 
 
 }

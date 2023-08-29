@@ -34,38 +34,38 @@ import java.util.List;
 
 public class ExasolImportTableTool implements IUserInterfaceTool {
 
-	public ExasolImportTableTool()
-	{
-	}
-	
-	@Override
-	public void execute(IWorkbenchWindow window, IWorkbenchPart activePart,
-			Collection<DBSObject> objects) throws DBException
-	{
-		List<ExasolTable> tables = CommonUtils.filterCollection(objects, ExasolTable.class);
-		List<ExasolSchema> schemas = CommonUtils.filterCollection(objects, ExasolSchema.class);
-		
-		//add tables for all Schemas but ignore views in schema
-		for(ExasolSchema schema : schemas)
-		{
-			tables.addAll(schema.getTables(new VoidProgressMonitor()));
-		}
-		
-		// create TableBase Objects list
-		@SuppressWarnings({ "unchecked", "rawtypes" })
-		HashSet<ExasolTableBase> tableBaseObjects = new HashSet();
-		
-		//add tables
-		for(ExasolTable table : tables)
-		{
-			tableBaseObjects.add((ExasolTableBase) table);
-		}
-		
-		
-		if (!tableBaseObjects.isEmpty()) {
-			ExasolImportTableToolDialog dialog = new ExasolImportTableToolDialog(activePart.getSite(), tableBaseObjects) ;
-			dialog.open();
-		}
+    public ExasolImportTableTool()
+    {
+    }
 
-	}
+    @Override
+    public void execute(IWorkbenchWindow window, IWorkbenchPart activePart,
+            Collection<DBSObject> objects) throws DBException
+    {
+        List<ExasolTable> tables = CommonUtils.filterCollection(objects, ExasolTable.class);
+        List<ExasolSchema> schemas = CommonUtils.filterCollection(objects, ExasolSchema.class);
+
+        //add tables for all Schemas but ignore views in schema
+        for(ExasolSchema schema : schemas)
+        {
+            tables.addAll(schema.getTables(new VoidProgressMonitor()));
+        }
+
+        // create TableBase Objects list
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+        HashSet<ExasolTableBase> tableBaseObjects = new HashSet();
+
+        //add tables
+        for(ExasolTable table : tables)
+        {
+            tableBaseObjects.add((ExasolTableBase) table);
+        }
+
+
+        if (!tableBaseObjects.isEmpty()) {
+            ExasolImportTableToolDialog dialog = new ExasolImportTableToolDialog(activePart.getSite(), tableBaseObjects) ;
+            dialog.open();
+        }
+
+    }
 }

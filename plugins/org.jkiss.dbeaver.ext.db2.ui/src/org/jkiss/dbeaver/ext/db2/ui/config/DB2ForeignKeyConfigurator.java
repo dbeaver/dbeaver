@@ -36,9 +36,9 @@ import java.util.Map;
  * DB2 foreign key configurator
  */
 public class DB2ForeignKeyConfigurator implements DBEObjectConfigurator<DB2TableForeignKey> {
-	private static final DBSForeignKeyModifyRule[] FK_RULES;
-	
-	static {
+    private static final DBSForeignKeyModifyRule[] FK_RULES;
+    
+    static {
         List<DBSForeignKeyModifyRule> rules = new ArrayList<>(DB2DeleteUpdateRule.values().length);
         for (DB2DeleteUpdateRule db2DeleteUpdateRule : DB2DeleteUpdateRule.values()) {
             rules.add(db2DeleteUpdateRule.getRule());

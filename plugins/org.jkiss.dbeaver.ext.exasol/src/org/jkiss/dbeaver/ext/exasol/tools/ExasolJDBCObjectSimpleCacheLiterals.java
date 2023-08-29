@@ -31,15 +31,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public final class ExasolJDBCObjectSimpleCacheLiterals<OWNER extends DBSObject, OBJECT extends DBSObject>
-		extends JDBCObjectCache<OWNER, OBJECT> {
+        extends JDBCObjectCache<OWNER, OBJECT> {
 
     private final String query;
     private final Class<OBJECT> objectType;
     private final Object[] queryParameters;
     private Constructor<OBJECT> objectConstructor;
     private String executeQuery = "";
-	
-	
+
+
     public ExasolJDBCObjectSimpleCacheLiterals(Class<OBJECT> objectType, String query, Object ... args)
     {
         this.query = query;
@@ -49,7 +49,7 @@ public final class ExasolJDBCObjectSimpleCacheLiterals<OWNER extends DBSObject, 
 
     @NotNull
     @SuppressWarnings("rawtypes")
-	@Override
+    @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OWNER owner)
         throws SQLException
     {
@@ -59,7 +59,7 @@ public final class ExasolJDBCObjectSimpleCacheLiterals<OWNER extends DBSObject, 
         //escape parameters
         for (int i = 0; i < queryParameters.length; i++) {
         	queryParameters[i] = (Object) ExasolUtils.quoteString(queryParameters[i].toString());
-		}
+        }
         executeQuery = String.format(query, queryParameters);
         
         ((JDBCStatementImpl) dbStat).setQueryString(executeQuery);

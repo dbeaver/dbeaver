@@ -40,112 +40,112 @@ import java.sql.SQLException;
  */
 public class ExasolViewCache extends JDBCStructCache<ExasolSchema, ExasolView, ExasolTableColumn> {
 
-	private static final String SQL_COLS_VIEW = "/*snapshot execution*/ SELECT " + 
-			"c.* " + 
-			"FROM " + 
-			"SYS.%s_COLUMNS c " + 
-			"WHERE " + 
-			"COLUMN_SCHEMA = '%s' " + 
-			"AND COLUMN_TABLE = '%s' " + 
-			"ORDER BY " + 
-			"COLUMN_ORDINAL_POSITION ";
-	private static final String SQL_COLS_ALL = "/*snapshot execution*/ SELECT " + 
-			"c.* " + 
-			"FROM " + 
-			"SYS.%s_COLUMNS c " + 
-			"WHERE " + 
-			"COLUMN_SCHEMA = '%s' AND COLUMN_OBJECT_TYPE = 'VIEW' " + 
-			"ORDER BY " + 
-			"COLUMN_ORDINAL_POSITION ";
+    private static final String SQL_COLS_VIEW = "/*snapshot execution*/ SELECT " +
+            "c.* " + 
+            "FROM " + 
+            "SYS.%s_COLUMNS c " + 
+            "WHERE " + 
+            "COLUMN_SCHEMA = '%s' " + 
+            "AND COLUMN_TABLE = '%s' " + 
+            "ORDER BY " + 
+            "COLUMN_ORDINAL_POSITION ";
+    private static final String SQL_COLS_ALL = "/*snapshot execution*/ SELECT " +
+            "c.* " + 
+            "FROM " + 
+            "SYS.%s_COLUMNS c " + 
+            "WHERE " + 
+            "COLUMN_SCHEMA = '%s' AND COLUMN_OBJECT_TYPE = 'VIEW' " + 
+            "ORDER BY " + 
+            "COLUMN_ORDINAL_POSITION ";
 
-	private static final String SQL_COLS_SYS_VIEW = ""
-			+ "/*snapshot execution*/ SELECT OBJECT_ID as COLUMN_OBJECT_ID, " + 
-			"	TABLE_CAT, " + 
-			"	TABLE_SCHEM as COLUMN_SCHEMA, " + 
-			"	TABLE_NAME as COLUMN_TABLE, " + 
-			"	COLUMN_NAME as COLUMN_NAME, " + 
-			"	DATA_TYPE as COLUMN_TYPE_ID, " + 
-			"	'VIEW' as COLUMN_OBJECT_TYPE, " + 
-			"	TYPE_NAME  , " + 
-			"	COLUMN_SIZE as COLUMN_MAXSIZE, " + 
-			"	DECIMAL_DIGITS as COLUMN_NUM_SCALE, " + 
-			"	NUM_PREC_RADIX, " + 
-			"	NULLABLE, " + 
-			"	REMARKS, " + 
-			"	COLUMN_DEF as COLUMN_DEFAULT, " + 
-			"	CHAR_OCTET_LENGTH, " + 
-			"	ORDINAL_POSITION as COLUMN_ORDINAL_POSITION, " + 
-			"	IS_NULLABLE, " + 
-			"	SCOPE_CATALOG, " + 
-			"	SCOPE_SCHEMA, " + 
-			"	SCOPE_TABLE, " + 
-			"	SOURCE_DATA_TYPE, " + 
-			"	COLUMN_TYPE, " + 
-			"	COLUMN_IS_DISTRIBUTION_KEY as COLUMN_IS_DISTRIBUTION_KEY, " + 
-			"	COLUMN_IDENTITY as COLUMN_IDENTITY, " + 
-			"	COLUMN_COMMENT as COLUMN_COMMENT, " + 
-			"	COLUMN_IS_NULLABLE as COLUMN_IS_NULLABLE	, " + 
-			"	'SYS' as COLUMN_OWNER, " + 
-			"	CAST(null as varchar(128)) as STATUS, " + 
-			"	cast(null as integer) as COLUMN_PARTITION_KEY_ORDINAL_POSITION " + 
-			"FROM  \"$ODBCJDBC\".ALL_COLUMNS  " + 
-			"WHERE table_schem = '%s' AND table_name = '%s'";
+    private static final String SQL_COLS_SYS_VIEW = ""
+            + "/*snapshot execution*/ SELECT OBJECT_ID as COLUMN_OBJECT_ID, " + 
+            "	TABLE_CAT, " + 
+            "	TABLE_SCHEM as COLUMN_SCHEMA, " + 
+            "	TABLE_NAME as COLUMN_TABLE, " + 
+            "	COLUMN_NAME as COLUMN_NAME, " + 
+            "	DATA_TYPE as COLUMN_TYPE_ID, " + 
+            "	'VIEW' as COLUMN_OBJECT_TYPE, " + 
+            "	TYPE_NAME  , " + 
+            "	COLUMN_SIZE as COLUMN_MAXSIZE, " + 
+            "	DECIMAL_DIGITS as COLUMN_NUM_SCALE, " + 
+            "	NUM_PREC_RADIX, " + 
+            "	NULLABLE, " + 
+            "	REMARKS, " + 
+            "	COLUMN_DEF as COLUMN_DEFAULT, " + 
+            "	CHAR_OCTET_LENGTH, " + 
+            "	ORDINAL_POSITION as COLUMN_ORDINAL_POSITION, " + 
+            "	IS_NULLABLE, " + 
+            "	SCOPE_CATALOG, " + 
+            "	SCOPE_SCHEMA, " + 
+            "	SCOPE_TABLE, " + 
+            "	SOURCE_DATA_TYPE, " + 
+            "	COLUMN_TYPE, " + 
+            "	COLUMN_IS_DISTRIBUTION_KEY as COLUMN_IS_DISTRIBUTION_KEY, " + 
+            "	COLUMN_IDENTITY as COLUMN_IDENTITY, " + 
+            "	COLUMN_COMMENT as COLUMN_COMMENT, " + 
+            "	COLUMN_IS_NULLABLE as COLUMN_IS_NULLABLE	, " + 
+            "	'SYS' as COLUMN_OWNER, " + 
+            "	CAST(null as varchar(128)) as STATUS, " + 
+            "	cast(null as integer) as COLUMN_PARTITION_KEY_ORDINAL_POSITION " + 
+            "FROM  \"$ODBCJDBC\".ALL_COLUMNS  " + 
+            "WHERE table_schem = '%s' AND table_name = '%s'";
 
-	private static final String SQL_COLS_SYS_ALL = ""
-			+ "/*snapshot execution*/ SELECT OBJECT_ID as COLUMN_OBJECT_ID, " + 
-			"	TABLE_CAT, " + 
-			"	TABLE_SCHEM as COLUMN_SCHEMA, " + 
-			"	TABLE_NAME as COLUMN_TABLE, " + 
-			"	COLUMN_NAME as COLUMN_NAME, " + 
-			"	DATA_TYPE as COLUMN_TYPE_ID, " + 
-			"	'VIEW' as COLUMN_OBJECT_TYPE, " + 
-			"	TYPE_NAME  , " + 
-			"	COLUMN_SIZE as COLUMN_MAXSIZE, " + 
-			"	DECIMAL_DIGITS as COLUMN_NUM_SCALE, " + 
-			"	NUM_PREC_RADIX, " + 
-			"	NULLABLE, " + 
-			"	REMARKS, " + 
-			"	COLUMN_DEF as COLUMN_DEFAULT, " + 
-			"	CHAR_OCTET_LENGTH, " + 
-			"	ORDINAL_POSITION as COLUMN_ORDINAL_POSITION, " + 
-			"	IS_NULLABLE, " + 
-			"	SCOPE_CATALOG, " + 
-			"	SCOPE_SCHEMA, " + 
-			"	SCOPE_TABLE, " + 
-			"	SOURCE_DATA_TYPE, " + 
-			"	COLUMN_TYPE, " + 
-			"	COLUMN_IS_DISTRIBUTION_KEY as COLUMN_IS_DISTRIBUTION_KEY, " + 
-			"	COLUMN_IDENTITY as COLUMN_IDENTITY, " + 
-			"	COLUMN_COMMENT as COLUMN_COMMENT, " + 
-			"	COLUMN_IS_NULLABLE as COLUMN_IS_NULLABLE	, " + 
-			"	'SYS' as COLUMN_OWNER, " + 
-			"	CAST(null as varchar(128)) as STATUS, " + 
-			"	cast(null as integer) as COLUMN_PARTITION_KEY_ORDINAL_POSITION " + 
-			"FROM  \"$ODBCJDBC\".ALL_COLUMNS  " + 
-			"WHERE table_schem = '%s' ";
-	
-	
-	private static final String SQL_VIEWS = "/*snapshot execution*/ select OWNER,OBJECT_ID,TABLE_CAT,TABLE_SCHEM,TABLE_NAME as COLUMN_TABLE,TABLE_TYPE,REMARKS,TYPE_CAT,TYPE_SCHEM,TYPE_NAME,SELF_REFERENCING_COL_NAME,REF_GENERATION from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_SCHEM = '%s' and TABLE_TYPE = 'VIEW' " +
+    private static final String SQL_COLS_SYS_ALL = ""
+            + "/*snapshot execution*/ SELECT OBJECT_ID as COLUMN_OBJECT_ID, " + 
+            "	TABLE_CAT, " + 
+            "	TABLE_SCHEM as COLUMN_SCHEMA, " + 
+            "	TABLE_NAME as COLUMN_TABLE, " + 
+            "	COLUMN_NAME as COLUMN_NAME, " + 
+            "	DATA_TYPE as COLUMN_TYPE_ID, " + 
+            "	'VIEW' as COLUMN_OBJECT_TYPE, " + 
+            "	TYPE_NAME  , " + 
+            "	COLUMN_SIZE as COLUMN_MAXSIZE, " + 
+            "	DECIMAL_DIGITS as COLUMN_NUM_SCALE, " + 
+            "	NUM_PREC_RADIX, " + 
+            "	NULLABLE, " + 
+            "	REMARKS, " + 
+            "	COLUMN_DEF as COLUMN_DEFAULT, " + 
+            "	CHAR_OCTET_LENGTH, " + 
+            "	ORDINAL_POSITION as COLUMN_ORDINAL_POSITION, " + 
+            "	IS_NULLABLE, " + 
+            "	SCOPE_CATALOG, " + 
+            "	SCOPE_SCHEMA, " + 
+            "	SCOPE_TABLE, " + 
+            "	SOURCE_DATA_TYPE, " + 
+            "	COLUMN_TYPE, " + 
+            "	COLUMN_IS_DISTRIBUTION_KEY as COLUMN_IS_DISTRIBUTION_KEY, " + 
+            "	COLUMN_IDENTITY as COLUMN_IDENTITY, " + 
+            "	COLUMN_COMMENT as COLUMN_COMMENT, " + 
+            "	COLUMN_IS_NULLABLE as COLUMN_IS_NULLABLE	, " + 
+            "	'SYS' as COLUMN_OWNER, " + 
+            "	CAST(null as varchar(128)) as STATUS, " + 
+            "	cast(null as integer) as COLUMN_PARTITION_KEY_ORDINAL_POSITION " + 
+            "FROM  \"$ODBCJDBC\".ALL_COLUMNS  " + 
+            "WHERE table_schem = '%s' ";
+
+
+    private static final String SQL_VIEWS = "/*snapshot execution*/ select OWNER,OBJECT_ID,TABLE_CAT,TABLE_SCHEM,TABLE_NAME as COLUMN_TABLE,TABLE_TYPE,REMARKS,TYPE_CAT,TYPE_SCHEM,TYPE_NAME,SELF_REFERENCING_COL_NAME,REF_GENERATION from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_SCHEM = '%s' and TABLE_TYPE = 'VIEW' " +
             " union all select 'SYS',-1,' ',SCHEMA_name, object_name as column_table, object_type,object_comment,null, null,null,null,null from EXA_SYSCAT where SCHEMA_NAME = '%s' order by TABLE_NAME";
-	
-	
+
+
 
     public ExasolViewCache() {
         super("COLUMN_TABLE");
 
     }
 
-	@NotNull
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull ExasolSchema exasolSchema) throws SQLException {
 
-		String sql = String.format(SQL_VIEWS, exasolSchema.getName(),exasolSchema.getName());
-		
-		JDBCStatement dbstat = session.createStatement();
-		
-		dbstat.setQueryString(sql);
+        String sql = String.format(SQL_VIEWS, exasolSchema.getName(),exasolSchema.getName());
+        
+        JDBCStatement dbstat = session.createStatement();
+        
+        dbstat.setQueryString(sql);
 
-		return dbstat;
+        return dbstat;
     }
 
     @Override
@@ -154,25 +154,25 @@ public class ExasolViewCache extends JDBCStructCache<ExasolSchema, ExasolView, E
         return new ExasolView(session.getProgressMonitor(), exasolSchema, dbResult);
     }
 
-	@Override
+    @Override
     protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull ExasolSchema exasolSchema, @Nullable ExasolView forView) throws SQLException {
         String sql;
-		String tablePrefix = exasolSchema.getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL);
+        String tablePrefix = exasolSchema.getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL);
 
-		if (exasolSchema.getName().equals("SYS") || exasolSchema.getName().equals("EXA_STATISTICS"))
-		{
-			if (forView != null) {
-	            sql = String.format(SQL_COLS_SYS_VIEW, ExasolUtils.quoteString(exasolSchema.getName()), ExasolUtils.quoteString(forView.getName())) ;
-	        } else {
-	            sql = String.format(SQL_COLS_SYS_ALL, ExasolUtils.quoteString(exasolSchema.getName()));
-	        }
-		} else {
-			if (forView != null) {
-	            sql = String.format(SQL_COLS_VIEW,tablePrefix, ExasolUtils.quoteString(exasolSchema.getName()), ExasolUtils.quoteString(forView.getName())) ;
-	        } else {
-	            sql = String.format(SQL_COLS_ALL,tablePrefix, ExasolUtils.quoteString(exasolSchema.getName()));
-	        }
-		}
+        if (exasolSchema.getName().equals("SYS") || exasolSchema.getName().equals("EXA_STATISTICS"))
+        {
+            if (forView != null) {
+                sql = String.format(SQL_COLS_SYS_VIEW, ExasolUtils.quoteString(exasolSchema.getName()), ExasolUtils.quoteString(forView.getName())) ;
+            } else {
+                sql = String.format(SQL_COLS_SYS_ALL, ExasolUtils.quoteString(exasolSchema.getName()));
+            }
+        } else {
+            if (forView != null) {
+                sql = String.format(SQL_COLS_VIEW,tablePrefix, ExasolUtils.quoteString(exasolSchema.getName()), ExasolUtils.quoteString(forView.getName())) ;
+            } else {
+                sql = String.format(SQL_COLS_ALL,tablePrefix, ExasolUtils.quoteString(exasolSchema.getName()));
+            }
+        }
 
         JDBCStatement dbStat = session.createStatement();
         

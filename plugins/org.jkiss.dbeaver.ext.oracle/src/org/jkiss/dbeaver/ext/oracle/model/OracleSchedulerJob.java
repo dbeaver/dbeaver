@@ -509,29 +509,29 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
 
     }
 
-	public DBSObjectState getObjectState() {
-		DBSObjectState objectState = null;
-		
-		try {
-			if ( JobState.valueOf(state).equals(JobState.RUNNING) ) {
-				objectState = DBSObjectState.ACTIVE;
-			} else if ( JobState.valueOf(state).equals(JobState.BROKEN) ) {
-				objectState = DBSObjectState.INVALID;
-			} else if ( JobState.valueOf(state).equals(JobState.CHAIN_STALLED) ) {
-				objectState = DBSObjectState.INVALID;
-			} else if ( JobState.valueOf(state).equals(JobState.FAILED) ) {
-				objectState = DBSObjectState.INVALID;
-			} else {
-				objectState = DBSObjectState.NORMAL;
-			}
-		} catch (IllegalArgumentException e) {
-			objectState = DBSObjectState.UNKNOWN;
-		}
-		
-		return objectState;
-	}
+    public DBSObjectState getObjectState() {
+        DBSObjectState objectState = null;
 
-	public void refreshObjectState(DBRProgressMonitor monitor) {
+        try {
+            if ( JobState.valueOf(state).equals(JobState.RUNNING) ) {
+                objectState = DBSObjectState.ACTIVE;
+            } else if ( JobState.valueOf(state).equals(JobState.BROKEN) ) {
+                objectState = DBSObjectState.INVALID;
+            } else if ( JobState.valueOf(state).equals(JobState.CHAIN_STALLED) ) {
+                objectState = DBSObjectState.INVALID;
+            } else if ( JobState.valueOf(state).equals(JobState.FAILED) ) {
+                objectState = DBSObjectState.INVALID;
+            } else {
+                objectState = DBSObjectState.NORMAL;
+            }
+        } catch (IllegalArgumentException e) {
+            objectState = DBSObjectState.UNKNOWN;
+        }
+
+        return objectState;
+    }
+
+    public void refreshObjectState(DBRProgressMonitor monitor) {
         if (monitor != null) {
         	monitor.beginTask("Load action for '" + this.getName() + "'...", 1);
         	try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load action for " + OracleObjectType.JOB + " '" + this.getName() + "'")) {
@@ -567,7 +567,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
                 monitor.done();
             }
         }
-	}
+    }
 
     public DBEPersistAction[] getRunActions() {
         StringBuffer runScript = new StringBuffer();
@@ -584,8 +584,8 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
             )};
     }
 
-	@Override
-	public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         if (jobAction == null && monitor != null) {
         	monitor.beginTask("Load action for '" + this.getName() + "'...", 1);
         	try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load action for " + OracleObjectType.JOB + " '" + this.getName() + "'")) {

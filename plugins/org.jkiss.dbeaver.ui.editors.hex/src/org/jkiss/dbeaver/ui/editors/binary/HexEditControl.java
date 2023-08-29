@@ -2050,9 +2050,9 @@ public class HexEditControl extends Composite {
         redrawTextAreas(true);
     }
 
-	public void setDefWidth(int defValue) {
-		this.defWidth = defValue ;
-	}
+    public void setDefWidth(int defValue) {
+        this.defWidth = defValue ;
+    }
 
     public boolean isReadOnly() {
         return readOnly;

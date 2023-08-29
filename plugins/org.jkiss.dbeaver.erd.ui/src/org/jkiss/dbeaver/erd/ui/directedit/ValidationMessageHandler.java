@@ -27,10 +27,10 @@ package org.jkiss.dbeaver.erd.ui.directedit;
 public interface ValidationMessageHandler
 {
 
-	void setMessageText(String text);
+    void setMessageText(String text);
 
-	/**
-	 * Resets so that the validation message is no longer shown
-	 */
-	void reset();
+    /**
+     * Resets so that the validation message is no longer shown
+     */
+    void reset();
 }

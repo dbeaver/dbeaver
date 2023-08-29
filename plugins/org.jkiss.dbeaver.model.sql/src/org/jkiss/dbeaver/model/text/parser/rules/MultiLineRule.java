@@ -26,15 +26,15 @@ import org.jkiss.dbeaver.model.text.parser.TPToken;
  */
 public class MultiLineRule extends PatternRule {
 
-	public MultiLineRule(String startSequence, String endSequence, TPToken token) {
-		this(startSequence, endSequence, token, (char) 0);
-	}
+    public MultiLineRule(String startSequence, String endSequence, TPToken token) {
+        this(startSequence, endSequence, token, (char) 0);
+    }
 
-	public MultiLineRule(String startSequence, String endSequence, TPToken token, char escapeCharacter) {
-		this(startSequence, endSequence, token, escapeCharacter, false);
-	}
+    public MultiLineRule(String startSequence, String endSequence, TPToken token, char escapeCharacter) {
+        this(startSequence, endSequence, token, escapeCharacter, false);
+    }
 
-	public MultiLineRule(String startSequence, String endSequence, TPToken token, char escapeCharacter, boolean breaksOnEOF) {
-		super(startSequence, endSequence, token, escapeCharacter, false, breaksOnEOF);
-	}
+    public MultiLineRule(String startSequence, String endSequence, TPToken token, char escapeCharacter, boolean breaksOnEOF) {
+        super(startSequence, endSequence, token, escapeCharacter, false, breaksOnEOF);
+    }
 }

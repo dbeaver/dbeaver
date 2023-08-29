@@ -25,29 +25,29 @@ import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphNode;
 
 public class LockGraphEditPartFactory implements EditPartFactory {
 
-	public EditPart createEditPart(EditPart context, Object model) {
-		
-		EditPart editPart = null;
-		
-		if (model instanceof LockGraph) {
-			
-			editPart = new LockGraphEditPart();
-			
-		} else if (model instanceof LockGraphEdge) {
-			
-			editPart = new LockGraphEdgeEditPart();
-			
-		} else if (model instanceof LockGraphNode) {
-			
-			editPart = new LockGraphNodeEditPart();
-			
-		}
+    public EditPart createEditPart(EditPart context, Object model) {
 
-		if (editPart != null) {
-			
-			editPart.setModel(model);
-		}
+        EditPart editPart = null;
 
-		return editPart;
-	}
+        if (model instanceof LockGraph) {
+            
+            editPart = new LockGraphEditPart();
+            
+        } else if (model instanceof LockGraphEdge) {
+            
+            editPart = new LockGraphEdgeEditPart();
+            
+        } else if (model instanceof LockGraphNode) {
+            
+            editPart = new LockGraphNodeEditPart();
+            
+        }
+
+        if (editPart != null) {
+            
+            editPart.setModel(model);
+        }
+
+        return editPart;
+    }
 }

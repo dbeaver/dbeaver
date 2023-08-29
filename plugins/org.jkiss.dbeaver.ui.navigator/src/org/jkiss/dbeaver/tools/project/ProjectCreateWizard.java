@@ -50,7 +50,7 @@ public class ProjectCreateWizard extends BasicNewProjectResourceWizard implement
     private ProjectCreateRemotePage remoteProjectPage;
 
     public ProjectCreateWizard() {
-	}
+    }
 
     public IProject getProject() {
         return project;
@@ -86,7 +86,7 @@ public class ProjectCreateWizard extends BasicNewProjectResourceWizard implement
     }
 
     @Override
-	public boolean performFinish() {
+    public boolean performFinish() {
         if (DBWorkbench.isDistributed()) {
             try {
                 DBPProject newProject = DBPPlatformDesktop.getInstance().getWorkspace().createProject(
@@ -129,7 +129,7 @@ public class ProjectCreateWizard extends BasicNewProjectResourceWizard implement
         } else {
             return false;
         }
-	}
+    }
 
     private IProject createProject(DBRProgressMonitor monitor) throws CoreException {
         final IProgressMonitor nestedMonitor = RuntimeUtils.getNestedMonitor(monitor);

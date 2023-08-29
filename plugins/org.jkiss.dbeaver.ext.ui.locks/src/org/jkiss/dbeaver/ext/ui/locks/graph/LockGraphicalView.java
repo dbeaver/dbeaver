@@ -33,79 +33,79 @@ import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphManager;
 
 public class LockGraphicalView extends ViewPart {
 
-	private static final LockGraph EMPTY_GRAPH = new LockGraph(null);
-	
-	private DefaultEditDomain editDomain;
+    private static final LockGraph EMPTY_GRAPH = new LockGraph(null);
 
-	private GraphicalViewer graphicalViewer;
+    private DefaultEditDomain editDomain;
 
-	
-	private final LockGraphManager graphManager;
-	private final LockManagerViewer viewer;
-	
-	public LockGraphicalView(LockManagerViewer viewer) {
-		super();
+    private GraphicalViewer graphicalViewer;
+
+
+    private final LockGraphManager graphManager;
+    private final LockManagerViewer viewer;
+
+    public LockGraphicalView(LockManagerViewer viewer) {
+        super();
         this.viewer = viewer;
         this.graphManager = viewer.getGraphManager();
-	}
+    }
 
-	@Override
-	public void createPartControl(Composite parent) {
-		setEditDomain(new DefaultEditDomain(null));
-		setGraphicalViewer(new ScrollingGraphicalViewer());
-		getGraphicalViewer().createControl(parent);
-		getGraphicalViewer().setRootEditPart(new FreeformGraphicalRootEditPart());
-		getGraphicalViewer().setEditPartFactory(new LockGraphEditPartFactory());
-		getGraphicalViewer().setContextMenu(new ContextMenuProvider(graphicalViewer){
+    @Override
+    public void createPartControl(Composite parent) {
+        setEditDomain(new DefaultEditDomain(null));
+        setGraphicalViewer(new ScrollingGraphicalViewer());
+        getGraphicalViewer().createControl(parent);
+        getGraphicalViewer().setRootEditPart(new FreeformGraphicalRootEditPart());
+        getGraphicalViewer().setEditPartFactory(new LockGraphEditPartFactory());
+        getGraphicalViewer().setContextMenu(new ContextMenuProvider(graphicalViewer){
 
-			@Override
-			public void buildContextMenu(IMenuManager menu) {
-			    
-				menu.add(viewer.getKillAction());
-				
-			}
-			
-		});
-	}		
+            @Override
+            public void buildContextMenu(IMenuManager menu) {
+                
+                menu.add(viewer.getKillAction());
+                
+            }
+            
+        });
+    }
 
-	public void drawGraf(DBAServerLock selection)
-	{
-		if (selection == null) return;
-		
-		LockGraph g = selection == null ? EMPTY_GRAPH : graphManager.getGraph(selection);
-		
-		if (g == null) return;
-		
+    public void drawGraf(DBAServerLock selection)
+    {
+        if (selection == null) return;
+
+        LockGraph g = selection == null ? EMPTY_GRAPH : graphManager.getGraph(selection);
+
+        if (g == null) return;
+
 /*
-		if (g != EMPTY_GRAPH) {
-			g.setLockManagerViewer(viewer);
-		}
+        if (g != EMPTY_GRAPH) {
+            g.setLockManagerViewer(viewer);
+        }
 */
 
-		getGraphicalViewer().setContents(g);
-		getGraphicalViewer().getControl().setBackground(ColorConstants.listBackground);
-	}
-	
-	protected DefaultEditDomain getEditDomain() {
-		return this.editDomain;
-	}
+        getGraphicalViewer().setContents(g);
+        getGraphicalViewer().getControl().setBackground(ColorConstants.listBackground);
+    }
 
-	protected GraphicalViewer getGraphicalViewer() {
-		return this.graphicalViewer;
-	}
+    protected DefaultEditDomain getEditDomain() {
+        return this.editDomain;
+    }
 
-	protected void setEditDomain(DefaultEditDomain anEditDomain) {
-		this.editDomain = anEditDomain;
-	}
+    protected GraphicalViewer getGraphicalViewer() {
+        return this.graphicalViewer;
+    }
 
-	@Override
-	public void setFocus() {
-		getGraphicalViewer().getControl().setFocus();
-	}
+    protected void setEditDomain(DefaultEditDomain anEditDomain) {
+        this.editDomain = anEditDomain;
+    }
 
-	protected void setGraphicalViewer(GraphicalViewer viewer) {
-		getEditDomain().addViewer(viewer);
-		this.graphicalViewer = viewer;
-	}
+    @Override
+    public void setFocus() {
+        getGraphicalViewer().getControl().setFocus();
+    }
+
+    protected void setGraphicalViewer(GraphicalViewer viewer) {
+        getEditDomain().addViewer(viewer);
+        this.graphicalViewer = viewer;
+    }
 
 }

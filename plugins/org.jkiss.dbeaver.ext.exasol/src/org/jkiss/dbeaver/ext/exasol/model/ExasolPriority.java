@@ -30,85 +30,85 @@ import java.sql.Date;
 
 public class ExasolPriority implements DBPRefreshableObject, DBPNamedObject2, DBPSaveableObject {
 
-	private ExasolDataSource dataSource;
-	private String groupName;
-	private Date created;
-	private String comment="";
-	private Boolean persisted;
-	private BigDecimal groupId = new BigDecimal(-1);
-	
-	public ExasolPriority(ExasolDataSource dataSource, String name, String comment ) {
-		this.groupName = name;
-		this.comment = comment;
-	    this.persisted = false;
-	    this.dataSource = dataSource;
-	}
-	
-	@Override
-	public DBSObject getParentObject()
-	{
-		return this.dataSource.getContainer();
-	}
+    private ExasolDataSource dataSource;
+    private String groupName;
+    private Date created;
+    private String comment="";
+    private Boolean persisted;
+    private BigDecimal groupId = new BigDecimal(-1);
 
-	@Override
-	public ExasolDataSource getDataSource()
-	{
-		return this.dataSource;
-	}
+    public ExasolPriority(ExasolDataSource dataSource, String name, String comment ) {
+        this.groupName = name;
+        this.comment = comment;
+        this.persisted = false;
+        this.dataSource = dataSource;
+    }
 
-	@Override
-	public boolean isPersisted()
-	{
-		return this.persisted;
-	}
+    @Override
+    public DBSObject getParentObject()
+    {
+        return this.dataSource.getContainer();
+    }
 
-	@Override
-	public void setPersisted(boolean persisted)
-	{
-		this.persisted = persisted;
+    @Override
+    public ExasolDataSource getDataSource()
+    {
+        return this.dataSource;
+    }
 
-	}
+    @Override
+    public boolean isPersisted()
+    {
+        return this.persisted;
+    }
 
-	@Override
-	public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
-			throws DBException
-	{
+    @Override
+    public void setPersisted(boolean persisted)
+    {
+        this.persisted = persisted;
+
+    }
+
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
+            throws DBException
+    {
         ((ExasolDataSource) getDataSource()).refreshObject(monitor);
-		return this;
-	}
+        return this;
+    }
 
-	public void setName(String groupName) {
-		this.groupName = groupName;
-	}
-	
-	public void setDescription(String description)
-	{
-		this.comment = description;
-	}
+    public void setName(String groupName) {
+        this.groupName = groupName;
+    }
 
-	@Override
+    public void setDescription(String description)
+    {
+        this.comment = description;
+    }
+
+    @Override
     @Property(viewable = true, editable= true, updatable=true, order = 30)
-	public String getDescription() {
-		return comment;
-	}
+    public String getDescription() {
+        return comment;
+    }
 
-	@Property(viewable = true, editable= false, updatable=false, order = 40)
-	public BigDecimal getGroupId()
-	{
-		return groupId;
-	}
-	
+    @Property(viewable = true, editable= false, updatable=false, order = 40)
+    public BigDecimal getGroupId()
+    {
+        return groupId;
+    }
+
     @Property(viewable = true, editable= false, updatable=false, order = 40)
     public Date getCreated()
     {
     	return created;
     }
-	
+
     @Property(viewable = true, editable= true, updatable=true, order = 10)
-	@Override
-	public String getName() {
-		return groupName;
-	}
+    @Override
+    public String getName() {
+        return groupName;
+    }
 
     
 

@@ -32,21 +32,21 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import java.io.File;
 
 public class ConfigImportWizardPageNavicatSettings extends WizardPage {
-	
-	private TextWithOpenFile filePathText;
-	private File inputFile;
-	private Combo encodingCombo;
-	
-	protected ConfigImportWizardPageNavicatSettings()
+    
+    private TextWithOpenFile filePathText;
+    private File inputFile;
+    private Combo encodingCombo;
+    
+    protected ConfigImportWizardPageNavicatSettings()
     {
         super("Navicat");
         setTitle("Navicat");
         setDescription("Import Navicat connections");
     }
 
-	@Override
-	public void createControl(Composite parent) {
-		Composite placeholder = new Composite(parent, SWT.NONE);
+    @Override
+    public void createControl(Composite parent) {
+        Composite placeholder = new Composite(parent, SWT.NONE);
         placeholder.setLayout(new GridLayout(1, true));
         
         UIUtils.createControlLabel(placeholder, "Navicat Connection Export (NCX) file");
@@ -72,18 +72,18 @@ public class ConfigImportWizardPageNavicatSettings extends WizardPage {
         encodingCombo = UIUtils.createEncodingCombo(placeholder, GeneralUtils.DEFAULT_ENCODING);
         
         setControl(placeholder);
-	}
-	
-	@Override
+    }
+    
+    @Override
     public boolean isPageComplete() {
         return inputFile != null && inputFile.exists();
     }
-	
-	public String getInputFileEncoding() {
+    
+    public String getInputFileEncoding() {
         return encodingCombo.getText();
     }
-	
-	public File getInputFile() {
-		return inputFile;
-	}
+    
+    public File getInputFile() {
+        return inputFile;
+    }
 }

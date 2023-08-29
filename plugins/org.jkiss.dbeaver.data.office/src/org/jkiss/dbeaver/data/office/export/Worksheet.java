@@ -20,39 +20,39 @@ import org.apache.poi.ss.usermodel.Sheet;
 
 
 public class Worksheet {
-	
-	private Sheet sh;
-	private Object columnVal;
-	private int currentRow;
-	
-	public Worksheet(Sheet sh, Object columnVal, int currentRow)
-	{
-		super();
-		this.sh = sh;
-		this.columnVal = columnVal;
-		this.currentRow = currentRow;
-	}
-	
-	public Sheet getSh()
-	{
-		return sh;
-	}
-	
-	public Object getColumnVal()
-	{
-		return columnVal;
-	}
-	
-	public int getCurrentRow()
-	{
-		return currentRow;
-	}
-	
-	public void incRow(){
-		currentRow++;
-	}
-	
-	public void dispose(){
-		sh = null;
-	}
+
+    private Sheet sh;
+    private Object columnVal;
+    private int currentRow;
+
+    public Worksheet(Sheet sh, Object columnVal, int currentRow)
+    {
+        super();
+        this.sh = sh;
+        this.columnVal = columnVal;
+        this.currentRow = currentRow;
+    }
+
+    public Sheet getSh()
+    {
+        return sh;
+    }
+
+    public Object getColumnVal()
+    {
+        return columnVal;
+    }
+
+    public int getCurrentRow()
+    {
+        return currentRow;
+    }
+
+    public void incRow(){
+        currentRow++;
+    }
+
+    public void dispose(){
+        sh = null;
+    }
 }

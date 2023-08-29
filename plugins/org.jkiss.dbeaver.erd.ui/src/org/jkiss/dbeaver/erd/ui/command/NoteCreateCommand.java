@@ -30,8 +30,8 @@ import org.jkiss.dbeaver.erd.ui.part.NotePart;
 public class NoteCreateCommand extends Command
 {
 
-	private DiagramPart diagramPart;
-	private ERDNote note;
+    private DiagramPart diagramPart;
+    private ERDNote note;
     private Point location;
     private Dimension size;
 
@@ -45,7 +45,7 @@ public class NoteCreateCommand extends Command
 
     @Override
     public void execute()
-	{
+    {
         diagramPart.getDiagram().addNote(note, true);
         //diagramPart.getDiagram().addModelRelations(monitor, table, true);
 
@@ -66,7 +66,7 @@ public class NoteCreateCommand extends Command
                 }
             }
         }
-	}
+    }
 
     @Override
     public void undo()

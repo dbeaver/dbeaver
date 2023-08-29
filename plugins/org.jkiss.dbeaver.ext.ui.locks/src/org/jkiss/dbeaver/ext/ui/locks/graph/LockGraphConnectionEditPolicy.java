@@ -22,9 +22,9 @@ import org.eclipse.gef.requests.GroupRequest;
 
 public class LockGraphConnectionEditPolicy extends ConnectionEditPolicy {
 
-	@Override
-	protected Command getDeleteCommand(GroupRequest request) {
-		return null;
-	}
+    @Override
+    protected Command getDeleteCommand(GroupRequest request) {
+        return null;
+    }
 
 }

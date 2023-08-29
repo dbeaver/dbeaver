@@ -19,24 +19,24 @@ package org.jkiss.dbeaver.ext.athena.ui.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class AthenaMessages extends NLS {
-	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.athena.ui.internal.AthenaMessages"; //$NON-NLS-1$
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.athena.ui.internal.AthenaMessages"; //$NON-NLS-1$
 
-	static {
-		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, AthenaMessages.class);
-	}
+    static {
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, AthenaMessages.class);
+    }
 
-	public static String label_region;
-	public static String label_connection;
-	public static String label_aws_access_key;
+    public static String label_region;
+    public static String label_connection;
+    public static String label_aws_access_key;
 
-	private AthenaMessages() {
-	}
+    private AthenaMessages() {
+    }
 
-	public static String label_access_key;
-	public static String label_access_key_id;
-	public static String label_s3_location;
-	public static String label_s3_output_location;
-	public static String label_secret_key;
-	public static String label_security;
+    public static String label_access_key;
+    public static String label_access_key_id;
+    public static String label_s3_location;
+    public static String label_s3_output_location;
+    public static String label_secret_key;
+    public static String label_security;
 }

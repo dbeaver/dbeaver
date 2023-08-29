@@ -365,11 +365,11 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
                 }
             }.start();
 
-			/*
+            /*
              * FIXME:
-			 * 	Should copy the printer data to avoid threading issues,
-			 *	but this is currently not possible, see http://bugs.eclipse.org/297957
-			 */
+             * 	Should copy the printer data to avoid threading issues,
+             *	but this is currently not possible, see http://bugs.eclipse.org/297957
+             */
             fgPrinterData = data;
             fgPrinterData.startPage = 1;
             fgPrinterData.endPage = 1;

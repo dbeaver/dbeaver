@@ -28,15 +28,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OracleLock implements DBAServerLock {
-	
-	 private int    wait_sid;
-	 private int    serial;
-	 private int    wait_pid;
-	 private String wait_user;
-	 private String oname;
-	 private String owner;
-	 private long row_lock;
-	 private int    hold_sid;
+    
+     private int    wait_sid;
+     private int    serial;
+     private int    wait_pid;
+     private String wait_user;
+     private String oname;
+     private String owner;
+     private long row_lock;
+     private int    hold_sid;
      private int    hold_pid;
      private String hold_user;
      private Date ltime;
@@ -46,7 +46,7 @@ public class OracleLock implements DBAServerLock {
      private DBAServerLock hold = null;
      private List<DBAServerLock> waiters = new ArrayList<>(0);
 
-	 private OracleDataSource dataSource;
+     private OracleDataSource dataSource;
      
      public OracleLock(ResultSet dbResult, OracleDataSource dataSource) {
     	 this.wait_sid = JDBCUtils.safeGetInt(dbResult, "waiting_session");
@@ -57,7 +57,7 @@ public class OracleLock implements DBAServerLock {
     	 this.oname = JDBCUtils.safeGetString(dbResult, "oname");
     	 if (oname == null) {
     	 	oname = "name";
-		 }
+         }
     	 this.owner = JDBCUtils.safeGetString(dbResult, "owner");
     	 this.row_lock = JDBCUtils.safeGetLong(dbResult, "row_lock");
     	 this.wait_user = JDBCUtils.safeGetString(dbResult, "waiting_user");
@@ -113,92 +113,92 @@ public class OracleLock implements DBAServerLock {
  	}
 
  	@Property(viewable = true, order = 1)
-	public int getWait_sid()
-	{
-		return wait_sid;
-	}
+    public int getWait_sid()
+    {
+        return wait_sid;
+    }
 
  	@Property(viewable = true, order = 2, visibleIf = OracleLockColumnsValueValidator.class)
-	public int getWait_pid()
-	{
-		return wait_pid;
-	}
+    public int getWait_pid()
+    {
+        return wait_pid;
+    }
 
  	@Property(viewable = true, order = 3)
-	public String getWait_user()
-	{
-		return wait_user;
-	}
+    public String getWait_user()
+    {
+        return wait_user;
+    }
 
  	@Property(viewable = true, order = 4, visibleIf = OracleLockColumnsValueValidator.class)
-	public String getOname()
-	{
-		return oname;
-	}
+    public String getOname()
+    {
+        return oname;
+    }
 
  	@Property(viewable = true, order = 5, visibleIf = OracleLockColumnsValueValidator.class)
-	public String getOwner()
-	{
-		return owner;
-	}
+    public String getOwner()
+    {
+        return owner;
+    }
 
  	@Property(viewable = true, order = 6, visibleIf = OracleLockColumnsValueValidator.class)
-	public long getRow_lock()
-	{
-		return row_lock;
-	}
+    public long getRow_lock()
+    {
+        return row_lock;
+    }
 
  	@Property(viewable = true, order = 7)
-	public int getHold_sid()
-	{
-		return hold_sid;
-	}
+    public int getHold_sid()
+    {
+        return hold_sid;
+    }
 
  	@Property(viewable = true, order = 8, visibleIf = OracleLockColumnsValueValidator.class)
-	public int getHold_pid()
-	{
-		return hold_pid;
-	}
+    public int getHold_pid()
+    {
+        return hold_pid;
+    }
 
  	@Property(viewable = true, order = 9)
-	public String getHold_user()
-	{
-		return hold_user;
-	}
+    public String getHold_user()
+    {
+        return hold_user;
+    }
 
  	@Property(viewable = true, order = 10, visibleIf = OracleLockColumnsValueValidator.class)
-	public Date getLtime()
-	{
-		return ltime;
-	}
+    public Date getLtime()
+    {
+        return ltime;
+    }
 
  	@Property(viewable = true, order = 11, visibleIf = OracleLockColumnsValueValidator.class)
-	public String getStatus()
-	{
-		return status;
-	}
+    public String getStatus()
+    {
+        return status;
+    }
 
  	@Property(viewable = true, order = 12, visibleIf = OracleLockColumnsValueValidator.class)
-	public String getEvent()
-	{
-		return event;
-	}
+    public String getEvent()
+    {
+        return event;
+    }
 
  	public int getSerial()
-	{
-		return serial;
-	}
+    {
+        return serial;
+    }
 
-	public OracleDataSource getDataSource() {
-		return dataSource;
-	}
+    public OracleDataSource getDataSource() {
+        return dataSource;
+    }
 
-	public static class OracleLockColumnsValueValidator implements IPropertyValueValidator<OracleLock, Object> {
+    public static class OracleLockColumnsValueValidator implements IPropertyValueValidator<OracleLock, Object> {
 
-		@Override
-		public boolean isValidValue(OracleLock lock, Object value) throws IllegalArgumentException {
-			return lock.getDataSource().isAtLeastV10();
-		}
-	}
+        @Override
+        public boolean isValidValue(OracleLock lock, Object value) throws IllegalArgumentException {
+            return lock.getDataSource().isAtLeastV10();
+        }
+    }
  	
 }

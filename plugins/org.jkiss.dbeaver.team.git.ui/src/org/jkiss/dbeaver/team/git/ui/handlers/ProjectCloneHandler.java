@@ -30,7 +30,7 @@ public class ProjectCloneHandler extends AbstractHandler {
     private static final Log log = Log.getLog(ProjectCloneHandler.class);
 
     @Override
-	public Object execute(ExecutionEvent event) {
+    public Object execute(ExecutionEvent event) {
         try {
             // FIXME: this is a EGIT hack
             // Set new project default option (Create general project. As Create New Project is broken)
@@ -51,7 +51,7 @@ public class ProjectCloneHandler extends AbstractHandler {
         wizardDialog.setHelpAvailable(false);
         wizardDialog.open();
 
-	    return null;
-		
-	}
+        return null;
+        
+    }
 }

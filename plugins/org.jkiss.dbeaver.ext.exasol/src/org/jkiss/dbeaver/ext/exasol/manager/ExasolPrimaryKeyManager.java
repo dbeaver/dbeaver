@@ -41,89 +41,89 @@ import java.util.List;
 import java.util.Map;
 
 public class ExasolPrimaryKeyManager
-		extends SQLConstraintManager<ExasolTableUniqueKey, ExasolTable> 
-		implements DBEObjectRenamer<ExasolTableUniqueKey>{
+        extends SQLConstraintManager<ExasolTableUniqueKey, ExasolTable> 
+        implements DBEObjectRenamer<ExasolTableUniqueKey>{
 
-	@Override
-	public DBSObjectCache<? extends DBSObject, ExasolTableUniqueKey> getObjectsCache(
-			ExasolTableUniqueKey object)
-	{
-		return object.getTable().getSchema().getConstraintCache();
-	}
+    @Override
+    public DBSObjectCache<? extends DBSObject, ExasolTableUniqueKey> getObjectsCache(
+            ExasolTableUniqueKey object)
+    {
+        return object.getTable().getSchema().getConstraintCache();
+    }
 
-	@Override
-	protected ExasolTableUniqueKey createDatabaseObject(
-		DBRProgressMonitor monitor, DBECommandContext context,
-		Object container, Object copyFrom, Map<String, Object> options) throws DBException
-	{
-		return new ExasolTableUniqueKey(
-			(ExasolTable) container,
-			DBSEntityConstraintType.PRIMARY_KEY,
-			true,
-			"CONSTRAINT"
-		);		
-	}
-	
-	@Override
-	protected String getDropConstraintPattern(ExasolTableUniqueKey constraint)
-	{
-		return "ALTER TABLE " + constraint.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " DROP PRIMARY KEY";
-	}
-	
-	@Override
-	protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
+    @Override
+    protected ExasolTableUniqueKey createDatabaseObject(
+        DBRProgressMonitor monitor, DBECommandContext context,
+        Object container, Object copyFrom, Map<String, Object> options) throws DBException
+    {
+        return new ExasolTableUniqueKey(
+            (ExasolTable) container,
+            DBSEntityConstraintType.PRIMARY_KEY,
+            true,
+            "CONSTRAINT"
+        );		
+    }
+    
+    @Override
+    protected String getDropConstraintPattern(ExasolTableUniqueKey constraint)
+    {
+        return "ALTER TABLE " + constraint.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " DROP PRIMARY KEY";
+    }
+    
+    @Override
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                           ObjectCreateCommand command, Map<String, Object> options)
-	{
-		ExasolTableUniqueKey obj = (ExasolTableUniqueKey) command.getObject();
-		try {
-			actions.add(new SQLDatabasePersistAction("Create PK", ExasolUtils.getPKDdl(obj, monitor)));
-		} catch (DBException e) {
-			log.error("Could not generated DDL for PK");
-		}
-	}
+    {
+        ExasolTableUniqueKey obj = (ExasolTableUniqueKey) command.getObject();
+        try {
+            actions.add(new SQLDatabasePersistAction("Create PK", ExasolUtils.getPKDdl(obj, monitor)));
+        } catch (DBException e) {
+            log.error("Could not generated DDL for PK");
+        }
+    }
 
-	@Override
-	public void renameObject(@NotNull DBECommandContext commandContext,
-							 @NotNull ExasolTableUniqueKey object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException
-	{
-		processObjectRename(commandContext, object, options, newName);
-		
-	}
-	
-	@Override
-	protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList,
+    @Override
+    public void renameObject(@NotNull DBECommandContext commandContext,
+                             @NotNull ExasolTableUniqueKey object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException
+    {
+        processObjectRename(commandContext, object, options, newName);
+        
+    }
+    
+    @Override
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList,
                                           ObjectChangeCommand command, Map<String, Object> options)
-	{
-		final ExasolTableUniqueKey constraint = command.getObject();
-		
-		if (command.getProperties().containsKey(DBConstants.PROP_ID_ENABLED))
-		{
-			actionList.add(
-					new SQLDatabasePersistAction("Alter PK",
-							"ALTER TABLE " + constraint.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + 
-							" MODIFY CONSTRAINT " + constraint.getName() + " " +
-							(constraint.getEnabled() ? ExasolConstants.KEYWORD_ENABLE : ExasolConstants.KEYWORD_DISABLE)
-							)
-					);
-		}
-	}
-	
-	
-	@Override
-	protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-										  ObjectRenameCommand command, Map<String, Object> options)
-	{
-		final ExasolTableUniqueKey key = command.getObject();
-		actions.add(
-				new SQLDatabasePersistAction(
-					"Rename PK", 
-					"ALTER TABLE " + DBUtils.getObjectFullName(key.getTable(),DBPEvaluationContext.DDL) + " RENAME CONSTRAINT " 
-					+ DBUtils.getQuotedIdentifier(key.getDataSource(),command.getOldName()) + " to " +
-					DBUtils.getQuotedIdentifier(key.getDataSource(), command.getNewName())
-				)
-		);
+    {
+        final ExasolTableUniqueKey constraint = command.getObject();
+        
+        if (command.getProperties().containsKey(DBConstants.PROP_ID_ENABLED))
+        {
+            actionList.add(
+                    new SQLDatabasePersistAction("Alter PK",
+                            "ALTER TABLE " + constraint.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + 
+                            " MODIFY CONSTRAINT " + constraint.getName() + " " +
+                            (constraint.getEnabled() ? ExasolConstants.KEYWORD_ENABLE : ExasolConstants.KEYWORD_DISABLE)
+                            )
+                    );
+        }
+    }
+    
+    
+    @Override
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
+                                          ObjectRenameCommand command, Map<String, Object> options)
+    {
+        final ExasolTableUniqueKey key = command.getObject();
+        actions.add(
+                new SQLDatabasePersistAction(
+                    "Rename PK", 
+                    "ALTER TABLE " + DBUtils.getObjectFullName(key.getTable(),DBPEvaluationContext.DDL) + " RENAME CONSTRAINT " 
+                    + DBUtils.getQuotedIdentifier(key.getDataSource(),command.getOldName()) + " to " +
+                    DBUtils.getQuotedIdentifier(key.getDataSource(), command.getNewName())
+                )
+        );
 
-	}
-	
+    }
+    
 
 }

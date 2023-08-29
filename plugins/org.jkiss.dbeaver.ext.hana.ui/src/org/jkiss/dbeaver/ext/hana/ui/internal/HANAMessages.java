@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.hana.ui.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class HANAMessages extends NLS {
-	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.hana.ui.internal.HANAMessages"; //$NON-NLS-1$
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.hana.ui.internal.HANAMessages"; //$NON-NLS-1$
 
     public static String label_connection;
     public static String label_edition;
@@ -30,8 +30,8 @@ public class HANAMessages extends NLS {
     
     public static String tooltip_instance;
 
-	public static String edition_generic;
-	public static String edition_platform_single_db;
+    public static String edition_generic;
+    public static String edition_platform_single_db;
     public static String edition_platform_system_db;
     public static String edition_platform_tenant_db;
     public static String edition_express;

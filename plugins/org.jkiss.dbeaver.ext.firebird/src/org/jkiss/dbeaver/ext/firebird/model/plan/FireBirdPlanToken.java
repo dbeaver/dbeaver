@@ -26,23 +26,23 @@ import java.util.regex.Pattern;
  * @author tomashorak@post.cz
  */
 enum FireBirdPlanToken {
-	PLAN("\\GPLAN\\b"), 
-	JOIN("\\GJOIN\\b"), 
-	NATURAL("\\GNATURAL\\b"),
-	SORT_MERGE("\\GSORT\\w+MERGE\\b"),
-	SORT("\\GSORT\\b"), 
-	MERGE("\\GMERGE\\b"), 
-	HASH("\\GHASH\\b"),
-	ORDER("\\GORDER\\b"), 
-	INDEX("\\GINDEX\\b"), 
-	LEFTPARENTHESE("\\G\\("), 
-	RIGHTPARENTHESE("\\G\\)"),
-	COMMA("\\G,"),
-	WHITESPACE("\\G\\s+"),
-	IDENTIFICATOR("\\G\\b[\\w$]+\\b"),
-	UNRECOGNIZED("\\G\\b[^\\s]+\\b");
+    PLAN("\\GPLAN\\b"),
+    JOIN("\\GJOIN\\b"),
+    NATURAL("\\GNATURAL\\b"),
+    SORT_MERGE("\\GSORT\\w+MERGE\\b"),
+    SORT("\\GSORT\\b"),
+    MERGE("\\GMERGE\\b"),
+    HASH("\\GHASH\\b"),
+    ORDER("\\GORDER\\b"),
+    INDEX("\\GINDEX\\b"),
+    LEFTPARENTHESE("\\G\\("),
+    RIGHTPARENTHESE("\\G\\)"),
+    COMMA("\\G,"),
+    WHITESPACE("\\G\\s+"),
+    IDENTIFICATOR("\\G\\b[\\w$]+\\b"),
+    UNRECOGNIZED("\\G\\b[^\\s]+\\b");
     
-	private final Pattern pattern;
+    private final Pattern pattern;
 
     private FireBirdPlanToken(String regex) {
         pattern = Pattern.compile(regex);

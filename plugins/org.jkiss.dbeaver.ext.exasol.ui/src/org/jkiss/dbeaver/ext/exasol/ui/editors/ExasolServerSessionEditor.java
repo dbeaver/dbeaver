@@ -57,7 +57,7 @@ public class ExasolServerSessionEditor extends AbstractSessionEditor {
     }
 
     @SuppressWarnings("rawtypes")
-	@Override
+    @Override
     protected SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent) {
         return new SessionManagerViewer<ExasolServerSession>(this, parent, new ExasolServerSessionManager((ExasolDataSource) executionContext.getDataSource())) {
             @Override
@@ -89,7 +89,7 @@ public class ExasolServerSessionEditor extends AbstractSessionEditor {
         }
 
         @SuppressWarnings("unchecked")
-		@Override
+        @Override
         public void run() {
             final List<DBAServerSession> sessions = getSessionsViewer().getSelectedSessions();
             final String action = ExasolMessages.editors_exasol_session_editor_action_kill;

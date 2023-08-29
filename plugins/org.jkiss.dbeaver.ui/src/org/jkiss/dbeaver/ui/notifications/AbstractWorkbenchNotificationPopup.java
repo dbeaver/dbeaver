@@ -23,17 +23,17 @@ import org.jkiss.dbeaver.ui.UIIcon;
  */
 public class AbstractWorkbenchNotificationPopup extends AbstractNotificationPopup {
 
-	public AbstractWorkbenchNotificationPopup(Display display, int style) {
+    public AbstractWorkbenchNotificationPopup(Display display, int style) {
         super(display, style);
-	}
+    }
 
-	public AbstractWorkbenchNotificationPopup(Display display) {
-		super(display);
-	}
+    public AbstractWorkbenchNotificationPopup(Display display) {
+        super(display);
+    }
 
-	@Override
-	protected Image getPopupShellImage(int maximumHeight) {
-		return DBeaverIcons.getImage(UIIcon.DBEAVER_LOGO_SMALL);
-	}
+    @Override
+    protected Image getPopupShellImage(int maximumHeight) {
+        return DBeaverIcons.getImage(UIIcon.DBEAVER_LOGO_SMALL);
+    }
 
 }

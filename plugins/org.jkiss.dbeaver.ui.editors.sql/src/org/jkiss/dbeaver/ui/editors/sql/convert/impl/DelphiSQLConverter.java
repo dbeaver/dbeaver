@@ -25,8 +25,8 @@ import java.util.Map;
  * DelphiSQLConverter
  */
 public class DelphiSQLConverter extends SourceCodeSQLConverter {
-	
-	public static final String OPTION_USE_STRING_BUILDER = "use-string-builder";
+
+    public static final String OPTION_USE_STRING_BUILDER = "use-string-builder";
 
     @Override
     protected void convertSourceLines(StringBuilder result, String[] sourceLines, String lineDelimiter, Map<String, Object> options) {

@@ -29,18 +29,18 @@ import java.util.List;
 
 
 public class ExasolLock implements DBAServerLock {
-	
-	 private long    waitSessionId;
-	 private String waitUserName;
-	 private String waitCommandName;
-	 private String waitOsUser;
-	 private String waitClient;
-	 private long    holdSessionId;
-	 private String holdClient;
-	 private String holdUserName;
-	 private String oname;
-	 private String status;
-	 private Timestamp waitLoginTime;
+
+     private long    waitSessionId;
+     private String waitUserName;
+     private String waitCommandName;
+     private String waitOsUser;
+     private String waitClient;
+     private long    holdSessionId;
+     private String holdClient;
+     private String holdUserName;
+     private String oname;
+     private String status;
+     private Timestamp waitLoginTime;
     
     private DBAServerLock hold = null;
     private List<DBAServerLock> waiters = new ArrayList<>(0);
@@ -59,7 +59,7 @@ public class ExasolLock implements DBAServerLock {
    	 this.waitLoginTime = JDBCUtils.safeGetTimestamp(dbResult, "W_LOGIN_TIME");
    	 
     }
-	
+
 
  	@Override
  	public String getTitle() {		
@@ -102,28 +102,28 @@ public class ExasolLock implements DBAServerLock {
  	}
 
  	@Property(viewable = true, order = 1)
-	public BigInteger getWait_sid()
-	{
-		return BigInteger.valueOf(waitSessionId);
-	}
+    public BigInteger getWait_sid()
+    {
+        return BigInteger.valueOf(waitSessionId);
+    }
 
  	@Property(viewable = true, order = 2)
-	public String getWait_osuser()
-	{
-		return waitOsUser;
-	}
+    public String getWait_osuser()
+    {
+        return waitOsUser;
+    }
 
  	@Property(viewable = true, order = 3)
-	public String getWait_user()
-	{
-		return waitUserName;
-	}
+    public String getWait_user()
+    {
+        return waitUserName;
+    }
 
  	@Property(viewable = true, order = 4)
-	public String getOname()
-	{
-		return oname;
-	}
+    public String getOname()
+    {
+        return oname;
+    }
  	
  	@Property(viewable = true, order = 5)
  	public String getWait_command()
@@ -138,29 +138,29 @@ public class ExasolLock implements DBAServerLock {
  	}
 
  	@Property(viewable = true, order = 7)
-	public long getHold_sid()
-	{
-		return holdSessionId;
-	}
+    public long getHold_sid()
+    {
+        return holdSessionId;
+    }
 
 
  	@Property(viewable = true, order = 9)
-	public String getHold_user()
-	{
-		return holdUserName;
-	}
+    public String getHold_user()
+    {
+        return holdUserName;
+    }
 
  	@Property(viewable = true, order = 10)
-	public Timestamp getLtime()
-	{
-		return waitLoginTime;
-	}
+    public Timestamp getLtime()
+    {
+        return waitLoginTime;
+    }
 
  	@Property(viewable = true, order = 11)
-	public String getStatus()
-	{
-		return status;
-	}
+    public String getStatus()
+    {
+        return status;
+    }
  	
  	@Property(viewable = true, order = 12)
  	public String getHold_client()

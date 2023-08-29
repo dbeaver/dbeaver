@@ -35,50 +35,50 @@ import java.util.Map;
  * @author tomashorak@post.cz
  */
 public class FireBirdPlanAnalyser extends AbstractExecutionPlan {
-	
-	private FireBirdDataSource dataSource;
-	private JDBCSession session;
-	private String query;
-	private List<FireBirdPlanNode> rootNodes;
 
-	public FireBirdPlanAnalyser(FireBirdDataSource dataSource, JDBCSession session, String query)
+    private FireBirdDataSource dataSource;
+    private JDBCSession session;
+    private String query;
+    private List<FireBirdPlanNode> rootNodes;
+
+    public FireBirdPlanAnalyser(FireBirdDataSource dataSource, JDBCSession session, String query)
     {
         this.dataSource = dataSource;
         this.session = session;
         this.query = query;
     }
-	
-	public void explain()
-	        throws DBException
-	{
-		try {
-			JDBCPreparedStatement dbStat = session.prepareStatement(getQueryString());
-			// Read explained plan
-			try {
-				String plan = FireBirdUtils.getPlan(dbStat);
-				FireBirdPlanBuilder builder = new FireBirdPlanBuilder(plan);
-				rootNodes = builder.Build(session);
-			} finally {
-				dbStat.close();
-			}
-		} catch (SQLException e) {
-			throw new DBCException(e, session.getExecutionContext());
-		}
-	}
-	
-	@Override
-	public String getQueryString() {
-		return query;
-	}
 
-	@Override
-	public String getPlanQueryString() throws DBException {
-		return null;
-	}
+    public void explain()
+            throws DBException
+    {
+        try {
+            JDBCPreparedStatement dbStat = session.prepareStatement(getQueryString());
+            // Read explained plan
+            try {
+                String plan = FireBirdUtils.getPlan(dbStat);
+                FireBirdPlanBuilder builder = new FireBirdPlanBuilder(plan);
+                rootNodes = builder.Build(session);
+            } finally {
+                dbStat.close();
+            }
+        } catch (SQLException e) {
+            throw new DBCException(e, session.getExecutionContext());
+        }
+    }
 
-	@Override
-	public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options) {
-		return rootNodes;
-	}
+    @Override
+    public String getQueryString() {
+        return query;
+    }
+
+    @Override
+    public String getPlanQueryString() throws DBException {
+        return null;
+    }
+
+    @Override
+    public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options) {
+        return rootNodes;
+    }
 
 }

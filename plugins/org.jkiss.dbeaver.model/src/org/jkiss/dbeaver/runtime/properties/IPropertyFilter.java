@@ -22,8 +22,8 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
  * Interface for filters. Can accept or reject items.
  */
 public interface IPropertyFilter {
-	/**
-	 * Determines if the given property passes this filter.
-	 */
-	boolean select(Object object, DBPPropertyDescriptor property);
+    /**
+     * Determines if the given property passes this filter.
+     */
+    boolean select(Object object, DBPPropertyDescriptor property);
 }

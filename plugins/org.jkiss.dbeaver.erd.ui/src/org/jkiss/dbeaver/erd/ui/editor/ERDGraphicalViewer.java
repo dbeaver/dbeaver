@@ -77,7 +77,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
     private static final Log log = Log.getLog(ERDGraphicalViewer.class);
 
     private ERDEditorPart editor;
-	private ValidationMessageHandler messageHandler;
+    private ValidationMessageHandler messageHandler;
     private IThemeManager themeManager;
     private boolean loadContents = false;
 
@@ -87,15 +87,15 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
 
     private final Map<DBPDataSourceContainer, DataSourceInfo> usedDataSources = new IdentityHashMap<>();
 
-	/**
-	 * ValidationMessageHandler to receive messages
-	 * @param messageHandler message handler 
-	 */
-	public ERDGraphicalViewer(ERDEditorPart editor, ValidationMessageHandler messageHandler)
-	{
-		super();
+    /**
+     * ValidationMessageHandler to receive messages
+     * @param messageHandler message handler
+     */
+    public ERDGraphicalViewer(ERDEditorPart editor, ValidationMessageHandler messageHandler)
+    {
+        super();
         this.editor = editor;
-		this.messageHandler = messageHandler;
+        this.messageHandler = messageHandler;
 
         themeManager = editor.getSite().getWorkbenchWindow().getWorkbench().getThemeManager();
         themeManager.addPropertyChangeListener(this);
@@ -133,29 +133,29 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
     }
 
     /**
-	 * @return Returns the messageLabel.
-	 */
-	public ValidationMessageHandler getValidationHandler()
-	{
-		return messageHandler;
-	}
+     * @return Returns the messageLabel.
+     */
+    public ValidationMessageHandler getValidationHandler()
+    {
+        return messageHandler;
+    }
 
-	/**
-	 * This method is invoked when this viewer's control loses focus. It removes
-	 * focus from the {@link AbstractEditPartViewer#focusPart focusPart}, if
-	 * there is one.
-	 * 
-	 * @param fe
-	 *            the focusEvent received by this viewer's control
-	 */
-	@Override
+    /**
+     * This method is invoked when this viewer's control loses focus. It removes
+     * focus from the {@link AbstractEditPartViewer#focusPart focusPart}, if
+     * there is one.
+     *
+     * @param fe
+     *            the focusEvent received by this viewer's control
+     */
+    @Override
     protected void handleFocusLost(FocusEvent fe)
-	{
-		//give the superclass a chance to handle this first
-		super.handleFocusLost(fe);
-		//call reset on the MessageHandler itself
-		messageHandler.reset();
-	}
+    {
+        //give the superclass a chance to handle this first
+        super.handleFocusLost(fe);
+        //call reset on the MessageHandler itself
+        messageHandler.reset();
+    }
 
     @Override
     public void propertyChange(PropertyChangeEvent event)

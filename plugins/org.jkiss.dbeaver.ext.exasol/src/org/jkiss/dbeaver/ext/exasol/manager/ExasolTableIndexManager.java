@@ -38,56 +38,56 @@ import java.util.Map;
 
 public class ExasolTableIndexManager extends SQLIndexManager<ExasolTableIndex, ExasolTable>  {
 
-	@Override
-	public long getMakerOptions(DBPDataSource dataSource) {
-		return FEATURE_EDITOR_ON_CREATE;
-	}
-	
-	@Nullable
-	@Override
-	public DBSObjectCache<ExasolSchema, ExasolTableIndex> getObjectsCache(ExasolTableIndex object) {
-		return object.getTable().getContainer().getIndexCache();
-	}
-	
-	@Override
-	public boolean canEditObject(ExasolTableIndex object) {
-		return false;
-	}
-	
-	@Override
-	protected ExasolTableIndex createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
-			Object container, Object from, Map<String, Object> options) throws DBException {
-		return new ExasolTableIndex((ExasolTable) container, null,  DBSIndexType.OTHER, false );
-	}
-	
-	
-	
-	@Override
-	protected String getDropIndexPattern(ExasolTableIndex index) {
-		return "DROP " + index.getType().getName() + " INDEX ON " + index.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " " + index.getColumnString();
-	}
-	
-	@Override
-	protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
-			List<DBEPersistAction> actions, SQLObjectEditor<ExasolTableIndex, ExasolTable>.ObjectCreateCommand command,
-			Map<String, Object> options) {
-		ExasolTableIndex index = command.getObject();
-		String SQL = String.format(
-				"ENFORCE %s INDEX ON %s %s",
-				index.getType().getName(),
-				index.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL),
-				index.getColumnString()
-				);
-		
-		actions.add(
-				new SQLDatabasePersistAction(
-						"Create Index",
-						SQL
-						)
-				); 
-		
-	}
-	
-	
+    @Override
+    public long getMakerOptions(DBPDataSource dataSource) {
+        return FEATURE_EDITOR_ON_CREATE;
+    }
+    
+    @Nullable
+    @Override
+    public DBSObjectCache<ExasolSchema, ExasolTableIndex> getObjectsCache(ExasolTableIndex object) {
+        return object.getTable().getContainer().getIndexCache();
+    }
+    
+    @Override
+    public boolean canEditObject(ExasolTableIndex object) {
+        return false;
+    }
+    
+    @Override
+    protected ExasolTableIndex createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
+            Object container, Object from, Map<String, Object> options) throws DBException {
+        return new ExasolTableIndex((ExasolTable) container, null,  DBSIndexType.OTHER, false );
+    }
+    
+    
+    
+    @Override
+    protected String getDropIndexPattern(ExasolTableIndex index) {
+        return "DROP " + index.getType().getName() + " INDEX ON " + index.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " " + index.getColumnString();
+    }
+    
+    @Override
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
+            List<DBEPersistAction> actions, SQLObjectEditor<ExasolTableIndex, ExasolTable>.ObjectCreateCommand command,
+            Map<String, Object> options) {
+        ExasolTableIndex index = command.getObject();
+        String SQL = String.format(
+                "ENFORCE %s INDEX ON %s %s",
+                index.getType().getName(),
+                index.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL),
+                index.getColumnString()
+                );
+        
+        actions.add(
+                new SQLDatabasePersistAction(
+                        "Create Index",
+                        SQL
+                        )
+                ); 
+        
+    }
+    
+    
 
 }

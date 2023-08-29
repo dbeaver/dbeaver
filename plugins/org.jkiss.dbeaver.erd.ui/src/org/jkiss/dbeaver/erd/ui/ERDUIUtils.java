@@ -145,7 +145,7 @@ public class ERDUIUtils {
             }
         }
         return attributeLabel;
-	}
+    }
 
     @Nullable
     public static PaletteEntry findPaletteEntry(@NotNull PaletteContainer container, @NotNull String id) {

@@ -25,19 +25,19 @@ import org.eclipse.gef.editpolicies.ConnectionEndpointEditPolicy;
 
 public class LockGraphEdgeEditPart extends AbstractConnectionEditPart {
 
-	@Override
-	protected void createEditPolicies() {
-		installEditPolicy(EditPolicy.CONNECTION_ROLE,
-				new LockGraphConnectionEditPolicy());
-		installEditPolicy(EditPolicy.CONNECTION_ENDPOINTS_ROLE,
-				new ConnectionEndpointEditPolicy());
-	}
+    @Override
+    protected void createEditPolicies() {
+        installEditPolicy(EditPolicy.CONNECTION_ROLE,
+                new LockGraphConnectionEditPolicy());
+        installEditPolicy(EditPolicy.CONNECTION_ENDPOINTS_ROLE,
+                new ConnectionEndpointEditPolicy());
+    }
 
-	@Override
-	protected IFigure createFigure() {
-		
-		PolylineConnection connection = (PolylineConnection) super.createFigure();
-		
+    @Override
+    protected IFigure createFigure() {
+        
+        PolylineConnection connection = (PolylineConnection) super.createFigure();
+        
         connection.setLineWidth(1);
         
         PolygonDecoration decoration = new PolygonDecoration();
@@ -47,8 +47,8 @@ public class LockGraphEdgeEditPart extends AbstractConnectionEditPart {
 
         
         return connection;
-		
+        
 
-	}
+    }
 
 }

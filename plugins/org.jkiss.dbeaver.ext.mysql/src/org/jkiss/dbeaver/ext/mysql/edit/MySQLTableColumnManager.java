@@ -82,7 +82,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
         }
     };
 
-	private final ColumnModifier<MySQLTableColumn> ExtraInfoModifier = (monitor, column, sql, command) -> {
+    private final ColumnModifier<MySQLTableColumn> ExtraInfoModifier = (monitor, column, sql, command) -> {
         String extraInfo = column.getExtraInfo();
         if (!CommonUtils.isEmpty(extraInfo)) {
             if (extraInfo.contains(MySQLConstants.EXTRA_INFO_DEFAULT_GENERATED)) {

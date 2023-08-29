@@ -36,45 +36,45 @@ import java.util.List;
 public class ExasolExportTableTool implements IUserInterfaceTool {
 
 
-	public ExasolExportTableTool()
-	{
-	}
+    public ExasolExportTableTool()
+    {
+    }
 
-	@Override
-	public void execute(IWorkbenchWindow window, IWorkbenchPart activePart,
-			Collection<DBSObject> objects) throws DBException
-	{
-		List<ExasolTable> tables = CommonUtils.filterCollection(objects, ExasolTable.class);
-		List<ExasolView> views = CommonUtils.filterCollection(objects, ExasolView.class);
-		List<ExasolSchema> schemas = CommonUtils.filterCollection(objects, ExasolSchema.class);
-		
-		//add tables for all Schemas but ignore views in schema
-		for(ExasolSchema schema : schemas)
-		{
-			tables.addAll(schema.getTables(new VoidProgressMonitor()));
-		}
-		
-		// create TableBase Objects list
-		@SuppressWarnings({ "unchecked", "rawtypes" })
-		HashSet<ExasolTableBase> tableBaseObjects = new HashSet();
-		
-		//add tables
-		for(ExasolTable table : tables)
-		{
-			tableBaseObjects.add((ExasolTableBase) table);
-		}
-		
-		//add views
-		for(ExasolView view : views)
-		{
-			tableBaseObjects.add((ExasolTableBase) view);
-		}
-		
-		if (!tableBaseObjects.isEmpty()) {
-			ExasolExportTableToolDialog dialog = new ExasolExportTableToolDialog(activePart.getSite(), tableBaseObjects);
-			dialog.open();
-		}
-		
-	}
+    @Override
+    public void execute(IWorkbenchWindow window, IWorkbenchPart activePart,
+            Collection<DBSObject> objects) throws DBException
+    {
+        List<ExasolTable> tables = CommonUtils.filterCollection(objects, ExasolTable.class);
+        List<ExasolView> views = CommonUtils.filterCollection(objects, ExasolView.class);
+        List<ExasolSchema> schemas = CommonUtils.filterCollection(objects, ExasolSchema.class);
+        
+        //add tables for all Schemas but ignore views in schema
+        for(ExasolSchema schema : schemas)
+        {
+            tables.addAll(schema.getTables(new VoidProgressMonitor()));
+        }
+        
+        // create TableBase Objects list
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+        HashSet<ExasolTableBase> tableBaseObjects = new HashSet();
+        
+        //add tables
+        for(ExasolTable table : tables)
+        {
+            tableBaseObjects.add((ExasolTableBase) table);
+        }
+        
+        //add views
+        for(ExasolView view : views)
+        {
+            tableBaseObjects.add((ExasolTableBase) view);
+        }
+        
+        if (!tableBaseObjects.isEmpty()) {
+            ExasolExportTableToolDialog dialog = new ExasolExportTableToolDialog(activePart.getSite(), tableBaseObjects);
+            dialog.open();
+        }
+        
+    }
 
 }

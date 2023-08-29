@@ -25,52 +25,52 @@ import java.util.List;
 
 public class LockGraph {
 
-	private List<LockGraphNode> nodes = new ArrayList<>();
-	private int maxWidth = 0;
-	private LockGraphNode selection;
-	//private LockManagerViewer lockManagerViewer;
-	private final DBAServerLock lockRoot;
-	
-	public DBAServerLock getLockRoot() {
-		return lockRoot;
-	}
+    private List<LockGraphNode> nodes = new ArrayList<>();
+    private int maxWidth = 0;
+    private LockGraphNode selection;
+    //private LockManagerViewer lockManagerViewer;
+    private final DBAServerLock lockRoot;
+
+    public DBAServerLock getLockRoot() {
+        return lockRoot;
+    }
 
 /*
-	public LockManagerViewer getLockManagerViewer() {
-		return lockManagerViewer;
-	}
+    public LockManagerViewer getLockManagerViewer() {
+        return lockManagerViewer;
+    }
 
-	public void setLockManagerViewer(LockManagerViewer lockManagerViewer) {
-		this.lockManagerViewer = lockManagerViewer;
-	}
+    public void setLockManagerViewer(LockManagerViewer lockManagerViewer) {
+        this.lockManagerViewer = lockManagerViewer;
+    }
 */
 
-	public LockGraph(DBAServerLock lockRoot) {
-		this.selection = null;
-		this.lockRoot = lockRoot;
-	}
+    public LockGraph(DBAServerLock lockRoot) {
+        this.selection = null;
+        this.lockRoot = lockRoot;
+    }
 
-	public LockGraphNode getSelection() {
-		return selection;
-	}
-
-
-	public void setSelection(LockGraphNode selection) {
-		this.selection = selection;
-	}
+    public LockGraphNode getSelection() {
+        return selection;
+    }
 
 
-	public List<LockGraphNode> getNodes() {
-		return this.nodes;
-	}
+    public void setSelection(LockGraphNode selection) {
+        this.selection = selection;
+    }
 
 
-	public int getMaxWidth() {
-		return maxWidth;
-	}
+    public List<LockGraphNode> getNodes() {
+        return this.nodes;
+    }
 
 
-	public void setMaxWidth(int maxWidth) {
-		this.maxWidth = maxWidth;
-	}
+    public int getMaxWidth() {
+        return maxWidth;
+    }
+
+
+    public void setMaxWidth(int maxWidth) {
+        this.maxWidth = maxWidth;
+    }
 }

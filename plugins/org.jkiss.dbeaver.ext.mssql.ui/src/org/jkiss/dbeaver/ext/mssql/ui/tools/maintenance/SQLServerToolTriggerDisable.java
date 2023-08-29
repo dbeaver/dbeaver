@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance;
 public class SQLServerToolTriggerDisable extends SQLServerToolTriggerToggle {
 
     public SQLServerToolTriggerDisable() {
-	super(false);
+    super(false);
     }
 
 }

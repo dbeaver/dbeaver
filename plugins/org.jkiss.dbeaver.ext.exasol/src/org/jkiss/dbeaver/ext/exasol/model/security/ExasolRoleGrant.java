@@ -30,66 +30,66 @@ import java.sql.ResultSet;
 
 public class ExasolRoleGrant implements DBAPrivilege  {
 
-	private Boolean adminOption;
-	private String role;
-	private ExasolDataSource dataSource;
-	private String grantee;
-	
-	public ExasolRoleGrant(ExasolDataSource dataSource, ResultSet resultSet)
-	{
-		this.role = JDBCUtils.safeGetString(resultSet, "ROLE_NAME");
-		this.grantee = JDBCUtils.safeGetString(resultSet, "GRANTEE");
-		this.dataSource = dataSource;
-		this.adminOption = JDBCUtils.safeGetBoolean(resultSet, "ADMIN_OPTION");
-	}
-	
-	@Property(viewable = true, order = 10)
-	public ExasolRole getRole(DBRProgressMonitor monitor) throws DBException
-	{
-		return dataSource.getRole(monitor, role);
-	}
-	
-	@Property(viewable = true, order = 20)
-	public Boolean getAdminOption()
-	{
-		return this.adminOption;
-	}
+    private Boolean adminOption;
+    private String role;
+    private ExasolDataSource dataSource;
+    private String grantee;
 
-	@Override
-	public String getDescription()
-	{
-		return null;
-	}
+    public ExasolRoleGrant(ExasolDataSource dataSource, ResultSet resultSet)
+    {
+        this.role = JDBCUtils.safeGetString(resultSet, "ROLE_NAME");
+        this.grantee = JDBCUtils.safeGetString(resultSet, "GRANTEE");
+        this.dataSource = dataSource;
+        this.adminOption = JDBCUtils.safeGetBoolean(resultSet, "ADMIN_OPTION");
+    }
 
-	@Override
-	public DBSObject getParentObject()
-	{
-		return dataSource.getContainer();
-	}
+    @Property(viewable = true, order = 10)
+    public ExasolRole getRole(DBRProgressMonitor monitor) throws DBException
+    {
+        return dataSource.getRole(monitor, role);
+    }
 
-	@Override
-	public DBPDataSource getDataSource()
-	{
-		return this.dataSource;
-	}
+    @Property(viewable = true, order = 20)
+    public Boolean getAdminOption()
+    {
+        return this.adminOption;
+    }
 
-	@Override
-	public String getName()
-	{
-		return grantee + "|" + role;
-	}
-	
-	public String getGrantee()
-	{
-		return grantee;
-	}	
-	
+    @Override
+    public String getDescription()
+    {
+        return null;
+    }
 
-	@Override
-	public boolean isPersisted()
-	{
-		// TODO Auto-generated method stub
-		return false;
-	}
+    @Override
+    public DBSObject getParentObject()
+    {
+        return dataSource.getContainer();
+    }
+
+    @Override
+    public DBPDataSource getDataSource()
+    {
+        return this.dataSource;
+    }
+
+    @Override
+    public String getName()
+    {
+        return grantee + "|" + role;
+    }
+
+    public String getGrantee()
+    {
+        return grantee;
+    }
+
+
+    @Override
+    public boolean isPersisted()
+    {
+        // TODO Auto-generated method stub
+        return false;
+    }
 
 }

@@ -26,13 +26,13 @@ import org.w3c.dom.Element;
  */
 public class DOMElementProvider implements IElementProvider {
 
-	public static final IElementProvider INSTANCE = new DOMElementProvider();
+    public static final IElementProvider INSTANCE = new DOMElementProvider();
 
-	@Override
-	public Element getElement(Object element, CSSEngine engine) {
-		if (element instanceof VerticalFolder) {
-			return new VerticalFolderElement((VerticalFolder) element, engine);
-		}
-		return null;
-	}
+    @Override
+    public Element getElement(Object element, CSSEngine engine) {
+        if (element instanceof VerticalFolder) {
+            return new VerticalFolderElement((VerticalFolder) element, engine);
+        }
+        return null;
+    }
 }

@@ -31,12 +31,12 @@ import org.jkiss.dbeaver.ui.UIIcon;
 public class ERDPropertiesDrawer extends PaletteDrawer
 {
 
-	public ERDPropertiesDrawer() {
-		super("Properties", DBeaverIcons.getImageDescriptor(UIIcon.PROPERTIES));
-		setDescription("Object properties");
-		setId("erd-properties");
+    public ERDPropertiesDrawer() {
+        super("Properties", DBeaverIcons.getImageDescriptor(UIIcon.PROPERTIES));
+        setDescription("Object properties");
+        setId("erd-properties");
 
-		add(new SelectionToolEntry());
-	}
+        add(new SelectionToolEntry());
+    }
 
 }

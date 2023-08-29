@@ -24,16 +24,16 @@ import org.eclipse.gef.requests.CreateRequest;
 
 public class LockGraphXYLayoutEditPolicy extends XYLayoutEditPolicy {
 
-	@Override
-	protected Command createChangeConstraintCommand(EditPart child,
-			Object constraint) {
-		return null;
-	}
+    @Override
+    protected Command createChangeConstraintCommand(EditPart child,
+            Object constraint) {
+        return null;
+    }
 
-	@Override
-	protected Command getCreateCommand(CreateRequest request) {
-		return null;
-	}
+    @Override
+    protected Command getCreateCommand(CreateRequest request) {
+        return null;
+    }
 
 
 

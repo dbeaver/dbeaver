@@ -27,38 +27,38 @@ import java.util.Collection;
  */
 public final class DatabaseObjectTransfer extends LocalObjectTransfer<Collection<DBPNamedObject>> {
 
-	private static final DatabaseObjectTransfer INSTANCE = new DatabaseObjectTransfer();
-	private static final String TYPE_NAME = "DBSObject Transfer"//$NON-NLS-1$
-			+ System.currentTimeMillis() + ":" + INSTANCE.hashCode();//$NON-NLS-1$
-	private static final int TYPEID = registerType(TYPE_NAME);
+    private static final DatabaseObjectTransfer INSTANCE = new DatabaseObjectTransfer();
+    private static final String TYPE_NAME = "DBSObject Transfer"//$NON-NLS-1$
+            + System.currentTimeMillis() + ":" + INSTANCE.hashCode();//$NON-NLS-1$
+    private static final int TYPEID = registerType(TYPE_NAME);
 
-	/**
-	 * Returns the singleton instance.
-	 *
-	 * @return The singleton instance
-	 */
-	public static DatabaseObjectTransfer getInstance() {
-		return INSTANCE;
-	}
+    /**
+     * Returns the singleton instance.
+     *
+     * @return The singleton instance
+     */
+    public static DatabaseObjectTransfer getInstance() {
+        return INSTANCE;
+    }
 
-	private DatabaseObjectTransfer() {
-	}
+    private DatabaseObjectTransfer() {
+    }
 
-	/**
-	 * @see org.eclipse.swt.dnd.Transfer#getTypeIds()
-	 */
-	@Override
+    /**
+     * @see org.eclipse.swt.dnd.Transfer#getTypeIds()
+     */
+    @Override
     protected int[] getTypeIds() {
-		return new int[] { TYPEID };
-	}
+        return new int[] { TYPEID };
+    }
 
-	/**
-	 * @see org.eclipse.swt.dnd.Transfer#getTypeNames()
-	 */
-	@Override
+    /**
+     * @see org.eclipse.swt.dnd.Transfer#getTypeNames()
+     */
+    @Override
     protected String[] getTypeNames() {
-		return new String[] { TYPE_NAME };
-	}
+        return new String[] { TYPE_NAME };
+    }
 
     public static Collection<DBPNamedObject> getFromClipboard()
     {

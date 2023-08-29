@@ -28,42 +28,42 @@ import org.eclipse.gef.requests.CreationFactory;
 public class DataElementFactory implements CreationFactory
 {
 
-	private Object template;
+    private Object template;
 
-	/**
-	 * Creates a new FlowElementFactory with the given template object
-	 * 
-	 * @param o
-	 *            the template
-	 */
-	public DataElementFactory(Object o)
-	{
-		template = o;
-	}
+    /**
+     * Creates a new FlowElementFactory with the given template object
+     *
+     * @param o
+     *            the template
+     */
+    public DataElementFactory(Object o)
+    {
+        template = o;
+    }
 
-	/**
-	 * @see org.eclipse.gef.requests.CreationFactory#getNewObject()
-	 */
-	@Override
+    /**
+     * @see org.eclipse.gef.requests.CreationFactory#getNewObject()
+     */
+    @Override
     public Object getNewObject()
-	{
-		try
-		{
-			return ((Class<?>) template).getConstructor().newInstance();
-		}
-		catch (Exception e)
-		{
-			return null;
-		}
-	}
+    {
+        try
+        {
+            return ((Class<?>) template).getConstructor().newInstance();
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+    }
 
-	/**
-	 * @see org.eclipse.gef.requests.CreationFactory#getObjectType()
-	 */
-	@Override
+    /**
+     * @see org.eclipse.gef.requests.CreationFactory#getObjectType()
+     */
+    @Override
     public Object getObjectType()
-	{
-		return template;
-	}
+    {
+        return template;
+    }
 
 }

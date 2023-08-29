@@ -115,11 +115,11 @@ public class ExasolSecurityPolicyManager
     }
 
 
-	@Override
-	protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
+    @Override
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                           ObjectCreateCommand command,
                                           Map<String, Object> options) {
-	}
+    }
     
     
     

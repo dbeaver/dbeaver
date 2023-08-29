@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.spanner.model;
  */
 public class SpannerConstants {
 
-	// Community driver constants.
+    // Community driver constants.
     public static final String DRIVER_PROP_PROJECT_ID = "Project";
     public static final String DRIVER_PROP_INSTANCE_ID = "Instance";
     public static final String DRIVER_PROP_DATABASE_ID = "Database";

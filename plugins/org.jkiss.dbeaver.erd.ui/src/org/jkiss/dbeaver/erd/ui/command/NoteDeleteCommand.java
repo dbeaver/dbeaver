@@ -30,9 +30,9 @@ import org.jkiss.dbeaver.erd.ui.part.NotePart;
 public class NoteDeleteCommand extends Command
 {
     private NotePart notePart;
-	private ERDNote note;
-	private EntityDiagram entityDiagram;
-	private Rectangle bounds;
+    private ERDNote note;
+    private EntityDiagram entityDiagram;
+    private Rectangle bounds;
 
     public NoteDeleteCommand(EntityDiagram entityDiagram, NotePart notePart, Rectangle originalBounds) {
         this.entityDiagram = entityDiagram;
@@ -41,29 +41,29 @@ public class NoteDeleteCommand extends Command
         this.bounds = originalBounds;
     }
 
-	/**
-	 * @see org.eclipse.gef.commands.Command#execute()
-	 */
-	@Override
+    /**
+     * @see org.eclipse.gef.commands.Command#execute()
+     */
+    @Override
     public void execute()
-	{
-		entityDiagram.removeNote(note, true);
-	}
+    {
+        entityDiagram.removeNote(note, true);
+    }
 
-	/**
-	 * @see org.eclipse.gef.commands.Command#redo()
-	 */
-	@Override
+    /**
+     * @see org.eclipse.gef.commands.Command#redo()
+     */
+    @Override
     public void redo()
-	{
-		execute();
-	}
+    {
+        execute();
+    }
 
-	@Override
+    @Override
     public void undo()
-	{
-		entityDiagram.addNote(note, true);
-	}
+    {
+        entityDiagram.addNote(note, true);
+    }
 
 }
 

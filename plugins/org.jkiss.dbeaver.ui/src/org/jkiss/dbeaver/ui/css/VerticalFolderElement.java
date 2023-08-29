@@ -30,17 +30,17 @@ import java.util.stream.Stream;
  */
 public class VerticalFolderElement extends CompositeElement implements IStreamingNodeList {
 
-	public VerticalFolderElement(VerticalFolder composite, CSSEngine engine) {
-		super(composite, engine);
-	}
+    public VerticalFolderElement(VerticalFolder composite, CSSEngine engine) {
+        super(composite, engine);
+    }
 
-	protected VerticalFolder getVerticalFolder() {
-		return (VerticalFolder) getNativeWidget();
-	}
+    protected VerticalFolder getVerticalFolder() {
+        return (VerticalFolder) getNativeWidget();
+    }
 
-	@Override
-	public Stream<Node> stream() {
-		return Arrays.stream(getVerticalFolder().getChildren()).map(this::getElement);
-	}
+    @Override
+    public Stream<Node> stream() {
+        return Arrays.stream(getVerticalFolder().getChildren()).map(this::getElement);
+    }
 
 }

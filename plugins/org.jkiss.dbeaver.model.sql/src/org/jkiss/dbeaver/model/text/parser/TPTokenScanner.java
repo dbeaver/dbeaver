@@ -23,30 +23,30 @@ import org.eclipse.jface.text.IDocument;
  */
 public interface TPTokenScanner {
 
-	/**
-	 * Configures the scanner by providing access to the document range that should
-	 * be scanned.
-	 */
-	void setRange(IDocument document, int offset, int length);
+    /**
+     * Configures the scanner by providing access to the document range that should
+     * be scanned.
+     */
+    void setRange(IDocument document, int offset, int length);
 
-	/**
-	 * Returns the next token in the document.
-	 *
-	 * @return the next token in the document
-	 */
-	TPToken nextToken();
+    /**
+     * Returns the next token in the document.
+     *
+     * @return the next token in the document
+     */
+    TPToken nextToken();
 
-	/**
-	 * Returns the offset of the last token read by this scanner.
-	 *
-	 * @return the offset of the last token read by this scanner
-	 */
-	int getTokenOffset();
+    /**
+     * Returns the offset of the last token read by this scanner.
+     *
+     * @return the offset of the last token read by this scanner
+     */
+    int getTokenOffset();
 
-	/**
-	 * Returns the length of the last token read by this scanner.
-	 *
-	 * @return the length of the last token read by this scanner
-	 */
-	int getTokenLength();
+    /**
+     * Returns the length of the last token read by this scanner.
+     *
+     * @return the length of the last token read by this scanner
+     */
+    int getTokenLength();
 }

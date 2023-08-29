@@ -43,7 +43,7 @@ public class ExasolConsumerGroupDialog extends BaseDialog {
     private String name = "";
     private BigDecimal cpuWeight = null;
     private BigDecimal userRamLimit = null;
-	private BigDecimal groupRamLimit = null;
+    private BigDecimal groupRamLimit = null;
     private BigDecimal sessionRamLimit = null;
     private BigDecimal precedence = null;
     private String comment = "";
@@ -90,7 +90,7 @@ public class ExasolConsumerGroupDialog extends BaseDialog {
 
         ModifyListener mod = new ModifyListener() {
             @SuppressWarnings("unused")
-			@Override
+            @Override
             public void modifyText(ModifyEvent e) {
                 name = nameText.getText();
                 try {
@@ -109,7 +109,7 @@ public class ExasolConsumerGroupDialog extends BaseDialog {
     					} catch (NumberFormatException e2) {
     					}
                     }
-				}
+                }
                 
                 //enable/disable OK button   
                 if (name.isEmpty() | cpuWeight == null) {
@@ -145,33 +145,33 @@ public class ExasolConsumerGroupDialog extends BaseDialog {
     }
 
     public BigDecimal getUserRamLimit() {
-		return userRamLimit;
-	}
+        return userRamLimit;
+    }
 
-	public BigDecimal getGroupRamLimit() {
-		return groupRamLimit;
-	}
+    public BigDecimal getGroupRamLimit() {
+        return groupRamLimit;
+    }
 
-	public BigDecimal getSessionRamLimit() {
-		return sessionRamLimit;
-	}
-	
-	public Integer getPrecedence() {
-		return Integer.valueOf(precedence.intValue());
-	}
+    public BigDecimal getSessionRamLimit() {
+        return sessionRamLimit;
+    }
 
-	@Override
-	protected void okPressed() {
-		// TODO Auto-generated method stub
-		super.okPressed();
-		this.group.setCpuWeight(getCpuWeight());
-		this.group.setDescription(getComment());
-		this.group.setGroupRamLimit(getGroupRamLimit());
-		this.group.setName(getName());
-		this.group.setPrecedence(getPrecedence());
-		this.group.setSessionRamLimit(getSessionRamLimit());
-		this.group.setUserRamLimit(getUserRamLimit());
-	}
+    public Integer getPrecedence() {
+        return Integer.valueOf(precedence.intValue());
+    }
+
+    @Override
+    protected void okPressed() {
+        // TODO Auto-generated method stub
+        super.okPressed();
+        this.group.setCpuWeight(getCpuWeight());
+        this.group.setDescription(getComment());
+        this.group.setGroupRamLimit(getGroupRamLimit());
+        this.group.setName(getName());
+        this.group.setPrecedence(getPrecedence());
+        this.group.setSessionRamLimit(getSessionRamLimit());
+        this.group.setUserRamLimit(getUserRamLimit());
+    }
     
     @Override
     protected void createButtonsForButtonBar(Composite parent) {

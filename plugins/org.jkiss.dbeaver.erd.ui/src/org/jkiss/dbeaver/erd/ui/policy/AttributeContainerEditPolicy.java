@@ -43,18 +43,18 @@ public class AttributeContainerEditPolicy extends ContainerEditPolicy {
     protected Command getCreateCommand(CreateRequest request) {
 /*
         Object newObject = request.getNewObject();
-		if (!(newObject instanceof ERDEntityAttribute))
-		{
-			return null;
-		}
-		
-		EntityPart entityPart = (EntityPart) getHost();
-		ERDEntity table = entityPart.getTable();
-		ERDEntityAttribute column = (ERDEntityAttribute) newObject;
-		AttributeCreateCommand command = new AttributeCreateCommand();
-		command.setTable(table);
-		command.setColumn(column);
-		return command;
+        if (!(newObject instanceof ERDEntityAttribute))
+        {
+            return null;
+        }
+        
+        EntityPart entityPart = (EntityPart) getHost();
+        ERDEntity table = entityPart.getTable();
+        ERDEntityAttribute column = (ERDEntityAttribute) newObject;
+        AttributeCreateCommand command = new AttributeCreateCommand();
+        command.setTable(table);
+        command.setColumn(column);
+        return command;
 */
         return null;
     }

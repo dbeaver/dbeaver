@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import java.sql.ResultSet;
 
 public class PostgreLockItem implements DBAServerLockItem{
-	
+
     private String datname;
     private String locktype;
     private String relation;
@@ -53,43 +53,43 @@ public class PostgreLockItem implements DBAServerLockItem{
     }
     
     @Property(viewable = true, order = 1)
-	public String getDatname() {
-		return datname;
-	}
+    public String getDatname() {
+        return datname;
+    }
     
     @Property(viewable = true, order = 2)
-	public String getLocktype() {
-		return locktype;		
-	}
+    public String getLocktype() {
+        return locktype;
+    }
     
     @Property(viewable = true, order = 3)
-	public String getRelation() {
-		return relation;
-	}
+    public String getRelation() {
+        return relation;
+    }
     
     @Property(viewable = true, order = 4)
-	public String getMode() {
-		return mode;
-	}
+    public String getMode() {
+        return mode;
+    }
     
     @Property(viewable = true, order = 5)
     public String getTid() {
-		return tid;
-	}
+        return tid;
+    }
     
     @Property(viewable = true, order = 6)
     public String getDetail() {
-		return detail;
-	}    
-	public int getPid() {
-		return pid;
-	}
+        return detail;
+    }
+    public int getPid() {
+        return pid;
+    }
     
     @Property(viewable = true, order = 7)
-	public boolean isGranted() {
-		return granted;
-	}
+    public boolean isGranted() {
+        return granted;
+    }
     
     
-	 
+
 }

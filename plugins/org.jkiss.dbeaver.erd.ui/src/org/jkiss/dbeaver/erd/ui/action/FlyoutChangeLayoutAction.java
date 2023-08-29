@@ -32,70 +32,70 @@ import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 public class FlyoutChangeLayoutAction extends Action
 {
 
-	private IEditorPart editor;
-	private boolean checked;
+    private IEditorPart editor;
+    private boolean checked;
 
-	public FlyoutChangeLayoutAction(IEditorPart editor)
-	{
-		super("Automatic Layout", Action.AS_CHECK_BOX);
-		this.editor = editor;
-	}
+    public FlyoutChangeLayoutAction(IEditorPart editor)
+    {
+        super("Automatic Layout", Action.AS_CHECK_BOX);
+        this.editor = editor;
+    }
 
-	@Override
+    @Override
     public void run()
-	{
-		if (editor instanceof ERDEditorPart)
-		{
-			ERDEditorPart erdEditor = (ERDEditorPart) editor;
-			EntityDiagram entityDiagram = erdEditor.getDiagram();
-			boolean isManual = entityDiagram.isLayoutManualDesired();
-			entityDiagram.setLayoutManualDesired(!isManual);
+    {
+        if (editor instanceof ERDEditorPart)
+        {
+            ERDEditorPart erdEditor = (ERDEditorPart) editor;
+            EntityDiagram entityDiagram = erdEditor.getDiagram();
+            boolean isManual = entityDiagram.isLayoutManualDesired();
+            entityDiagram.setLayoutManualDesired(!isManual);
             erdEditor.getDiagramPart().changeLayout();
 
-			checked = !isManual;
-			setChecked(checked);
-		}
-	}
+            checked = !isManual;
+            setChecked(checked);
+        }
+    }
 
-	@Override
+    @Override
     public boolean isChecked()
-	{
-		if (editor != null)
-			return isChecked(editor);
-		else
-			return super.isChecked();
-	}
+    {
+        if (editor != null)
+            return isChecked(editor);
+        else
+            return super.isChecked();
+    }
 
-	/**
-	 * @see org.eclipse.jface.action.IAction#isChecked()
-	 */
-	public boolean isChecked(IEditorPart editor)
-	{
+    /**
+     * @see org.eclipse.jface.action.IAction#isChecked()
+     */
+    public boolean isChecked(IEditorPart editor)
+    {
 
-		if (editor instanceof ERDEditorPart)
-		{
-			ERDEditorPart schemaEditor = (ERDEditorPart) editor;
-			EntityDiagram entityDiagram = schemaEditor.getDiagram();
-			boolean checkTrue = entityDiagram.isLayoutManualDesired();
-			return (!checkTrue);
-		}
-		else
-		{
-			return false;
-		}
+        if (editor instanceof ERDEditorPart)
+        {
+            ERDEditorPart schemaEditor = (ERDEditorPart) editor;
+            EntityDiagram entityDiagram = schemaEditor.getDiagram();
+            boolean checkTrue = entityDiagram.isLayoutManualDesired();
+            return (!checkTrue);
+        }
+        else
+        {
+            return false;
+        }
 
-	}
+    }
 
-	public void setActiveEditor(IEditorPart editor)
-	{
-		this.editor = editor;
-		boolean localChecked = isChecked(editor);
-		
-		//there appears to be a bug in the framework which necessitates this
-		if (localChecked)
-			firePropertyChange(CHECKED, Boolean.FALSE, Boolean.TRUE);
-		else
-			firePropertyChange(CHECKED, Boolean.TRUE, Boolean.FALSE);
-	}
+    public void setActiveEditor(IEditorPart editor)
+    {
+        this.editor = editor;
+        boolean localChecked = isChecked(editor);
+        
+        //there appears to be a bug in the framework which necessitates this
+        if (localChecked)
+            firePropertyChange(CHECKED, Boolean.FALSE, Boolean.TRUE);
+        else
+            firePropertyChange(CHECKED, Boolean.TRUE, Boolean.FALSE);
+    }
 
 }

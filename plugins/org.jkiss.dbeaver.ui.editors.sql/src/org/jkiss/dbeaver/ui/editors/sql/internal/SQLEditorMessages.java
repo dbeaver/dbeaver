@@ -80,9 +80,9 @@ public class SQLEditorMessages extends NLS {
     public static String action_menu_sqleditor_restoreResultsPanel;
 
     public static String script_close_behavior_delete_always;
-	public static String script_close_behavior_delete_only_new_scripts;
-	public static String script_close_behavior_do_not_delete;
-	public static String sql_editor_menu_format;
+    public static String script_close_behavior_delete_only_new_scripts;
+    public static String script_close_behavior_do_not_delete;
+    public static String sql_editor_menu_format;
     public static String sql_editor_error_position;
 
     public static String action_result_tabs_close_all_tabs;
@@ -299,24 +299,24 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_label_clear_output_before_execute;
     public static String pref_page_sql_editor_label_clear_output_before_execute_tip;
 
-	public static String pref_page_sql_insert_case_default;
-	public static String pref_page_sql_insert_case_lower_case;
-	public static String pref_page_sql_insert_case_upper_case;
+    public static String pref_page_sql_insert_case_default;
+    public static String pref_page_sql_insert_case_lower_case;
+    public static String pref_page_sql_insert_case_upper_case;
 
     public static String sql_editor_menu_choose_format;
     public static String sql_editor_panel_format;
     public static String sql_editor_result_set_orientation_detached;
-	public static String sql_editor_result_set_orientation_detached_tip;
-	public static String sql_editor_result_set_orientation_horizontal;
-	public static String sql_editor_result_set_orientation_horizontal_tip;
-	public static String sql_editor_result_set_orientation_vertical;
-	public static String sql_editor_result_set_orientation_vertical_tip;
+    public static String sql_editor_result_set_orientation_detached_tip;
+    public static String sql_editor_result_set_orientation_horizontal;
+    public static String sql_editor_result_set_orientation_horizontal_tip;
+    public static String sql_editor_result_set_orientation_vertical;
+    public static String sql_editor_result_set_orientation_vertical_tip;
     public static String sql_script_binding_type_radio_button_connection_name;
-	public static String sql_script_binding_type_radio_button_connection_parameters;
-	public static String sql_script_binding_type_radio_button_connection_unique;
-	public static String sql_script_binding_type_radio_button_connection_url;
+    public static String sql_script_binding_type_radio_button_connection_parameters;
+    public static String sql_script_binding_type_radio_button_connection_unique;
+    public static String sql_script_binding_type_radio_button_connection_url;
 
-	public static String sql_generator_dialog_button_use_fully_names;
+    public static String sql_generator_dialog_button_use_fully_names;
     public static String sql_generator_dialog_button_compact_sql;
     public static String sql_generator_dialog_button_exclude_columns;
     public static String sql_generator_dialog_button_use_custom_data_format;

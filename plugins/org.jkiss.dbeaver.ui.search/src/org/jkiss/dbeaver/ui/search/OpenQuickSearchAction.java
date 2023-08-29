@@ -27,29 +27,29 @@ import org.jkiss.dbeaver.ui.ActionUtils;
  */
 public class OpenQuickSearchAction implements IWorkbenchWindowActionDelegate {
 
-	private IWorkbenchWindow fWindow;
+    private IWorkbenchWindow fWindow;
 
-	public OpenQuickSearchAction() {
-	}
+    public OpenQuickSearchAction() {
+    }
 
-	@Override
-	public void init(IWorkbenchWindow window) {
-		fWindow= window;
-	}
+    @Override
+    public void init(IWorkbenchWindow window) {
+        fWindow= window;
+    }
 
-	@Override
-	public void run(IAction action) {
-		ActionUtils.runCommand("org.eclipse.text.quicksearch.commands.quicksearchCommand", fWindow);
-	}
+    @Override
+    public void run(IAction action) {
+        ActionUtils.runCommand("org.eclipse.text.quicksearch.commands.quicksearchCommand", fWindow);
+    }
 
-	@Override
-	public void selectionChanged(IAction action, ISelection selection) {
-		// do nothing since the action isn't selection dependent.
-	}
+    @Override
+    public void selectionChanged(IAction action, ISelection selection) {
+        // do nothing since the action isn't selection dependent.
+    }
 
-	@Override
-	public void dispose() {
-		fWindow= null;
-	}
+    @Override
+    public void dispose() {
+        fWindow= null;
+    }
 
 }

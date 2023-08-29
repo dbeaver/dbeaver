@@ -27,34 +27,34 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
  */
 public class OpenDataSearchPageAction implements IWorkbenchWindowActionDelegate {
 
-	private static final String DATA_SEARCH_PAGE_ID = SearchDataPage.class.getName();
+    private static final String DATA_SEARCH_PAGE_ID = SearchDataPage.class.getName();
 
-	private IWorkbenchWindow fWindow;
+    private IWorkbenchWindow fWindow;
 
-	public OpenDataSearchPageAction() {
-	}
+    public OpenDataSearchPageAction() {
+    }
 
-	@Override
-	public void init(IWorkbenchWindow window) {
-		fWindow= window;
-	}
+    @Override
+    public void init(IWorkbenchWindow window) {
+        fWindow= window;
+    }
 
-	@Override
-	public void run(IAction action) {
-		if (fWindow == null || fWindow.getActivePage() == null) {
-			return;
-		}
-		NewSearchUI.openSearchDialog(fWindow, DATA_SEARCH_PAGE_ID);
-	}
+    @Override
+    public void run(IAction action) {
+        if (fWindow == null || fWindow.getActivePage() == null) {
+            return;
+        }
+        NewSearchUI.openSearchDialog(fWindow, DATA_SEARCH_PAGE_ID);
+    }
 
-	@Override
-	public void selectionChanged(IAction action, ISelection selection) {
-		// do nothing since the action isn't selection dependent.
-	}
+    @Override
+    public void selectionChanged(IAction action, ISelection selection) {
+        // do nothing since the action isn't selection dependent.
+    }
 
-	@Override
-	public void dispose() {
-		fWindow= null;
-	}
+    @Override
+    public void dispose() {
+        fWindow= null;
+    }
 
 }

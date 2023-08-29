@@ -35,14 +35,14 @@ import java.util.ResourceBundle;
  */
 public class ERDUIActivator extends AbstractUIPlugin {
 
-	// The plug-in ID
-	public static final String PLUGIN_ID = "org.jkiss.dbeaver.erd.ui";
+    // The plug-in ID
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.erd.ui";
 
-	private static final Log log = Log.getLog(ERDUIActivator.class);
+    private static final Log log = Log.getLog(ERDUIActivator.class);
 
-	// The shared instance
-	private static ERDUIActivator plugin;
-	
+    // The shared instance
+    private static ERDUIActivator plugin;
+
     private static ResourceBundle resourceBundle;
 
     private DBPPreferenceStore preferences;
@@ -50,13 +50,13 @@ public class ERDUIActivator extends AbstractUIPlugin {
     /**
      * The constructor
      */
-	public ERDUIActivator() {
-	}
+    public ERDUIActivator() {
+    }
 
-	@Override
+    @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
-		plugin = this;
+        plugin = this;
         preferences = new BundlePreferenceStore(getBundle());
 
         try {
@@ -69,44 +69,44 @@ public class ERDUIActivator extends AbstractUIPlugin {
         // See http://www.jgraph.com/forum/viewtopic.php?t=4066
         System.setProperty("sun.java2d.d3d", Boolean.FALSE.toString()); //$NON-NLS-1$
 
-		// Overload GEF images
-		try {
-			// Use reflection because of Eclipse API incompatibility with oder versions
-			InternalImages.class.getMethod(
-				"set",
-				String.class, Image.class)
-				.invoke(null, InternalImages.IMG_PALETTE, DBeaverIcons.getImage(UIIcon.PALETTE));
-		} catch (Throwable e) {
-			log.debug(e);
-		}
-		//InternalImages.set(InternalImages.IMG_PINNED, DBeaverIcons.getImage(UIIcon.PI));
-	}
+        // Overload GEF images
+        try {
+            // Use reflection because of Eclipse API incompatibility with oder versions
+            InternalImages.class.getMethod(
+                "set",
+                String.class, Image.class)
+                .invoke(null, InternalImages.IMG_PALETTE, DBeaverIcons.getImage(UIIcon.PALETTE));
+        } catch (Throwable e) {
+            log.debug(e);
+        }
+        //InternalImages.set(InternalImages.IMG_PINNED, DBeaverIcons.getImage(UIIcon.PI));
+    }
 
-	@Override
+    @Override
     public void stop(BundleContext context) throws Exception {
-		plugin = null;
-		super.stop(context);
-	}
+        plugin = null;
+        super.stop(context);
+    }
 
-	/**
-	 * Returns the shared instance
-	 *
-	 * @return the shared instance
-	 */
-	public static ERDUIActivator getDefault() {
-		return plugin;
-	}
+    /**
+     * Returns the shared instance
+     *
+     * @return the shared instance
+     */
+    public static ERDUIActivator getDefault() {
+        return plugin;
+    }
 
-	/**
-	 * Returns an image descriptor for the image file at the given
-	 * plug-in relative path
-	 *
-	 * @param path the path
-	 * @return the image descriptor
-	 */
-	public static ImageDescriptor getImageDescriptor(String path) {
-		return imageDescriptorFromPlugin(PLUGIN_ID, path);
-	}
+    /**
+     * Returns an image descriptor for the image file at the given
+     * plug-in relative path
+     *
+     * @param path the path
+     * @return the image descriptor
+     */
+    public static ImageDescriptor getImageDescriptor(String path) {
+        return imageDescriptorFromPlugin(PLUGIN_ID, path);
+    }
 
     /**
      * Returns the plugin's resource bundle,

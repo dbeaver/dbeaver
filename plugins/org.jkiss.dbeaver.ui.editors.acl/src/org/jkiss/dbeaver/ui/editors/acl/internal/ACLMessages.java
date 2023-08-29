@@ -20,18 +20,18 @@ package org.jkiss.dbeaver.ui.editors.acl.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class ACLMessages extends NLS {
-	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.acl.internal.ACLMessages"; //$NON-NLS-1$
-		
-	/* Permissions */
-	public static String edit_command_grant_privilege_action_grant_privilege;
-	public static String edit_command_grant_privilege_action_revoke_privilege;
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.acl.internal.ACLMessages"; //$NON-NLS-1$
 
-	static {
-		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, ACLMessages.class);
-	}
+    /* Permissions */
+    public static String edit_command_grant_privilege_action_grant_privilege;
+    public static String edit_command_grant_privilege_action_revoke_privilege;
 
-	private ACLMessages() {
-	}
-	
+    static {
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, ACLMessages.class);
+    }
+
+    private ACLMessages() {
+    }
+
 }

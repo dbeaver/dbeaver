@@ -37,44 +37,44 @@ import java.util.List;
 public class GraphLayoutAuto extends AbstractLayout
 {
 
-	private DiagramPart diagram;
+    private DiagramPart diagram;
 
-	public GraphLayoutAuto(DiagramPart diagram)
-	{
-		this.diagram = diagram;
-	}
+    public GraphLayoutAuto(DiagramPart diagram)
+    {
+        this.diagram = diagram;
+    }
 
-	
-	@Override
+
+    @Override
     protected Dimension calculatePreferredSize(IFigure container, int wHint, int hHint)
-	{		
-		container.validate();
-		List<? extends IFigure> children = container.getChildren();
-		Rectangle result = new Rectangle().setLocation(container.getClientArea().getLocation());
-		for (IFigure child : children) {
-			result.union(child.getBounds());
-		}
-		result.resize(container.getInsets().getWidth(), container.getInsets().getHeight());
-		return result.getSize();		
-	}
+    {
+        container.validate();
+        List<? extends IFigure> children = container.getChildren();
+        Rectangle result = new Rectangle().setLocation(container.getClientArea().getLocation());
+        for (IFigure child : children) {
+            result.union(child.getBounds());
+        }
+        result.resize(container.getInsets().getWidth(), container.getInsets().getHeight());
+        return result.getSize();
+    }
 
-	
-	@Override
+
+    @Override
     public void layout(IFigure container)
-	{
+    {
         Animation.markBegin();
 /*
-		GraphAnimation.recordInitialState(container);
-		if (GraphAnimation.playbackState(container))
-			return;
+        GraphAnimation.recordInitialState(container);
+        if (GraphAnimation.playbackState(container))
+            return;
 */
 
         // TODO: REPLACE WITH ZEST!
-		new DirectedGraphLayoutVisitor(diagram.getDiagram().getDecorator()).layoutDiagram(diagram);
+        new DirectedGraphLayoutVisitor(diagram.getDiagram().getDecorator()).layoutDiagram(diagram);
         diagram.setTableModelBounds();
         //new ZestGraphLayout().layoutDiagram(diagram);
 
         Animation.run(400);
-	}
-	
+    }
+
 }

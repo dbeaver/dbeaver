@@ -32,7 +32,7 @@ public class SubEditorSite implements IEditorSite {
     private final IWorkbenchPartSite parentSite;
     private final IActionBars actionBars;
     @SuppressWarnings("deprecation")
-	private final IKeyBindingService keyBindingService;
+    private final IKeyBindingService keyBindingService;
     private final ISelectionProvider selectionProvider;
 
     public SubEditorSite(IWorkbenchPartSite parentSite, ISelectionProvider selectionProvider)
@@ -174,7 +174,7 @@ public class SubEditorSite implements IEditorSite {
     }
 
     @SuppressWarnings("deprecation")
-	private static class FakeKeyBindingService implements IKeyBindingService {
+    private static class FakeKeyBindingService implements IKeyBindingService {
         @Override
         public String[] getScopes()
         {

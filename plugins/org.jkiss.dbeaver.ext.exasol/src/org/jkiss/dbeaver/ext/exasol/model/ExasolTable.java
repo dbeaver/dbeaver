@@ -391,7 +391,7 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
     }
     public ExasolTablePartitionColumn getPartition(String name) throws DBException {
     	return tablePartitionColumnCache.getCachedObject(name);
-	}
+    }
     
     public Collection<ExasolTablePartitionColumn> getPartitions(DBRProgressMonitor monitor) throws DBException {
     	return tablePartitionColumnCache.getAllObjects(monitor, this);

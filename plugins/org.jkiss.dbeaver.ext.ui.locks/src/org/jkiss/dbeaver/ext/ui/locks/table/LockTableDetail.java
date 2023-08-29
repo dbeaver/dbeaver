@@ -48,10 +48,10 @@ public class LockTableDetail extends DatabaseObjectListControl<DBAServerLockItem
     Map<String, Object> options = new HashMap<String, Object>(1); 
     
     public Map<String, Object> getOptions() {
-		return options;
-	}
+        return options;
+    }
 
-	public LockTableDetail(Composite parent, int style, IWorkbenchSite site, DBAServerLockManager<DBAServerLock,DBAServerLockItem> lockManager)
+    public LockTableDetail(Composite parent, int style, IWorkbenchSite site, DBAServerLockManager<DBAServerLock,DBAServerLockItem> lockManager)
     {
         super(parent, style, site, CONTENT_PROVIDER);
         this.lockManager = lockManager;
@@ -103,7 +103,7 @@ public class LockTableDetail extends DatabaseObjectListControl<DBAServerLockItem
     };
    
 
-	private class LoadLockDetailService extends DatabaseLoadService<Collection<DBAServerLockItem>> {
+    private class LoadLockDetailService extends DatabaseLoadService<Collection<DBAServerLockItem>> {
 
         protected LoadLockDetailService()
         {

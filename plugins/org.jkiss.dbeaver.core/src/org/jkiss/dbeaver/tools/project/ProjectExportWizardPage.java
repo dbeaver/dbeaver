@@ -103,7 +103,7 @@ class ProjectExportWizardPage extends WizardPage {
             DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
             if (activeProject != null) {
     			projectList.add(activeProject);
-			}
+            }
         }
 
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);

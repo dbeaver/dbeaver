@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.model.text.parser;
  */
 public interface TPPredicateRule extends TPRule {
 
-	TPToken getSuccessToken();
+    TPToken getSuccessToken();
 
-	TPToken evaluate(TPCharacterScanner scanner, boolean resume);
+    TPToken evaluate(TPCharacterScanner scanner, boolean resume);
 }

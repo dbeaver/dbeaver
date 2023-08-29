@@ -34,59 +34,59 @@ public final class ExasolDataTypeCache
     extends JDBCObjectCache<ExasolDataSource, ExasolDataType> {
 
     private LongKeyMap<ExasolDataType> dataTypeMap = new LongKeyMap<>();
-	
-	private static final String SQL_TYPE_CACHE =
+    
+    private static final String SQL_TYPE_CACHE =
         "/*snapshot execution*/ select * from SYS.EXA_SQL_TYPES";
 
-	@NotNull
+    @NotNull
     @Override
-	protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull ExasolDataSource owner) throws SQLException {
-		JDBCStatement dbstat = session.createStatement();
-		
-		dbstat.setQueryString(SQL_TYPE_CACHE);
-		
-		return dbstat;
-	}
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull ExasolDataSource owner) throws SQLException {
+        JDBCStatement dbstat = session.createStatement();
+        
+        dbstat.setQueryString(SQL_TYPE_CACHE);
+        
+        return dbstat;
+    }
 
-	@Override
-	protected ExasolDataType fetchObject(@NotNull JDBCSession session, @NotNull ExasolDataSource owner, @NotNull JDBCResultSet resultSet)
-			throws SQLException, DBException {
-		return new ExasolDataType(owner, resultSet);
-	}
-	
-	@Override
-	public void clearCache() {
-		// TODO Auto-generated method stub
-		super.clearCache();
-		dataTypeMap.clear();
-		
-	}
-	
-	@Override
-	public void removeObject(@NotNull ExasolDataType object, boolean resetFullCache) {
-		super.removeObject(object, resetFullCache);
-		dataTypeMap.remove(object.getExasolTypeId());
-	}
-	
-	@Override
-	public void setCache(List<ExasolDataType> objects) {
-		super.setCache(objects);
-		for (ExasolDataType dt: objects)
-		{
-			dataTypeMap.put(dt.getExasolTypeId(), dt);
-		}
-	}
-	
-	public ExasolDataType getDataTypeId(long id)
-	{
-		return dataTypeMap.get(id);
-	}
-	
-	
-	
-	
-	
-	
+    @Override
+    protected ExasolDataType fetchObject(@NotNull JDBCSession session, @NotNull ExasolDataSource owner, @NotNull JDBCResultSet resultSet)
+            throws SQLException, DBException {
+        return new ExasolDataType(owner, resultSet);
+    }
+    
+    @Override
+    public void clearCache() {
+        // TODO Auto-generated method stub
+        super.clearCache();
+        dataTypeMap.clear();
+        
+    }
+    
+    @Override
+    public void removeObject(@NotNull ExasolDataType object, boolean resetFullCache) {
+        super.removeObject(object, resetFullCache);
+        dataTypeMap.remove(object.getExasolTypeId());
+    }
+    
+    @Override
+    public void setCache(List<ExasolDataType> objects) {
+        super.setCache(objects);
+        for (ExasolDataType dt: objects)
+        {
+            dataTypeMap.put(dt.getExasolTypeId(), dt);
+        }
+    }
+    
+    public ExasolDataType getDataTypeId(long id)
+    {
+        return dataTypeMap.get(id);
+    }
+    
+    
+    
+    
+    
+    
 
 
 

@@ -16,15 +16,15 @@ import org.eclipse.jface.text.link.ProposalPosition;
 
 public class SQLProposalPosition extends ProposalPosition {
 
-	private SQLVariable variable;
+    private SQLVariable variable;
 
-	public SQLProposalPosition(IDocument document, int offset, int length, SQLVariable variable) {
-		super(document, offset, length, new ICompletionProposal[0]);
+    public SQLProposalPosition(IDocument document, int offset, int length, SQLVariable variable) {
+        super(document, offset, length, new ICompletionProposal[0]);
         this.variable = variable;
-	}
+    }
 
-	public ICompletionProposal[] getChoices() {
-		return variable.getProposals(this, getLength());
-	}
+    public ICompletionProposal[] getChoices() {
+        return variable.getProposals(this, getLength());
+    }
 
 }

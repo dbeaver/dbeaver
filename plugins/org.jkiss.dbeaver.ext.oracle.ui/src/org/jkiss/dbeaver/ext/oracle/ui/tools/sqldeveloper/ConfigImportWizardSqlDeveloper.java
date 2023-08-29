@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.ui.tools.sqldeveloper;
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizard;
 
 public class ConfigImportWizardSqlDeveloper extends ConfigImportWizard {
-	
+
     @Override
     protected ConfigImportWizardPageSqlDeveloper createMainPage()
     {

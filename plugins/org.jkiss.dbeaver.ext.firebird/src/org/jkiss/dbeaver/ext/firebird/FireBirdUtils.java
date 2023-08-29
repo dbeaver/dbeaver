@@ -290,13 +290,13 @@ public class FireBirdUtils {
     
     public static String getPlan(JDBCPreparedStatement statement) {
     	String plan = "";
-		try {
-			plan = (String) statement.getOriginal().getClass().getMethod("getExecutionPlan").invoke(statement.getOriginal());
-		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
-				| SecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        try {
+            plan = (String) statement.getOriginal().getClass().getMethod("getExecutionPlan").invoke(statement.getOriginal());
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+                | SecurityException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     	return plan;
     }
 

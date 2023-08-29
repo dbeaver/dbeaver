@@ -18,20 +18,20 @@
 package org.jkiss.dbeaver.ext.exasol.model.security;
 
 public enum ExasolTableObjectType {
-	VIEW("VIEW"),
-	TABLE("TABLE"),
-	SCHEMA("TABLE"),
-	SCRIPT("SCRIPT");
-	
-	private String value;
-	
-	ExasolTableObjectType(String value)
-	{
-		this.value = value;
-	}
-	
-	public String getDescription()
-	{
-		return this.value;
-	}
+    VIEW("VIEW"),
+    TABLE("TABLE"),
+    SCHEMA("TABLE"),
+    SCRIPT("SCRIPT");
+    
+    private String value;
+    
+    ExasolTableObjectType(String value)
+    {
+        this.value = value;
+    }
+    
+    public String getDescription()
+    {
+        return this.value;
+    }
 }

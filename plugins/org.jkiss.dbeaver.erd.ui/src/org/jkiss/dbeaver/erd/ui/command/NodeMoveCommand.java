@@ -29,21 +29,21 @@ import org.jkiss.dbeaver.erd.ui.part.NodePart;
 public class NodeMoveCommand extends Command
 {
 
-	private NodePart nodePart;
-	private Rectangle oldBounds;
-	private Rectangle newBounds;
+    private NodePart nodePart;
+    private Rectangle oldBounds;
+    private Rectangle newBounds;
 
-	public NodeMoveCommand(NodePart nodePart, Rectangle oldBounds, Rectangle newBounds)
-	{
-		super();
-		this.nodePart = nodePart;
-		this.oldBounds = oldBounds;
-		this.newBounds = newBounds;
-	}
+    public NodeMoveCommand(NodePart nodePart, Rectangle oldBounds, Rectangle newBounds)
+    {
+        super();
+        this.nodePart = nodePart;
+        this.oldBounds = oldBounds;
+        this.newBounds = newBounds;
+    }
 
-	@Override
+    @Override
     public void execute()
-	{
+    {
 /*
         List tcList = nodePart.getTargetConnections();
         for (Object tc : tcList) {
@@ -53,12 +53,12 @@ public class NodeMoveCommand extends Command
         }
 */
         nodePart.modifyBounds(newBounds);
-	}
+    }
 
-	@Override
+    @Override
     public void undo()
-	{
-		nodePart.modifyBounds(oldBounds);
-	}
+    {
+        nodePart.modifyBounds(oldBounds);
+    }
 
 }

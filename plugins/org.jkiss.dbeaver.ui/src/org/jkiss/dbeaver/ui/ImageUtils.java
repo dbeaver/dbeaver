@@ -117,29 +117,29 @@ public class ImageUtils {
         return srcImage;
     }
 
-	public static Image cropImage(Image srcImage, int x, int y, int w, int h)
-	{
-		Image cropImage = new Image(srcImage.getDevice(), w, h);
+    public static Image cropImage(Image srcImage, int x, int y, int w, int h)
+    {
+        Image cropImage = new Image(srcImage.getDevice(), w, h);
 
         // Redefine w and h to void them to be too big
-		if (x+w > srcImage.getBounds().width) {
-			w = srcImage.getBounds().width - x;
-		}
-		if (y+h > srcImage.getBounds().height) {
-			h = srcImage.getBounds().height - y;
-		}
+        if (x+w > srcImage.getBounds().width) {
+            w = srcImage.getBounds().width - x;
+        }
+        if (y+h > srcImage.getBounds().height) {
+            h = srcImage.getBounds().height - y;
+        }
 
-		GC cropGC = new GC(cropImage);
-		cropGC.drawImage(srcImage,
-				x, y,
-				w, h,
-				0, 0,
-				w, h);
-		UIUtils.dispose(cropGC);
+        GC cropGC = new GC(cropImage);
+        cropGC.drawImage(srcImage,
+                x, y,
+                w, h,
+                0, 0,
+                w, h);
+        UIUtils.dispose(cropGC);
         UIUtils.dispose(srcImage);
 
-		return cropImage;
-	}
+        return cropImage;
+    }
 
     /**
      * Retrieve the image data for the image, using a palette of at most 256

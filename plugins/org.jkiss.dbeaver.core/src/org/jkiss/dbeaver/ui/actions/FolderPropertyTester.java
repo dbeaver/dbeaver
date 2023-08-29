@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 
 public class FolderPropertyTester extends PropertyTester {
 
-	static protected final Log log = Log.getLog(FolderPropertyTester.class);
+    static protected final Log log = Log.getLog(FolderPropertyTester.class);
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {

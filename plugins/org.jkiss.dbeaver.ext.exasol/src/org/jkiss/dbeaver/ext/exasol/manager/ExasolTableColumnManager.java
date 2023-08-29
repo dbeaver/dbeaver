@@ -137,10 +137,10 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
         if (command.getProperties().containsKey("distKey"))
         {
         	try {
-				actionList.addAll(modifyDistKey(monitor, exasolColumn));
-			} catch (DBException e) {
-				log.error("Failed to modify distkey settings",e);
-			}
+                actionList.addAll(modifyDistKey(monitor, exasolColumn));
+            } catch (DBException e) {
+                log.error("Failed to modify distkey settings",e);
+            }
         }
 
     }
@@ -217,11 +217,11 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
                 );
         
         if (exasolColumn.isDistKey())
-			try {
-				modifyDistKey(monitor, exasolColumn);
-			} catch (DBException e) {
-				log.error("Failed to generate distribution key",e);
-			}
+            try {
+                modifyDistKey(monitor, exasolColumn);
+            } catch (DBException e) {
+                log.error("Failed to generate distribution key",e);
+            }
         
     }
     

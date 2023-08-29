@@ -19,17 +19,17 @@ package org.jkiss.dbeaver.team.git.ui.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class GITMessages extends NLS {
-	static final String BUNDLE_NAME = "org.jkiss.dbeaver.team.git.ui.internal.GITResources"; //$NON-NLS-1$
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.team.git.ui.internal.GITResources"; //$NON-NLS-1$
 
-	public static String project_share_handler_notifications_title_project_added;
-	public static String project_share_handler_notifications_text_project_added;
-	public static String project_share_handler_menu_element_text_add;
+    public static String project_share_handler_notifications_title_project_added;
+    public static String project_share_handler_notifications_text_project_added;
+    public static String project_share_handler_menu_element_text_add;
 
     static {
-		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, GITMessages.class);
-	}
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, GITMessages.class);
+    }
 
-	private GITMessages() {
-	}
+    private GITMessages() {
+    }
 }

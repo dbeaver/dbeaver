@@ -58,14 +58,14 @@ public class NotePart extends NodePart
     }
 
     public ERDNote getNote()
-	{
-		return (ERDNote) getModel();
-	}
+    {
+        return (ERDNote) getModel();
+    }
 
-	/**
-	 * Creates edit policies and associates these with roles
-	 */
-	@Override
+    /**
+     * Creates edit policies and associates these with roles
+     */
+    @Override
     protected void createEditPolicies()
     {
         if (!getEditor().isReadOnly()) {
@@ -95,20 +95,20 @@ public class NotePart extends NodePart
         return super.getTargetEditPart(request);
     }
 
-	@Override
+    @Override
     public void performRequest(Request request)
-	{
-		if (request.getType() == RequestConstants.REQ_OPEN) {
+    {
+        if (request.getType() == RequestConstants.REQ_OPEN) {
             performDirectEdit();
         } else if (request.getType() == RequestConstants.REQ_DIRECT_EDIT) {
-			if (request instanceof DirectEditRequest
-					&& !directEditHitTest(((DirectEditRequest) request).getLocation().getCopy()))
-				return;
-			performDirectEdit();
+            if (request instanceof DirectEditRequest
+                    && !directEditHitTest(((DirectEditRequest) request).getLocation().getCopy()))
+                return;
+            performDirectEdit();
         } else {
             getDiagram().getModelAdapter().performPartRequest(this, request);
         }
-	}
+    }
 
     @Override
     public Command getCommand(Request request) {
@@ -140,10 +140,10 @@ public class NotePart extends NodePart
         manager.show();
     }
 
-	public String toString()
-	{
-		return getNote().getObject();
-	}
+    public String toString()
+    {
+        return getNote().getObject();
+    }
 
     public void handleNameChange(String value)
     {
@@ -165,26 +165,26 @@ public class NotePart extends NodePart
         refreshVisuals();
     }
 
-	/**
-	 * Handles change in name when committing a direct edit
-	 */
-	@Override
+    /**
+     * Handles change in name when committing a direct edit
+     */
+    @Override
     protected void commitNameChange(PropertyChangeEvent evt)
-	{
-		NoteFigure noteFigure = (NoteFigure) getFigure();
-		noteFigure.setText(getNote().getObject());
-		noteFigure.setVisible(true);
-		refreshVisuals();
-	}
+    {
+        NoteFigure noteFigure = (NoteFigure) getFigure();
+        noteFigure.setText(getNote().getObject());
+        noteFigure.setVisible(true);
+        refreshVisuals();
+    }
 
-	//******************* Layout related methods *********************/
+    //******************* Layout related methods *********************/
 
-	/**
-	 * Creates a figure which represents the table
-	 */
-	@Override
+    /**
+     * Creates a figure which represents the table
+     */
+    @Override
     protected NoteFigure createFigure()
-	{
+    {
         final NoteFigure noteFigure = new NoteFigure(getNote());
         EntityDiagram.NodeVisualInfo visualInfo = ((DiagramPart) getParent()).getDiagram().getVisualInfo(getNote(), true);
         Rectangle bounds = visualInfo.initBounds;
@@ -215,35 +215,35 @@ public class NotePart extends NodePart
         return noteFigure;
     }
 
-	/**
-	 * Reset the layout constraint, and revalidate the content pane
-	 */
-	@Override
+    /**
+     * Reset the layout constraint, and revalidate the content pane
+     */
+    @Override
     protected void refreshVisuals()
-	{
-		NoteFigure notefigure = (NoteFigure) getFigure();
-		Point location = notefigure.getLocation();
-		DiagramPart parent = (DiagramPart) getParent();
-		Rectangle constraint = new Rectangle(location.x, location.y, -1, -1);
-		parent.setLayoutConstraint(this, notefigure, constraint);
-	}
+    {
+        NoteFigure notefigure = (NoteFigure) getFigure();
+        Point location = notefigure.getLocation();
+        DiagramPart parent = (DiagramPart) getParent();
+        Rectangle constraint = new Rectangle(location.x, location.y, -1, -1);
+        parent.setLayoutConstraint(this, notefigure, constraint);
+    }
 
-	/**
-	 * Sets the width of the line when selected
-	 */
-	@Override
+    /**
+     * Sets the width of the line when selected
+     */
+    @Override
     public void setSelected(int value)
-	{
-		super.setSelected(value);
+    {
+        super.setSelected(value);
 /*
-		NoteFigure noteFigure = (NoteFigure) getFigure();
-		if (value != EditPart.SELECTED_NONE)
-			noteFigure.setSelected(true);
-		else
-			noteFigure.setSelected(false);
-		noteFigure.repaint();
+        NoteFigure noteFigure = (NoteFigure) getFigure();
+        if (value != EditPart.SELECTED_NONE)
+            noteFigure.setSelected(true);
+        else
+            noteFigure.setSelected(false);
+        noteFigure.repaint();
 */
-	}
+    }
 
     @Override
     public ConnectionAnchor getSourceConnectionAnchor(ConnectionEditPart connection)

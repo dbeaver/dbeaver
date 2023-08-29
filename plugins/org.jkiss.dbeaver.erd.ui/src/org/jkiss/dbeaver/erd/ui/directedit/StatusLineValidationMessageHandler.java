@@ -29,32 +29,32 @@ import org.eclipse.ui.IEditorSite;
 public class StatusLineValidationMessageHandler implements ValidationMessageHandler
 {
 
-	private IEditorSite editorSite;
+    private IEditorSite editorSite;
 
-	public StatusLineValidationMessageHandler(IEditorSite editorSite)
-	{
-		this.editorSite = editorSite;
-	}
+    public StatusLineValidationMessageHandler(IEditorSite editorSite)
+    {
+        this.editorSite = editorSite;
+    }
 
-	/**
-	 * Sets the status message
-	 * 
-	 * @param text
-	 *            the message to display
-	 */
-	@Override
+    /**
+     * Sets the status message
+     *
+     * @param text
+     *            the message to display
+     */
+    @Override
     public void setMessageText(String text)
-	{
-		editorSite.getActionBars().getStatusLineManager().setErrorMessage(text);
-	}
+    {
+        editorSite.getActionBars().getStatusLineManager().setErrorMessage(text);
+    }
 
-	/**
-	 * Sets clears the status line
-	 */
-	@Override
+    /**
+     * Sets clears the status line
+     */
+    @Override
     public void reset()
-	{
-		editorSite.getActionBars().getStatusLineManager().setErrorMessage(null);
-	}
+    {
+        editorSite.getActionBars().getStatusLineManager().setErrorMessage(null);
+    }
 
 }

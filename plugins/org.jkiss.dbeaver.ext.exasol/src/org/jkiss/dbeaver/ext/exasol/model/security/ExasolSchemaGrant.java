@@ -21,23 +21,23 @@ import org.jkiss.dbeaver.model.meta.Property;
 
 public class ExasolSchemaGrant extends ExasolBaseObjectGrant {
 
-	public ExasolSchemaGrant(ExasolBaseObjectGrant grant)
-	{
-		super(grant);
-	}
-	
-	
-	@Override
-	public String getDescription()
-	{
-		return super.getSchema().getDescription();
-	}
-	
-	@Property(viewable = true, order = 100)
-	public Boolean getExecuteAuth()
-	{
-		return super.getExecuteAuth();
-	}
+    public ExasolSchemaGrant(ExasolBaseObjectGrant grant)
+    {
+        super(grant);
+    }
+
+
+    @Override
+    public String getDescription()
+    {
+        return super.getSchema().getDescription();
+    }
+
+    @Property(viewable = true, order = 100)
+    public Boolean getExecuteAuth()
+    {
+        return super.getExecuteAuth();
+    }
 
 
 }

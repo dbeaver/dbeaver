@@ -53,7 +53,7 @@ public class EntityAddCommand extends Command {
     private static final Log log = Log.getLog(EntityAddCommand.class);
 
     protected DiagramPart diagramPart;
-	protected List<ERDEntity> entities;
+    protected List<ERDEntity> entities;
     protected Point location;
 
     public EntityAddCommand(DiagramPart diagram, List<ERDEntity> entities, Point location)
@@ -69,7 +69,7 @@ public class EntityAddCommand extends Command {
 
     @Override
     public void execute()
-	{
+    {
         VoidProgressMonitor monitor = new VoidProgressMonitor();
 
         Point curLocation = location == null ? null : new Point(location);
@@ -106,7 +106,7 @@ public class EntityAddCommand extends Command {
             if (entity.getObject() == null) {
                 continue;
             }
-		    diagramPart.getDiagram().addEntity(entity, true);
+            diagramPart.getDiagram().addEntity(entity, true);
 
             if (curLocation != null) {
                 // Put new entities in specified location
@@ -131,7 +131,7 @@ public class EntityAddCommand extends Command {
 
             handleEntityChange(entity, false);
         }
-	}
+    }
 
     @Override
     public void undo()

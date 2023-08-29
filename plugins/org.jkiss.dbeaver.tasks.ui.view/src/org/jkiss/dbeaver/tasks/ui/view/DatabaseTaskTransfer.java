@@ -29,45 +29,45 @@ import java.util.List;
  */
 public final class DatabaseTaskTransfer extends LocalObjectTransfer<List<DBTTask>> {
 
-	public static class Data {
-		private Control sourceControl;
-		private List<DBTTask> tasks;
+    public static class Data {
+        private Control sourceControl;
+        private List<DBTTask> tasks;
 
-		public Data(Control sourceControl, List<DBTTask> tasks) {
-			this.sourceControl = sourceControl;
-			this.tasks = tasks;
-		}
+        public Data(Control sourceControl, List<DBTTask> tasks) {
+            this.sourceControl = sourceControl;
+            this.tasks = tasks;
+        }
 
-		public Control getSourceControl() {
-			return sourceControl;
-		}
+        public Control getSourceControl() {
+            return sourceControl;
+        }
 
-		public List<DBTTask> getTasks() {
-			return tasks;
-		}
-	}
+        public List<DBTTask> getTasks() {
+            return tasks;
+        }
+    }
 
-	private static final DatabaseTaskTransfer INSTANCE = new DatabaseTaskTransfer();
-	private static final String TYPE_NAME = "DBTTask Transfer"//$NON-NLS-1$
-			+ System.currentTimeMillis() + ":" + INSTANCE.hashCode();//$NON-NLS-1$
-	private static final int TYPEID = registerType(TYPE_NAME);
+    private static final DatabaseTaskTransfer INSTANCE = new DatabaseTaskTransfer();
+    private static final String TYPE_NAME = "DBTTask Transfer"//$NON-NLS-1$
+            + System.currentTimeMillis() + ":" + INSTANCE.hashCode();//$NON-NLS-1$
+    private static final int TYPEID = registerType(TYPE_NAME);
 
-	public static DatabaseTaskTransfer getInstance() {
-		return INSTANCE;
-	}
+    public static DatabaseTaskTransfer getInstance() {
+        return INSTANCE;
+    }
 
-	private DatabaseTaskTransfer() {
-	}
+    private DatabaseTaskTransfer() {
+    }
 
-	@Override
+    @Override
     protected int[] getTypeIds() {
-		return new int[] { TYPEID };
-	}
+        return new int[] { TYPEID };
+    }
 
-	@Override
+    @Override
     protected String[] getTypeNames() {
-		return new String[] { TYPE_NAME };
-	}
+        return new String[] { TYPE_NAME };
+    }
 
     public static List<DBTTask> getFromClipboard()
     {

@@ -133,7 +133,7 @@ public class ExasolRoleManager extends SQLObjectEditor<ExasolRole, ExasolDataSou
         	else if (ExasolConstants.PRIORITY_GROUP_CLASS.equals(priority.getClass().getName())) {
         		script = String.format("GRANT PRIORITY GROUP %s to %s", DBUtils.getQuotedIdentifier(priority), DBUtils.getQuotedIdentifier(obj));
                 actionList.add(new SQLDatabasePersistAction(ExasolMessages.manager_assign_priority_group, script));
-			} 
+            } 
         }
 
 

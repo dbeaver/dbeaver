@@ -22,14 +22,14 @@ package org.jkiss.dbeaver.model.text.parser;
  */
 public interface TPRule {
 
-	/**
-	 * Evaluates the rule by examining the characters available from the provided character scanner.
-	 * The token returned by this rule returns <code>true</code> when calling
-	 * <code>isUndefined</code>, if the text that the rule investigated does not match the rule's
-	 * requirements
-	 *
-	 * @param scanner the character scanner to be used by this rule
-	 * @return the token computed by the rule
-	 */
-	TPToken evaluate(TPCharacterScanner scanner);
+    /**
+     * Evaluates the rule by examining the characters available from the provided character scanner.
+     * The token returned by this rule returns <code>true</code> when calling
+     * <code>isUndefined</code>, if the text that the rule investigated does not match the rule's
+     * requirements
+     *
+     * @param scanner the character scanner to be used by this rule
+     * @return the token computed by the rule
+     */
+    TPToken evaluate(TPCharacterScanner scanner);
 }

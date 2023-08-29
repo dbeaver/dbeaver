@@ -286,7 +286,7 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
         private final Integer minScale;
         private final Integer maxScale;
         @SuppressWarnings("unused")
-		private final String name;
+        private final String name;
 
         private TypeDesc(DBPDataKind dataKind, Integer sqlType, Integer precision, Integer minScale, Integer maxScale, String name) {
             this.name = name;

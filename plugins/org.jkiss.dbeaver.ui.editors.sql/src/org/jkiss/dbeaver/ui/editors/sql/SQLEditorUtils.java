@@ -90,8 +90,8 @@ public class SQLEditorUtils {
     {
     	if (project == null) {
     		IStatus status = new Status(IStatus.ERROR, SQLEditorActivator.PLUGIN_ID, "No active project to locate Script Folder");
-			throw new CoreException(status);
-		}
+            throw new CoreException(status);
+        }
         return DBPPlatformDesktop.getInstance().getWorkspace().getResourceDefaultRoot(project, ScriptsHandlerImpl.class, forceCreate);
     }
 

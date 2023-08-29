@@ -31,54 +31,54 @@ import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 public class ERDPalettePreferences implements FlyoutPreferences
 {
 
-	public static final int DEFAULT_PALETTE_WIDTH = 150;
+    public static final int DEFAULT_PALETTE_WIDTH = 150;
 
-	protected static final String PALETTE_DOCK_LOCATION = "Dock location";
-	protected static final String PALETTE_SIZE = "Palette Size";
-	protected static final String PALETTE_STATE = "Palette state";
+    protected static final String PALETTE_DOCK_LOCATION = "Dock location";
+    protected static final String PALETTE_SIZE = "Palette Size";
+    protected static final String PALETTE_STATE = "Palette state";
 
-	@Override
+    @Override
     public int getDockLocation()
-	{
-		int location = ERDUIActivator.getDefault().getPreferenceStore().getInt(PALETTE_DOCK_LOCATION);
-		if (location == 0)
-		{
-			return PositionConstants.EAST;
-		}
-		return location;
-	}
+    {
+        int location = ERDUIActivator.getDefault().getPreferenceStore().getInt(PALETTE_DOCK_LOCATION);
+        if (location == 0)
+        {
+            return PositionConstants.EAST;
+        }
+        return location;
+    }
 
-	@Override
+    @Override
     public int getPaletteState()
-	{
-		return ERDUIActivator.getDefault().getPreferenceStore().getInt(PALETTE_STATE);
-	}
+    {
+        return ERDUIActivator.getDefault().getPreferenceStore().getInt(PALETTE_STATE);
+    }
 
-	@Override
+    @Override
     public int getPaletteWidth()
-	{
-		int width = ERDUIActivator.getDefault().getPreferenceStore().getInt(PALETTE_SIZE);
-		if (width == 0)
-			return DEFAULT_PALETTE_WIDTH;
-		return width;
-	}
+    {
+        int width = ERDUIActivator.getDefault().getPreferenceStore().getInt(PALETTE_SIZE);
+        if (width == 0)
+            return DEFAULT_PALETTE_WIDTH;
+        return width;
+    }
 
-	@Override
+    @Override
     public void setDockLocation(int location)
-	{
-		ERDUIActivator.getDefault().getPreferenceStore().setValue(PALETTE_DOCK_LOCATION, location);
-	}
+    {
+        ERDUIActivator.getDefault().getPreferenceStore().setValue(PALETTE_DOCK_LOCATION, location);
+    }
 
-	@Override
+    @Override
     public void setPaletteState(int state)
-	{
-		ERDUIActivator.getDefault().getPreferenceStore().setValue(PALETTE_STATE, state);
-	}
+    {
+        ERDUIActivator.getDefault().getPreferenceStore().setValue(PALETTE_STATE, state);
+    }
 
-	@Override
+    @Override
     public void setPaletteWidth(int width)
-	{
-		ERDUIActivator.getDefault().getPreferenceStore().setValue(PALETTE_SIZE, width);
-	}
+    {
+        ERDUIActivator.getDefault().getPreferenceStore().setValue(PALETTE_SIZE, width);
+    }
 
 }

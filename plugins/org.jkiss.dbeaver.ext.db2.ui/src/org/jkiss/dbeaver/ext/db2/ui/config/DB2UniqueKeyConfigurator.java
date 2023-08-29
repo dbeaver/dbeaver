@@ -35,7 +35,7 @@ import java.util.Map;
  * DB2 unique constraint configurator
  */
 public class DB2UniqueKeyConfigurator implements DBEObjectConfigurator<DB2TableUniqueKey> {
-	
+    
     private static final DBSEntityConstraintType[] CONS_TYPES  = { DBSEntityConstraintType.PRIMARY_KEY,
             DBSEntityConstraintType.UNIQUE_KEY };
 

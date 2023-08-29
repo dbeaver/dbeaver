@@ -92,13 +92,13 @@ public abstract class PropertyAwareConnectionPart extends AbstractConnectionEdit
                 break;
         }
 
-		/*
+        /*
          * if (FlowElement.CHILDREN.equals(prop)) refreshChildren(); else if
-		 * (FlowElement.INPUTS.equals(prop)) refreshTargetConnections(); else if
-		 * (FlowElement.OUTPUTS.equals(prop)) refreshSourceConnections(); else
-		 * if (Activity.PROP_NAME.equals(prop)) refreshVisuals(); // Causes Graph to
-		 * re-layout
-		 */
+         * (FlowElement.INPUTS.equals(prop)) refreshTargetConnections(); else if
+         * (FlowElement.OUTPUTS.equals(prop)) refreshSourceConnections(); else
+         * if (Activity.PROP_NAME.equals(prop)) refreshVisuals(); // Causes Graph to
+         * re-layout
+         */
         ((GraphicalEditPart) (getViewer().getContents())).getFigure().revalidate();
     }
 

@@ -35,184 +35,184 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public abstract class ExasolGrantee
-		implements DBPSaveableObject, DBPRefreshableObject {
-	
-	private ExasolDataSource dataSource;
-	private ExasolPriority priority;
-	private boolean persisted;
+        implements DBPSaveableObject, DBPRefreshableObject {
 
-	private static final Log log = Log.getLog(ExasolGrantee.class);
-	
+    private ExasolDataSource dataSource;
+    private ExasolPriority priority;
+    private boolean persisted;
+
+    private static final Log log = Log.getLog(ExasolGrantee.class);
 
 
-	public ExasolGrantee(ExasolDataSource dataSource, ResultSet resultSet)
-	{
-		this.dataSource = dataSource;
-		if (resultSet != null) {
-			this.persisted = true;
-	        try {
+
+    public ExasolGrantee(ExasolDataSource dataSource, ResultSet resultSet)
+    {
+        this.dataSource = dataSource;
+        if (resultSet != null) {
+            this.persisted = true;
+            try {
         		this.priority = dataSource.getPriorityGroup(new VoidProgressMonitor(), JDBCUtils.safeGetString(resultSet, "USER_PRIORITY"));
-			} catch (DBException e) {
-				this.priority = null;
-			}
-		} else {
-			this.persisted = false;
-		}
-		
-	}
-	
-	public ExasolGrantee(ExasolDataSource dataSource, Boolean persisted)
-	{
-		this.dataSource = dataSource;
-		this.persisted = persisted;
-	}
-	
-	public abstract String getName(); 
+            } catch (DBException e) {
+                this.priority = null;
+            }
+        } else {
+            this.persisted = false;
+        }
 
-	@Override
-	public boolean isPersisted()
-	{
-		return this.persisted;
-	}
+    }
 
-	@Override
-	public DBSObject getParentObject()
-	{
-		return this.dataSource.getContainer();
-	}
+    public ExasolGrantee(ExasolDataSource dataSource, Boolean persisted)
+    {
+        this.dataSource = dataSource;
+        this.persisted = persisted;
+    }
 
-	@Override
-	public ExasolDataSource getDataSource()
-	{
-		return this.dataSource;
-	}
+    public abstract String getName();
+
+    @Override
+    public boolean isPersisted()
+    {
+        return this.persisted;
+    }
+
+    @Override
+    public DBSObject getParentObject()
+    {
+        return this.dataSource.getContainer();
+    }
+
+    @Override
+    public ExasolDataSource getDataSource()
+    {
+        return this.dataSource;
+    }
 
 
-	@Override
-	public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
-			throws DBException
-	{
-		dataSource.refreshObject(monitor);
-		for (ExasolGrantee grantee : dataSource.getAllGrantees(monitor))
-		{
-			if (this.getClass().getSimpleName().equals(grantee.getClass().getSimpleName())
-					&& this.getName().equals(grantee.getName())
-					) 
-			{
-				return grantee;
-			}
-		}
-		throw new DBException("Object disappeard after refresh");
-	}
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
+            throws DBException
+    {
+        dataSource.refreshObject(monitor);
+        for (ExasolGrantee grantee : dataSource.getAllGrantees(monitor))
+        {
+            if (this.getClass().getSimpleName().equals(grantee.getClass().getSimpleName())
+                    && this.getName().equals(grantee.getName())
+                    ) 
+            {
+                return grantee;
+            }
+        }
+        throw new DBException("Object disappeard after refresh");
+    }
 
-	@Override
-	public void setPersisted(boolean persisted)
-	{
-		this.persisted = persisted;
-	}
-	
-	public Collection<ExasolSystemGrant> getSystemgrants(DBRProgressMonitor monitor) throws DBException
-	{
-		Collection<ExasolSystemGrant> sysGrants = new ArrayList<>();
-		
-		for(ExasolSystemGrant grant: dataSource.getSystemGrants(monitor))
-		{
-			if (grant.getGrantee().equals(this.getName()))
-				sysGrants.add(grant);
-		}
-		return sysGrants;
-	}
-	
-	public Collection<ExasolConnectionGrant> getConnections(DBRProgressMonitor monitor) throws DBException
-	{
-		Collection<ExasolConnectionGrant> conGrants = new ArrayList<>(); 
-		for(ExasolConnectionGrant grant: this.dataSource.getConnectionGrants(monitor))
-		{
-			if (grant.getGrantee().equals(this.getName()))
-				conGrants.add(grant);
-		}
-		return conGrants;
-			
-		
-	}
+    @Override
+    public void setPersisted(boolean persisted)
+    {
+        this.persisted = persisted;
+    }
 
-	public Collection<ExasolRoleGrant> getRoles(DBRProgressMonitor monitor)
-			throws DBException
-	{
-		Collection<ExasolRoleGrant> roleGrants = new ArrayList<>();
-		for (ExasolRoleGrant grant: this.dataSource.getRoleGrants(monitor))
-		{
-			if (grant.getGrantee().equals(this.getName()))
-				roleGrants.add(grant);
-				
-		}
-		return roleGrants;
-		
+    public Collection<ExasolSystemGrant> getSystemgrants(DBRProgressMonitor monitor) throws DBException
+    {
+        Collection<ExasolSystemGrant> sysGrants = new ArrayList<>();
 
-	}
-	
-	//
-	// Retrieve Grants
-	//
-	public Collection<ExasolTableGrant> getTables(DBRProgressMonitor monitor) throws DBException
-	{
-		Collection<ExasolTableGrant> grants = new ArrayList<>();
-		
-		for(ExasolTableGrant grant: this.dataSource.getTableGrants(monitor))
-		{
-			if (grant.getGrantee().equals(this.getName()))
-			{
-				grants.add(grant);
-			}
-		}
-		return grants;
-		
-	}
-	
-	public Collection<ExasolViewGrant> getViews(DBRProgressMonitor monitor) throws DBException
-	{
-		Collection<ExasolViewGrant> grants = new ArrayList<>();
-		
-		for(ExasolViewGrant grant: this.dataSource.getViewGrants(monitor))
-		{
-			if (grant.getGrantee().equals(this.getName()))
-			{
-				grants.add(grant);
-			}
-		}
-		return grants;
-		
-	}
+        for(ExasolSystemGrant grant: dataSource.getSystemGrants(monitor))
+        {
+            if (grant.getGrantee().equals(this.getName()))
+                sysGrants.add(grant);
+        }
+        return sysGrants;
+    }
 
-	public Collection<ExasolScriptGrant> getProcedures(DBRProgressMonitor monitor) throws DBException
-	{
-		Collection<ExasolScriptGrant> grants = new ArrayList<>();
-		
-		for(ExasolScriptGrant grant: this.dataSource.getScriptGrants(monitor))
-		{
-			if (grant.getGrantee().equals(this.getName()))
-			{
-				grants.add(grant);
-			}
-		}
-		return grants;
-		
-	}
+    public Collection<ExasolConnectionGrant> getConnections(DBRProgressMonitor monitor) throws DBException
+    {
+        Collection<ExasolConnectionGrant> conGrants = new ArrayList<>();
+        for(ExasolConnectionGrant grant: this.dataSource.getConnectionGrants(monitor))
+        {
+            if (grant.getGrantee().equals(this.getName()))
+                conGrants.add(grant);
+        }
+        return conGrants;
+            
 
-	public Collection<ExasolSchemaGrant> getSchemas(DBRProgressMonitor monitor) throws DBException
-	{
-		Collection<ExasolSchemaGrant> grants = new ArrayList<>();
-		
-		for(ExasolSchemaGrant grant: this.dataSource.getSchemaGrants(monitor))
-		{
-			if (grant.getGrantee().equals(this.getName()))
-			{
-				grants.add(grant);
-			}
-		}
-		return grants;
-		
-	}
+    }
+
+    public Collection<ExasolRoleGrant> getRoles(DBRProgressMonitor monitor)
+            throws DBException
+    {
+        Collection<ExasolRoleGrant> roleGrants = new ArrayList<>();
+        for (ExasolRoleGrant grant: this.dataSource.getRoleGrants(monitor))
+        {
+            if (grant.getGrantee().equals(this.getName()))
+                roleGrants.add(grant);
+                
+        }
+        return roleGrants;
+
+
+    }
+
+    //
+    // Retrieve Grants
+    //
+    public Collection<ExasolTableGrant> getTables(DBRProgressMonitor monitor) throws DBException
+    {
+        Collection<ExasolTableGrant> grants = new ArrayList<>();
+
+        for(ExasolTableGrant grant: this.dataSource.getTableGrants(monitor))
+        {
+            if (grant.getGrantee().equals(this.getName()))
+            {
+                grants.add(grant);
+            }
+        }
+        return grants;
+
+    }
+
+    public Collection<ExasolViewGrant> getViews(DBRProgressMonitor monitor) throws DBException
+    {
+        Collection<ExasolViewGrant> grants = new ArrayList<>();
+
+        for(ExasolViewGrant grant: this.dataSource.getViewGrants(monitor))
+        {
+            if (grant.getGrantee().equals(this.getName()))
+            {
+                grants.add(grant);
+            }
+        }
+        return grants;
+
+    }
+
+    public Collection<ExasolScriptGrant> getProcedures(DBRProgressMonitor monitor) throws DBException
+    {
+        Collection<ExasolScriptGrant> grants = new ArrayList<>();
+
+        for(ExasolScriptGrant grant: this.dataSource.getScriptGrants(monitor))
+        {
+            if (grant.getGrantee().equals(this.getName()))
+            {
+                grants.add(grant);
+            }
+        }
+        return grants;
+
+    }
+
+    public Collection<ExasolSchemaGrant> getSchemas(DBRProgressMonitor monitor) throws DBException
+    {
+        Collection<ExasolSchemaGrant> grants = new ArrayList<>();
+
+        for(ExasolSchemaGrant grant: this.dataSource.getSchemaGrants(monitor))
+        {
+            if (grant.getGrantee().equals(this.getName()))
+            {
+                grants.add(grant);
+            }
+        }
+        return grants;
+
+    }
 
     @Property(viewable = true,   editable = true, updatable = true, order = 20, listProvider = PriorityListProvider.class)
     public ExasolPriority getPriority()
@@ -221,36 +221,36 @@ public abstract class ExasolGrantee
     }
     
     public void setPriority(ExasolPriority priority) {
-		this.priority = priority;
-	}
+        this.priority = priority;
+    }
     
 
     public static class PriorityListProvider implements IPropertyValueListProvider<ExasolGrantee> {
 
-		@Override
-		public boolean allowCustomValue() {
-			return false;
-		}
+        @Override
+        public boolean allowCustomValue() {
+            return false;
+        }
 
-		@Override
-		public Object[] getPossibleValues(ExasolGrantee object) {
-			ExasolDataSource dataSource = object.getDataSource();
-			try {
-				if (dataSource.getUserPriviliges().hasConsumerGroups())
-				{
-					Collection<ExasolConsumerGroup> consumerGroups = dataSource.getConsumerGroups(new VoidProgressMonitor());
-					return consumerGroups.toArray(new Object[consumerGroups.size()]);
-				} else {
-					Collection<ExasolPriorityGroup> priorityGroups = dataSource.getPriorityGroups(new VoidProgressMonitor());
-					return priorityGroups.toArray(new Object[priorityGroups.size()]);
-				}
-			} catch (DBException e) {
-				log.error(e);
-				return new Object[0];
-			}
-		}
+        @Override
+        public Object[] getPossibleValues(ExasolGrantee object) {
+            ExasolDataSource dataSource = object.getDataSource();
+            try {
+                if (dataSource.getUserPriviliges().hasConsumerGroups())
+                {
+                    Collection<ExasolConsumerGroup> consumerGroups = dataSource.getConsumerGroups(new VoidProgressMonitor());
+                    return consumerGroups.toArray(new Object[consumerGroups.size()]);
+                } else {
+                    Collection<ExasolPriorityGroup> priorityGroups = dataSource.getPriorityGroups(new VoidProgressMonitor());
+                    return priorityGroups.toArray(new Object[priorityGroups.size()]);
+                }
+            } catch (DBException e) {
+                log.error(e);
+                return new Object[0];
+            }
+        }
     	
     }
-	
-	
+
+
 }

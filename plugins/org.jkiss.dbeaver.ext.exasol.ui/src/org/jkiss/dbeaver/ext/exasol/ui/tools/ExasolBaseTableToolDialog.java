@@ -59,14 +59,14 @@ public abstract class ExasolBaseTableToolDialog extends GenerateMultiSQLDialog<E
     private static final String VARIABLE_DATE = "date";
     private static final String VARIABLE_TABLE = "table";
     private static final String VARIABLE_SCHEMA = "schema";
-	
 
-	ExasolBaseTableToolDialog(IWorkbenchPartSite partSite, String title,
+
+    ExasolBaseTableToolDialog(IWorkbenchPartSite partSite, String title,
                               Collection<ExasolTableBase> objects)
-	{
-		super(partSite, title, objects, true);
-	}
-	
+    {
+        super(partSite, title, objects, true);
+    }
+
     private int getNumberExtraResultingColumns()
     {
         return 0;
@@ -92,10 +92,10 @@ public abstract class ExasolBaseTableToolDialog extends GenerateMultiSQLDialog<E
 
     }
     
-	
-	@Override
-	protected SQLScriptProgressListener<ExasolTableBase> getScriptListener()
-	{
+
+    @Override
+    protected SQLScriptProgressListener<ExasolTableBase> getScriptListener()
+    {
         final int nbExtraColumns = getNumberExtraResultingColumns();
 
         return new SQLScriptStatusDialog<ExasolTableBase>(getTitle() + " " + ExasolMessages.dialog_table_tools_progress,null) {
@@ -154,8 +154,8 @@ public abstract class ExasolBaseTableToolDialog extends GenerateMultiSQLDialog<E
         
         	
         };
-	}
-	
+    }
+
     @Override
     protected void executeSQL() {
         final String jobName = getShell().getText();
@@ -171,7 +171,7 @@ public abstract class ExasolBaseTableToolDialog extends GenerateMultiSQLDialog<E
             Exception objectProcessingError;
 
             @SuppressWarnings("rawtypes")
-			@Override
+            @Override
             protected IStatus run(final DBRProgressMonitor monitor)
             {
                 final DataSourceJob curJob = this;

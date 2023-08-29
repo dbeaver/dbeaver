@@ -14,7 +14,7 @@ package org.jkiss.dbeaver.ui.editors.sql.templates;
 
 public class SQLContextTypeBase extends SQLContextTypeAbstract {
 
-	public static final String ID_SQL= "sql"; //$NON-NLS-1$
+    public static final String ID_SQL= "sql"; //$NON-NLS-1$
 
     public SQLContextTypeBase()
     {

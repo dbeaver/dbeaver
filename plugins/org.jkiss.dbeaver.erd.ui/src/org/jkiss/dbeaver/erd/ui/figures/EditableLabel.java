@@ -36,66 +36,66 @@ import org.jkiss.dbeaver.ui.UIUtils;
 public class EditableLabel extends Label
 {
 
-	private boolean selected;
-	
-	public EditableLabel(String text)
-	{
-		super(text);
-	}
-	
-	private Rectangle getSelectionRectangle()
-	{
-		Rectangle bounds = getTextBounds().getCopy();
-		bounds.expand(new Insets(2, 2, 0, 0));
-		translateToParent(bounds);
-		bounds.intersect(getBounds());
-		return bounds;
-	}
+    private boolean selected;
 
-	
-	/**
-	 * sets the text of the label
-	 */
-	@Override
+    public EditableLabel(String text)
+    {
+        super(text);
+    }
+
+    private Rectangle getSelectionRectangle()
+    {
+        Rectangle bounds = getTextBounds().getCopy();
+        bounds.expand(new Insets(2, 2, 0, 0));
+        translateToParent(bounds);
+        bounds.intersect(getBounds());
+        return bounds;
+    }
+
+
+    /**
+     * sets the text of the label
+     */
+    @Override
     public void setText(String s)
-	{
-		super.setText(s);
-	}
-	
-	
-	/**
-	 * paints figure differently depends on the whether the figure has focus or is selected 
-	 */
-	@Override
+    {
+        super.setText(s);
+    }
+
+
+    /**
+     * paints figure differently depends on the whether the figure has focus or is selected
+     */
+    @Override
     protected void paintFigure(Graphics graphics)
-	{
-		if (selected)
-		{
-			graphics.pushState();
-			graphics.setBackgroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ATTR_FOREGROUND));
-			graphics.fillRoundRectangle(getSelectionRectangle(), 3, 3);
-			graphics.popState();
-			graphics.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
-		}
-		super.paintFigure(graphics);
-	}
+    {
+        if (selected)
+        {
+            graphics.pushState();
+            graphics.setBackgroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ATTR_FOREGROUND));
+            graphics.fillRoundRectangle(getSelectionRectangle(), 3, 3);
+            graphics.popState();
+            graphics.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+        }
+        super.paintFigure(graphics);
+    }
 
-	@Override
-	public Dimension getPreferredSize(int wHint, int hHint) {
-		return super.getPreferredSize(wHint, hHint);
-	}
+    @Override
+    public Dimension getPreferredSize(int wHint, int hHint) {
+        return super.getPreferredSize(wHint, hHint);
+    }
 
-	/**
-	 * Sets the selection state of this SimpleActivityLabel
-	 * 
-	 * @param b
-	 *            true will cause the label to appear selected
-	 */
-	public void setSelected(boolean b)
-	{
-		selected = b;
-		repaint();
-	}
+    /**
+     * Sets the selection state of this SimpleActivityLabel
+     *
+     * @param b
+     *            true will cause the label to appear selected
+     */
+    public void setSelected(boolean b)
+    {
+        selected = b;
+        repaint();
+    }
 
 
 }

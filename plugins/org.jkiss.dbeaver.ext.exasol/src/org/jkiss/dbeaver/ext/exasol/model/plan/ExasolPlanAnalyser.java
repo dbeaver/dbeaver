@@ -98,13 +98,13 @@ public class ExasolPlanAnalyser extends AbstractExecutionPlan {
 
             //retrieve execute info
             try (JDBCPreparedStatement stmt = connection.prepareStatement(getPlanQueryString())) {
-	            stmt.setString(1, query);
-	            try (JDBCResultSet dbResult = stmt.executeQuery()) {
-		            while (dbResult.next()) {
-		                ExasolPlanNode node = new ExasolPlanNode(null, dbResult);
-		                rootNodes.add(node);
-		            }
-	            }
+                stmt.setString(1, query);
+                try (JDBCResultSet dbResult = stmt.executeQuery()) {
+                    while (dbResult.next()) {
+                        ExasolPlanNode node = new ExasolPlanNode(null, dbResult);
+                        rootNodes.add(node);
+                    }
+                }
             }
 
         } catch (SQLException e) {

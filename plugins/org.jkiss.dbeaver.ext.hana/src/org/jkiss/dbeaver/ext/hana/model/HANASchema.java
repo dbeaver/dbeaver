@@ -44,7 +44,7 @@ public class HANASchema extends GenericSchema implements DBPQualifiedObject, DBP
     @NotNull
     private String schemaName;
     private boolean hasStatistics;
-	
+
     public HANASchema(@NotNull GenericDataSource dataSource, @Nullable GenericCatalog catalog, @NotNull String schemaName) {
         super(dataSource, catalog, schemaName);
         this.schemaName = schemaName;

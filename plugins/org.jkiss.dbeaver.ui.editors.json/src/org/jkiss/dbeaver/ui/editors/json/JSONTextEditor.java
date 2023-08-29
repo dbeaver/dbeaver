@@ -37,74 +37,74 @@ import org.jkiss.dbeaver.ui.editors.text.FileRefDocumentProvider;
  */
 public class JSONTextEditor extends BaseTextEditor {
 
-	private final static char[] PAIRS= { '{', '}', '[', ']' };
+    private final static char[] PAIRS= { '{', '}', '[', ']' };
 
-	private DefaultCharacterPairMatcher pairsMatcher = new DefaultCharacterPairMatcher(PAIRS);
+    private DefaultCharacterPairMatcher pairsMatcher = new DefaultCharacterPairMatcher(PAIRS);
 
-	private ProjectionSupport projectionSupport;
+    private ProjectionSupport projectionSupport;
 
-	public JSONTextEditor() {
-		super();
-		setDocumentProvider(new FileRefDocumentProvider());
-	}
+    public JSONTextEditor() {
+        super();
+        setDocumentProvider(new FileRefDocumentProvider());
+    }
 
-	@Override
-	public void dispose() {
-		if (pairsMatcher != null) {
-			pairsMatcher.dispose();
-			pairsMatcher = null;
-		}
+    @Override
+    public void dispose() {
+        if (pairsMatcher != null) {
+            pairsMatcher.dispose();
+            pairsMatcher = null;
+        }
 
-		super.dispose();
-	}
+        super.dispose();
+    }
 
-	@Override
-	public void doRevertToSaved() {
-		super.doRevertToSaved();
-	}
+    @Override
+    public void doRevertToSaved() {
+        super.doRevertToSaved();
+    }
 
-	@Override
-	public void doSave(IProgressMonitor monitor) {
-		super.doSave(monitor);
-	}
+    @Override
+    public void doSave(IProgressMonitor monitor) {
+        super.doSave(monitor);
+    }
 
-	@Override
-	public void doSaveAs() {
-		super.doSaveAs();
-	}
+    @Override
+    public void doSaveAs() {
+        super.doSaveAs();
+    }
 
-	@Override
-	public void doSetInput(IEditorInput input) throws CoreException {
-		super.doSetInput(input);
-		setupDocument();
-	}
+    @Override
+    public void doSetInput(IEditorInput input) throws CoreException {
+        super.doSetInput(input);
+        setupDocument();
+    }
 
-	private void setupDocument() {
-		IDocument document = getDocument();
-		if (document != null) {
-			IDocumentPartitioner partitioner =
-				new FastPartitioner(
-					new JSONPartitionScanner(),
-					new String[]{
-						JSONPartitionScanner.JSON_STRING});
-			partitioner.connect(document);
-			((IDocumentExtension3) document).setDocumentPartitioner(JSONPartitionScanner.JSON_PARTITIONING, partitioner);
-		}
-	}
+    private void setupDocument() {
+        IDocument document = getDocument();
+        if (document != null) {
+            IDocumentPartitioner partitioner =
+                new FastPartitioner(
+                    new JSONPartitionScanner(),
+                    new String[]{
+                        JSONPartitionScanner.JSON_STRING});
+            partitioner.connect(document);
+            ((IDocumentExtension3) document).setDocumentPartitioner(JSONPartitionScanner.JSON_PARTITIONING, partitioner);
+        }
+    }
 
 
-	@Override
-	public void createPartControl(Composite parent) {
-		setSourceViewerConfiguration(new JSONSourceViewerConfiguration(this));
-		super.createPartControl(parent);
-	}
+    @Override
+    public void createPartControl(Composite parent) {
+        setSourceViewerConfiguration(new JSONSourceViewerConfiguration(this));
+        super.createPartControl(parent);
+    }
 
-	@Override
-	protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
+    @Override
+    protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
 
-		ISourceViewer viewer = new ProjectionViewer(parent, ruler, null, false, styles);
+        ISourceViewer viewer = new ProjectionViewer(parent, ruler, null, false, styles);
 
-		return viewer;
-	}
+        return viewer;
+    }
 
 }

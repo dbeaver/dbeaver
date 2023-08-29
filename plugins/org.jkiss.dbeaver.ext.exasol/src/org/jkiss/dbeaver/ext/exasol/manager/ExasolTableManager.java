@@ -116,21 +116,21 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
 
         if (command.getProperties().size() > 0) {
         	
-			if (command.getProperties().containsKey("hasPartitionKey") 
-					&& ((command.getProperties().get("hasPartitionKey").toString()).equals("false")) )
-			{
-				actionList.add(new SQLDatabasePersistAction("ALTER TABLE " + exasolTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + " DROP PARTITION KEYS"));
-			} else if (command.getProperties().size() > 1) {
-			
-			StringBuilder sb = new StringBuilder(128);
-			sb.append(SQL_ALTER);
-			sb.append(exasolTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
-			sb.append(" ");
+            if (command.getProperties().containsKey("hasPartitionKey")
+                    && ((command.getProperties().get("hasPartitionKey").toString()).equals("false")) )
+            {
+                actionList.add(new SQLDatabasePersistAction("ALTER TABLE " + exasolTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + " DROP PARTITION KEYS"));
+            } else if (command.getProperties().size() > 1) {
 
-			appendTableModifiers(monitor, command.getObject(), command, sb, true);
+            StringBuilder sb = new StringBuilder(128);
+            sb.append(SQL_ALTER);
+            sb.append(exasolTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
+            sb.append(" ");
 
-			actionList.add(new SQLDatabasePersistAction(CMD_ALTER, sb.toString()));
-			}
+            appendTableModifiers(monitor, command.getObject(), command, sb, true);
+
+            actionList.add(new SQLDatabasePersistAction(CMD_ALTER, sb.toString()));
+            }
         }
 
         DBEPersistAction commentAction = buildCommentAction(exasolTable);

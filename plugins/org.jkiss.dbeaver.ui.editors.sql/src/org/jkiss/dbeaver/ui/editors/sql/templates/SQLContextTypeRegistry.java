@@ -25,7 +25,7 @@ import java.util.Set;
  */
 public class SQLContextTypeRegistry extends ContextTypeRegistry {
 
-	public SQLContextTypeRegistry() {
+    public SQLContextTypeRegistry() {
         loadContextTypes();
     }
 

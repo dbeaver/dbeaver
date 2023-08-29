@@ -107,7 +107,7 @@ class MySQLExportWizard extends AbstractNativeExportWizard<MySQLExportSettings, 
     }
 
     @Override
-	public void onSuccess(long workTime) {
+    public void onSuccess(long workTime) {
         UIUtils.showMessageBox(
             getShell(),
             MySQLUIMessages.tools_db_export_wizard_title,
@@ -116,5 +116,5 @@ class MySQLExportWizard extends AbstractNativeExportWizard<MySQLExportSettings, 
 
         Set<File> set = getSettings().getExportObjects().stream().map(it -> getSettings().getOutputFolder(it)).collect(Collectors.toSet());
         set.forEach(it -> ShellUtils.launchProgram(it.getAbsolutePath()));
-	}
+    }
 }

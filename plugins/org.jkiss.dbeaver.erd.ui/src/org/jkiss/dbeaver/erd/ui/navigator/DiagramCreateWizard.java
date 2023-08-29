@@ -56,15 +56,15 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
     private IFolder folder;
     private EntityDiagram diagram = new EntityDiagram(null, "", new ERDContentProviderDecorated(), new ERDDecoratorDefault());
     private DiagramCreateWizardPage pageContent;
-	private String errorMessage;
+    private String errorMessage;
     private IStructuredSelection entitySelection;
     @Nullable
     private DBPProject project;
     
     public DiagramCreateWizard() {
-	}
+    }
 
-	@Override
+    @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(ERDUIMessages.wizard_diagram_create_title);
         setNeedsProgressMonitor(true);
@@ -73,21 +73,21 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
             Object element = selection.getFirstElement();
             if (element != null) {
                 diagramFolder = Platform.getAdapterManager().getAdapter(element, IFolder.class);
-			}
+            }
         }
         if (diagramFolder == null) {
             DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         	if (activeProject == null) {
-				errorMessage = "Can't create diagram without active project";
-			} else {
-	        	try {
-					diagramFolder = ERDResourceHandler.getDiagramsFolder(activeProject, true);
-				} catch (CoreException e) {
-					errorMessage = e.getMessage();
-				}
-			}
+                errorMessage = "Can't create diagram without active project";
+            } else {
+            	try {
+                    diagramFolder = ERDResourceHandler.getDiagramsFolder(activeProject, true);
+                } catch (CoreException e) {
+                    errorMessage = e.getMessage();
+                }
+            }
 
-			// Check for entity selection
+            // Check for entity selection
             if (selection != null && !selection.isEmpty()) {
         	    if (Platform.getAdapterManager().getAdapter(selection.getFirstElement(), DBSEntity.class) != null) {
         	        entitySelection = selection;
@@ -108,7 +108,7 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
         if (getContainer() != null) {
             //WizardDialog call
             pageContent.setErrorMessage(errorMessage);
-		}
+        }
     }
     
     @Override
@@ -117,11 +117,11 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
     	if (pageContent != null) {
     		//New Wizard call
             pageContent.setErrorMessage(errorMessage);
-		}
+        }
     }
     
-	@Override
-	public boolean performFinish() {
+    @Override
+    public boolean performFinish() {
         try {
             Collection<DBNNode> initialContent = pageContent.getInitialContent();
             List<DBSObject> rootObjects = new ArrayList<>();
@@ -153,7 +153,7 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
             return false;
         }
         return true;
-	}
+    }
 
     private class DiagramCreator implements DBRRunnableWithProgress {
         Collection<DBSObject> roots;

@@ -224,7 +224,7 @@ class ImageViewCanvas extends Canvas {
         vertical.setSelection((int) (-ty));
         vertical.setThumb(getClientArea().height);
 
-		/* update transform. */
+        /* update transform. */
         af = AffineTransform.getScaleInstance(sx, sy);
         af.preConcatenate(AffineTransform.getTranslateInstance(tx, ty));
         transform = af;

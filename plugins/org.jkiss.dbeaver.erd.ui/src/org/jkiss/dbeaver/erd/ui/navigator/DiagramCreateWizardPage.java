@@ -85,8 +85,8 @@ class DiagramCreateWizardPage extends WizardPage {
             setErrorMessage(null);
         }
     	if (getErrorMessage() != null) {
-			return false;
-		}
+            return false;
+        }
         return hasName;
     }
 
@@ -114,8 +114,8 @@ class DiagramCreateWizardPage extends WizardPage {
         final DBNProject rootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(project);
         if (rootNode == null) {
             setControl(placeholder);
-			return;
-		}
+            return;
+        }
         contentTree = new DatabaseNavigatorTree(configGroup, rootNode.getDatabases(), SWT.SINGLE | SWT.CHECK);
         gd = new GridData(GridData.FILL_BOTH);
         gd.horizontalSpan = 2;
@@ -159,8 +159,8 @@ class DiagramCreateWizardPage extends WizardPage {
     Collection<DBNNode> getInitialContent()
     {
     	if (contentTree == null) {
-			return Collections.emptyList();
-		}
+            return Collections.emptyList();
+        }
         List<DBNNode> nodes = new ArrayList<>();
         for (Object obj : contentTree.getCheckboxViewer().getCheckedElements()) {
             DBNNode node = (DBNNode)obj;

@@ -95,14 +95,14 @@ public class DBRShellCommand
     }
 
     public int getWaitProcessTimeoutMs() {
-		return waitProcessTimeoutMs;
-	}
+        return waitProcessTimeoutMs;
+    }
 
-	public void setWaitProcessTimeoutMs(int waitProcessTimeoutMs) {
-		this.waitProcessTimeoutMs = waitProcessTimeoutMs;
-	}
+    public void setWaitProcessTimeoutMs(int waitProcessTimeoutMs) {
+        this.waitProcessTimeoutMs = waitProcessTimeoutMs;
+    }
 
-	public boolean isTerminateAtDisconnect()
+    public boolean isTerminateAtDisconnect()
     {
         return terminateAtDisconnect;
     }

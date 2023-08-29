@@ -41,19 +41,19 @@ public class OracleSchedulerProgram extends OracleSchemaObject {
     private static final String CAT_ADVANCED = "Advanced";
 
     private String owner;
-	private String programName;
-	private String programType;
-	private String programAction;
-	private long numberOfArguments;
-	private String enabled;
-	private String detached;
-	private String scheduleLimit;
-	private String priority;
-	private String weight;
-	private long maxRuns;
-	private long maxFailures;
-	private String maxRunDuration;
-	private String nlsEnv;
+    private String programName;
+    private String programType;
+    private String programAction;
+    private long numberOfArguments;
+    private String enabled;
+    private String detached;
+    private String scheduleLimit;
+    private String priority;
+    private String weight;
+    private long maxRuns;
+    private long maxFailures;
+    private String maxRunDuration;
+    private String nlsEnv;
     private String comments;
     private final ArgumentsCache argumentsCache = new ArgumentsCache();
 

@@ -65,9 +65,9 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
     private ProjectImportData data = new ProjectImportData();
 
     public ProjectImportWizard() {
-	}
+    }
 
-	@Override
+    @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(CoreMessages.dialog_project_import_wizard_title);
         setNeedsProgressMonitor(true);
@@ -80,8 +80,8 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         //addPage(new ProjectImportWizardPageFinal(data));
     }
 
-	@Override
-	public boolean performFinish() {
+    @Override
+    public boolean performFinish() {
         try {
             UIUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
                 @Override
@@ -106,7 +106,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         }
         UIUtils.showMessageBox(getShell(), CoreMessages.dialog_project_import_wizard_message_success_import_title, CoreMessages.dialog_project_import_wizard_message_success_import_message, SWT.ICON_INFORMATION);
         return true;
-	}
+    }
 
     private void importProjects(DBRProgressMonitor monitor) throws IOException, DBException
     {

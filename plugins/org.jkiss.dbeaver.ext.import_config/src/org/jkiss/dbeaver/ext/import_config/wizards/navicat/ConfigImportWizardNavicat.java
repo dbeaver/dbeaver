@@ -23,38 +23,38 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import java.io.File;
 
 public class ConfigImportWizardNavicat extends ConfigImportWizard {
-	
-	private ConfigImportWizardPageNavicatDriver pageDriver;
-	private ConfigImportWizardPageNavicatSettings pageSettings;
-	
-	@Override
+    
+    private ConfigImportWizardPageNavicatDriver pageDriver;
+    private ConfigImportWizardPageNavicatSettings pageSettings;
+    
+    @Override
     protected ConfigImportWizardPageNavicatConnections createMainPage() {
         return new ConfigImportWizardPageNavicatConnections();
     }
-	
-	@Override
+    
+    @Override
     public void addPages() {
-		pageDriver = new ConfigImportWizardPageNavicatDriver();
+        pageDriver = new ConfigImportWizardPageNavicatDriver();
         pageSettings = new ConfigImportWizardPageNavicatSettings();
 
         addPage(pageDriver);
         addPage(pageSettings);
         super.addPages();
     }
-	
-	public ConfigImportWizardPageNavicatSettings getPageSettings() {
-		return pageSettings;
-	}
-	
-	public ConfigImportWizardPageNavicatDriver getPageDriver() {
-		return pageDriver;
-	}
-	
-	public DBPDriver getDriver() {
+    
+    public ConfigImportWizardPageNavicatSettings getPageSettings() {
+        return pageSettings;
+    }
+    
+    public ConfigImportWizardPageNavicatDriver getPageDriver() {
+        return pageDriver;
+    }
+    
+    public DBPDriver getDriver() {
         return pageDriver.getSelectedDriver();
     }
-	
-	public File getInputFile() {
+    
+    public File getInputFile() {
         return pageSettings.getInputFile();
     }
 

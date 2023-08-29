@@ -45,18 +45,18 @@ import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 public class FilterValueEditDialog extends BaseDialog{
-	
-	private static final String DIALOG_ID = "DBeaver.FilterValueEditDialog";//$NON-NLS-1$
+    
+    private static final String DIALOG_ID = "DBeaver.FilterValueEditDialog";//$NON-NLS-1$
     private GenericFilterValueEdit handler;
     private Object value;
     private static final Log log = Log.getLog(FilterValueEditDialog.class);
 
     public FilterValueEditDialog(ResultSetViewer viewer, DBDAttributeBinding attr, ResultSetRow[] rows, DBCLogicalOperator operator) {
-		super(viewer.getControl().getShell(), "Edit value", null);
-		handler = new GenericFilterValueEdit(viewer, attr, rows, operator);
-	}
+        super(viewer.getControl().getShell(), "Edit value", null);
+        handler = new GenericFilterValueEdit(viewer, attr, rows, operator);
+    }
 
-	@Override
+    @Override
     protected IDialogSettings getDialogBoundsSettings()
     {
         return UIUtils.getDialogSettings(DIALOG_ID + "." + handler.getOperator().name());
@@ -117,12 +117,12 @@ public class FilterValueEditDialog extends BaseDialog{
         }
     }
 
-	
-	private void createMultiValueSelector(Composite composite) {
-		GridData layoutData = new GridData(GridData.FILL_BOTH);
-		layoutData.widthHint = 400;
-		layoutData.heightHint = 300;
-		handler.setupTable(composite, SWT.BORDER | SWT.MULTI | SWT.CHECK | SWT.FULL_SELECTION, true, true, layoutData);
+    
+    private void createMultiValueSelector(Composite composite) {
+        GridData layoutData = new GridData(GridData.FILL_BOTH);
+        layoutData.widthHint = 400;
+        layoutData.heightHint = 300;
+        handler.setupTable(composite, SWT.BORDER | SWT.MULTI | SWT.CHECK | SWT.FULL_SELECTION, true, true, layoutData);
 
 
         ViewerColumnController columnController = new ViewerColumnController(getClass().getName(), handler.getTableViewer());
@@ -141,22 +141,22 @@ public class FilterValueEditDialog extends BaseDialog{
         columnController.createColumns(true);
 
         Action[] elements = new Action[] {
-	        new Action("Select &All") {
-	            @Override
-	            public void run() {
+            new Action("Select &All") {
+                @Override
+                public void run() {
                     for (TableItem item : handler.getTableViewer().getTable().getItems()) {
                         item.setChecked(true);
                     }
-	            }
-	        },
-	        new Action("Select &None") {
-	            @Override
-	            public void run() {
+                }
+            },
+            new Action("Select &None") {
+                @Override
+                public void run() {
                     for (TableItem item : handler.getTableViewer().getTable().getItems()) {
                         item.setChecked(false);
                     }
-	            }
-	        }
+                }
+            }
         };
         handler.addContextMenu(elements);
 
@@ -168,11 +168,11 @@ public class FilterValueEditDialog extends BaseDialog{
         columnController.createColumns(true);
     }
 
-	public Object getValue() {
+    public Object getValue() {
         return value;
     }
 
-	@Override
+    @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
         if (handler.getOperator().getArgumentCount() == 1) {

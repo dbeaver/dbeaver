@@ -136,7 +136,7 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
         addFunctions(Arrays.asList(ADVANCED_FUNCTIONS));
         
         try {
-			try (JDBCStatement stmt = session.createStatement()) {
+            try (JDBCStatement stmt = session.createStatement()) {
         		try (JDBCResultSet dbResult = stmt.executeQuery("/*snapshot execution*/ SELECT \"VALUE\" FROM \"$ODBCJDBC\".DB_METADATA WHERE name = 'aggregateFunctions'")) {
         			if (dbResult != null && dbResult.next()) {
         				String keyWord = dbResult.getString(1);
@@ -157,21 +157,21 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
             LOG.warn("Could not retrieve functions list from Exasol dictionary");
         }
         
-		@SuppressWarnings("serial")
-		ArrayList<String> value = new ArrayList<String>() {{
-			add("KERBEROS");
-			add("JDBC");
-			add("BYTE");
-			add("BIT");
-			add("PRECEDENCE");
-			add("GROUP_TEMP_DB_RAM_LIMIT");
-			add("USER_TEMP_DB_RAM_LIMIT");
-			add("SESSION_TEMP_DB_RAM_LIMIT");
-			add("CPU_WEIGHT");
-		}};
-		
-		this.addKeywords(value, DBPKeywordType.KEYWORD);
-		
+        @SuppressWarnings("serial")
+        ArrayList<String> value = new ArrayList<String>() {{
+            add("KERBEROS");
+            add("JDBC");
+            add("BYTE");
+            add("BIT");
+            add("PRECEDENCE");
+            add("GROUP_TEMP_DB_RAM_LIMIT");
+            add("USER_TEMP_DB_RAM_LIMIT");
+            add("SESSION_TEMP_DB_RAM_LIMIT");
+            add("CPU_WEIGHT");
+        }};
+
+        this.addKeywords(value, DBPKeywordType.KEYWORD);
+
     }
 
     @NotNull
@@ -194,7 +194,7 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
     @NotNull
     @Override
     public String escapeScriptValue(DBSTypedObject attribute, @NotNull Object value, @NotNull String strValue) {
-		return super.escapeScriptValue(attribute, value, strValue);
+        return super.escapeScriptValue(attribute, value, strValue);
     }
 
     @Override

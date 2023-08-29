@@ -33,30 +33,30 @@ import java.util.Map;
 public class ExasolIndexConfigurator implements DBEObjectConfigurator<ExasolTableIndex> {
 
 
-	@Override
-	public ExasolTableIndex configureObject(DBRProgressMonitor monitor, Object container, ExasolTableIndex index, Map<String, Object> options) {
-		return UITask.run(() -> {
-				EditIndexPage editPage = new EditIndexPage(
-						"create index",
-						index,
-						Arrays.asList(new DBSIndexType("LOCAL","LOCAL"), new DBSIndexType("GLOBAL","GLOBAL")),
-						false
-					);
-				if (!editPage.edit()) {
-					return null;
-				}
-				
-				index.setIndexType(editPage.getIndexType());
-				int colIndex = 1;
-				for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
-					index.addColumn(
-								new ExasolTableIndexColumn(index, (ExasolTableColumn) tableColumn, colIndex++)
-							);
-				}
-				index.setName(index.getIndexType().getName() + " INDEX " + index.getSimpleColumnString());
-				return index;
-			});
-		}
+    @Override
+    public ExasolTableIndex configureObject(DBRProgressMonitor monitor, Object container, ExasolTableIndex index, Map<String, Object> options) {
+        return UITask.run(() -> {
+                EditIndexPage editPage = new EditIndexPage(
+                        "create index",
+                        index,
+                        Arrays.asList(new DBSIndexType("LOCAL","LOCAL"), new DBSIndexType("GLOBAL","GLOBAL")),
+                        false
+                    );
+                if (!editPage.edit()) {
+                    return null;
+                }
+                
+                index.setIndexType(editPage.getIndexType());
+                int colIndex = 1;
+                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
+                    index.addColumn(
+                                new ExasolTableIndexColumn(index, (ExasolTableColumn) tableColumn, colIndex++)
+                            );
+                }
+                index.setName(index.getIndexType().getName() + " INDEX " + index.getSimpleColumnString());
+                return index;
+            });
+        }
 
 
 }

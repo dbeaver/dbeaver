@@ -128,11 +128,11 @@ public class HANAProcedure extends GenericProcedure {
                         
                         DBSProcedureParameterKind parameterType;
                         switch(parameterTypeStr) {
-	                    	case PARAMETER_TYPE_IN:     parameterType = DBSProcedureParameterKind.IN; break; 
-	                    	case PARAMETER_TYPE_INOUT:  parameterType = DBSProcedureParameterKind.INOUT; break; 
-	                    	case PARAMETER_TYPE_OUT:    parameterType = DBSProcedureParameterKind.OUT; break; 
-	                    	case PARAMETER_TYPE_RETURN: parameterType = DBSProcedureParameterKind.RETURN; break; 
-	                    	default:                    parameterType = DBSProcedureParameterKind.UNKNOWN; break; 
+                        	case PARAMETER_TYPE_IN:     parameterType = DBSProcedureParameterKind.IN; break; 
+                        	case PARAMETER_TYPE_INOUT:  parameterType = DBSProcedureParameterKind.INOUT; break; 
+                        	case PARAMETER_TYPE_OUT:    parameterType = DBSProcedureParameterKind.OUT; break; 
+                        	case PARAMETER_TYPE_RETURN: parameterType = DBSProcedureParameterKind.RETURN; break; 
+                        	default:                    parameterType = DBSProcedureParameterKind.UNKNOWN; break; 
                         }
                         DBSObject tableType = null;
                         List<HANAInplaceTableTypeColumn> inplaceTableType = null;

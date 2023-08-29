@@ -27,15 +27,15 @@ import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
  */
 public class DBeaverApplicationPreferenceInitializer extends AbstractPreferenceInitializer {
 
-	@Override
-	public void initializeDefaultPreferences() {
+    @Override
+    public void initializeDefaultPreferences() {
 
-		IEclipsePreferences node= DefaultScope.INSTANCE.getNode(IDEWorkbenchPlugin.getDefault().getBundle().getSymbolicName());
+        IEclipsePreferences node= DefaultScope.INSTANCE.getNode(IDEWorkbenchPlugin.getDefault().getBundle().getSymbolicName());
 
-		node.putBoolean(IDEInternalPreferences.SHOW_LOCATION, false);
-		node.putBoolean(IDEInternalPreferences.SHOW_LOCATION_NAME, false);
-		node.putBoolean(IDEInternalPreferences.SHOW_PERSPECTIVE_IN_TITLE, false);
-		node.putBoolean(IDEInternalPreferences.SHOW_PRODUCT_IN_TITLE, true);
-	}
+        node.putBoolean(IDEInternalPreferences.SHOW_LOCATION, false);
+        node.putBoolean(IDEInternalPreferences.SHOW_LOCATION_NAME, false);
+        node.putBoolean(IDEInternalPreferences.SHOW_PERSPECTIVE_IN_TITLE, false);
+        node.putBoolean(IDEInternalPreferences.SHOW_PRODUCT_IN_TITLE, true);
+    }
 
 }

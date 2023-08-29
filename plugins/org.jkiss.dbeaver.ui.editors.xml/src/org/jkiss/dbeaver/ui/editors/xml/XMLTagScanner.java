@@ -24,20 +24,20 @@ import org.jkiss.dbeaver.ui.editors.text.TextWhiteSpaceDetector;
 
 public class XMLTagScanner extends RuleBasedScanner {
 
-	XMLTagScanner(ColorRegistry manager) {
-		IToken string =
-			new Token(
-				new TextAttribute(manager.get(XMLSourceViewerConfiguration.COLOR_XML_STRING)));
+    XMLTagScanner(ColorRegistry manager) {
+        IToken string =
+            new Token(
+                new TextAttribute(manager.get(XMLSourceViewerConfiguration.COLOR_XML_STRING)));
 
-		IRule[] rules = new IRule[3];
+        IRule[] rules = new IRule[3];
 
-		// Add rule for double quotes
-		rules[0] = new SingleLineRule("\"", "\"", string, '\\'); //$NON-NLS-1$ //$NON-NLS-2$
-		// Add a rule for single quotes
-		rules[1] = new SingleLineRule("'", "'", string, '\\'); //$NON-NLS-1$ //$NON-NLS-2$
-		// Add generic whitespace rule.
-		rules[2] = new WhitespaceRule(new TextWhiteSpaceDetector());
+        // Add rule for double quotes
+        rules[0] = new SingleLineRule("\"", "\"", string, '\\'); //$NON-NLS-1$ //$NON-NLS-2$
+        // Add a rule for single quotes
+        rules[1] = new SingleLineRule("'", "'", string, '\\'); //$NON-NLS-1$ //$NON-NLS-2$
+        // Add generic whitespace rule.
+        rules[2] = new WhitespaceRule(new TextWhiteSpaceDetector());
 
-		setRules(rules);
-	}
+        setRules(rules);
+    }
 }

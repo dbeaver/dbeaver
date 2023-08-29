@@ -126,10 +126,10 @@ public class TabbedFolderList extends Composite {
                     if (!selected) {
                         select(getIndex(ListElement.this));
                         /*
-						 * We set focus to the tabbed property composite so that
-						 * focus is moved to the appropriate widget in the
-						 * section.
-						 */
+                         * We set focus to the tabbed property composite so that
+                         * focus is moved to the appropriate widget in the
+                         * section.
+                         */
                         Composite tabbedPropertyComposite = getParent();
                         tabbedPropertyComposite.setFocus();
                     }
@@ -172,17 +172,17 @@ public class TabbedFolderList extends Composite {
          * @param e the paint event.
          */
         private void paint(PaintEvent e) {
-			/*
-			 * draw the top two lines of the tab, same for selected, hover and
-			 * default
-			 */
+            /*
+             * draw the top two lines of the tab, same for selected, hover and
+             * default
+             */
             Rectangle bounds = getBounds();
             e.gc.setForeground(widgetNormalShadow);
             e.gc.drawLine(0, 0, bounds.width - 1, 0);
             e.gc.setForeground(listBackground);
             e.gc.drawLine(0, 1, bounds.width - 1, 1);
 
-			/* draw the fill in the tab */
+            /* draw the fill in the tab */
             if (selected) {
                 e.gc.setBackground(listBackground);
                 e.gc.fillRectangle(0, 2, bounds.width, bounds.height - 1);
@@ -209,16 +209,16 @@ public class TabbedFolderList extends Composite {
                     bounds.height + 1);
             }
 
-			/*
-			 * Add INDENT_LEFT pixels to the left as a margin.
-			 */
+            /*
+             * Add INDENT_LEFT pixels to the left as a margin.
+             */
             int textIndent = INDENT_LEFT;
             FontMetrics fm = e.gc.getFontMetrics();
             int height = fm.getHeight();
             int textMiddle = (bounds.height - height) / 2;
 
             if (tab.getImage() != null) {
-				/* draw the icon for the selected tab */
+                /* draw the icon for the selected tab */
                 if (tab.isIndented()) {
                     textIndent = textIndent + INDENT_LEFT;
                 } else {
@@ -237,20 +237,20 @@ public class TabbedFolderList extends Composite {
                 textIndent = textIndent + INDENT_LEFT;
             }
 
-			/* draw the text */
+            /* draw the text */
             e.gc.setForeground(widgetForeground);
             if (selected) {
-				/* selected tab is bold font */
+                /* selected tab is bold font */
                 e.gc.setFont(boldFont);
             }
             e.gc.drawText(tab.getText(), textIndent, textMiddle, true);
             if (((TabbedFolderList) getParent()).focus && selected) {
-				/* draw a line if the tab has focus */
+                /* draw a line if the tab has focus */
                 Point point = e.gc.textExtent(tab.getText());
                 e.gc.drawLine(textIndent, bounds.height - 4, textIndent + point.x, bounds.height - 4);
             }
 
-			/* draw the bottom line on the tab for selected and default */
+            /* draw the bottom line on the tab for selected and default */
             if (!hover) {
                 e.gc.setForeground(listBackground);
                 e.gc.drawLine(0, bounds.height - 1, bounds.width - 2, bounds.height - 1);
@@ -607,11 +607,11 @@ public class TabbedFolderList extends Composite {
 
     private int getTabWidth(TabbedFolderInfo folderInfo) {
         int width = getTextDimension(folderInfo.getText()).x;
-		/*
-		 * To anticipate for the icon placement we should always keep the
-		 * space available after the label. So when the active tab includes
-		 * an icon the width of the tab doesn't change.
-		 */
+        /*
+         * To anticipate for the icon placement we should always keep the
+         * space available after the label. So when the active tab includes
+         * an icon the width of the tab doesn't change.
+         */
         if (folderInfo.getImage() != null) {
             Image image = DBeaverIcons.getImage(folderInfo.getImage());
             width = width + image.getBounds().width + 4;
@@ -642,10 +642,10 @@ public class TabbedFolderList extends Composite {
             if (lastSelected != NONE) {
                 elements[lastSelected].setSelected(false);
                 if (getSelectionIndex() != elements.length - 1) {
-					/*
-					 * redraw the next tab to fix the border by calling
-					 * setSelected()
-					 */
+                    /*
+                     * redraw the next tab to fix the border by calling
+                     * setSelected()
+                     */
                     elements[getSelectionIndex() + 1].setSelected(false);
                 }
             }
@@ -684,13 +684,13 @@ public class TabbedFolderList extends Composite {
         } else if (widestLabelIndex == -1) {
             result.x = getTextDimension(LABEL_NA).x + INDENT_LEFT;
         } else {
-			/*
-			 * Add INDENT_LEFT pixels to the left of the longest tab as a margin.
-			 */
+            /*
+             * Add INDENT_LEFT pixels to the left of the longest tab as a margin.
+             */
             int width = getTabWidth(elements[widestLabelIndex].getInfo()) + INDENT_LEFT;
-			/*
-			 * Add INDENT_RIGHT pixels to the right of the longest tab as a margin.
-			 */
+            /*
+             * Add INDENT_RIGHT pixels to the right of the longest tab as a margin.
+             */
             result.x = width + INDENT_RIGHT;
         }
         return result;
@@ -736,11 +736,11 @@ public class TabbedFolderList extends Composite {
         RGB white = display.getSystemColor(SWT.COLOR_WHITE).getRGB();
         RGB black = display.getSystemColor(SWT.COLOR_BLACK).getRGB();
 
-		/*
-		 * gradient in the default tab: start colour WIDGET_NORMAL_SHADOW 100% +
-		 * white 20% + INFO_BACKGROUND 60% end colour WIDGET_NORMAL_SHADOW 100% +
-		 * INFO_BACKGROUND 40%
-		 */
+        /*
+         * gradient in the default tab: start colour WIDGET_NORMAL_SHADOW 100% +
+         * white 20% + INFO_BACKGROUND 60% end colour WIDGET_NORMAL_SHADOW 100% +
+         * INFO_BACKGROUND 40%
+         */
         /*
         defaultGradientStart = sharedColors.getColor(
             UIUtils.blend(infoBackground,
@@ -760,11 +760,11 @@ public class TabbedFolderList extends Composite {
         bottomNavigationElementShadowStroke1 = sharedColors.getColor(UIUtils.blend(black, widgetBackground.getRGB(), 10));
         bottomNavigationElementShadowStroke2 = sharedColors.getColor(UIUtils.blend(black, widgetBackground.getRGB(), 5));
 
-		/*
-		 * gradient in the hover tab: start colour WIDGET_BACKGROUND 100% +
-		 * white 20% end colour WIDGET_BACKGROUND 100% + WIDGET_NORMAL_SHADOW
-		 * 10%
-		 */
+        /*
+         * gradient in the hover tab: start colour WIDGET_BACKGROUND 100% +
+         * white 20% end colour WIDGET_BACKGROUND 100% + WIDGET_NORMAL_SHADOW
+         * 10%
+         */
         hoverGradientStart = sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 20));
         hoverGradientEnd = sharedColors.getColor(UIUtils.blend(widgetNormalShadow.getRGB(), widgetBackground.getRGB(), 10));
 
@@ -813,10 +813,10 @@ public class TabbedFolderList extends Composite {
     int getTabHeight() {
         int tabHeight = getTextDimension("").y + INDENT_LEFT; //$NON-NLS-1$
         if (tabsThatFitInComposite == 1) {
-			/*
-			 * if only one tab will fix, reduce the size of the tab height so
-			 * that the navigation elements fit.
-			 */
+            /*
+             * if only one tab will fix, reduce the size of the tab height so
+             * that the navigation elements fit.
+             */
             int ret = getBounds().height - 20;
             return (ret > tabHeight) ? tabHeight : Math.max(ret, 5);
         }
@@ -848,34 +848,34 @@ public class TabbedFolderList extends Composite {
     private void computeTopAndBottomTab() {
         computeTabsThatFitInComposite();
         if (elements.length == 0) {
-			/*
-			 * no tabs to display.
-			 */
+            /*
+             * no tabs to display.
+             */
             topVisibleIndex = 0;
             bottomVisibleIndex = 0;
         } else if (tabsThatFitInComposite >= elements.length) {
-			/*
-			 * all the tabs fit.
-			 */
+            /*
+             * all the tabs fit.
+             */
             topVisibleIndex = 0;
             bottomVisibleIndex = elements.length - 1;
         } else if (getSelectionIndex() == NONE) {
-			/*
-			 * there is no selected tab yet, assume that tab one would
-			 * be selected for now.
-			 */
+            /*
+             * there is no selected tab yet, assume that tab one would
+             * be selected for now.
+             */
             topVisibleIndex = 0;
             bottomVisibleIndex = tabsThatFitInComposite - 1;
         } else if (getSelectionIndex() + tabsThatFitInComposite > elements.length) {
-			/*
-			 * the selected tab is near the bottom.
-			 */
+            /*
+             * the selected tab is near the bottom.
+             */
             bottomVisibleIndex = elements.length - 1;
             topVisibleIndex = bottomVisibleIndex - tabsThatFitInComposite + 1;
         } else {
-			/*
-			 * the selected tab is near the top.
-			 */
+            /*
+             * the selected tab is near the top.
+             */
             topVisibleIndex = selectedElementIndex;
             bottomVisibleIndex = selectedElementIndex + tabsThatFitInComposite
                 - 1;
@@ -910,23 +910,23 @@ public class TabbedFolderList extends Composite {
             formData.height = 10;
             topNavigationElement.setLayoutData(formData);
 
-			/*
-			 * use nextElement to attach the layout to the previous canvas
-			 * widget in the list.
-			 */
+            /*
+             * use nextElement to attach the layout to the previous canvas
+             * widget in the list.
+             */
             Canvas nextElement = topNavigationElement;
 
             for (int i = 0; i < elements.length; i++) {
                 if (i < topVisibleIndex || i > bottomVisibleIndex) {
-					/*
-					 * this tab is not visible
-					 */
+                    /*
+                     * this tab is not visible
+                     */
                     elements[i].setLayoutData(null);
                     elements[i].setVisible(false);
                 } else {
-					/*
-					 * this tab is visible.
-					 */
+                    /*
+                     * this tab is visible.
+                     */
                     formData = new FormData();
                     formData.height = getTabHeight();
                     formData.left = new FormAttachment(0, 0);

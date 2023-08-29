@@ -171,25 +171,25 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> impl
         this.enabled = enabled;
     }
 
-	@Override
-	public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
-			throws DBException
-	{
-		return ExasolUtils.getFKDdl(this, monitor);
-	}
-	
-	@Override
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
+            throws DBException
+    {
+        return ExasolUtils.getFKDdl(this, monitor);
+    }
+
+    @Override
     @Property(viewable = true)
-	public String getName()
-	{
-		return this.constName;
-	}
-	
-	@Override
-	public void setName(String name)
-	{
-		this.constName = name;
-	}
-		
+    public String getName()
+    {
+        return this.constName;
+    }
+
+    @Override
+    public void setName(String name)
+    {
+        this.constName = name;
+    }
+
 
 }

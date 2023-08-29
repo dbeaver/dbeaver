@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.Map;
 
 public class FireBirdDataSource extends GenericDataSource
-	implements DBCQueryPlanner {
+    implements DBCQueryPlanner {
 
     private static final Log log = Log.getLog(FireBirdDataSource.class);
 
@@ -127,19 +127,19 @@ public class FireBirdDataSource extends GenericDataSource
         super.initialize(monitor);
     }
 
-	@NotNull
+    @NotNull
     @Override
-	public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration) throws DBException {
-		FireBirdPlanAnalyser plan = new FireBirdPlanAnalyser(this, (JDBCSession) session, query);
+    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration) throws DBException {
+        FireBirdPlanAnalyser plan = new FireBirdPlanAnalyser(this, (JDBCSession) session, query);
         plan.explain();
         return plan;
-	}
+    }
 
-	@NotNull
+    @NotNull
     @Override
-	public DBCPlanStyle getPlanStyle() {
-		return DBCPlanStyle.PLAN;
-	}
+    public DBCPlanStyle getPlanStyle() {
+        return DBCPlanStyle.PLAN;
+    }
 
     @Override
     public List<FireBirdTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {

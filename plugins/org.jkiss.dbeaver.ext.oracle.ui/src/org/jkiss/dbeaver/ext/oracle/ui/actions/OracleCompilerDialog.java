@@ -169,10 +169,10 @@ public class OracleCompilerDialog extends BaseDialog
     @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
-		// create OK and Cancel buttons by default
+        // create OK and Cancel buttons by default
         createButton(parent, COMPILE_ID, OracleUIMessages.views_oracle_compiler_dialog_button_compile, false).setEnabled(false);
-		createButton(parent, COMPILE_ALL_ID, OracleUIMessages.views_oracle_compiler_dialog_button_compile_all, true);
-		createButton(parent, IDialogConstants.CANCEL_ID,
+        createButton(parent, COMPILE_ALL_ID, OracleUIMessages.views_oracle_compiler_dialog_button_compile_all, true);
+        createButton(parent, IDialogConstants.CANCEL_ID,
             IDialogConstants.CLOSE_LABEL, false);
     }
 

@@ -51,9 +51,9 @@ public class ScriptsExportWizard extends Wizard implements IExportWizard {
     private ScriptsExportWizardPage mainPage;
 
     public ScriptsExportWizard() {
-	}
+    }
 
-	@Override
+    @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(CoreMessages.dialog_scripts_export_wizard_window_title); //NON-NLS-1
         setDefaultPageImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_SCRIPT));
@@ -67,8 +67,8 @@ public class ScriptsExportWizard extends Wizard implements IExportWizard {
         addPage(mainPage);
     }
 
-	@Override
-	public boolean performFinish() {
+    @Override
+    public boolean performFinish() {
         final ScriptsExportData exportData = mainPage.getExportData();
         try {
             UIUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
@@ -93,7 +93,7 @@ public class ScriptsExportWizard extends Wizard implements IExportWizard {
             return false;
         }
         return true;
-	}
+    }
 
     public void exportScripts(DBRProgressMonitor monitor, final ScriptsExportData exportData)
         throws IOException, CoreException, InterruptedException

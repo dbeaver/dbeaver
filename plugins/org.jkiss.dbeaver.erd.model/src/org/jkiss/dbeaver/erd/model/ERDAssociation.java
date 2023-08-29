@@ -40,7 +40,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 {
     private static final Log log = Log.getLog(ERDAssociation.class);
 
-	private ERDElement<?> sourceEntity;
+    private ERDElement<?> sourceEntity;
     private ERDElement<?> targetEntity;
     private List<ERDEntityAttribute> sourceAttributes;
     private List<ERDEntityAttribute> targetAttributes;
@@ -73,20 +73,20 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
      * @param targetEntity pk table
      * @param reflect reflect flag
      */
-	public ERDAssociation(DBSEntityAssociation association, ERDEntity sourceEntity, ERDEntity targetEntity, boolean reflect)
-	{
-		super(association);
-		this.targetEntity = targetEntity;
-		this.sourceEntity = sourceEntity;
+    public ERDAssociation(DBSEntityAssociation association, ERDEntity sourceEntity, ERDEntity targetEntity, boolean reflect)
+    {
+        super(association);
+        this.targetEntity = targetEntity;
+        this.sourceEntity = sourceEntity;
 
-		// Resolve association attributes
+        // Resolve association attributes
         if (association instanceof DBSEntityReferrer) {
             resolveAttributes((DBSEntityReferrer) association, sourceEntity, targetEntity);
         }
 
         this.targetEntity.addReferenceAssociation(this, reflect);
         this.sourceEntity.addAssociation(this, reflect);
-	}
+    }
 
     /**
      */
@@ -119,36 +119,36 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
         return getObject() instanceof ERDLogicalAssociation;
     }
 
-	/**
-	 * @return Returns the sourceEntity.
-	 */
-	public ERDElement<?> getSourceEntity()
-	{
-		return sourceEntity;
-	}
+    /**
+     * @return Returns the sourceEntity.
+     */
+    public ERDElement<?> getSourceEntity()
+    {
+        return sourceEntity;
+    }
 
-	/**
-	 * @return Returns the targetEntity.
-	 */
-	public ERDElement<?> getTargetEntity()
-	{
-		return targetEntity;
-	}
+    /**
+     * @return Returns the targetEntity.
+     */
+    public ERDElement<?> getTargetEntity()
+    {
+        return targetEntity;
+    }
 
-	public void setTargetEntity(ERDElement<?> targetPrimaryKey)
-	{
-		this.targetEntity = targetPrimaryKey;
-	}
+    public void setTargetEntity(ERDElement<?> targetPrimaryKey)
+    {
+        this.targetEntity = targetPrimaryKey;
+    }
 
-	/**
-	 * @param sourceForeignKey the foreign key table you are connecting from
-	 */
-	public void setSourceEntity(ERDElement<?> sourceForeignKey)
-	{
-		this.sourceEntity = sourceForeignKey;
-	}
+    /**
+     * @param sourceForeignKey the foreign key table you are connecting from
+     */
+    public void setSourceEntity(ERDElement<?> sourceForeignKey)
+    {
+        this.sourceEntity = sourceForeignKey;
+    }
 
-	@NotNull
+    @NotNull
     public List<ERDEntityAttribute> getSourceAttributes() {
         return sourceAttributes == null ? Collections.emptyList() : sourceAttributes;
     }
@@ -159,7 +159,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
     }
 
     public void addCondition(@Nullable ERDEntityAttribute sourceAttribute, @Nullable ERDEntityAttribute targetAttribute) {
-	    if (sourceAttribute != null) {
+        if (sourceAttribute != null) {
             if (sourceAttributes == null) {
                 sourceAttributes = new ArrayList<>();
             }

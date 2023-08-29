@@ -31,19 +31,19 @@ import org.eclipse.gef.ui.palette.PaletteViewerProvider;
 public class ERDPaletteViewerProvider extends PaletteViewerProvider
 {
 
-	/**
-	 * implicit constructor
-	 */
-	public ERDPaletteViewerProvider(EditDomain graphicalViewerDomain)
-	{
-		super(graphicalViewerDomain);
-	}
+    /**
+     * implicit constructor
+     */
+    public ERDPaletteViewerProvider(EditDomain graphicalViewerDomain)
+    {
+        super(graphicalViewerDomain);
+    }
 
-	@Override
+    @Override
     protected void configurePaletteViewer(PaletteViewer viewer)
-	{
-		super.configurePaletteViewer(viewer);
-		viewer.addDragSourceListener(new TemplateTransferDragSourceListener(viewer));
-	}
+    {
+        super.configurePaletteViewer(viewer);
+        viewer.addDragSourceListener(new TemplateTransferDragSourceListener(viewer));
+    }
 
 }

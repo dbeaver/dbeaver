@@ -52,15 +52,15 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
     private Map<String, DriverDescriptor> driverClassMap = new HashMap<>();
 
     public ConfigImportWizard() {
-		super();
-	}
+        super();
+    }
 
-	@Override
+    @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-		setWindowTitle(ImportConfigMessages.config_import_wizard_header_import_configuration); 
-		setNeedsProgressMonitor(true);
-		mainPage = createMainPage(); //NON-NLS-1
-	}
+        setWindowTitle(ImportConfigMessages.config_import_wizard_header_import_configuration);
+        setNeedsProgressMonitor(true);
+        mainPage = createMainPage(); //NON-NLS-1
+    }
 
     protected abstract ConfigImportWizardPage createMainPage();
 

@@ -31,46 +31,46 @@ public class PostgreUIActivator extends AbstractUIPlugin {
     
     public static final String IMG_PG_SQL = "IMG_PG_SQL"; //$NON-NLS-1$
 
-	// The plug-in ID
-	public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.postgresql"; //$NON-NLS-1$
+    // The plug-in ID
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.postgresql"; //$NON-NLS-1$
 
-	// The shared instance
-	private static PostgreUIActivator plugin;
+    // The shared instance
+    private static PostgreUIActivator plugin;
     private static BundleContext bundleContext;
 
     public PostgreUIActivator() {
-	}
+    }
 
-	@Override
+    @Override
     public void start(BundleContext context) throws Exception {
-		super.start(context);
-		bundleContext = context;
-		plugin = this;
-	}
+        super.start(context);
+        bundleContext = context;
+        plugin = this;
+    }
 
-	@Override
+    @Override
     public void stop(BundleContext context) throws Exception {
-		plugin = null;
-		bundleContext = context;
-		super.stop(context);
-	}
+        plugin = null;
+        bundleContext = context;
+        super.stop(context);
+    }
 
-	public static PostgreUIActivator getDefault() {
-		return plugin;
-	}
+    public static PostgreUIActivator getDefault() {
+        return plugin;
+    }
 
-	public static ImageDescriptor getImageDescriptor(String path) {
-		return imageDescriptorFromPlugin(PLUGIN_ID, path);
-	}
-	
-	@Override
-	protected void initializeImageRegistry(ImageRegistry reg)
-	{
-	    super.initializeImageRegistry(reg);
-	    reg.put(IMG_PG_SQL, getImageDescriptor("$nl$/icons/postgresql_icon.png")); //$NON-NLS-1$
-	}
-	
-	public IEventBroker getEventBroker() {
+    public static ImageDescriptor getImageDescriptor(String path) {
+        return imageDescriptorFromPlugin(PLUGIN_ID, path);
+    }
+
+    @Override
+    protected void initializeImageRegistry(ImageRegistry reg)
+    {
+        super.initializeImageRegistry(reg);
+        reg.put(IMG_PG_SQL, getImageDescriptor("$nl$/icons/postgresql_icon.png")); //$NON-NLS-1$
+    }
+
+    public IEventBroker getEventBroker() {
         IEclipseContext serviceContext = EclipseContextFactory.getServiceContext(bundleContext);
         return serviceContext.get(IEventBroker.class);
     }

@@ -117,7 +117,7 @@ public final class ExasolTableUniqueKeyCache
 
 
     @SuppressWarnings("rawtypes")
-	@NotNull
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(JDBCSession session, ExasolSchema exasolSchema, ExasolTable forTable)
         throws SQLException {

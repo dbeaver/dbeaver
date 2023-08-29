@@ -40,25 +40,25 @@ public class ExasolRole extends ExasolGrantee  implements DBARole, DBPNamedObjec
     public ExasolRole(ExasolDataSource dataSource, ResultSet resultSet) {
     	super(dataSource, resultSet);
     	if (resultSet != null) {
-	        this.name = JDBCUtils.safeGetString(resultSet, "ROLE_NAME");
-	        this.description = JDBCUtils.safeGetStringTrimmed(resultSet, "ROLE_COMMENT");
-	        this.dataSource = dataSource;
-	        this.created = JDBCUtils.safeGetTimestamp(resultSet, "CREATED");
+            this.name = JDBCUtils.safeGetString(resultSet, "ROLE_NAME");
+            this.description = JDBCUtils.safeGetStringTrimmed(resultSet, "ROLE_COMMENT");
+            this.dataSource = dataSource;
+            this.created = JDBCUtils.safeGetTimestamp(resultSet, "CREATED");
     	} else {
     		this.name = "New Role";
     	}
     }
 
     public ExasolRole(ExasolDataSource dataSource, String name,
-			String description)
-	{
+            String description)
+    {
     	super(dataSource,false);
-		this.dataSource = dataSource;
-		this.name = name;
-		this.description = description;
-	}
+        this.dataSource = dataSource;
+        this.name = name;
+        this.description = description;
+    }
 
-	@NotNull
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName() {
@@ -92,15 +92,15 @@ public class ExasolRole extends ExasolGrantee  implements DBARole, DBPNamedObjec
     	return "Role "+ getName();
     }
 
-	@Override
-	public void setName(String newName)
-	{
-		this.name = newName;
-	}
-	
-		
+    @Override
+    public void setName(String newName)
+    {
+        this.name = newName;
+    }
+
+
 
 }
 
-	
+
 

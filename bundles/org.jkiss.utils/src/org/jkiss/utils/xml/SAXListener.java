@@ -20,27 +20,27 @@ package org.jkiss.utils.xml;
 import org.xml.sax.Attributes;
 
 /**
-	SAX document listener
+    SAX document listener
 */
 public interface SAXListener {
 
-	void saxStartElement(
+    void saxStartElement(
         SAXReader reader,
         String namespaceURI,
         String localName,
         org.xml.sax.Attributes atts)
-		throws XMLException;
+        throws XMLException;
 
-	void saxText(
+    void saxText(
         SAXReader reader,
         String data)
-		throws XMLException;
+        throws XMLException;
 
-	void saxEndElement(
+    void saxEndElement(
         SAXReader reader,
         String namespaceURI,
         String localName)
-		throws XMLException;
+        throws XMLException;
 
 
     /**

@@ -33,95 +33,95 @@ import java.util.List;
 import java.util.Map;
 
 public class ExasolVirtualSchema extends ExasolSchema  {
-	
-	private String adapterScriptSchema;
-	private String adapterScriptName;
-	private Timestamp lastRefresh;
-	private String adapterNotes;
-	private String refreshBy;
-	private ExasolDataSource dataSource;
-	private DBSObjectCache<ExasolVirtualSchema, ExasolVirtualSchemaParameter> virtualSchemaParameterCache;
-	
-	public ExasolVirtualSchema(ExasolDataSource exasolDataSource, ResultSet dbResult) throws DBException {
-		super(exasolDataSource, dbResult);
-		this.adapterNotes = JDBCUtils.safeGetString(dbResult, "ADAPTER_NOTES");
-		this.lastRefresh = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REFRESH");
-		this.refreshBy = JDBCUtils.safeGetString(dbResult, "LAST_REFRESH_BY");
-		
-		List<String> fqnAdapter = CommonUtils.splitString(JDBCUtils.safeGetString(dbResult, "ADAPTER_SCRIPT"),'.');
-		adapterScriptSchema = fqnAdapter.get(0);
-		adapterScriptName = fqnAdapter.get(1);
-		
-		this.dataSource = exasolDataSource;
-		
-		virtualSchemaParameterCache = new JDBCObjectSimpleCache<>(
-				ExasolVirtualSchemaParameter.class, 
-				"/*snapshot execution*/ select\r\n" + 
-				"	property_name,\r\n" + 
-				"	property_value\r\n" + 
-				"from\r\n" + 
-				"	EXA_ALL_VIRTUAL_SCHEMA_PROPERTIES\r\n" + 
-				"where\r\n" + 
-				"	schema_name = ?\r\n" + 
-				"order by\r\n" + 
-				"	property_name\r\n" + 
-				"", 
-				super.getName()
-				);
-		
-	}
 
-	@Property(viewable = true, order = 10)
-	public ExasolSchema getAdapterScriptSchema() throws DBException
-	{
-		return dataSource.getSchema(new VoidProgressMonitor(), adapterScriptSchema) ;
-	}
+    private String adapterScriptSchema;
+    private String adapterScriptName;
+    private Timestamp lastRefresh;
+    private String adapterNotes;
+    private String refreshBy;
+    private ExasolDataSource dataSource;
+    private DBSObjectCache<ExasolVirtualSchema, ExasolVirtualSchemaParameter> virtualSchemaParameterCache;
 
-	@Property(viewable = true, order = 20)
-	public ExasolScript getAdapterScriptName() throws DBException
-	{
-		return this.getAdapterScriptSchema().getProcedure(new VoidProgressMonitor(), adapterScriptName);
-	}
+    public ExasolVirtualSchema(ExasolDataSource exasolDataSource, ResultSet dbResult) throws DBException {
+        super(exasolDataSource, dbResult);
+        this.adapterNotes = JDBCUtils.safeGetString(dbResult, "ADAPTER_NOTES");
+        this.lastRefresh = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REFRESH");
+        this.refreshBy = JDBCUtils.safeGetString(dbResult, "LAST_REFRESH_BY");
 
-	@Property(viewable = true, order = 30)
-	public Timestamp getLastRefresh()
-	{
-		return lastRefresh;
-	}
+        List<String> fqnAdapter = CommonUtils.splitString(JDBCUtils.safeGetString(dbResult, "ADAPTER_SCRIPT"),'.');
+        adapterScriptSchema = fqnAdapter.get(0);
+        adapterScriptName = fqnAdapter.get(1);
 
-	@Property(viewable = true, order = 40)
-	public String getRefreshBy()
-	{
-		return refreshBy;
-	}
-	
-	@Override
-	public ExasolDataSource getDataSource()
-	{
-		return this.dataSource;
-	}
-	
-	public Collection<ExasolVirtualSchemaParameter> getVirtualSchemaParameters() throws DBException
-	{
-		return virtualSchemaParameterCache.getAllObjects(new VoidProgressMonitor(), this);
-	}
+        this.dataSource = exasolDataSource;
 
-	@Override
-	public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
-			throws DBException
-	{
-		return this.adapterNotes.replaceAll(",", ",\n");
-	}
+        virtualSchemaParameterCache = new JDBCObjectSimpleCache<>(
+                ExasolVirtualSchemaParameter.class, 
+                "/*snapshot execution*/ select\r\n" + 
+                "	property_name,\r\n" + 
+                "	property_value\r\n" + 
+                "from\r\n" + 
+                "	EXA_ALL_VIRTUAL_SCHEMA_PROPERTIES\r\n" + 
+                "where\r\n" + 
+                "	schema_name = ?\r\n" + 
+                "order by\r\n" + 
+                "	property_name\r\n" + 
+                "", 
+                super.getName()
+                );
 
+    }
 
-	@Override
-	public Boolean isPhysicalSchema()
-	{
-	    return false;
-	}
+    @Property(viewable = true, order = 10)
+    public ExasolSchema getAdapterScriptSchema() throws DBException
+    {
+        return dataSource.getSchema(new VoidProgressMonitor(), adapterScriptSchema) ;
+    }
+
+    @Property(viewable = true, order = 20)
+    public ExasolScript getAdapterScriptName() throws DBException
+    {
+        return this.getAdapterScriptSchema().getProcedure(new VoidProgressMonitor(), adapterScriptName);
+    }
+
+    @Property(viewable = true, order = 30)
+    public Timestamp getLastRefresh()
+    {
+        return lastRefresh;
+    }
+
+    @Property(viewable = true, order = 40)
+    public String getRefreshBy()
+    {
+        return refreshBy;
+    }
+
+    @Override
+    public ExasolDataSource getDataSource()
+    {
+        return this.dataSource;
+    }
+
+    public Collection<ExasolVirtualSchemaParameter> getVirtualSchemaParameters() throws DBException
+    {
+        return virtualSchemaParameterCache.getAllObjects(new VoidProgressMonitor(), this);
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
+            throws DBException
+    {
+        return this.adapterNotes.replaceAll(",", ",\n");
+    }
 
 
-	
-	
+    @Override
+    public Boolean isPhysicalSchema()
+    {
+        return false;
+    }
+
+
+
+
 
 }

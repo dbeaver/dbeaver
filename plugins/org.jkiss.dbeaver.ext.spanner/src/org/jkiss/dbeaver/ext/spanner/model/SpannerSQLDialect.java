@@ -26,8 +26,8 @@ public class SpannerSQLDialect extends GenericSQLDialect {
         super("Spanner", "spanner");
     }
 
-	@Override
-	public String[][] getIdentifierQuoteStrings() {
-	    return new String[][] {{"`", "`"}};
-	}
+    @Override
+    public String[][] getIdentifierQuoteStrings() {
+        return new String[][] {{"`", "`"}};
+    }
 }

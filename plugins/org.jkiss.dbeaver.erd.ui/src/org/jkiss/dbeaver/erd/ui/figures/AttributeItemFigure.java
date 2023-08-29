@@ -49,7 +49,7 @@ public class AttributeItemFigure extends Figure
     private IFigure rightPanel;
 
     public AttributeItemFigure(AttributePart part)
-	{
+    {
         super();
         this.part = part;
 
@@ -101,7 +101,7 @@ public class AttributeItemFigure extends Figure
             rightPanel.setFont(columnFont);
             rightPanel.setForegroundColor(columnColor);
         }
-	}
+    }
 
     protected Color getColumnForegroundColor() {
         return UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ATTR_FOREGROUND);
@@ -114,8 +114,8 @@ public class AttributeItemFigure extends Figure
 
     @Nullable
     public CustomCheckBoxFigure getCheckBox() {
-	    if (getChildren().size() < 2) {
-	        return null;
+        if (getChildren().size() < 2) {
+            return null;
         }
         return (CustomCheckBoxFigure) getChildren().get(0);
     }

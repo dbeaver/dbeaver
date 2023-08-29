@@ -36,7 +36,7 @@ import java.util.*;
 
 public class PostgreLockManager extends LockGraphManager implements DBAServerLockManager<PostgreLock,PostgreLockItem> {
 
-	public static final String LOCK_QUERY =
+    public static final String LOCK_QUERY =
         "with locks as ( "+
                     "select  "+
                      "pid,locktype, mode,granted,transactionid tid,relation,page,tuple "+
@@ -110,23 +110,23 @@ public class PostgreLockManager extends LockGraphManager implements DBAServerLoc
                    " root_quest "+
                 " where"+
                    " real_locks.blocking_pid = root_quest.blocking_pid "
-											;
+                                            ;
 
-	public static final String LOCK_ITEM_QUERY = "select "+
-			" coalesce(db.datname,'') as datname, "+
-			" coalesce(lock.locktype,'') as locktype, "+
-			" coalesce(lock.relation::regclass::varchar,'') as relation, "+
-			" coalesce(lock.mode,'') as mode, "+
-			" coalesce(lock.transactionid::varchar,'') as tid, "+
-			" lock.page as page, "+
-			" lock.tuple as tuple, "+
-			" lock.pid as pid, "+
-			" lock.granted"+
-			" from pg_catalog.pg_locks lock "+
-			"   left join pg_catalog.pg_database db "+
-			"     on db.oid = lock.database "+
-			" where  "+
-			"  lock.pid = ? ";
+    public static final String LOCK_ITEM_QUERY = "select "+
+            " coalesce(db.datname,'') as datname, "+
+            " coalesce(lock.locktype,'') as locktype, "+
+            " coalesce(lock.relation::regclass::varchar,'') as relation, "+
+            " coalesce(lock.mode,'') as mode, "+
+            " coalesce(lock.transactionid::varchar,'') as tid, "+
+            " lock.page as page, "+
+            " lock.tuple as tuple, "+
+            " lock.pid as pid, "+
+            " lock.granted"+
+            " from pg_catalog.pg_locks lock "+
+            "   left join pg_catalog.pg_database db "+
+            "     on db.oid = lock.database "+
+            " where  "+
+            "  lock.pid = ? ";
     public static final String pidHold = "hpid";
     public static final String pidWait = "wpid";
 

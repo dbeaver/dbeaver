@@ -31,42 +31,42 @@ import java.util.List;
  */
 public class FireBirdPlanNode extends AbstractExecutionPlanNode {
 
-	private String plan;
-	FireBirdPlanNode parent;
-	private List<FireBirdPlanNode> nested;
-	
-	public FireBirdPlanNode(String plan) {
-		this.plan = plan;
-		this.nested = new ArrayList<>();
-	}
+    private String plan;
+    FireBirdPlanNode parent;
+    private List<FireBirdPlanNode> nested;
+
+    public FireBirdPlanNode(String plan) {
+        this.plan = plan;
+        this.nested = new ArrayList<>();
+    }
 
     @Property(order = 1, viewable = true)
-	@Override
-	public String getNodeName() {
-		return plan;
-	}
+    @Override
+    public String getNodeName() {
+        return plan;
+    }
 
-	@Override
-	public String getNodeType() {
-		return "Plan";
-	}
+    @Override
+    public String getNodeType() {
+        return "Plan";
+    }
 
-	@Override
-	public String getNodeDescription() {
-		return plan;
-	}
+    @Override
+    public String getNodeDescription() {
+        return plan;
+    }
 
-	@Override
-	public DBCPlanNode getParent() {
-		return parent;
-	}
+    @Override
+    public DBCPlanNode getParent() {
+        return parent;
+    }
 
-	@Override
-	public Collection<FireBirdPlanNode> getNested() {
-		return nested;
-	}
-	
-	@Override
+    @Override
+    public Collection<FireBirdPlanNode> getNested() {
+        return nested;
+    }
+
+    @Override
     public String toString()
     {
         return plan;

@@ -131,8 +131,8 @@ public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable> imple
     
     
 
-	public boolean hasColumn(ExasolTableColumn column)
-	{
+    public boolean hasColumn(ExasolTableColumn column)
+    {
         if (this.columns != null) {
             for (ExasolTableKeyColumn constColumn : columns) {
                 if (constColumn.getAttribute() == column) {
@@ -141,19 +141,19 @@ public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable> imple
             }
         }
         return false;
-	}
+    }
 
-	@Override
-	public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
-			throws DBException
-	{
-		return ExasolUtils.getPKDdl(this, monitor);
-	}
-	
-	public void setEnabled(Boolean enable)
-	{
-		this.enabled = enable;
-	}
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
+            throws DBException
+    {
+        return ExasolUtils.getPKDdl(this, monitor);
+    }
+
+    public void setEnabled(Boolean enable)
+    {
+        this.enabled = enable;
+    }
 
     
 }

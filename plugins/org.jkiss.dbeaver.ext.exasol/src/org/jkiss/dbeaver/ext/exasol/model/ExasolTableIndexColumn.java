@@ -22,54 +22,54 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndexColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 
 public class ExasolTableIndexColumn extends AbstractTableIndexColumn {
-	
-	private ExasolTableIndex index;
-	private int ordinalPosition;
-	private ExasolTableColumn tableColumn;
+    
+    private ExasolTableIndex index;
+    private int ordinalPosition;
+    private ExasolTableColumn tableColumn;
 
-	public ExasolTableIndexColumn(
-			ExasolTableIndex index,
-			ExasolTableColumn tableColumn,
-			int ordinalPosition
-			) 
-	{
-		this.index = index;
-		this.ordinalPosition = ordinalPosition;
-		this.tableColumn = tableColumn;
-	}
-	
+    public ExasolTableIndexColumn(
+            ExasolTableIndex index,
+            ExasolTableColumn tableColumn,
+            int ordinalPosition
+            ) 
+    {
+        this.index = index;
+        this.ordinalPosition = ordinalPosition;
+        this.tableColumn = tableColumn;
+    }
+    
 
-	@Override
-	public ExasolTableIndex getIndex() {
-		return this.index;
-	}
+    @Override
+    public ExasolTableIndex getIndex() {
+        return this.index;
+    }
 
-	@Override
+    @Override
     @Property(viewable = false, order = 2)
-	public int getOrdinalPosition() {
-		return this.ordinalPosition;
-	}
+    public int getOrdinalPosition() {
+        return this.ordinalPosition;
+    }
 
-	@Override
-	public boolean isAscending() {
-		return true;
-	}
+    @Override
+    public boolean isAscending() {
+        return true;
+    }
 
-	@Override
-	public ExasolTableIndex getParentObject() {
-		return index;
-	}
+    @Override
+    public ExasolTableIndex getParentObject() {
+        return index;
+    }
 
-	@Override
-	public DBPDataSource getDataSource() {
-		return index.getDataSource();
-	}
+    @Override
+    public DBPDataSource getDataSource() {
+        return index.getDataSource();
+    }
 
-	@Override
-	public String getName() {
-		return tableColumn.getName();
-	}
-	
+    @Override
+    public String getName() {
+        return tableColumn.getName();
+    }
+    
     @Nullable
     @Override
     @Property(id = "name", viewable = true, order = 1)
@@ -77,12 +77,12 @@ public class ExasolTableIndexColumn extends AbstractTableIndexColumn {
     {
         return tableColumn;
     }
-	
+    
 
-	@Override
-	public String getDescription() {
-		// Index has no description in Exasol
-		return "";
-	}
-	
+    @Override
+    public String getDescription() {
+        // Index has no description in Exasol
+        return "";
+    }
+    
 }

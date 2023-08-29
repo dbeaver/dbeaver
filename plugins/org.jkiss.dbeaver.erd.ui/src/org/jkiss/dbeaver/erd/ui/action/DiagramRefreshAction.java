@@ -32,19 +32,19 @@ import org.jkiss.dbeaver.ui.UIIcon;
  */
 public class DiagramRefreshAction extends Action
 {
-	private ERDEditorPart editor;
+    private ERDEditorPart editor;
 
-	public DiagramRefreshAction(ERDEditorPart editor)
-	{
-		super(ERDUIMessages.erd_editor_control_action_refresh_diagram, DBeaverIcons.getImageDescriptor(UIIcon.REFRESH));
-		this.editor = editor;
-	}
+    public DiagramRefreshAction(ERDEditorPart editor)
+    {
+        super(ERDUIMessages.erd_editor_control_action_refresh_diagram, DBeaverIcons.getImageDescriptor(UIIcon.REFRESH));
+        this.editor = editor;
+    }
 
-	@Override
+    @Override
     public void run()
-	{
+    {
         //editor.get
         editor.refreshDiagram(true, true);
-	}
+    }
 
 }

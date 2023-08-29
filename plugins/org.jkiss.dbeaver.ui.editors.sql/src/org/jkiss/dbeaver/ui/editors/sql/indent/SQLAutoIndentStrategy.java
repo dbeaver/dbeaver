@@ -169,40 +169,40 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         for (int i = quoteStart; i < quoteEnd; i++) {
             final char ch = sourceCode.charAt(i);
             
-	        if (inString) {
-	        	if (prevChar == escapeChar) {
-		            switch (ch) {
-	                case 'n':
-	                    if (!endsWithLF(result, '\n')) {
-	                        result.append("\n");
-	                    }
-	                    break;
-	                case 'r':
-	                    if (!endsWithLF(result, '\r')) {
-	                        result.append("\r");
-	                    }
-	                    break;
-	                case 't':
-	                    result.append("\t");
-	                    break;
-	                default:
-	                    result.append(ch);
-	                    break;
-		            }
-	        	}
-	        	else {
-		            switch (ch) {
-	                case '"':
-	                    inString = false;
-	                    break;
-	                default:
-	                    if (ch == escapeChar) {
-	                        break;
-	                    }
+            if (inString) {
+            	if (prevChar == escapeChar) {
+                    switch (ch) {
+                    case 'n':
+                        if (!endsWithLF(result, '\n')) {
+                            result.append("\n");
+                        }
+                        break;
+                    case 'r':
+                        if (!endsWithLF(result, '\r')) {
+                            result.append("\r");
+                        }
+                        break;
+                    case 't':
+                        result.append("\t");
+                        break;
+                    default:
+                        result.append(ch);
+                        break;
+                    }
+            	}
+            	else {
+                    switch (ch) {
+                    case '"':
+                        inString = false;
+                        break;
+                    default:
+                        if (ch == escapeChar) {
+                            break;
+                        }
                         result.append(ch);
                     }
-		        }
-	        }
+                }
+            }
             else if (inComment) {
         		if (commentType == CommentType.Unknown && prevChar == '/' && ch == '*') {
         			commentType = CommentType.Block;

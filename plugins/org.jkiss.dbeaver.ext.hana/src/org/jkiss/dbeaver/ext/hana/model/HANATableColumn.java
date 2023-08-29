@@ -36,9 +36,9 @@ import java.sql.SQLException;
 
 public class HANATableColumn extends GenericTableColumn implements DBPNamedObject2, GisAttribute {
 
-	private static final int FLAT_EARTH_SRID_START = 1000000000;
+    private static final int FLAT_EARTH_SRID_START = 1000000000;
 
-	private static final int FLAT_EARTH_SRID_END = 2000000000;
+    private static final int FLAT_EARTH_SRID_END = 2000000000;
 
     private GeometryInfo geometryInfo;
 

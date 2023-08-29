@@ -70,8 +70,8 @@ public class ExasolPriorityGroupDialog extends BaseDialog {
                 try {
                 	if (weightText.getText().length()>0)
                 		weight = Integer.parseInt(weightText.getText());
-				} catch (NumberFormatException ex) {
-				}
+                } catch (NumberFormatException ex) {
+                }
                 comment = commentText.getText();
                 //enable/disable OK button   
                 if (name.isEmpty() | weight == -1 | weight > 1000 | weight < 1) {

@@ -103,7 +103,7 @@ class PostgreBackupWizard extends AbstractNativeExportWizard<PostgreDatabaseBack
     }
 
     @Override
-	public void onSuccess(long workTime) {
+    public void onSuccess(long workTime) {
         UIUtils.showMessageBox(
             getShell(),
             PostgreMessages.wizard_backup_msgbox_success_title,

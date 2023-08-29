@@ -168,8 +168,8 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             curPropertySource = null;
         }
         UIUtils.dispose(boldFont);
-		super.dispose();
-	}
+        super.dispose();
+    }
 
     private void refreshProperties() {
         if (curPropertySource == null) {

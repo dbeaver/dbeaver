@@ -24,17 +24,17 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class ExasolTableGrant extends ExasolBaseObjectGrant {
 
-	public ExasolTableGrant(ExasolBaseObjectGrant grant) throws DBException
-	{
-		super(grant);
-	}
-	
-	
+    public ExasolTableGrant(ExasolBaseObjectGrant grant) throws DBException
+    {
+        super(grant);
+    }
+
+
     @Property(viewable = true, order = 10)
-	public ExasolTable getTable(DBRProgressMonitor monitor) throws DBException
-	{
-		return super.getSchema().getTable(monitor, super.getObjectName());
-	}
+    public ExasolTable getTable(DBRProgressMonitor monitor) throws DBException
+    {
+        return super.getSchema().getTable(monitor, super.getObjectName());
+    }
 
 
 }

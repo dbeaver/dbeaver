@@ -19,13 +19,13 @@ package org.jkiss.dbeaver.ui.editors.data.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class DataEditorsMessages extends NLS {
-	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsResources"; //$NON-NLS-1$
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsResources"; //$NON-NLS-1$
 
-	public static String grid_tooltip_sort_by_column;
-	public static String grid_tooltip_filter_by_column;
+    public static String grid_tooltip_sort_by_column;
+    public static String grid_tooltip_filter_by_column;
     public static String controls_column_info_panel_property_key;
-	public static String resultset_segment_size;
-	
+    public static String resultset_segment_size;
+    
     // ResultSetPresentation
     public static String pref_page_database_resultsets_group_common;
     public static String pref_page_database_resultsets_label_switch_mode_on_rows;
@@ -71,8 +71,8 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_enter_for_inline_behavior_tip;
 
     public static String pref_page_result_selector_editor;
-	public static String pref_page_result_selector_inline_editor;
-	public static String pref_page_result_selector_none;
+    public static String pref_page_result_selector_inline_editor;
+    public static String pref_page_result_selector_none;
     public static String pref_page_result_selector_copy_cell;
     public static String pref_page_result_selector_paste_cell_value;
     public static String pref_page_database_resultsets_label_max_def_column_width;
@@ -97,28 +97,28 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_text_show_line_numbers;
     public static String pref_page_database_resultsets_label_text_show_line_numbers_tip;
 
-	public static String virtual_structure_editor_abstract_job_load_entity;
-	public static String virtual_structure_editor_info_label_entity_structure;
-	public static String virtual_structure_editor_dictionary_page_text;
-	public static String virtual_structure_editor_columns_group_virtual;
-	public static String virtual_structure_editor_columns_group_unique_keys;
-	public static String virtual_structure_editor_table_column_key_name;
-	public static String virtual_structure_editor_table_column_columns;
-	public static String virtual_structure_editor_dialog_button_add;
-	public static String virtual_structure_editor_constraint_page_edit_key;
-	public static String virtual_structure_editor_dialog_button_edit;
-	public static String virtual_structure_editor_dialog_button_remove;
-	public static String virtual_structure_editor_confirm_action_delete_key;
-	public static String virtual_structure_editor_confirm_action_question_delete;
-	public static String virtual_structure_editor_control_group_label_foreign_key;
-	public static String virtual_structure_editor_table_column_target_table;
-	public static String virtual_structure_editor_table_column_datasource;
-	public static String virtual_structure_editor_confirm_action_delete_fk;
-	public static String virtual_structure_editor_confirm_action_question_delete_foreign;
-	public static String virtual_structure_editor_control_group_references;
-	public static String virtual_structure_editor_table_column_source_table;
-	public static String virtual_structure_editor_table_column_source_datasource;
-	public static String virtual_structure_editor_dialog_button_refresh;
+    public static String virtual_structure_editor_abstract_job_load_entity;
+    public static String virtual_structure_editor_info_label_entity_structure;
+    public static String virtual_structure_editor_dictionary_page_text;
+    public static String virtual_structure_editor_columns_group_virtual;
+    public static String virtual_structure_editor_columns_group_unique_keys;
+    public static String virtual_structure_editor_table_column_key_name;
+    public static String virtual_structure_editor_table_column_columns;
+    public static String virtual_structure_editor_dialog_button_add;
+    public static String virtual_structure_editor_constraint_page_edit_key;
+    public static String virtual_structure_editor_dialog_button_edit;
+    public static String virtual_structure_editor_dialog_button_remove;
+    public static String virtual_structure_editor_confirm_action_delete_key;
+    public static String virtual_structure_editor_confirm_action_question_delete;
+    public static String virtual_structure_editor_control_group_label_foreign_key;
+    public static String virtual_structure_editor_table_column_target_table;
+    public static String virtual_structure_editor_table_column_datasource;
+    public static String virtual_structure_editor_confirm_action_delete_fk;
+    public static String virtual_structure_editor_confirm_action_question_delete_foreign;
+    public static String virtual_structure_editor_control_group_references;
+    public static String virtual_structure_editor_table_column_source_table;
+    public static String virtual_structure_editor_table_column_source_datasource;
+    public static String virtual_structure_editor_dialog_button_refresh;
 
     public static String complex_object_editor_root_element_name;
     public static String complex_object_editor_dialog_menu_copy_element;
@@ -148,10 +148,10 @@ public class DataEditorsMessages extends NLS {
 
 
     static {
-		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, DataEditorsMessages.class);
-	}
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, DataEditorsMessages.class);
+    }
 
-	private DataEditorsMessages() {
-	}
+    private DataEditorsMessages() {
+    }
 }

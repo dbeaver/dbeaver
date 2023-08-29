@@ -25,32 +25,32 @@ import org.osgi.framework.BundleContext;
  */
 public class SQLiteUIActivator extends AbstractUIPlugin {
 
-	// The plug-in ID
-	public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.sqlite.ui";
+    // The plug-in ID
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.sqlite.ui";
 
-	// The shared instance
-	private static SQLiteUIActivator plugin;
-	
-	public SQLiteUIActivator() {
-	}
+    // The shared instance
+    private static SQLiteUIActivator plugin;
 
-	@Override
+    public SQLiteUIActivator() {
+    }
+
+    @Override
     public void start(BundleContext context) throws Exception {
-		super.start(context);
-		plugin = this;
-	}
+        super.start(context);
+        plugin = this;
+    }
 
-	@Override
+    @Override
     public void stop(BundleContext context) throws Exception {
-		plugin = null;
-		super.stop(context);
-	}
+        plugin = null;
+        super.stop(context);
+    }
 
-	public static SQLiteUIActivator getDefault() {
-		return plugin;
-	}
+    public static SQLiteUIActivator getDefault() {
+        return plugin;
+    }
 
-	public static ImageDescriptor getImageDescriptor(String path) {
-		return imageDescriptorFromPlugin(PLUGIN_ID, path);
-	}
+    public static ImageDescriptor getImageDescriptor(String path) {
+        return imageDescriptorFromPlugin(PLUGIN_ID, path);
+    }
 }

@@ -109,7 +109,7 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
             }
         });
         progressControl.addDisposeListener(e -> dispose());
-	}
+    }
 
     @Override
     public void setFocus() {
@@ -126,8 +126,8 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
             curPropertySource = null;
         }
         UIUtils.dispose(boldFont);
-		super.dispose();
-	}
+        super.dispose();
+    }
 
     private void refreshProperties()
     {

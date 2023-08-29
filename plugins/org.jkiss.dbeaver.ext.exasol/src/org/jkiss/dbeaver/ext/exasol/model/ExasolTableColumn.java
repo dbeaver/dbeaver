@@ -294,53 +294,53 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
 
     @Override
     @Property(viewable = true, order = 80)
-	public boolean isInUniqueKey() 
-	{
+    public boolean isInUniqueKey() 
+    {
         
         if (getTable().getClass() == ExasolView.class)
         {
             return false;
         }
 
-		ExasolTableBase table = (ExasolTable) getTable();
-		try {
-			final Collection<ExasolTableUniqueKey> uniqueKeysCache = table.getConstraints(new VoidProgressMonitor());
-			if (!CommonUtils.isEmpty(uniqueKeysCache))
-			{
-				for (ExasolTableUniqueKey key : uniqueKeysCache)
-				{
-					if (key.hasColumn(this))
-						return true;
-				}
-			}
-		} catch ( DBException e)
-		{
-			return false;
-		}
-		return false;
-	}
+        ExasolTableBase table = (ExasolTable) getTable();
+        try {
+            final Collection<ExasolTableUniqueKey> uniqueKeysCache = table.getConstraints(new VoidProgressMonitor());
+            if (!CommonUtils.isEmpty(uniqueKeysCache))
+            {
+                for (ExasolTableUniqueKey key : uniqueKeysCache)
+                {
+                    if (key.hasColumn(this))
+                        return true;
+                }
+            }
+        } catch ( DBException e)
+        {
+            return false;
+        }
+        return false;
+    }
 
-	@Property(hidden = true)
+    @Property(hidden = true)
     public Boolean isOriRequired()
     {
     	return oriRequired;
     }
 
-	@Override
-	public boolean isInReferenceKey()
-	{
-		// don't need this one
-		return false;
-	}
-	
-	public Integer getPartitionKeyOrdinalPosition()
-	{
-		return partitionKey;
-	}
-	
-	public void setPartitionKeyOrdinalPosition(Integer position)
-	{
-		
-	}
+    @Override
+    public boolean isInReferenceKey()
+    {
+        // don't need this one
+        return false;
+    }
+    
+    public Integer getPartitionKeyOrdinalPosition()
+    {
+        return partitionKey;
+    }
+    
+    public void setPartitionKeyOrdinalPosition(Integer position)
+    {
+        
+    }
 
 }

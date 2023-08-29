@@ -160,12 +160,12 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
                         dbStat.setLong(2, ((OracleServerSession) serverSession).getSqlChildNumber());
                         try (JDBCResultSet dbResult = dbStat.executeQuery()) 
                         {
-							List<OracleServerExecutePlan> planItems = new ArrayList<>();
-							while (dbResult.next()) {
+                            List<OracleServerExecutePlan> planItems = new ArrayList<>();
+                            while (dbResult.next()) {
                                 planItems.add(new OracleServerExecutePlan(dbResult));
                             }
-							return planItems;
-						}
+                            return planItems;
+                        }
                     }							
                 } catch (SQLException e) {
                     throw new DBException(e, session.getDataSource());

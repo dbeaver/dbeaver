@@ -24,9 +24,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class PhoenixDataSource extends GenericDataSource {
 
-	public PhoenixDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
-			throws DBException {
-		super(monitor, container, metaModel, new PhoenixSQLDialect());
-	}
+    public PhoenixDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
+            throws DBException {
+        super(monitor, container, metaModel, new PhoenixSQLDialect());
+    }
 
 }

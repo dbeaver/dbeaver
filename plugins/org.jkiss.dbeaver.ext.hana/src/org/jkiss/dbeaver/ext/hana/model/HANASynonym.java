@@ -47,7 +47,7 @@ public class HANASynonym extends GenericSynonym implements DBPQualifiedObject {
     }
 
     @Property(viewable = true, order = 22)
-	@Override
+    @Override
     public DBSObject getTargetObject(DBRProgressMonitor monitor) throws DBException {
         GenericSchema schema = getDataSource().getSchema(targetObjectSchema);
         switch(targetObjectType) {

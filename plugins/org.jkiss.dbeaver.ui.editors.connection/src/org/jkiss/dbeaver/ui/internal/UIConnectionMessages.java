@@ -165,7 +165,7 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_driver_download_network_unavailable_msg;
     public static String dialog_driver_download_network_unavailable_cert_msg;
     // Driver edit
-	public static String dialog_edit_driver_setting;
+    public static String dialog_edit_driver_setting;
     public static String dialog_edit_driver_type_label;
     public static String dialog_edit_driver_embedded_label;
     public static String dialog_edit_driver_embedded_tip;

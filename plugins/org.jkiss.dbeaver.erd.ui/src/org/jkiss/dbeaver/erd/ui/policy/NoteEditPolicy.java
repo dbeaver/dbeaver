@@ -31,13 +31,13 @@ import org.jkiss.dbeaver.erd.ui.part.NotePart;
 public class NoteEditPolicy extends ComponentEditPolicy
 {
 
-	@Override
+    @Override
     protected Command createDeleteCommand(GroupRequest request)
-	{
-		NotePart notePart = (NotePart) getHost();
-		Rectangle bounds = notePart.getFigure().getBounds().getCopy();
-		EntityDiagram parent = (EntityDiagram) (notePart.getParent().getModel());
-		return new NoteDeleteCommand(parent, notePart, bounds);
-	}
-	
+    {
+        NotePart notePart = (NotePart) getHost();
+        Rectangle bounds = notePart.getFigure().getBounds().getCopy();
+        EntityDiagram parent = (EntityDiagram) (notePart.getParent().getModel());
+        return new NoteDeleteCommand(parent, notePart, bounds);
+    }
+    
 }

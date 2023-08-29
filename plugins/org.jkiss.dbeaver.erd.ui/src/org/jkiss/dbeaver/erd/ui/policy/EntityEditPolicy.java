@@ -27,11 +27,11 @@ import org.jkiss.dbeaver.erd.ui.part.EntityPart;
  */
 public class EntityEditPolicy extends ComponentEditPolicy {
 
-	@Override
+    @Override
     protected Command createDeleteCommand(GroupRequest request)
-	{
-		EntityPart entityPart = (EntityPart) getHost();
-		return entityPart.getDiagramPart().createEntityDeleteCommand(entityPart);
-	}
-	
+    {
+        EntityPart entityPart = (EntityPart) getHost();
+        return entityPart.getDiagramPart().createEntityDeleteCommand(entityPart);
+    }
+
 }

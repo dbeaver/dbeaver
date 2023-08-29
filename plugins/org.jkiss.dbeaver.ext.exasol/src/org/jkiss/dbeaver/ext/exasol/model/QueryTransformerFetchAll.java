@@ -26,22 +26,22 @@ import java.sql.Statement;
 
 public class QueryTransformerFetchAll implements DBCQueryTransformer {
 
-	@Override
-	public void setParameters(Object... parameters) {
-	}
+    @Override
+    public void setParameters(Object... parameters) {
+    }
 
-	@Override
-	public String transformQueryString(SQLQuery query) throws DBCException {
-		return query.getText();
-	}
+    @Override
+    public String transformQueryString(SQLQuery query) throws DBCException {
+        return query.getText();
+    }
 
-	@Override
-	public void transformStatement(DBCStatement statement, int parameterIndex) throws DBCException {
-		try {
+    @Override
+    public void transformStatement(DBCStatement statement, int parameterIndex) throws DBCException {
+        try {
             ((Statement)statement).setFetchSize(2000);
-		} catch (SQLException e) {
-			throw new DBCException(e, statement.getSession().getExecutionContext());
-		}
-	}
+        } catch (SQLException e) {
+            throw new DBCException(e, statement.getSession().getExecutionContext());
+        }
+    }
 
 }

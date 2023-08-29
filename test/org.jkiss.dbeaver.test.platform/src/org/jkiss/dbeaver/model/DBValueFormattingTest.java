@@ -32,85 +32,85 @@ import static org.mockito.Mockito.mock;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DBValueFormattingTest {
-	
-	private DBSObject objectAssociation;
-	private DBSObject objectProcedure;
-	private DBSEntity objectEntity;
-	private DBPObject objectPackage;
-	private DBPObject objectTrigger;
-	private DBPObject object;
+    
+    private DBSObject objectAssociation;
+    private DBSObject objectProcedure;
+    private DBSEntity objectEntity;
+    private DBPObject objectPackage;
+    private DBPObject objectTrigger;
+    private DBPObject object;
 
-	
-	@Before
-	public void setUpAssociationObject() {
-		object = mock(DBPObject.class);
-		objectAssociation =  mock(DBSEntityAssociation.class);
-		objectProcedure =  mock(DBSProcedure.class);
-		objectPackage = mock(DBSPackage.class);
-		objectTrigger = mock(DBSTrigger.class);		
-		objectEntity = mock(DBSEntity.class);
-	}
+    
+    @Before
+    public void setUpAssociationObject() {
+        object = mock(DBPObject.class);
+        objectAssociation =  mock(DBSEntityAssociation.class);
+        objectProcedure =  mock(DBSProcedure.class);
+        objectPackage = mock(DBSPackage.class);
+        objectTrigger = mock(DBSTrigger.class);		
+        objectEntity = mock(DBSEntity.class);
+    }
 
-	@Test
-	public void testGetObjectImageAssociation() {
+    @Test
+    public void testGetObjectImageAssociation() {
         
         Assert.assertTrue(objectAssociation instanceof DBSEntityAssociation);
         Assert.assertTrue(objectAssociation instanceof DBPObject);
         DBPImage image = DBValueFormatting.getObjectImage(objectAssociation, true);
         Assert.assertNotNull(image);
         Assert.assertEquals(DBIcon.TREE_ASSOCIATION,image);        
-	}	
+    }	
 
-	@Test
-	public void testGetObjectImageProcedure() {
+    @Test
+    public void testGetObjectImageProcedure() {
         
         Assert.assertTrue(objectProcedure instanceof DBSProcedure);
         Assert.assertTrue(objectProcedure instanceof DBPObject);
         DBPImage image = DBValueFormatting.getObjectImage(objectProcedure, true);
         Assert.assertNotNull(image);
         Assert.assertEquals(DBIcon.TREE_PROCEDURE,image);
-	}
-	
-	@Test
-	public void testGetObjectImagePackage() {
+    }
+    
+    @Test
+    public void testGetObjectImagePackage() {
 
         Assert.assertTrue(objectPackage instanceof DBPObject);
         DBPImage image = DBValueFormatting.getObjectImage(objectPackage, true);
         Assert.assertNotNull(image);
         Assert.assertEquals(DBIcon.TREE_PACKAGE,image);
-	}
-	
-	@Test
-	public void testGetObjectImageTrigger() {
+    }
+    
+    @Test
+    public void testGetObjectImageTrigger() {
 
         Assert.assertTrue(objectTrigger instanceof DBPObject);
         DBPImage image = DBValueFormatting.getObjectImage(objectTrigger, true);
         Assert.assertNotNull(image);
         Assert.assertEquals(DBIcon.TREE_TRIGGER,image);
-	}
-	
-	@Test
-	public void testGetObjectImage() {
+    }
+    
+    @Test
+    public void testGetObjectImage() {
         
         Assert.assertTrue(object instanceof DBPObject);
         DBPImage image = DBValueFormatting.getObjectImage(object, true);
         Assert.assertNotNull(image);
         Assert.assertEquals(DBIcon.TYPE_OBJECT,image);
-	}
-	
-	@Test
-	public void testGetObjectImageEntity() {
+    }
+    
+    @Test
+    public void testGetObjectImageEntity() {
         
         Assert.assertTrue(objectEntity instanceof DBPObject);
         DBPImage image = DBValueFormatting.getObjectImage(objectEntity, true);
         Assert.assertNotNull(image);
         Assert.assertEquals(DBIcon.TREE_TABLE,image);
-	}
-	
-	@Test
-	public void testGetObjectReturnsNull() {
+    }
+    
+    @Test
+    public void testGetObjectReturnsNull() {
 
         DBPImage image = DBValueFormatting.getObjectImage(object, false);
         Assert.assertNull(image);
-	}
+    }
 }

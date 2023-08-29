@@ -34,8 +34,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
  */
 public class DBeaverSplashHandler extends BasicSplashHandler {
 
-	public static final int TOTAL_LOADING_TASKS = 20;
-	private static DBeaverSplashHandler instance;
+    public static final int TOTAL_LOADING_TASKS = 20;
+    private static DBeaverSplashHandler instance;
 
     public static IProgressMonitor getActiveMonitor()
     {
@@ -94,16 +94,16 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
 
         int foregroundColorInteger = 0xD2D7FF;
         try {
-			if (foregroundColorString != null) {
-				foregroundColorInteger = Integer.parseInt(foregroundColorString, 16);
-			}
+            if (foregroundColorString != null) {
+                foregroundColorInteger = Integer.parseInt(foregroundColorString, 16);
+            }
         } catch (Exception ex) {
             // ignore
         }
 
         setForeground(
-			new RGB(
-				(foregroundColorInteger & 0xFF0000) >> 16,
+            new RGB(
+                (foregroundColorInteger & 0xFF0000) >> 16,
                 (foregroundColorInteger & 0xFF00) >> 8,
                 foregroundColorInteger & 0xFF));
 
@@ -143,12 +143,12 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
         instance = null;
     }
 
-	public static void showMessage(String message) {
+    public static void showMessage(String message) {
         IProgressMonitor activeMonitor = getActiveMonitor();
-		if (activeMonitor == null || message == null || message.isEmpty()) {
-			return;
-		}
-		if (message.startsWith(">") || message.startsWith("<")) {
+        if (activeMonitor == null || message == null || message.isEmpty()) {
+            return;
+        }
+        if (message.startsWith(">") || message.startsWith("<")) {
             message = message.substring(2);
             int divPos = message.indexOf("[");
             if (divPos != -1) {

@@ -31,7 +31,7 @@ public class ExasolCurrentUserPrivileges {
 
     private static final Log LOG = Log.getLog(ExasolCurrentUserPrivileges.class);
 
-	private static final String C_QUERY_DICTIONARY = "/*snapshot execution*/ SELECT CONNECTION_NAME FROM sys.EXA_DBA_CONNECTIONS WHERE false";
+    private static final String C_QUERY_DICTIONARY = "/*snapshot execution*/ SELECT CONNECTION_NAME FROM sys.EXA_DBA_CONNECTIONS WHERE false";
     private static final String C_MAJOR_VERSION = "/*snapshot execution*/ select TO_NUMBER(\"VALUE\") AS VERSION from \"$ODBCJDBC\".DB_METADATA WHERE name LIKE 'databaseMajorVersion'";
     private static final String C_MINOR_VERSION = "/*snapshot execution*/ select TO_NUMBER(\"VALUE\") AS VERSION from \"$ODBCJDBC\".DB_METADATA WHERE name LIKE 'databaseMinorVersion'";
 

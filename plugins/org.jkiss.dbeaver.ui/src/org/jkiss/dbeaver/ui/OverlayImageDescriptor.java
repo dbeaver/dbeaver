@@ -63,7 +63,7 @@ public class OverlayImageDescriptor extends CompositeImageDescriptor {
         return baseImageDataProvider;
     }
 
-	@Override
+    @Override
     protected void drawCompositeImage(int width, int height) {
         drawImage(getBaseImageData(), 0, 0);
         
@@ -117,31 +117,31 @@ public class OverlayImageDescriptor extends CompositeImageDescriptor {
         }
     }
 
-	private void drawBottomLeft(ImageDescriptor[] overlays) {
-		if (overlays == null)
-			return;
-		int length = overlays.length;
-		int x = 0;
-		for (int i = 0; i < 3; i++) {
-			if (i < length && overlays[i] != null) {
+    private void drawBottomLeft(ImageDescriptor[] overlays) {
+        if (overlays == null)
+            return;
+        int length = overlays.length;
+        int x = 0;
+        for (int i = 0; i < 3; i++) {
+            if (i < length && overlays[i] != null) {
                 CachedImageDataProvider idp = createCachedImageDataProvider(overlays[i]);
-				drawImage(idp, x, getSize().y - idp.getHeight());
-				x += idp.getWidth();
-			}
-		}
-	}
-	private void drawBottomRight(ImageDescriptor[] overlays) {
-		if (overlays == null)
-			return;
-		int length = overlays.length;
-		int x = getSize().x;
-		for (int i = 2; i >= 0; i--) {
-			if (i < length && overlays[i] != null) {
+                drawImage(idp, x, getSize().y - idp.getHeight());
+                x += idp.getWidth();
+            }
+        }
+    }
+    private void drawBottomRight(ImageDescriptor[] overlays) {
+        if (overlays == null)
+            return;
+        int length = overlays.length;
+        int x = getSize().x;
+        for (int i = 2; i >= 0; i--) {
+            if (i < length && overlays[i] != null) {
                 CachedImageDataProvider idp = createCachedImageDataProvider(overlays[i]);
-				x -= idp.getWidth();
-				drawImage(idp, x, getSize().y - idp.getHeight());
-			}
-		}
-	}
+                x -= idp.getWidth();
+                drawImage(idp, x, getSize().y - idp.getHeight());
+            }
+        }
+    }
 
 }

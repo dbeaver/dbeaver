@@ -151,7 +151,7 @@ public class MigrateConnectionWizard extends Wizard
                         item.setChecked(true);
                     }
                 }
-			}
+            }
             setControl(connectionsViewer);
         }
 

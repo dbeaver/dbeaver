@@ -38,30 +38,30 @@ import org.jkiss.dbeaver.erd.ui.part.NodePart;
 public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
 {
 
-	private static final boolean ALLOW_ENTITY_RESIZE = true;
+    private static final boolean ALLOW_ENTITY_RESIZE = true;
 
-	@Override
+    @Override
     protected Command createAddCommand(EditPart child, Object constraint)
-	{
-		return null;
-	}
+    {
+        return null;
+    }
 
-	/**
-	 * Creates command to move table. Does not allow table to be resized
-	 */
-	@Override
+    /**
+     * Creates command to move table. Does not allow table to be resized
+     */
+    @Override
     protected Command createChangeConstraintCommand(EditPart child, Object constraint)
-	{
+    {
 
-		if (!(child instanceof NodePart))
-			return null;
-		if (!(constraint instanceof Rectangle))
-			return null;
+        if (!(child instanceof NodePart))
+            return null;
+        if (!(constraint instanceof Rectangle))
+            return null;
 
-		NodePart nodePart = (NodePart) child;
-		Figure figure = (Figure) nodePart.getFigure();
-		Rectangle oldBounds = figure.getBounds();
-		Rectangle newBounds = (Rectangle) constraint;
+        NodePart nodePart = (NodePart) child;
+        Figure figure = (Figure) nodePart.getFigure();
+        Rectangle oldBounds = figure.getBounds();
+        Rectangle newBounds = (Rectangle) constraint;
 
         // Restrict resize for entities
         if (!ALLOW_ENTITY_RESIZE && nodePart instanceof EntityPart) {
@@ -71,45 +71,45 @@ public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
                 return null;
         }
 
-		//DiagramPart diagramPart = (DiagramPart) nodePart.getParent();
+        //DiagramPart diagramPart = (DiagramPart) nodePart.getParent();
 
-		return new NodeMoveCommand(nodePart, oldBounds.getCopy(), newBounds.getCopy());
-	}
+        return new NodeMoveCommand(nodePart, oldBounds.getCopy(), newBounds.getCopy());
+    }
 
-	/**
-	 * Returns the current bounds as the constraint if none can be found in the
-	 * figures Constraint object
-	 */
-	@Override
+    /**
+     * Returns the current bounds as the constraint if none can be found in the
+     * figures Constraint object
+     */
+    @Override
     public Rectangle getCurrentConstraintFor(GraphicalEditPart child)
-	{
+    {
 
-		IFigure fig = child.getFigure();
-		Object constraint = fig.getParent().getLayoutManager().getConstraint(fig);
-		Rectangle rectangle = constraint instanceof Rectangle ? (Rectangle) constraint : null;
-		if (rectangle == null) {
-			rectangle = fig.getBounds();
-		}
-		return rectangle;
-	}
+        IFigure fig = child.getFigure();
+        Object constraint = fig.getParent().getLayoutManager().getConstraint(fig);
+        Rectangle rectangle = constraint instanceof Rectangle ? (Rectangle) constraint : null;
+        if (rectangle == null) {
+            rectangle = fig.getBounds();
+        }
+        return rectangle;
+    }
 
-	@Override
+    @Override
     protected Command getCreateCommand(CreateRequest request)
-	{
-		return null;
-	}
+    {
+        return null;
+    }
 
-	@Override
+    @Override
     protected Command getDeleteDependantCommand(Request request)
-	{
-		return null;
-	}
+    {
+        return null;
+    }
 
-	@Override
-	public Command getCommand(Request request) {
-		if (REQ_RESIZE.equals(request.getType())) {
-			return null;//getHost();
-		}
-		return super.getCommand(request);
-	}
+    @Override
+    public Command getCommand(Request request) {
+        if (REQ_RESIZE.equals(request.getType())) {
+            return null;//getHost();
+        }
+        return super.getCommand(request);
+    }
 }

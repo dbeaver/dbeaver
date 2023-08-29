@@ -52,61 +52,61 @@ public class BinaryEditorInput implements IEditorInput, IStorageEditorInput {
         this.value = value;
         this.readOnly = readOnly;
         this.encoding = encoding;
-	}
+    }
 
 /*
-	public int hashCode() {
-		return Arrays.hashCode(value);
-	}
+    public int hashCode() {
+        return Arrays.hashCode(value);
+    }
 
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (!(obj instanceof BinaryEditorInput)) {
-			return false;
-		}
-		BinaryEditorInput other = (BinaryEditorInput) obj;
-		return Arrays.equals(value, other.value);
-	}
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof BinaryEditorInput)) {
+            return false;
+        }
+        BinaryEditorInput other = (BinaryEditorInput) obj;
+        return Arrays.equals(value, other.value);
+    }
 */
 
-	@Override
+    @Override
     public boolean exists() {
-		return true;
-	}
-
-	@Override
-    public ImageDescriptor getImageDescriptor() {
-		return DBeaverIcons.getImageDescriptor(DBIcon.TREE_INFO);
-	}
-
-	@Override
-    public String getName() {
-		return name;
-	}
-
-	@Override
-    public IPersistableElement getPersistable() {
-		return null;
-	}
+        return true;
+    }
 
     @Override
-	public IStorage getStorage() {
+    public ImageDescriptor getImageDescriptor() {
+        return DBeaverIcons.getImageDescriptor(DBIcon.TREE_INFO);
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public IPersistableElement getPersistable() {
+        return null;
+    }
+
+    @Override
+    public IStorage getStorage() {
         if (storage == null) {
             storage = new ByteStorage();
         }
-		return storage;
-	}
+        return storage;
+    }
 
-	@Override
+    @Override
     public String getToolTipText() {
-		return name;
-	}
+        return name;
+    }
 
     public String toString() {
-		return new String(value);
-	}
+        return new String(value);
+    }
 
     public byte[] getValue() {
         return value;
@@ -117,8 +117,8 @@ public class BinaryEditorInput implements IEditorInput, IStorageEditorInput {
         if (adapter == IStorage.class) {
             return adapter.cast(getStorage());
         }
-		return null;
-	}
+        return null;
+    }
 
     private class ByteStorage implements IPersistentStorage,IEncodedStorage {
         @Override

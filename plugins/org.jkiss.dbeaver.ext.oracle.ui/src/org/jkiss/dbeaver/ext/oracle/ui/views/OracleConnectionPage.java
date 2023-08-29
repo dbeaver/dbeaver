@@ -62,7 +62,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
     private Combo sidServiceCombo;
     private Combo serviceNameCombo;
     private Combo tnsNameCombo;
-	private TabFolder connectionTypeFolder;
+    private TabFolder connectionTypeFolder;
     private ClientHomesSelector oraHomeSelector;
     private Text connectionUrlText;
 
@@ -105,7 +105,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         connectionTypeFolder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         createBasicConnectionControls(connectionTypeFolder);
-		createTNSConnectionControls(connectionTypeFolder);
+        createTNSConnectionControls(connectionTypeFolder);
         createCustomConnectionControls(connectionTypeFolder);
         connectionTypeFolder.setSelection(connectionType.ordinal());
         connectionTypeFolder.addSelectionListener(new SelectionAdapter()

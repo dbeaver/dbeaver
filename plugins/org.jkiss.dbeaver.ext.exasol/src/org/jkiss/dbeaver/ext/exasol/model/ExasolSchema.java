@@ -298,26 +298,26 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     private synchronized void refresh(DBRProgressMonitor monitor) throws DBCException
     {
     	if (!refreshed && this.objectId != 0) {
-	    	JDBCSession session = DBUtils.openMetaSession(monitor, this, ExasolMessages.read_schema_details );
-	    	try (JDBCPreparedStatement stmt = session.prepareStatement("/*snapshot execution*/ SELECT * FROM SYS."+getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL)+"_OBJECT_SIZES WHERE OBJECT_ID = ?"))
-	    	{
-	    		stmt.setLong(1, this.objectId);
-	    		try (JDBCResultSet dbResult = stmt.executeQuery()) 
-	    		{
-	    			if (dbResult.next()) {
+        	JDBCSession session = DBUtils.openMetaSession(monitor, this, ExasolMessages.read_schema_details );
+        	try (JDBCPreparedStatement stmt = session.prepareStatement("/*snapshot execution*/ SELECT * FROM SYS."+getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL)+"_OBJECT_SIZES WHERE OBJECT_ID = ?"))
+        	{
+        		stmt.setLong(1, this.objectId);
+        		try (JDBCResultSet dbResult = stmt.executeQuery())
+        		{
+        			if (dbResult.next()) {
                         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
                         this.rawObjectSize = JDBCUtils.safeGetBigDecimal(dbResult, "RAW_OBJECT_SIZE");
                         this.memObjectSize = JDBCUtils.safeGetBigDecimal(dbResult, "MEM_OBJECT_SIZE");
                         this.rawObjectSizeLimit = JDBCUtils.safeGetBigDecimal(dbResult, "RAW_OBJECT_SIZE_LIMIT");
                     }
-	    		}
-	    		refreshed = true;
-	    	} catch (SQLException e) {
-	    		throw new DBCException(e, session.getExecutionContext());
-			}
+        		}
+        		refreshed = true;
+        	} catch (SQLException e) {
+        		throw new DBCException(e, session.getExecutionContext());
+            }
     	}
-		
-	}
+
+    }
 
     @Property(viewable = true, editable = false, order = 2)
     public Timestamp getCreateTime(DBRProgressMonitor monitor) throws DBCException {
@@ -346,27 +346,27 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     public long getRawObjectSize() {
     	if (rawObjectSize == null)
     		return -1;
-		return rawObjectSize.longValue();
-	}
+        return rawObjectSize.longValue();
+    }
 
     @Property(viewable = true, editable = false, updatable =  false,  order = 6, formatter = ByteNumberFormat.class)
-	public long getMemObjectSize() {
+    public long getMemObjectSize() {
     	if (memObjectSize == null)
     		return -1;
-		return memObjectSize.longValue();
-	}
+        return memObjectSize.longValue();
+    }
 
     @Property(viewable = true, editable = true, updatable = true,  order = 7)
-	public BigDecimal getRawObjectSizeLimit() {
-		return rawObjectSizeLimit;
-	}
+    public BigDecimal getRawObjectSizeLimit() {
+        return rawObjectSizeLimit;
+    }
     
     public void setRawObjectSizeLimit(BigDecimal limit) {
     	this.rawObjectSizeLimit = limit;
     }
     
 
-	public void setOwner(String owner)
+    public void setOwner(String owner)
     {
         this.owner = owner;
     }
@@ -388,50 +388,50 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
         return associationCache;
     }
 
-	@Override
-	public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
-			throws DBException
-	{
-		return ExasolUtils.generateDDLforSchema(monitor, this);
-	}
-	
-	
-	public static class OwnerListProvider implements IPropertyValueListProvider<ExasolSchema> {
-		
-		@Override
-		public boolean allowCustomValue() {
-			return false;
-		}
-		
-		public Object[] getPossibleValues(ExasolSchema object)
-		{
-			ExasolDataSource dataSource = object.getDataSource();
-			try {
-				Collection<ExasolGrantee> grantees = dataSource.getAllGrantees(new VoidProgressMonitor());
-				return grantees.toArray(new Object[grantees.size()]);
-			} catch (DBException e) {
-				log.error(e);
-				return new  Object[0];
-			}
-		}
-		
-	}
-	
-	public Boolean isPhysicalSchema()
-	{
-	    return true;
-	}
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
+            throws DBException
+    {
+        return ExasolUtils.generateDDLforSchema(monitor, this);
+    }
 
-	public ExasolTableIndexCache getIndexCache() {
-		return indexCache;
-	}
-	
-	@Association
-	public Collection<ExasolTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
-		return indexCache.getObjects(monitor, this, null);
-	}
-	
-	
-	
-	
+
+    public static class OwnerListProvider implements IPropertyValueListProvider<ExasolSchema> {
+
+        @Override
+        public boolean allowCustomValue() {
+            return false;
+        }
+
+        public Object[] getPossibleValues(ExasolSchema object)
+        {
+            ExasolDataSource dataSource = object.getDataSource();
+            try {
+                Collection<ExasolGrantee> grantees = dataSource.getAllGrantees(new VoidProgressMonitor());
+                return grantees.toArray(new Object[grantees.size()]);
+            } catch (DBException e) {
+                log.error(e);
+                return new  Object[0];
+            }
+        }
+
+    }
+
+    public Boolean isPhysicalSchema()
+    {
+        return true;
+    }
+
+    public ExasolTableIndexCache getIndexCache() {
+        return indexCache;
+    }
+
+    @Association
+    public Collection<ExasolTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+        return indexCache.getObjects(monitor, this, null);
+    }
+
+
+
+
 }

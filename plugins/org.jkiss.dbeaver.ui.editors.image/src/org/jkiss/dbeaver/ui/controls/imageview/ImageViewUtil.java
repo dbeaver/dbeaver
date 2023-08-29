@@ -122,7 +122,7 @@ class ImageViewUtil {
         if (src.height < 0) {
             dest.y = src.y + src.height + 1;
             dest.height=-src.height; }
-		else{ dest.y=src.y; dest.height=src.height; }
-		return dest;
-	}
+        else{ dest.y=src.y; dest.height=src.height; }
+        return dest;
+    }
 }

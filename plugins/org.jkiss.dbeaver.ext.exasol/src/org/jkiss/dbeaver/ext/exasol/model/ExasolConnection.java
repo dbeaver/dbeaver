@@ -35,163 +35,163 @@ import java.sql.ResultSet;
 import java.util.Map;
 
 public class ExasolConnection
-		implements DBPRefreshableObject, DBPNamedObject2, DBPSaveableObject, DBPScriptObject{
+        implements DBPRefreshableObject, DBPNamedObject2, DBPSaveableObject, DBPScriptObject{
 
-	private ExasolDataSource dataSource;
-	private String connectionName;
-	private String connectionString;
-	private String userName;
-	private String password="";
-	private Date created;
-	private String comment="";
-	private Boolean persisted;
+    private ExasolDataSource dataSource;
+    private String connectionName;
+    private String connectionString;
+    private String userName;
+    private String password="";
+    private Date created;
+    private String comment="";
+    private Boolean persisted;
 
-	public ExasolConnection(
-	        ExasolDataSource dataSource
-	        )
-	{
-	    this.dataSource = dataSource;
-	    this.persisted = false;
-	}
-	
-	public ExasolConnection(
-	        ExasolDataSource dataSource,
-	        String name,
-	        String url,
+    public ExasolConnection(
+            ExasolDataSource dataSource
+            )
+    {
+        this.dataSource = dataSource;
+        this.persisted = false;
+    }
+    
+    public ExasolConnection(
+            ExasolDataSource dataSource,
+            String name,
+            String url,
             String comment,
-	        String user,
-	        String password
-	        )
-	{
-	    this.persisted = false;
-	    this.connectionName = name;
-	    this.connectionString = url;
-	    this.comment = comment;
-	    this.userName = user;
-	    this.password = password;
-	    this.dataSource = dataSource;
-	}
-	
-	public ExasolConnection(ExasolDataSource dataSource, ResultSet dbResult)
-	{
-		this.dataSource = dataSource;
-		if (dbResult != null) {
-			this.persisted = true;
-			this.connectionName = JDBCUtils.safeGetString(dbResult,"CONNECTION_NAME");
-			this.connectionString = JDBCUtils.safeGetString(dbResult,"CONNECTION_STRING");
-			this.created = JDBCUtils.safeGetDate(dbResult, "CREATED");
-			this.comment = JDBCUtils.safeGetString(dbResult,"CONNECTION_COMMENT");
-			this.userName = JDBCUtils.safeGetString(dbResult, "USER_NAME");
-		} else {
-			this.connectionName = "new connection";
-			this.persisted = false;
-			this.password = "";
-		}
+            String user,
+            String password
+            )
+    {
+        this.persisted = false;
+        this.connectionName = name;
+        this.connectionString = url;
+        this.comment = comment;
+        this.userName = user;
+        this.password = password;
+        this.dataSource = dataSource;
+    }
+    
+    public ExasolConnection(ExasolDataSource dataSource, ResultSet dbResult)
+    {
+        this.dataSource = dataSource;
+        if (dbResult != null) {
+            this.persisted = true;
+            this.connectionName = JDBCUtils.safeGetString(dbResult,"CONNECTION_NAME");
+            this.connectionString = JDBCUtils.safeGetString(dbResult,"CONNECTION_STRING");
+            this.created = JDBCUtils.safeGetDate(dbResult, "CREATED");
+            this.comment = JDBCUtils.safeGetString(dbResult,"CONNECTION_COMMENT");
+            this.userName = JDBCUtils.safeGetString(dbResult, "USER_NAME");
+        } else {
+            this.connectionName = "new connection";
+            this.persisted = false;
+            this.password = "";
+        }
 
-	}
+    }
 
-	@Override
-	@Property(viewable = true, editable=true, order = 10)
-	public String getName()
-	{
-		return this.connectionName;
-	}
-	
-	@Override
-	public void setName(String name)
-	{
-	    this.connectionName = name;
-	}
+    @Override
+    @Property(viewable = true, editable=true, order = 10)
+    public String getName()
+    {
+        return this.connectionName;
+    }
+    
+    @Override
+    public void setName(String name)
+    {
+        this.connectionName = name;
+    }
 
-	@Property(viewable = true,editable=true, updatable=true, order = 20)
-	public String getConnectionString()
-	{
-		return this.connectionString;
-	}
-	
-	public void setConnectionString(String url)
-	{
-	    this.connectionString = url;
-	}
+    @Property(viewable = true,editable=true, updatable=true, order = 20)
+    public String getConnectionString()
+    {
+        return this.connectionString;
+    }
+    
+    public void setConnectionString(String url)
+    {
+        this.connectionString = url;
+    }
 
-	@Property(viewable = true, order = 30)
-	public Date getCreated()
-	{
-		return this.created;
-	}
+    @Property(viewable = true, order = 30)
+    public Date getCreated()
+    {
+        return this.created;
+    }
 
-	@Property(viewable = true,editable=true, updatable=true, order = 30)
-	public String getUserName()
-	{
-		return this.userName;
-	}
+    @Property(viewable = true,editable=true, updatable=true, order = 30)
+    public String getUserName()
+    {
+        return this.userName;
+    }
 
    public void setUserName(String userName)
     {
         this.userName = userName;
     }
 
-	@Override
-	@Property(viewable = true, editable= true, updatable=true, length = PropertyLength.MULTILINE, order = 50)
-	public String getDescription()
-	{
-		return this.comment;
-	}
-	
-	public void setDescription(String comment)
-	{
-	    this.comment = comment;
-	}
+    @Override
+    @Property(viewable = true, editable= true, updatable=true, length = PropertyLength.MULTILINE, order = 50)
+    public String getDescription()
+    {
+        return this.comment;
+    }
+    
+    public void setDescription(String comment)
+    {
+        this.comment = comment;
+    }
 
-	@Override
-	public DBSObject getParentObject()
-	{
-		return this.dataSource.getContainer();
-	}
+    @Override
+    public DBSObject getParentObject()
+    {
+        return this.dataSource.getContainer();
+    }
 
-	@Override
-	public ExasolDataSource getDataSource()
-	{
-		return this.dataSource;
-	}
+    @Override
+    public ExasolDataSource getDataSource()
+    {
+        return this.dataSource;
+    }
 
-	@Override
-	public boolean isPersisted()
-	{
-		return this.persisted;
-	}
+    @Override
+    public boolean isPersisted()
+    {
+        return this.persisted;
+    }
 
-	@Override
-	public void setPersisted(boolean persisted)
-	{
-		this.persisted = persisted;
+    @Override
+    public void setPersisted(boolean persisted)
+    {
+        this.persisted = persisted;
 
-	}
+    }
 
-	@Override
-	public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
-			throws DBException
-	{
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
+            throws DBException
+    {
         ((ExasolDataSource) getDataSource()).refreshObject(monitor);
-		return this;
-	}
+        return this;
+    }
 
-	@Override
-	public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
-			throws DBException
-	{
-		if (getDataSource().isAuthorizedForConnections()) {
-			return ExasolUtils.getConnectionDdl(this, monitor);
-		} else {
-			return "User needs full access to dictionary or dba privilege to generate ddl for connections";
-		}
-	}
-	
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
+            throws DBException
+    {
+        if (getDataSource().isAuthorizedForConnections()) {
+            return ExasolUtils.getConnectionDdl(this, monitor);
+        } else {
+            return "User needs full access to dictionary or dba privilege to generate ddl for connections";
+        }
+    }
+    
     @Property(viewable = true, editable= true, updatable=true, password = true, order = 35)
-	public String getPassword()
-	{
-	    return password;
-	}
+    public String getPassword()
+    {
+        return password;
+    }
 
     public void setPassword(String password) 
     {
