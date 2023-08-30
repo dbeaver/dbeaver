@@ -14,28 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.dpi;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+/**
+ * Detached session
+ */
+public class DPISession {
 
-public interface DPIClientObject {
+    private final String sessionId;
 
-    String dpiObjectId();
+    public DPISession(String sessionId) {
+        this.sessionId = sessionId;
+    }
 
-    String dpiObjectType();
-
-    ClassLoader dpiClassLoader();
-
-    Object dpiPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String propertyName)
-        throws DBException;
-
-    Object dpiObjectMethod(
-        @Nullable DBRProgressMonitor monitor,
-        @NotNull String methodName,
-        @Nullable Object[] arguments)
-        throws DBException;
+    public String getSessionId() {
+        return sessionId;
+    }
 
 }

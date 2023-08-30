@@ -24,11 +24,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.dpi.model.DPIContext;
-import org.jkiss.dbeaver.dpi.model.DPIController;
-import org.jkiss.dbeaver.dpi.model.DPISession;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.dpi.DPIController;
+import org.jkiss.dbeaver.model.dpi.DPISession;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -153,11 +153,16 @@ public class DPIControllerImpl implements DPIController {
     private Object invokeObjectMethod(Object object, Method method, Object[] args) throws DBException {
         try {
             log.debug("DPI Server: invoke DPI method " + method + " on " + object.getClass());
+            Class<?>[] parameterTypes = method.getParameterTypes();
             if (args == null) {
-                return method.invoke(object);
+                // Simple method or property read
+                if (parameterTypes.length == 1 && parameterTypes[0] == DBRProgressMonitor.class) {
+                    // Lazy property read
+                    args = new Object[] { context.getProgressMonitor() };
+                }
+                return method.invoke(object, args);
             }
             // Deserialize arguments
-            Class<?>[] parameterTypes = method.getParameterTypes();
             Object[] realArgs = new Object[args.length];
             Gson gson = context.getGson();
             for (int i = 0; i < parameterTypes.length; i++) {

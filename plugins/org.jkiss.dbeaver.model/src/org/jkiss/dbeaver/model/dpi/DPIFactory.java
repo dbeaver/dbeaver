@@ -14,24 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.struct;
+package org.jkiss.dbeaver.model.dpi;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.dpi.DPIElement;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Instance with lazy initialization
+ * Object's factory.
+ *
+ * Method return is cached for each unique parameter
  */
-public interface DBSInstanceLazy extends DBSInstance
-{
-    /**
-     * Check instance connection
-     */
-    void checkInstanceConnection(@NotNull DBRProgressMonitor monitor) throws DBException;
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD,ElementType.TYPE})
+public @interface DPIFactory {
 
-    @DPIElement
-    boolean isInstanceConnected();
+    String parameter() default "";
 
 }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.dpi;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -22,10 +22,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Object which can be transferred over network in serialized form
+ * Object's element.
+ *
+ * Elements are cached on client side
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface DPIObject {
+@Target({ElementType.METHOD, ElementType.TYPE})
+public @interface DPIElement {
 
 }

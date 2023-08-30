@@ -21,10 +21,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.dpi.model.DPIConstants;
 import org.jkiss.dbeaver.dpi.model.DPIContext;
-import org.jkiss.dbeaver.dpi.model.DPIController;
 import org.jkiss.dbeaver.dpi.model.DPISerializer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.dpi.DPIController;
+import org.jkiss.dbeaver.model.dpi.DPIProcessController;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -40,9 +40,9 @@ import java.util.Map;
 /**
  * Detached process controller
  */
-public class DPIProcessController implements AutoCloseable {
+public class DPIProcessControllerImpl implements DPIProcessController {
 
-    private static final Log log = Log.getLog(DPIProcessController.class);
+    private static final Log log = Log.getLog(DPIProcessControllerImpl.class);
 
     public static final int PROCESS_PAWN_TIMEOUT = 10000;
     private DPIController dpiRestClient;
@@ -50,16 +50,7 @@ public class DPIProcessController implements AutoCloseable {
     private final Process process;
 
 
-    public static DPIProcessController detachDatabaseProcess(DBRProgressMonitor monitor, DBPDataSourceContainer dataSourceContainer) throws IOException {
-        try {
-            BundleProcessConfig processConfig = BundleConfigGenerator.generateBundleConfig(monitor, dataSourceContainer);
-            return new DPIProcessController(dataSourceContainer, processConfig);
-        } catch (Exception e) {
-            throw new IOException("Error generating osgi process from datasource configuration", e);
-        }
-    }
-
-    public DPIProcessController(DBPDataSourceContainer dataSourceContainer, BundleProcessConfig processConfig) throws IOException {
+    public DPIProcessControllerImpl(DBPDataSourceContainer dataSourceContainer, BundleProcessConfig processConfig) throws IOException {
         DPIContext dpiContext = new DPIContext(new LoggingProgressMonitor(log), dataSourceContainer);
 
         log.debug("Starting detached database application");

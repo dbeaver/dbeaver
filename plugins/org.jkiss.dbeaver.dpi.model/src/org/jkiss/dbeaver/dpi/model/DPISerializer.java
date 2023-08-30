@@ -29,10 +29,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.dpi.model.client.DPIClientProxy;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DPIClientObject;
-import org.jkiss.dbeaver.model.DPIContainer;
-import org.jkiss.dbeaver.model.DPIObject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.dpi.DPIClientObject;
+import org.jkiss.dbeaver.model.dpi.DPIContainer;
+import org.jkiss.dbeaver.model.dpi.DPIObject;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
@@ -426,8 +426,10 @@ public class DPISerializer {
             } else {
                 throw new IOException("Non class result, deserialization not supported (" + type + ")");
             }
-            allInterfaces.add(theClass);
-            Collections.addAll(allInterfaces, (theClass).getInterfaces());
+            if (theClass.isInterface()) {
+                allInterfaces.add(theClass);
+            }
+            Collections.addAll(allInterfaces, theClass.getInterfaces());
             allInterfaces.add(DPIClientObject.class);
             DPIClientProxy objectHandler = new DPIClientProxy(
                 context,

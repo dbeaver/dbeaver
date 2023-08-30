@@ -14,24 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.struct;
-
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.dpi.DPIElement;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+package org.jkiss.dbeaver.model.dpi;
 
 /**
- * Instance with lazy initialization
+ * Detached process controller
  */
-public interface DBSInstanceLazy extends DBSInstance
-{
-    /**
-     * Check instance connection
-     */
-    void checkInstanceConnection(@NotNull DBRProgressMonitor monitor) throws DBException;
+public interface DPIProcessController extends AutoCloseable {
 
-    @DPIElement
-    boolean isInstanceConnected();
+    DPIController getClient();
+
+    void close();
 
 }

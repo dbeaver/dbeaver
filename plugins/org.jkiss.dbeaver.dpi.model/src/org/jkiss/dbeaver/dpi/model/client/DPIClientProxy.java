@@ -21,15 +21,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.dpi.model.DPIContext;
-import org.jkiss.dbeaver.dpi.model.DPIController;
 import org.jkiss.dbeaver.dpi.model.DPISerializer;
-import org.jkiss.dbeaver.model.DPIClientObject;
-import org.jkiss.dbeaver.model.DPIContainer;
-import org.jkiss.dbeaver.model.DPIElement;
-import org.jkiss.dbeaver.model.DPIFactory;
+import org.jkiss.dbeaver.model.dpi.*;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
-import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
@@ -56,7 +51,6 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
     private final Integer objectHashCode;
     private final transient Object objectInstance;
     private Map<String, Object> objectContainers;
-    private DBPPropertyDescriptor[] propertyDescriptors;
     private Map<String, Object> propertyValues;
     private Map<Class<?>, Object> factoryObjects;
 
@@ -172,6 +166,8 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
                     return dpiPropertyValue((DBRProgressMonitor) args[0], (String) args[1]);
                 case "dpiObjectMethod":
                     return dpiObjectMethod((DBRProgressMonitor) args[0], (String) args[1], (Object[]) args[2]);
+                default:
+                    log.debug("Unsupported DPI method '" + methodName + "'");
             }
             return null;
         }

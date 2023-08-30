@@ -26,9 +26,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.dpi.model.DPIController;
-import org.jkiss.dbeaver.dpi.model.DPISession;
-import org.jkiss.dbeaver.dpi.model.client.DPIProcessController;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
@@ -39,6 +36,10 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.dpi.DPIController;
+import org.jkiss.dbeaver.model.dpi.DPIProcessController;
+import org.jkiss.dbeaver.model.dpi.DPIProvider;
+import org.jkiss.dbeaver.model.dpi.DPISession;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
@@ -971,7 +972,12 @@ public class DataSourceDescriptor
 
     private boolean openDetachedConnection(DBRProgressMonitor monitor) {
         try {
-            dpiController = DPIProcessController.detachDatabaseProcess(monitor, this);
+            DPIProvider provider = GeneralUtils.adapt(this, DPIProvider.class);
+            if (provider == null) {
+                log.debug("DPI provider not available");
+                return false;
+            }
+            dpiController = provider.detachDatabaseProcess(monitor, this);
             Map<String, String> credentials = new LinkedHashMap<>();
             DPIController dpiClient = dpiController.getClient();
             DPISession session = dpiClient.openSession(getProject().getId());
