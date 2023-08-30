@@ -36,14 +36,10 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
@@ -380,46 +376,8 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                             (CommonUtils.isNotEmpty(sourceContainer.getConnectionError()) ?
                                 UINavigatorMessages.navigator_view_base_acc_node_connection_last_error +
                                     sourceContainer.getConnectionError() : ""));
-                } else if (firstElement instanceof DBNDatabaseFolder) {
-                    e.result = UINavigatorMessages.navigator_view_base_acc_node_folder + ((DBNDatabaseFolder) firstElement).getName();
-                } else if (firstElement instanceof DBNLocalFolder) {
-                    e.result = UINavigatorMessages.navigator_view_base_acc_node_connection_folder +
-                        ((DBNLocalFolder) firstElement).getName();
-                } else if (firstElement instanceof DBNDatabaseItem) {
-                    DBNDatabaseItem element = (DBNDatabaseItem) firstElement;
-                    DBSObject object = element.getObject();
-                    if (object != null) {
-                        String objectName = object.getName();
-                        if (object instanceof DBSView) {
-                            e.result = UINavigatorMessages.navigator_view_base_acc_node_view +
-                                ((DBSView) object).getFullyQualifiedName(DBPEvaluationContext.DDL);
-                        } else if (object instanceof DBSTable) {
-                            e.result = UINavigatorMessages.navigator_view_base_acc_node_table +
-                                ((DBSTable) object).getFullyQualifiedName(DBPEvaluationContext.DDL);
-                        } else if (object instanceof DBSSequence) {
-                            e.result = UINavigatorMessages.navigator_view_base_acc_node_sequence + objectName;
-                        } else if (object instanceof DBSTableColumn) {
-                            e.result = UINavigatorMessages.navigator_view_base_acc_node_column + objectName;
-                        } else if (object instanceof DBSEntityConstraint) {
-                            e.result = ((DBSEntityConstraint) object).getConstraintType().getLocalizedName() + objectName;
-                        } else if (object instanceof DBSProcedure) {
-                            e.result = ((DBSProcedure) object).getProcedureType().name() +
-                                ((DBSProcedure) object).getFullyQualifiedName(DBPEvaluationContext.DDL);
-                        } else if (object instanceof DBSTrigger) {
-                            e.result = UINavigatorMessages.navigator_view_base_acc_node_trigger + objectName;
-                        } else if (object instanceof DBSSchema) {
-                            e.result = UINavigatorMessages.navigator_view_base_acc_node_schema + objectName;
-                        } else if (object instanceof DBSCatalog) {
-                            e.result = UINavigatorMessages.navigator_view_base_acc_node_catalog + objectName;
-                        } else {
-                            e.result = UINavigatorMessages.navigator_view_base_acc_node_name + objectName;
-                        }
-                    }
-                } else if (firstElement instanceof DBNResource) {
-                    DBNResource element = (DBNResource) firstElement;
-                    e.result = element.getNodeType() + element.getNodeName();
                 } else if (firstElement instanceof DBNNode) {
-                    e.result = UINavigatorMessages.navigator_view_base_acc_node_name + ((DBNNode) firstElement).getNodeName();
+                    e.result = ((DBNNode) firstElement).getNodeType() + ((DBNNode) firstElement).getNodeName();
                 }
             }
         });

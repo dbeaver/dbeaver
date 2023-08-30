@@ -295,16 +295,6 @@ public class UINavigatorMessages extends NLS {
     public static String navigator_view_base_acc_node_connection_status_connected;
     public static String navigator_view_base_acc_node_connection_status_disconnected;
     public static String navigator_view_base_acc_node_connection_last_error;
-    public static String navigator_view_base_acc_node_folder;
-    public static String navigator_view_base_acc_node_connection_folder;
-    public static String navigator_view_base_acc_node_table;
-    public static String navigator_view_base_acc_node_view;
-    public static String navigator_view_base_acc_node_sequence;
-    public static String navigator_view_base_acc_node_column;
-    public static String navigator_view_base_acc_node_trigger;
-    public static String navigator_view_base_acc_node_schema;
-    public static String navigator_view_base_acc_node_catalog;
-    public static String navigator_view_base_acc_node_name;
 
     static {
         // initialize resource bundle
