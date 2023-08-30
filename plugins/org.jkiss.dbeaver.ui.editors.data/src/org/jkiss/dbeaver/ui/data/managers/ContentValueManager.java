@@ -101,12 +101,13 @@ public class ContentValueManager extends BaseValueManager {
                         }
                         if (value instanceof DBDContent) {
                             boolean isExternalFileOpened = false;
-                            IStreamValueEditor<Control> streamEditor
-                                = ((ContentPanelEditor) activeEditor).getStreamEditor();
-                            if (streamEditor instanceof IStreamValueEditorPersistent) {
-                                Path externalFilePath = ((IStreamValueEditorPersistent) streamEditor).getExternalFilePath(activeEditor.getControl());
-                                if (externalFilePath != null) {
-                                    isExternalFileOpened = openExternalFile(externalFilePath);
+                            if (activeEditor != null) {
+                                IStreamValueEditor<Control> streamEditor = ((ContentPanelEditor) activeEditor).getStreamEditor();
+                                if (streamEditor instanceof IStreamValueEditorPersistent) {
+                                    Path externalFilePath = ((IStreamValueEditorPersistent) streamEditor).getExternalFilePath(activeEditor.getControl());
+                                    if (externalFilePath != null) {
+                                        isExternalFileOpened = openExternalFile(externalFilePath);
+                                    }
                                 }
                             }
                             if (!isExternalFileOpened) {
