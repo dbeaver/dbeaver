@@ -22,5 +22,6 @@ public class VerticaConstants {
     public static String TYPE_SYSTEM_TABLE = "SYSTEM TABLE";
 
     public static final String PROP_DISABLE_COMMENTS_READING = "disable-comments-reading@";
+    public static final String PROP_DOLLAR_QUOTES_AS_STRING = "dollar-quotes-as-string@";
 
 }

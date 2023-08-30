@@ -591,7 +591,7 @@ public class ResultSetViewer extends Viewer
 
         if (filtersPanel != null) {
             DBeaverNotifications.showNotification(
-                "rsv.filter.saved",
+                DBeaverNotifications.NT_GENERIC,
                 "Data filter was saved",
                 filtersPanel.getFilterText(),
                 DBPMessageType.INFORMATION, null);

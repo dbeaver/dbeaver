@@ -435,7 +435,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
 
             IFile file = EditorUtils.getFileFromInput(input);
-            if (file != null) {
+            if (file != null && dataSourceContainer != null) {
                 DBNUtils.refreshNavigatorResource(dataSourceContainer.getProject(), file, container);
             } else {
                 // FIXME: this is a hack. We can't fire event on resource change so editor's state won't be updated in UI.
@@ -2917,6 +2917,9 @@ public class SQLEditor extends SQLEditorBase implements
             bottomLeft = DBIcon.OVER_RED_LAMP;
         }
 
+        if (baseEditorImage == null) {
+            baseEditorImage = getTitleImage();
+        }
         if (bottomLeft != null || bottomRight != null) {
             DBPImage image = new DBIconComposite(new DBIconBinary(null, baseEditorImage), false, null, null, bottomLeft, bottomRight);
             editorImage = DBeaverIcons.getImage(image, false);

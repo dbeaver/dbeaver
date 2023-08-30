@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeBase;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeDriver;
+import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeProvider;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.utils.CommonUtils;
@@ -562,17 +563,17 @@ public class SQLEditorUtils {
      */
     public static boolean isTemplateContextFitsEditorContext(@NotNull String templateContextTypeId, @NotNull SQLEditorBase editor) {
         boolean result = false;
-        String editorContextTypeId = null;
         if (editor instanceof SQLEditor) {
             DBPDataSourceContainer dsContainer = ((SQLEditor) editor).getDataSourceContainer();
             if (dsContainer != null) {
                 DBPDriver driver = dsContainer.getDriver();
-                editorContextTypeId = SQLContextTypeDriver.getTypeId(driver);
-                result = isTemplateContextFitsEditorContext(templateContextTypeId, editorContextTypeId);
+                String driverContextTypeId = SQLContextTypeDriver.getTypeId(driver);
+                String providerContextTypeId = SQLContextTypeProvider.getTypeId(driver.getProviderId());
+                result = isTemplateContextFitsEditorContext(templateContextTypeId, driverContextTypeId, providerContextTypeId);
                 if (!result) {
                     for (Pair<String, String> replInfo : driver.getDriverReplacementsInfo()) {
-                        editorContextTypeId = SQLContextTypeDriver.getTypeId(replInfo.getFirst(), replInfo.getSecond());
-                        result = isTemplateContextFitsEditorContext(templateContextTypeId, editorContextTypeId);
+                        driverContextTypeId = SQLContextTypeDriver.getTypeId(replInfo.getFirst(), replInfo.getSecond());
+                        result = isTemplateContextFitsEditorContext(templateContextTypeId, driverContextTypeId, providerContextTypeId);
                         if (result) {
                             break;
                         }
@@ -587,8 +588,13 @@ public class SQLEditorUtils {
     /**
      * Checks whether template's context is suitable for the editor context
      */
-    private static boolean isTemplateContextFitsEditorContext(@NotNull String templateContextTypeId, @Nullable String editorContextTypeId) {
-        return editorContextTypeId != null && templateContextTypeId.equalsIgnoreCase(editorContextTypeId) 
-            || templateContextTypeId.equalsIgnoreCase(SQLContextTypeBase.ID_SQL);
+    private static boolean isTemplateContextFitsEditorContext(
+        @NotNull String templateContextTypeId,
+        @Nullable String driverContextTypeId,
+        @Nullable String providerContextTypeId
+    ) {
+        return templateContextTypeId.equalsIgnoreCase(SQLContextTypeBase.ID_SQL) ||
+            templateContextTypeId.equalsIgnoreCase(driverContextTypeId) ||
+            templateContextTypeId.equalsIgnoreCase(providerContextTypeId);
     }
 }
