@@ -41,7 +41,7 @@
 								<artifact><id>commons-cli:commons-cli:1.3.1</id></artifact>
 								<artifact><id>com.ibm.icu:com.ibm.icu.base:58.2.0</id></artifact>
 								<!-- Byte buddy -->
-								<artifact><id>net.bytebuddy:byte-buddy:1.14.7</id></artifact>
+								<artifact><id>net.bytebuddy:byte-buddy:1.14.7</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 
 								<!-- ANTLR -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.antlr4:LATEST</id></artifact>
@@ -56,12 +56,7 @@
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jfreechart:LATEST</id></artifact>
 
 								<!-- SSH and BouncyCastle -->
-								<artifact>
-									<id>com.jcraft:jsch:0.2.8</id>
-									<transitive>false</transitive>
-									<source>false</source>
-									<override>false</override>
-								</artifact>
+								<artifact><id>com.jcraft:jsch:0.2.8</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:LATEST</id></artifact>
 								<!-- Ant minimized -->
 								<artifact><id>org.jkiss.bundle:org.apache.ant:1.10.0</id></artifact>
@@ -81,7 +76,7 @@
 
 								<!-- Tests. Mockito-all is kept for old version build support. -->
 <!--								<artifact><id>org.mockito:mockito-all:1.10.19</id></artifact>-->
-								<artifact><id>org.mockito:mockito-core:4.6.1</id></artifact>
+								<artifact><id>org.mockito:mockito-core:4.6.1</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 							</artifacts>
 							<additionalArgs>-metadataRepositoryName "${repo-name}" -artifactRepositoryName "${repo-name}"</additionalArgs>
 
