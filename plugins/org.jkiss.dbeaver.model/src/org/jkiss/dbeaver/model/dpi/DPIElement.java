@@ -30,8 +30,14 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD, ElementType.TYPE})
 public @interface DPIElement {
 
+    /**
+     * Reads value and return as property on first object info read
+     */
     boolean cache() default false;
 
+    /**
+     * Property shows object state. State may change after other functions invocation.
+     */
     boolean objectState() default false;
 
 }

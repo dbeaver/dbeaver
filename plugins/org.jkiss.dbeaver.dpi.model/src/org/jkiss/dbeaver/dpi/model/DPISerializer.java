@@ -32,10 +32,13 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.dpi.DPIClientObject;
 import org.jkiss.dbeaver.model.dpi.DPIContainer;
+import org.jkiss.dbeaver.model.dpi.DPIElement;
 import org.jkiss.dbeaver.model.dpi.DPIObject;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.utils.BeanUtils;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -271,11 +274,26 @@ public class DPISerializer {
             // Serialize properties
             PropertyCollector pc = new PropertyCollector(t, false);
             pc.collectProperties();
+            Map<String, Object> props = new LinkedHashMap<>();
             if (pc.getProperties().length > 0) {
-                Map<String, Object> props = new LinkedHashMap<>();
                 for (DBPPropertyDescriptor prop : pc.getProperties()) {
                     props.put(prop.getId(), pc.getPropertyValue(null, prop.getId()));
                 }
+            }
+            for (Method m : t.getClass().getMethods()) {
+                if (m.getParameterTypes().length == 0 && !m.isAnnotationPresent(Property.class)) {
+                    DPIElement elemAnno = DPISerializer.getMethodAnno(m, DPIElement.class);
+                    if (elemAnno != null && elemAnno.cache()) {
+                        try {
+                            Object propValue = m.invoke(t);
+                            props.put(BeanUtils.getPropertyNameFromGetter(m.getName()), propValue);
+                        } catch (Throwable e) {
+                            log.debug("Error reading object element " + m);
+                        }
+                    }
+                }
+            }
+            if (!props.isEmpty()) {
                 JSONUtils.serializeProperties(jsonWriter, ATTR_PROPS, props);
             }
         }

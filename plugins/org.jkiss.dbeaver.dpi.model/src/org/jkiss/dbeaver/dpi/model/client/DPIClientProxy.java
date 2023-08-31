@@ -191,6 +191,10 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
             method.getDeclaringClass().getAnnotation(DPIElement.class) != null;
         if (isElement && propertyValues != null) {
             Object result = propertyValues.get(getElementKey(method, args));
+            if (result == null && method.getParameterTypes().length == 0) {
+                // Try property
+                result = propertyValues.get(BeanUtils.getPropertyNameFromGetter(method.getName()));
+            }
             if (result != null) {
                 return unwrapObjectValue(result);
             }

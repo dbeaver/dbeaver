@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.dpi.DPIElement;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
@@ -25,8 +26,9 @@ import org.jkiss.dbeaver.model.struct.DBSObjectState;
 /**
  * Object with state.
  */
-public interface DBPStatefulObject extends DBPObject
-{
+public interface DBPStatefulObject extends DBPObject {
+
+    @DPIElement(objectState = true)
     @NotNull
     DBSObjectState getObjectState();
 
