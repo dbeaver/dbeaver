@@ -169,8 +169,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     public Object start(IApplicationContext context) {
         instance = this;
 
-        loadStartupActions();
-
         Location instanceLoc = Platform.getInstanceLocation();
 
         CommandLine commandLine = DBeaverCommandLine.getCommandLine();
@@ -228,6 +226,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         final Runtime runtime = Runtime.getRuntime();
 
+        loadStartupActions();
         initializeConfiguration();
 
         // Debug logger
