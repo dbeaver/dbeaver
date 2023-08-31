@@ -950,10 +950,13 @@ public class DataSourceDescriptor
                 // Open local connection
                 succeeded = connect0(monitor, initialize, reflect);
             }
-            if (!succeeded) {
-                // Notify about the error
-                updateDataSourceObject(this);
+            if (reflect) {
+                getRegistry().notifyDataSourceListeners(new DBPEvent(
+                    DBPEvent.Action.OBJECT_UPDATE,
+                    DataSourceDescriptor.this,
+                    true));
             }
+
             return succeeded;
         }
         finally {
@@ -1122,6 +1125,12 @@ public class DataSourceDescriptor
 
                 openDataSource(monitor, initialize);
 
+                try {
+                    log.debug("Connected (" + getId() + ", " + getPropertyDriver() + ")");
+                } catch (Throwable e) {
+                    log.debug("Connected (" + getId() + ", driver unknown)");
+                }
+
                 this.connectFailed = false;
             } finally {
                 exclusiveLock.releaseExclusiveLock(dsLock);
@@ -1129,17 +1138,6 @@ public class DataSourceDescriptor
 
             processEvents(monitor, DBPConnectionEventType.AFTER_CONNECT);
 
-            if (reflect) {
-                getRegistry().notifyDataSourceListeners(new DBPEvent(
-                    DBPEvent.Action.OBJECT_UPDATE,
-                    DataSourceDescriptor.this,
-                    true));
-            }
-            try {
-                log.debug("Connected (" + getId() + ", " + getPropertyDriver() + ")");
-            } catch (Throwable e) {
-                log.debug("Connected (" + getId() + ", driver unknown)");
-            }
             return true;
         } catch (Throwable e) {
             lastConnectionError = e.getMessage();
@@ -1166,12 +1164,6 @@ public class DataSourceDescriptor
             proxyHandler = null;
             // Failed
             connectFailed = true;
-            //if (reflect) {
-            getRegistry().notifyDataSourceListeners(new DBPEvent(
-                DBPEvent.Action.OBJECT_UPDATE,
-                DataSourceDescriptor.this,
-                false));
-            //}
             if (e instanceof DBException) {
                 throw (DBException) e;
             } else {
