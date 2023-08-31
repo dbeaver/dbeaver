@@ -23,7 +23,7 @@
                         icon="icons/spanner_icon.png"
                         iconBig="icons/spanner_icon_big.png"
                         class="com.google.cloud.spanner.jdbc.JdbcDriver"
-                        sampleURL="jdbc:cloudspanner:/projects/my-project/instances/my-instance/databases/my-database"
+                        sampleURL="jdbc:cloudspanner:/projects/{server}/instances/{host}/databases/{database}"
                         defaultPort=""
                         description="Google Cloud Spanner Open Source JDBC Driver"
                         webURL="https://cloud.google.com/spanner/docs/use-oss-jdbc"
@@ -32,8 +32,10 @@
                     <replace provider="google_spanner" driver="spanner_jdbc"/>
                     <parameter name="omit-catalog" value="true"/>
                     <parameter name="omit-schema" value="false"/>
-                    <file type="jar" path="maven:/com.google.cloud:google-cloud-spanner-jdbc:RELEASE[2.7.4]"/>
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
+                    <file type="jar" path="maven:/com.google.cloud:google-cloud-spanner-jdbc:RELEASE[2.7.4]" bundle="!drivers.spanner"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.spanner"/>
+                    <file type="jar" path="drivers/spanner" bundle="drivers.spanner"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.spanner"/>
                 </driver>
                 
                 <driver
