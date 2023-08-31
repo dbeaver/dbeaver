@@ -10,7 +10,7 @@
     <booleanAttribute key="clearConfig" value="false"/>
     <booleanAttribute key="clearws" value="false"/>
     <booleanAttribute key="clearwslog" value="false"/>
-    <stringAttribute key="configLocation" value="${workspace_loc}/.metadata/.plugins/org.eclipse.pde.core/DBeaver.product - 副本"/>
+    <stringAttribute key="configLocation" value="${workspace_loc}/.metadata/.plugins/org.eclipse.pde.core/DBeaver.product"/>
     <booleanAttribute key="default" value="false"/>
     <setAttribute key="deselected_workspace_bundles"/>
     <booleanAttribute key="includeOptional" value="true"/>
@@ -30,12 +30,13 @@
         <setEntry value="bcpg@default:default"/>
         <setEntry value="bcprov@default:default"/>
         <setEntry value="com.github.jsqlparser@default:default"/>
-        <setEntry value="com.google.gson*2.10.1.v20230109-0753@default:default"/>
+        <setEntry value="com.google.gson@default:default"/>
         <setEntry value="com.google.guava@default:default"/>
         <setEntry value="com.ibm.icu@default:default"/>
-        <setEntry value="com.jcraft.jsch*0.2.8@default:default"/>
-        <setEntry value="com.sun.jna.platform@default:default"/>
-        <setEntry value="com.sun.jna@default:default"/>
+        <setEntry value="com.jcraft.jsch@default:default"/>
+        <setEntry value="com.sun.jna*5.12.1@default:default"/>
+        <setEntry value="com.sun.jna.platform*5.12.1@default:default"/>
+        <setEntry value="javaewah@default:default"/>
         <setEntry value="javax.annotation@default:default"/>
         <setEntry value="javax.inject@default:default"/>
         <setEntry value="javax.xml@default:default"/>
@@ -56,6 +57,8 @@
         <setEntry value="org.apache.felix.scr@1:true"/>
         <setEntry value="org.apache.xml.serializer@default:default"/>
         <setEntry value="org.apache.xmlgraphics@default:default"/>
+        <setEntry value="org.bouncycastle.bcpkix@default:default"/>
+        <setEntry value="org.bouncycastle.bcutil@default:default"/>
         <setEntry value="org.eclipse.compare.core@default:default"/>
         <setEntry value="org.eclipse.compare@default:default"/>
         <setEntry value="org.eclipse.core.commands@default:default"/>
@@ -201,7 +204,7 @@
         <setEntry value="org.jkiss.bundle.gis@default:default"/>
         <setEntry value="org.jkiss.bundle.jfreechart@default:default"/>
         <setEntry value="org.jkiss.bundle.sshj@default:default"/>
-        <setEntry value="org.objectweb.asm@default:default"/>
+        <setEntry value="org.objectweb.asm*9.4.0.v20221107-1714@default:default"/>
         <setEntry value="org.osgi.annotation.bundle@default:default"/>
         <setEntry value="org.osgi.annotation.versioning@default:default"/>
         <setEntry value="org.osgi.service.cm@default:default"/>
@@ -240,6 +243,8 @@
         <setEntry value="org.jkiss.dbeaver.data.office@default:default"/>
         <setEntry value="org.jkiss.dbeaver.data.transfer.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.data.transfer@default:default"/>
+		<setEntry value="org.jkiss.dbeaver.data.generate.ui@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.data.generate@default:default"/>
         <setEntry value="org.jkiss.dbeaver.debug.core@default:default"/>
         <setEntry value="org.jkiss.dbeaver.debug.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.erd.model@default:default"/>
@@ -255,8 +260,6 @@
         <setEntry value="org.jkiss.dbeaver.ext.db2.zos@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.db2@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.derby@default:default"/>
-        <setEntry value="org.jkiss.dbeaver.ext.dm.ui@default:default"/>
-        <setEntry value="org.jkiss.dbeaver.ext.dm@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.duckdb@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.elasticsearch@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.exasol.ui@default:default"/>
@@ -284,6 +287,10 @@
         <setEntry value="org.jkiss.dbeaver.ext.opendistro@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.oracle.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.oracle@default:default"/>
+		<setEntry value="org.jkiss.dbeaver.ext.yashandb.ui@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ext.yashandb@default:default"/>
+		<setEntry value="org.jkiss.dbeaver.ext.dm.ui@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ext.dm@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.phoenix@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.postgresql.debug.core@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.postgresql.debug.ui@default:default"/>
@@ -304,8 +311,6 @@
         <setEntry value="org.jkiss.dbeaver.ext.vertica.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.vertica@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.wmi@default:default"/>
-        <setEntry value="org.jkiss.dbeaver.ext.yashandb.ui*1.0.97.qualifier@default:default"/>
-        <setEntry value="org.jkiss.dbeaver.ext.yashandb@default:default"/>
         <setEntry value="org.jkiss.dbeaver.model.sql@default:default"/>
         <setEntry value="org.jkiss.dbeaver.model@default:default"/>
         <setEntry value="org.jkiss.dbeaver.net.ssh.jsch@default:default"/>
