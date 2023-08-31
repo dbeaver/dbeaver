@@ -226,7 +226,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         final Runtime runtime = Runtime.getRuntime();
 
-        loadStartupActions();
+        loadStartupActions(instanceLoc);
         initializeConfiguration();
 
         // Debug logger
@@ -797,7 +797,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         this.ignoreRecentWorkspaces = ignoreRecentWorkspaces;
     }
 
-    private void loadStartupActions() {
+    private void loadStartupActions(@NotNull Location instanceLoc) {
         final Path path = GeneralUtils.getMetadataFolder().resolve(STARTUP_ACTIONS_FILE);
 
         if (Files.notExists(path)) {
@@ -809,7 +809,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             properties.load(reader);
 
             if (!properties.isEmpty()) {
-                processStartupActions(properties.stringPropertyNames());
+                processStartupActions(instanceLoc, properties.stringPropertyNames());
             }
         } catch (Exception e) {
             log.error("Unable to read startup actions", e);
@@ -842,15 +842,15 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
     }
 
-    private void processStartupActions(@NotNull Set<String> actions) throws Exception {
+    private void processStartupActions(@NotNull Location instanceLoc, @NotNull Set<String> actions) throws Exception {
         final boolean resetUserPreferences = actions.contains(RESET_USER_PREFERENCES);
         final boolean resetWorkspaceConfiguration = actions.contains(RESET_WORKSPACE_CONFIGURATION);
 
-        if (!resetUserPreferences && !resetWorkspaceConfiguration) {
+        if (!resetUserPreferences && !resetWorkspaceConfiguration || !instanceLoc.isSet()) {
             return;
         }
 
-        final Path path = DBWorkbench.getPlatform().getWorkspace().getMetadataFolder().resolve(PLUGINS_FOLDER);
+        final Path path = Path.of(instanceLoc.getDataArea("").toURI());
 
         if (Files.notExists(path) || !Files.isDirectory(path)) {
             return;
