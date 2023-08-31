@@ -4817,12 +4817,14 @@ public class SQLEditor extends SQLEditorBase implements
     private void notifyOnDataListeners(@NotNull QueryResultsContainer container) {
         // Notify listeners
         synchronized (listeners) {
+            SQLScriptElement query = container.getQuery();
+            String queryText = query == null ? "" : query.getOriginalText();
             for (SQLEditorListener listener : listeners) {
                 try {
                     listener.onDataReceived(
                         getContextPrefStore(container),
                         container.getResultSetController().getModel(),
-                        container.getQuery().getOriginalText()
+                        queryText
                     );
                 } catch (Throwable ex) {
                     log.error(ex);
