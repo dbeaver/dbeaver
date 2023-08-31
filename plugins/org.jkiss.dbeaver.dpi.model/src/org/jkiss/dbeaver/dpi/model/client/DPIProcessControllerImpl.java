@@ -87,12 +87,12 @@ public class DPIProcessControllerImpl implements DPIProcessController {
             throw new IOException("Child DPI process start is failed (" + process.exitValue() + ")");
         }
 
-        dpiRestClient = RestClient
-            .builder(getRemoteEndpoint(), DPIController.class)
-            .setGson(DPISerializer.createSerializer(dpiContext))
-            .create();
-
         try {
+            dpiRestClient = RestClient
+                .builder(getRemoteEndpoint(), DPIController.class)
+                .setGson(DPISerializer.createSerializer(dpiContext))
+                .create();
+
             validateRestClient();
         } catch (Throwable e) {
             terminateChildProcess();
