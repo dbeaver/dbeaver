@@ -809,7 +809,7 @@ public class PostgreSchema implements
         protected PostgreTableColumn fetchChild(@NotNull JDBCSession session, @NotNull PostgreTableContainer container, @NotNull PostgreTableBase table, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException {
             try {
-                return container.getDataSource().getServerType().createTableColumn(session.getProgressMonitor(), PostgreSchema.this, table, dbResult);
+                return table.createTableColumn(session.getProgressMonitor(), PostgreSchema.this, dbResult);
             } catch (DBException e) {
                 log.warn("Error reading attribute info", e);
                 return null;

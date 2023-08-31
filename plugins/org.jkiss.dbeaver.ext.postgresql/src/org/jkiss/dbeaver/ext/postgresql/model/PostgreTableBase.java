@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
@@ -302,6 +303,12 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         }
         return DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS.equals(option) || DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS.equals(option)
                || DBPScriptObject.OPTION_INCLUDE_PERMISSIONS.equals(option);
+    }
+
+    public PostgreTableColumn createTableColumn(DBRProgressMonitor monitor, PostgreSchema schema, JDBCResultSet dbResult)
+        throws DBException
+    {
+        return new PostgreTableColumn(monitor, this, dbResult);
     }
 
     public static class TablespaceListProvider implements IPropertyValueListProvider<PostgreTableBase> {

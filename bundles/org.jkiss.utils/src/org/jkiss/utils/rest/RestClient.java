@@ -156,7 +156,7 @@ public class RestClient {
                 HttpResponse.BodyHandler<String> readerBodyHandler =
                     info -> BodySubscribers.ofString(StandardCharsets.UTF_8);
                 String requestString = gson.toJson(values);
-System.out.println("REQUEST: " + requestString);
+System.out.println("REQUEST [" + endpoint + "]\n\t" + requestString);
                 HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(URI.create(url.toString()))
                     .header("Content-Type", "application/json")
@@ -191,7 +191,7 @@ System.out.println("REQUEST: " + requestString);
                     // Convert to raw class type to force our serializer to work
                     returnType = Class.class;
                 }
-System.out.println("RESPONSE: " + contents);
+System.out.println("RESPONSE:\n\t" + contents);
                 return gson.fromJson(contents, returnType);
             } catch (RuntimeException e) {
                 throw e;
