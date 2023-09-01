@@ -205,6 +205,9 @@ public interface DBPDriver extends DBPNamedObject
      */
     Set<DBPDriverConfigurationType> getSupportedConfigurationTypes();
 
+    @NotNull
+    Set<String> getSupportedPageFields();
+
     default String getFullId() {
         return getProviderId() + ":" + getId();
     }
