@@ -730,11 +730,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
     }
 
-    @Override
-    public void shutdown(DBRProgressMonitor monitor) {
-        super.shutdown(monitor);
-    }
-
     public PostgreServerExtension getServerType() {
         if (serverExtension == null) {
             PostgreServerType serverType = PostgreUtils.getServerType(getContainer().getDriver());
