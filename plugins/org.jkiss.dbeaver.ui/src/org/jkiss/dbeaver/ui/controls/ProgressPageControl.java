@@ -306,6 +306,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                     ToolBar toolbar = customToolbarManager.createControl(customControlsComposite);
                     toolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
                     populateCustomActions(customToolbarManager);
+                    UIUtils.populateToolItemCommandIds(customToolbarManager);
                 }
             }
 
