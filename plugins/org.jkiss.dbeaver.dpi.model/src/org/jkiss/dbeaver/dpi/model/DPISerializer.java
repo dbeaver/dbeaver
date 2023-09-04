@@ -45,6 +45,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -96,9 +97,11 @@ public class DPISerializer {
                         return new DPIObjectTypeAdapter<>(context, typeToken.getType());
                     }
                 }
-            }
-            if (typeToken.getType() == Class.class) {
+            } else if (typeToken.getType() == Class.class) {
                 return (TypeAdapter<T>) new DPIClassAdapter(context);
+            } else if (typeToken.getType() instanceof Class<?> &&
+                Throwable.class.isAssignableFrom((Class<?>) typeToken.getType())) {
+                return (TypeAdapter<T>) new DPIThrowableAdapter(context);
             }
             return null;
         }
@@ -196,6 +199,69 @@ public class DPISerializer {
             String className = jsonReader.nextString();
             try {
                 return Class.forName(className, true, context.getClassLoader());
+            } catch (Exception e) {
+                throw new IOException(e);
+            }
+        }
+    }
+
+    static class DPIThrowableAdapter extends AbstractTypeAdapter<Throwable> {
+        public DPIThrowableAdapter(DPIContext context) {
+            super(context);
+        }
+
+        @Override
+        public void write(JsonWriter jsonWriter, Throwable error) throws IOException {
+            jsonWriter.name("class");
+            jsonWriter.value(error.getClass().getName());
+            if (error.getMessage() != null) {
+                jsonWriter.name("message");
+                jsonWriter.value(error.getMessage());
+            }
+            jsonWriter.name("stacktrace");
+            jsonWriter.value(Arrays.toString(error.getStackTrace()));
+            if (error instanceof SQLException) {
+                SQLException sqlError = (SQLException) error;
+                jsonWriter.name("errorCode");
+                jsonWriter.value(sqlError.getErrorCode());
+                if (sqlError.getSQLState() != null) {
+                    jsonWriter.name("sqlState");
+                    jsonWriter.value(sqlError.getSQLState());
+                }
+            }
+        }
+
+        @Override
+        public Throwable read(JsonReader jsonReader) throws IOException {
+            String className = null;
+            String message = null;
+            String stacktrace = null;
+            int errorCode = -1;
+            String sqlState = null;
+            while (jsonReader.peek() == JsonToken.NAME) {
+                String attrName = jsonReader.nextName();
+                switch (attrName) {
+                    case "class":
+                        className = jsonReader.nextString();
+                        break;
+                    case "message":
+                        message = jsonReader.nextString();
+                        break;
+                    case "stacktrace":
+                        stacktrace = jsonReader.nextString();
+                        break;
+                    case "errorCode":
+                        errorCode = jsonReader.nextInt();
+                        break;
+                    case "sqlState":
+                        sqlState = jsonReader.nextString();
+                        break;
+                }
+            }
+            try {
+                Class<?> errorClass = Class.forName(className, true, context.getClassLoader());
+                return new Exception();
+                //errorClass.getConstructor()
             } catch (Exception e) {
                 throw new IOException(e);
             }
