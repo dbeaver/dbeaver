@@ -159,8 +159,7 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
 
 
     private void migrateFromEclipseStorage(Path storagePath) throws Exception {
-        Path oldLocation = Path.of(StorageUtils.getDefaultLocation().toURI());
-
+        Path oldLocation = new File(StorageUtils.getDefaultLocation().getPath()).toPath();
         Files.createDirectories(storagePath.getParent());
         Files.copy(oldLocation, storagePath, StandardCopyOption.REPLACE_EXISTING);
     }
