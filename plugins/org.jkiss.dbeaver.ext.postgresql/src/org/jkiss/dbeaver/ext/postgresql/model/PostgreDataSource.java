@@ -98,8 +98,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private String serverVersion;
     private volatile boolean hasStatistics;
 
-    private static final String LEGACY_TIMEZONE = "Europe/Kiev";
-    private static final String NEW_TIMEZONE = "Europe/Kyiv";
+    private static final String LEGACY_UA_TIMEZONE = "Europe/Kiev";
+    private static final String NEW_UA_TIMEZONE = "Europe/Kyiv";
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -507,9 +507,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             // Old versions of postgres and some linux distributions, on which docker images are made, may not contain
             // new timezone, which will lead to the error while connecting, there is no way to know before connecting
             // so to be sure we will use the old name
-            if (NEW_TIMEZONE.equals(TimeZone.getDefault().getID())) { //$NON-NLS-1$
+            if (NEW_UA_TIMEZONE.equals(TimeZone.getDefault().getID())) { //$NON-NLS-1$
                 timezoneOverridden = true;
-                TimezoneRegistry.setDefaultZone(ZoneId.of(LEGACY_TIMEZONE)); //$NON-NLS-1$
+                TimezoneRegistry.setDefaultZone(ZoneId.of(LEGACY_UA_TIMEZONE)); //$NON-NLS-1$
             }
             if (conConfig.getConfigurationType() != DBPDriverConfigurationType.URL &&
                 instance instanceof PostgreDatabase &&
@@ -571,8 +571,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
             throw e;
         } finally {
-            if (timezoneOverridden && LEGACY_TIMEZONE.equals(TimeZone.getDefault().getID())) { //$NON-NLS-1$
-                TimezoneRegistry.setDefaultZone(ZoneId.of(NEW_TIMEZONE)); //$NON-NLS-1$
+            if (timezoneOverridden && LEGACY_UA_TIMEZONE.equals(TimeZone.getDefault().getID())) { //$NON-NLS-1$
+                TimezoneRegistry.setDefaultZone(ZoneId.of(NEW_UA_TIMEZONE)); //$NON-NLS-1$
             }
         }
 
