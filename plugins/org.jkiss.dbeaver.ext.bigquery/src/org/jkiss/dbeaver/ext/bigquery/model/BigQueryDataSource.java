@@ -44,7 +44,9 @@ public class BigQueryDataSource extends GenericDataSource {
     @Override
     protected String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
         String connectionURL = super.getConnectionURL(connectionInfo);
-        if (CommonUtils.isNotEmpty(connectionURL) && connectionURL.contains("OAuthPvtKeyPath={server};")) {
+        if (CommonUtils.isNotEmpty(connectionURL) &&
+            (connectionURL.contains("OAuthPvtKeyPath={server};") || connectionURL.contains("OAuthServiceAcctEmail=;"))
+        ) {
             // Backward compatibility. We do not want to use this incorrect pattern as a URL. Better to create a new URL.
             DBPDriver driver = getContainer().getDriver();
             return driver.getDataSourceProvider().getConnectionURL(driver, connectionInfo);
