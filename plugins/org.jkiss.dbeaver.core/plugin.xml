@@ -1002,16 +1002,6 @@
             </enabledWhen>
         </page>
 
-        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageProjectNetworkProfiles"
-              id="org.jkiss.dbeaver.project.settings.networkProfiles"
-              name="%page.org.jkiss.dbeaver.project.settings.networkProfiles.name" >
-            <enabledWhen>
-                <adapt type="org.eclipse.core.resources.IProject">
-                    <test property="org.eclipse.core.resources.projectNature" value="org.jkiss.dbeaver.DBeaverNature"/>
-                </adapt>
-            </enabledWhen>
-        </page>
-
         <page id="org.jkiss.dbeaver.preferences.main.toolbar.customization"
               class="org.jkiss.dbeaver.ui.preferences.PrefPageToolbarCustomization"
               name="%org.jkiss.dbeaver.preferences.main.toolbar.customization.name">

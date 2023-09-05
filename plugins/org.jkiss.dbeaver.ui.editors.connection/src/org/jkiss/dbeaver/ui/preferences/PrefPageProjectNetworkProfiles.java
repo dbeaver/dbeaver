@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +33,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -54,6 +52,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -161,8 +160,8 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
     private void createProfilesToolBar(Composite profilesGroup) {
         ToolBar toolbar = new ToolBar(profilesGroup, SWT.HORIZONTAL | SWT.RIGHT);
 
-        UIUtils.createToolItem(toolbar, CoreMessages.pref_page_network_profiles_tool_create_title,
-                CoreMessages.pref_page_network_profiles_tool_create_text, UIIcon.ROW_ADD,
+        UIUtils.createToolItem(toolbar, UIConnectionMessages.pref_page_network_profiles_tool_create_title,
+                UIConnectionMessages.pref_page_network_profiles_tool_create_text, UIIcon.ROW_ADD,
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
@@ -170,8 +169,8 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
                     }
                 });
 
-        deleteProfileItem = UIUtils.createToolItem(toolbar, CoreMessages.pref_page_network_profiles_tool_delete_title,
-            CoreMessages.pref_page_network_profiles_tool_delete_text, UIIcon.ROW_DELETE,
+        deleteProfileItem = UIUtils.createToolItem(toolbar, UIConnectionMessages.pref_page_network_profiles_tool_delete_title,
+            UIConnectionMessages.pref_page_network_profiles_tool_delete_text, UIIcon.ROW_DELETE,
             new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -180,8 +179,8 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
                     if (!usedBy.isEmpty()) {
                         UIUtils.showMessageBox(
                             getShell(),
-                            CoreMessages.pref_page_network_profiles_tool_delete_dialog_error_title,
-                            NLS.bind(CoreMessages.pref_page_network_profiles_tool_delete_dialog_error_info, new Object[]{
+                            UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_title,
+                            NLS.bind(UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_info, new Object[]{
                                 selectedProfile.getProfileName(),
                                 usedBy.size(),
                                 usedBy.stream()
@@ -195,9 +194,9 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
                     }
                     if (UIUtils.confirmAction(
                         getShell(),
-                        CoreMessages.pref_page_network_profiles_tool_delete_confirmation_title,
+                        UIConnectionMessages.pref_page_network_profiles_tool_delete_confirmation_title,
                         NLS.bind(
-                            CoreMessages.pref_page_network_profiles_tool_delete_confirmation_question,
+                            UIConnectionMessages.pref_page_network_profiles_tool_delete_confirmation_question,
                             selectedProfile.getProfileName()
                         )
                     )) {
@@ -216,8 +215,8 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
 
         copyProfileItem = UIUtils.createToolItem(
             toolbar,
-            CoreMessages.pref_page_network_profiles_tool_copy_title,
-            CoreMessages.pref_page_network_profiles_tool_copy_text,
+            UIConnectionMessages.pref_page_network_profiles_tool_copy_title,
+            UIConnectionMessages.pref_page_network_profiles_tool_copy_text,
             UIIcon.ROW_COPY,
             new SelectionAdapter() {
                 @Override
@@ -233,7 +232,7 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
         while (true) {
             profileName = EnterNameDialog.chooseName(
                 getShell(),
-                CoreMessages.pref_page_network_profiles_tool_create_dialog_profile_name,
+                UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_profile_name,
                 profileName
             );
 
@@ -244,8 +243,8 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
             if (projectMeta.getDataSourceRegistry().getNetworkProfile(profileName) != null) {
                 UIUtils.showMessageBox(
                     getShell(),
-                    CoreMessages.pref_page_network_profiles_tool_create_dialog_error_title,
-                    NLS.bind(CoreMessages.pref_page_network_profiles_tool_create_dialog_error_info, profileName, projectMeta.getName()),
+                    UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_title,
+                    NLS.bind(UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_info, profileName, projectMeta.getName()),
                     SWT.ICON_ERROR
                 );
 
@@ -357,15 +356,15 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
         composite.setLayout(new GridLayout(1, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        final Button useHandlerCheck = UIUtils.createCheckbox(composite, NLS.bind(CoreMessages.dialog_tunnel_checkbox_use_handler, descriptor.getLabel()), false);
+        final Button useHandlerCheck = UIUtils.createCheckbox(composite, NLS.bind(UIConnectionMessages.dialog_tunnel_checkbox_use_handler, descriptor.getLabel()), false);
         useHandlerCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
                 if (selectedProfile == null) {
                     useHandlerCheck.setSelection(false);
-                    UIUtils.showMessageBox(getShell(), CoreMessages.pref_page_network_profiles_tool_no_profile_error_title,
-                            CoreMessages.pref_page_network_profiles_tool_no_profile_error_information, SWT.ICON_INFORMATION);
+                    UIUtils.showMessageBox(getShell(), UIConnectionMessages.pref_page_network_profiles_tool_no_profile_error_title,
+                            UIConnectionMessages.pref_page_network_profiles_tool_no_profile_error_information, SWT.ICON_INFORMATION);
                     return;
                 }
                 HandlerBlock handlerBlock = configurations.get(descriptor);
