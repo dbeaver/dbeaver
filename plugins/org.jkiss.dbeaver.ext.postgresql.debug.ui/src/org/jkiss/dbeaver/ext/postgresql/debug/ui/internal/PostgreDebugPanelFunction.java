@@ -58,7 +58,7 @@ import java.util.Map;
 
 public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
     
-    private final static int PARAMETERS_TABLE_MAX_WIDTH = 270;
+    private final static int PARAMETERS_TABLE_MAX_WIDTH = 150;
     
     private DBGConfigurationPanelContainer container;
     private Button kindLocal;
@@ -158,7 +158,8 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
         Group composite = UIUtils.createControlGroup(parent, "Function parameters", 2, GridData.FILL_BOTH, SWT.DEFAULT);
 
         parametersTable = new Table(composite, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-        final GridData gd = new GridData(GridData.FILL_BOTH);
+        final GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.minimumHeight = 150;
         parametersTable.setLayoutData(gd);
         parametersTable.setHeaderVisible(true);
         parametersTable.setLinesVisible(true);
