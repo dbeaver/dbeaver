@@ -39,9 +39,6 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedureParameter;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -341,7 +338,6 @@ public class PostgreDebugSession extends DBGJDBCSession {
             protected IStatus run(DBRProgressMonitor monitor) {
                 try (JDBCSession session = connection.openSession(monitor, DBCExecutionPurpose.USER, "Run SQL command")) {
                     JDBCCallableStatement statement = null;
-                    boolean isParamsNotSet = false;
                     try {
                         StringBuilder query = new StringBuilder();
                         if (function.getProcedureType() == DBSProcedureType.PROCEDURE) {
