@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.debug.jdbc.DBGJDBCSession;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.debug.PostgreDebugConstants;
 import org.jkiss.dbeaver.ext.postgresql.debug.core.PostgreSqlDebugCore;
+import org.jkiss.dbeaver.ext.postgresql.debug.internal.PostgreDebugCoreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
@@ -353,31 +355,45 @@ public class PostgreDebugSession extends DBGJDBCSession {
                                 query.append(",");
                             }
                             String paramValue = paramValues.get(i);
+                            if (CommonUtils.isEmpty(paramValue)) {
+                                throw new DBGException(NLS.bind(
+                                    PostgreDebugCoreMessages.PostgreSqlDebugCore_parameters_not_set_message,
+                                    parameters.get(i).getName()
+                                ));
+                            }
                             switch (parameters.get(i).getDataKind()) {
                                 case NUMERIC: 
                                     if (!CommonUtils.isNumber(paramValue)) { 
-                                        throw new DBGException("Parameter '" + parameters.get(i).getName() +
-                                            "' is expected to be a numeric, but the given value is: " + paramValue + ".");
+                                        throw new DBGException(NLS.bind(
+                                            PostgreDebugCoreMessages.PostgreSqlDebugCore_parameter_type_not_fit_message,
+                                            new Object[]{
+                                                parameters.get(i).getName(),
+                                                "numeric",
+                                                paramValue
+                                            }
+                                        ));
                                     }
                                     break;
                                 case BOOLEAN:
                                     if (!paramValue.equalsIgnoreCase("true") && !paramValue.equalsIgnoreCase("false")) {
-                                        throw new DBGException("Parameter '" + parameters.get(i).getName() +
-                                            "' is expected to be a boolean, but the given value is: " + paramValue + ".");
+                                        throw new DBGException(NLS.bind(
+                                            PostgreDebugCoreMessages.PostgreSqlDebugCore_parameter_type_not_fit_message,
+                                            new Object[]{
+                                                parameters.get(i).getName(),
+                                                "boolean",
+                                                paramValue
+                                            }
+                                        ));
                                     }
                                     break;
                                 default:
                                     break;
                             } 
                             query.append(paramValue);
-                            isParamsNotSet |= CommonUtils.isEmpty(paramValue);
                         }
                         query.append(")");
                         if (function.getProcedureType() == DBSProcedureType.PROCEDURE) {
                             query.append(" }");
-                        }
-                        if (isParamsNotSet) {
-                            throw new DBGException("One or more function parameters were not set.");
                         }
 
                         log.debug(String.format("Prepared local call %s", query));
