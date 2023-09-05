@@ -850,7 +850,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             return;
         }
 
-        final Path path = Path.of(instanceLoc.getDataArea("").toURI());
+        final Path path = new File(instanceLoc.getDataArea("").toURI()).toPath();
 
         if (Files.notExists(path) || !Files.isDirectory(path)) {
             return;
