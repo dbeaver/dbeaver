@@ -336,6 +336,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
             protected IStatus run(DBRProgressMonitor monitor) {
                 try (JDBCSession session = connection.openSession(monitor, DBCExecutionPurpose.USER, "Run SQL command")) {
                     JDBCCallableStatement statement = null;
+                    boolean isParamsNotSet = true;
                     try {
                         StringBuilder query = new StringBuilder();
                         if (function.getProcedureType() == DBSProcedureType.PROCEDURE) {
@@ -345,14 +346,21 @@ public class PostgreDebugSession extends DBGJDBCSession {
                         }
                         query.append(function.getFullyQualifiedName(DBPEvaluationContext.DML)).append("(");
                         for (int i = 0; i < parameters.size(); i++) {
-                            if (i > 0) query.append(",");
+                            if (i > 0) {
+                                query.append(",");
+                            }
                             String paramValue = paramValues.get(i);
                             query.append(paramValue);
+                            isParamsNotSet &= paramValue.isEmpty();
                         }
                         query.append(")");
                         if (function.getProcedureType() == DBSProcedureType.PROCEDURE) {
                             query.append(" }");
                         }
+                        if (isParamsNotSet) {
+                            throw new DBGException("Function parameters were not set.");
+                        }
+
                         log.debug(String.format("Prepared local call %s", query));
                         statement = session.prepareCall(query.toString());
 
@@ -373,7 +381,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
                         if (!asyncStatement.isDone()) {
                             asyncStatement.cancel(false);
                         }
-                        
+
                         log.debug("Error execute local statement: " + e.getMessage());
                         String sqlState = e instanceof SQLException ? ((SQLException) e).getSQLState() : null;
                         if (!PostgreConstants.EC_QUERY_CANCELED.equals(sqlState)) {
