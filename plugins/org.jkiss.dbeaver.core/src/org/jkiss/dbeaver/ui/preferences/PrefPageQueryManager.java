@@ -93,11 +93,6 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         checkObjectTypeQueries = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_queries, false);
 
         {
-            Group viewSettings = UIUtils.createControlGroup(composite, CoreMessages.pref_page_query_manager_group_settings, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            textEntriesPerPage = UIUtils.createLabelText(viewSettings, CoreMessages.pref_page_query_manager_label_entries_per_page, "", SWT.BORDER, new GridData(50, SWT.DEFAULT)); //$NON-NLS-2$
-        }
-
-        {
             Group storageSettings = UIUtils.createControlGroup(composite, CoreMessages.pref_page_query_manager_group_storage, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
             checkStoreLog = UIUtils.createCheckbox(storageSettings, CoreMessages.pref_page_query_manager_checkbox_store_log_file, false);
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
@@ -141,9 +136,7 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         checkQueryTypeDDL.setSelection(queryTypes.contains(DBCExecutionPurpose.META_DDL.name()));
 
         textHistoryDays.setText(store.getString(QMConstants.PROP_HISTORY_DAYS));
-        textEntriesPerPage.setText(store.getString(QMConstants.PROP_ENTRIES_PER_PAGE));
 
-        checkStoreLog.setSelection(store.getBoolean(QMConstants.PROP_STORE_LOG_FILE));
         textOutputFolder.setText(store.getString(QMConstants.PROP_LOG_DIRECTORY));
         UIUtils.enableWithChildren(textOutputFolder.getParent(), checkStoreLog.getSelection());
         UIUtils.enableWithChildren(textHistoryDays, checkStoreLog.getSelection());
@@ -176,11 +169,7 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         if (historyDays != null) {
             store.setValue(QMConstants.PROP_HISTORY_DAYS, Math.max(1, historyDays));
         }
-        if (entriesPerPage != null) {
-            store.setValue(QMConstants.PROP_ENTRIES_PER_PAGE, Math.max(1, entriesPerPage));
-        }
         store.setValue(QMConstants.PROP_STORE_LOG_FILE, checkStoreLog.getSelection());
-        store.setValue(QMConstants.PROP_LOG_DIRECTORY, textOutputFolder.getText());
         PrefUtils.savePreferenceStore(store);
 
         return super.performOk();
