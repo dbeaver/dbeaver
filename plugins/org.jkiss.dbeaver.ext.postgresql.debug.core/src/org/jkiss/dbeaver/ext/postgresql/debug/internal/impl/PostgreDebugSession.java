@@ -37,6 +37,9 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedureParameter;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -336,7 +339,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
             protected IStatus run(DBRProgressMonitor monitor) {
                 try (JDBCSession session = connection.openSession(monitor, DBCExecutionPurpose.USER, "Run SQL command")) {
                     JDBCCallableStatement statement = null;
-                    boolean isParamsNotSet = true;
+                    boolean isParamsNotSet = false;
                     try {
                         StringBuilder query = new StringBuilder();
                         if (function.getProcedureType() == DBSProcedureType.PROCEDURE) {
@@ -350,15 +353,31 @@ public class PostgreDebugSession extends DBGJDBCSession {
                                 query.append(",");
                             }
                             String paramValue = paramValues.get(i);
+                            switch (parameters.get(i).getDataKind()) {
+                                case NUMERIC: 
+                                    if (!CommonUtils.isNumber(paramValue)) { 
+                                        throw new DBGException("Parameter '" + parameters.get(i).getName() +
+                                            "' is expected to be a numeric, but the given value is: " + paramValue + ".");
+                                    }
+                                    break;
+                                case BOOLEAN:
+                                    if (!paramValue.equalsIgnoreCase("true") && !paramValue.equalsIgnoreCase("false")) {
+                                        throw new DBGException("Parameter '" + parameters.get(i).getName() +
+                                            "' is expected to be a boolean, but the given value is: " + paramValue + ".");
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            } 
                             query.append(paramValue);
-                            isParamsNotSet &= paramValue.isEmpty();
+                            isParamsNotSet |= CommonUtils.isEmpty(paramValue);
                         }
                         query.append(")");
                         if (function.getProcedureType() == DBSProcedureType.PROCEDURE) {
                             query.append(" }");
                         }
                         if (isParamsNotSet) {
-                            throw new DBGException("Function parameters were not set.");
+                            throw new DBGException("One or more function parameters were not set.");
                         }
 
                         log.debug(String.format("Prepared local call %s", query));
@@ -378,15 +397,16 @@ public class PostgreDebugSession extends DBGJDBCSession {
                         log.debug("Local statement executed (ANHWIE)");
                         fireEvent(new DBGEvent(this, DBGEvent.RESUME, DBGEvent.STEP_RETURN));
                     } catch (Exception e) {
-                        if (!asyncStatement.isDone()) {
-                            asyncStatement.cancel(false);
-                        }
-
                         log.debug("Error execute local statement: " + e.getMessage());
-                        String sqlState = e instanceof SQLException ? ((SQLException) e).getSQLState() : null;
-                        if (!PostgreConstants.EC_QUERY_CANCELED.equals(sqlState)) {
-                            log.error(name, e);
-                            return DebugUtils.newErrorStatus(name, e);
+                        if (!asyncStatement.isDone()) {
+                            asyncStatement.completeExceptionally(e);
+                            return Status.CANCEL_STATUS;
+                        } else {
+                            String sqlState = e instanceof SQLException ? ((SQLException) e).getSQLState() : null;
+                            if (!PostgreConstants.EC_QUERY_CANCELED.equals(sqlState)) {
+                                log.error(name, e);
+                                return DebugUtils.newErrorStatus(name, e);
+                            } 
                         }
                     } finally {
                         try {
