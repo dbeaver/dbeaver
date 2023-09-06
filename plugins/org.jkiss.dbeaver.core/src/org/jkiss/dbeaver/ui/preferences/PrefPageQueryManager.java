@@ -58,7 +58,6 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
     private Button checkQueryTypeMeta;
     private Button checkQueryTypeDDL;
     private Text textHistoryDays;
-    private Text textEntriesPerPage;
     private Button checkStoreLog;
     private Text textOutputFolder;
 
@@ -161,7 +160,6 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         if (checkQueryTypeDDL.getSelection()) queryTypes.add(DBCExecutionPurpose.META_DDL.name());
 
         Integer historyDays = UIUtils.getTextInteger(textHistoryDays);
-        Integer entriesPerPage = UIUtils.getTextInteger(textEntriesPerPage);
 
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.setValue(QMConstants.PROP_OBJECT_TYPES, QMObjectType.toString(objectTypes));
