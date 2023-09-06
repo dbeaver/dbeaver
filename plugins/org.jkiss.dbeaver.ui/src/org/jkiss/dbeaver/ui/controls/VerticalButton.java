@@ -206,7 +206,9 @@ public class VerticalButton extends Canvas {
     public void paint(PaintEvent e) {
         boolean selected = isSelected();
         Point size = computeSize(e.gc, -1, -1, false);
-
+        Color curBackground = e.gc.getBackground();
+        boolean isDarkBG = UIUtils.isDark(curBackground.getRGB());
+        
         boolean enabled = true;
         if (getFolder().isCheckCommandEnablement()) {
             if (action != null && !action.isEnabled()) {
@@ -216,8 +218,7 @@ public class VerticalButton extends Canvas {
             }
         }
         if (enabled && (selected || isHover)) {
-            Color curBackground = e.gc.getBackground();
-            boolean isDarkBG = UIUtils.isDark(curBackground.getRGB());
+
             RGB blendRGB = isDarkBG ? new RGB(255, 255, 255) : new RGB(0, 0, 0);
 
             // Make bg a bit darker
@@ -285,7 +286,7 @@ public class VerticalButton extends Canvas {
         }
 
         if (!CommonUtils.isEmpty(text)) {
-            e.gc.setForeground(UIStyles.getDefaultTextForeground());
+            e.gc.setForeground(isDarkBG ? UIUtils.COLOR_WHITE : UIStyles.getDefaultTextForeground());
             e.gc.drawString(this.text, xOffset, yOffset);
         }
 

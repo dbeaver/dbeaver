@@ -71,7 +71,7 @@
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLPartition" label="%tree.partitions.node.name" icon="#partitions" description="Table partitions" visibleIf="object.dataSource.supportsPartitions() &amp;&amp; object.hasPartitions()">
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLPartition" label="%tree.partitions.node.name" icon="#partitions" description="Table partitions" visibleIf="object.dataSource.supportsPartitions()">
                                     <items label="%tree.partition.node.name" path="partition" property="partitions" icon="#partition">
                                         <items label="%tree.subpartitions.node.name" itemLabel="%tree.subpartition.node.name" path="subpartition" property="subPartitions" navigable="false" inline="true">
                                         </items>
@@ -196,6 +196,12 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
+                    <provider-properties>
+                        <propertyGroup label="Advanced">
+                            <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
+                        </propertyGroup>
+                    </provider-properties>
+
                 </driver>
                 <driver
                         id="mysql8"
@@ -223,6 +229,11 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
+                    <provider-properties>
+                        <propertyGroup label="Advanced">
+                            <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
+                        </propertyGroup>
+                    </provider-properties>
                 </driver>
                 <driver
                     id="mysql_ndb"
@@ -246,6 +257,11 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
+                    <provider-properties>
+                        <propertyGroup label="Advanced">
+                            <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
+                        </propertyGroup>
+                    </provider-properties>
                 </driver>
 
                 <driver
@@ -271,6 +287,11 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <!--<property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>-->
                     <parameter name="krb5.enabled" value="true"/>
+                    <provider-properties>
+                        <propertyGroup label="Advanced">
+                            <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
+                        </propertyGroup>
+                    </provider-properties>
                 </driver>
             </drivers>
 
@@ -349,6 +370,7 @@
                 description="Secure socket layer"
                 desktop="false"
                 secured="false"
+                pinned="true"
                 order="100"
                 handlerClass="org.jkiss.dbeaver.ext.mysql.model.net.MySQLSSLHandlerImpl">
             <propertyGroup label="SSL Settings">
@@ -442,12 +464,17 @@
         <category id="mysql" name="MySQL" description="%org.jkiss.dbeaver.task.category.mysql.description" icon="icons/mysql_icon.png"/>
         <category id="mysqlTool" parent="mysql" name="%org.jkiss.dbeaver.task.category.mysqlTool.name" description="%org.jkiss.dbeaver.task.category.mysqlTool.description" icon="icons/mysql_icon.png"/>
 
-        <task id="mysqlDatabaseBackup" name="%task.mysqlDatabaseBackup.name" description="%task.mysqlDatabaseBackup.description" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLDatabaseExportHandler">
+        <task id="mysqlDatabaseBackup" name="%task.mysqlDatabaseBackup.name" description="%task.mysqlDatabaseBackup.description"
+              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="mysql"
+              handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLDatabaseExportHandler" supportsDistributedMode="false">
             <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase"/>
         </task>
-        <task id="mysqlDatabaseRestore" name="%task.mysqlDatabaseRestore.name" description="%task.mysqlDatabaseRestore.description" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler" confirmationMessage="%mysqlDatabaseRestore.confirmationMessage">
+        <task id="mysqlDatabaseRestore" name="%task.mysqlDatabaseRestore.name" description="%task.mysqlDatabaseRestore.description"
+              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="mysql"
+              handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler"
+              confirmationMessage="%mysqlDatabaseRestore.confirmationMessage" supportsDistributedMode="false">
             <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
         </task>

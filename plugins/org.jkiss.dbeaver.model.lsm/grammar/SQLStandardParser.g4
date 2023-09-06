@@ -53,7 +53,7 @@ sqlQueries: (sqlQuery Semicolon?)* EOF; // EOF - don't stop early. must match al
 sqlQuery: directSqlDataStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|sqlDataStatement;
 
 directSqlDataStatement: (deleteStatement|selectStatement|insertStatement|updateStatement);
-selectStatement: queryExpression (orderByClause)?;
+selectStatement: withClause? queryExpression orderByClause?;
 
 // data type literals
 literal: (signedNumericLiteral|generalLiteral);
@@ -145,6 +145,12 @@ qualifier: (tableName|correlationName);
 correlationName: identifier;
 setFunctionSpecification: (COUNT LeftParen Asterisk RightParen|anyWordsWithProperty);
 
+withClause: WITH RECURSIVE? cteList;
+cteList: with_list_element (Comma with_list_element)*;
+with_list_element: queryName (LeftParen withColumnList RightParen)? AS anyWordsWithProperty? subquery;
+withColumnList: columnName (Comma columnName )*;
+queryName: Identifier;
+
 // select, subquery
 scalarSubquery: subquery;
 subquery: LeftParen queryExpression RightParen;
@@ -158,18 +164,19 @@ simpleTable: (querySpecification|tableValueConstructor|explicitTable);
 querySpecification: SELECT (setQuantifier)? selectList tableExpression?;
 setQuantifier: (DISTINCT|ALL);
 selectList: (Asterisk|selectSublist) (Comma selectSublist)*; // (Comma selectSublist)* contains any quantifier for error recovery;
-selectSublist: (qualifier Period Asterisk | derivedColumn)*; // * for whole rule to handle select fields autocompletion when from immediately after select
+selectSublist: (qualifier Period Asterisk | derivedColumn | (.*?)); // (.*?) for whole rule to handle select fields autocompletion when from immediately after select
 derivedColumn: valueExpression (asClause)?;
 asClause: (AS)? columnName;
-tableExpression: (.*?) fromClause (whereClause)? (groupByClause)? (havingClause)?; // (.*?) - for error recovery
+tableExpression: fromClause (whereClause)? (groupByClause)? (havingClause)?;
 queryPrimary: (nonJoinQueryPrimary|joinedTable);
 queryTerm: (nonJoinQueryTerm|joinedTable);
 queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
 
 // from
 fromClause: FROM tableReference ((Comma tableReference)+)?;
-nonjoinedTableReference: (tableName (correlationSpecification)?)|(derivedTable correlationSpecification);
-tableReference: (nonjoinedTableReference|joinedTable)*; // * to handle incomplete queries
+nonjoinedTableReference: (tableName (PARTITION anyProperty)? (correlationSpecification)?)|(derivedTable correlationSpecification);
+tableReference: (nonjoinedTableReference|joinedTable|tableReferenceHints)*; // * to handle incomplete queries
+tableReferenceHints: (tableHintKeywords|anyWord)+ anyProperty; // dialect-specific options, should be described and moved to dialects in future
 joinedTable: (nonjoinedTableReference|(LeftParen joinedTable RightParen)) (naturalJoinTerm|crossJoinTerm)+;
 correlationSpecification: (AS)? correlationName (LeftParen derivedColumnList RightParen)?;
 derivedColumnList: columnNameList;
@@ -189,8 +196,8 @@ joinColumnList: columnNameList;
 // conditions
 whereClause: WHERE searchCondition;
 groupByClause: GROUP BY groupingColumnReferenceList;
-groupingColumnReferenceList: groupingColumnReference ((Comma groupingColumnReference)+)?;
-groupingColumnReference: columnReference;
+groupingColumnReferenceList: groupingColumnReference (Comma groupingColumnReference)*;
+groupingColumnReference: columnReference | anyWordsWithProperty;
 havingClause: HAVING searchCondition;
 tableValueConstructor: VALUES tableValueConstructorList;
 tableValueConstructorList: rowValueConstructor ((Comma rowValueConstructor)+)?;
@@ -251,7 +258,7 @@ quantifier: (all|some);
 all: ALL;
 some: (SOME|ANY);
 existsPredicate: EXISTS tableSubquery;
-matchPredicate: rowValueConstructor MATCH (UNIQUE)? ((PARTIAL|FULL))? tableSubquery;
+matchPredicate: rowValueConstructor MATCH (UNIQUE)? (matchType)? tableSubquery;
 overlapsPredicate: rowValueConstructor1 OVERLAPS rowValueConstructor2;
 rowValueConstructor1: rowValueConstructor;
 rowValueConstructor2: rowValueConstructor;
@@ -339,19 +346,30 @@ rollbackStatement: ROLLBACK (WORK)?;
 
 // session
 sqlSessionStatement: (setCatalogStatement|setSchemaStatement|setNamesStatement|setSessionAuthorizationIdentifierStatement|setLocalTimeZoneStatement);
-setCatalogStatement: SET CATALOG valueSpecification;
+setCatalogStatement: SET CATALOG (identifier|valueSpecification);
 valueSpecification: (literal|generalValueSpecification);
-setSchemaStatement: SET SCHEMA valueSpecification;
-setNamesStatement: SET NAMES valueSpecification;
+setSchemaStatement: SET SCHEMA (identifier|valueSpecification);
+setNamesStatement: SET NAMES (identifier|valueSpecification);
 setSessionAuthorizationIdentifierStatement: SET SESSION AUTHORIZATION valueSpecification;
 setLocalTimeZoneStatement: SET TIME ZONE setTimeZoneValue;
 setTimeZoneValue: (intervalValueExpression|LOCAL);
 
 // unknown keyword, data type or function name
-anyWord: Identifier;
+anyWord: actualIdentifier;
 anyValue: qualifiedName|literal|valueExpression|Comma;
 anyWordWithAnyValue: anyWord anyValue;
 anyProperty: LeftParen anyValue+ RightParen;
 anyWordsWithProperty: anyWord+ anyProperty?;
 
-nonReserved: COMMITTED | DATA | NAME | NULLABLE | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED;
+tableHintKeywords: WITH | UPDATE | IN | KEY | JOIN | ORDER BY | GROUP BY;
+
+nonReserved: COMMITTED | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED |
+    CURRENT_USER | SESSION_USER | SYSTEM_USER | USER | VALUE |
+    DATE | YEAR | MONTH | DAY | HOUR | MINUTE | SECOND | ZONE |
+    ACTION | ADD | AUTHORIZATION | BY | CASCADE | CASCADED | CATALOG | COALESCE | COMMIT |
+    CONSTRAINT | CONSTRAINTS | CORRESPONDING | COUNT | DEFERRABLE | DEFERRED | IMMEDIATE |
+    EXTRACT | FULL | GLOBAL | LOCAL | INDICATOR | INITIALLY | INTERVAL | ISOLATION | KEY | LEVEL |
+    NAMES | NO | NULLIF| ONLY | OVERLAPS| PARTIAL | PRESERVE | READ | RESTRICT | ROLLBACK | SCHEMA |
+    SESSION | SET | TEMPORARY | TIME | TIMESTAMP | TIMEZONE_HOUR | TIMEZONE_MINUTE | TRANSACTION |
+    VIEW | WORK | WRITE
+;

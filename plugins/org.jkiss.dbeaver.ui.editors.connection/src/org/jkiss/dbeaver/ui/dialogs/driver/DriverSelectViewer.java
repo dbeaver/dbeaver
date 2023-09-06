@@ -164,6 +164,10 @@ public class DriverSelectViewer extends Viewer {
 
         createSelectorControl();
 
+        filterText.addTraverseListener(e -> {
+            selectorViewer.getControl().traverse(e.detail, e);
+        });
+
         refreshJob = createRefreshJob();
     }
 

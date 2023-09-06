@@ -609,13 +609,20 @@
                 </driver>
 
                 <provider-properties drivers="*">
+                    <propertyGroup label="Misc">
+                        <property id="@dbeaver-chosen-role@" label="User role" type="string" description="User role for connection" supportedConfigurationTypes="MANUAL,URL"/>
+                    </propertyGroup>
                     <propertyGroup label="Database list">
                         <property id="@dbeaver-show-non-default-db@" label="Show all databases" type="boolean" description="Show all databases on server. Otherwise show current database only."/>
                         <property id="@dbeaver-show-template-db@" label="Show template databases" type="boolean" description="Show template databases."/>
                         <property id="@dbeaver-show-unavailable-db@" label="Show unavailable databases" type="boolean" description="Show databases not unavailable for connection."/>
+                        <property id="show-database-statistics" label="Show database statistics" type="boolean" description="Show statistics for entire databases. May be slow if you have big number of databases." supportedConfigurationTypes="MANUAL,URL"/>
+                        <property id="@dbeaver-read-all-data-types-db@" label="Read all data types" type="boolean" description="Read all database data types. Including array types." supportedConfigurationTypes="MANUAL,URL"/>
+                        <property id="read-keys-with-columns" label="Read table keys with columns" type="boolean" description="Read table constraints at the stage of reading columns for proper keys recognition. This setting may reduce metadata loading performance." supportedConfigurationTypes="MANUAL,URL"/>
                     </propertyGroup>
-                    <propertyGroup label="Misc">
-                        <property id="@dbeaver-chosen-role@" label="User role" type="string" description="User role for connection" supportedConfigurationTypes="MANUAL,URL"/>
+                    <propertyGroup label="SQL">
+                        <property id="postgresql.dd.plain.string" label="Show $$ quote as String" type="boolean" description="Show $$ quote as String" supportedConfigurationTypes="MANUAL,URL"/>
+                        <property id="postgresql.dd.tag.string" label="Show $tagName$ quote as String" type="boolean" description="Show $tagName$ quote as String" supportedConfigurationTypes="MANUAL,URL"/>
                     </propertyGroup>
                 </provider-properties>
 
@@ -623,16 +630,18 @@
 
             <nativeClients>
                 <client id="postgresql_client" label="PostgreSQL Binaries">
-                    <dist os="win32" targetPath="clients/postgresql/win/14" remotePath="repo:/drivers/postgresql/client/win/14" resourcePath="clients/postgresql/win/14">
+                    <dist os="win32" targetPath="clients/postgresql/win/15" remotePath="repo:/drivers/postgresql/client/win/15" resourcePath="clients/postgresql/win/15">
                         <file type="exec" name="psql.exe"/>
                         <file type="exec" name="pg_dump.exe"/>
                         <file type="exec" name="pg_dumpall.exe"/>
                         <file type="exec" name="pg_restore.exe"/>
-                        <file type="lib" name="libcrypto-1_1-x64.dll"/>
+                        <file type="lib" name="libcrypto-3-x64.dll"/>
                         <file type="lib" name="libiconv-2.dll"/>
                         <file type="lib" name="libintl-9.dll"/>
+                        <file type="lib" name="libzstd.dll"/>
+                        <file type="lib" name="liblz4.dll"/>
                         <file type="lib" name="libpq.dll"/>
-                        <file type="lib" name="libssl-1_1-x64.dll"/>
+                        <file type="lib" name="libssl-3-x64.dll"/>
                         <file type="lib" name="libwinpthread-1.dll"/>
                         <file type="lib" name="zlib1.dll"/>
                     </dist>
@@ -715,6 +724,7 @@
                 description="%handler.ssl.description"
                 desktop="false"
                 secured="false"
+                pinned="true"
                 order="100"
                 handlerClass="org.jkiss.dbeaver.ext.postgresql.model.net.PostgreSSLHandlerImpl">
             <propertyGroup label="SSL Settings">
@@ -745,20 +755,25 @@
         <category id="postgresql" name="PostgreSQL" description="%org.jkiss.dbeaver.task.category.postgresql.description" icon="icons/postgresql_icon.png"/>
         <category id="postgreTool" parent="postgresql" name="%org.jkiss.dbeaver.task.category.postgreTool.name" description="%org.jkiss.dbeaver.task.category.postgreTool.description" icon="icons/postgresql_icon.png"/>
 
-        <task id="pgDatabaseBackup" name="%task.pgDatabaseBackup.name" description="%task.pgDatabaseBackup.description" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="postgresql" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupHandler">
+        <task id="pgDatabaseBackup" name="%task.pgDatabaseBackup.name" description="%task.pgDatabaseBackup.description"
+              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="postgresql"
+              handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupHandler" supportsDistributedMode="false">
             <datasource id="postgresql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreObject"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
         </task>
-        <task id="pgDatabaseRestore" name="%task.pgDatabaseRestore.name" description="%task.pgDatabaseRestore.description" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="postgresql" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreHandler" confirmationMessage="%pgDatabaseRestore.confirmationMessage">
+        <task id="pgDatabaseRestore" name="%task.pgDatabaseRestore.name" description="%task.pgDatabaseRestore.description"
+              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="postgresql"
+              handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreHandler"
+              confirmationMessage="%pgDatabaseRestore.confirmationMessage" supportsDistributedMode="false">
             <datasource id="postgresql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
         </task>
         <task id="pgDatabaseBackupAll" name="%task.pgDatabaseBackupAll.name" description="%task.pgDatabaseBackupAll.description"
               icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="postgresql"
-              handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupAllHandler">
+              handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupAllHandler" supportsDistributedMode="false">
             <datasource id="postgresql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
         </task>

@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -57,8 +59,8 @@ public class MySQLToolTableRepairSettings extends SQLToolExecuteSettings<MySQLTa
     }
 
     @Override
-    public void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config) {
-        super.loadConfiguration(runnableContext, config);
+    public void loadConfiguration(@NotNull DBRRunnableContext runnableContext, @NotNull Map<String, Object> config, @NotNull DBPProject project) {
+        super.loadConfiguration(runnableContext, config, project);
         isQuick = JSONUtils.getBoolean(config, "quick");
         isExtended = JSONUtils.getBoolean(config, "extended");
         useFRM = JSONUtils.getBoolean(config, "use_frm");

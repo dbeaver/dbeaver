@@ -718,18 +718,18 @@ public class TabbedFolderList extends Composite {
         Display display = Display.getCurrent();
         ISharedTextColors sharedColors = UIUtils.getSharedTextColors();
 
-        listBackground = UIStyles.getDefaultTextBackground();
+        listBackground = UIStyles.getDefaultWidgetBackground();
         Color widgetBackground;
         if (UIStyles.isDarkTheme()) {
             // By some reason E4 sets white background in dark theme.
-            widgetBackground = UIStyles.getDefaultTextBackground();
+            widgetBackground = UIStyles.getDefaultWidgetBackground();
             super.setBackground(widgetBackground);
             topNavigationElement.setBackground(widgetBackground);
             bottomNavigationElement.setBackground(widgetBackground);
         } else {
             widgetBackground = getBackground();
         }
-        widgetForeground = UIStyles.getDefaultTextForeground();
+        widgetForeground = UIStyles.isDarkHighContrastTheme() ? UIUtils.COLOR_WHITE : UIStyles.getDefaultTextForeground();
         widgetDarkShadow = display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
         widgetNormalShadow = display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
@@ -1021,7 +1021,7 @@ public class TabbedFolderList extends Composite {
 
     public void handleTraverse(TraverseEvent e) {
         if (e.detail == SWT.TRAVERSE_PAGE_PREVIOUS || e.detail == SWT.TRAVERSE_PAGE_NEXT) {
-            if ((e.stateMask & SWT.ALT) != SWT.ALT) {
+            if ((e.stateMask & SWT.CTRL) != SWT.CTRL && (e.stateMask & SWT.ALT) != SWT.ALT) {
                 // Only in case of CTRL+ALT+PG
                 return;
             }

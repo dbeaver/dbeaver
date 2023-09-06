@@ -64,7 +64,7 @@ public class ConfigurationImportWizard extends Wizard implements IImportWizard {
 
     @Override
     public boolean performFinish() {
-        Path workbench = DBWorkbench.getPlatform().getWorkspace().getMetadataFolder().resolve(".plugins\\org.eclipse.core.runtime\\.settings");
+        Path workbench = DBWorkbench.getPlatform().getWorkspace().getMetadataFolder().resolve(".plugins/org.eclipse.core.runtime/.settings");
         if (!workbench.toFile().exists() || !workbench.toFile().isDirectory() || !workbench.toFile().canRead()) {
             log.error("Error reading configuration");
             return false;

@@ -459,7 +459,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             for (Map.Entry<String, Map<String, Object>> ctMap : JSONUtils.getNestedObjects(jsonMap, "external-configurations")) {
                 String id = ctMap.getKey();
                 Map<String, Object> configMap = ctMap.getValue();
-                externalConfigurations.put(id, new DBPExternalConfiguration(id, configMap));
+                externalConfigurations.put(id, new DBPExternalConfiguration(id, () -> configMap));
             }
 
             // Virtual models
@@ -618,6 +618,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         config.setUserName(creds.getUserName());
                         if (dataSource.isSavePassword() || !CommonUtils.isEmpty(creds.getUserPassword())) {
                             config.setUserPassword(creds.getUserPassword());
+                        } else {
+                            config.setUserPassword(null);
                         }
                         boolean savePasswordApplicable = (!dataSource.getProject().isUseSecretStorage() || dataSource.isSharedCredentials());
                         if (savePasswordApplicable && !CommonUtils.isEmpty(creds.getUserPassword())) {

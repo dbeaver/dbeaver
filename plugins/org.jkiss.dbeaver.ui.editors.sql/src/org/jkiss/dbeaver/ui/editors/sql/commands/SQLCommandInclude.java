@@ -16,8 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.commands;
 
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IURIEditorInput;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDEEncoding;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -29,6 +33,7 @@ import org.jkiss.dbeaver.model.sql.eval.ScriptVariablesResolver;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -87,6 +92,19 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         UIUtils.syncExec(() -> {
             try {
                 final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+                for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+                    for (IWorkbenchPage page : window.getPages()) {
+                        for (IEditorReference editorReference : page.getEditorReferences()) {
+                            if (editorReference.getEditorInput() instanceof IncludeEditorInput) {
+                                IncludeEditorInput includeInput = (IncludeEditorInput) editorReference.getEditorInput();
+                                if (includeInput.incFile.getAbsolutePath().equals(finalIncFile.getAbsolutePath())) {
+                                    UIUtils.syncExec(
+                                        () -> page.closeEditor(editorReference.getEditor(false), false));
+                                }
+                            }
+                        }
+                    }
+                }
                 final IncludeEditorInput input = new IncludeEditorInput(finalIncFile, fileContents);
                 SQLEditor sqlEditor = SQLEditorHandlerOpenEditor.openSQLConsole(
                         workbenchWindow,
@@ -145,7 +163,9 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
 
         @Override
         public void onEndScript(DBCStatistics statistics, boolean hasErrors) {
-            UIUtils.syncExec(() -> workbenchWindow.getActivePage().closeEditor(editor, false));
+            if (editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION)) {
+                UIUtils.syncExec(() -> workbenchWindow.getActivePage().closeEditor(editor, false));
+            }
             statusFlag[0] = true;
         }
     }

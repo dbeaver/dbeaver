@@ -78,7 +78,7 @@ public class DataTransferJob implements DBRRunnableWithProgress {
             if (monitor.isCanceled()) {
                 break;
             }
-            DataTransferPipe transferPipe = settings.acquireDataPipe(monitor);
+            DataTransferPipe transferPipe = settings.acquireDataPipe(monitor, task);
             if (transferPipe == null) {
                 break;
             }
@@ -118,7 +118,7 @@ public class DataTransferJob implements DBRRunnableWithProgress {
             consumer.finishTransfer(monitor, false);
             return true;
         } catch (Exception e) {
-            consumer.finishTransfer(monitor, e, false);
+            consumer.finishTransfer(monitor, e, task, false);
             log.error("Error transfering data from " + producer.getObjectName() + " to " + consumer.getObjectName(), e);
             throw e;
         } finally {
