@@ -1511,7 +1511,15 @@ public class UIUtils {
             offset += ext.y;
         }
     }
-    
+
+    /**
+     * 
+     * Method designed to draw message on top of control with left bottom positioning
+     *  
+     * @param control - ui control
+     * @param gc - graphical container
+     * @param message - custom message text
+     */
     public static void drawMessageOverControlOnLeftBottom(Control control, GC gc, String message) {
         Rectangle bounds = control.getBounds();
         gc.setForeground(getSharedColor(SharedTextColors.COLOR_WARNING));
