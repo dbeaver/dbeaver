@@ -116,14 +116,14 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
 
         editor.addContextMenuContributor(manager -> contributeTextEditorActions(manager, editorControl));
         editorPaintListener = new PanelEditorPaintListener();
-		editorControl.addPaintListener(editorPaintListener);
-		editorControl.addListener(SWT.RESIZE, new Listener() {
+        editorControl.addPaintListener(editorPaintListener);
+        editorControl.addListener(SWT.RESIZE, new Listener() {
 
-			@Override
-			public void handleEvent(Event event) {
-				editorControl.redraw();
-			}
-		});
+            @Override
+            public void handleEvent(Event event) {
+                editorControl.redraw();
+            }
+        });
         return editorControl;
     }
 
@@ -287,68 +287,71 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     }
 
     @Override
-    public void primeEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull StyledText control, @Nullable DBDContent value) throws DBException
-    {
-    	try {
-			int maxContentSize = DBWorkbench.getPlatform().getPreferenceStore().getInt(ModelPreferences.EDITING_CONTENT_MAX_SIZE_KBYTES)*1000;
-			if (editor == null) {
-				log.error("Editor is null or undefined");
-				return;
-			}
-			resetEditorInput();
-			byte[] bytes = CommonUtils.toString(value).getBytes();
-			if (bytes.length > maxContentSize) {
-				showRestrictedContent(editorPaintListener, bytes);
-			} else {
-				showRegularContent(editorPaintListener, bytes, monitor);
-			}
+    public void primeEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull StyledText control,
+            @Nullable DBDContent value) throws DBException {
+        try {
+            int maxContentSize = DBWorkbench.getPlatform().getPreferenceStore()
+                    .getInt(ModelPreferences.EDITING_CONTENT_MAX_SIZE_KBYTES) * 1000;
+            if (editor == null) {
+                log.error("Editor is null or undefined");
+                return;
+            }
+            resetEditorInput();
+            byte[] bytes = CommonUtils.toString(value).getBytes();
+            if (bytes.length > maxContentSize) {
+                showRestrictedContent(editorPaintListener, bytes);
+            } else {
+                showRegularContent(editorPaintListener, bytes, monitor);
+            }
 
-		} catch (Exception e) {
-			throw new DBException("Error loading text value", e);
-		} finally {
-			monitor.done();
-		}
+        } catch (Exception e) {
+            throw new DBException("Error loading text value", e);
+        } finally {
+            monitor.done();
+        }
     }
 
     private void resetEditorInput() {
-		// Load contents in two steps (empty + real in async mode). Workaround for some
-		// strange bug in StyledText in E4.13 (#6701)
-		UIUtils.asyncExec(() -> {
-			if (editor != null) {
-				editorPaintListener.updateStatusMessage("");
-				editor.setInput(new StringEditorInput("Empty", "", true, StandardCharsets.UTF_8.name()));
-			}
-		});
-	}
+        // Load contents in two steps (empty + real in async mode). Workaround for some
+        // strange bug in StyledText in E4.13 (#6701)
+        UIUtils.asyncExec(() -> {
+            if (editor != null) {
+                editorPaintListener.updateStatusMessage("");
+                editor.setInput(new StringEditorInput("Empty", "", true, StandardCharsets.UTF_8.name()));
+            }
+        });
+    }
 
-	private void showRegularContent(final PanelEditorPaintListener editorPaintListener, byte[] bytes,
-			DBRProgressMonitor monitor) throws DBException {
-		String encoding = getPanelSettings().get(PREF_TEXT_EDITOR_ENCODING);
-		if (encoding == null) {
-			encoding = StandardCharsets.UTF_8.name();
-		}
-		final ContentEditorInput textInput = new ContentEditorInput(valueController, null, null, encoding, monitor);
-		UIUtils.asyncExec(() -> {
-			if (editor != null) {
-				editor.setInput(textInput);
-				applyEditorStyle();
-			}
-		});
-	}
+    private void showRegularContent(@NotNull final PanelEditorPaintListener editorPaintListener, @NotNull byte[] bytes,
+            @NotNull DBRProgressMonitor monitor) throws DBException {
+        String encoding = getPanelSettings().get(PREF_TEXT_EDITOR_ENCODING);
+        if (encoding == null) {
+            encoding = StandardCharsets.UTF_8.name();
+        }
+        final ContentEditorInput textInput = new ContentEditorInput(valueController, null, null, encoding, monitor);
+        UIUtils.asyncExec(() -> {
+            if (editor != null) {
+                editor.setInput(textInput);
+                applyEditorStyle();
+            }
+        });
+    }
 
-	private void showRestrictedContent(final PanelEditorPaintListener editorPaintListener, byte[] bytes) {
-		int maxContentSize = DBWorkbench.getPlatform().getPreferenceStore().getInt(ModelPreferences.EDITING_CONTENT_MAX_SIZE_KBYTES);
-		byte[] restrictedBytes = Arrays.copyOfRange(bytes, 0, maxContentSize);
-		UIUtils.asyncExec(() -> {
-			if (editor != null) {
-				String msg = NLS.bind(ResultSetMessages.panel_editor_text_content_limitation_lbl, maxContentSize);
-				editorPaintListener.updateStatusMessage(msg);
-				editor.setInput(new StringEditorInput("Limited Content ", new String(restrictedBytes), true,
-						StandardCharsets.UTF_8.name()));
-			}
-		});
-	}
-    
+    private void showRestrictedContent(@NotNull final PanelEditorPaintListener editorPaintListener,
+            @NotNull byte[] bytes) {
+        int maxContentSize = DBWorkbench.getPlatform().getPreferenceStore()
+                .getInt(ModelPreferences.EDITING_CONTENT_MAX_SIZE_KBYTES);
+        byte[] restrictedBytes = Arrays.copyOfRange(bytes, 0, maxContentSize);
+        UIUtils.asyncExec(() -> {
+            if (editor != null) {
+                String msg = NLS.bind(ResultSetMessages.panel_editor_text_content_limitation_lbl, maxContentSize);
+                editorPaintListener.updateStatusMessage(msg);
+                editor.setInput(new StringEditorInput("Limited Content ", new String(restrictedBytes), true,
+                        StandardCharsets.UTF_8.name()));
+            }
+        });
+    }
+
     @Nullable
     @Override
     public Path getExternalFilePath(@NotNull StyledText control) {

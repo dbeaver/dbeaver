@@ -328,9 +328,9 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS, true);
 
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.DICTIONARY_COLUMN_DIVIDER, " ");
-        
+
         // Editor
-		PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.EDITING_CONTENT_MAX_SIZE_KBYTES, 1000);
+        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.EDITING_CONTENT_MAX_SIZE_KBYTES, 1000);
 
         // Data formats
         DataFormatterProfile.initDefaultPreferences(store, Locale.getDefault());
