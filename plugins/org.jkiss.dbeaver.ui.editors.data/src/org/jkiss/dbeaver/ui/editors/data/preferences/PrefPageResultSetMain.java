@@ -113,7 +113,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES) ||
             store.contains(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL) ||
             store.contains(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER) ||
-            store.contains(ModelPreferences.EDITING_CONTENT_MAX_SIZE_KBYTES) ;
+            store.contains(ModelPreferences.EDITING_CONTENT_MAX_SIZE_KBYTES);
     }
 
     @Override
@@ -125,7 +125,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-    	Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
+        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
         Composite leftPane = UIUtils.createComposite(composite, 1);
         leftPane.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         Composite rightPane = UIUtils.createComposite(composite, 1);

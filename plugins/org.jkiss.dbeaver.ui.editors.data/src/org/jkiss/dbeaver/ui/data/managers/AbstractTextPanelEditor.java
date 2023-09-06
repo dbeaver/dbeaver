@@ -297,11 +297,10 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
                 return;
             }
             resetEditorInput();
-
             if (value.getContentLength() > maxContentSize) {
                 showRestrictedContent(editorPaintListener, value);
             } else {
-                showRegularContent(editorPaintListener, monitor);
+                showRegularContent(monitor);
             }
         } catch (Exception e) {
             throw new DBException("Error loading text value", e);
@@ -321,8 +320,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         });
     }
 
-    private void showRegularContent(@NotNull final PanelEditorPaintListener editorPaintListener,
-            @NotNull DBRProgressMonitor monitor) throws DBException {
+    private void showRegularContent(@NotNull DBRProgressMonitor monitor) throws DBException {
         String encoding = getPanelSettings().get(PREF_TEXT_EDITOR_ENCODING);
         if (encoding == null) {
             encoding = StandardCharsets.UTF_8.name();
