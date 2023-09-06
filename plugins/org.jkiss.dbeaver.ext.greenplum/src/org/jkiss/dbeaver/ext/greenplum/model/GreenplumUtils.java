@@ -132,7 +132,14 @@ public class GreenplumUtils {
         }
     }
 
-    static void addObjectModifiersToDDL(@NotNull DBRProgressMonitor monitor, @NotNull StringBuilder ddl, @NotNull PostgreTableReal table, List<PostgreTableColumn> distributionColumns, boolean supportsReplicatedDistribution) throws DBCException {
+    static void addObjectModifiersToDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull StringBuilder ddl,
+        @NotNull PostgreTableReal table,
+        List<PostgreTableColumn> distributionColumns,
+        boolean supportsReplicatedDistribution,
+        boolean addPartitionInfo
+    ) throws DBCException {
         ddl.append("\nDISTRIBUTED ");
         if (supportsReplicatedDistribution && table.isPersisted() && GreenplumUtils.isDistributedByReplicated(monitor, table)) {
             ddl.append("REPLICATED");
@@ -147,10 +154,12 @@ public class GreenplumUtils {
             ddl.append("RANDOMLY");
         }
 
-        String partitionData = table.isPersisted() ? GreenplumUtils.getPartitionData(monitor, table) : null;
-        if (partitionData != null) {
-            ddl.append("\n");
-            ddl.append(partitionData);
+        if (addPartitionInfo) {
+            String partitionData = table.isPersisted() ? GreenplumUtils.getPartitionData(monitor, table) : null;
+            if (partitionData != null) {
+                ddl.append("\n");
+                ddl.append(partitionData);
+            }
         }
     }
 }

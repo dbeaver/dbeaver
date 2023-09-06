@@ -392,6 +392,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_setting_connection_general;
 
 	public static String dialog_connection_network_title;
+	public static String dialog_connection_network_add_tunnel_label;
 	public static String dialog_connection_wizard_final_label_connection_type;
 	public static String dialog_connection_wizard_final_label_connection_types_edit;
 	public static String dialog_connection_wizard_final_label_navigator_settings;
@@ -450,9 +451,6 @@ public class CoreMessages extends NLS {
 	public static String pref_page_ui_general_label_enable_long_operations_tip;
 	public static String pref_page_ui_general_label_long_operation_timeout;
 	public static String pref_page_ui_general_group_notifications;
-	public static String pref_page_ui_general_label_enable_notifications;
-	public static String pref_page_ui_general_label_enable_notifications_tip;
-	public static String pref_page_ui_general_label_notifications_close_delay;
 	public static String pref_page_ui_general_group_resources;
 	public static String pref_page_ui_general_label_default_resource_encoding;
 	public static String pref_page_ui_general_label_set_default_resource_encoding_tip;
@@ -463,6 +461,16 @@ public class CoreMessages extends NLS {
 	public static String pref_page_ui_general_label_open_file_text;
 	public static String pref_page_ui_general_label_options_take_effect_after_restart;
 	public static String pref_page_ui_general_label_settings;
+
+	public static String pref_page_notifications_group_global;
+	public static String pref_page_notifications_enable_notifications_label;
+	public static String pref_page_notifications_enable_notifications_label_tip;
+	public static String pref_page_notifications_label_notifications_close_delay;
+	public static String pref_page_notifications_enable_sounds_label;
+	public static String pref_page_notifications_sound_volume_label;
+	public static String pref_page_notifications_column_name_label;
+	public static String pref_page_notifications_column_sound_label;
+	public static String pref_page_notifications_column_popup_label;
 
 	public static String pref_page_database_general_label_sync_editor_connection_with_navigator;
 	public static String pref_page_database_general_label_sync_editor_connection_with_navigator_tip;

@@ -17,6 +17,10 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.e4.ui.css.swt.internal.theme.BootstrapTheme3x;
+import org.eclipse.e4.ui.css.swt.theme.ITheme;
+import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
+import org.eclipse.e4.ui.css.swt.theme.IThemeManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -24,9 +28,12 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
-import org.eclipse.ui.themes.ITheme;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceReference;
 
 /**
  * UI Utils
@@ -35,7 +42,11 @@ public class UIStyles {
 
     private static final Log log = Log.getLog(UIStyles.class);
 
+    private static final String THEME_HIGH_CONTRAST_ID = "org.eclipse.e4.ui.css.theme.high-contrast";
+
     static IPreferenceStore EDITORS_PREFERENCE_STORE;
+    
+    static IThemeEngine themeEngine = null;
 
     public static synchronized IPreferenceStore getEditorsPreferenceStore() {
         if (EDITORS_PREFERENCE_STORE == null) {
@@ -45,11 +56,51 @@ public class UIStyles {
     }
 
     public static boolean isDarkTheme() {
-        return UIUtils.isDark(getDefaultTextBackground().getRGB());
+        return UIUtils.isDark(getDefaultTextBackground().getRGB()) || isDarkHighContrastTheme();
+    }
+
+    private static IThemeEngine getThemeEngine() {
+        if (themeEngine == null) {
+            Bundle bundle = FrameworkUtil.getBundle(BootstrapTheme3x.class);
+            if (bundle != null) {
+                BundleContext context = bundle.getBundleContext();
+                if (context != null) {
+                    ServiceReference<IThemeManager> ref = context.getServiceReference(IThemeManager.class);
+                    if (ref != null) {
+                        IThemeManager manager = context.getService(ref);
+                        if (manager != null) {
+                            themeEngine = manager.getEngineForDisplay(Display.getDefault());
+                        }
+                    }
+                }
+            }
+        }
+        return themeEngine;
+    }
+
+    public static boolean isHighContrastTheme() {
+        IThemeEngine themeEngine = getThemeEngine();
+        org.eclipse.e4.ui.css.swt.theme.ITheme theme = null;
+        if (themeEngine != null) {
+            theme = themeEngine.getActiveTheme(); 
+        } else {
+            themeEngine = PlatformUI.getWorkbench().getService(IThemeEngine.class);
+            if (themeEngine != null) {
+                theme = themeEngine.getActiveTheme();
+            }
+        }
+        if (theme != null) {
+            return theme.getId().equals(THEME_HIGH_CONTRAST_ID);
+        }
+        return false;
+    }
+    
+    public static boolean isDarkHighContrastTheme() {
+        return isHighContrastTheme() && UIUtils.isDark(getDefaultWidgetBackground().getRGB());
     }
 
     public static Color getDefaultWidgetBackground() {
-        ITheme theme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+        org.eclipse.ui.themes.ITheme theme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
         Color color = theme.getColorRegistry().get(IWorkbenchThemeConstants.INACTIVE_TAB_BG_START);
         if (color == null) {
             color = Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);

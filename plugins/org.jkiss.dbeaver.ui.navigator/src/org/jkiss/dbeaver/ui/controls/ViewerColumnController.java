@@ -840,11 +840,16 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
             Item column = (Item)e.widget;
             if (prevColumn == column) {
                 // Set reverse order
-                sortDirection = sortDirection == SWT.UP ? SWT.DOWN : SWT.UP;
+                if (sortDirection == SWT.NONE) {
+                    sortDirection = SWT.UP;
+                } else if (sortDirection == SWT.UP) {
+                    sortDirection = SWT.DOWN;
+                } else {
+                    sortDirection = SWT.NONE;
+                }
             }
             prevColumn = column;
-
-            sortViewer(column, sortDirection);
+            sortViewer(sortDirection == SWT.NONE ? null : column, sortDirection);
         }
 
         private void sortViewer(final Item column, final int sortDirection) {

@@ -14,11 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.security;
+package org.jkiss.dbeaver.ext.clickhouse.model;
 
-public interface SMObjects {
-    String PROJECT_OBJECT_TYPE_ID = "project";
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 
-    SMObjectType DATASOURCE = new SMObjectType("datasource");
-    SMObjectType PROJECT = new SMObjectType(PROJECT_OBJECT_TYPE_ID);
+public class ClickhouseMapType extends ClickhouseTupleType {
+    public ClickhouseMapType(@NotNull ClickhouseDataSource dataSource, @NotNull DBSDataType keyType, @NotNull DBSDataType valueType) {
+        super(dataSource, new DBSDataType[]{keyType, valueType}, new String[]{"Key", "Value"});
+    }
 }

@@ -20,12 +20,14 @@
  */
 package org.jkiss.dbeaver.ext.greenplum.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * PostgreServerGreenplum
@@ -43,7 +45,7 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
 
     @Override
     public boolean supportsFunctionDefRead() {
-        return false;
+        return dataSource.isServerVersionAtLeast(12, 0);
     }
 
     @Override
@@ -96,17 +98,27 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
 
     @Override
     public boolean supportsExplainPlanXML() {
-        return false;
+        return dataSource.isServerVersionAtLeast(12, 0);
     }
 
     @Override
     public boolean supportsExplainPlanVerbose() {
-        return false;
+        return dataSource.isServerVersionAtLeast(12, 0);
     }
 
     @Override
     public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
         return GreenplumWithClauseBuilder.generateWithClause(table, tableBase);
+    }
+
+    @Override
+    public void createUsingClause(@NotNull PostgreTableRegular table, @NotNull StringBuilder ddl) {
+        if (table instanceof GreenplumTable) {
+            String accessMethod = ((GreenplumTable) table).getAccessMethod();
+            if (CommonUtils.isNotEmpty(accessMethod)) {
+                ddl.append("\nUSING ").append(accessMethod);
+            }
+        }
     }
 
     @Override
@@ -145,7 +157,7 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
 
     @Override
     public boolean supportsRoleBypassRLS() {
-        return false;
+        return dataSource.isServerVersionAtLeast(12, 0);
     }
 
     @Override
@@ -160,7 +172,7 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
 
     @Override
     public boolean supportsDistinctForStatementsWithAcl() {
-        return false;
+        return dataSource.isServerVersionAtLeast(12, 0);
     }
 
     @Override

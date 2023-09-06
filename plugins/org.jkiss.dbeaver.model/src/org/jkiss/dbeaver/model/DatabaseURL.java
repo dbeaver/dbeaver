@@ -80,7 +80,8 @@ public class DatabaseURL {
                     newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_FILE), connectionInfo.getDatabaseName());
                 }
                 newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_USER), CommonUtils.notEmpty(connectionInfo.getUserName()));
-                newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_PASSWORD), CommonUtils.notEmpty(connectionInfo.getUserPassword()));
+                // support of {password} pattern was removed for security reasons (see dbeaver/pro#1888)
+                //newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_PASSWORD), CommonUtils.notEmpty(connectionInfo.getUserPassword()));
 
                 if (newComponent.startsWith("[")) { //$NON-NLS-1$
                     if (!newComponent.equals(component)) {

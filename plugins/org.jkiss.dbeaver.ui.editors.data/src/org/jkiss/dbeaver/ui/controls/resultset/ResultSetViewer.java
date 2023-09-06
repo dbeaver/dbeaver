@@ -228,6 +228,7 @@ public class ResultSetViewer extends Viewer
     private boolean actionsDisabled;
     private volatile boolean isUIUpdateRunning;
 
+    private final boolean isDarkHighContrast;
     private final Color defaultBackground;
     private final Color defaultForeground;
     private VerticalButton recordModeButton;
@@ -260,9 +261,9 @@ public class ResultSetViewer extends Viewer
         }
 
         loadPresentationSettings();
-
-        this.defaultBackground = UIStyles.getDefaultTextBackground();
-        this.defaultForeground = UIStyles.getDefaultTextForeground();
+        isDarkHighContrast = UIStyles.isDarkHighContrastTheme();
+        this.defaultBackground = isDarkHighContrast ? UIStyles.getDefaultWidgetBackground() : UIStyles.getDefaultTextBackground();
+        this.defaultForeground = isDarkHighContrast ? UIUtils.COLOR_WHITE : UIStyles.getDefaultTextForeground();
 
         long decoratorFeatures = decorator.getDecoratorFeatures();
 
@@ -589,7 +590,8 @@ public class ResultSetViewer extends Viewer
         DataFilterRegistry.getInstance().saveDataFilter(dataContainer, model.getDataFilter());
 
         if (filtersPanel != null) {
-            DBeaverNotifications.showNotification(DBeaverNotifications.NT_GENERAL,
+            DBeaverNotifications.showNotification(
+                DBeaverNotifications.NT_GENERIC,
                 "Data filter was saved",
                 filtersPanel.getFilterText(),
                 DBPMessageType.INFORMATION, null);
@@ -703,7 +705,7 @@ public class ResultSetViewer extends Viewer
         if (filtersPanel == null) {
             return defaultBackground;
         }
-        return UIStyles.getDefaultTextBackground();
+        return isDarkHighContrast ? UIStyles.getDefaultWidgetBackground() : UIStyles.getDefaultTextBackground();
     }
 
     @NotNull

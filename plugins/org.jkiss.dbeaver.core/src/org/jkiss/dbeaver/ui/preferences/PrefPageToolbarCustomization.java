@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -28,8 +29,8 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Resource;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
@@ -40,7 +41,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.ToolBarConfigurationDescriptor;
 import org.jkiss.dbeaver.ui.actions.ToolBarConfigurationPropertyTester;
 import org.jkiss.dbeaver.ui.actions.ToolBarConfigurationRegistry;
@@ -267,7 +268,7 @@ public class PrefPageToolbarCustomization extends AbstractPrefPage implements IW
             composite,
             SWT.BORDER | SWT.UNDERLINE_SINGLE | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.CHECK
         );
-        treeViewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
+        treeViewer.getTree().setLayoutData(GridDataFactory.fillDefaults().grab(true, true).hint(SWT.DEFAULT, 100).create());
         TreeViewerEditor.create(treeViewer, new ColumnViewerEditorActivationStrategy(treeViewer) { 
             @Override
             protected boolean isEditorActivationEvent(ColumnViewerEditorActivationEvent event) {

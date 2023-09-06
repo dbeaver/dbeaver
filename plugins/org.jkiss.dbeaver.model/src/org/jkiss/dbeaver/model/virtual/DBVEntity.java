@@ -694,13 +694,90 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return true;
     }
 
+    @Override
+    public DBSDictionaryAccessor getDictionaryAccessor(
+        DBRProgressMonitor monitor,
+        List<DBDAttributeValue> precedingKeys,
+        DBSEntityAttribute keyColumn,
+        boolean sortAsc,
+        boolean sortByDesc
+    ) throws DBException {
+        final DBSEntity realEntity = getRealEntity(monitor);
+        if (realEntity instanceof DBSDictionary) {
+            return ((DBSDictionary) realEntity).getDictionaryAccessor(
+                monitor,
+                    precedingKeys,
+                keyColumn,
+                sortAsc,
+                sortByDesc
+            );
+        } else {
+            return emptyDictionaryAccessor;
+        }
+    }
+
+    private static final DBSDictionaryAccessor emptyDictionaryAccessor = new DBSDictionaryAccessor() {
+        
+        @Override
+        public boolean isKeyComparable() {
+            return false;
+        }
+        
+        @NotNull
+        @Override
+        public List<DBDLabelValuePair> getValueEntry(@NotNull Object keyValue) throws DBException {
+            return Collections.emptyList();
+        }
+        
+        @NotNull
+        public List<DBDLabelValuePair> getValues(long offset, long maxResults) {
+            return Collections.emptyList();
+        }
+
+        @NotNull
+        public List<DBDLabelValuePair> getSimilarValues(
+            @NotNull Object pattern,
+            boolean caseInsensitive,
+            boolean byDesc,
+            long offset,
+            long maxResults
+        ) {
+            return Collections.emptyList();
+        }
+
+        @NotNull
+        @Override
+        public List<DBDLabelValuePair> getValuesNear(
+            @NotNull Object value,
+            boolean isPreceeding,
+            long offset,
+            long maxResults
+        ) throws DBException {
+            return Collections.emptyList();
+        }
+        
+        @Override
+        public List<DBDLabelValuePair> getSimilarValuesNear(
+            @NotNull Object pattern, boolean caseInsensitive, boolean byDesc, 
+            Object value, boolean isPreceeding, 
+            long offset, long maxResults
+        ) throws DBException {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public void close() throws Exception {
+            // do nothing
+        }
+    };
+
     @NotNull
     @Override
     public List<DBDLabelValuePair> getDictionaryEnumeration(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSEntityAttribute keyColumn,
-        Object keyPattern,
-        @Nullable List<DBDAttributeValue> preceedingKeys,
+        @Nullable Object keyPattern,
+        @Nullable String searchText, @Nullable List<DBDAttributeValue> preceedingKeys,
         boolean caseInsensitiveSearch,
         boolean sortAsc,
         boolean sortByValue,
@@ -713,6 +790,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
                 monitor,
                 keyColumn,
                 keyPattern,
+                searchText,
                 preceedingKeys,
                 caseInsensitiveSearch,
                 sortAsc,

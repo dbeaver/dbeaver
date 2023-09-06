@@ -24,6 +24,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
@@ -56,6 +57,9 @@ import java.util.List;
 import java.util.Map;
 
 public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
+    
+    private final static int PARAMETERS_TABLE_MAX_WIDTH = 270;
+    
     private DBGConfigurationPanelContainer container;
     private Button kindLocal;
     private Button kindGlobal;
@@ -158,6 +162,15 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
         parametersTable.setLayoutData(gd);
         parametersTable.setHeaderVisible(true);
         parametersTable.setLinesVisible(true);
+        parametersTable.addListener(SWT.Resize, new Listener() {
+            @Override
+            public void handleEvent(Event arg0) {
+                Point size = parametersTable.getSize();
+                if(size.y > PARAMETERS_TABLE_MAX_WIDTH) {
+                    parametersTable.setSize(size.x, PARAMETERS_TABLE_MAX_WIDTH);
+                }
+            }
+        });
 
         final TableColumn nameColumn = UIUtils.createTableColumn(parametersTable, SWT.LEFT, "Name");
         nameColumn.setWidth(100);

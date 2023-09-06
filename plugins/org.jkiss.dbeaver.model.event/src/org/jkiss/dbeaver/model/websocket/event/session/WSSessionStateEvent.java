@@ -16,10 +16,9 @@
  */
 package org.jkiss.dbeaver.model.websocket.event.session;
 
-import org.jkiss.dbeaver.model.websocket.event.WSAbstractEvent;
 import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
-public class WSSessionStateEvent extends WSAbstractEvent {
+public class WSSessionStateEvent extends WSAbstractSessionEvent {
     private final long remainingTime;
     private final boolean isValid;
 

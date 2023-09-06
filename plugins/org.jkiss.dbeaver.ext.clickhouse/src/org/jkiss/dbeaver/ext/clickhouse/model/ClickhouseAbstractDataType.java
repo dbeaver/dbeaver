@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ext.clickhouse.model;
 
-package org.jkiss.dbeaver.model.auth;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.impl.struct.AbstractDataType;
 
-/**
- * Federated session
- */
-public interface SMSessionFederated extends SMSession {
-
-
+public abstract class ClickhouseAbstractDataType extends AbstractDataType<ClickhouseDataSource> {
+    public ClickhouseAbstractDataType(@NotNull ClickhouseDataSource dataSource) {
+        super(dataSource);
+    }
 }
