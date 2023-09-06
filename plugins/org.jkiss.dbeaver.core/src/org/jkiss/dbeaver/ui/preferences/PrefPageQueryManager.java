@@ -136,6 +136,7 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
 
         textHistoryDays.setText(store.getString(QMConstants.PROP_HISTORY_DAYS));
 
+        checkStoreLog.setSelection(store.getBoolean(QMConstants.PROP_STORE_LOG_FILE));
         textOutputFolder.setText(store.getString(QMConstants.PROP_LOG_DIRECTORY));
         UIUtils.enableWithChildren(textOutputFolder.getParent(), checkStoreLog.getSelection());
         UIUtils.enableWithChildren(textHistoryDays, checkStoreLog.getSelection());
@@ -168,6 +169,7 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
             store.setValue(QMConstants.PROP_HISTORY_DAYS, Math.max(1, historyDays));
         }
         store.setValue(QMConstants.PROP_STORE_LOG_FILE, checkStoreLog.getSelection());
+        store.setValue(QMConstants.PROP_LOG_DIRECTORY, textOutputFolder.getText());
         PrefUtils.savePreferenceStore(store);
 
         return super.performOk();
