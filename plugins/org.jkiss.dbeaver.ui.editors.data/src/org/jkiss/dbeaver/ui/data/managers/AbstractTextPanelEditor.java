@@ -324,7 +324,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     }
 
     private void showRegularContent(@NotNull DBRProgressMonitor monitor) throws DBException {
-    String encoding = getPanelSettings().get(PREF_TEXT_EDITOR_ENCODING);
+        String encoding = getPanelSettings().get(PREF_TEXT_EDITOR_ENCODING);
         if (encoding == null) {
             encoding = StandardCharsets.UTF_8.name();
         }
