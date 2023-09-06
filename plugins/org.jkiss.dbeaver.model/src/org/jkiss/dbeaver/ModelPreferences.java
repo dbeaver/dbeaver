@@ -160,6 +160,8 @@ public final class ModelPreferences
 
     public static final String READ_EXPENSIVE_PROPERTIES = "database.props.expensive"; //$NON-NLS-1$
     public static final String READ_EXPENSIVE_STATISTICS = "database.stats.expensive"; //$NON-NLS-1$
+    
+    public static final String EDITING_CONTENT_MAX_SIZE_KBYTES = "editing.content.max.size";  //$NON-NLS-1$
 
     // Driver and proxy settings. They have prefix UI_ by historical reasons.
     public static final String UI_DRIVERS_VERSION_UPDATE = "ui.drivers.version.update"; //$NON-NLS-1$
@@ -326,6 +328,9 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS, true);
 
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.DICTIONARY_COLUMN_DIVIDER, " ");
+        
+        // Editor
+		PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.EDITING_CONTENT_MAX_SIZE_KBYTES, 1000);
 
         // Data formats
         DataFormatterProfile.initDefaultPreferences(store, Locale.getDefault());

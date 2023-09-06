@@ -24,6 +24,7 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.code.NotNull;
@@ -79,6 +80,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
     private Button ignoreColumnLabelCheck;
     private Button useDateTimeEditor;
     private Button useBrowserCheckbox;
+    
+    private Text maxEditingContentSize; 
 
     public PrefPageResultSetMain()
     {
@@ -109,7 +112,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG) ||
             store.contains(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES) ||
             store.contains(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL) ||
-            store.contains(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER);
+            store.contains(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER) ||
+            store.contains(ModelPreferences.EDITING_CONTENT_MAX_SIZE_KBYTES) ;
     }
 
     @Override
@@ -121,7 +125,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
+    	Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
         Composite leftPane = UIUtils.createComposite(composite, 1);
         leftPane.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         Composite rightPane = UIUtils.createComposite(composite, 1);
@@ -214,37 +218,41 @@ public class PrefPageResultSetMain extends TargetPrefPage
             useBrowserCheckbox.setToolTipText(DataEditorsMessages.pref_page_database_resultsets_label_image_browser_tip);
 
         }
+		GridLayout editingGroupLayout = new GridLayout(2, false);
+		final Group group = UIUtils.createControlGroup(leftPane,
+				ResultSetMessages.pref_page_content_editor_group_editing, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+		group.setLayout(editingGroupLayout);
 
-        {
-            final Group group = UIUtils.createControlGroup(
-                leftPane,
-                ResultSetMessages.pref_page_content_editor_group_editing,
-                1,
-                GridData.VERTICAL_ALIGN_BEGINNING,
-                0
-            );
+		alwaysUseAllColumns = UIUtils.createCheckbox(group,
+				ResultSetMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns, false);
+		alwaysUseAllColumns.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true, 2, 1));
 
-            alwaysUseAllColumns = UIUtils.createCheckbox(
-                group,
-                ResultSetMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns,
-                false
-            );
+		disableEditingOnMissingKey = UIUtils.createCheckbox(group,
+				ResultSetMessages.pref_page_content_editor_checkbox_disable_editing_if_key_missing, false);
+		disableEditingOnMissingKey.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true, 2, 1));
+		alwaysUseAllColumns.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				updateOptionsEnablement();
+			}
+		});
 
-            disableEditingOnMissingKey = UIUtils.createCheckbox(
-                group,
-                ResultSetMessages.pref_page_content_editor_checkbox_disable_editing_if_key_missing,
-                false
-            );
+		Label lblMaxEditingContentSize = UIUtils.createControlLabel(group, "Maximum size of editing content (Kbytes)");
+		lblMaxEditingContentSize.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1, 1));
+		maxEditingContentSize = new Text(group, SWT.BORDER);
+		maxEditingContentSize.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1, 1));
+		maxEditingContentSize.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
+		maxEditingContentSize.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				int contentSize = CommonUtils.toInt(maxEditingContentSize.getText());
+				if (contentSize < 100) {
+					maxEditingContentSize.setText("100");
+				}
+			}
+		});
 
-            alwaysUseAllColumns.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    updateOptionsEnablement();
-                }
-            });
-        }
-
-        return composite;
+		return composite;
     }
 
     private void updateOptionsEnablement() {
@@ -293,7 +301,9 @@ public class PrefPageResultSetMain extends TargetPrefPage
             }
             showErrorsInDialog.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG));
             markCellValueOccurrences.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES));
-
+            int maxEditiingContentSize = store.getInt(ModelPreferences.EDITING_CONTENT_MAX_SIZE_KBYTES);
+            maxEditingContentSize.setText(String.valueOf(maxEditiingContentSize));
+            
             updateOptionsEnablement();
         } catch (Exception e) {
             log.warn(e);
@@ -331,6 +341,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             }
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG, showErrorsInDialog.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES, markCellValueOccurrences.getSelection());
+            store.setValue(ModelPreferences.EDITING_CONTENT_MAX_SIZE_KBYTES, maxEditingContentSize.getText());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -364,6 +375,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         store.setToDefault(ResultSetPreferences.RESULT_SET_CONFIRM_BEFORE_SAVE);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG);
         store.setToDefault(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES);
+        store.setToDefault(ModelPreferences.EDITING_CONTENT_MAX_SIZE_KBYTES);
 
         updateOptionsEnablement();
     }

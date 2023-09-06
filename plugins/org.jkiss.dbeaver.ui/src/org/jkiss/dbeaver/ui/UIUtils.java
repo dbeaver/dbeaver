@@ -1511,6 +1511,20 @@ public class UIUtils {
             offset += ext.y;
         }
     }
+    
+    public static void drawMessageOverControlOnLeftBottom(Control control, GC gc, String message) {
+        Rectangle bounds = control.getBounds();
+       
+        gc.setForeground( getSharedColor(SharedTextColors.COLOR_WARNING));
+		final int height = gc.textExtent(message).y;
+		for (String line : message.split("\n")) {
+			line = line.trim();
+			Point ext = gc.textExtent(line);
+			int x = bounds.x; 
+			int y = bounds.y + bounds.height-ext.y-height ;
+			gc.drawText(line, x , y);
+		}
+    }
 
     public static void createTableContextMenu(@NotNull final Table table, @Nullable DBRCreator<Boolean, IContributionManager> menuCreator) {
         MenuManager menuMgr = new MenuManager();

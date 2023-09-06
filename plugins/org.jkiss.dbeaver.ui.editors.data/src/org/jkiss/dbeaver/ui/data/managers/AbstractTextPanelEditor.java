@@ -29,12 +29,16 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchCommandConstants;
@@ -45,6 +49,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -65,12 +70,14 @@ import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsActivator;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 /**
 * AbstractTextPanelEditor
@@ -83,12 +90,13 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     private static final String PREF_TEXT_EDITOR_ENCODING = "content.text.editor.encoding";
 
     private static final Log log = Log.getLog(AbstractTextPanelEditor.class);
-    public static final int LONG_CONTENT_LENGTH = 10000;
+    
 
     private IValueController valueController;
     private IEditorSite subSite;
     private EDITOR editor;
     private Path tempFile;
+    private PanelEditorPaintListener editorPaintListener;
 
     @Override
     public StyledText createControl(IValueController valueController) {
@@ -107,7 +115,15 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         initEditorSettings(editorControl);
 
         editor.addContextMenuContributor(manager -> contributeTextEditorActions(manager, editorControl));
+        editorPaintListener = new PanelEditorPaintListener();
+		editorControl.addPaintListener(editorPaintListener);
+		editorControl.addListener(SWT.RESIZE, new Listener() {
 
+			@Override
+			public void handleEvent(Event event) {
+				editorControl.redraw();
+			}
+		});
         return editorControl;
     }
 
@@ -196,8 +212,10 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     @Override
     public void disposeEditor() {
         if (editor != null) {
+        	editor.getEditorControl().removePaintListener(editorPaintListener);
             editor.dispose();
             editor = null;
+            editorPaintListener = null;
         }
         if (tempFile != null) {
             try {
@@ -271,42 +289,66 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     @Override
     public void primeEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull StyledText control, @Nullable DBDContent value) throws DBException
     {
-        try {
-            // Load contents in two steps (empty + real in async mode). Workaround for some strange bug in StyledText in E4.13 (#6701)
-            final TextViewer textViewer = editor.getTextViewer();
-            final String encoding = getPanelSettings().get(PREF_TEXT_EDITOR_ENCODING);
-            final ContentEditorInput textInput = new ContentEditorInput(valueController, null, null, encoding, monitor);
-            boolean longContent = textInput.getContentLength() > LONG_CONTENT_LENGTH;
-            if (longContent) {
-                UIUtils.asyncExec(() -> {
-                    editor.setInput(new StringEditorInput("Empty", "", true, StandardCharsets.UTF_8.name()));
-                });
-            }
-            UIUtils.asyncExec(() -> {
+    	try {
+			int maxContentSize = DBWorkbench.getPlatform().getPreferenceStore().getInt(ModelPreferences.EDITING_CONTENT_MAX_SIZE_KBYTES)*1000;
+			if (editor == null) {
+				log.error("Editor is null or undefined");
+				return;
+			}
+			resetEditorInput();
+			byte[] bytes = CommonUtils.toString(value).getBytes();
+			if (bytes.length > maxContentSize) {
+				showRestrictedContent(editorPaintListener, bytes);
+			} else {
+				showRegularContent(editorPaintListener, bytes, monitor);
+			}
 
-                if (textViewer != null && editor != null) {
-                    StyledText textWidget = textViewer.getTextWidget();
-                    if (textWidget != null && longContent) {
-                        GC gc = new GC(textWidget);
-                        try {
-                            UIUtils.drawMessageOverControl(textWidget, gc, NLS.bind(ResultSetMessages.panel_editor_text_loading_placeholder_label, textInput.getContentLength()), 0);
-                            editor.setInput(textInput);
-                        } finally {
-                            gc.dispose();
-                        }
-                    } else {
-                        editor.setInput(textInput);
-                    }
-                    applyEditorStyle();
-                }
-            });
-        } catch (Exception e) {
-            throw new DBException("Error loading text value", e);
-        } finally {
-            monitor.done();
-        }
+		} catch (Exception e) {
+			throw new DBException("Error loading text value", e);
+		} finally {
+			monitor.done();
+		}
     }
 
+    private void resetEditorInput() {
+		// Load contents in two steps (empty + real in async mode). Workaround for some
+		// strange bug in StyledText in E4.13 (#6701)
+		UIUtils.asyncExec(() -> {
+			if (editor != null) {
+				editorPaintListener.updateStatusMessage("");
+				editor.setInput(new StringEditorInput("Empty", "", true, StandardCharsets.UTF_8.name()));
+			}
+		});
+	}
+
+	private void showRegularContent(final PanelEditorPaintListener editorPaintListener, byte[] bytes,
+			DBRProgressMonitor monitor) throws DBException {
+		String encoding = getPanelSettings().get(PREF_TEXT_EDITOR_ENCODING);
+		if (encoding == null) {
+			encoding = StandardCharsets.UTF_8.name();
+		}
+		final ContentEditorInput textInput = new ContentEditorInput(valueController, null, null, encoding, monitor);
+		UIUtils.asyncExec(() -> {
+			if (editor != null) {
+				editor.setInput(textInput);
+				applyEditorStyle();
+			}
+		});
+	}
+
+	private void showRestrictedContent(final PanelEditorPaintListener editorPaintListener, byte[] bytes) {
+		int maxContentSize = DBWorkbench.getPlatform().getPreferenceStore().getInt(ModelPreferences.EDITING_CONTENT_MAX_SIZE_KBYTES);
+		byte[] restrictedBytes = Arrays.copyOfRange(bytes, 0, maxContentSize);
+		UIUtils.asyncExec(() -> {
+			if (editor != null) {
+				String msg = NLS.bind(ResultSetMessages.panel_editor_text_content_limitation_lbl, maxContentSize);
+				editorPaintListener.updateStatusMessage(msg);
+				editor.setInput(new StringEditorInput("Limited Content ", new String(restrictedBytes), true,
+						StandardCharsets.UTF_8.name()));
+			}
+		});
+	}
+    
     @Nullable
     @Override
     public Path getExternalFilePath(@NotNull StyledText control) {
@@ -451,4 +493,24 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
             return encoding;
         }
     }
+    
+    class PanelEditorPaintListener implements PaintListener {
+
+		private String statusMessage;
+		public PanelEditorPaintListener() {
+			this.statusMessage = "";
+		}
+
+		public void updateStatusMessage(String statusMessage) {
+			this.statusMessage = statusMessage;
+		}
+
+		public void paintControl(PaintEvent event) {
+			Object source = event.getSource();
+			if (source instanceof Control) {
+				UIUtils.drawMessageOverControlOnLeftBottom((Control) source, event.gc, statusMessage);
+			}
+		}
+
+	}
 }
