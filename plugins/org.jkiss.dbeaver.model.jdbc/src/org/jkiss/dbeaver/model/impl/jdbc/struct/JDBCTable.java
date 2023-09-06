@@ -1054,6 +1054,17 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 return readValues(dbStat);
             }
         }
+        
+        @NotNull
+        @Override
+        public List<DBDLabelValuePair> getValues(long offset, int pageSize) throws DBException {
+            StringBuilder query = prepareQueryString(filter);
+            appendSortingClause(query, false);
+            try (DBCStatement dbStat = DBUtils.makeStatement(null, session, DBCStatementType.QUERY, query.toString(), offset, pageSize)) {
+                bindPrecedingKeys(dbStat);
+                return readValues(dbStat);
+            }
+        }
 
         @NotNull
         @Override
