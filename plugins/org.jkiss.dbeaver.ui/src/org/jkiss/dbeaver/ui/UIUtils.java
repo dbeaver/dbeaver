@@ -1513,10 +1513,8 @@ public class UIUtils {
     }
 
     /**
-     * 
      * Method designed to draw message on top of control with left bottom
      * positioning
-     * 
      * @param control - ui control
      * @param gc      - graphical container
      * @param message - custom message text
