@@ -75,6 +75,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
     private boolean isStandalone = DesktopPlatform.isStandalone();
     private Combo browserCombo;
+    private Button useEmbeddedBrowserAuth;
 
 
     public PrefPageDatabaseUserInterface()
@@ -165,12 +166,12 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             ));
 
         }
+        Group groupObjects = UIUtils.createControlGroup(
+            composite,
+            CoreMessages.pref_page_ui_general_group_browser, 2,
+            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0
+        );
         if (isWindowsDesktopClient()) {
-            Group groupObjects = UIUtils.createControlGroup(
-                composite,
-                CoreMessages.pref_page_ui_general_group_browser, 2,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0
-            );
             browserCombo = UIUtils.createLabelCombo(groupObjects, CoreMessages.pref_page_ui_general_combo_browser,
                 SWT.READ_ONLY
             );
@@ -184,6 +185,14 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1
             ));
         }
+        useEmbeddedBrowserAuth = UIUtils.createCheckbox(
+            groupObjects,
+            CoreMessages.pref_page_ui_general_check_browser_auth,
+            false
+        );
+        useEmbeddedBrowserAuth.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
+            GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1
+        ));
 
         performDefaults();
 
@@ -202,6 +211,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             SWTBrowserRegistry.getActiveBrowser();
             browserCombo.select(SWTBrowserRegistry.getActiveBrowser().ordinal());
         }
+        useEmbeddedBrowserAuth.setSelection(store.getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
         final String timezone = store.getString(ModelPreferences.CLIENT_TIMEZONE);
         if (clientTimezone != null) {
             if (DBConstants.DEFAULT_TIMEZONE.equals(timezone)) {
@@ -229,6 +239,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
         if (isStandalone) {
             store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
+            store.setValue(DBeaverPreferences.UI_USE_EMBEDDED_AUTH, useEmbeddedBrowserAuth.getSelection());
         }
 
         if (isWindowsDesktopClient()) {
