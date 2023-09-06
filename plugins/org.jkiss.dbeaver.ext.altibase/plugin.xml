@@ -257,6 +257,7 @@
             <type name="BIT"/>
             <type name="VARBIT"/>
             <type name="GEOMETRY"/>
+            <type name="TIMESTAMP"/>
         </provider>
     </extension>
     

@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 
 public class AltibaseValueHandlerProvider implements DBDValueHandlerProvider {
 
@@ -33,11 +34,13 @@ public class AltibaseValueHandlerProvider implements DBDValueHandlerProvider {
         String typeName = typedObject.getTypeName();
 
         switch (typeName) {
-            case "BIT":
-            case "VARBIT":
+            case AltibaseConstants.TYPE_NAME_BIT:
+            case AltibaseConstants.TYPE_NAME_VARBIT:
                 return AltibaseBitSetValueHandler.INSTANCE;
-            case "GEOMETRY":
+            case AltibaseConstants.TYPE_NAME_GEOMETRY:
                 return AltibaseGeometryValueHandler.INSTANCE;
+            case AltibaseConstants.TYPE_NAME_TIMESTAMP:
+                return AltibaseTimestampValueHandler.INSTANCE;
             default:
                 // Do nothing
                 ;
