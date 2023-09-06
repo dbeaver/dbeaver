@@ -52,7 +52,6 @@ import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ConfigurationFileSelector;
-import org.jkiss.dbeaver.ui.controls.TextWithOpen;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.HelpUtils;
@@ -524,7 +523,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         private final Text userNameText;
         private final Combo authMethodCombo;
         private final Label privateKeyLabel;
-        private final TextWithOpen privateKeyText;
+        private final ConfigurationFileSelector privateKeyText;
         private final Label passwordLabel;
         private final Text passwordText;
         private final Button savePasswordCheckbox;
@@ -564,8 +563,16 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             privateKeyLabel = UIUtils.createControlLabel(this, SSHUIMessages.model_ssh_configurator_label_private_key);
             privateKeyLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            privateKeyText = new ConfigurationFileSelector(this, SSHUIMessages.model_ssh_configurator_dialog_choose_private_key, new String[]{"*", "*.ssh", "*.pem", "*.*"});
+            privateKeyText = new ConfigurationFileSelector(
+                this,
+                SSHUIMessages.model_ssh_configurator_dialog_choose_private_key, new String[]{"*", "*.ssh", "*.pem", "*.*"},
+                false,
+                DBWorkbench.isDistributed()
+            );
             privateKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            if (DBWorkbench.isDistributed()) {
+                privateKeyText.getTextControl().setEditable(false);
+            }
 
             passwordLabel = UIUtils.createControlLabel(this, SSHUIMessages.model_ssh_configurator_label_password);
             privateKeyLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));

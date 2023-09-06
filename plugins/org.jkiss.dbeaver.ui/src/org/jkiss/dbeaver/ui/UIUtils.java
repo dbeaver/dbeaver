@@ -16,10 +16,13 @@
  */
 package org.jkiss.dbeaver.ui;
 
+import org.eclipse.core.commands.ParameterizedCommand;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.e4.ui.model.application.ui.menu.MHandledItem;
+import org.eclipse.e4.ui.workbench.renderers.swt.HandledContributionItem;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -53,6 +56,7 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.code.NotNull;
@@ -2305,5 +2309,47 @@ public class UIUtils {
         final FontData[] mainFontData = JFaceResources.getFontRegistry().getFontData(UIFonts.DBEAVER_FONTS_MAIN_FONT);
         final FontData[] defaultFontData = JFaceResources.getFontRegistry().getFontData(JFaceResources.DEFAULT_FONT);
         return Arrays.equals(mainFontData, defaultFontData);
+    }
+
+    @Nullable
+    public static ToolItem findToolItemByCommandId(@NotNull ToolBarManager toolbarManager, @NotNull String commandId) {
+        for (ToolItem item : toolbarManager.getControl().getItems()) {
+            Object data = item.getData();
+            if (data instanceof CommandContributionItem) {
+                ParameterizedCommand cmd = ((CommandContributionItem) data).getCommand(); 
+                if (cmd != null && commandId.equals(cmd.getId())) {
+                    return item;
+                }
+            } else if (data instanceof HandledContributionItem) {
+                MHandledItem model = ((HandledContributionItem) data).getModel();
+                if (model != null ) {
+                    ParameterizedCommand cmd = model.getWbCommand();
+                    if (cmd != null && commandId.equals(cmd.getId())) {
+                        return item;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public static void populateToolItemCommandIds(ToolBarManager toolbarManager) {
+        for (ToolItem item : toolbarManager.getControl().getItems()) {
+            Object data = item.getData();
+            if (data instanceof CommandContributionItem) {
+                ParameterizedCommand cmd = ((CommandContributionItem) data).getCommand(); 
+                if (cmd != null) {
+                    item.setData("commandId", cmd.getId());
+                }
+            } else if (data instanceof HandledContributionItem) {
+                MHandledItem model = ((HandledContributionItem) data).getModel();
+                if (model != null ) {
+                    ParameterizedCommand cmd = model.getWbCommand();
+                    if (cmd != null) {
+                        item.setData("commandId", cmd.getId());
+                    }
+                }
+            }
+        }
     }
 }

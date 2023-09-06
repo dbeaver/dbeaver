@@ -142,10 +142,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         @Override
         String getText(QMEvent event, boolean briefInfo) {
-            if (event.getObject() instanceof QMMConnectionInfo && event.getAction() == QMEventAction.END) {
-                return timeFormat.format(event.getObject().getCloseTime());
-            }
-            return timeFormat.format(event.getObject().getOpenTime());
+            return timeFormat.format(QMUtils.getObjectEventTime(event.getObject(), event.getAction()));
         }
 
         String getToolTipText(QMEvent event) {

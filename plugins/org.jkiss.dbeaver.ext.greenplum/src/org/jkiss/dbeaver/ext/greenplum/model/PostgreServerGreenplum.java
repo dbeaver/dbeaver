@@ -45,7 +45,7 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
 
     @Override
     public boolean supportsFunctionDefRead() {
-        return false;
+        return dataSource.isServerVersionAtLeast(12, 0);
     }
 
     @Override
@@ -98,12 +98,12 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
 
     @Override
     public boolean supportsExplainPlanXML() {
-        return false;
+        return dataSource.isServerVersionAtLeast(12, 0);
     }
 
     @Override
     public boolean supportsExplainPlanVerbose() {
-        return false;
+        return dataSource.isServerVersionAtLeast(12, 0);
     }
 
     @Override
@@ -157,7 +157,7 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
 
     @Override
     public boolean supportsRoleBypassRLS() {
-        return false;
+        return dataSource.isServerVersionAtLeast(12, 0);
     }
 
     @Override
@@ -172,7 +172,7 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
 
     @Override
     public boolean supportsDistinctForStatementsWithAcl() {
-        return false;
+        return dataSource.isServerVersionAtLeast(12, 0);
     }
 
     @Override
