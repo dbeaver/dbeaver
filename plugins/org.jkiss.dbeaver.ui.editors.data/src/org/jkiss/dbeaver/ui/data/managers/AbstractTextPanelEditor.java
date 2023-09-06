@@ -31,7 +31,9 @@ import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -58,6 +60,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -321,7 +324,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     }
 
     private void showRegularContent(@NotNull DBRProgressMonitor monitor) throws DBException {
-        String encoding = getPanelSettings().get(PREF_TEXT_EDITOR_ENCODING);
+    String encoding = getPanelSettings().get(PREF_TEXT_EDITOR_ENCODING);
         if (encoding == null) {
             encoding = StandardCharsets.UTF_8.name();
         }
@@ -510,9 +513,18 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         public void paintControl(PaintEvent event) {
             Object source = event.getSource();
             if (source instanceof Control) {
-                UIUtils.drawMessageOverControlOnLeftBottom((Control) source, event.gc, statusMessage);
+                GC gc = event.gc;
+                Rectangle bounds = ((Control) source).getBounds();
+                gc.setForeground(UIUtils.getSharedColor(SharedTextColors.COLOR_WARNING));
+                final int height = gc.textExtent(statusMessage).y;
+                for (String line : statusMessage.split("\n")) {
+                    line = line.trim();
+                    Point ext = gc.textExtent(line);
+                    int x = bounds.x;
+                    int y = bounds.y + bounds.height - ext.y - height;
+                    gc.drawText(line, x, y);
+                }
             }
         }
-
     }
 }

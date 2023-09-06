@@ -1512,26 +1512,6 @@ public class UIUtils {
         }
     }
 
-    /**
-     * Method designed to draw message on top of control with left bottom
-     * positioning
-     * @param control - ui control
-     * @param gc      - graphical container
-     * @param message - custom message text
-     */
-    public static void drawMessageOverControlOnLeftBottom(Control control, GC gc, String message) {
-        Rectangle bounds = control.getBounds();
-        gc.setForeground(getSharedColor(SharedTextColors.COLOR_WARNING));
-        final int height = gc.textExtent(message).y;
-        for (String line : message.split("\n")) {
-            line = line.trim();
-            Point ext = gc.textExtent(line);
-            int x = bounds.x;
-            int y = bounds.y + bounds.height - ext.y - height;
-            gc.drawText(line, x, y);
-        }
-    }
-
     public static void createTableContextMenu(@NotNull final Table table, @Nullable DBRCreator<Boolean, IContributionManager> menuCreator) {
         MenuManager menuMgr = new MenuManager();
         menuMgr.addMenuListener(manager -> {
