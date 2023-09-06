@@ -27,5 +27,8 @@
    <plugin id="org.jkiss.dbeaver.debug.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
    <plugin id="org.jkiss.dbeaver.ext.postgresql.debug.core" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
    <plugin id="org.jkiss.dbeaver.ext.postgresql.debug.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+   <plugin id="org.jkiss.dbeaver.ext.yashandb.debug.core" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+   <plugin id="org.jkiss.dbeaver.ext.yashandb.debug.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+   
 
 </feature>

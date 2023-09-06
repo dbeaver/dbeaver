@@ -289,6 +289,8 @@
         <setEntry value="org.jkiss.dbeaver.ext.oracle@default:default"/>
 		<setEntry value="org.jkiss.dbeaver.ext.yashandb.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.yashandb@default:default"/>
+		<setEntry value="org.jkiss.dbeaver.ext.yashandb.debug.ui@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ext.yashandb.debug.core@default:default"/>
 		<setEntry value="org.jkiss.dbeaver.ext.dm.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.dm@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.phoenix@default:default"/>

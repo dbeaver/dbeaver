@@ -26,6 +26,8 @@ import java.util.List;
 public interface DBGSession {
 
     DBGSessionInfo getSessionInfo();
+    
+    DBGObjectDescriptor getObjectDesc();
 
     Object getSessionId();
 

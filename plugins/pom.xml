@@ -173,6 +173,8 @@
                 <module>org.jkiss.dbeaver.team.git.ui</module>
 				
 				<module>org.jkiss.dbeaver.ext.yashandb.ui</module>
+				<module>org.jkiss.dbeaver.ext.yashandb.debug.core</module>
+    			<module>org.jkiss.dbeaver.ext.yashandb.debug.ui</module>
 				<module>org.jkiss.dbeaver.ext.dm.ui</module>
             </modules>
         </profile>

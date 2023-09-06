@@ -38,7 +38,7 @@ public interface DBGController {
      */
     DBGSession openSession(DBRProgressMonitor monitor) throws DBGException;
 
-    DBGBreakpointDescriptor describeBreakpoint(Map<String, Object> attributes);
+    DBGBreakpointDescriptor describeBreakpoint(Map<String, Object> attributes) throws DBGException;
 
     /*
      * Events

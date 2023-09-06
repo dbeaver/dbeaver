@@ -25,6 +25,7 @@ import org.eclipse.debug.core.IBreakpointManagerListener;
 import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.model.IDebugTarget;
 import org.jkiss.dbeaver.debug.DBGController;
+import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGSession;
 
 public interface IDatabaseDebugTarget extends IDebugTarget, IDebugEventSetListener, IBreakpointManagerListener {
@@ -33,7 +34,7 @@ public interface IDatabaseDebugTarget extends IDebugTarget, IDebugEventSetListen
 
     DBGSession getSession();
 
-    void connect(IProgressMonitor monitor) throws CoreException;
+    void connect(IProgressMonitor monitor) throws CoreException,DBGException;
 
     boolean canStepInto();
 

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.debug.ui.configurationPanels">
+        <panel id="org.jkiss.dbeaver.ext.yashandb.debug.function"
+               name="Function/Procedure"
+               description="YashanDB Function or Procedure"
+               class="org.jkiss.dbeaver.ext.yashandb.debug.ui.internal.YashanDBDebugPanelFunction">
+            <datasource id="yashandb"/>
+        </panel>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.ext.yashandb.ui.editors.YashanDBSourceDeclarationEditor"
+                 class="org.jkiss.dbeaver.debug.ui.actions.DebugActionAdapterFactory">
+            <adapter type="org.eclipse.debug.ui.actions.IToggleBreakpointsTarget"/>
+        </factory>
+        <factory adaptableType="org.jkiss.dbeaver.model.DBPDataSourceContainer"
+                 class="org.jkiss.dbeaver.ext.yashandb.debug.ui.internal.YashanDBDebugUIAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.debug.ui.DBGEditorAdvisor"/>
+        </factory>
+        <factory adaptableType="java.lang.Object"
+                 class="org.jkiss.dbeaver.ext.yashandb.debug.ui.internal.YashanDBDebugObjectAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.debug.DBGDebugObject"/>
+        </factory>
+    </extension>
+
+    <extension point="org.eclipse.ui.editorActions">
+        <editorContribution id="org.jkiss.dbeaver.debug.ui.editorContribution" targetID="source.declaration">
+            <action
+                    actionID="RulerDoubleClick"
+                    class="org.eclipse.debug.ui.actions.RulerToggleBreakpointActionDelegate"
+                    icon="platform:/plugin/org.eclipse.debug.ui/$nl$/icons/full/obj16/brkp_obj.png"
+                    id="org.jkiss.dbeaver.debug.ui.actions.ManageBreakpointRulerAction"
+                    label="%actions.ManageBreakpointRulerAction.label"
+                    style="push">
+            </action>
+        </editorContribution>
+    </extension>
+
+</plugin>

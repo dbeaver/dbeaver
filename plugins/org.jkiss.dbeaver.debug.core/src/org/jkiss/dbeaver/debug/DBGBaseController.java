@@ -66,6 +66,7 @@ public abstract class DBGBaseController implements DBGController {
         if (!dataSourceContainer.isConnected()) {
             throw new DBGException(ModelMessages.error_not_connected_to_database);
         }
+        log.info(dataSourceContainer.getName()+"已经创建debug的Connect...");
         return createSession(monitor, configuration);
     }
 
