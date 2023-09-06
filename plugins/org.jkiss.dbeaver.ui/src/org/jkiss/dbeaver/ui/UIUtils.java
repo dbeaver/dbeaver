@@ -1514,10 +1514,11 @@ public class UIUtils {
 
     /**
      * 
-     * Method designed to draw message on top of control with left bottom positioning
-     *  
+     * Method designed to draw message on top of control with left bottom
+     * positioning
+     * 
      * @param control - ui control
-     * @param gc - graphical container
+     * @param gc      - graphical container
      * @param message - custom message text
      */
     public static void drawMessageOverControlOnLeftBottom(Control control, GC gc, String message) {
