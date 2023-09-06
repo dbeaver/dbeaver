@@ -218,41 +218,41 @@ public class PrefPageResultSetMain extends TargetPrefPage
             useBrowserCheckbox.setToolTipText(DataEditorsMessages.pref_page_database_resultsets_label_image_browser_tip);
 
         }
-		GridLayout editingGroupLayout = new GridLayout(2, false);
-		final Group group = UIUtils.createControlGroup(leftPane,
-				ResultSetMessages.pref_page_content_editor_group_editing, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-		group.setLayout(editingGroupLayout);
+        GridLayout editingGroupLayout = new GridLayout(2, false);
+        final Group group = UIUtils.createControlGroup(leftPane,
+                ResultSetMessages.pref_page_content_editor_group_editing, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+        group.setLayout(editingGroupLayout);
 
-		alwaysUseAllColumns = UIUtils.createCheckbox(group,
-				ResultSetMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns, false);
-		alwaysUseAllColumns.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true, 2, 1));
+        alwaysUseAllColumns = UIUtils.createCheckbox(group,
+                ResultSetMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns, false);
+        alwaysUseAllColumns.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true, 2, 1));
 
-		disableEditingOnMissingKey = UIUtils.createCheckbox(group,
-				ResultSetMessages.pref_page_content_editor_checkbox_disable_editing_if_key_missing, false);
-		disableEditingOnMissingKey.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true, 2, 1));
-		alwaysUseAllColumns.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				updateOptionsEnablement();
-			}
-		});
+        disableEditingOnMissingKey = UIUtils.createCheckbox(group,
+                ResultSetMessages.pref_page_content_editor_checkbox_disable_editing_if_key_missing, false);
+        disableEditingOnMissingKey.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true, 2, 1));
+        alwaysUseAllColumns.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                updateOptionsEnablement();
+            }
+        });
 
-		Label lblMaxEditingContentSize = UIUtils.createControlLabel(group, "Maximum size of editing content (Kbytes)");
-		lblMaxEditingContentSize.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1, 1));
-		maxEditingContentSize = new Text(group, SWT.BORDER);
-		maxEditingContentSize.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1, 1));
-		maxEditingContentSize.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
-		maxEditingContentSize.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				int contentSize = CommonUtils.toInt(maxEditingContentSize.getText());
-				if (contentSize < 100) {
-					maxEditingContentSize.setText("100");
-				}
-			}
-		});
+        Label lblMaxEditingContentSize = UIUtils.createControlLabel(group, "Maximum size of editing content (Kbytes)");
+        lblMaxEditingContentSize.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1, 1));
+        maxEditingContentSize = new Text(group, SWT.BORDER);
+        maxEditingContentSize.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1, 1));
+        maxEditingContentSize.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
+        maxEditingContentSize.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                int contentSize = CommonUtils.toInt(maxEditingContentSize.getText());
+                if (contentSize < 100) {
+                    maxEditingContentSize.setText("100");
+                }
+            }
+        });
 
-		return composite;
+        return composite;
     }
 
     private void updateOptionsEnablement() {

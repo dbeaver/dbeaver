@@ -212,7 +212,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     @Override
     public void disposeEditor() {
         if (editor != null) {
-        	editor.getEditorControl().removePaintListener(editorPaintListener);
+            editor.getEditorControl().removePaintListener(editorPaintListener);
             editor.dispose();
             editor = null;
             editorPaintListener = null;
@@ -297,13 +297,12 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
                 return;
             }
             resetEditorInput();
-            byte[] bytes = CommonUtils.toString(value).getBytes();
-            if (bytes.length > maxContentSize) {
-                showRestrictedContent(editorPaintListener, bytes);
-            } else {
-                showRegularContent(editorPaintListener, bytes, monitor);
-            }
 
+            if (value.getContentLength() > maxContentSize) {
+                showRestrictedContent(editorPaintListener, value);
+            } else {
+                showRegularContent(editorPaintListener, monitor);
+            }
         } catch (Exception e) {
             throw new DBException("Error loading text value", e);
         } finally {
@@ -322,7 +321,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         });
     }
 
-    private void showRegularContent(@NotNull final PanelEditorPaintListener editorPaintListener, @NotNull byte[] bytes,
+    private void showRegularContent(@NotNull final PanelEditorPaintListener editorPaintListener,
             @NotNull DBRProgressMonitor monitor) throws DBException {
         String encoding = getPanelSettings().get(PREF_TEXT_EDITOR_ENCODING);
         if (encoding == null) {
@@ -338,9 +337,10 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     }
 
     private void showRestrictedContent(@NotNull final PanelEditorPaintListener editorPaintListener,
-            @NotNull byte[] bytes) {
+            @NotNull DBDContent value) {
         int maxContentSize = DBWorkbench.getPlatform().getPreferenceStore()
                 .getInt(ModelPreferences.EDITING_CONTENT_MAX_SIZE_KBYTES);
+        byte[] bytes = CommonUtils.toString(value).getBytes();
         byte[] restrictedBytes = Arrays.copyOfRange(bytes, 0, maxContentSize);
         UIUtils.asyncExec(() -> {
             if (editor != null) {
@@ -499,21 +499,22 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     
     class PanelEditorPaintListener implements PaintListener {
 
-		private String statusMessage;
-		public PanelEditorPaintListener() {
-			this.statusMessage = "";
-		}
+        private String statusMessage;
 
-		public void updateStatusMessage(String statusMessage) {
-			this.statusMessage = statusMessage;
-		}
+        public PanelEditorPaintListener() {
+            this.statusMessage = "";
+        }
 
-		public void paintControl(PaintEvent event) {
-			Object source = event.getSource();
-			if (source instanceof Control) {
-				UIUtils.drawMessageOverControlOnLeftBottom((Control) source, event.gc, statusMessage);
-			}
-		}
+        public void updateStatusMessage(String statusMessage) {
+            this.statusMessage = statusMessage;
+        }
 
-	}
+        public void paintControl(PaintEvent event) {
+            Object source = event.getSource();
+            if (source instanceof Control) {
+                UIUtils.drawMessageOverControlOnLeftBottom((Control) source, event.gc, statusMessage);
+            }
+        }
+
+    }
 }
