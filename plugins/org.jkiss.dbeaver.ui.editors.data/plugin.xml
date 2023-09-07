@@ -1022,7 +1022,7 @@
              commandId="org.jkiss.dbeaver.core.resultset.grid.selectRowColor"
              contextId="org.jkiss.dbeaver.ui.context.resultset.focused"
              schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme"
-             sequence="ALT+CTRL+SHIFT+C"/>
+             sequence="ALT+SHIFT+1"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.grid.togglePanel" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="CTRL+ALT+F2">
             <parameter id="panelId" value="value-view"/>
         </key>
