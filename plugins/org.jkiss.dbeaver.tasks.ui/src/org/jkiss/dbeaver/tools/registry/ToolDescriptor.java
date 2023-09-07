@@ -18,38 +18,45 @@
 package org.jkiss.dbeaver.tools.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
+import org.jkiss.dbeaver.registry.task.TaskRegistry;
+import org.jkiss.dbeaver.registry.task.TaskTypeDescriptor;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * ToolDescriptor
  */
-public class ToolDescriptor extends AbstractContextDescriptor {
+public class ToolDescriptor extends AbstractDescriptor {
     private final String id;
     private final String label;
     private final String description;
-    private final ObjectType toolType;
     private final DBPImage icon;
     private final boolean singleton;
     private final ToolGroupDescriptor group;
 
-    public ToolDescriptor(IConfigurationElement config)
-    {
+    private final Set<String> toolImplTaskIds;
+
+    public ToolDescriptor(IConfigurationElement config) {
         super(config);
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        this.toolType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         this.singleton = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_SINGLETON));
         String groupId = config.getAttribute(RegistryConstants.ATTR_GROUP);
         this.group = CommonUtils.isEmpty(groupId) ? null : ToolsRegistry.getInstance().getToolGroup(groupId);
+        this.toolImplTaskIds = Stream.of(config.getChildren("task"))
+            .map(e -> e.getAttribute(RegistryConstants.ATTR_ID))
+            .collect(Collectors.toSet());
     }
 
     public String getId() {
@@ -62,6 +69,10 @@ public class ToolDescriptor extends AbstractContextDescriptor {
 
     public String getDescription() {
         return description;
+    }
+    
+    public Set<String> getImplTaskIds() {
+        return toolImplTaskIds;
     }
 
     public DBPImage getIcon() {
@@ -77,21 +88,27 @@ public class ToolDescriptor extends AbstractContextDescriptor {
     }
 
     @Override
-    protected Object adaptType(DBPObject object) {
-        if (object instanceof DBSObject) {
-            return ((DBSObject) object).getDataSource();
-        }
-        return super.adaptType(object);
-    }
-
-    public IUserInterfaceTool createTool()
-        throws DBException
-    {
-        return toolType.createInstance(IUserInterfaceTool.class);
-    }
-
-    @Override
     public String toString() {
         return id + " (" + label + ")";
+    }
+
+    public TaskTypeDescriptor getTaskForObjects(Collection<DBSObject> objects) {
+        for (String taskId : toolImplTaskIds) {
+            TaskTypeDescriptor task = TaskRegistry.getInstance().getTaskType(taskId);
+            if (task != null && objects.stream().allMatch(task::appliesTo)) {
+                return task;
+            }
+        }
+        return null;
+    }
+
+    public boolean appliesTo(DBPObject item) {
+        for (String taskId : toolImplTaskIds) {
+            TaskTypeDescriptor task = TaskRegistry.getInstance().getTaskType(taskId);
+            if (task != null && task.appliesTo(item)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

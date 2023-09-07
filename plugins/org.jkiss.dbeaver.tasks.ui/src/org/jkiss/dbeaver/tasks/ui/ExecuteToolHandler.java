@@ -18,15 +18,19 @@ package org.jkiss.dbeaver.tasks.ui;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.task.TaskTypeDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
 import org.jkiss.dbeaver.tools.registry.ToolDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
-import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 
 import java.util.Collection;
 import java.util.List;
@@ -55,8 +59,15 @@ public class ExecuteToolHandler implements IActionDelegate
     private void executeTool(IWorkbenchPart part, Collection<DBSObject> objects)
     {
         try {
-            IUserInterfaceTool toolInstance = tool.createTool();
-            toolInstance.execute(window, part, objects);
+            
+            DBPProject selectedProject = objects.stream().findFirst().get().getDataSource().getContainer().getProject();
+            TaskTypeDescriptor taskForObjs = tool.getTaskForObjects(objects);
+            if (taskForObjs != null) {
+                IStructuredSelection selectedObjects = new StructuredSelection(objects.toArray());
+                TaskConfigurationWizardDialog.openNewTaskDialog(window, selectedProject, taskForObjs.getId(), selectedObjects);
+            } else {
+                // wtf
+            }
         } catch (Throwable e) {
             DBWorkbench.getPlatformUI().showError("Tool error", "Error executing tool '" + tool.getLabel() + "'", e);
         }
