@@ -33,6 +33,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class BrowsePeerMethods {
     private static final Log log = Log.getLog(BrowsePeerMethods.class);
 
+    /**
+     * Checks if request can be opened in SWT browser
+     * @return true if request is redirectable
+     */
     public static boolean canBrowseInSWTBrowser() {
         DBPPreferenceStore store = new BundlePreferenceStore(DBeaverActivator.getInstance().getBundle());
         boolean useEmbeddedAuth = store.getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH);
@@ -51,6 +55,12 @@ public class BrowsePeerMethods {
         return result.get();
     }
 
+    /**
+     * Open URI via SWT browser API
+     * @param uri uri to open
+     *
+     * @return was it opened successfully
+     */
     public static boolean browseInSWTBrowser(URI uri) {
         DBPPreferenceStore store = new BundlePreferenceStore(DBeaverActivator.getInstance().getBundle());
         if (store.getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH)) {

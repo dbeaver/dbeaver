@@ -16,7 +16,6 @@
  */
 package org.jkiss.awt.injector;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.desktop.*;
 import java.io.File;
@@ -25,6 +24,7 @@ import java.net.URI;
 import java.awt.peer.*;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
+import javax.swing.*;
 
 class BrowsePeerProxy implements DesktopPeer {
     private final DesktopPeer peer;
@@ -35,7 +35,7 @@ class BrowsePeerProxy implements DesktopPeer {
         DesktopPeer peer,
         Callable<Boolean> isBrowseSupportedInteraction,
         Function<URI, Boolean> browseFunction
-        ) {
+    ) {
         this.peer = peer;
         this.isBrowseSupportedCallable = isBrowseSupportedInteraction;
         this.browseFunction = browseFunction;
@@ -43,13 +43,13 @@ class BrowsePeerProxy implements DesktopPeer {
 
     @Override
     public boolean isSupported(Desktop.Action action) {
-
         try {
             Boolean success = this.isBrowseSupportedCallable.call();
             if (success) {
                 return true;
             }
         } catch (Exception ignored) {
+            // ignored
         }
         return peer.isSupported(action);
 
@@ -83,6 +83,7 @@ class BrowsePeerProxy implements DesktopPeer {
                 return;
             }
         } catch (Exception ignored) {
+            // ignored
         }
         peer.browse(uri);
     }
