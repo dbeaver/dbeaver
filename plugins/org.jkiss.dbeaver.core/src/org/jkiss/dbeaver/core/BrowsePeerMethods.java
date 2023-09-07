@@ -21,6 +21,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWebBrowser;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -30,6 +31,8 @@ import java.net.URI;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BrowsePeerMethods {
+    private static final Log log = Log.getLog(BrowsePeerMethods.class);
+
     public static boolean canBrowseInSWTBrowser() {
         DBPPreferenceStore store = new BundlePreferenceStore(DBeaverActivator.getInstance().getBundle());
         boolean useEmbeddedAuth = store.getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH);
@@ -38,7 +41,12 @@ public class BrowsePeerMethods {
         }
         AtomicBoolean result = new AtomicBoolean(false);
         UIUtils.syncExec(() -> {
-            result.set(PlatformUI.getWorkbench().getBrowserSupport().isInternalWebBrowserAvailable());
+            boolean internalWebBrowserAvailable = PlatformUI.getWorkbench().getBrowserSupport()
+                .isInternalWebBrowserAvailable();
+            result.set(internalWebBrowserAvailable);
+            if (!internalWebBrowserAvailable) {
+                log.warn("Embedded Browser is disabled or unavailable");
+            }
         });
         return result.get();
     }
@@ -52,7 +60,6 @@ public class BrowsePeerMethods {
                 boolean internalWebBrowserAvailable = browserSupport.isInternalWebBrowserAvailable();
                 if (internalWebBrowserAvailable) {
                     try {
-                        // Be careful near URI
                         IWebBrowser browser = browserSupport.createBrowser(
                             IWorkbenchBrowserSupport.AS_EDITOR,
                             uri.getHost(),
@@ -62,8 +69,10 @@ public class BrowsePeerMethods {
                         browser.openURL(uri.toURL());
                         result.set(true);
                     } catch (PartInitException | MalformedURLException e) {
-                        e.printStackTrace();
+                        log.warn("Error redirecting request to embedded browser", e);
                     }
+                } else {
+                    log.warn("Embedded Browser is disabled or unavailable");
                 }
             });
             return result.get();
