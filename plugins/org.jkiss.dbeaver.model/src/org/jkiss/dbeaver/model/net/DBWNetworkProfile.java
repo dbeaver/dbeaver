@@ -69,7 +69,7 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
     @Nullable
     public DBWHandlerConfiguration getConfiguration(DBWHandlerDescriptor handler) {
         for (DBWHandlerConfiguration  cfg : configurations) {
-            if (Objects.equals(cfg.getHandlerDescriptor().getId(), handler.getId())) {
+            if (Objects.equals(cfg.getId(), handler.getId())) {
                 return cfg;
             }
         }

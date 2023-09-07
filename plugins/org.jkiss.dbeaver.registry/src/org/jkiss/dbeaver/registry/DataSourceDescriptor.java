@@ -2032,7 +2032,7 @@ public class DataSourceDescriptor
             for (DBWHandlerConfiguration hc : connectionInfo.getHandlers()) {
                 Map<String, Object> handlerProps = hc.saveToSecret();
                 if (!handlerProps.isEmpty()) {
-                    handlerProps.put(RegistryConstants.ATTR_ID, hc.getHandlerDescriptor().getId());
+                    handlerProps.put(RegistryConstants.ATTR_ID, hc.getId());
                     handlersConfigs.add(handlerProps);
                 }
             }
