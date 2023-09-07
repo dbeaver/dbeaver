@@ -41,6 +41,7 @@ import org.jkiss.utils.Pair;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ClickhouseTypeParser {
     private static final Log log = Log.getLog(ClickhouseTypeParser.class);
@@ -85,7 +86,13 @@ public class ClickhouseTypeParser {
             return new JDBCCollection(session.getProgressMonitor(), map, DBUtils.findValueHandler(session, map), values.toArray());
         } else if (type instanceof ClickhouseTupleType) {
             final ClickhouseTupleType tuple = (ClickhouseTupleType) type;
-            final Object[] values = ((Collection<?>) object).toArray();
+            final Object[] values;
+            if (object instanceof Map) {
+                values = ((Map<?, ?>) object).entrySet().stream()
+                    .flatMap(e -> Stream.of(e.getKey(), e.getValue())).toArray();
+            } else {
+                values = ((Collection<?>) object).toArray();
+            }
 
             for (int i = 0; i < values.length; i++) {
                 values[i] = makeValue(session, tuple.getAttributes().get(i).getDataType(), values[i]);
