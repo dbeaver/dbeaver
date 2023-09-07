@@ -48,6 +48,9 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
         return configurations;
     }
 
+    public DBWNetworkProfile() {
+    }
+
     public DBWNetworkProfile(DBPProject project) {
         super(project);
     }

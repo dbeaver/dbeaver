@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.meta.SecureProperty;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -38,13 +39,16 @@ public class DBWHandlerConfiguration {
     public static final String PROP_PORT = "port";
 
     @NotNull
-    private final DBWHandlerDescriptor descriptor;
-    private DBPDataSourceContainer dataSource;
+    private final transient DBWHandlerDescriptor descriptor;
+    private transient DBPDataSourceContainer dataSource;
     private boolean enabled;
+    @SecureProperty
     private String userName;
+    @SecureProperty
     private String password;
     private boolean savePassword = true;
     private final Map<String, Object> properties;
+    @SecureProperty
     private final Map<String, String> secureProperties;
 
     public DBWHandlerConfiguration(@NotNull DBWHandlerDescriptor descriptor, DBPDataSourceContainer dataSource) {

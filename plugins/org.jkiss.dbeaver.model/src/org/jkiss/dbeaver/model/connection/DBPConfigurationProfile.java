@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.secret.DBPSecretHolder;
 import org.jkiss.utils.CommonUtils;
@@ -29,6 +30,7 @@ import java.util.Map;
  */
 public abstract class DBPConfigurationProfile implements DBPSecretHolder {
 
+    @Nullable
     private final DBPProject project;
 
     private String profileId;
@@ -38,7 +40,11 @@ public abstract class DBPConfigurationProfile implements DBPSecretHolder {
     // Properties. Basically JSON
     private Map<String, String> properties = new LinkedHashMap<>();
 
-    public DBPConfigurationProfile(DBPProject project) {
+    public DBPConfigurationProfile() {
+        this.project = null;
+    }
+
+    public DBPConfigurationProfile(@Nullable DBPProject project) {
         this.project = project;
     }
 
@@ -52,6 +58,7 @@ public abstract class DBPConfigurationProfile implements DBPSecretHolder {
         }
     }
 
+    @Nullable
     public DBPProject getProject() {
         return project;
     }
