@@ -146,13 +146,7 @@ class DriverDependenciesTree {
             }
             DBPDriverLibrary library = node.library;
             TreeItem item = new TreeItem(filesTree, SWT.NONE);
-            Path localFile = node.library.getLocalFile();
-            try {
-                if ((localFile != null && Files.exists(localFile) && Files.size(localFile) > 0) && editable) {
-                    item.setForeground(filesTree.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
-                }
-            } catch (IOException ignored) {
-            }
+            grayOutInstalledArtifact(node, item);
             item.setData(node);
             item.setImage(DBeaverIcons.getImage(library.getIcon()));
             item.setText(0, library.getDisplayName());
@@ -182,6 +176,16 @@ class DriverDependenciesTree {
 //            ((DriverDownloadDialog)getWizard().getContainer()).closeWizard();
         }
         return resolved;
+    }
+
+    private void grayOutInstalledArtifact(DBPDriverDependencies.DependencyNode node, TreeItem item) {
+        Path localFile = node.library.getLocalFile();
+        try {
+            if ((localFile != null && Files.exists(localFile) && Files.size(localFile) > 0) && editable) {
+                item.setForeground(filesTree.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
+            }
+        } catch (IOException ignored) {
+        }
     }
 
     public boolean handleDownloadError(DBException e) {
@@ -234,13 +238,7 @@ class DriverDependenciesTree {
                 item.setText(0, dep.library.getDisplayName());
                 item.setText(1, CommonUtils.notEmpty(dep.library.getVersion()));
                 item.setText(2, CommonUtils.notEmpty(dep.library.getDescription()));
-                Path localFile = dep.library.getLocalFile();
-                try {
-                    if ((localFile != null && Files.exists(localFile) && Files.size(localFile) > 0) && editable) {
-                        item.setForeground(filesTree.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
-                    }
-                } catch (IOException ignored) {
-                }
+                grayOutInstalledArtifact(dep, item);
                 if (dep.duplicate) {
                     item.setForeground(filesTree.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
                 } else {
