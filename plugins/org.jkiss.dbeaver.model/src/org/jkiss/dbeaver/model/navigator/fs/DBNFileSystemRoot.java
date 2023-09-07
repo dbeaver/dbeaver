@@ -32,12 +32,10 @@ import java.nio.file.Path;
 /**
  * DBNFileSystemRoot
  */
-public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
-{
+public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode {
     private static final Log log = Log.getLog(DBNFileSystemRoot.class);
 
     private DBFVirtualFileSystemRoot root;
-    private DBNPath[] children;
     private Path path;
 
     public DBNFileSystemRoot(DBNFileSystem parentNode, DBFVirtualFileSystemRoot root) {
@@ -57,7 +55,6 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
 
     @Override
     protected void dispose(boolean reflect) {
-        children = null;
         this.root = null;
         super.dispose(reflect);
     }
@@ -71,11 +68,6 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
     public String getNodeName() {
         return root.getName();
-    }
-
-    @Override
-    public String getNodeDescription() {
-        return null;
     }
 
     @Override

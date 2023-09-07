@@ -41,7 +41,7 @@
 
     <extension point="org.eclipse.core.filesystem.filesystems">
         <filesystem scheme="dbvfs">
-            <run class="org.jkiss.dbeaver.model.fs.nio.NIOFileSystem"/>
+            <run class="org.jkiss.dbeaver.model.fs.nio2.NIO2FileSystem"/>
         </filesystem>
     </extension>
 

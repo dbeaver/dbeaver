@@ -27,10 +27,12 @@ import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.fs.nio.NIOListener;
 import org.jkiss.dbeaver.model.fs.nio.NIOMonitor;
 import org.jkiss.dbeaver.model.fs.nio.NIOResource;
+import org.jkiss.dbeaver.model.fs.nio2.NIO2FileSystem;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -125,8 +127,7 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, NIOListe
             DBFVirtualFileSystem[] fsList = fsProvider.getInstance().getAvailableFileSystems(
                 monitor, getModel().getModelAuthContext());
             for (DBFVirtualFileSystem fs : fsList) {
-                DBNFileSystem newChild = new DBNFileSystem(this, fs);
-                result.add(newChild);
+                result.add(new DBNFileSystem(this, fs));
             }
         }
         result.sort(DBUtils.nameComparatorIgnoreCase());

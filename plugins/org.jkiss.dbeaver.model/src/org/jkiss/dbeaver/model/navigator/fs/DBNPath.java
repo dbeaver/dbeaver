@@ -64,11 +64,6 @@ public class DBNPath extends DBNPathBase implements DBNStreamData
     }
 
     @Override
-    public String getNodeDescription() {
-        return null;
-    }
-
-    @Override
     public String getNodeTargetName() {
         return super.getNodeTargetName();
     }

@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.model.navigator.fs;
 
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.DBException;
@@ -28,11 +25,8 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
-import org.jkiss.dbeaver.model.fs.nio.NIOFile;
-import org.jkiss.dbeaver.model.fs.nio.NIOFileSystemRoot;
-import org.jkiss.dbeaver.model.fs.nio.NIOFolder;
 import org.jkiss.dbeaver.model.fs.nio.NIOResource;
+import org.jkiss.dbeaver.model.fs.nio2.NIO2FileSystem;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -99,12 +93,8 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
     public String getNodeName() {
-        return getFileName();
-    }
-
-    // Path's file name may be null (e.g. forFS root folder)
-    // Then try to extract it from URI or from toString
-    private String getFileName() {
+        // Path's file name may be null (e.g. forFS root folder)
+        // Then try to extract it from URI or from toString
         return URLDecoder.decode(NIOResource.getPathFileNameOrHost(getPath()), StandardCharsets.UTF_8);
     }
 
@@ -141,7 +131,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         if (allowsChildren() && Files.exists(path)) {
             try {
                 Files.list(path).forEach(c -> {
-                    DBNNode newChild = makeNode(c);
+                    DBNNode newChild = new DBNPath(this, c);
                     if (newChild != null) {
                         result.add(newChild);
                     }
@@ -202,10 +192,6 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
             children = ArrayUtils.remove(DBNNode.class, children, child);
             fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, child));
         }
-    }
-
-    private DBNPathBase makeNode(Path resource) {
-        return new DBNPath(this, resource);
     }
 
     @Override
@@ -360,36 +346,22 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         return time.toString();
     }
 
-    protected boolean isResourceExists() {
-        return getPath() != null && Files.exists(getPath());
-    }
-
     @Override
     public <T> T getAdapter(Class<T> adapter) {
         if (adapter == Path.class) {
             return adapter.cast(getPath());
         } else if (adapter == IResource.class) {
-            DBNFileSystemRoot rootNode = this instanceof DBNFileSystemRoot ?
-                (DBNFileSystemRoot) this :
-                DBNUtils.getParentOfType(DBNFileSystemRoot.class, this);
+            DBNFileSystemRoot rootNode = this instanceof DBNFileSystemRoot
+                ? (DBNFileSystemRoot) this
+                : DBNUtils.getParentOfType(DBNFileSystemRoot.class, this);
             if (rootNode == null) {
                 return null;
             }
-            Path rootPath = rootNode.getPath();
-            DBFVirtualFileSystemRoot fsRoot = rootNode.getRoot();
-            NIOFileSystemRoot root = new NIOFileSystemRoot(
+            return adapter.cast(NIO2FileSystem.toResource(
                 getOwnerProject().getEclipseProject(),
-                fsRoot,
-                fsRoot.getFileSystem().getType() + "/" + fsRoot.getFileSystem().getId() + "/" + fsRoot.getRootId()
-            );
-            Path path = getPath();
-            IResource resource;
-            if (allowsChildren()) {
-                resource = new NIOFolder(root, path);
-            } else {
-                resource = new NIOFile(root, path);
-            }
-            return adapter.cast(resource);
+                rootNode.getRoot(),
+                getPath()
+            ));
         }
         return super.getAdapter(adapter);
     }

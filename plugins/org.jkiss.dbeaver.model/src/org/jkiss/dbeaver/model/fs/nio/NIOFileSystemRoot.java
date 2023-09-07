@@ -26,12 +26,10 @@ public class NIOFileSystemRoot {
 
     private final IProject project;
     private final DBFVirtualFileSystemRoot fsRoot;
-    private final String fsPrefix;
 
-    public NIOFileSystemRoot(IProject project, DBFVirtualFileSystemRoot fsRoot, String fsPrefix) {
+    public NIOFileSystemRoot(IProject project, DBFVirtualFileSystemRoot fsRoot) {
         this.project = project;
         this.fsRoot = fsRoot;
-        this.fsPrefix = fsPrefix;
     }
 
     public IProject getProject() {
@@ -43,7 +41,7 @@ public class NIOFileSystemRoot {
     }
 
     public String getPrefix() {
-        return fsPrefix;
+        return fsRoot.getFileSystem().getType() + "/" + fsRoot.getFileSystem().getId() + "/" + fsRoot.getRootId();
     }
 
 }

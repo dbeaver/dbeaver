@@ -20,6 +20,7 @@ import org.eclipse.core.internal.resources.Resource;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -255,7 +256,8 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
         return null;
     }
 
-    private DBNNode makeNode(IResource resource) {
+    @Nullable
+    protected DBNNode makeNode(IResource resource) {
         boolean isRootResource = isRootResource(resource);
         if (isRootResource && resource.getName().startsWith(".")) {
             // Skip project config
@@ -465,6 +467,10 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
         return resource;
     }
 
+    public void setResource(IResource resource) {
+        this.resource = resource;
+    }
+
     protected void filterChildren(List<DBNNode> list) {
 
     }
@@ -498,6 +504,10 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
     @Override
     public void setResourceImage(DBPImage resourceImage) {
         this.resourceImage = resourceImage;
+    }
+
+    public DBPResourceHandler getHandler() {
+        return handler;
     }
 
     public Collection<DBPDataSourceContainer> getAssociatedDataSources() {
