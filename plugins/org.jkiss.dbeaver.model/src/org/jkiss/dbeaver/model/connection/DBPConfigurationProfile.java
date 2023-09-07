@@ -31,7 +31,7 @@ import java.util.Map;
 public abstract class DBPConfigurationProfile implements DBPSecretHolder {
 
     @Nullable
-    private final DBPProject project;
+    private final transient DBPProject project;
 
     private String profileId;
     private String profileName;

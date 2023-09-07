@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.rm.RMProjectType;
 import org.jkiss.dbeaver.model.secret.DBSSecret;
 import org.jkiss.dbeaver.model.secret.DBSSecretBrowser;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.jkiss.dbeaver.model.secret.DBSSecretSubject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.io.StringReader;
@@ -39,6 +40,8 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
 
     // Secret key prefix
     public static final String PROFILE_KEY_PREFIX = "/network-profile/";
+
+    private transient DBSSecretSubject secretSubject;
 
     @NotNull
     private final List<DBWHandlerConfiguration> configurations = new ArrayList<>();
@@ -53,6 +56,10 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
 
     public DBWNetworkProfile(DBPProject project) {
         super(project);
+    }
+
+    public void setSecretSubject(DBSSecretSubject secretSubject) {
+        this.secretSubject = secretSubject;
     }
 
     public void updateConfiguration(@NotNull DBWHandlerConfiguration cfg) {
@@ -87,7 +94,16 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
     }
 
     public String getSecretKeyId() {
-        return RMProjectType.getPlainProjectId(getProject()) + PROFILE_KEY_PREFIX + getProfileId();
+        String prefix;
+        DBPProject project = getProject();
+        if (project != null) {
+            prefix = RMProjectType.getPlainProjectId(project);
+        } else if (secretSubject != null) {
+            prefix = secretSubject.getSecretSubjectId();
+        } else {
+            prefix = "global";
+        }
+        return prefix + PROFILE_KEY_PREFIX + getProfileId();
     }
 
     @Override
@@ -141,7 +157,7 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
     }
 
     private void loadFromLegacySecret(DBSSecretController secretController) throws DBException {
-        if (!(secretController instanceof DBSSecretBrowser)) {
+        if (!(secretController instanceof DBSSecretBrowser) || getProject() == null) {
             return;
         }
         DBSSecretBrowser secretBrowser = (DBSSecretBrowser) secretController;
