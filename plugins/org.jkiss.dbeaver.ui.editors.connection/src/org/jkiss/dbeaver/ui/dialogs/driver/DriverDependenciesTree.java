@@ -87,7 +87,6 @@ class DriverDependenciesTree {
             treeEditor.verticalAlignment = SWT.CENTER;
             treeEditor.grabHorizontal = true;
             treeEditor.minimumWidth = 50;
-
             filesTree.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseUp(MouseEvent e)
@@ -142,8 +141,18 @@ class DriverDependenciesTree {
         filesTree.removeAll();
         int totalItems = 1;
         for (DBPDriverDependencies.DependencyNode node : dependencies.getLibraryMap()) {
+            if (node.library.getType().equals(DBPDriverLibrary.FileType.license) && editable) {
+                continue;
+            }
             DBPDriverLibrary library = node.library;
             TreeItem item = new TreeItem(filesTree, SWT.NONE);
+            Path localFile = node.library.getLocalFile();
+            try {
+                if ((localFile != null && Files.exists(localFile) && Files.size(localFile) > 0) && editable) {
+                    item.setForeground(filesTree.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
+                }
+            } catch (IOException ignored) {
+            }
             item.setData(node);
             item.setImage(DBeaverIcons.getImage(library.getIcon()));
             item.setText(0, library.getDisplayName());
@@ -218,13 +227,20 @@ class DriverDependenciesTree {
         Collection<DBPDriverDependencies.DependencyNode> dependencies = node.dependencies;
         if (dependencies != null && !dependencies.isEmpty()) {
             for (DBPDriverDependencies.DependencyNode dep : dependencies) {
+
                 TreeItem item = new TreeItem(parent, SWT.NONE);
                 //item.setData(dep);
                 item.setImage(DBeaverIcons.getImage(dep.library.getIcon()));
                 item.setText(0, dep.library.getDisplayName());
                 item.setText(1, CommonUtils.notEmpty(dep.library.getVersion()));
                 item.setText(2, CommonUtils.notEmpty(dep.library.getDescription()));
-
+                Path localFile = dep.library.getLocalFile();
+                try {
+                    if ((localFile != null && Files.exists(localFile) && Files.size(localFile) > 0) && editable) {
+                        item.setForeground(filesTree.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
+                    }
+                } catch (IOException ignored) {
+                }
                 if (dep.duplicate) {
                     item.setForeground(filesTree.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
                 } else {
