@@ -70,13 +70,15 @@ public abstract class JDBCStructureAssistant<CONTEXT extends JDBCExecutionContex
         List<DBSObjectReference> references = new ArrayList<>();
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, ModelMessages.model_jdbc_find_objects_by_name)) {
             for (DBSObjectType type : params.getObjectTypes()) {
-                findObjectsByMask(executionContext, session, type, params, references);
+                try {
+                    findObjectsByMask(executionContext, session, type, params, references);
+                } catch (Exception e) {
+                    log.debug("Error searching objects (" + type.getTypeName() + ")", e);
+                }
                 if (references.size() >= params.getMaxResults()) {
                     break;
                 }
             }
-        } catch (SQLException ex) {
-            throw new DBException(ex, getDataSource());
         }
         return references;
     }

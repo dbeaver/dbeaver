@@ -244,7 +244,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             DBWorkbench.getPlatformUI().showNotification(
                 "Read-only",
                 "Object [" + DBUtils.getObjectFullName(getDatabaseObject(), DBPEvaluationContext.UI) + "] is read-only",
-                true);
+                true, null);
             return;
         }
 
@@ -987,7 +987,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
         if (hasPropertiesEditor) {
             // Update main editor image
-            setPageImage(0, DBeaverIcons.getImage(getEditorInput().getNavigatorNode().getNodeIconDefault()));
+            DBNDatabaseNode navigatorNode = getEditorInput().getNavigatorNode();
+            if (navigatorNode != null) {
+                setPageImage(0, DBeaverIcons.getImage(navigatorNode.getNodeIconDefault()));
+            }
         }
 
         firePropertyChange(IWorkbenchPartConstants.PROP_DIRTY);
@@ -1039,7 +1042,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
         DBNDatabaseNode[] selNode = new DBNDatabaseNode[1];
         ToolBar breadcrumbsPanel = new ToolBar(bcComposite, SWT.HORIZONTAL | SWT.RIGHT);
         //breadcrumbsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        breadcrumbsPanel.setForeground(UIStyles.getDefaultTextForeground());
+        breadcrumbsPanel.setForeground(
+            UIUtils.isDark(breadcrumbsPanel.getBackground().getRGB()) ? UIUtils.COLOR_WHITE : UIStyles.getDefaultTextForeground());
         breadcrumbsPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDown(MouseEvent e) {

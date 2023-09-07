@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -72,7 +71,7 @@ import java.util.regex.Pattern;
 /**
  * PostgreDataSource
  */
-public class PostgreDataSource extends JDBCDataSource implements DBSInstanceContainer, IAdaptable, DBPObjectStatisticsCollector {
+public class PostgreDataSource extends JDBCDataSource implements DBSInstanceContainer, DBPAdaptable, DBPObjectStatisticsCollector {
 
     private static final Log log = Log.getLog(PostgreDataSource.class);
     private static final PostgrePrivilegeType[] SUPPORTED_PRIVILEGE_TYPES = new PostgrePrivilegeType[]{
@@ -323,7 +322,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private void initServerSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws DBException {
         props.put(PostgreConstants.PROP_SSL, "true");
 
-        if (!DBWorkbench.isDistributed()) {
+        if (!DBWorkbench.isDistributed() && !DBWorkbench.getPlatform().getApplication().isMultiuser()) {
             // Local FS mode
             final String rootCertProp;
             final String clientCertProp;

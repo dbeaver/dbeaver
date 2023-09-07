@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.clickhouse.ClickhouseConstants;
+import org.jkiss.dbeaver.ext.clickhouse.ClickhouseTypeParser;
 import org.jkiss.dbeaver.ext.clickhouse.model.jdbc.ClickhouseJdbcFactory;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSourceInfo;
@@ -101,7 +102,7 @@ public class ClickhouseDataSource extends GenericDataSource {
         properties.put(ClickhouseConstants.SSL_PARAM, "true");
         try {
             if ("com_clickhouse".equals(getContainer().getDriver().getId())) {
-                if (DBWorkbench.isDistributed()) {
+                if (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
                     String clientCertProp =
                         sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT_VALUE);
                     if (!CommonUtils.isEmpty(clientCertProp)) {
@@ -129,7 +130,7 @@ public class ClickhouseDataSource extends GenericDataSource {
                     properties.put(ClickhouseConstants.SSL_MODE, mode.toLowerCase());
                 }
             }
-            if (DBWorkbench.isDistributed()) {
+            if (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
                 String caCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT_VALUE);
                 if (!CommonUtils.isEmpty(caCertProp)) {
                     properties.put(ClickhouseConstants.SSL_ROOT_CERTIFICATE, saveCertificateToFile(caCertProp));
@@ -151,7 +152,12 @@ public class ClickhouseDataSource extends GenericDataSource {
         if (shortName != null) {
             typeFullName = shortName;
         }
-
+        if (ClickhouseTypeParser.isComplexType(typeFullName)) {
+            final DBSDataType type = ClickhouseTypeParser.getType(monitor, this, typeFullName);
+            if (type != null) {
+                return type;
+            }
+        }
         return super.resolveDataType(monitor, typeFullName);
     }
 

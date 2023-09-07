@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -72,6 +73,12 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
         throws DBException
     {
         String objectName = oldObject.getName();
+        if (oldObject instanceof DBPNamedObject2 && DBUtils.isQuotedIdentifier(oldObject.getDataSource(), objectName)) {
+            // Remove quotes in object name. Quotes are allowed only for a new (not-yet-persisted) objects
+            // https://github.com/dbeaver/dbeaver/issues/20383
+            objectName = DBUtils.getUnQuotedIdentifier(oldObject.getDataSource(), objectName);
+            ((DBPNamedObject2) oldObject).setName(objectName);
+        }
         if (!isFullyCached()) {
             this.loadObjects(monitor, owner);
         } else {
@@ -84,10 +91,6 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
             } else {
                 removeObject(oldObject, false);
             }
-//            removeObject(oldObject, false);
-//            if (newObject != null) {
-//                cacheObject(newObject);
-//            }
             return oldObject;
         }
         return getCachedObject(objectName);

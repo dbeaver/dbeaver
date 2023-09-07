@@ -276,4 +276,6 @@ public interface DBPDataSourceContainer extends
     DBPDriverSubstitutionDescriptor getDriverSubstitution();
 
     void setDriverSubstitution(@Nullable DBPDriverSubstitutionDescriptor driverSubstitution);
+
+    void dispose();
 }

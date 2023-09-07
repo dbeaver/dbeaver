@@ -260,13 +260,14 @@ public final class RuntimeUtils {
         monitorJob.schedule();
 
         // Wait for job to finish
+        boolean headlessMode = DBWorkbench.getPlatform().getApplication().isHeadlessMode();
         long startTime = System.currentTimeMillis();
         while (!monitoringTask.finished) {
             if (waitTime > 0 && System.currentTimeMillis() - startTime > waitTime) {
                 break;
             }
             try {
-                if (!DBWorkbench.getPlatformUI().readAndDispatchEvents()) {
+                if (headlessMode || !DBWorkbench.getPlatformUI().readAndDispatchEvents()) {
                     Thread.sleep(50);
                 }
             } catch (InterruptedException e) {
@@ -300,6 +301,41 @@ public final class RuntimeUtils {
         }
         catch (Exception ex) {
             throw new DBException("Error executing process " + binPath, ex);
+        }
+    }
+
+    public static String executeProcessAndCheckResult(String binPath, String ... args) throws DBException {
+        try {
+            String[] cmdBin = {binPath};
+            String[] cmd = args == null ? cmdBin : ArrayUtils.concatArrays(cmdBin, args);
+            Process p = Runtime.getRuntime().exec(cmd);
+            return getProcessResults(p);
+        }
+        catch (Exception ex) {
+            if (ex instanceof DBException) {
+                throw (DBException) ex;
+            }
+            throw new DBException("Error executing process " + binPath, ex);
+        }
+    }
+
+    @NotNull
+    public static String getProcessResults(Process p) throws IOException, InterruptedException, DBException {
+        try {
+            StringBuilder out = new StringBuilder();
+            readStringToBuffer(p.getInputStream(), out);
+
+            StringBuilder err = new StringBuilder();
+            readStringToBuffer(p.getErrorStream(), err);
+
+            p.waitFor();
+            if (p.exitValue() != 0) {
+                throw new DBException(err.toString());
+            }
+
+            return out.toString();
+        } finally {
+            p.destroy();
         }
     }
 

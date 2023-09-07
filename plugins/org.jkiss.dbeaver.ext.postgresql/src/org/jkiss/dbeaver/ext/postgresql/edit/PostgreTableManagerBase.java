@@ -82,7 +82,7 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                     }
                 }
 
-                if (showComments) {
+                if (showComments && !table.isPartition() && !monitor.isCanceled()) {
                     // Constraint comments
                     boolean hasComments = false;
                     for (PostgreTableConstraintBase constr : CommonUtils.safeCollection(table.getConstraints(monitor))) {
@@ -106,7 +106,7 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                 }
 
                 // Triggers
-                if (table instanceof PostgreTableReal) {
+                if (table instanceof PostgreTableReal && !table.isPartition() && !monitor.isCanceled()) {
                     Collection<PostgreTrigger> triggers = ((PostgreTableReal) table).getTriggers(monitor);
                     if (!CommonUtils.isEmpty(triggers)) {
                         actions.add(new SQLDatabasePersistActionComment(dataSource, "Table Triggers"));
@@ -118,7 +118,7 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                 }
 
                 // Rules
-                if (table instanceof PostgreTableReal) {
+                if (table instanceof PostgreTableReal && !table.isPartition() && !monitor.isCanceled()) {
                     Collection<PostgreRule> rules = ((PostgreTableReal) table).getRules(monitor);
                     if (!CommonUtils.isEmpty(rules)) {
                         actions.add(new SQLDatabasePersistActionComment(dataSource, "Table Rules"));
@@ -130,7 +130,10 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                 }
 
                 // Partitions
-                if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_PARTITIONS) && table instanceof PostgreTable) {
+                if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_PARTITIONS)
+                    && table instanceof PostgreTable
+                    && !monitor.isCanceled()
+                ) {
                     PostgreTable postgreTable = (PostgreTable) table;
                     List<PostgreTableBase> partitions = postgreTable.getPartitions(monitor);
                     if (postgreTable.hasPartitions() && !CommonUtils.isEmpty(partitions)) {
@@ -142,7 +145,7 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                     }
                 }
 
-                if (isDDL && !table.isPartition()) {
+                if (isDDL && !table.isPartition() && !monitor.isCanceled()) {
                     PostgreUtils.getObjectGrantPermissionActions(monitor, table, actions, options);
                 }
             } catch (DBException e) {

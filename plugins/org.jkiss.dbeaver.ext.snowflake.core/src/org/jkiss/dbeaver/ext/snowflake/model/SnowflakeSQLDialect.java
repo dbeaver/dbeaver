@@ -34,11 +34,12 @@ import org.jkiss.dbeaver.model.sql.parser.rules.SQLMultiWordRule;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.text.parser.*;
+import org.jkiss.dbeaver.model.text.parser.TPRule;
+import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
+import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
-import java.util.List;
 
 public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProvider {
 
@@ -66,22 +67,28 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
             ));
     }
 
+    @NotNull
     @Override
-    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
+    public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position) {
         if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
-            rules.add(new SQLDollarQuoteRule(
-                position == RulePosition.PARTITION,
-                false,
-                false,
-                dataSource == null || dataSource.getPreferenceStore().getBoolean(SnowflakeConstants.PROP_DD_STRING)
-            ));
+            return new TPRule[] {
+                new SQLDollarQuoteRule(
+                    position == RulePosition.PARTITION,
+                    false,
+                    false,
+                    dataSource == null || dataSource.getPreferenceStore().getBoolean(SnowflakeConstants.PROP_DD_STRING)
+                )
+            };
         }
         if (position == RulePosition.KEYWORDS) {
             final TPTokenDefault keywordToken = new TPTokenDefault(SQLTokenType.T_KEYWORD);
-            rules.add(new SQLMultiWordRule(new String[]{"BEGIN", "TRANSACTION"}, keywordToken));
-            rules.add(new SQLMultiWordRule(new String[]{"IF", "EXISTS"}, keywordToken));
-            rules.add(new SQLMultiWordRule(new String[]{"IF", "NOT", "EXISTS"}, keywordToken));
+            return new TPRule[]{
+                new SQLMultiWordRule(new String[]{"BEGIN", "TRANSACTION"}, keywordToken),
+                new SQLMultiWordRule(new String[]{"IF", "EXISTS"}, keywordToken),
+                new SQLMultiWordRule(new String[]{"IF", "NOT", "EXISTS"}, keywordToken)
+            };
         }
+        return new TPRule[0];
     }
 
     @Override
@@ -143,7 +150,18 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
         }
         return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
+    
+    @Override
+    public boolean validIdentifierStart(char c) {
+        return SQLUtils.isLatinLetter(c) || c == '_';
+    }
+    
+    @Override
+    public boolean validIdentifierPart(char c, boolean quoted) {
+        return SQLUtils.isLatinLetter(c) || Character.isDigit(c) || c == '_' || (quoted && validCharacters.indexOf(c) != -1) || c == '$';
+    }
 
+    
     @Override
     public boolean mustBeQuoted(@NotNull String str, boolean forceCaseSensitive) {
         // Unquoted object identifiers:
@@ -152,20 +170,9 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
         // * Are stored and resolved as uppercase characters (e.g. id is stored and resolved as ID).
         // https://docs.snowflake.com/en/sql-reference/identifiers-syntax
 
-        if (forceCaseSensitive || str.isBlank()) {
+        if (str.isBlank()) {
             return true;
         }
-        int firstCodePoint = str.codePointAt(0);
-        if (!SQLUtils.isLatinLetter(firstCodePoint) && firstCodePoint != '_') {
-            return true;
-        }
-        int length = str.codePointCount(0, str.length());
-        for (int i = 1; i < length; i++) {
-            int codePoint = str.codePointAt(i);
-            if (!SQLUtils.isLatinLetter(codePoint) && codePoint != '_' && !Character.isDigit(codePoint) && codePoint != '$') {
-                return true;
-            }
-        }
-        return false;
+        return super.mustBeQuoted(str, forceCaseSensitive);
     }
 }

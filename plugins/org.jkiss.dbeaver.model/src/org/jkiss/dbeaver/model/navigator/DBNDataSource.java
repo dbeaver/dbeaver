@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -29,8 +27,6 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.DBServiceConnections;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -39,7 +35,7 @@ import java.util.List;
 /**
  * DBNDataSource
  */
-public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAdaptable
+public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPAdaptable
 {
     private static final boolean USE_ICON_DECORATIONS = false; // Disabled in #9384
 
@@ -152,17 +148,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
 
     @Override
     public boolean initializeNode(@Nullable DBRProgressMonitor monitor, DBRProgressListener onFinish) throws DBException {
-        if (!dataSource.isConnected()) {
-            DBServiceConnections serviceConnections = DBWorkbench.getService(DBServiceConnections.class);
-            if (serviceConnections != null) {
-                serviceConnections.initConnection(monitor, dataSource, onFinish);
-            }
-        } else {
-            if (onFinish != null) {
-                onFinish.onTaskFinished(Status.OK_STATUS);
-            }
-        }
-        return dataSource.isConnected();
+        return DBUtils.initDataSource(monitor, dataSource, onFinish);
     }
 
     @Override

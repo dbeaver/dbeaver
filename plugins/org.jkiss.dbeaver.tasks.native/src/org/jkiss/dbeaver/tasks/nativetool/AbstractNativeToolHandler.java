@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tasks.nativetool;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.PrintStreamProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
@@ -41,6 +43,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.model.task.DBTTaskRunStatus;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ProgressStreamReader;
+import org.jkiss.dbeaver.tasks.nativetool.messages.NativeToolMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -265,10 +268,11 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
             }
 
             boolean refreshObjects = isSuccess && !monitor.isCanceled();
-            if (refreshObjects && needsModelRefresh()) {
+            var navigatorModel = task.getProject().getNavigatorModel();
+            if (navigatorModel != null && refreshObjects && needsModelRefresh()) {
                 // Refresh navigator node (script execution can change everything inside)
                 for (BASE_OBJECT object : settings.getDatabaseObjects()) {
-                    final DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().findNode(object);
+                    final DBNDatabaseNode node = navigatorModel.findNode(object);
                     if (node != null) {
                         node.refreshNode(monitor, this);
                     }
@@ -339,7 +343,9 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                         totalBytesDumped += count;
                         long currentTime = System.currentTimeMillis();
                         if (currentTime - prevStatusUpdateTime > 300) {
-                            monitor.subTask(numberFormat.format(totalBytesDumped) + " bytes");
+                            if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+                                monitor.subTask(numberFormat.format(totalBytesDumped) + " bytes");
+                            }
                             prevStatusUpdateTime = currentTime;
                         }
                         output.write(buffer, 0, count);
@@ -484,7 +490,8 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
             try {
                 logWriter.print(cmdString.toString());
 
-                logWriter.print("Task '" + task.getName() + "' started at " + new Date() + lf);
+                logWriter.print(
+                    NLS.bind(NativeToolMessages.native_tool_handler_log_task, task.getName(), new Date() + lf));
                 logWriter.flush();
 
 
@@ -516,11 +523,12 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 // just skip
                 logWriter.println(e.getMessage() + lf);
             } finally {
-                logWriter.print("Task '" + task.getName() + "' finished at " + new Date() + lf);
+                logWriter.print(NLS.bind(NativeToolMessages.native_tool_handler_log_finished_task, task.getName(),
+                    new Date() + lf));
                 logWriter.flush();
             }
         }
-
+        
         private String readStream(@NotNull InputStream inputStream) throws IOException {
             StringBuilder message = new StringBuilder();
             try (Reader reader = new InputStreamReader(inputStream, GeneralUtils.getDefaultConsoleEncoding())) {

@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset.plaintext;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.viewers.ISelection;
@@ -30,8 +29,6 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.printing.PrintDialog;
@@ -44,6 +41,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -63,7 +61,7 @@ import java.util.Map;
  * Empty presentation.
  * Used when RSV has no results (initially).
  */
-public class PlainTextPresentation extends AbstractPresentation implements IResultSetDisplayFormatProvider, IAdaptable {
+public class PlainTextPresentation extends AbstractPresentation implements IResultSetDisplayFormatProvider, DBPAdaptable {
 
     public static final int FIRST_ROW_LINE = 2;
 
@@ -128,8 +126,14 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
 
     @Override
     protected void applyThemeSettings(ITheme currentTheme) {
-        curLineColor = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
         text.setFont(currentTheme.getFontRegistry().get(UIFonts.DBEAVER_FONTS_MONOSPACE));
+        if (UIStyles.isDarkHighContrastTheme()) {
+            text.setBackground(UIStyles.getDefaultWidgetBackground());
+            text.setForeground(UIUtils.COLOR_WHITE);
+            curLineColor = UIUtils.COLOR_GREEN_CONTRAST;
+        } else {
+            curLineColor = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
+        }
     }
 
     private void onCursorChange(int offset) {

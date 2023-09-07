@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DPIContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -50,6 +51,7 @@ public class ExasolExecutionContext extends JDBCExecutionContext implements DBCE
         super(instance, purpose);
     }
 
+    @DPIContainer
     @NotNull
     @Override
     public ExasolDataSource getDataSource() {

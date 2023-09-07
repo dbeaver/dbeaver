@@ -94,16 +94,14 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
 
     @Override
     protected Control createContents(Composite parent) {
-        Control contents = super.createContents(parent);;
+        Control contents = super.createContents(parent);
         String activePage = defaultPageName;
         if (CommonUtils.isEmpty(activePage)) {
             activePage = lastActivePage;
         }
         if (!CommonUtils.isEmpty(activePage)) {
             String finalActivePage = activePage;
-            UIUtils.asyncExec(() -> {
-                getWizard().openSettingsPage(finalActivePage);
-            });
+            UIUtils.asyncExec(() -> getWizard().openSettingsPage(finalActivePage));
         }
         // Expand first page
         Tree pagesTree = getPagesTree();
@@ -169,6 +167,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
     private void testConnection() {
         getWizard().testConnection();
     }
+
 
     public static boolean openEditConnectionDialog(IWorkbenchWindow window, DBPDataSourceContainer dataSource, String defaultPageName) {
         return openEditConnectionDialog(window, dataSource, defaultPageName, null);

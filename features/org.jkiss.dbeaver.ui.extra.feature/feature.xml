@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.ui.extra.feature"
       label="%featureName"
-      version="23.1.1.qualifier"
+      version="23.2.0.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -12,13 +12,6 @@
    <copyright>
       %copyright
    </copyright>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.ui.colortheme"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
 
    <plugin
          id="org.jkiss.dbeaver.ext.ui.locks"

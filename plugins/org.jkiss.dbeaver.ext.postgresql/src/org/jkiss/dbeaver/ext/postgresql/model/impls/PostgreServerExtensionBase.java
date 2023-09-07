@@ -279,6 +279,12 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         }
 
         if (tableBase instanceof PostgreTableRegular) {
+            if (!alter) {
+                createUsingClause((PostgreTableRegular) tableBase, ddl);
+            }
+        }
+
+        if (tableBase instanceof PostgreTableRegular) {
             PostgreTableRegular table = (PostgreTableRegular) tableBase;
             try {
                 if (!alter) {
@@ -447,6 +453,10 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         }
 
         return withClauseBuilder.toString();
+    }
+
+    public void createUsingClause(@NotNull PostgreTableRegular table, @NotNull StringBuilder ddl) {
+        // Do nothing
     }
 
     @Override

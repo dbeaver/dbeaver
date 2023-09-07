@@ -23,9 +23,9 @@ import org.jkiss.dbeaver.tools.transfer.ui.IDataTransferEventProcessorConfigurat
 
 import java.util.Map;
 
-public class ShowInExplorerEventProcessorConfigurator implements IDataTransferEventProcessorConfigurator {
+public class ShowInExplorerEventProcessorConfigurator implements IDataTransferEventProcessorConfigurator<StreamConsumerSettings> {
     @Override
-    public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
+    public void createControl(@NotNull Composite parent, @NotNull StreamConsumerSettings settings, @NotNull Runnable propertyChangeListener) {
         // not implemented
     }
 

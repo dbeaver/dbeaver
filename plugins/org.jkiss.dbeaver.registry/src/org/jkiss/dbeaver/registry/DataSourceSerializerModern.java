@@ -70,6 +70,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
     public static final String TAG_ORIGIN = "origin"; //$NON-NLS-1$
     private static final String ATTR_ORIGIN_TYPE = "$type"; //$NON-NLS-1$
     private static final String ATTR_ORIGIN_CONFIGURATION = "$configuration"; //$NON-NLS-1$
+    public static final String ATTR_DPI_ENABLED = "dpi-enabled";
 
     private static final Log log = Log.getLog(DataSourceSerializerModern.class);
     private static final String NODE_CONNECTION = "#connection";
@@ -93,6 +94,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
     //  1 level: object type (connection or handler id)
     //  2 level: map of secured properties
     private final Map<String, Map<String, Map<String, String>>> secureProperties = new LinkedHashMap<>();
+    private final boolean isDetachedProcess = DBWorkbench.getPlatform().getApplication().isDetachedProcess();
 
     DataSourceSerializerModern(@NotNull DataSourceRegistry registry) {
         this.registry = registry;
@@ -457,7 +459,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             for (Map.Entry<String, Map<String, Object>> ctMap : JSONUtils.getNestedObjects(jsonMap, "external-configurations")) {
                 String id = ctMap.getKey();
                 Map<String, Object> configMap = ctMap.getValue();
-                externalConfigurations.put(id, new DBPExternalConfiguration(id, configMap));
+                externalConfigurations.put(id, new DBPExternalConfiguration(id, () -> configMap));
             }
 
             // Virtual models
@@ -521,10 +523,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 DriverDescriptor substitutedDriver;
 
                 if (CommonUtils.isEmpty(originalProviderId) || CommonUtils.isEmpty(originalDriverId)) {
-                    originalDriver = parseDriver(id, substitutedProviderId, substitutedDriverId, true);
+                    originalDriver = parseDriver(id, substitutedProviderId, substitutedDriverId, !isDetachedProcess);
                     substitutedDriver = originalDriver;
                 } else {
-                    originalDriver = parseDriver(id, originalProviderId, originalDriverId, true);
+                    originalDriver = parseDriver(id, originalProviderId, originalDriverId, !isDetachedProcess);
                     substitutedDriver = parseDriver(id, substitutedProviderId, substitutedDriverId, false);
                 }
                 if (originalDriver == null) {
@@ -581,6 +583,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 dataSource.setTemplate(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_TEMPLATE));
                 dataSource.setDriverSubstitution(DataSourceProviderRegistry.getInstance()
                     .getDriverSubstitution(CommonUtils.notEmpty(JSONUtils.getString(conObject, ATTR_DRIVER_SUBSTITUTION))));
+                dataSource.setDetachedProcessEnabled(JSONUtils.getBoolean(conObject, ATTR_DPI_ENABLED));
 
                 DataSourceNavigatorSettings navSettings = dataSource.getNavigatorSettings();
                 navSettings.setShowSystemObjects(JSONUtils.getBoolean(conObject,
@@ -615,6 +618,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         config.setUserName(creds.getUserName());
                         if (dataSource.isSavePassword() || !CommonUtils.isEmpty(creds.getUserPassword())) {
                             config.setUserPassword(creds.getUserPassword());
+                        } else {
+                            config.setUserPassword(null);
                         }
                         boolean savePasswordApplicable = (!dataSource.getProject().isUseSecretStorage() || dataSource.isSharedCredentials());
                         if (savePasswordApplicable && !CommonUtils.isEmpty(creds.getUserPassword())) {
@@ -706,17 +711,19 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     bootstrap.setInitQueries(JSONUtils.deserializeStringList(bootstrapCfg, RegistryConstants.TAG_QUERY));
 
                     if (originalDriver != substitutedDriver) {
-                        final DBPDataSourceProvider dataSourceProvider = substitutedDriver.getDataSourceProvider();
-                        if (dataSourceProvider instanceof DBPConnectionConfigurationMigrator) {
-                            final DBPConnectionConfigurationMigrator migrator = (DBPConnectionConfigurationMigrator) dataSourceProvider;
-                            if (migrator.migrationRequired(config)) {
-                                final DBPConnectionConfiguration migrated = new DBPConnectionConfiguration(config);
-                                try {
-                                    migrator.migrateConfiguration(config, migrated);
-                                    dataSource.setConnectionInfo(migrated);
-                                    log.debug("Connection configuration for data source '" + id + "' was migrated successfully");
-                                } catch (DBException e) {
-                                    log.error("Unable to migrate connection configuration for data source '" + id + "'", e);
+                        if (substitutedDriver.getProviderDescriptor().supportsDriverMigration()) {
+                            final DBPDataSourceProvider dataSourceProvider = substitutedDriver.getDataSourceProvider();
+                            if (dataSourceProvider instanceof DBPConnectionConfigurationMigrator) {
+                                final DBPConnectionConfigurationMigrator migrator = (DBPConnectionConfigurationMigrator) dataSourceProvider;
+                                if (migrator.migrationRequired(config)) {
+                                    final DBPConnectionConfiguration migrated = new DBPConnectionConfiguration(config);
+                                    try {
+                                        migrator.migrateConfiguration(config, migrated);
+                                        dataSource.setConnectionInfo(migrated);
+                                        log.debug("Connection configuration for data source '" + id + "' was migrated successfully");
+                                    } catch (DBException e) {
+                                        log.error("Unable to migrate connection configuration for data source '" + id + "'", e);
+                                    }
                                 }
                             }
                         }
@@ -858,7 +865,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
         NetworkHandlerDescriptor handlerDescriptor = NetworkHandlerRegistry.getInstance().getDescriptor(handlerId);
         if (handlerDescriptor == null) {
-            log.warn("Can't find network handler '" + handlerId + "'");
+            if (!isDetachedProcess) {
+                log.warn("Can't find network handler '" + handlerId + "'");
+            }
             return null;
         } else {
             DBWHandlerConfiguration curNetworkHandler = new DBWHandlerConfiguration(handlerDescriptor, dataSource);
@@ -972,6 +981,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (!CommonUtils.isEmpty(lockPasswordHash)) {
             JSONUtils.field(json, RegistryConstants.ATTR_LOCK_PASSWORD, lockPasswordHash);
         }
+        if (dataSource.isDetachedProcessEnabled()) JSONUtils.field(json, ATTR_DPI_ENABLED, true);
+
         if (dataSource.hasSharedVirtualModel()) {
             JSONUtils.field(json, "virtual-model-id", dataSource.getVirtualModel().getId());
         }

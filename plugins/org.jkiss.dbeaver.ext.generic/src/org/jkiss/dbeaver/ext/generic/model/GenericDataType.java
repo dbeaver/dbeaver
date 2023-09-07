@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
@@ -50,6 +51,11 @@ public class GenericDataType extends JDBCDataType<GenericStructContainer>
     public String getDescription()
     {
         return super.getDescription();
+    }
+
+    @Override
+    public DBPDataKind getDataKind() {
+        return GenericDataSource.getDataKind(getName(), getTypeID());
     }
 
     @Override

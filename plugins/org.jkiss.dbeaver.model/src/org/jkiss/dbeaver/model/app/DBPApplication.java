@@ -65,6 +65,8 @@ public interface DBPApplication {
      */
     boolean isDistributed();
 
+    boolean isDetachedProcess();
+
     /**
      * Application information details.
      * Like license info or some custom produce info

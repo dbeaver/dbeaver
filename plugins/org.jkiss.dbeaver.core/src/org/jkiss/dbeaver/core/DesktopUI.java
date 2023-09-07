@@ -161,10 +161,11 @@ public class DesktopUI implements DBPPlatformUI {
             return;
         }
         if (TrayIconHandler.isSupported()) {
+            Display.getCurrent().beep();
             getInstance().trayItem.notify(message, status);
         } else {
             DBeaverNotifications.showNotification(
-                "agentNotify",
+                "agent.notify",
                 "Agent Notification",
                 message,
                 status == IStatus.INFO ? DBPMessageType.INFORMATION :
@@ -269,17 +270,25 @@ public class DesktopUI implements DBPPlatformUI {
     }
 
     @Override
-    public void showNotification(@NotNull String title, String message, boolean error) {
-        showNotification(title, message, error ? DBPMessageType.ERROR : DBPMessageType.INFORMATION);
+    public void showNotification(@NotNull String title, String message, boolean error, @Nullable Runnable feedback) {
+        NotificationUtils.sendNotification(
+            DBeaverNotifications.NT_GENERIC,
+            title,
+            message,
+            error ? DBPMessageType.ERROR : DBPMessageType.INFORMATION,
+            feedback
+        );
     }
 
     @Override
     public void showWarningNotification(@NotNull String title, String message) {
-        showNotification(title, message, DBPMessageType.WARNING);
-    }
-
-    private static void showNotification(@NotNull String title, @NotNull String message, @NotNull DBPMessageType type) {
-        NotificationUtils.sendNotification(title, title, message, type, null);
+        NotificationUtils.sendNotification(
+            DBeaverNotifications.NT_GENERIC,
+            title,
+            message,
+            DBPMessageType.WARNING,
+            null
+        );
     }
 
     @Override

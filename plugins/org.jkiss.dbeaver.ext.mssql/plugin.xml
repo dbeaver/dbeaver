@@ -189,6 +189,13 @@
                     <file type="jar" path="drivers/mssql/new" bundle="drivers.mssql.new"/>
                     <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/new/auth/x64" optional="true" bundle="drivers.mssql.new"/>
                     <file type="license" path="drivers/mssql/new/LICENSE.txt" bundle="drivers.mssql.new"/>
+
+                    <provider-properties>
+                        <propertyGroup label="Advanced">
+                            <property id="@dbeaver-show-all-schemas@" label="Show all schemas" type="boolean" description="Shows all database schemas. If disabled shows only non-empty schemas."/>
+                            <property id="sslTrustServerCertificate" label="Trust Server Certificate" type="boolean" description="Trust Server Certificate"/>
+                        </propertyGroup>
+                    </provider-properties>
                 </driver>
 
                 <driver
@@ -568,8 +575,14 @@
                 label="SSL"
                 description="SSL settings"
                 secured="false"
+                pinned="true"
                 order="100"
                 handlerClass="org.jkiss.dbeaver.ext.mssql.model.SQLServerSSLHandlerImpl">
+            <propertyGroup label="SSL Settings">
+                <property id="ssl.keystore.value" label="Keystore" type="file" features="secured,password" length="MULTILINE"/>
+                <property id="password" label="Keystore password" type="string" features="secured,password"/>
+                <property id="sslKeyStoreHostname" label="Certificate hostname" type="string"/>
+            </propertyGroup>
             <objectType name="org.jkiss.dbeaver.ext.mssql.SQLServerDataSourceProvider"/>
         </handler>
     </extension>

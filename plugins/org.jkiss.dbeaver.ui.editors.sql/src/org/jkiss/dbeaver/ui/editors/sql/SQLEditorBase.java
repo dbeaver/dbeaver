@@ -54,6 +54,7 @@ import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
@@ -67,8 +68,11 @@ import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.parser.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
+import org.jkiss.dbeaver.ui.editors.AbstractStorageEditorInput;
 import org.jkiss.dbeaver.ui.editors.BaseTextEditorCommands;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.*;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.*;
@@ -171,6 +175,17 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         completionContext = new SQLEditorCompletionContext(this);
 
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(this);
+    }
+
+    @Override
+    protected void setDocumentProvider(IEditorInput input) {
+        if (input instanceof StringEditorInput) {
+            if (!(getDocumentProvider() instanceof NonFileDocumentProvider)) {
+                IDocumentProvider prov = new NonFileDocumentProvider(this, (StringEditorInput) input);
+                setDocumentProvider(prov);
+            }
+        }
+        super.setDocumentProvider(input);
     }
 
     @Override
@@ -546,6 +561,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 */
 
         super.configureSourceViewerDecorationSupport(support);
+
+        if (UIStyles.isDarkHighContrastTheme()) {
+            support.setCursorLinePainterPreferenceKeys(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_CURRENT_LINE, ThemeConstants.COLOR_SQL_RESULT_LINES_SELECTED);
+        }
     }
 
     public ICharacterPairMatcher getCharacterPairMatcher() {
@@ -1170,6 +1189,34 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 PropertyDialog.createDialogOn(shell, null, new StructuredSelection(getEditorInput())).open();
                 //PreferencesUtil.createPreferenceDialogOn(shell, preferencePages[0], preferencePages, getEditorInput()).open();
             }
+        }
+    }
+
+    private static class NonFileDocumentProvider extends SQLObjectDocumentProvider {
+
+        private final StringEditorInput editorInput;
+
+        public NonFileDocumentProvider(SQLEditorBase editor, StringEditorInput editorInput) {
+            super(editor);
+            this.editorInput = editorInput;
+        }
+
+        @Override
+        protected String loadSourceText(DBRProgressMonitor monitor) throws DBException {
+            return editorInput.getBuffer().toString();
+        }
+
+        @Override
+        protected void saveSourceText(DBRProgressMonitor monitor, String text) throws DBException {
+            editorInput.setText(text);
+        }
+
+        @Override
+        public boolean isReadOnly(Object element) {
+            if (element instanceof AbstractStorageEditorInput) {
+                return ((AbstractStorageEditorInput) element).isReadOnly();
+            }
+            return editorInput.isReadOnly();
         }
     }
 

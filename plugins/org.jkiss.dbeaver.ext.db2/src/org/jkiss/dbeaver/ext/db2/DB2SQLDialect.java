@@ -43,7 +43,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -155,13 +154,16 @@ public class DB2SQLDialect extends JDBCSQLDialect implements TPRuleProvider {
     	return "--#SET TERMINATOR";
     }
 
+    @NotNull
     @Override
-    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
+    public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position) {
         if (position == RulePosition.KEYWORDS) {
             final TPTokenDefault keywordToken = new TPTokenDefault(SQLTokenType.T_KEYWORD);
-            rules.add(new SQLMultiWordRule(new String[]{"ROW", "BEGIN"}, keywordToken));
-            rules.add(new SQLMultiWordRule(new String[]{"ROW", "END"}, keywordToken));
+            return new TPRule[] {
+                new SQLMultiWordRule(new String[]{"ROW", "BEGIN"}, keywordToken),
+                new SQLMultiWordRule(new String[]{"ROW", "END"}, keywordToken) };
         }
+        return new TPRule[0];
     }
 
     @Override

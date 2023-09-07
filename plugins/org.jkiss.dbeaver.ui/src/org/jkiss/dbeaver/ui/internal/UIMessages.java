@@ -60,6 +60,10 @@ public class UIMessages extends NLS {
     public static String button_reset_to_defaults;
     public static String button_start;
     public static String button_skip_all;
+    public static String browse_button_choose;
+    public static String browse_button_choose_tooltip;
+    public static String bad_container_node;
+    public static String bad_container_node_message;
 
     public static String controls_locale_selector_group_locale;
     public static String controls_locale_selector_label_country;
@@ -103,6 +107,10 @@ public class UIMessages extends NLS {
 
     public static String utils_actions_copy_label;
     public static String utils_actions_copy_all_label;
+    public static String text_with_open_dialog_set_text;
+    public static String text_with_open_dialog_edit_text;
+    public static String text_with_open_dialog_browse;
+    public static String text_with_open_dialog_edit_file;
 
     static {
         // initialize resource bundle

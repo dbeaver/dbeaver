@@ -88,7 +88,7 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
     {
         GenericStructContainer structContainer = (GenericStructContainer) container;
         String tableName = getNewChildName(monitor, structContainer, SQLTableManager.BASE_VIEW_NAME);
-        GenericTableBase viewImpl = structContainer.getDataSource().getMetaModel().createTableImpl(structContainer, tableName,
+        GenericTableBase viewImpl = structContainer.getDataSource().getMetaModel().createTableOrViewImpl(structContainer, tableName,
                 GenericConstants.TABLE_TYPE_VIEW,
                 null);
         if (viewImpl instanceof GenericView) {

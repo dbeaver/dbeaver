@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.AbstractCommandContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -58,16 +60,28 @@ public class DatabaseTransferUtils {
     private static final Pair<DBPDataKind, String> DATA_TYPE_STRING = new Pair<>(DBPDataKind.STRING, "VARCHAR");
 
     public static void refreshDatabaseModel(DBRProgressMonitor monitor, DatabaseConsumerSettings consumerSettings, DatabaseMappingContainer containerMapping) throws DBException {
-        monitor.subTask("Refresh navigator model");
-        consumerSettings.getContainerNode().refreshNode(monitor, containerMapping);
-
+        monitor.subTask("Refresh database model");
+        DBSObjectContainer container = consumerSettings.getContainer();
+        DBNModel navigatorModel = DBNUtils.getNavigatorModel(container);
+        if (navigatorModel != null) {
+            var containerNode = navigatorModel.getNodeByObject(monitor, container, false);
+            if (containerNode != null) {
+                containerNode.refreshNode(monitor, containerMapping);
+            }
+        } else if (container instanceof DBPRefreshableObject) {
+            ((DBPRefreshableObject) container).refreshObject(monitor);
+        }
         refreshDatabaseMappings(monitor, consumerSettings, containerMapping, false);
     }
 
-    public static void refreshDatabaseMappings(@NotNull DBRProgressMonitor monitor, @NotNull DatabaseConsumerSettings consumerSettings, @NotNull DatabaseMappingContainer containerMapping, boolean force) throws DBException {
+    public static void refreshDatabaseMappings(@NotNull DBRProgressMonitor monitor, @NotNull DatabaseConsumerSettings consumerSettings, @Nullable DatabaseMappingContainer containerMapping, boolean force) throws DBException {
         DBSObjectContainer container = consumerSettings.getContainer();
         if (container == null) {
-            throw new DBException("Null target container");
+            log.debug("Null target container");
+        }
+        if (containerMapping == null) {
+            log.debug("Null container mapping");
+            return;
         }
 
         // Reflect database changes in mappings

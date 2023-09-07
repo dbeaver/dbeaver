@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.net.ssh;
 
 import com.jcraft.jsch.Identity;
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.connection.channel.direct.DirectConnection;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.connection.channel.direct.Parameters;
@@ -28,6 +29,8 @@ import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
 import net.schmizz.sshj.xfer.InMemoryDestFile;
 import net.schmizz.sshj.xfer.InMemorySourceFile;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -35,11 +38,13 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHPortForwardConfiguration;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.slf4j.Logger;
+import org.slf4j.helpers.NOPLogger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,6 +53,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * SSHJ tunnel
@@ -78,6 +84,9 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
 
             client.setConnectTimeout(connectTimeout);
             client.getConnection().getKeepAlive().setKeepAliveInterval(keepAliveInterval);
+            client.getTransport().getConfig().setLoggerFactory(new FilterLoggerFactory());
+
+            clients[index] = client;
 
             try {
                 setupHostKeyVerification(client, configuration, host);
@@ -151,8 +160,6 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
                 closeTunnel(monitor);
                 throw new DBException("Cannot establish tunnel to " + host.getHostname() + ":" + host.getPort(), e);
             }
-
-            clients[index] = client;
         }
     }
 
@@ -178,23 +185,25 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
         listeners.forEach(LocalPortListener::disconnect);
         listeners.clear();
 
-        RuntimeUtils.runTask(monitor1 -> {
-            final SSHClient[] clients = this.clients;
-
-            if (ArrayUtils.isEmpty(clients)) {
-                return;
-            }
-
-            for (SSHClient client : clients) {
-                if (client != null && client.isConnected()) {
-                    try {
-                        client.disconnect();
-                    } catch (Exception e) {
-                        log.debug("Error closing session: " + e.getMessage());
+        if (!ArrayUtils.isEmpty(clients)) {
+            SSHClient[] clientsCopy = this.clients;
+            new AbstractJob("Close SSHJ clients") {
+                @Override
+                protected IStatus run(DBRProgressMonitor monitor) {
+                    for (SSHClient client : clientsCopy) {
+                        if (client != null && client.isConnected()) {
+                            try {
+                                log.debug("Disconnect SSHJ tunnel " + client);
+                                client.disconnect();
+                            } catch (Throwable e) {
+                                log.debug("Error closing session: " + e.getMessage());
+                            }
+                        }
                     }
+                    return Status.OK_STATUS;
                 }
-            }
-        }, "Close SSH session", 1000);
+            }.schedule();
+        }
 
         clients = null;
     }
@@ -278,10 +287,6 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
 
     }
 
-    private int setPortForwarding(@NotNull SSHClient client, String host, int port) throws IOException {
-        return setPortForwarding(client, "127.0.0.1", 0, host, port);
-    }
-
     private int setPortForwarding(
         @NotNull SSHClient client,
         @NotNull String localHost, int localPort,
@@ -296,6 +301,24 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
         listeners.add(listener);
 
         return ss.getLocalPort();
+    }
+
+    private static class FilterLoggerFactory implements LoggerFactory {
+        private static final Set<String> FILTERED_OUT_CLASSES = Set.of("net.schmizz.sshj.common.StreamCopier");
+
+        @Override
+        public Logger getLogger(String s) {
+            if (FILTERED_OUT_CLASSES.contains(s)) {
+                return NOPLogger.NOP_LOGGER;
+            } else {
+                return org.slf4j.LoggerFactory.getLogger(s);
+            }
+        }
+
+        @Override
+        public Logger getLogger(Class<?> cls) {
+            return getLogger(cls.getName());
+        }
     }
 
     private static class LocalPortListener extends Thread {

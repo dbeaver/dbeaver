@@ -158,10 +158,17 @@ public class SQLGroupingQueryGenerator {
             if (i > 0) sql.append(", ");
             sql.append(quotedGroupingString(dataSource, groupAttributes.get(i)));
         }
-        boolean isDefaultGrouping = groupFunctions.size() == 1 && groupFunctions.get(0).equals(DEFAULT_FUNCTION);
+        boolean isDefaultGrouping = groupFunctions.size() == 1 && groupFunctions.get(0).equalsIgnoreCase(DEFAULT_FUNCTION);
 
         if (isDefaultGrouping && showDuplicatesOnly) {
-            sql.append("\nHAVING ").append(funcAliases[0]).append(" > 1");
+            sql.append("\nHAVING ");
+            if (dataSource.getSQLDialect().supportsAliasInHaving()) {
+                sql.append(funcAliases[0]);
+            } else {
+                // very special case
+                sql.append(DEFAULT_FUNCTION);
+            }
+            sql.append(" > 1");
         }
         return sql.toString();
     }

@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI.UserChoiceResponse;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
@@ -49,6 +48,8 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.serialize.DTObjectSerializer;
+import org.jkiss.dbeaver.tools.transfer.serialize.SerializerContext;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings.BlobFileConflictBehavior;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings.ConsumerRuntimeParameters;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings.DataFileConflictBehavior;
@@ -70,7 +71,7 @@ import java.util.zip.ZipOutputStream;
 /**
  * Stream transfer consumer
  */
-@DBSerializable("streamTransferConsumer")
+@DBSerializable(StreamTransferConsumer.NODE_ID)
 public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsumerSettings, IStreamDataExporter> {
 
     private static final Log log = Log.getLog(StreamTransferConsumer.class);
@@ -603,7 +604,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void finishTransfer(@NotNull DBRProgressMonitor monitor, @Nullable Exception exception, boolean last) {
+    public void finishTransfer(@NotNull DBRProgressMonitor monitor, @Nullable Exception exception, @Nullable DBTTask task, boolean last) {
         if (!last && exception == null) {
             exportFooterInFile(monitor);
 
@@ -630,9 +631,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 final IDataTransferEventProcessor<StreamTransferConsumer> processor = descriptor.create();
 
                 if (exception == null) {
-                    processor.processEvent(monitor, IDataTransferEventProcessor.Event.FINISH, this, entry.getValue());
+                    processor.processEvent(monitor, IDataTransferEventProcessor.Event.FINISH, this, task, entry.getValue());
                 } else {
-                    processor.processError(monitor, exception, this, entry.getValue());
+                    processor.processError(monitor, exception, this, task, entry.getValue());
                 }
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Transfer event processor", "Error executing data transfer event processor '" + entry.getKey() + "'", e);
@@ -902,6 +903,17 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return null;
     }
 
+    @Override
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public DBPProject getProject() {
+        return null;
+    }
+
     public static Object[] fetchRow(DBCSession session, DBCResultSet resultSet, DBDAttributeBinding[] attributes) throws DBCException {
         int columnCount = attributes.length; // Column count without virtual columns
 
@@ -1082,14 +1094,14 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     }
 
-    public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, StreamTransferConsumer> {
+    public static class ObjectSerializer implements DTObjectSerializer<DBTTask, StreamTransferConsumer> {
 
         @Override
-        public void serializeObject(DBRRunnableContext runnableContext, DBTTask context, StreamTransferConsumer object, Map<String, Object> state) {
+        public void serializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull DBTTask context, @NotNull StreamTransferConsumer object, @NotNull Map<String, Object> state) {
         }
 
         @Override
-        public StreamTransferConsumer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) {
+        public StreamTransferConsumer deserializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull SerializerContext serializeContext, @NotNull DBTTask objectContext, @NotNull Map<String, Object> state) {
             return new StreamTransferConsumer();
         }
     }

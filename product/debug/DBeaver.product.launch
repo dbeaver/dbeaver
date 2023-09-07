@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.pde.ui.RuntimeWorkbench">
-    <booleanAttribute key="append.args" value="true"/>
     <stringAttribute key="application" value="org.jkiss.dbeaver.ui.app.standalone.standalone"/>
+    <stringAttribute key="configLocation" value="${workspace_loc}/.metadata/.plugins/org.eclipse.pde.core/DBeaver.product"/>
+    <stringAttribute key="location" value="${workspace_loc}/../runtime-DBeaver.product"/>
+    <stringAttribute key="product" value="org.jkiss.dbeaver.ui.app.standalone.product"/>
+    <stringAttribute key="productFile" value="\org.jkiss.dbeaver.ce.standalone\DBeaver.product"/>
+
+    <booleanAttribute key="append.args" value="true"/>
     <booleanAttribute key="askclear" value="true"/>
     <booleanAttribute key="automaticAdd" value="false"/>
     <booleanAttribute key="automaticValidate" value="true"/>
@@ -10,11 +15,8 @@
     <booleanAttribute key="clearConfig" value="false"/>
     <booleanAttribute key="clearws" value="false"/>
     <booleanAttribute key="clearwslog" value="false"/>
-    <stringAttribute key="configLocation" value="${workspace_loc}/.metadata/.plugins/org.eclipse.pde.core/DBeaver.product"/>
     <booleanAttribute key="default" value="false"/>
-    <setAttribute key="deselected_workspace_bundles"/>
     <booleanAttribute key="includeOptional" value="true"/>
-    <stringAttribute key="location" value="${workspace_loc}/../runtime-DBeaver.product"/>
     <booleanAttribute key="org.eclipse.debug.core.ATTR_FORCE_SYSTEM_CONSOLE_ENCODING" value="false"/>
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_ATTR_USE_ARGFILE" value="false"/>
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_SHOW_CODEDETAILS_IN_EXCEPTION_MESSAGES" value="true"/>
@@ -24,8 +26,14 @@
     <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.pde.ui.workbenchClasspathProvider"/>
     <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Xms64m -Xmx1024m"/>
     <stringAttribute key="pde.version" value="3.3"/>
-    <stringAttribute key="product" value="org.jkiss.dbeaver.ui.app.standalone.product"/>
-    <stringAttribute key="productFile" value="\org.jkiss.dbeaver.ce.standalone\DBeaver.product"/>
+    <booleanAttribute key="show_selected_only" value="false"/>
+    <booleanAttribute key="tracing" value="false"/>
+    <booleanAttribute key="useCustomFeatures" value="false"/>
+    <booleanAttribute key="useDefaultConfig" value="true"/>
+    <booleanAttribute key="useDefaultConfigArea" value="true"/>
+    <booleanAttribute key="useProduct" value="true"/>
+    <booleanAttribute key="usefeatures" value="false"/>
+    <setAttribute key="deselected_workspace_bundles"/>
     <setAttribute key="selected_target_bundles">
         <setEntry value="bcpg@default:default"/>
         <setEntry value="bcprov@default:default"/>
@@ -258,6 +266,7 @@
         <setEntry value="org.jkiss.dbeaver.ext.db2.zos@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.db2@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.derby@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ext.duckdb@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.elasticsearch@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.exasol.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.exasol@default:default"/>
@@ -298,7 +307,6 @@
         <setEntry value="org.jkiss.dbeaver.ext.sqlite@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.teradata@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.trino@default:default"/>
-        <setEntry value="org.jkiss.dbeaver.ext.ui.colortheme@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.ui.locks@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.ui.svg@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.ui.tipoftheday@default:default"/>
@@ -311,7 +319,6 @@
         <setEntry value="org.jkiss.dbeaver.net.ssh.sshj@default:default"/>
         <setEntry value="org.jkiss.dbeaver.net.ssh.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.net.ssh@default:default"/>
-        <setEntry value="org.jkiss.dbeaver.parser.common@default:default"/>
         <setEntry value="org.jkiss.dbeaver.registry@default:default"/>
         <setEntry value="org.jkiss.dbeaver.slf4j@default:false"/>
         <setEntry value="org.jkiss.dbeaver.tasks.native.ui@default:default"/>
@@ -341,11 +348,4 @@
         <setEntry value="org.jkiss.utils@default:default"/>
         <setEntry value="org.jkiss.wmi@default:default"/>
     </setAttribute>
-    <booleanAttribute key="show_selected_only" value="false"/>
-    <booleanAttribute key="tracing" value="false"/>
-    <booleanAttribute key="useCustomFeatures" value="false"/>
-    <booleanAttribute key="useDefaultConfig" value="true"/>
-    <booleanAttribute key="useDefaultConfigArea" value="true"/>
-    <booleanAttribute key="useProduct" value="true"/>
-    <booleanAttribute key="usefeatures" value="false"/>
 </launchConfiguration>

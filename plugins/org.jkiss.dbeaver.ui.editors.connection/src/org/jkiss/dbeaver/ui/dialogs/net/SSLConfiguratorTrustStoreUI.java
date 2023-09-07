@@ -155,7 +155,10 @@ public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI {
 
         if (isKeystoreSupported()) {
             keyStorePath.setText(getCertProperty(configuration, SSLHandlerTrustStoreImpl.PROP_SSL_KEYSTORE));
-            keyStorePassword.setText(CommonUtils.notEmpty(configuration.getPassword()));
+            keyStorePassword.setText(CommonUtils.notEmpty(
+                DBWorkbench.isDistributed() ?
+                    configuration.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_KEYSTORE_PASSWORD) :
+                    configuration.getPassword()));
         }
 
         final SSLConfigurationMethod method;
@@ -211,7 +214,11 @@ public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI {
 
             final String password = keyStorePassword.getText().trim();
             if (!CommonUtils.isEmptyTrimmed(password)) {
-                configuration.setPassword(password);
+                if (DBWorkbench.isDistributed()) {
+                    configuration.setSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_KEYSTORE_PASSWORD, password);
+                } else {
+                    configuration.setPassword(password);
+                }
                 configuration.setSavePassword(true);
             }
         }

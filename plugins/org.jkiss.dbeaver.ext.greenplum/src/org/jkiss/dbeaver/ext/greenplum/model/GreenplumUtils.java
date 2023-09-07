@@ -46,7 +46,7 @@ public class GreenplumUtils {
     static int[] readDistributedColumns(@NotNull DBRProgressMonitor monitor, @NotNull PostgreTableReal table) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Read Greenplum table distributed columns")) {
             try (JDBCStatement dbStat = session.createStatement()) {
-                if (((GreenplumDataSource) table.getDataSource()).isGreenplumVersionAtLeast(session.getProgressMonitor(), 6, 0)) {
+                if (((GreenplumDataSource) table.getDataSource()).isGreenplumVersionAtLeast(6, 0)) {
                     try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT distkey FROM pg_catalog.gp_distribution_policy WHERE localoid=" + table.getObjectId())) {
                         if (dbResult.next()) {
                             return PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, 1));
@@ -132,7 +132,14 @@ public class GreenplumUtils {
         }
     }
 
-    static void addObjectModifiersToDDL(@NotNull DBRProgressMonitor monitor, @NotNull StringBuilder ddl, @NotNull PostgreTableReal table, List<PostgreTableColumn> distributionColumns, boolean supportsReplicatedDistribution) throws DBCException {
+    static void addObjectModifiersToDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull StringBuilder ddl,
+        @NotNull PostgreTableReal table,
+        List<PostgreTableColumn> distributionColumns,
+        boolean supportsReplicatedDistribution,
+        boolean addPartitionInfo
+    ) throws DBCException {
         ddl.append("\nDISTRIBUTED ");
         if (supportsReplicatedDistribution && table.isPersisted() && GreenplumUtils.isDistributedByReplicated(monitor, table)) {
             ddl.append("REPLICATED");
@@ -147,10 +154,12 @@ public class GreenplumUtils {
             ddl.append("RANDOMLY");
         }
 
-        String partitionData = table.isPersisted() ? GreenplumUtils.getPartitionData(monitor, table) : null;
-        if (partitionData != null) {
-            ddl.append("\n");
-            ddl.append(partitionData);
+        if (addPartitionInfo) {
+            String partitionData = table.isPersisted() ? GreenplumUtils.getPartitionData(monitor, table) : null;
+            if (partitionData != null) {
+                ddl.append("\n");
+                ddl.append(partitionData);
+            }
         }
     }
 }

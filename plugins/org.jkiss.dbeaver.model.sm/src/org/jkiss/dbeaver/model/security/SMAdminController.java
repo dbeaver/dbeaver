@@ -21,6 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.security.user.SMTeam;
 import org.jkiss.dbeaver.model.security.user.SMUser;
+import org.jkiss.dbeaver.model.security.user.SMUserFilter;
+import org.jkiss.dbeaver.model.security.user.SMUserImportList;
 
 import java.util.List;
 import java.util.Map;
@@ -60,6 +62,8 @@ public interface SMAdminController extends SMController {
         @Nullable String defaultAuthRole
     ) throws DBException;
 
+    void importUsers(@NotNull SMUserImportList userImportList) throws DBException;
+
     void deleteUser(String userId) throws DBException;
 
     void setUserTeams(String userId, String[] teamIds, String grantorId) throws DBException;
@@ -75,6 +79,11 @@ public interface SMAdminController extends SMController {
 
     @NotNull
     SMUser[] findUsers(String userNameMask) throws DBException;
+
+    @NotNull
+    SMUser[] findUsers(@NotNull SMUserFilter filter) throws DBException;
+
+    int countUsers(@NotNull SMUserFilter filter) throws DBException;
 
     void enableUser(String userId, boolean enabled) throws DBException;
 
@@ -95,7 +104,7 @@ public interface SMAdminController extends SMController {
 
     void updateTeam(String teamId, String name, String description) throws DBException;
 
-    void deleteTeam(String teamId) throws DBException;
+    void deleteTeam(String teamId, boolean force) throws DBException;
 
     ///////////////////////////////////////////
     // Credentials
@@ -112,6 +121,18 @@ public interface SMAdminController extends SMController {
         @NotNull String userId,
         @NotNull String authProviderId,
         @NotNull Map<String, Object> credentials
+    ) throws DBException;
+
+    /**
+     * Delete user credentials for specified provider.
+     *
+     * @param userId         the user id
+     * @param authProviderId the auth provider id
+     * @throws DBException the db exception
+     */
+    void deleteUserCredentials(
+        @NotNull String userId,
+        @NotNull String authProviderId
     ) throws DBException;
 
     /**

@@ -145,6 +145,23 @@ public class AIConfiguratorDefault implements IObjectPropertyConfigurator<GPTCom
                     UIUtils.resizeShell(placeholder.getShell());
                 }
             };
+
+            Group modelGroup = UIUtils.createControlGroup(placeholder,
+                AIUIMessages.gpt_preference_page_group_model,
+                2,
+                SWT.NONE,
+                5
+            );
+            modelGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            modelCombo = UIUtils.createLabelCombo(modelGroup,
+                AIUIMessages.gpt_preference_page_combo_engine,
+                SWT.READ_ONLY
+            );
+            for (GPTModel model : GPTModel.values()) {
+                modelCombo.add(model.getName());
+            }
+            UIUtils.createInfoLabel(modelGroup, "gpt-3.5-turbo-16k model suits the best for SQL code completion",
+                GridData.FILL_HORIZONTAL, 2);
             {
                 final Composite modelGroup = createExpandable(
                     composite,

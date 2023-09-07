@@ -67,7 +67,12 @@ public class JDBCReferenceValueHandler extends JDBCComplexValueHandler {
         throws DBCException, SQLException
     {
         JDBCReference reference = (JDBCReference) value;
-        statement.setRef(paramIndex, reference.getValue());
+        Object ref = reference.getValue();
+        if (ref instanceof Ref) {
+            statement.setRef(paramIndex, (Ref) ref);
+        } else {
+            statement.setObject(paramIndex, ref);
+        }
     }
 
     @NotNull
@@ -108,10 +113,8 @@ public class JDBCReferenceValueHandler extends JDBCComplexValueHandler {
             return new JDBCReference(dataType, null);
         } else if (object instanceof JDBCReference) {
             return (JDBCReference)object;
-        } else if (object instanceof Ref) {
-            return new JDBCReference(dataType, (Ref) object);
         } else {
-            throw new DBCException("Unsupported struct type: " + object.getClass().getName());
+            return new JDBCReference(dataType, object);
         }
     }
 

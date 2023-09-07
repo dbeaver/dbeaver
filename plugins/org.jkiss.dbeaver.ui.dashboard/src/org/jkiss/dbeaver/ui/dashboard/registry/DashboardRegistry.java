@@ -102,8 +102,9 @@ public class DashboardRegistry {
                 .getPluginConfigurationController(UIDashboardActivator.PLUGIN_ID)
                 .loadConfigurationFile(CONFIG_FILE_NAME);
             
-            synchronized (syncRoot) {    
-                dashboardList.clear();
+            synchronized (syncRoot) {
+                // Clear all custom dashboards
+                dashboardList.values().removeIf(DashboardDescriptor::isCustom);
                 if (CommonUtils.isNotEmpty(configContent)) {
                     Document dbDocument = XMLUtils.parseDocument(new StringReader(configContent));
                     for (Element dbElement : XMLUtils.getChildElementList(dbDocument.getDocumentElement(), "dashboard")) {

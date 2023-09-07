@@ -22,20 +22,23 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.serialize.DTObjectSerializer;
+import org.jkiss.dbeaver.tools.transfer.serialize.SerializerContext;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -54,17 +57,18 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
 
     public static final String NODE_ID = "stream_producer";
 
-    private StreamEntityMapping entityMapping;
-    private DataTransferProcessorDescriptor defaultProcessor;
+    private final StreamEntityMapping entityMapping;
+    private final DataTransferProcessorDescriptor defaultProcessor;
 
     public StreamTransferProducer() {
+        this(null, null);
     }
 
-    public StreamTransferProducer(StreamEntityMapping entityMapping) {
+    public StreamTransferProducer(@Nullable StreamEntityMapping entityMapping) {
         this(entityMapping, null);
     }
 
-    public StreamTransferProducer(StreamEntityMapping entityMapping, DataTransferProcessorDescriptor defaultProcessor) {
+    public StreamTransferProducer(@Nullable StreamEntityMapping entityMapping, @Nullable DataTransferProcessorDescriptor defaultProcessor) {
         this.entityMapping = entityMapping;
         this.defaultProcessor = defaultProcessor;
     }
@@ -77,6 +81,17 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
     public StreamEntityMapping getDatabaseObject()
     {
         return entityMapping;
+    }
+
+    @Nullable
+    @Override
+    public DBPProject getProject() {
+        return null;
+    }
+
+    @Override
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return entityMapping.getDataSource().getContainer();
     }
 
     @Override
@@ -156,11 +171,14 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         return super.equals(obj);
     }
 
-    public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, StreamTransferProducer> {
+    public static class ObjectSerializer implements DTObjectSerializer<DBTTask, StreamTransferProducer> {
 
         @Override
-        public void serializeObject(DBRRunnableContext runnableContext, DBTTask context, StreamTransferProducer object, Map<String, Object> state) {
-            state.put("file", object.getInputFile().getAbsolutePath());
+        public void serializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull DBTTask context, @NotNull StreamTransferProducer object, @NotNull Map<String, Object> state) {
+            final StreamEntityMapping mapping = object.getEntityMapping();
+            state.put("file", mapping.getInputFile().getAbsolutePath());
+            state.put("name", mapping.getEntityName());
+            state.put("child", mapping.isChild());
             if (object.defaultProcessor != null) {
                 state.put("node", object.defaultProcessor.getNode().getId());
                 state.put("processor", object.defaultProcessor.getId());
@@ -168,8 +186,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         }
 
         @Override
-        public StreamTransferProducer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) {
-            File inputFile = new File(CommonUtils.toString(state.get("file")));
+        public StreamTransferProducer deserializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull SerializerContext serializeContext, @NotNull DBTTask objectContext, @NotNull Map<String, Object> state) {
             String nodeId = CommonUtils.toString(state.get("node"));
             String processorId = CommonUtils.toString(state.get("processor"));
             DataTransferProcessorDescriptor processor = null;
@@ -184,7 +201,14 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
                     }
                 }
             }
-            return new StreamTransferProducer(new StreamEntityMapping(inputFile), processor);
+            return new StreamTransferProducer(
+                new StreamEntityMapping(
+                    new File(CommonUtils.toString(state.get("file"))),
+                    CommonUtils.toString(state.get("name")),
+                    CommonUtils.toBoolean(state.get("child"))
+                ),
+                processor
+            );
         }
     }
 

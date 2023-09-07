@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
@@ -104,10 +103,8 @@ import java.util.stream.Collectors;
  * Visualizes results as grid.
  */
 public class SpreadsheetPresentation extends AbstractPresentation
-    implements IResultSetEditor, IResultSetDisplayFormatProvider, ISelectionProvider, IStatefulControl, IAdaptable, IGridController {
+    implements IResultSetEditor, IResultSetDisplayFormatProvider, ISelectionProvider, IStatefulControl, DBPAdaptable, IGridController {
     public static final String PRESENTATION_ID = "spreadsheet";
-
-    public static final String ATTR_OPTION_PINNED = "pinned";
 
     private static final int MAX_INLINE_COLLECTION_ELEMENTS = 3;
 
@@ -138,6 +135,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     private Color cellHeaderBackground;
     private Color cellHeaderSelectionBackground;
     private Color cellHeaderBorder;
+    private boolean isHighContrastTheme = false;
 
     private boolean showOddRows = true;
     private boolean highlightRowsWithSelectedCells;
@@ -830,6 +828,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         if (spreadsheet.isDisposed()) {
             return;
         }
+        isHighContrastTheme = UIStyles.isHighContrastTheme();
 
         // Cache preferences
         DBPPreferenceStore preferenceStore = getPreferenceStore();
@@ -957,10 +956,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
                     final boolean allPinned = selectedColumns.stream()
                         .map(x -> dataFilter.getConstraint(((DBDAttributeBinding) x.getElement()).getTopParent()))
-                        .allMatch(x -> x != null && x.hasOption(ATTR_OPTION_PINNED));
+                        .allMatch(x -> x != null && x.hasOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED));
                     final boolean allUnpinned = selectedColumns.stream()
                         .map(x -> dataFilter.getConstraint(((DBDAttributeBinding) x.getElement()).getTopParent()))
-                        .allMatch(x -> x != null && !x.hasOption(ATTR_OPTION_PINNED));
+                        .allMatch(x -> x != null && !x.hasOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED));
 
                     if (allUnpinned != allPinned) {
                         final String pinnedTitle = allUnpinned
@@ -979,9 +978,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
                                     final DBDAttributeConstraint constraint = dataFilter.getConstraint(attribute.getTopParent());
                                     if (constraint != null) {
                                         if (allUnpinned) {
-                                            constraint.setOption(ATTR_OPTION_PINNED, getNextPinIndex(dataFilter));
+                                            constraint.setOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED, getNextPinIndex(dataFilter));
                                         } else {
-                                            constraint.removeOption(ATTR_OPTION_PINNED);
+                                            constraint.removeOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED);
                                         }
                                     }
                                 }
@@ -992,15 +991,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
                 {
                     // Hide/show
-                    List<DBDAttributeBinding> hiddenAttributes = new ArrayList<>();
-                    List<DBDAttributeConstraint> constraints = getController().getModel().getDataFilter().getConstraints();
-                    for (DBDAttributeConstraint ac : constraints) {
-                        DBSAttributeBase attribute = ac.getAttribute();
-                        if (!ac.isVisible() && attribute instanceof DBDAttributeBinding && DBDAttributeConstraint.isVisibleByDefault((DBDAttributeBinding) attribute)) {
-                            hiddenAttributes.add((DBDAttributeBinding) attribute);
-                        }
-                    }
-                    if (!hiddenAttributes.isEmpty()) {
+                    if (getController().getModel().getDataFilter().hasHiddenAttributes()) {
                         manager.insertAfter(
                             IResultSetController.MENU_GROUP_ADDITIONS,
                             ActionUtils.makeCommandContribution(
@@ -1080,7 +1071,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     public static int getNextPinIndex(@NotNull DBDDataFilter dataFilter) {
         int maxIndex = 0;
         for (DBDAttributeConstraint ac : dataFilter.getConstraints()) {
-            Integer pinIndex = ac.getOption(ATTR_OPTION_PINNED);
+            Integer pinIndex = ac.getOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED);
             if (pinIndex != null) {
                 maxIndex = Math.max(maxIndex, pinIndex + 1);
             }
@@ -1142,7 +1133,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
         if (inline) {
             String readOnlyStatus = controller.getAttributeReadOnlyStatus(attr);
             if (readOnlyStatus != null) {
-                controller.setStatus("Column " + DBUtils.getObjectFullName(attr, DBPEvaluationContext.UI) + " is read-only: " + readOnlyStatus, DBPMessageType.ERROR);
+                controller.setStatus(
+                    NLS.bind(ResultSetMessages.controls_resultset_viewer_action_open_value_editor_column_readonly,
+                        DBUtils.getObjectFullName(attr, DBPEvaluationContext.UI), readOnlyStatus),
+                    DBPMessageType.ERROR);
             }
             spreadsheet.cancelInlineEditor();
             activeInlineEditor = null;
@@ -1558,7 +1552,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 final DBDAttributeConstraint attrConstraint = dataFilter.getConstraint((DBDAttributeBinding) column);
                 if (attrConstraint != null) {
                     constraintsToMove.add(attrConstraint);
-                    if (attrConstraint.hasOption(ATTR_OPTION_PINNED)) {
+                    if (attrConstraint.hasOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED)) {
                         pinnedAttrsCount++;
                     } else {
                         normalAttrsCount++;
@@ -1608,7 +1602,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if (dragC == null || dropC == null) {
                 return;
             }
-            final boolean pin = dragC.hasOption(ATTR_OPTION_PINNED) && dropC.hasOption(ATTR_OPTION_PINNED);
+            final boolean pin = dragC.hasOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED) && dropC.hasOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED);
             int sourcePosition = getConstraintPosition(dragC, pin);
             int targetPosition = getConstraintPosition(dropC, pin);
             switch (location) {
@@ -1652,7 +1646,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     private static int getConstraintPosition(@NotNull DBDAttributeConstraint constraint, boolean pin) {
         if (pin) {
-            return constraint.getOption(ATTR_OPTION_PINNED);
+            return constraint.getOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED);
         } else {
             return constraint.getVisualPosition();
         }
@@ -1660,7 +1654,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     private static void setConstraintPosition(@NotNull DBDAttributeConstraint constraint, boolean pin, int position) {
         if (pin) {
-            constraint.setOption(ATTR_OPTION_PINNED, position);
+            constraint.setOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED, position);
         } else {
             constraint.setVisualPosition(position);
         }
@@ -1671,8 +1665,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
         final List<DBDAttributeConstraint> constraints = filter.getConstraints();
         if (pin) {
             return constraints.stream()
-                .filter(x -> x.hasOption(ATTR_OPTION_PINNED))
-                .sorted(Comparator.comparing(x -> x.getOption(ATTR_OPTION_PINNED)))
+                .filter(x -> x.hasOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED))
+                .sorted(Comparator.comparing(x -> x.getOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED)))
                 .collect(Collectors.toList());
         } else {
             return constraints.stream()
@@ -2030,7 +2024,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 DBDAttributeBinding attr = (DBDAttributeBinding) element.getElement();
                 DBDAttributeConstraint ac = controller.getModel().getDataFilter().getConstraint(attr);
                 if (ac != null) {
-                    Integer pinIndex = ac.getOption(ATTR_OPTION_PINNED);
+                    Integer pinIndex = ac.getOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED);
                     return pinIndex == null ? -1 : pinIndex;
                 }
             }
@@ -2407,7 +2401,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
             if (cellSelected) {
                 Color normalColor = getCellBackground(attribute, row, cellValue, rowPosition, false, true);
-                if (normalColor == null || normalColor == backgroundNormal) {
+                if (normalColor == null || normalColor == backgroundNormal || isHighContrastTheme) {
                     return backgroundSelected;
                 }
                 RGB mixRGB = UIUtils.blend(
@@ -2444,7 +2438,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if (!ignoreRowSelection && highlightRowsWithSelectedCells && spreadsheet.isRowSelected(rowPosition)) {
                 Color normalColor = getCellBackground(attribute, row, cellValue, rowPosition, false, true);
                 Color selectedCellColor;
-                if (normalColor == null || normalColor == backgroundNormal) {
+                if (normalColor == null || normalColor == backgroundNormal || isHighContrastTheme) {
                     selectedCellColor = backgroundSelected;
                 } else {
                     RGB mixRGB = UIUtils.blend(
@@ -2498,7 +2492,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
             }
 
-            if (!controller.isRecordMode() && showOddRows) {
+            if (!controller.isRecordMode() && showOddRows  && !spreadsheet.isAccessibilityEnabled() && !isHighContrastTheme) {
                 // Determine odd/even row
                 if (rowBatchSize < 1) {
                     rowBatchSize = 1;

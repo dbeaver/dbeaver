@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.security;
 
+import org.jkiss.dbeaver.model.auth.AuthPropertyDescriptor;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,6 +89,22 @@ public class SMAuthProviderDescriptor {
             this.customConfigurations = new ArrayList<>();
         }
         this.customConfigurations.add(customConfiguration);
+    }
+
+    public boolean hasUserParameters() {
+        for (SMAuthCredentialsProfile profile : credentialProfiles) {
+            for (AuthPropertyDescriptor prop : profile.getCredentialParameters()) {
+                if (prop.isUser()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return id + " (" + label + ")";
     }
 
 }

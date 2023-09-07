@@ -42,12 +42,29 @@ public class SpreadsheetAccessibleAdapter extends AccessibleControlAdapter imple
         MimeTypes.MULTIPART_RELATED, "multipart"
     );
 
+    private static final boolean READ_VALUE = false;
+
+    private static GridCell lastCell;
+
     private final Spreadsheet spreadsheet;
     private final GridPos lastPosition;
+
+    private IGridLabelProvider labelProvider;
+    private IGridContentProvider contentProvider;
+    private GridPos position;
+    private GridCell cell;
+    private Object value;
+    private int rowsCount;
+    private int colsCount;
+    private int cellsCount;
+    private String valueStr;
+    private String valueType = "";
 
     private SpreadsheetAccessibleAdapter(@NotNull Spreadsheet spreadsheet) {
         this.spreadsheet = spreadsheet;
         this.lastPosition = new GridPos(-1, -1);
+        this.labelProvider = spreadsheet.getLabelProvider();
+        this.contentProvider = spreadsheet.getContentProvider();
     }
 
     public static void install(@NotNull Spreadsheet spreadsheet) {
@@ -58,62 +75,29 @@ public class SpreadsheetAccessibleAdapter extends AccessibleControlAdapter imple
         accessible.addAccessibleControlListener(adapter);
 
         spreadsheet.addCursorChangeListener(event -> {
-            accessible.selectionChanged();
-
             final GridCell cell = spreadsheet.getFocusCell();
-            if (cell != null) {
-                accessible.sendEvent(ACC.EVENT_VALUE_CHANGED, new Object[]{null, cell.getRow().getElement()});
+            if (cell != null && cell != lastCell) {
+                adapter.setNewCell(cell);
+                accessible.sendEvent(ACC.EVENT_NAME_CHANGED, new Object[]{null, cell.getRow().getElement()});
             }
         });
     }
 
     @Override
     public void getValue(AccessibleControlEvent e) {
-        int rowsCount = spreadsheet.getRowSelectionSize();
-        int colsCount = spreadsheet.getColumnSelectionSize();
-        int cellsCount = spreadsheet.getCellSelectionSize();
+        if (!READ_VALUE) {
+            return;
+        }
 
         if (cellsCount == 1) {
-            final IGridLabelProvider labelProvider = spreadsheet.getLabelProvider();
-            final IGridContentProvider contentProvider = spreadsheet.getContentProvider();
-            final GridPos position = spreadsheet.getCursorPosition();
-            final GridCell cell = spreadsheet.posToCell(position);
-            final Object value = contentProvider.getCellValue(cell.getColumn(), cell.getRow(), false);
-
-            String valueStr;
-            String valueType = "";
-
-            final String contentType = value instanceof DBDContent ? ((DBDContent) value).getContentType() : null;
-            final String collectionType = value instanceof DBDCollection ? ((DBDCollection) value).getComponentType().getName() : null;
-
-            if (contentType != null && lobMimeTypeNames.get(contentType) != null) {
-                valueStr = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_object_of_type, lobMimeTypeNames.get(contentType));
-            } else if (collectionType != null) {
-                valueStr = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_collection_of_type, collectionType);
-            } else if (value instanceof Boolean) {
-                valueType = DataEditorsMessages.spreadsheet_accessibility_boolean;
-                valueStr = value.toString();
-            } else {
-                if (value instanceof String) {
-                    valueType = DataEditorsMessages.spreadsheet_accessibility_string;
-                } else if (value instanceof Number) {
-                    valueType = DataEditorsMessages.spreadsheet_accessibility_numeric;
-                }
-                valueStr = contentProvider.getCellValue(cell.getColumn(), cell.getRow(), true).toString();
+            if (cell == null) {
+                return;
             }
 
-            if (valueStr.isEmpty()) {
-                valueStr = DataEditorsMessages.spreadsheet_accessibility_empty_string;
-            }
+            valueStr = "";
+            valueType = "";
 
-            if (contentProvider.isElementReadOnly(cell.getColumn())) {
-                valueType = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_readonly, valueType);
-            }
-
-            final String valueLink = contentProvider.getCellLinkText(cell.col, cell.row);
-            if (!valueLink.isEmpty()) {
-                valueType = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_foreign_key, valueType, valueLink);
-            }
+            readValueStringAndType(contentProvider, cell, value);
 
             if (lastPosition.col != position.col && lastPosition.row == position.row) {
                 e.result = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_grid_value_col, new Object[]{
@@ -133,23 +117,107 @@ public class SpreadsheetAccessibleAdapter extends AccessibleControlAdapter imple
                     valueType
                 });
             }
-
-            lastPosition.col = position.col;
-            lastPosition.row = position.row;
-        } else if (rowsCount == 1) {
-            e.result = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_rows_selected, colsCount);
+            e.result = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_columns_selected, colsCount);
         } else if (colsCount == 1) {
             e.result = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_rows_selected, rowsCount);
         } else {
             e.result = DataEditorsMessages.spreadsheet_accessibility_freeform_range_selected;
         }
-
-
     }
 
+    // This is a duplicate of the getValue() method. Because for some reason,
+    // some accessibility tools (like JAWs) use only results from the getName() method.
     @Override
     public void getName(AccessibleEvent e) {
-        // not implemented
+        if (cellsCount == 1) {
+            if (cell == null) {
+                return;
+            }
+
+            spreadsheet.setAccessibilityEnabled(true);
+            valueStr = "";
+            valueType = "";
+
+            readValueStringAndType(contentProvider, cell, value);
+
+            if (lastPosition.col != position.col && lastPosition.row == position.row) {
+                e.result = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_grid_value_col, new Object[]{
+                    valueStr,
+                    labelProvider.getText(cell.getColumn()),
+                });
+            } else if (lastPosition.row != position.row && lastPosition.col == position.col) {
+                e.result = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_grid_value_row, new Object[]{
+                    valueStr,
+                    labelProvider.getText(cell.getRow()),
+                });
+            } else if (!lastPosition.equals(position)) {
+                e.result = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_grid_value_row_col, new Object[]{
+                    valueStr,
+                    labelProvider.getText(cell.getRow()),
+                    labelProvider.getText(cell.getColumn()),
+                    valueType
+                });
+            } else {
+                e.result = valueStr;
+            }
+        } else if (rowsCount == 1) {
+            e.result = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_columns_selected, colsCount);
+        } else if (colsCount == 1) {
+            e.result = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_rows_selected, rowsCount);
+        } else {
+            e.result = DataEditorsMessages.spreadsheet_accessibility_freeform_range_selected;
+        }
+    }
+
+    private void setNewCell(GridCell cell) {
+        if (position != null) {
+            lastPosition.col = position.col;
+            lastPosition.row = position.row;
+        }
+
+        lastCell = cell;
+        this.cell = cell;
+        position = new GridPos(spreadsheet.getCursorPosition());
+
+        value = contentProvider.getCellValue(cell.getColumn(), cell.getRow(), false);
+
+        rowsCount = spreadsheet.getRowSelectionSize();
+        colsCount = spreadsheet.getColumnSelectionSize();
+        cellsCount = spreadsheet.getCellSelectionSize();
+    }
+
+    private void readValueStringAndType(@NotNull IGridContentProvider contentProvider, @NotNull GridCell cell, Object value) {
+        final String contentType = value instanceof DBDContent ? ((DBDContent) value).getContentType() : null;
+        final String collectionType = value instanceof DBDCollection ? ((DBDCollection) value).getComponentType().getName() : null;
+
+        if (contentType != null && lobMimeTypeNames.get(contentType) != null) {
+            valueStr = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_object_of_type, lobMimeTypeNames.get(contentType));
+        } else if (collectionType != null) {
+            valueStr = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_collection_of_type, collectionType);
+        } else if (value instanceof Boolean) {
+            valueType = DataEditorsMessages.spreadsheet_accessibility_boolean;
+            valueStr = value.toString();
+        } else {
+            if (value instanceof String) {
+                valueType = DataEditorsMessages.spreadsheet_accessibility_string;
+            } else if (value instanceof Number) {
+                valueType = DataEditorsMessages.spreadsheet_accessibility_numeric;
+            }
+            valueStr = contentProvider.getCellValue(cell.getColumn(), cell.getRow(), true).toString();
+        }
+
+        if (valueStr.isEmpty()) {
+            valueStr = DataEditorsMessages.spreadsheet_accessibility_empty_string;
+        }
+
+        if (contentProvider.isElementReadOnly(cell.getColumn())) {
+            valueType = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_readonly, valueType);
+        }
+
+        final String valueLink = contentProvider.getCellLinkText(cell.col, cell.row);
+        if (!valueLink.isEmpty()) {
+            valueType = NLS.bind(DataEditorsMessages.spreadsheet_accessibility_foreign_key, valueType, valueLink);
+        }
     }
 
     @Override

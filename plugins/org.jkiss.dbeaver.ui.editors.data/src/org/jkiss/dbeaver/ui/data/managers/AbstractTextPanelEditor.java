@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.data.managers;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionManager;
@@ -46,12 +45,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.storage.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -60,7 +61,6 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
-import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsActivator;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
@@ -76,7 +76,7 @@ import java.nio.file.Path;
 * AbstractTextPanelEditor
 */
 public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
-    implements IStreamValueEditorPersistent<StyledText>, IAdaptable {
+    implements IStreamValueEditorPersistent<StyledText>, DBPAdaptable {
 
     private static final String PREF_TEXT_EDITOR_WORD_WRAP = "content.text.editor.word-wrap";
     private static final String PREF_TEXT_EDITOR_AUTO_FORMAT = "content.text.editor.auto-format";
@@ -127,7 +127,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         manager.add(new WordWrapAction(control));
 
         manager.add(new Separator());
-        manager.add(TextEditorUtils.createFindReplaceAction(editor.getSite().getShell(), editor.getViewer().getFindReplaceTarget()));
+        manager.add(ActionUtils.makeCommandContribution(editor.getSite(), IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE));
 
         IAction preferencesAction = editor.getAction(ITextEditorActionConstants.CONTEXT_PREFERENCES);
         if (preferencesAction != null) {
@@ -239,7 +239,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
                         textViewer.doOperation(ISourceViewer.FORMAT);
                     }
                 } catch (Exception e) {
-                    log.debug("Error formatting text", e);
+                    log.debug("Error formatting text: " + e.getMessage());
                 } finally {
                     if (!oldEditable) {
                         textViewer.setEditable(false);

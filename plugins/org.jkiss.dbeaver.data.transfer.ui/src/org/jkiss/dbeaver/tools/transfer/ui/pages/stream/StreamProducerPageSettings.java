@@ -28,13 +28,12 @@ import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.tools.transfer.*;
@@ -56,9 +55,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     private static final Log log = Log.getLog(StreamProducerPageSettings.class);
@@ -93,23 +91,33 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             filesTable.setLinesVisible(true);
 
             UIUtils.createTableColumn(filesTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_source);
-            UIUtils.createTableColumn(filesTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_target);
+            List<DBSObject> sourceObjects = getWizard().getSettings().getSourceObjects();
+            boolean skipTargetColumn;
+            if (CommonUtils.isEmpty(sourceObjects)) {
+                skipTargetColumn = true;
+            } else {
+                boolean allSourceObjectsNotTables = true;
+                for (DBSObject sourceObject : sourceObjects) {
+                    if (sourceObject instanceof DBSDataManipulator) {
+                        allSourceObjectsNotTables = false;
+                        break;
+                    }
+                }
+                skipTargetColumn = allSourceObjectsNotTables;
+            }
+            if (!skipTargetColumn) {
+                UIUtils.createTableColumn(filesTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_target);
+            }
 
             filesTable.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetDefaultSelected(SelectionEvent e) {
                     if (filesTable.getSelectionIndex() < 0) {
                         return;
                     }
                     TableItem item = filesTable.getItem(filesTable.getSelectionIndex());
                     DataTransferPipe pipe = (DataTransferPipe) item.getData();
-                    chooseSourceFile(pipe);
-                }
-
-                @Override
-                public void widgetDefaultSelected(SelectionEvent e) {
-                    widgetSelected(e);
-                }
+                    chooseSourceFile(pipe);                }
             });
         }
 
@@ -136,7 +144,10 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
 
         DBRRunnableWithProgress initializer = null;
         if (pipe.getConsumer() != null && pipe.getConsumer().getTargetObjectContainer() != null) {
-            File[] files = DialogUtils.openFileList(getShell(), "Select input files", extensions.toArray(new String[0]));
+            File[] files = DialogUtils.openFileList(
+                getShell(),
+                DTUIMessages.stream_producer_select_input_file,
+                extensions.toArray(new String[0]));
             if (files != null && files.length > 0) {
                 initializer = monitor -> updateMultiConsumers(monitor, pipe, files);
             }
@@ -150,7 +161,10 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             try {
                 getWizard().getRunnableContext().run(true, true, initializer);
             } catch (InvocationTargetException e) {
-                DBWorkbench.getPlatformUI().showError("Column mappings error", "Error reading column mappings from stream", e.getTargetException());
+                DBWorkbench.getPlatformUI().showError(
+                    DTUIMessages.stream_producer_column_mapping_error_title,
+                    DTUIMessages.stream_producer_column_mapping_error_message,
+                    e.getTargetException());
                 return;
             } catch (InterruptedException e) {
                 // ignore
@@ -175,14 +189,14 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             DatabaseMappingContainer mapping = new DatabaseMappingContainer(settings, newProducer.getDatabaseObject());
             if (pipe.getConsumer() != null && pipe.getConsumer().getDatabaseObject() instanceof DBSDataManipulator) {
                 DBSDataManipulator databaseObject = (DBSDataManipulator) pipe.getConsumer().getDatabaseObject();
-                DBNDatabaseNode databaseNode = DBNUtils.getNodeByObject(monitor, databaseObject.getParentObject(), false);
-                if (databaseNode != null) {
-                    settings.setContainerNode(databaseNode);
+                DBSObject container = databaseObject.getParentObject();
+                if (container instanceof DBSObjectContainer) {
+                    settings.setContainer((DBSObjectContainer) container);
                 }
                 mapping.setTarget(databaseObject);
             } else {
                 mapping.setTarget(null);
-                mapping.setTargetName(generateTableName(newProducer.getInputFile()));
+                mapping.setTargetName(generateTableName(newProducer.getObjectName()));
             }
             if (oldProducer != null) {
                 // Remove old mapping because we're just replaced file
@@ -214,8 +228,18 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
         List<DataTransferPipe> newPipes = new ArrayList<>(dtSettings.getDataPipes());
         newPipes.remove(pipe);
 
-        for (File file : files) {
-            StreamTransferProducer producer = new StreamTransferProducer(new StreamEntityMapping(file));
+        final Deque<StreamEntityMapping> pendingEntityMappings = Arrays.stream(files)
+            .map(StreamEntityMapping::new)
+            .collect(Collectors.toCollection(ArrayDeque::new));
+
+        while (!pendingEntityMappings.isEmpty()) {
+            final StreamEntityMapping entityMapping = pendingEntityMappings.remove();
+
+            if (producerSettings.extractExtraEntities(monitor, entityMapping, dtSettings, pendingEntityMappings)) {
+                continue;
+            }
+
+            StreamTransferProducer producer = new StreamTransferProducer(entityMapping);
             IDataTransferConsumer<?, ?> consumer = new DatabaseTransferConsumer();
 
             DataTransferPipe singlePipe = new DataTransferPipe(producer, consumer);
@@ -234,16 +258,12 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             IDataTransferSettings consumerSettings = dtSettings.getNodeSettings(dtSettings.getConsumer());
             if (consumerSettings instanceof DatabaseConsumerSettings) {
                 DatabaseConsumerSettings dcs = (DatabaseConsumerSettings) consumerSettings;
-                if (originalConsumer != null && originalConsumer.getTargetObjectContainer() instanceof DBSObject) {
-                    DBNDatabaseNode containerNode = DBNUtils.getNodeByObject(
-                        monitor, (DBSObject)originalConsumer.getTargetObjectContainer(), false);
-                    if (containerNode != null) {
-                        dcs.setContainerNode(containerNode);
-                    }
+                if (originalConsumer != null && originalConsumer.getTargetObjectContainer() instanceof DBSObjectContainer) {
+                    dcs.setContainer((DBSObjectContainer) originalConsumer.getTargetObjectContainer());
                 }
                 DatabaseMappingContainer mapping = new DatabaseMappingContainer(dcs, producer.getDatabaseObject());
                 //mapping.setTarget(null);
-                mapping.setTargetName(generateTableName(producer.getInputFile()));
+                mapping.setTargetName(generateTableName(producer.getObjectName()));
 
                 dcs.addDataMappings(getWizard().getRunnableContext(), producer.getDatabaseObject(), mapping);
             }
@@ -378,9 +398,8 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     }
 
     @NotNull
-    private String generateTableName(File file) {
+    private String generateTableName(String fileName) {
         StringBuilder name = new StringBuilder();
-        String fileName = file.getName();
         // Cut off extension
         int divPos = fileName.lastIndexOf(".");
         if (divPos != -1) {

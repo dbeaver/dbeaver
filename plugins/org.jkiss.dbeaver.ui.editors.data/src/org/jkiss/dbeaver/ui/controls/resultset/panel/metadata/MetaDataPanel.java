@@ -37,8 +37,10 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
+import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -104,6 +106,7 @@ public class MetaDataPanel implements IResultSetPanel {
             attributeList.getControl().addDisposeListener(e ->
                 ((ISelectionProvider) presentation).removeSelectionChangedListener(listener));
         }
+
         ResultSetPanelRefresher.installOn(this, presentation);
 
         DataEditorFeatures.RESULT_SET_PANEL_METADATA.use();
@@ -249,6 +252,19 @@ public class MetaDataPanel implements IResultSetPanel {
                 return colorDisabled;
             }
             return super.getObjectForeground(item);
+        }
+
+        @Override
+        protected void addExtraColumns(ViewerColumnController<ObjectColumn, Object> columnController, Collection<DBDAttributeBinding> items) {
+            columnController.addColumn("Description", "Column description", SWT.LEFT, true, false, element -> {
+                if (element instanceof DBDAttributeBinding) {
+                    DBSEntityAttribute entityAttribute = ((DBDAttributeBinding) element).getEntityAttribute();
+                    if (entityAttribute != null) {
+                        return entityAttribute.getDescription();
+                    }
+                }
+                return "";
+            }, null);
         }
 
         @Override

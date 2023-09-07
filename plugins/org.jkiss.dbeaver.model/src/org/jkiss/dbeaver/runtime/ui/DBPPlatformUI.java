@@ -73,7 +73,7 @@ public interface DBPPlatformUI {
     UserResponse showError(@NotNull final String title, @Nullable final String message, @NotNull final IStatus status);
     UserResponse showError(@Nullable final String title, @Nullable final String message, @NotNull final Throwable e);
     UserResponse showError(@NotNull final String title, @Nullable final String message);
-    void showNotification(@NotNull final String title, @Nullable final String message, boolean error);
+    void showNotification(@NotNull final String title, @Nullable final String message, boolean error, @Nullable Runnable feedback);
     void showWarningNotification(@NotNull final String title, @Nullable final String message);
     void showMessageBox(@NotNull final String title, @Nullable final String message, boolean error);
     void showWarningMessageBox(@NotNull final String title, @Nullable final String message);

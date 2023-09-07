@@ -293,7 +293,14 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
     }
 
-    public void dispose() {
+    public static void dispose() {
+        if (instance != null) {
+            instance.dispose0();
+            instance = null;
+        }
+    }
+
+    private void dispose0() {
         synchronized (registryListeners) {
             if (!registryListeners.isEmpty()) {
                 log.warn("Some datasource registry listeners are still registered: " + registryListeners);

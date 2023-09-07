@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.stream.IAppendableDataExporter;
+import org.jkiss.dbeaver.tools.transfer.stream.IMultiStreamDataImporter;
 import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -171,6 +172,10 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
 
     public boolean isAppendable() {
         return IAppendableDataExporter.class.isAssignableFrom(processorType.getObjectClass());
+    }
+
+    public boolean isMulti() {
+        return IMultiStreamDataImporter.class.isAssignableFrom(processorType.getObjectClass());
     }
 
     public String getFullId() {

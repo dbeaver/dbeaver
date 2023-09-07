@@ -33,12 +33,12 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
-public class ExecuteCommandEventProcessorConfigurator implements IDataTransferEventProcessorConfigurator {
+public class ExecuteCommandEventProcessorConfigurator implements IDataTransferEventProcessorConfigurator<StreamConsumerSettings> {
     private String command;
     private String workingDirectory;
 
     @Override
-    public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
+    public void createControl(@NotNull Composite parent, @NotNull StreamConsumerSettings settings, @NotNull Runnable propertyChangeListener) {
         final Composite group = new Composite(parent, SWT.NONE);
         group.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).create());
         group.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).hint(300, SWT.DEFAULT).create());

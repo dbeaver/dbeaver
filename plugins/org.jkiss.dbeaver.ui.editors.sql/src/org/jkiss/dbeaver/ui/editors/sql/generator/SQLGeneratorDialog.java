@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -43,8 +44,6 @@ import org.jkiss.dbeaver.ui.editors.sql.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
-
 class SQLGeneratorDialog extends ViewSQLDialog {
     private static final Log log = Log.getLog(SQLGeneratorDialog.class);
 
@@ -59,7 +58,7 @@ class SQLGeneratorDialog extends ViewSQLDialog {
 
     SQLGeneratorDialog(IWorkbenchPartSite parentSite, DBCExecutionContext context, SQLGenerator<?> sqlGenerator) {
         super(parentSite, () -> context,
-            "Generated SQL (" + context.getDataSource().getContainer().getName() + ")",
+            NLS.bind(SQLEditorMessages.sql_generator_dialog_title, context.getDataSource().getContainer().getName()),
             null, "");
         this.sqlGenerator = sqlGenerator;
     }

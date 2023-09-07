@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.auth.SMAuthSpace;
 import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 
@@ -147,5 +148,8 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     void moveResourceProperties(@NotNull String oldResourcePath, @NotNull String newResourcePath);
 
     void refreshProject(DBRProgressMonitor monitor);
+
+    @Nullable
+    DBNModel getNavigatorModel();
 
 }

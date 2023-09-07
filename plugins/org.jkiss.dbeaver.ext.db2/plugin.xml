@@ -84,6 +84,10 @@
                                        <items label="%tree.triggerdeps.node.name" path="triggerdep" property="triggerDeps" icon="#triggerdep"/>
                                     </items>
                                 </folder>
+                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2ColumnMask" label="%tree.column.masks.node.name"
+                                        icon="#triggers" description="%tree.column.masks.node.name">
+                                    <items label="%tree.column.mask.node.name" path="columnMask" property="columnMasks" icon="#trigger"/>
+                                </folder>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.db2.model.DB2View" label="%tree.views.node.name" icon="#folder_view" description="Views">
@@ -442,6 +446,7 @@
                     category="Db2"
                     class="com.ibm.db2.jcc.DB2Driver"
                     sampleURL="jdbc:db2://{host}[:{port}]/{database}"
+                    supportedConfigurationTypes="MANUAL,URL"
                     useURL="false"
                     icon="icons/db2_icon.png"
                     iconBig="icons/db2_icon_big.png"

@@ -47,7 +47,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     public static final String VARIABLE_USER = "user";
     public static final String VARIABLE_PASSWORD = "password";
     public static final String VARIABLE_URL = "url";
-    public static final String VARIABLE_CONN_TYPE = "connectionType";
+    public static final String VARIABLE_CONN_TYPE = "connection.type";
     public static final String VARIABLE_DATASOURCE = "datasource";
     public static final String VAR_PROJECT_PATH = "project.path";
     public static final String VAR_PROJECT_NAME = "project.name";
@@ -80,7 +80,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     public static final String[][] INTERNAL_CONNECT_VARIABLES = ArrayUtils.concatArrays(
         CONNECT_VARIABLES,
         new String[][]{
-            {VARIABLE_PASSWORD, "database password (plain)"},
+            // {VARIABLE_PASSWORD, "database password (plain)"},  see dbeaver/pro#1861
         });
 
     private static final Log log = Log.getLog(DBPConnectionConfiguration.class);

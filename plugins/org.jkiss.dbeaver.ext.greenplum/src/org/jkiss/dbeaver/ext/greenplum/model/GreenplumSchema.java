@@ -69,7 +69,7 @@ public class GreenplumSchema extends PostgreSchema {
 
     public class GreenplumTableCache extends TableCache {
 
-        private boolean hasAccessToPartitionsView;
+        private boolean before7version;
 
         GreenplumTableCache() {
             super();
@@ -82,13 +82,14 @@ public class GreenplumSchema extends PostgreSchema {
                                                     @Nullable PostgreTableBase object,
                                                     @Nullable String objectName) throws SQLException {
             GreenplumDataSource dataSource = getDataSource();
-            boolean greenplumVersionAtLeast5 = dataSource.isGreenplumVersionAtLeast(session.getProgressMonitor(), 5, 0);
+            boolean greenplumVersionAtLeast5 = dataSource.isGreenplumVersionAtLeast(5, 0);
             String uriLocationColumn = greenplumVersionAtLeast5 ? "urilocation" : "location";
             String execLocationColumn = greenplumVersionAtLeast5 ? "execlocation" : "location";
-            boolean hasAccessToExttable = dataSource.isHasAccessToExttable(session);
-            hasAccessToPartitionsView = !dataSource.isGreenplumVersionAtLeast(session.getProgressMonitor(), 7, 0);
+            boolean hasAccessToExttable = dataSource.isHasAccessToExttable();
+            boolean supportsRelStorageColumn = dataSource.isServerSupportsRelstorageColumn(session);
+            before7version = !dataSource.isGreenplumVersionAtLeast(7, 0);
             String sqlQuery = "SELECT c.oid,c.*,d.description,\n" +
-                (hasAccessToPartitionsView ? "p.partitiontablename,p.partitionboundary as partition_expr," :
+                (before7version ? "p.partitiontablename,p.partitionboundary as partition_expr," :
                     "pg_catalog.pg_get_expr(c.relpartbound, c.oid) as partition_expr, pg_catalog.pg_get_partkeydef(c.oid) as partition_key,") +
                 (hasAccessToExttable ? "CASE WHEN x." + uriLocationColumn + " IS NOT NULL THEN array_to_string(x." + uriLocationColumn +
                     ", ',') ELSE '' END AS urilocation,\n" +
@@ -101,16 +102,20 @@ public class GreenplumSchema extends PostgreSchema {
                 "x.writable,\n" : "") +
                 (dataSource.isServerSupportFmterrtblColumn(session) ?
                     "case when x.fmterrtbl is not NULL then true else false end as \"is_logging_errors\",\n" : "") +
-                (dataSource.isServerSupportRelstorageColumn(session) ?
-                    "case when c.relstorage = 'x' then true else false end as \"is_ext_table\",\n" : "false as \"is_ext_table\",\n") +
-                "case when (ns.nspname !~ '^pg_toast' and ns.nspname like 'pg_temp%') then true else false end as \"is_temp_table\"\n" +
-                "FROM pg_catalog.pg_class c\n" +
+                (supportsRelStorageColumn ? // We want to know about table external status
+                    "case when c.relstorage = 'x' then true else false end as \"is_ext_table\"" :
+                    hasAccessToExttable ? "\ncase when x.fmttype is not null then true else false end as \"is_ext_table\"" :
+                        "false as \"is_ext_table\"") +
+                "\n,case when (ns.nspname !~ '^pg_toast' and ns.nspname like 'pg_temp%') then true else false end as \"is_temp_table\"\n" +
+                (before7version ? "" : ", pa.amname\n") +
+                "\nFROM pg_catalog.pg_class c\n" +
                 "INNER JOIN pg_catalog.pg_namespace ns\n\ton ns.oid = c.relnamespace\n" +
                 "LEFT OUTER JOIN pg_catalog.pg_description d\n\tON d.objoid=c.oid AND d.objsubid=0\n" +
                 (hasAccessToExttable ? "LEFT OUTER JOIN pg_catalog.pg_exttable x\n\ton x.reloid = c.oid\n" : "") +
-                (hasAccessToPartitionsView ? "LEFT OUTER JOIN pg_catalog.pg_partitions p\n\ton c.relname = p.partitiontablename " +
+                (before7version ? "LEFT OUTER JOIN pg_catalog.pg_partitions p\n\ton c.relname = p.partitiontablename " +
                     "and ns.nspname = p.schemaname\n" : "") +
-                "WHERE c.relnamespace= ? AND c.relkind not in ('i','c') " +
+                (before7version ? "" : "\nLEFT JOIN pg_catalog.pg_am pa ON pa.oid = c.relam") +
+                "\nWHERE c.relnamespace= ? AND c.relkind not in ('i','c') " +
                 (object == null && objectName == null ? "" : " AND relname=?");
             final JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery);
             dbStat.setLong(1, getObjectId());
@@ -121,7 +126,7 @@ public class GreenplumSchema extends PostgreSchema {
 
         @Override
         protected boolean isPartitionTableRow(@NotNull JDBCResultSet dbResult) {
-            return hasAccessToPartitionsView ? CommonUtils.isNotEmpty(JDBCUtils.safeGetString(dbResult, "partitiontablename")) :
+            return before7version ? CommonUtils.isNotEmpty(JDBCUtils.safeGetString(dbResult, "partitiontablename")) :
                super.isPartitionTableRow(dbResult);
         }
     }
