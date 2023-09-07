@@ -19,6 +19,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
@@ -26,6 +27,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -130,6 +132,8 @@ public abstract class YashanDBTableBase extends JDBCTable<YashanDBDataSource, Ya
         return getComment(monitor);
     }
 
+
+
     /**
      * getComment by search sql.
      */
@@ -142,6 +146,8 @@ public abstract class YashanDBTableBase extends JDBCTable<YashanDBDataSource, Ya
                 getName(),
                 getTableTypeName());
     }
+
+
 
 
     /**
@@ -293,6 +299,16 @@ public abstract class YashanDBTableBase extends JDBCTable<YashanDBDataSource, Ya
     @Association
     public Collection<YashanDBPrivTable> getTablePrivs(DBRProgressMonitor monitor) throws DBException {
         return tablePrivCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public List<? extends YashanDBTableColumn> getCachedAttributes()
+    {
+        final DBSObjectCache<YashanDBTableBase, YashanDBTableColumn> childrenCache = getContainer().getTableCache().getChildrenCache(this);
+        if (childrenCache != null) {
+            return childrenCache.getCachedObjects();
+        }
+        return Collections.emptyList();
     }
 
     /**

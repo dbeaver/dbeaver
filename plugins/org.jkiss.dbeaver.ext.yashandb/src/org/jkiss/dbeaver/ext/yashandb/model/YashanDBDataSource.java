@@ -25,12 +25,14 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -78,6 +80,22 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
     public YashanDBDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         super(monitor, container, new YashanDBSQLDialect());
         log.debug(">>>Initialize {YashanDBDataSource}....");
+    }
+
+    // Constructor for tests
+    @ForTest
+    public YashanDBDataSource(DBPDataSourceContainer container) {
+        super(container, new YashanDBSQLDialect());
+//        this.outputReader = new OracleOutputReader();
+
+//        YashanDBCo configurator = GeneralUtils.adapt(this, OracleConfigurator.class);
+//        if (configurator != null) {
+//            resolveGeometryAsStruct = configurator.resolveGeometryAsStruct();
+//        }
+        this.hasStatistics = false;
+
+        YashanDBSchema defSchema = new YashanDBSchema(this, -1, "TEST_SCHEMA");
+        schemaCache.setCache(Collections.singletonList(defSchema));
     }
 
 
