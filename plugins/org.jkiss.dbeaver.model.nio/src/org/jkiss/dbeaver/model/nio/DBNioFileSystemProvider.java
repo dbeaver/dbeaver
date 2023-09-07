@@ -14,34 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.nio;
 
-package org.jkiss.dbeaver.model.fs;
+import org.jkiss.utils.CommonUtils;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import java.net.URI;
+import java.nio.file.spi.FileSystemProvider;
 
-/**
- * Virtual file system
- */
-public interface DBFVirtualFileSystem {
-
-    @NotNull
-    String getFileSystemDisplayName();
-
-    @NotNull
-    String getType();
-
-    String getDescription();
-
-    DBPImage getIcon();
-
-    @NotNull
-    String getId();
-
-    @NotNull
-    DBFVirtualFileSystemRoot[] getRootFolders(DBRProgressMonitor monitor, @NotNull DBPProject project) throws DBException;
-
+public abstract class DBNioFileSystemProvider extends FileSystemProvider {
+    protected void validateUri(URI uri) {
+        if (CommonUtils.isEmpty(uri.getScheme()) || !getScheme().equalsIgnoreCase(uri.getScheme())) {
+            throw new IllegalArgumentException("Unsupported uri schema");
+        }
+    }
 }

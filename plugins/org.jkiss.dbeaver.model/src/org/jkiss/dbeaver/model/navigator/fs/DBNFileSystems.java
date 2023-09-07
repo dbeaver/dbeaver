@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.fs.DBFFileSystemDescriptor;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
@@ -46,10 +47,11 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, NIOListe
     private static final Log log = Log.getLog(DBNFileSystems.class);
 
     private DBNFileSystem[] children;
+    private DBPProject project;
 
     public DBNFileSystems(DBNProject parentNode) {
         super(parentNode);
-
+        this.project = parentNode.getProject();
         NIOMonitor.addListener(this);
     }
 
