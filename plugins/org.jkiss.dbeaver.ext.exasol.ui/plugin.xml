@@ -150,7 +150,7 @@
                group="org.jkiss.dbeaver.ext.exasol.ui.tools"
                label="Truncate"
                singleton="false">
-              <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolTable"/>
+              <task id="exasolToolTruncateTable"/>
           </tool>
       </tools>
     </extension>

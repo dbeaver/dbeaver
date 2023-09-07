@@ -195,9 +195,7 @@
                     label="%tools.backup.db.name"
                     icon="#export"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreObject"/>
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
+                <task id="pgDatabaseBackup"/>
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolBackupAll"
@@ -206,7 +204,7 @@
                     label="%tools.backup.all.db.name"
                     icon="#export"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
+                <task id="pgDatabaseBackupAll"/>
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolRestore"
@@ -234,8 +232,8 @@
                     group="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
                     label="%tools.analyze.name"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
+                <task id="pgToolDatabaseAnalyze"/>
+                <task id="pgToolTableAnalyze"/>
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolVacuum"
@@ -244,8 +242,8 @@
                     group="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
                     label="%tools.vacuum.name"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
+                <task id="pgToolTableVacuum"/>
+                <task id="pgToolDatabaseVacuum"/>
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolTruncate"
@@ -254,7 +252,7 @@
                     group="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
                     label="%tools.truncate.name"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
+                <task id="pgToolTableTruncate"/>
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolTriggerDisable"
@@ -263,7 +261,7 @@
                     group="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
                     label="Disable trigger(s)"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTriggerBase" if="object.enabledState != 'D'"/>
+                <task id="pgToolTriggerDisable"/>
             </tool>            
             <!--<tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolExtensionUninstall"
@@ -281,7 +279,7 @@
                     group="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
                     label="Enable trigger"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTriggerBase" if="object.enabledState == 'D'"/>
+                <task id="pgToolTriggerEnable"/>
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolRefreshMView"
@@ -290,7 +288,7 @@
                     group="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
                     label="%tools.refesh.mview.name"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView"/>
+                <task id="pgToolRefreshMView"/>
             </tool>
 
             <toolGroup

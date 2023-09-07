@@ -115,7 +115,7 @@
                     group="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance"
                     label="%tool.org.jkiss.dbeaver.ext.db2.table.runstats.name"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
+                <task id="db2ToolTableRunstats"/>
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance.DB2ReorgTableTool"
@@ -133,7 +133,7 @@
                     group="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance"
                     label="%tool.org.jkiss.dbeaver.ext.db2.table.reorgix.name"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
+                <task id="db2ToolTableReorgIndex"/>
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance.DB2ReorgCheckTableTool"
@@ -142,7 +142,7 @@
                     group="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance"
                     label="%tool.org.jkiss.dbeaver.ext.db2.table.reorgcheck.name"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
+                <task id="db2ToolTableReorgCheck"/>
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance.DB2TruncateTool"
@@ -151,7 +151,7 @@
                     group="org.jkiss.dbeaver.ext.db2.ui.tools.maintenance"
                     label="%tool.org.jkiss.dbeaver.ext.db2.table.truncate.name"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
+                <task id="db2ToolTableTruncate"/>
             </tool>
         </tools>
 

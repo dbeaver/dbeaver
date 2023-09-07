@@ -175,7 +175,7 @@
                 group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
                 label="%tools.analyzeTable.label"
                 singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+                <task id="mysqlToolAnalyzeTable"/>
             </tool>
             <tool
                 class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolCheck"
@@ -184,7 +184,7 @@
                 group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
                 label="%tools.checkTable.label"
                 singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+                <task id="mysqlToolCheckTable"/>
             </tool>
             <tool
                 class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolOptimize"
@@ -193,7 +193,7 @@
                 group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
                 label="%tools.optimizeTable.label"
                 singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+                <task id="mysqlToolOptimizeTable"/>
             </tool>
             <tool
                 class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolRepair"
@@ -202,7 +202,7 @@
                 group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
                 label="%tools.repairTable.label"
                 singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+                <task id="mysqlToolRepairTable"/>
             </tool>
             <tool
                 class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolTruncate"
@@ -211,7 +211,7 @@
                 group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
                 label="%tools.truncateTable.label"
                 singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+                <task id="mysqlToolTruncateTable"/>
             </tool>
         </tools>
     </extension>
