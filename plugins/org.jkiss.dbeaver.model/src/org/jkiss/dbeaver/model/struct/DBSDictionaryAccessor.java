@@ -56,5 +56,8 @@ public interface DBSDictionaryAccessor extends AutoCloseable {
     
     @NotNull
     List<DBDLabelValuePair> getValueEntry(@NotNull Object keyValue) throws DBException;
+
+    @NotNull
+    List<DBDLabelValuePair> getValues(long offset, int pageSize) throws DBException;
 }
 

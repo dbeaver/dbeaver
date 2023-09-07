@@ -85,7 +85,8 @@ public class GreenplumSchema extends PostgreSchema {
             boolean greenplumVersionAtLeast5 = dataSource.isGreenplumVersionAtLeast(5, 0);
             String uriLocationColumn = greenplumVersionAtLeast5 ? "urilocation" : "location";
             String execLocationColumn = greenplumVersionAtLeast5 ? "execlocation" : "location";
-            boolean hasAccessToExttable = dataSource.isHasAccessToExttable(session);
+            boolean hasAccessToExttable = dataSource.isHasAccessToExttable();
+            boolean supportsRelStorageColumn = dataSource.isServerSupportsRelstorageColumn(session);
             before7version = !dataSource.isGreenplumVersionAtLeast(7, 0);
             String sqlQuery = "SELECT c.oid,c.*,d.description,\n" +
                 (before7version ? "p.partitiontablename,p.partitionboundary as partition_expr," :
@@ -101,9 +102,11 @@ public class GreenplumSchema extends PostgreSchema {
                 "x.writable,\n" : "") +
                 (dataSource.isServerSupportFmterrtblColumn(session) ?
                     "case when x.fmterrtbl is not NULL then true else false end as \"is_logging_errors\",\n" : "") +
-                (dataSource.isServerSupportRelstorageColumn(session) ?
-                    "case when c.relstorage = 'x' then true else false end as \"is_ext_table\",\n" : "false as \"is_ext_table\",\n") +
-                "case when (ns.nspname !~ '^pg_toast' and ns.nspname like 'pg_temp%') then true else false end as \"is_temp_table\"\n" +
+                (supportsRelStorageColumn ? // We want to know about table external status
+                    "case when c.relstorage = 'x' then true else false end as \"is_ext_table\"" :
+                    hasAccessToExttable ? "\ncase when x.fmttype is not null then true else false end as \"is_ext_table\"" :
+                        "false as \"is_ext_table\"") +
+                "\n,case when (ns.nspname !~ '^pg_toast' and ns.nspname like 'pg_temp%') then true else false end as \"is_temp_table\"\n" +
                 (before7version ? "" : ", pa.amname\n") +
                 "\nFROM pg_catalog.pg_class c\n" +
                 "INNER JOIN pg_catalog.pg_namespace ns\n\ton ns.oid = c.relnamespace\n" +

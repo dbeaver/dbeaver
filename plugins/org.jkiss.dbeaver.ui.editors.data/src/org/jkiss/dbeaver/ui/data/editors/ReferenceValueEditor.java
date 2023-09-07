@@ -169,7 +169,7 @@ public class ReferenceValueEditor {
 
         private void reloadData() {
             SelectorLoaderService loadingService = new SelectorLoaderService(accessor -> {
-                if (accessor.isKeyComparable()) {
+                if (accessor.isKeyComparable() && keyValue != null) {
                     return loadComparableKeyValues(accessor);
                 } else {
                     return loadNoncomparableKeyValues(accessor);
@@ -184,12 +184,16 @@ public class ReferenceValueEditor {
         
         private List<DBDLabelValuePair> loadNoncomparableKeyValues(DBSDictionaryAccessor accessor) throws DBException {
             List<DBDLabelValuePair> data;
-            if (searchText == null) {
+            if (searchText == null && keyValue != null) { 
                 data = accessor.getValueEntry(keyValue);
                 estimateOnePage(true);
             } else {
                 long offset = currPageNumber * pageSize;
-                data = accessor.getSimilarValues(searchText, true, true, offset, pageSize);
+                if (searchText == null) {
+                    data = accessor.getValues(offset, pageSize);
+                } else {
+                    data = accessor.getSimilarValues(searchText, true, true, offset, pageSize);
+                }
                 if (currPageNumber == 0) {
                     estimateOnePage(false);
                 }

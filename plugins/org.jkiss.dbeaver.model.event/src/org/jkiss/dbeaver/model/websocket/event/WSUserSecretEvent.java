@@ -16,12 +16,15 @@
  */
 package org.jkiss.dbeaver.model.websocket.event;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 public class WSUserSecretEvent extends WSAbstractEvent {
 
     private final String dataSourceId;
 
-    public WSUserSecretEvent(String dataSourceId) {
-        super(WSEventType.DATASOURCE_SECRET_UPDATED);
+    public WSUserSecretEvent(@NotNull String dataSourceId, @Nullable String sessionId, @Nullable String userId) {
+        super(WSEventType.DATASOURCE_SECRET_UPDATED, sessionId, userId);
         this.dataSourceId = dataSourceId;
     }
 
