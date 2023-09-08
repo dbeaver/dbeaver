@@ -21,11 +21,8 @@ import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 
 public class AltibaseDataType extends GenericDataType {
 
-    private AltibaseDataTypeDomain dataTypeDomin;
-
     public AltibaseDataType(GenericStructContainer owner, AltibaseDataTypeDomain dataTypeDomin) {
         super(owner, dataTypeDomin.getValueType(), dataTypeDomin.getTypeName(), null, false, true, 0, 0, 0);
-        this.dataTypeDomin = dataTypeDomin;
     }
 
     public AltibaseDataType(GenericStructContainer owner, AltibaseDataTypeDomain fieldType,
@@ -33,11 +30,5 @@ public class AltibaseDataType extends GenericDataType {
             int precision, int minScale, int maxScale) {
         super(owner, fieldType.getValueType(), name, remarks, unsigned, searchable, precision, 
                 minScale, maxScale);
-
-        this.dataTypeDomin = fieldType;
-    }
-
-    public int getDbTypeID() {
-        return dataTypeDomin.getDbTypeID(); 
     }
 }

@@ -28,7 +28,7 @@
                 class="org.jkiss.dbeaver.ext.altibase.AltibaseDataSourceProvider"
                 description="Altibase JDBC connector"
                 id="altibase"
-                parent="generic"
+                
                 label="Altibase"
                 icon="icons/altibase_icon.png"
                 dialect="altibase">
@@ -258,6 +258,7 @@
             <type name="VARBIT"/>
             <type name="GEOMETRY"/>
             <type name="TIMESTAMP"/>
+            <type name="DATE"/>
         </provider>
     </extension>
     

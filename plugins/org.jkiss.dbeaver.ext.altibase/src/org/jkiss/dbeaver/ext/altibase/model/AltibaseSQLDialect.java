@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -534,22 +533,22 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
 
     @Override
     public String getTimestampDataType() {
-        return AltibaseConstants.TYPE_NAME_DATE;
+        return AltibaseDataTypeDomain.DATE.getTypeName();
     }
 
     @Override
     public String getBigIntegerType() {
-        return SQLConstants.DATA_TYPE_BIGINT;
+        return AltibaseDataTypeDomain.BIGINT.getTypeName();
     }
 
     @Override
     public String getBlobDataType() {
-        return AltibaseConstants.TYPE_NAME_BLOB;
+        return AltibaseDataTypeDomain.BLOB.getTypeName();
     }
     
     @Override
     public String getClobDataType() {
-        return AltibaseConstants.TYPE_NAME_CLOB;
+        return AltibaseDataTypeDomain.CLOB.getTypeName();
     }
 
     @Override

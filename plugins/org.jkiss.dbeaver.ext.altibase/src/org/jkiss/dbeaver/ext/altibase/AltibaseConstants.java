@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.ext.altibase;
 
 import org.jkiss.utils.StandardConstants;
 
-import java.sql.Types;
-
 public class AltibaseConstants {
     
     public static final String NEW_LINE = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
@@ -33,6 +31,7 @@ public class AltibaseConstants {
     public static final int PACKAGE_TYPE_SPEC = 6;
     public static final int PACKAGE_TYPE_BODY = 7;
 
+    /* TODO: remove later if not used anymore 
     public static final int TYPE_BIGINT = Types.BIGINT;
     public static final int TYPE_BINARY = Types.BINARY;
     public static final int TYPE_BIT = Types.BIT;
@@ -45,7 +44,7 @@ public class AltibaseConstants {
     public static final int TYPE_ECHAR = 60;
     public static final int TYPE_EVARCHAR = 61;
     public static final int TYPE_FLOAT = Types.FLOAT;
-    public static final int TYPE_GEOMETRY = 10003;
+    
     public static final int TYPE_INTEGER = Types.INTEGER;
     public static final int TYPE_NCHAR = -8;
     public static final int TYPE_NIBBLE = 20002;
@@ -59,10 +58,17 @@ public class AltibaseConstants {
     public static final int TYPE_VARBYTE = 20003;
     public static final int TYPE_VARCHAR = 12;
 
-    public static final String TYPE_NAME_GEOMETRY = "GEOMETRY";
+    public static final String TYPE_NAME_CHAR = "CHAR";
+    public static final String TYPE_NAME_VARCHAR = "VARCHAR";
+    public static final String TYPE_NAME_NCHAR = "NCHAR";
+    public static final String TYPE_NAME_NVARCHAR = "NVARCHAR";
+    
+    
+    public static final String TYPE_NAME_DATE = "DATE";
+    
     public static final String TYPE_NAME_BLOB = "BLOB";
     public static final String TYPE_NAME_CLOB = "CLOB";
-    public static final String TYPE_NAME_DATE = "DATE";
+    
     public static final String TYPE_NAME_BYTE = "BYTE"; // for reflection
     public static final String TYPE_NAME_VARBYTE = "VARBYTE";
     public static final String TYPE_NAME_BIT = "BIT";
@@ -70,6 +76,14 @@ public class AltibaseConstants {
     public static final String TYPE_NAME_NIBBLE = "VARBYTE";
     public static final String TYPE_NAME_BINARY = "BINARY";
     public static final String TYPE_NAME_TIMESTAMP = "TIMESTAMP";
+        
+    public static final String TYPE_NAME_BIT = "BIT";
+    public static final String TYPE_NAME_VARBIT = "VARBIT";
+    */
+    public static final int TYPE_GEOMETRY = 10003;
+    public static final String TYPE_NAME_GEOMETRY = "GEOMETRY";
+    public static final String TYPE_NAME_TIMESTAMP = "TIMESTAMP";
+    public static final String TYPE_NAME_DATE = "DATE";
     
     public static final String OBJ_TYPE_MATERIALIZED_VIEW = "MATERIALIZED VIEW";
     public static final String OBJ_TYPE_TYPESET = "TYPESET";

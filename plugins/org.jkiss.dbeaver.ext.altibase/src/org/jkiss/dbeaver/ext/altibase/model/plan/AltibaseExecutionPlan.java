@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.altibase.model.plan;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataTypeDomain;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants.ExplainPlan;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataSource;
@@ -119,7 +120,7 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
              * Here, the second method is required.
              */
             method = getMethod2SetExplainWithByteArgType(clazz, 
-                    setExplainPlan, AltibaseConstants.TYPE_NAME_BYTE.toLowerCase());
+                    setExplainPlan, AltibaseDataTypeDomain.BYTE.getTypeName().toLowerCase());
 
             expPlan = AltibaseConstants.ExplainPlan.getByIndex(
                     dataSource.getContainer().getPreferenceStore().getInt(
@@ -174,6 +175,6 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
         }
 
         throw new NoSuchMethodException(String.format("Unable to find the target method: [class] %s, [method] %s, [argument type] %s", 
-                        class1.getName(), setExplainPlan, AltibaseConstants.TYPE_NAME_BYTE.toLowerCase()));
+                        class1.getName(), setExplainPlan,  AltibaseDataTypeDomain.BYTE.getTypeName().toLowerCase()));
     }
 }

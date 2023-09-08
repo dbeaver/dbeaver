@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /* 
  * Altibase Timestamp constraint works like a data type, though it's not a real data type.
+ * 
+ * It's not allowed to update the inserted value.
  */
 public class AltibaseTimestampValueHandler extends JDBCObjectValueHandler {
 
