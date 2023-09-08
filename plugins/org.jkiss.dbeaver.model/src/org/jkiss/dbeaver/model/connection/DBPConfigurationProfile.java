@@ -63,6 +63,10 @@ public abstract class DBPConfigurationProfile implements DBPSecretHolder {
         return project;
     }
 
+    public boolean isExternallyProvided() {
+        return project == null;
+    }
+
     public String getProfileId() {
         if (CommonUtils.isEmpty(profileId)) {
             return profileName;

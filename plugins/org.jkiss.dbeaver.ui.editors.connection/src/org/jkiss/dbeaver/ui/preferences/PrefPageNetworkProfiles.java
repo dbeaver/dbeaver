@@ -88,6 +88,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
     private final Map<NetworkHandlerDescriptor, HandlerBlock> configurations = new HashMap<>();
 
     public PrefPageNetworkProfiles() {
+        noDefaultAndApplyButton();
     }
 
     @NotNull

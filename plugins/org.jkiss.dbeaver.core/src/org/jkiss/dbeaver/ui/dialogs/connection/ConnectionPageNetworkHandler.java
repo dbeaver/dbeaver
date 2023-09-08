@@ -33,6 +33,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceOrigin;
+import org.jkiss.dbeaver.model.DBPDataSourceOriginExternal;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
@@ -44,7 +46,9 @@ import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.preferences.PrefPageProjectNetworkProfiles;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Network handlers edit dialog page
@@ -203,9 +207,19 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         profileCombo.removeAll();
         profileCombo.add("");
 
-        for (DBWNetworkProfile profile : site.getProject().getDataSourceRegistry().getNetworkProfiles()) {
-            profileCombo.add(profile.getProfileName());
-            if (CommonUtils.equalObjects(profileId, profile.getProfileName())) {
+        List<DBWNetworkProfile> allProfiles = new ArrayList<>();
+        DBPDataSourceOrigin dataSourceOrigin = site.getActiveDataSource().getOrigin();
+        if (dataSourceOrigin instanceof DBPDataSourceOriginExternal) {
+            allProfiles.addAll(((DBPDataSourceOriginExternal) dataSourceOrigin).getAvailableNetworkProfiles());
+        }
+        allProfiles.addAll(site.getProject().getDataSourceRegistry().getNetworkProfiles());
+        for (DBWNetworkProfile profile : allProfiles) {
+            String profileDisplayName = profile.getProfileName();
+            if (profile.isExternallyProvided()) {
+                profileDisplayName += " - " + dataSourceOrigin.getDisplayName();
+            }
+            profileCombo.add(profileDisplayName);
+            if (CommonUtils.equalObjects(profileId, profile.getProfileId())) {
                 profileCombo.select(profileCombo.getItemCount() - 1);
             }
         }

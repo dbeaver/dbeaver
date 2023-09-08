@@ -21,8 +21,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -106,5 +108,10 @@ class DataSourceOriginLazy implements DBPDataSourceOriginExternal
     @Override
     public DBPExternalConfiguration getExternalConfiguration() {
         return externalConfiguration;
+    }
+
+    @Override
+    public List<DBWNetworkProfile> getAvailableNetworkProfiles() {
+        return null;
     }
 }
