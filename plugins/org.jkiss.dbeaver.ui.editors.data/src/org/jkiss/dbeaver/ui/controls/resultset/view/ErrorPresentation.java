@@ -98,32 +98,6 @@ public class ErrorPresentation extends AbstractPresentation {
                 textWidget.setText(sqlText);
             }
         }
-
-        try {
-            boolean widthSet = false;
-            IDialogSettings viewSettings = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_ERROR_PANEL);
-            String errorWidth = viewSettings.get(PROP_ERROR_WIDTH);
-            if (errorWidth != null) {
-                String[] widthStrs = errorWidth.split(":");
-                if (widthStrs.length == 2) {
-                    if (Integer.parseInt(widthStrs[0]) == 0) {
-                        partDivider.setWeights(700, 300);
-                    } else {
-                        partDivider.setWeights(Integer.parseInt(widthStrs[0]), Integer.parseInt(widthStrs[1]));
-                    }
-                }
-                widthSet = true;
-            }
-            if (!widthSet) {
-                partDivider.setWeights(700, 300);
-            }
-            partDivider.addCustomSashFormListener((firstControlWeight, secondControlWeight) -> {
-                int[] weights = partDivider.getWeights();
-                viewSettings.put(PROP_ERROR_WIDTH, weights[0] + ":" + weights[1]);
-            });
-        } catch (Throwable e) {
-            log.debug(e);
-        }
     }
 
     @Override
