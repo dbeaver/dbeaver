@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.model.websocket.event.session;
 
-import org.jkiss.dbeaver.model.websocket.event.WSServerOutputLogInfo;
 import org.jkiss.dbeaver.model.websocket.event.WSEventType;
+import org.jkiss.dbeaver.model.websocket.event.WSServerOutputLogInfo;
 
 import java.util.List;
 
