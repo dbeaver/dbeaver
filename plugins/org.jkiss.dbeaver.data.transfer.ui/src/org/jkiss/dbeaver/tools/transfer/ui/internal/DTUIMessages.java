@@ -235,6 +235,7 @@ public class DTUIMessages extends NLS {
 
     public static String mappings_rules_dialog_title;
     public static String mappings_rules_dialog_save_settings_checkbox;
+    public static String mappings_rules_dialog_save_settings_checkbox_tip;
     public static String mappings_rules_dialog_confirmation_title;
     public static String mappings_rules_dialog_confirmation_message;
 

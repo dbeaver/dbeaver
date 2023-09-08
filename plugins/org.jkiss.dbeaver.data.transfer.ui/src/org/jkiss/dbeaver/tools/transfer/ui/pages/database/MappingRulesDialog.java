@@ -50,6 +50,7 @@ public class MappingRulesDialog extends BaseDialog {
 
     private final DBPDataSource dataSource;
     private final List<Object> elementList;
+    private DBPPreferenceStore dbpPreferenceStore;
     private DBPPreferenceStore store;
 
     private Combo nameCaseCombo;
@@ -65,7 +66,7 @@ public class MappingRulesDialog extends BaseDialog {
         super(parentShell, DTUIMessages.mappings_rules_dialog_title, null);
         this.dataSource = dataSource;
         this.elementList = elementList;
-        DBPPreferenceStore dbpPreferenceStore = dataSource.getContainer().getPreferenceStore();
+        dbpPreferenceStore = dataSource.getContainer().getPreferenceStore();
         store = DTActivator.getDefault().getPreferences();
         // First check datasource settings, then - global
         originalNameCaseSelection = dbpPreferenceStore.contains(DTConstants.PREF_NAME_CASE_MAPPING) ?
@@ -127,6 +128,7 @@ public class MappingRulesDialog extends BaseDialog {
             mappingGroup,
             DTUIMessages.mappings_rules_dialog_save_settings_checkbox,
             store.contains(DTConstants.PREF_SAVE_LOCAL_SETTINGS) ? store.getBoolean(DTConstants.PREF_SAVE_LOCAL_SETTINGS) : true);
+        saveSettings.setToolTipText(DTUIMessages.mappings_rules_dialog_save_settings_checkbox_tip);
         GridData gd2 = new GridData();
         gd2.horizontalSpan = 2;
         saveSettings.setLayoutData(gd2);
@@ -195,20 +197,35 @@ public class MappingRulesDialog extends BaseDialog {
                 }
             }
         }
-        if (saveSettings.getSelection()) {
-            // Save settings to the store
-            if (changeNameCase) {
+        boolean saveToGlobalSettings = saveSettings.getSelection();
+
+        // Save settings
+        if (changeNameCase) {
+            if (saveToGlobalSettings) {
                 store.setValue(DTConstants.PREF_NAME_CASE_MAPPING, nameCaseCombo.getSelectionIndex());
-            }
-            if (changeReplaceMechanism) {
-                store.setValue(DTConstants.PREF_REPLACE_MAPPING, replaceCombo.getSelectionIndex());
-            }
-            if (changeDataTypeLength) {
-                store.setValue(DTConstants.PREF_MAX_TYPE_LENGTH, typeLengthSpinner.getSelection());
+            } else {
+                dbpPreferenceStore.setValue(DTConstants.PREF_NAME_CASE_MAPPING, nameCaseCombo.getSelectionIndex());
             }
         }
-        store.setValue(DTConstants.PREF_SAVE_LOCAL_SETTINGS, saveSettings.getSelection());
+        if (changeReplaceMechanism) {
+            if (saveToGlobalSettings) {
+                store.setValue(DTConstants.PREF_REPLACE_MAPPING, replaceCombo.getSelectionIndex());
+            } else {
+                dbpPreferenceStore.setValue(DTConstants.PREF_REPLACE_MAPPING, replaceCombo.getSelectionIndex());
+            }
+        }
+        if (changeDataTypeLength) {
+            if (saveToGlobalSettings) {
+                store.setValue(DTConstants.PREF_MAX_TYPE_LENGTH, typeLengthSpinner.getSelection());
+            } else {
+                dbpPreferenceStore.setValue(DTConstants.PREF_MAX_TYPE_LENGTH, typeLengthSpinner.getSelection());
+            }
+        }
+        store.setValue(DTConstants.PREF_SAVE_LOCAL_SETTINGS, saveToGlobalSettings);
         PrefUtils.savePreferenceStore(store);
+        if (!saveToGlobalSettings) {
+            PrefUtils.savePreferenceStore(dbpPreferenceStore);
+        }
     }
 
     @Nullable
