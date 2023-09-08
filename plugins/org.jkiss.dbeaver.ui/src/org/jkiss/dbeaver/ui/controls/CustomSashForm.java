@@ -662,7 +662,7 @@ public class CustomSashForm extends SashForm {
             children[0].setFocus();
         fireDividerMoved();
     }
-    
+
     /*
      * Helper method for upHideClicked / downHideClicked
      */
