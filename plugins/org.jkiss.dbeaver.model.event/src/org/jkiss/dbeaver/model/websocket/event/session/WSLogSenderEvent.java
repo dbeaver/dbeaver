@@ -21,9 +21,9 @@ import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 import java.util.List;
 
 public class WSLogSenderEvent extends WSAbstractSessionEvent {
-    String asyncTaskId;
-    List<String> messages;
-    long eventTimestamp;
+    private final String asyncTaskId;
+    private final List<String> messages;
+    private final long eventTimestamp;
 
     public WSLogSenderEvent(String asyncTaskId,
                             List<String> messages,
@@ -32,5 +32,17 @@ public class WSLogSenderEvent extends WSAbstractSessionEvent {
         this.asyncTaskId = asyncTaskId;
         this.messages = messages;
         this.eventTimestamp = eventTimestamp;
+    }
+
+    public String getAsyncTaskId() {
+        return asyncTaskId;
+    }
+
+    public List<String> getMessages() {
+        return messages;
+    }
+
+    public long getEventTimestamp() {
+        return eventTimestamp;
     }
 }
