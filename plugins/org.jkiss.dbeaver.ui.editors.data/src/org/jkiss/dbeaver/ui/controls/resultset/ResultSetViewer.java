@@ -76,6 +76,7 @@ import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.dbeaver.ui.controls.TabFolderReorder;
 import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.VerticalButton;
@@ -1015,7 +1016,15 @@ public class ResultSetViewer extends Viewer
             }
         } else {
             if (viewerSash != null) {
-                viewerSash.setMaximizedControl(viewerSash.getChildren()[0]);
+                Control control = viewerSash.getChildren()[0];
+                viewerSash.setMaximizedControl(control);
+                if (control instanceof Composite) {
+                    Control child = ((Composite) control).getChildren()[0];
+                    if (child instanceof CustomSashForm) {
+                        CustomSashForm form = (CustomSashForm) child;
+                        form.resetWeight();
+                    }
+                }
             }
         }
 
