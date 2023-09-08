@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWHandlerDescriptor;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
@@ -106,7 +107,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
             handlersFolder = new TabFolder(divider, SWT.TOP | SWT.FLAT);
             handlersFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
             for (NetworkHandlerDescriptor nhd : NetworkHandlerRegistry.getInstance().getDescriptors()) {
-                if (!nhd.hasObjectTypes()) {
+                if (!nhd.hasObjectTypes() && isHandlerApplicable(nhd)) {
                     createHandlerTab(nhd);
                 }
             }
@@ -125,6 +126,10 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
         }
 
         return divider;
+    }
+
+    protected boolean isHandlerApplicable(DBWHandlerDescriptor nhd) {
+        return true;
     }
 
     protected boolean isInitOnCreate() {
