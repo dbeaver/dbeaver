@@ -83,6 +83,7 @@ public class DBConstants {
     public static final String BOOLEAN_PROP_NO = "no";
 
     public static final DBDBinaryFormatter[] BINARY_FORMATS = {
+
         new BinaryFormatterHex(),
         new BinaryFormatterString(),
         new BinaryFormatterBase64(),

@@ -1,5 +1,6 @@
 package org.jkiss.dbeaver.ext.yashandb.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -34,13 +35,13 @@ public class YashanDBTableColumn extends JDBCTableColumn<YashanDBTableBase> impl
 
     private String comment;
     //    private boolean hidden;
-    private Integer scale;
+//    private Integer scale;
 
     public YashanDBTableColumn(YashanDBTableBase table) {
         super(table, false);
     }
 
-    public YashanDBTableColumn(DBRProgressMonitor monitor, YashanDBTableBase table, ResultSet dbResult) throws DBException {
+    public YashanDBTableColumn(DBRProgressMonitor monitor, YashanDBTableBase table,@NotNull ResultSet dbResult) throws DBException {
         super(table, true);
         setDefaultValue(JDBCUtils.safeGetString(dbResult, "DATA_DEFAULT"));
         setName(JDBCUtils.safeGetString(dbResult, "COLUMN_NAME"));
@@ -61,13 +62,24 @@ public class YashanDBTableColumn extends JDBCTableColumn<YashanDBTableBase> impl
         }
         setMaxLength(JDBCUtils.safeGetLong(dbResult, "DATA_LENGTH"));
         setRequired(!"Y".equals(JDBCUtils.safeGetString(dbResult, "NULLABLE")));
-        this.scale = JDBCUtils.safeGetInteger(dbResult, "DATA_SCALE");
-        if (this.scale == null || this.scale < 0) {
+
+//        this.scale = JDBCUtils.safeGetInteger(dbResult, "DATA_SCALE");
+//        if (this.scale == null || this.scale < 0) {
+//            // Scale can be null in case when type was declared without parameters (examples: NUMBER, NUMBER(*), FLOAT)
+//            if (this.type != null && this.type.getScale() != null) {
+//                this.scale = this.type.getScale();
+//            }
+//        }
+
+        Integer scale = JDBCUtils.safeGetInteger(dbResult, "DATA_SCALE");
+        if (scale == null) {
             // Scale can be null in case when type was declared without parameters (examples: NUMBER, NUMBER(*), FLOAT)
             if (this.type != null && this.type.getScale() != null) {
-                this.scale = this.type.getScale();
+                scale = this.type.getScale();
             }
         }
+        setScale(scale);
+
         // if typename is bit, use data length as data precision.
         if(typeName.equals("BIT")) {
             setPrecision(CommonUtils.toInt(JDBCUtils.safeGetLong(dbResult, "DATA_LENGTH")));
@@ -89,12 +101,12 @@ public class YashanDBTableColumn extends JDBCTableColumn<YashanDBTableBase> impl
             this.valueType = Types.REF;
         }
 
-        if (this.scale == null || this.scale < 0) {
-            // Scale can be null in case when type was declared without parameters (examples: NUMBER, NUMBER(*), FLOAT)
-            if (this.type != null && this.type.getScale() != null) {
-                this.scale = this.type.getScale();
-            }
-        }
+//        if (this.scale == null || this.scale < 0) {
+//            // Scale can be null in case when type was declared without parameters (examples: NUMBER, NUMBER(*), FLOAT)
+//            if (this.type != null && this.type.getScale() != null) {
+//                this.scale = this.type.getScale();
+//            }
+//        }
 
     }
 
@@ -229,13 +241,13 @@ public class YashanDBTableColumn extends JDBCTableColumn<YashanDBTableBase> impl
     @Override
     @Property(viewable = false, editableExpr = "!object.table.view", updatableExpr = "!object.table.view", order = 42)
     public Integer getScale() {
-        return scale;
+        return super.getScale();
     }
 
-    @Override
-    public void setScale(Integer scale) {
-        this.scale = scale;
-    }
+//    @Override
+//    public void setScale(Integer scale) {
+//        this.scale = scale;
+//    }
 
     /**
      * Not null and AutoIncrement box will be showed in right UI.

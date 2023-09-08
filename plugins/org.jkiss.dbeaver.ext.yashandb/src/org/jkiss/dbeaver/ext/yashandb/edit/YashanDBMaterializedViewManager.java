@@ -98,7 +98,7 @@ public class YashanDBMaterializedViewManager extends SQLObjectEditor<YashanDBMat
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         boolean hasComment = command.hasProperty("comment");
         if (!hasComment || command.getProperties().size() > 1) {
-            String mViewDefinition = view.getMViewText().trim();
+            String mViewDefinition = view.getMViewText().trim().replaceAll(";","");
             if (mViewDefinition.contains("CREATE MATERIALIZED VIEW")) {
                 if (mViewDefinition.endsWith(";")) mViewDefinition = mViewDefinition.substring(0, mViewDefinition.length() - 1);
                 decl.append(mViewDefinition);

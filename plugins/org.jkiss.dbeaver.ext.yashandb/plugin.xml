@@ -519,7 +519,7 @@
                         webURL="http://cod-doc.yasdb.com/"
                         categories="sql,analytic,columns">
                     <replace provider="generic" driver="yashandb"/>
-                    <file type="jar" path="platform:/plugin/org.jkiss.dbeaver.ext.yashandb/driver/yashandb-jdbc-1.3.0.jar"
+                    <file type="jar" path="platform:/plugin/org.jkiss.dbeaver.ext.yashandb/driver/yashandb-jdbc-1.4.7.jar"
                           bundle="!drivers.yashandb"/>
                     <file type="jar" path="drivers/yashandb" bundle="drivers.yashandb"/>
                 </driver>
