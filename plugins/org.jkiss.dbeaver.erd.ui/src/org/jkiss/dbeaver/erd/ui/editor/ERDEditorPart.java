@@ -26,6 +26,7 @@ import org.eclipse.draw2d.PrintFigureOperation;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.gef.*;
+import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
 import org.eclipse.gef.editparts.ZoomManager;
@@ -1282,6 +1283,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 }
                 getCommandStack().flush();
                 if (entityDiagram != null) {
+                    if (entityDiagram.isDirty()) {
+                        // Associated connections were changed during the loading process
+                        getCommandStack().execute(new MarkDirtyCommand());
+                    }
                     EditPart oldContents = getGraphicalViewer().getContents();
                     if (oldContents instanceof DiagramPart) {
                         if (restoreVisualSettings((DiagramPart) oldContents, entityDiagram)) {
@@ -1516,6 +1521,26 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         @Override
         public void setSelection(ISelection selection, boolean reveal) {
 
+        }
+    }
+
+    /**
+     * A special command that marks the editor dirty without the possibility to undo it.
+     */
+    private static class MarkDirtyCommand extends Command {
+        @Override
+        public boolean canExecute() {
+            return true;
+        }
+
+        @Override
+        public boolean canRedo() {
+            return false;
+        }
+
+        @Override
+        public boolean canUndo() {
+            return false;
         }
     }
 }
