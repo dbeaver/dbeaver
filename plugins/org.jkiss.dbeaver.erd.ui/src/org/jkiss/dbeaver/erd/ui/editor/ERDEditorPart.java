@@ -100,6 +100,7 @@ import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.ui.editors.EditorAccessibleAdapter;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseModellerEditor;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
@@ -273,6 +274,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         if (hasProgressControl()) {
             progressControl.createProgressPanel();
         }
+
+        EditorAccessibleAdapter.install(getGraphicalControl());
     }
 
     public DBECommandContext getCommandContext() {

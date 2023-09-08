@@ -63,7 +63,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
 
     @Override
     protected CTabItem createItem(int index, Control control) {
-        EditorAccessibleAdapter.install((Composite) control);
+        EditorAccessibleAdapter.install(control);
         return super.createItem(index, control);
     }
 

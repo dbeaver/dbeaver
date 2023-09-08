@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.swt.accessibility.*;
 import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.TabFolder;
 import org.jkiss.code.NotNull;
 
@@ -29,11 +29,11 @@ import java.util.Deque;
 public class EditorAccessibleAdapter extends AccessibleControlAdapter implements AccessibleListener {
     private static final String DATA_KEY = EditorAccessibleAdapter.class.getName();
 
-    private final WeakReference<Composite> composite;
+    private final WeakReference<Control> control;
     private boolean active;
 
-    private EditorAccessibleAdapter(@NotNull Composite composite) {
-        this.composite = new WeakReference<>(composite);
+    private EditorAccessibleAdapter(@NotNull Control control) {
+        this.control = new WeakReference<>(control);
     }
 
     /**
@@ -41,8 +41,8 @@ public class EditorAccessibleAdapter extends AccessibleControlAdapter implements
      * <p>
      * In other words, if any method of this adapter was called at least once, it will be treated as "active".
      */
-    public static boolean isActive(@NotNull Composite composite) {
-        for (Composite c = composite; c != null; c = c.getParent()) {
+    public static boolean isActive(@NotNull Control control) {
+        for (Control c = control; c != null; c = c.getParent()) {
             final Object data = c.getData(DATA_KEY);
             if (data instanceof EditorAccessibleAdapter && ((EditorAccessibleAdapter) data).active) {
                 return true;
@@ -55,32 +55,30 @@ public class EditorAccessibleAdapter extends AccessibleControlAdapter implements
     /**
      * Installs this accessible adapter on the given control.
      */
-    public static void install(@NotNull Composite composite) {
-        final EditorAccessibleAdapter adapter = new EditorAccessibleAdapter(composite);
+    public static void install(@NotNull Control control) {
+        final EditorAccessibleAdapter adapter = new EditorAccessibleAdapter(control);
 
-        final Accessible accessible = composite.getAccessible();
+        final Accessible accessible = control.getAccessible();
         accessible.addAccessibleListener(adapter);
         accessible.addAccessibleControlListener(adapter);
 
-        composite.setData(DATA_KEY, adapter);
+        control.setData(DATA_KEY, adapter);
     }
 
     @Override
     public void getName(AccessibleEvent e) {
-        final Composite composite = this.composite.get();
-
-        if (composite != null) {
-            e.result = getWorkbenchLocation(composite);
+        final Control control = this.control.get();
+        if (control != null && e.childID == ACC.CHILDID_SELF) {
+            e.result = getWorkbenchLocation(control);
             active = true;
         }
     }
 
     @Override
     public void getValue(AccessibleControlEvent e) {
-        final Composite composite = this.composite.get();
-
-        if (composite != null) {
-            e.result = getWorkbenchLocation(composite);
+        final Control control = this.control.get();
+        if (control != null && e.childID == ACC.CHILDID_SELF) {
+            e.result = getWorkbenchLocation(control);
             active = true;
         }
     }
@@ -101,10 +99,10 @@ public class EditorAccessibleAdapter extends AccessibleControlAdapter implements
     }
 
     @NotNull
-    private static String getWorkbenchLocation(@NotNull Composite composite) {
+    private static String getWorkbenchLocation(@NotNull Control control) {
         final Deque<String> path = new ArrayDeque<>();
 
-        for (Composite c = composite; c != null; c = c.getParent()) {
+        for (Control c = control; c != null; c = c.getParent()) {
             if (c instanceof TabFolder) {
                 final TabFolder folder = (TabFolder) c;
                 final int index = folder.getSelectionIndex();
