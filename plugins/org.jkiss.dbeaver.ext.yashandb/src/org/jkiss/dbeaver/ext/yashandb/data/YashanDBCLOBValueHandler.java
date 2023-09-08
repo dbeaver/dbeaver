@@ -56,9 +56,11 @@ public class YashanDBCLOBValueHandler extends JDBCContentValueHandler {
             for (int i = 0; i < parts.length; i++) {
                 String part = parts[i];
                 if (i > 0) writer.write("||");
-                writer.write("TO_CLOB('");
+//                writer.write("TO_CLOB('");
+                writer.write("'");
                 writer.write(part.replace("'", "''"));
-                writer.write("')");
+                writer.write("'");
+//                writer.write("')");
             }
         }
     }

@@ -373,7 +373,7 @@ public class CSVParser {
                             && nextLine.length() > (i + 1) &&
                             nextLine.charAt(i + 1) != this.separator //not at the	end of an escape sequence
                         ) {
-
+//                           这个地方的判断如果有一个空白字符就会导致数据清0，应该是bug
 //                            if (ignoreLeadingWhiteSpace && sb.length() > 0 && isAllWhiteSpace(sb)) {
                         	if (ignoreLeadingWhiteSpace && sb.length() > 0 && sb.toString().trim().length()==0) {
                                 sb.setLength(0);
@@ -385,7 +385,10 @@ public class CSVParser {
                     }
                 }
                 inField = !inField;
-            } else if (c == separator && !(inQuotes && !ignoreQuotations)) {
+            }
+            //复杂场景的切分会有问题，直接根据分隔符切分
+//            else if (c == separator && !(inQuotes && !ignoreQuotations)) {
+            else if (c == separator){
                 tokensOnThisLine.add(convertEmptyToNullIfNeeded(sb.toString(), fromQuotedField));
                 fromQuotedField = false;
                 sb.setLength(0);
@@ -396,6 +399,11 @@ public class CSVParser {
                     inField = true;
                     fromQuotedField = true;
                 }
+            }
+
+            //保证切分正确
+            if(i==nextLine.length()-1){
+                inQuotes=false;
             }
 
         }

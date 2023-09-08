@@ -317,7 +317,7 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
                     "col.COLUMN_NAME,col.POSITION\n" +
                     "FROM " + YashanDBUtils.isAdminPriv(getDataSource(), "CONSTRAINTS") +
                     " c, " + YashanDBUtils.isAdminPriv(getDataSource(), "CONS_COLUMNS") + " col\n" +
-                    "WHERE c.CONSTRAINT_TYPE<>'FOREIGN KEY' AND c.OWNER=? AND c.OWNER=col.OWNER AND c.CONSTRAINT_NAME=col" +
+                            "WHERE c.CONSTRAINT_TYPE<>'R' AND c.OWNER=? AND c.OWNER=col.OWNER AND c.CONSTRAINT_NAME=col" +
                     ".CONSTRAINT_NAME");
 
             if (forTable != null) {
@@ -477,7 +477,7 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
                     "R_TABLE_NAME,c.DELETE_RULE, \n" +
                     "col.COLUMN_NAME,col.POSITION\r\n" +
                     "FROM " + constraintsView + " c, " + consColumnsView + " col, " + constraintsView + " rc\n" +
-                    "WHERE c.CONSTRAINT_TYPE='FOREIGN KEY' AND c.OWNER=?\n" +
+                    "WHERE c.CONSTRAINT_TYPE='R' AND c.OWNER=?\n" +
                     "AND c.OWNER=col.OWNER AND c.CONSTRAINT_NAME=col.CONSTRAINT_NAME\n" +
                     "AND rc.OWNER=c.r_OWNER AND rc.CONSTRAINT_NAME=c.R_CONSTRAINT_NAME");
             if (forTable != null) {
