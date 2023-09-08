@@ -663,18 +663,6 @@ public class CustomSashForm extends SashForm {
         fireDividerMoved();
     }
     
-    public void resetWeight() {
-        int[] weights = getWeights();
-        if (weights.length != 2) {
-            return;
-        }
-        // Assume weights are always in units of 1000.
-        weights[0] = 500;
-        weights[1] = 500;
-        setWeights(weights);
-        fireDividerMoved();
-    }
-
     /*
      * Helper method for upHideClicked / downHideClicked
      */
