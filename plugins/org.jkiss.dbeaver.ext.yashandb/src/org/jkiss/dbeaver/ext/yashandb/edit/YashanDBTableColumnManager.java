@@ -2,10 +2,7 @@ package org.jkiss.dbeaver.ext.yashandb.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.yashandb.model.YashanDBDataType;
-import org.jkiss.dbeaver.ext.yashandb.model.YashanDBTableBase;
-import org.jkiss.dbeaver.ext.yashandb.model.YashanDBTableColumn;
-import org.jkiss.dbeaver.ext.yashandb.model.YashanDBUtils;
+import org.jkiss.dbeaver.ext.yashandb.model.*;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -41,7 +38,7 @@ public class YashanDBTableColumnManager extends SQLTableColumnManager<YashanDBTa
     }
 
     protected ColumnModifier[] getSupportedModifiers(YashanDBTableColumn column, Map<String, Object> options) {
-        return new ColumnModifier[]{DataTypeModifier, DefaultModifier, NullNotNullModifierConditional};
+        return new ColumnModifier[]{DataTypeModifier, DefaultModifier, NullNotNullModifier};
     }
 
     /**

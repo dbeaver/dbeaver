@@ -240,7 +240,7 @@ public class YashanDBTableColumn extends JDBCTableColumn<YashanDBTableBase> impl
     /**
      * Not null and AutoIncrement box will be showed in right UI.
      */
-    @Property(viewable = false, editableExpr = "!object.table.view", updatableExpr = "!object.table.view", order = 50)
+    @Property(viewable = true, editableExpr = "!object.table.view", updatableExpr = "!object.table.view", order = 50)
     @Override
     public boolean isRequired() {
         return super.isRequired();

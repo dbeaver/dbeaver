@@ -96,7 +96,7 @@ public class YashanDBAlterTableColumnTest {
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
-        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE ADD COLUMN4 INTEGER;" + lineBreak;
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE ADD COLUMN4 INTEGER NULL;" + lineBreak;
 
         Assert.assertEquals(script, expectedDDL);
     }
@@ -113,7 +113,7 @@ public class YashanDBAlterTableColumnTest {
         
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
-        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(100);"+lineBreak
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(100) NULL;"+lineBreak
         		+ "COMMENT ON COLUMN TEST_SCHEMA.TEST_TABLE.COLUMN1 IS 'Test comment';" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
     }
@@ -146,7 +146,7 @@ public class YashanDBAlterTableColumnTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL =
-            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(100) DEFAULT 'Test value';\r\n"
+            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(100) DEFAULT 'Test value' NULL;\r\n"
             + "COMMENT ON COLUMN TEST_SCHEMA.TEST_TABLE.COLUMN1 IS '';\r\n";
         Assert.assertEquals(script, expectedDDL);
     }
@@ -163,7 +163,7 @@ public class YashanDBAlterTableColumnTest {
 
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
         String expectedDDL =
-            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(38,0) DEFAULT 42;" + lineBreak
+            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(38,0) DEFAULT 42 NULL;" + lineBreak
             +"COMMENT ON COLUMN TEST_SCHEMA.TEST_TABLE.COLUMN2 IS '';"+lineBreak;
         Assert.assertEquals(script, expectedDDL);
     }
@@ -181,7 +181,7 @@ public class YashanDBAlterTableColumnTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL =
-            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(50) DEFAULT 'Test value';\r\n"
+            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(50) DEFAULT 'Test value' NULL;\r\n"
             + "COMMENT ON COLUMN TEST_SCHEMA.TEST_TABLE.COLUMN1 IS '';\r\n";
         Assert.assertEquals(script, expectedDDL);
     }
@@ -197,7 +197,7 @@ public class YashanDBAlterTableColumnTest {
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
 
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
-        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN3 CHAR(33);"+lineBreak
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN3 CHAR(33) NULL;"+lineBreak
         		+ "COMMENT ON COLUMN TEST_SCHEMA.TEST_TABLE.COLUMN3 IS '';"+lineBreak;
         Assert.assertEquals(script, expectedDDL);
     }
@@ -213,7 +213,7 @@ public class YashanDBAlterTableColumnTest {
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
-        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(22,0);\r\n"
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(22,0) NULL;\r\n"
         		+ "COMMENT ON COLUMN TEST_SCHEMA.TEST_TABLE.COLUMN2 IS '';\r\n"
         		+ "";
         Assert.assertEquals(script, expectedDDL);
@@ -232,7 +232,7 @@ public class YashanDBAlterTableColumnTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL =
-            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(38,17) DEFAULT 42;\r\n"
+            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(38,17) DEFAULT 42 NULL;\r\n"
             + "COMMENT ON COLUMN TEST_SCHEMA.TEST_TABLE.COLUMN2 IS '';\r\n";
         Assert.assertEquals(script, expectedDDL);
     }

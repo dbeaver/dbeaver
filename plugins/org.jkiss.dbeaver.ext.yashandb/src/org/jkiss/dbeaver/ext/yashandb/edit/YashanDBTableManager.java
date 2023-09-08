@@ -123,7 +123,7 @@ public class YashanDBTableManager extends SQLTableManager<YashanDBTable, YashanD
 //        }
 
         //TMP
-        ddl.append("LOGGING TABLESPACE \"USERS\"");
+//        ddl.append("LOGGING TABLESPACE \"USERS\"");
     }
 
     /**

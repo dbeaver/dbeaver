@@ -55,7 +55,7 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
     private static final Log log = Log.getLog(YashanDBSchema.class);
 
     //ORACLE默认是false, 但是我们ys查询比较快,所以先加上, 后续有情况再修改
-    private  static boolean SYNONYMS_AS_CHILDREN = true;
+    private  static boolean SYNONYMS_AS_CHILDREN = false;
     private  static boolean FUNC_PROC_AS_CHILDREN = true;
     private  static boolean SEQUENCE_AS_CHILDREN = true;
     private static boolean PACKAGE_AS_CHILDREN = true;
@@ -103,8 +103,8 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
         }
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
         //TODO: 这个目前是假的
-        //SYNONYMS_AS_CHILDREN = CommonUtils.getBoolean(dataSource.getContainer().getConnectionConfiguration().getProviderProperty(YashanDBConstants.PROP_SEARCH_METADATA_IN_SYNONYMS));
-        SYNONYMS_AS_CHILDREN = true;
+        //        SYNONYMS_AS_CHILDREN = true;
+        SYNONYMS_AS_CHILDREN = CommonUtils.getBoolean(dataSource.getContainer().getConnectionConfiguration().getProviderProperty(YashanDBConstants.PROP_SEARCH_METADATA_IN_SYNONYMS));
     }
 
     @Override
