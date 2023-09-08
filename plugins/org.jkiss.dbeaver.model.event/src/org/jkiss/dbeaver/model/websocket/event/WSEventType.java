@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.websocket.event.datasource.WSDatasourceFolderEven
 import org.jkiss.dbeaver.model.websocket.event.permissions.WSObjectPermissionEvent;
 import org.jkiss.dbeaver.model.websocket.event.permissions.WSSubjectPermissionEvent;
 import org.jkiss.dbeaver.model.websocket.event.resource.WSResourceUpdatedEvent;
+import org.jkiss.dbeaver.model.websocket.event.session.WSLogSenderEvent;
 import org.jkiss.dbeaver.model.websocket.event.session.WSSessionExpiredEvent;
 import org.jkiss.dbeaver.model.websocket.event.session.WSSessionStateEvent;
 import org.jkiss.dbeaver.model.websocket.event.session.WSSocketConnectedEvent;
@@ -79,7 +80,7 @@ public enum WSEventType {
 
     WORKSPACE_CONFIG_CHANGED("cb_workspace_config_changed", WSEventTopic.WORKSPACE_CONFIG, WSWorkspaceConfigurationChangedEvent.class),
 
-    LOG_SEND("cb_log_send", WSEventTopic.OUTPUT_LOG, WSDataSourceEvent.class);
+    DB_LOG_UPDATED("cb_database_output_log_updated", WSEventTopic.OUTPUT_LOG, WSLogSenderEvent.class);
 
     private final String eventId;
     private final WSEventTopic topic;

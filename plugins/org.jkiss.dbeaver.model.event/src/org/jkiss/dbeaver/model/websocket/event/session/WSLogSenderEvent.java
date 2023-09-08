@@ -28,7 +28,7 @@ public class WSLogSenderEvent extends WSAbstractSessionEvent {
     public WSLogSenderEvent(String asyncTaskId,
                             List<String> messages,
                             long eventTimestamp) {
-        super(WSEventType.LOG_SEND);
+        super(WSEventType.DB_LOG_UPDATED);
         this.asyncTaskId = asyncTaskId;
         this.messages = messages;
         this.eventTimestamp = eventTimestamp;
