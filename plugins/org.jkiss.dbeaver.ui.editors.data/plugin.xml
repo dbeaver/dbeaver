@@ -844,7 +844,7 @@
             </with>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.grid.selectRowColor" 
-                 class="org.jkiss.dbeaver.ui.controls.resultset.colors.SetRowColorHandler">
+                 class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain">
         </handler>
     </extension>
 
