@@ -49,8 +49,9 @@ public class ClickhouseValueHandlerProvider implements DBDValueHandlerProvider {
             } else {
                 return new JDBCNumberValueHandler(type, preferences);
             }
-        } else {
-            return null;
+        } else if (dataKind == DBPDataKind.STRING && "ipv4".equals(lowerTypeName)) {
+            return ClikhouseInetTypeValueHandler.INSTANCE;
         }
+        return null;
     }
 }

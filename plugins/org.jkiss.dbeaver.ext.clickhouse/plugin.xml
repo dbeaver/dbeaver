@@ -126,6 +126,7 @@
             <type kind="NUMERIC"/>
             <type name="BOOL"/>
             <type name="UUID"/>
+            <type name="IPV4"/>
         </provider>
     </extension>
 
