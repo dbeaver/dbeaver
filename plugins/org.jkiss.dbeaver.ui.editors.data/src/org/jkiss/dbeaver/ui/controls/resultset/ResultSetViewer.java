@@ -1016,15 +1016,7 @@ public class ResultSetViewer extends Viewer
             }
         } else {
             if (viewerSash != null) {
-                Control control = viewerSash.getChildren()[0];
-                viewerSash.setMaximizedControl(control);
-                if (control instanceof Composite) {
-                    Control child = ((Composite) control).getChildren()[0];
-                    if (child instanceof CustomSashForm) {
-                        CustomSashForm form = (CustomSashForm) child;
-                        form.resetWeight();
-                    }
-                }
+                viewerSash.setMaximizedControl(viewerSash.getChildren()[0]);
             }
         }
 
