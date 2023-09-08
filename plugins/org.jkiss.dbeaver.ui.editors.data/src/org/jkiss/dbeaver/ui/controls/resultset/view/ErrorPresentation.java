@@ -106,8 +106,11 @@ public class ErrorPresentation extends AbstractPresentation {
             if (errorWidth != null) {
                 String[] widthStrs = errorWidth.split(":");
                 if (widthStrs.length == 2) {
-                    partDivider.setWeights(Integer.parseInt(widthStrs[0]),
-                        Integer.parseInt(widthStrs[1]));
+                    if (Integer.parseInt(widthStrs[0]) == 0) {
+                        partDivider.setWeights(700, 300);
+                    } else {
+                        partDivider.setWeights(Integer.parseInt(widthStrs[0]), Integer.parseInt(widthStrs[1]));
+                    }
                 }
                 widthSet = true;
             }
