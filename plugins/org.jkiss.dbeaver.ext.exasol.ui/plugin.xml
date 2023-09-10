@@ -144,7 +144,6 @@
          </tool>
 
           <tool
-               class="org.jkiss.dbeaver.ext.exasol.ui.tools.ExasolToolTruncate"
                description="Truncate table(s)"
                id="org.jkiss.dbeaver.ext.exasol.ui.tools.ExasolToolTruncate"
                group="org.jkiss.dbeaver.ext.exasol.ui.tools"

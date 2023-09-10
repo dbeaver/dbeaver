@@ -269,15 +269,12 @@
             <toolGroup id="org.jkiss.dbeaver.ext.oracle.ui.tools.statistics" label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.statistics.label"/>
             <toolGroup id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance" label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.label"/>
             <tool
-                    class="org.jkiss.dbeaver.ext.oracle.ui.tools.OracleToolScript"
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.OracleToolScript.description"
                     id="org.jkiss.dbeaver.ext.oracle.ui.tools.OracleToolScript"
                     label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.OracleToolScript.label">
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataSource"/>
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
+                <task id="oracleScriptExecute"/>
             </tool>
             <tool
-                    class="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolValidateStructure"
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolValidateStructure.label"
                     id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolValidateStructure"
                     group="org.jkiss.dbeaver.ext.oracle.ui.tools.statistics"
@@ -286,7 +283,6 @@
                 <task id="oracleToolValidateStructure"/>
             </tool>
             <tool
-                    class="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolRefreshMView"
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolRefreshMView.label"
                     id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolRefreshMView"
                     group="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance"
@@ -295,7 +291,6 @@
                 <task id="oracleToolMViewRefresh"/>
             </tool>
             <tool
-                    class="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolGatherStatistics"
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolGatherStatistics.label"
                     id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolGatherStatistics"
                     group="org.jkiss.dbeaver.ext.oracle.ui.tools.statistics"
@@ -305,7 +300,6 @@
                 <task id="oracleToolIndexGatherStatistics"/>
             </tool>
             <tool
-                    class="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTruncate"
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTruncate.description"
                     id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTruncate"
                     group="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance"
@@ -314,7 +308,6 @@
                 <task id="oracleToolTableTruncate"/>
             </tool>
             <tool
-                    class="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerDisable"
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerDisable.description"
                     id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerDisable"
                     group="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance"
@@ -323,7 +316,6 @@
                 <task id="OracleToolTriggerDisable"/>
             </tool>
             <tool
-                    class="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerEnable"
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerEnable.description"
                     id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerEnable"
                     group="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance"
