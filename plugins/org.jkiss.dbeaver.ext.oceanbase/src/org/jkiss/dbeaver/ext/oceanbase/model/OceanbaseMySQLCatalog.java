@@ -41,7 +41,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
@@ -54,6 +56,8 @@ public class OceanbaseMySQLCatalog extends MySQLCatalog {
     private final MySQLDataSource dataSource;
     private final OceanbaseProceduresCache oceanbaseProceduresCache = new OceanbaseProceduresCache();
     private final OceanbaseTableCache oceanbaseTableCache = new OceanbaseTableCache();
+
+    private List<String> proceduresNames = new ArrayList<>();
 
     public OceanbaseMySQLCatalog(MySQLDataSource dataSource, ResultSet dbResult) {
         super(dataSource, dbResult);
@@ -73,6 +77,12 @@ public class OceanbaseMySQLCatalog extends MySQLCatalog {
     @Override
     public MySQLDataSource getDataSource() {
         return dataSource;
+    }
+
+    @Override
+    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        proceduresNames.clear();
+        return super.refreshObject(monitor);
     }
 
     static class OceanbaseTableCache extends TableCache {
@@ -109,11 +119,8 @@ public class OceanbaseMySQLCatalog extends MySQLCatalog {
 
     class OceanbaseProceduresCache extends ProceduresCache {
 
-        private List<String> proceduresNames;
-
         OceanbaseProceduresCache() {
             super();
-            proceduresNames = new ArrayList<>();
         }
 
         @Override
