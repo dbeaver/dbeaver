@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.model.websocket.event;
 
-public class WSServerOutputLogInfo {
+public class WSOutputLogInfo {
     private final String severity;
     private final String message;
 
-    public WSServerOutputLogInfo(String severity, String message) {
+    public WSOutputLogInfo(String severity, String message) {
         this.message = message;
         this.severity = severity;
     }

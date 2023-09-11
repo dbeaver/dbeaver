@@ -21,7 +21,7 @@ public enum WSEventTopic {
     SERVER_CONFIG("cb_config"),
     WORKSPACE_CONFIG("cb_workspace_configuration"),
     SESSION_LOG("cb_session_log"),
-    OUTPUT_LOG("cb_output_log"),
+    DB_OUTPUT_LOG("cb_database_output_log"),
     SESSION("cb_session"),
     DATASOURCE("cb_datasource"),
     DATASOURCE_FOLDER("cb_datasource_folder"),
