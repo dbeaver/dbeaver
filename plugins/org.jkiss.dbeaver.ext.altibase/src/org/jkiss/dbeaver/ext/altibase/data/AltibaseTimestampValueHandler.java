@@ -35,11 +35,12 @@ public class AltibaseTimestampValueHandler extends JDBCObjectValueHandler {
 
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, 
-            Object object, boolean copy, boolean validateValue) throws DBCException
-    {
+            Object object, boolean copy, boolean validateValue) throws DBCException {
         if (object != null && object instanceof JDBCContentBytes) {
             byte[] bytes = ((JDBCContentBytes) object).getRawValue();
-            return BinaryFormatterHex.INSTANCE.toString(bytes, 0, bytes.length);
+            if (bytes != null) {
+                return BinaryFormatterHex.INSTANCE.toString(bytes, 0, bytes.length);
+            }
         }
         
         return super.getValueFromObject(session, type, object, copy, validateValue);

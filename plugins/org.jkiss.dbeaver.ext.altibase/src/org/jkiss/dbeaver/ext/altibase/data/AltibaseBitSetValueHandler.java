@@ -18,11 +18,15 @@ package org.jkiss.dbeaver.ext.altibase.data;
 
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCRowId;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCObjectValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.BitSet;
 
 public class AltibaseBitSetValueHandler extends JDBCObjectValueHandler {
@@ -52,5 +56,26 @@ public class AltibaseBitSetValueHandler extends JDBCObjectValueHandler {
         }
 
         return getValueFromObject(session, type, value, false, false);
+    }
+    
+    @Override
+    protected void bindParameter(
+        JDBCSession session,
+        JDBCPreparedStatement statement,
+        DBSTypedObject paramType,
+        int paramIndex,
+        Object value)
+        throws DBCException, SQLException
+    {
+        if (value == null) {
+            statement.setNull(paramIndex, paramType.getTypeID());
+        } else {
+            try {
+                statement.setObject(paramIndex, value.toString(), Types.BIT);
+                //statement.setObject(paramIndex, "BIT'" + value.toString() + "'");
+            } catch (SQLException e) {
+                statement.setObject(paramIndex, value);
+            }
+        }
     }
 }

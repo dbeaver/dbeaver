@@ -49,7 +49,7 @@ public enum AltibaseDataTypeDomain {
     VARBIT("VARBIT", Types.BIT),
     BYTE("BYTE", Types.BINARY),
     VARBYTE("VARBYTE", Types.BINARY),
-    NIBBLE("NIBBLE", Types.BINARY),
+    NIBBLE("NIBBLE", Types.VARCHAR),
     BINARY(JDBCType.BINARY),
 
     CLOB(JDBCType.CLOB),

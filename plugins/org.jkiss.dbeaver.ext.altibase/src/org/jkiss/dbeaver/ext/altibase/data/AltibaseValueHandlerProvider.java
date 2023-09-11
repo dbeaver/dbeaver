@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataTypeDomain;
 
 public class AltibaseValueHandlerProvider implements DBDValueHandlerProvider {
@@ -33,18 +32,14 @@ public class AltibaseValueHandlerProvider implements DBDValueHandlerProvider {
             DBSTypedObject typedObject) {
 
         String typeName = typedObject.getTypeName();
-        
-        /* TIMESTAMP is not a data type but a constraint. */
-        if (typeName.contains(AltibaseConstants.TYPE_NAME_TIMESTAMP)) {
-            return AltibaseTimestampValueHandler.INSTANCE;
-        }
-        
         AltibaseDataTypeDomain dataTypeDomain = AltibaseDataTypeDomain.getByTypeName(typeName);
 
         switch (dataTypeDomain) {
             case BIT:
             case VARBIT:
                 return AltibaseBitSetValueHandler.INSTANCE;
+            case NIBBLE:
+                return AltibaseNibbleValueHandler.INSTANCE;
             case DATE:
                 return new AltibaseDateValueHandler(preferences);
             case GEOMETRY:

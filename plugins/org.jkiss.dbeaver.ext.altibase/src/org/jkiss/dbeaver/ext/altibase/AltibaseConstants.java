@@ -36,7 +36,7 @@ public class AltibaseConstants {
     public static final int TYPE_BINARY = Types.BINARY;
     public static final int TYPE_BIT = Types.BIT;
     public static final int TYPE_BLOB = 30;
-    public static final int TYPE_BYTE = 20001;
+    
     public static final int TYPE_CHAR = Types.CHAR;
     public static final int TYPE_CLOB = 40;
     public static final int TYPE_DATE = 9;
@@ -55,7 +55,7 @@ public class AltibaseConstants {
     public static final int TYPE_SMALLINT = Types.SMALLINT;
     public static final int TYPE_TIMESTAMP = 3010;
     public static final int TYPE_VARBIT = -100;
-    public static final int TYPE_VARBYTE = 20003;
+    
     public static final int TYPE_VARCHAR = 12;
 
     public static final String TYPE_NAME_CHAR = "CHAR";
@@ -80,6 +80,11 @@ public class AltibaseConstants {
     public static final String TYPE_NAME_BIT = "BIT";
     public static final String TYPE_NAME_VARBIT = "VARBIT";
     */
+    
+    public static final int TYPE_BYTE = 20001;
+    public static final int TYPE_VARBYTE = 20003;
+    public static final int TYPE_NIBBLE = 20002;
+    
     public static final int TYPE_GEOMETRY = 10003;
     public static final String TYPE_NAME_GEOMETRY = "GEOMETRY";
     public static final String TYPE_NAME_TIMESTAMP = "TIMESTAMP";

@@ -256,8 +256,9 @@
 
             <type name="BIT"/>
             <type name="VARBIT"/>
+            <type name="NIBBLE"/>
             <type name="GEOMETRY"/>
-            <type name="TIMESTAMP"/>
+            
             <type name="DATE"/>
         </provider>
     </extension>
