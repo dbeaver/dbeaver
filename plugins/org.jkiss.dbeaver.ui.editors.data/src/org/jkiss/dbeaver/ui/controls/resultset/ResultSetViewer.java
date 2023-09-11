@@ -118,15 +118,14 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-
 /**
  * ResultSetViewer
  *
- * TODO: not-editable cells (struct owners in record mode) TODO: PROBLEM.
- * Multiple occurrences of the same struct type in a single table. Need to make
- * wrapper over DBSAttributeBase or something. Or maybe it is not a problem
- * because we search for binding by attribute only in constraints and for unique
- * key columns which are unique? But what PK has struct type?
+ * TODO: not-editable cells (struct owners in record mode)
+ * TODO: PROBLEM. Multiple occurrences of the same struct type in a single table.
+ * Need to make wrapper over DBSAttributeBase or something. Or maybe it is not a problem
+ * because we search for binding by attribute only in constraints and for unique key columns which are unique?
+ * But what PK has struct type?
  *
  */
 public class ResultSetViewer extends Viewer
