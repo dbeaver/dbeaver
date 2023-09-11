@@ -190,7 +190,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         if (isStandalone) {
             useEmbeddedBrowserAuth = UIUtils.createCheckbox(groupObjects,
                 CoreMessages.pref_page_ui_general_check_browser_auth,
-                false
+                CoreMessages.pref_page_ui_general_check_browser_auth_tip,
+                false,
+                2
             );
             useEmbeddedBrowserAuth.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
                 GridData.VERTICAL_ALIGN_BEGINNING,
