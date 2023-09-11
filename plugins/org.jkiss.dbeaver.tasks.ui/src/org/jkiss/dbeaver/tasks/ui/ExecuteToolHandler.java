@@ -20,6 +20,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.task.TaskTypeDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
 import org.jkiss.dbeaver.tools.registry.ToolDescriptor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -36,7 +38,6 @@ import java.util.List;
 
 public class ExecuteToolHandler implements IActionDelegate {
 
-    private static final Log log = Log.getLog(ExecuteToolHandler.class);
     private final IWorkbenchWindow window;
     private final ToolDescriptor tool;
     private ISelection selection;
@@ -69,13 +70,23 @@ public class ExecuteToolHandler implements IActionDelegate {
                         selectedObjects
                     );
                 } else {
-                    log.error("Couldn't apply requested task for the selected objects");
+                    DBWorkbench.getPlatformUI().showWarningMessageBox(
+                        TaskUIMessages.task_execute_handler_tool_error_title,
+                        TaskUIMessages.task_execute_handler_tool_error_apply_message
+                    );
                 }
             } else {
-                log.error("Can't determine project for the selected objects");
+                DBWorkbench.getPlatformUI().showWarningMessageBox(
+                    TaskUIMessages.task_execute_handler_tool_error_title,
+                    TaskUIMessages.task_execute_handler_tool_error_project_message
+                );
             }
         } catch (Throwable e) {
-            DBWorkbench.getPlatformUI().showError("Tool error", "Error executing tool '" + tool.getLabel() + "'", e);
+            DBWorkbench.getPlatformUI().showError(
+                TaskUIMessages.task_execute_handler_tool_error_title,
+                NLS.bind(TaskUIMessages.task_execute_handler_tool_error_message, tool.getLabel()),
+                e
+            );
         }
     }
 

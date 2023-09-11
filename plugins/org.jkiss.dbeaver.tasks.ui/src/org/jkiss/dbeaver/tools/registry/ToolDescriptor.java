@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.tools.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
@@ -70,10 +72,6 @@ public class ToolDescriptor extends AbstractDescriptor {
     public String getDescription() {
         return description;
     }
-    
-    public Set<String> getImplTaskIds() {
-        return toolImplTaskIds;
-    }
 
     public DBPImage getIcon() {
         return icon;
@@ -92,7 +90,14 @@ public class ToolDescriptor extends AbstractDescriptor {
         return id + " (" + label + ")";
     }
 
-    public TaskTypeDescriptor getTaskForObjects(Collection<DBSObject> objects) {
+    /**
+     * Return task for the selected command
+     *
+     * @param objects - selected objects
+     * @return corresponding task or null
+     */
+    @Nullable
+    public TaskTypeDescriptor getTaskForObjects(@NotNull Collection<DBSObject> objects) {
         for (String taskId : toolImplTaskIds) {
             TaskTypeDescriptor task = TaskRegistry.getInstance().getTaskType(taskId);
             if (task != null && objects.stream().allMatch(task::appliesTo)) {
@@ -102,7 +107,13 @@ public class ToolDescriptor extends AbstractDescriptor {
         return null;
     }
 
-    public boolean appliesTo(DBPObject item) {
+    /**
+     * Checks if the tool tasks could be applied to the given object
+     *
+     * @param item selected object
+     * @return indication of the possibility of application
+     */
+    public boolean appliesTo(@NotNull DBPObject item) {
         for (String taskId : toolImplTaskIds) {
             TaskTypeDescriptor task = TaskRegistry.getInstance().getTaskType(taskId);
             if (task != null && task.appliesTo(item)) {

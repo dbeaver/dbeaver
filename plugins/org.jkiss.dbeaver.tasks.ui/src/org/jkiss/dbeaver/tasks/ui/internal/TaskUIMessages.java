@@ -70,8 +70,10 @@ public class TaskUIMessages extends NLS {
 	public static String task_configuration_wizard_page_task_enter_type;
 	public static String task_configuration_wizard_page_settings_fill_parameters;
 	public static String task_configuration_wizard_dialog_configuration_error;
-
-
+	public static String task_execute_handler_tool_error_title;
+	public static String task_execute_handler_tool_error_message;
+	public static String task_execute_handler_tool_error_project_message;
+	public static String task_execute_handler_tool_error_apply_message;
 
 	static {
 		// initialize resource bundle
