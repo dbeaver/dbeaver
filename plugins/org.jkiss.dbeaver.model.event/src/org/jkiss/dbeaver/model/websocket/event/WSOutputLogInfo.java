@@ -16,11 +16,14 @@
  */
 package org.jkiss.dbeaver.model.websocket.event;
 
+import org.jkiss.code.Nullable;
+
 public class WSOutputLogInfo {
+    @Nullable
     private final String severity;
     private final String message;
 
-    public WSOutputLogInfo(String severity, String message) {
+    public WSOutputLogInfo(@Nullable String severity, String message) {
         this.message = message;
         this.severity = severity;
     }
