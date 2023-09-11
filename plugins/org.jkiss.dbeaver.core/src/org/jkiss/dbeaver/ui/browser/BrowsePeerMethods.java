@@ -36,7 +36,7 @@ public class BrowsePeerMethods {
      * @return true if request is redirectable
      */
     public static boolean canBrowseInSWTBrowser() {
-        DBPPreferenceStore store = new BundlePreferenceStore(DBeaverActivator.getInstance().getBundle());
+        DBPPreferenceStore store = DBeaverActivator.getInstance().getPreferences();
         boolean useEmbeddedAuth = store.getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH);
         if (!useEmbeddedAuth) {
             return false;
@@ -60,7 +60,7 @@ public class BrowsePeerMethods {
      * @return was it opened successfully
      */
     public static boolean browseInSWTBrowser(URI uri) {
-        DBPPreferenceStore store = new BundlePreferenceStore(DBeaverActivator.getInstance().getBundle());
+        DBPPreferenceStore store = DBeaverActivator.getInstance().getPreferences();
         if (store.getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH)) {
             AtomicBoolean result = new AtomicBoolean();
             UIUtils.syncExec(() -> {
