@@ -106,6 +106,7 @@ public class GenericConstants {
 
     public static final String TABLE_TYPE_VIEW = "VIEW";
     public static final String TABLE_TYPE_TABLE = "TABLE";
+    public static final String TABLE_TYPE_MATERIALIZED_VIEW = "MATERIALIZED VIEW";
 
     public static final String BASE_CONSTRAINT_NAME = "new_key";
 
