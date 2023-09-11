@@ -22,7 +22,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.ext.oceanbase.mysql.model.OceanbaseMySQLDataSource;
+import org.jkiss.dbeaver.ext.oceanbase.model.OceanbaseMySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;

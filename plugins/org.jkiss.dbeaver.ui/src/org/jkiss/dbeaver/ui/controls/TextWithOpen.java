@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,6 +47,10 @@ public class TextWithOpen extends Composite {
     private final ToolBar toolbar;
 
     public TextWithOpen(Composite parent) {
+        this(parent, false);
+    }
+    
+    public TextWithOpen(Composite parent, boolean secured) {
         super(parent, SWT.NONE);
         final GridLayout gl = new GridLayout(2, false);
         gl.marginHeight = 0;
@@ -55,7 +60,10 @@ public class TextWithOpen extends Composite {
         setLayout(gl);
 
         boolean useTextEditor = isShowFileContentEditor();
-        text = new Text(this, SWT.BORDER | (useTextEditor ? SWT.MULTI | SWT.V_SCROLL : SWT.SINGLE));
+        text = new Text(this, SWT.BORDER | ((useTextEditor && !secured) ? SWT.MULTI | SWT.V_SCROLL : SWT.SINGLE));
+        if (secured) {
+            text.setEchoChar('*');
+        }
         GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER);
         if (useTextEditor) {
             gd.heightHint = text.getLineHeight();
@@ -66,11 +74,15 @@ public class TextWithOpen extends Composite {
         if (useTextEditor) {
             final ToolItem toolItem = new ToolItem(toolbar, SWT.NONE);
             toolItem.setImage(DBeaverIcons.getImage(UIIcon.TEXTFIELD));
-            toolItem.setToolTipText("Edit text");
+            toolItem.setToolTipText(secured ? UIMessages.text_with_open_dialog_set_text : UIMessages.text_with_open_dialog_edit_text);
             toolItem.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    String newText = EditTextDialog.editText(getShell(), "Edit text", getText());
+                    String newText = EditTextDialog.editText(
+                        getShell(),
+                        secured ? UIMessages.text_with_open_dialog_set_text : UIMessages.text_with_open_dialog_edit_text,
+                        secured ? "" : getText()
+                    );
                     if (newText != null) {
                         setText(newText);
                     }
@@ -80,7 +92,7 @@ public class TextWithOpen extends Composite {
         {
             final ToolItem toolItem = new ToolItem(toolbar, SWT.NONE);
             toolItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
-            toolItem.setToolTipText("Browse");
+            toolItem.setToolTipText(UIMessages.text_with_open_dialog_browse);
             toolItem.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -93,7 +105,7 @@ public class TextWithOpen extends Composite {
             // Open file text in embedded editor
             final ToolItem editItem = new ToolItem(toolbar, SWT.NONE);
             editItem.setImage(DBeaverIcons.getImage(UIIcon.EDIT));
-            editItem.setToolTipText("Edit file");
+            editItem.setToolTipText(UIMessages.text_with_open_dialog_edit_file);
             editItem.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -140,6 +152,10 @@ public class TextWithOpen extends Composite {
 
     public Text getTextControl() {
         return text;
+    }
+
+    public ToolBar getToolbar() {
+        return toolbar;
     }
 
     @Override

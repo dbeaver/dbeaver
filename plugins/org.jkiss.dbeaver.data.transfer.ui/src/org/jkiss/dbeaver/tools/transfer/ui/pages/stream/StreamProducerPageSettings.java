@@ -91,7 +91,23 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             filesTable.setLinesVisible(true);
 
             UIUtils.createTableColumn(filesTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_source);
-            UIUtils.createTableColumn(filesTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_target);
+            List<DBSObject> sourceObjects = getWizard().getSettings().getSourceObjects();
+            boolean skipTargetColumn;
+            if (CommonUtils.isEmpty(sourceObjects)) {
+                skipTargetColumn = true;
+            } else {
+                boolean allSourceObjectsNotTables = true;
+                for (DBSObject sourceObject : sourceObjects) {
+                    if (sourceObject instanceof DBSDataManipulator) {
+                        allSourceObjectsNotTables = false;
+                        break;
+                    }
+                }
+                skipTargetColumn = allSourceObjectsNotTables;
+            }
+            if (!skipTargetColumn) {
+                UIUtils.createTableColumn(filesTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_target);
+            }
 
             filesTable.addSelectionListener(new SelectionAdapter() {
                 @Override
