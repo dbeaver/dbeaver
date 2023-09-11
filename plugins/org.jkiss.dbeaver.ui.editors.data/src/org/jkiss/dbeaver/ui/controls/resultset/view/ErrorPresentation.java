@@ -32,7 +32,6 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
@@ -50,10 +49,9 @@ import java.util.Map;
  */
 public class ErrorPresentation extends AbstractPresentation {
 
-    private static final Log log = Log.getLog(ErrorPresentation.class);
-
     private static final String SETTINGS_SECTION_ERROR_PANEL = ErrorPresentation.class.getSimpleName();
     private static final String PROP_ERROR_WIDTH = "errorWidth";
+    private static final boolean REMEBER_SASH_RATIO = false;
 
     private final String sqlText;
     private final IStatus status;
@@ -97,6 +95,25 @@ public class ErrorPresentation extends AbstractPresentation {
                 textWidget = new StyledText(sqlPanel, SWT.BORDER | SWT.READ_ONLY);
                 textWidget.setText(sqlText);
             }
+        }
+        if (REMEBER_SASH_RATIO) {
+            boolean widthSet = false;
+            IDialogSettings viewSettings = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_ERROR_PANEL);
+            String errorWidth = viewSettings.get(PROP_ERROR_WIDTH);
+            if (errorWidth != null) {
+                String[] widthStrs = errorWidth.split(":");
+                if (widthStrs.length == 2) {
+                    partDivider.setWeights(Integer.parseInt(widthStrs[0]), Integer.parseInt(widthStrs[1]));
+                }
+                widthSet = true;
+            }
+            if (!widthSet) {
+                partDivider.setWeights(700, 300);
+            }
+            partDivider.addCustomSashFormListener((firstControlWeight, secondControlWeight) -> {
+                int[] weights = partDivider.getWeights();
+                viewSettings.put(PROP_ERROR_WIDTH, weights[0] + ":" + weights[1]);
+            });
         }
     }
 
