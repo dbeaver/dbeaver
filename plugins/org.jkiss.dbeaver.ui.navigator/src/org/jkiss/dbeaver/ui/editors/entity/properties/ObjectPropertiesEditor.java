@@ -368,7 +368,9 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     {
         // do not force focus in active editor. We can't do it properly because folderComposite detects
         // active folder by focus (which it doesn't have)
-        if (folderComposite != null) {
+        // If accessibility is active, set focus to the page control rather the active editor so
+        // the tab names can be read correctly
+        if (folderComposite != null && !EditorAccessibleAdapter.isActive(folderComposite.getParent())) {
             ITabbedFolder selectedPage = folderComposite.getActiveFolder();
             if (selectedPage != null) {
                 selectedPage.setFocus();
