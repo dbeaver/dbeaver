@@ -17,18 +17,18 @@
 package org.jkiss.dbeaver.model.websocket.event.session;
 
 import org.jkiss.dbeaver.model.websocket.event.WSEventType;
-import org.jkiss.dbeaver.model.websocket.event.WSServerOutputLogInfo;
+import org.jkiss.dbeaver.model.websocket.event.WSOutputLogInfo;
 
 import java.util.List;
 
-public class WSLogSenderEvent extends WSAbstractSessionEvent {
+public class WSDBOutputLogEvent extends WSAbstractSessionEvent {
     private final String asyncTaskId;
-    private final List<WSServerOutputLogInfo> messages;
+    private final List<WSOutputLogInfo> messages;
     private final long eventTimestamp;
 
-    public WSLogSenderEvent(String asyncTaskId,
-                            List<WSServerOutputLogInfo> messages,
-                            long eventTimestamp) {
+    public WSDBOutputLogEvent(String asyncTaskId,
+                              List<WSOutputLogInfo> messages,
+                              long eventTimestamp) {
         super(WSEventType.DB_LOG_UPDATED);
         this.asyncTaskId = asyncTaskId;
         this.messages = messages;
@@ -39,7 +39,7 @@ public class WSLogSenderEvent extends WSAbstractSessionEvent {
         return asyncTaskId;
     }
 
-    public List<WSServerOutputLogInfo> getMessages() {
+    public List<WSOutputLogInfo> getMessages() {
         return messages;
     }
 
