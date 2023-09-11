@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.navigator.fs2;
 
 import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
@@ -106,12 +105,6 @@ public class DBNFileSystemNIO2Resource extends DBNResource implements DBNLazyNod
     }
 
     public void link() {
-        final IProject project = getOwnerProject().getEclipseProject();
-
-        if (project == null) {
-            throw new IllegalStateException("No Eclipse project is present");
-        }
-
-        setResource(NIO2FileSystem.toResource(project, root, null));
+        setResource(NIO2FileSystem.toResource(getOwnerProject(), root, null));
     }
 }

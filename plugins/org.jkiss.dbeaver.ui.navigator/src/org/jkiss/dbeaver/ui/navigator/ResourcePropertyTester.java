@@ -20,7 +20,6 @@ import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.jkiss.dbeaver.model.app.*;
-import org.jkiss.dbeaver.model.fs.nio.NIOResource;
 import org.jkiss.dbeaver.ui.ActionUtils;
 
 /**
@@ -73,7 +72,7 @@ public class ResourcePropertyTester extends PropertyTester
                 final DBPResourceHandler resourceHandler = workspace.getResourceHandler(resource);
                 return resourceHandler != null && expectedValue.equals(resourceHandler.getTypeName(resource));
             case PROP_IS_LOCAL_FS:
-                return !(resource instanceof NIOResource) && resource.getLocation() != null;
+                return resource.getLocation() != null;
         }
         return false;
     }

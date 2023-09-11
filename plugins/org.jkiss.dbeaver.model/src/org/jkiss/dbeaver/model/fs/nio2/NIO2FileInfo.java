@@ -56,7 +56,7 @@ public class NIO2FileInfo implements IFileInfo {
         try {
             switch (attribute) {
                 case EFS.ATTRIBUTE_READ_ONLY:
-                    return Files.isReadable(path) && !Files.isWritable(path);
+                    return !Files.isWritable(path);
                 case EFS.ATTRIBUTE_EXECUTABLE:
                     return Files.isExecutable(path);
                 case EFS.ATTRIBUTE_ARCHIVE:

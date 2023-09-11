@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -173,8 +172,6 @@ public class NavigatorObjectsDeleter {
                 deleteDatabaseNode((DBNDatabaseNode)obj);
             } else if (obj instanceof DBNResource) {
                 deleteResource(((DBNResource) obj).getResource());
-            } else if (obj instanceof DBNPath) {
-                deleteResource(((DBNPath) obj).getResource());
             } else if (obj instanceof DBNLocalFolder) {
                 deleteLocalFolder((DBNLocalFolder) obj);
             } else {

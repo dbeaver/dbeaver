@@ -16,35 +16,20 @@
  */
 package org.jkiss.dbeaver.ui.resources;
 
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.swt.program.Program;
-import org.eclipse.ui.IEditorDescriptor;
-import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.ide.IDE;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.fs.nio.NIOFile;
-import org.jkiss.dbeaver.model.fs.nio.NIOFileStore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNNodeWithResource;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ProgramInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
-
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 /**
  * Default resource handler
@@ -104,60 +89,7 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
 
     @Override
     public void openResource(@NotNull IResource resource) throws CoreException, DBException {
-        if (resource instanceof NIOFile) {
-            NIOFileStore fileStore = new NIOFileStore(resource.getLocationURI(), ((NIOFile) resource).getNioPath());
-
-            // open the editor on the file
-            IEditorDescriptor editorDesc;
-            try {
-                editorDesc = IDE.getEditorDescriptor((IFile)resource, true, true);
-            } catch (OperationCanceledException ex) {
-                return;
-            }
-
-            try {
-                final Path[] target = new Path[1];
-
-                UIUtils.runInProgressService(monitor -> {
-                    try {
-                        target[0] = Files.createTempFile(
-                            DBWorkbench.getPlatform().getTempFolder(monitor, "external-files"),
-                            null,
-                            fileStore.getName()
-                        );
-
-                        try (InputStream is = fileStore.openInputStream(EFS.NONE, null)) {
-                            try (OutputStream os = Files.newOutputStream(target[0])) {
-                                final IFileInfo info = fileStore.fetchInfo(EFS.NONE, null);
-                                ContentUtils.copyStreams(is, info.getLength(), os, monitor);
-                            }
-                        }
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
-                });
-
-                if (IEditorRegistry.SYSTEM_EXTERNAL_EDITOR_ID.equals(editorDesc.getId())) {
-                    // Here we could potentially start a new process
-                    // and wait for it to finish, this will allow us to:
-                    //  1. Delete the temporary file right away
-                    //  2. Detect changes made by an external editor
-                    // But for now it's okay, I assume.
-
-                    Program.launch(target[0].toString());
-                } else {
-                    IDE.openEditor(
-                        UIUtils.getActiveWorkbenchWindow().getActivePage(),
-                        target[0].toUri(),
-                        editorDesc.getId(),
-                        true
-                    );
-                }
-            } catch (InvocationTargetException e) {
-                DBWorkbench.getPlatformUI().showError("Error opening resource", "Can't open resource using external editor", e.getTargetException());
-            } catch (InterruptedException ignored) {
-            }
-        } else if (resource instanceof IFile) {
+        if (resource instanceof IFile) {
             IDE.openEditor(UIUtils.getActiveWorkbenchWindow().getActivePage(), (IFile) resource);
         } else if (resource instanceof IFolder) {
             DBWorkbench.getPlatformUI().executeShellProgram(resource.getLocation().toOSString());

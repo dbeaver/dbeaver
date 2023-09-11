@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.fs.DBFRemoteFileStore;
-import org.jkiss.dbeaver.model.fs.nio.NIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -378,7 +377,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
                 }
             }
         } catch (CoreException e) {
-            throw new DBException("Can't rename resource", e);
+            throw new DBException("Can't rename resource : " + e.getMessage(), e);
         }
     }
 
@@ -419,12 +418,12 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
                         IResource otherResource = node.getAdapter(IResource.class);
                         if (otherResource != null) {
                             try {
-                                if (otherResource instanceof NIOResource) {
+                                /*if (otherResource instanceof NIOResource) {
                                     otherResource.copy(
                                         resource.getRawLocation().append(otherResource.getName()),
                                         true,
                                         monitor.getNestedMonitor());
-                                } else {
+                                } else */{
                                     if (DBWorkbench.isDistributed() && !CommonUtils.equalObjects(otherResource.getProject(), resource.getProject())) {
                                         throw new DBException("Cross-project resource move is not supported in distributed workspaces");
                                     }
@@ -436,7 +435,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
                                 refreshFileStore(monitor);
                                 resource.refreshLocal(IResource.DEPTH_ONE, monitor.getNestedMonitor());
                             } catch (CoreException e) {
-                                throw new DBException("Can't copy " + otherResource.getName() + " to " + resource.getName(), e);
+                                throw new DBException("Can't copy " + otherResource.getName() + " to " + resource.getName() + ": " + e.getMessage(), e);
                             }
                         } else {
                             throw new DBException("Can't get resource from node " + node.getName());
