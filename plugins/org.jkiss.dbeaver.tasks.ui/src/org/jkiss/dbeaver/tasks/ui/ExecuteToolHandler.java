@@ -21,52 +21,58 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IActionDelegate;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.task.TaskTypeDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
 import org.jkiss.dbeaver.tools.registry.ToolDescriptor;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
-import java.util.Collection;
 import java.util.List;
 
-public class ExecuteToolHandler implements IActionDelegate
-{
-    private IWorkbenchWindow window;
-    private ToolDescriptor tool;
+public class ExecuteToolHandler implements IActionDelegate {
+
+    private static final Log log = Log.getLog(ExecuteToolHandler.class);
+    private final IWorkbenchWindow window;
+    private final ToolDescriptor tool;
     private ISelection selection;
 
-    public ExecuteToolHandler(IWorkbenchWindow window, ToolDescriptor tool)
-    {
+    public ExecuteToolHandler(IWorkbenchWindow window, ToolDescriptor tool) {
         this.window = window;
         this.tool = tool;
     }
 
     @Override
-    public void run(IAction action)
-    {
+    public void run(IAction action) {
         if (!selection.isEmpty()) {
             List<DBSObject> selectedObjects = NavigatorUtils.getSelectedObjects(selection);
-            executeTool(UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart(), selectedObjects);
+            executeTool(selectedObjects);
         }
     }
 
-    private void executeTool(IWorkbenchPart part, Collection<DBSObject> objects)
-    {
+    private void executeTool(List<DBSObject> objects) {
         try {
-            
-            DBPProject selectedProject = objects.stream().findFirst().get().getDataSource().getContainer().getProject();
-            TaskTypeDescriptor taskForObjs = tool.getTaskForObjects(objects);
-            if (taskForObjs != null) {
-                IStructuredSelection selectedObjects = new StructuredSelection(objects.toArray());
-                TaskConfigurationWizardDialog.openNewTaskDialog(window, selectedProject, taskForObjs.getId(), selectedObjects);
+            DBPDataSource dataSource = objects.get(0).getDataSource();
+            if (dataSource != null) {
+                DBPProject selectedProject = dataSource.getContainer().getProject();
+                TaskTypeDescriptor taskForObjs = tool.getTaskForObjects(objects);
+                if (taskForObjs != null) {
+                    IStructuredSelection selectedObjects = new StructuredSelection(objects.toArray());
+                    TaskConfigurationWizardDialog.openNewTaskDialog(
+                        window,
+                        selectedProject,
+                        taskForObjs.getId(),
+                        selectedObjects
+                    );
+                } else {
+                    log.error("Couldn't apply requested task for the selected objects");
+                }
             } else {
-                // wtf
+                log.error("Can't determine project for the selected objects");
             }
         } catch (Throwable e) {
             DBWorkbench.getPlatformUI().showError("Tool error", "Error executing tool '" + tool.getLabel() + "'", e);
@@ -74,8 +80,7 @@ public class ExecuteToolHandler implements IActionDelegate
     }
 
     @Override
-    public void selectionChanged(IAction action, ISelection selection)
-    {
+    public void selectionChanged(IAction action, ISelection selection) {
         this.selection = selection;
     }
 
