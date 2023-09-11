@@ -28,6 +28,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
@@ -51,6 +52,7 @@ import java.util.List;
 import javax.net.ssl.SSLHandshakeException;
 
 class DriverDependenciesTree {
+    private static final Log log = Log.getLog(DriverDependenciesTree.class);
 
     public static final String NETWORK_TEST_URL = "https://repo1.maven.org";
     private DBRRunnableContext runnableContext;
@@ -184,7 +186,8 @@ class DriverDependenciesTree {
             if ((localFile != null && Files.exists(localFile) && Files.size(localFile) > 0) && editable) {
                 item.setForeground(filesTree.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
             }
-        } catch (IOException ignored) {
+        } catch (IOException ex) {
+            log.error("Error reading" + node.library.getDisplayName() + " local file", ex);
         }
     }
 
