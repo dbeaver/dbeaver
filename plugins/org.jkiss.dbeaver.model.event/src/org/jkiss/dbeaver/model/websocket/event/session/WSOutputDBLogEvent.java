@@ -22,21 +22,21 @@ import org.jkiss.dbeaver.model.websocket.event.WSOutputLogInfo;
 import java.util.List;
 
 public class WSOutputDBLogEvent extends WSAbstractSessionEvent {
-    private final String asyncTaskId;
+    private final long executionContextId;
     private final List<WSOutputLogInfo> messages;
     private final long eventTimestamp;
 
-    public WSOutputDBLogEvent(String asyncTaskId,
+    public WSOutputDBLogEvent(long executionContextId,
                               List<WSOutputLogInfo> messages,
                               long eventTimestamp) {
         super(WSEventType.DB_LOG_UPDATED);
-        this.asyncTaskId = asyncTaskId;
+        this.executionContextId = executionContextId;
         this.messages = messages;
         this.eventTimestamp = eventTimestamp;
     }
 
-    public String getAsyncTaskId() {
-        return asyncTaskId;
+    public long getExecutionContextId() {
+        return executionContextId;
     }
 
     public List<WSOutputLogInfo> getMessages() {
