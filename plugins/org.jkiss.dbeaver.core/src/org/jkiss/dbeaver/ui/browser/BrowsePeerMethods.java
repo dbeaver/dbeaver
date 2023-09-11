@@ -14,14 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.core;
+package org.jkiss.dbeaver.ui.browser;
 
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.browser.IWebBrowser;
-import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -66,23 +64,11 @@ public class BrowsePeerMethods {
         if (store.getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH)) {
             AtomicBoolean result = new AtomicBoolean();
             UIUtils.syncExec(() -> {
-                IWorkbenchBrowserSupport browserSupport = PlatformUI.getWorkbench().getBrowserSupport();
-                boolean internalWebBrowserAvailable = browserSupport.isInternalWebBrowserAvailable();
-                if (internalWebBrowserAvailable) {
-                    try {
-                        IWebBrowser browser = browserSupport.createBrowser(
-                            IWorkbenchBrowserSupport.AS_EDITOR,
-                            uri.getHost(),
-                            "Browser",
-                            uri.toURL().toString()
-                        );
-                        browser.openURL(uri.toURL());
-                        result.set(true);
-                    } catch (PartInitException | MalformedURLException e) {
-                        log.warn("Error redirecting request to embedded browser", e);
-                    }
-                } else {
-                    log.warn("Embedded Browser is disabled or unavailable");
+                try {
+                    BrowserPopup.openBrowser("redirect.auth", uri.toURL());
+                    result.set(true);
+                } catch (MalformedURLException e) {
+                    log.warn("Error redirecting request to embedded browser", e);
                 }
             });
             return result.get();
@@ -90,5 +76,4 @@ public class BrowsePeerMethods {
             return false;
         }
     }
-
 }

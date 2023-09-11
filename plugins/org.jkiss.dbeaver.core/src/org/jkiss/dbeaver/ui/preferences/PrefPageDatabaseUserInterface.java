@@ -25,6 +25,8 @@ import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -185,15 +187,32 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1
             ));
         }
-        useEmbeddedBrowserAuth = UIUtils.createCheckbox(
-            groupObjects,
-            CoreMessages.pref_page_ui_general_check_browser_auth,
-            false
-        );
-        useEmbeddedBrowserAuth.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
-            GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1
-        ));
-
+        if (isStandalone) {
+            useEmbeddedBrowserAuth = UIUtils.createCheckbox(groupObjects,
+                CoreMessages.pref_page_ui_general_check_browser_auth,
+                false
+            );
+            useEmbeddedBrowserAuth.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
+                GridData.VERTICAL_ALIGN_BEGINNING,
+                false,
+                false,
+                2,
+                1
+            ));
+            if (browserCombo != null) {
+                browserCombo.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        if (browserCombo.getSelectionIndex() == SWTBrowserRegistry.BrowserSelection.IE.ordinal()) {
+                            useEmbeddedBrowserAuth.setEnabled(false);
+                            useEmbeddedBrowserAuth.setSelection(false);
+                        } else {
+                            useEmbeddedBrowserAuth.setEnabled(true);
+                        }
+                    }
+                });
+            }
+        }
         performDefaults();
 
         return composite;
@@ -203,15 +222,15 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     protected void performDefaults()
     {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-
-        if (isStandalone) {
-            automaticUpdateCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
-        }
         if (isWindowsDesktopClient()) {
             SWTBrowserRegistry.getActiveBrowser();
             browserCombo.select(SWTBrowserRegistry.getActiveBrowser().ordinal());
+            useEmbeddedBrowserAuth.setEnabled(!SWTBrowserRegistry.getActiveBrowser().equals(SWTBrowserRegistry.BrowserSelection.IE));
         }
-        useEmbeddedBrowserAuth.setSelection(store.getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
+        if (isStandalone) {
+            automaticUpdateCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
+            useEmbeddedBrowserAuth.setSelection(store.getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
+        }
         final String timezone = store.getString(ModelPreferences.CLIENT_TIMEZONE);
         if (clientTimezone != null) {
             if (DBConstants.DEFAULT_TIMEZONE.equals(timezone)) {
