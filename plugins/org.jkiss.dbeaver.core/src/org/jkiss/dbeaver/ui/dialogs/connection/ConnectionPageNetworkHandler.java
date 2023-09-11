@@ -69,6 +69,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
     private Combo profileCombo;
     private Button useHandlerCheck;
     private DBWNetworkProfile activeProfile;
+    private final List<DBWNetworkProfile> allProfiles = new ArrayList<>();;
 
     public ConnectionPageNetworkHandler(IDataSourceConnectionEditorSite site, NetworkHandlerDescriptor descriptor) {
         super(ConnectionPageNetworkHandler.class.getSimpleName() + "." + descriptor.getId());
@@ -130,7 +131,9 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         profileCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                setConnectionConfigProfile(profileCombo.getText());
+                int pi = profileCombo.getSelectionIndex();
+                DBWNetworkProfile profile = pi <= 0 ? null : allProfiles.get(pi - 1);
+                setConnectionConfigProfile(profile);
             }
         });
         ToolBar editToolbar = new ToolBar(buttonsGroup, SWT.HORIZONTAL);
@@ -148,7 +151,8 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
                     CommonUtils.isEmpty(profileCombo.getText()) ? null : profileCombo.getText());
                 if (preferenceDialog != null) {
                     if (preferenceDialog.open() == IDialogConstants.OK_ID) {
-                        setConnectionConfigProfile(profileCombo.getText());
+                        int pi = profileCombo.getSelectionIndex();
+                        setConnectionConfigProfile(pi <= 0 ? null : allProfiles.get(pi - 1));
                     }
                 }
             }
@@ -178,9 +182,8 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         setControl(composite);
     }
 
-    private void setConnectionConfigProfile(String profileName) {
-        activeProfile = CommonUtils.isEmpty(profileName) ?
-            null : site.getProject().getDataSourceRegistry().getNetworkProfile(profileName);
+    private void setConnectionConfigProfile(DBWNetworkProfile profile) {
+        activeProfile = profile;
         DBPDataSourceContainer dataSource = site.getActiveDataSource();
         DBPConnectionConfiguration cfg = dataSource.getConnectionConfiguration();
         String oldProfileId = cfg.getConfigProfileName();
@@ -200,14 +203,15 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
 
     private void updateProfileList() {
         DBPConnectionConfiguration cfg = site.getActiveDataSource().getConnectionConfiguration();
-        String profileId = cfg.getConfigProfileName();
-        activeProfile = CommonUtils.isEmpty(profileId) ? null : site.getProject().getDataSourceRegistry().getNetworkProfile(profileId);
+        activeProfile = CommonUtils.isEmpty(cfg.getConfigProfileName()) ? null : site.getProject().getDataSourceRegistry().getNetworkProfile(
+            cfg.getConfigProfileSource(),
+            cfg.getConfigProfileName());
 
         // Refresh profile list
         profileCombo.removeAll();
         profileCombo.add("");
 
-        List<DBWNetworkProfile> allProfiles = new ArrayList<>();
+        allProfiles.clear();
         DBPDataSourceOrigin dataSourceOrigin = site.getActiveDataSource().getOrigin();
         if (dataSourceOrigin instanceof DBPDataSourceOriginExternal) {
             allProfiles.addAll(((DBPDataSourceOriginExternal) dataSourceOrigin).getAvailableNetworkProfiles());
@@ -219,7 +223,8 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
                 profileDisplayName += " - " + dataSourceOrigin.getDisplayName();
             }
             profileCombo.add(profileDisplayName);
-            if (CommonUtils.equalObjects(profileId, profile.getProfileId())) {
+            if (CommonUtils.equalObjects(cfg.getConfigProfileName(), profile.getProfileName()) &&
+                CommonUtils.equalObjects(cfg.getConfigProfileSource(), profile.getProfileSource())) {
                 profileCombo.select(profileCombo.getItemCount() - 1);
             }
         }

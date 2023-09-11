@@ -126,7 +126,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
                 return null;
             }
 
-            if (projectMeta.getDataSourceRegistry().getNetworkProfile(profileName) != null) {
+            if (projectMeta.getDataSourceRegistry().getNetworkProfile(null, profileName) != null) {
                 UIUtils.showMessageBox(
                     getShell(),
                     UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_title,

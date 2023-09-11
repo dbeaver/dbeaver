@@ -58,6 +58,11 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
         super(project);
     }
 
+    @Override
+    public String getProfileSource() {
+        return secretSubject == null ? null : secretSubject.getSecretSubjectId();
+    }
+
     public void setSecretSubject(DBSSecretSubject secretSubject) {
         this.secretSubject = secretSubject;
     }

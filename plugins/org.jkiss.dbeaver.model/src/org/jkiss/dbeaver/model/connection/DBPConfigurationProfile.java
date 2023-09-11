@@ -74,6 +74,10 @@ public abstract class DBPConfigurationProfile implements DBPSecretHolder {
         return profileId;
     }
 
+    public String getProfileSource() {
+        return null;
+    }
+
     public void setProfileId(String profileId) {
         this.profileId = profileId;
     }

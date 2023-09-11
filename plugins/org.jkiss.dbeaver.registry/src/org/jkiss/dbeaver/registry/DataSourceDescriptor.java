@@ -1179,11 +1179,13 @@ public class DataSourceDescriptor
     private void resolveConnectVariables(DBSSecretController secretController) throws DBException {
         // Resolve variables
         if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS) ||
-            !CommonUtils.isEmpty(connectionInfo.getConfigProfileName())) {
+            !CommonUtils.isEmpty(resolvedConnectionInfo.getConfigProfileName())) {
             // Update config from profile
-            if (!CommonUtils.isEmpty(connectionInfo.getConfigProfileName())) {
+            if (!CommonUtils.isEmpty(resolvedConnectionInfo.getConfigProfileName())) {
                 // Update config from profile
-                DBWNetworkProfile profile = registry.getNetworkProfile(resolvedConnectionInfo.getConfigProfileName());
+                DBWNetworkProfile profile = registry.getNetworkProfile(
+                    resolvedConnectionInfo.getConfigProfileSource(),
+                    resolvedConnectionInfo.getConfigProfileName());
                 if (profile != null) {
                     if (secretController != null) {
                         profile.resolveSecrets(secretController);
