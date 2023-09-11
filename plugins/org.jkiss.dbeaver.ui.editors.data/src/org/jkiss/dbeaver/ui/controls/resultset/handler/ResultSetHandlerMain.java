@@ -592,13 +592,13 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                             final DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
                             ResultSetCellLocation currentCellLocation = ssp.getCurrentCellLocation();
                             Object cellValue = resultSetViewer.getContainer().getResultSetController().getModel()
-                                    .getCellValue(currentCellLocation);
+                                .getCellValue(currentCellLocation);
                             vEntity.setColorOverride(attr, cellValue, null, StringConverter.asString(color));
                             updateColors(resultSetViewer, vEntity, true);
                         } catch (IllegalStateException e) {
                             DBWorkbench.getPlatformUI().showError(
-                                    ResultSetMessages.dialog_row_colors_error_message_title,
-                                    ResultSetMessages.dialog_row_colors_error_message_text, e);
+                                ResultSetMessages.dialog_row_colors_error_message_title,
+                                ResultSetMessages.dialog_row_colors_error_message_text, e);
                         }
                     }
                 }

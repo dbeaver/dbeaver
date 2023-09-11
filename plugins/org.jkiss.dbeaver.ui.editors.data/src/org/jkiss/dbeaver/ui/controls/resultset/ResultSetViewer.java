@@ -3061,15 +3061,13 @@ public class ResultSetViewer extends Viewer
         viewMenu.add(new Separator());
         if (model.getDocumentAttribute() == null) {
             if (valueController != null) {
-                String bindingText = attr.getName() 
-                        + " = "
-                        + UITextUtils.getShortText(this.getControl(),
-                        CommonUtils.toString(valueController.getValue()), 100);
+                String bindingText = attr.getName()
+                    + " = "
+                    + UITextUtils.getShortText(this.getControl(), CommonUtils.toString(valueController.getValue()), 100);
                 String msgSelectRowColor = NLS.bind(ResultSetMessages.actions_name_color_by, bindingText);
                 // select row color
                 viewMenu.add(ActionUtils.makeCommandContribution(this.getSite(),
-                        "org.jkiss.dbeaver.core.resultset.grid.selectRowColor",
-                        msgSelectRowColor, null));
+                    ResultSetHandlerMain.CMD_SELECT_ROW_COLOR, msgSelectRowColor, null));
                 for (DBVColorOverride mapping : getColorOverrides(attr, valueController.getValue())) {
                     viewMenu.add(new ResetRowColorAction(this, mapping, valueController.getValue()));
                 }
