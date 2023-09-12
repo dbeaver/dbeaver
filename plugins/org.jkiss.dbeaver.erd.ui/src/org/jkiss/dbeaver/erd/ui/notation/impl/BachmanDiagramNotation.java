@@ -86,7 +86,7 @@ public class BachmanDiagramNotation implements ERDNotation {
                 conn.setTargetDecoration(targetDecor);
             }
         }
-        conn.setLineWidth(2);
+        conn.setLineWidth(1);
         conn.setLineStyle(SWT.LINE_CUSTOM);
     }
 

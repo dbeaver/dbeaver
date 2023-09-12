@@ -197,7 +197,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         }
 
         if (value != EditPart.SELECTED_NONE) {
-            ((PolylineConnection) getFigure()).setLineWidth(oldLineWidth + 1);
+            ((PolylineConnection) getFigure()).setLineWidth(oldLineWidth + 3);
         } else {
             ((PolylineConnection) getFigure()).setLineWidth(oldLineWidth);
         }

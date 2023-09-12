@@ -32,11 +32,9 @@ import org.osgi.framework.BundleContext;
  */
 public class ERDUIActivator extends AbstractUIPlugin {
 
-    public static final String PLUGIN_ID = "org.jkiss.dbeaver.erd.ui"; //$NON-NLS-0$
-
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.erd.ui"; // $NON-NLS-0$
     private static final Log log = Log.getLog(ERDUIActivator.class);
     private static ERDUIActivator plugin;
-    private static BundleContext context;
     private DBPPreferenceStore preferences;
 
     public ERDUIActivator() {
@@ -46,7 +44,6 @@ public class ERDUIActivator extends AbstractUIPlugin {
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
-        ERDUIActivator.context = context;
         ERDUIActivator.plugin = this;
         preferences = new BundlePreferenceStore(getBundle());
         // Switch off D3D because of Sun XOR painting bug
