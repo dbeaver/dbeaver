@@ -377,9 +377,9 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                                 UINavigatorMessages.navigator_view_base_acc_node_connection_last_error +
                                     sourceContainer.getConnectionError() : ""));
                 } else if (firstElement instanceof DBNDatabaseFolder) {
-                    e.result = UINavigatorMessages.navigator_view_base_acc_node_folder + ((DBNNode) firstElement).getName();
+                    e.result = UINavigatorMessages.navigator_view_base_acc_node_folder + " " + ((DBNNode) firstElement).getName();
                 } else if (firstElement instanceof DBNNode) {
-                    e.result = ((DBNNode) firstElement).getNodeType() + ((DBNNode) firstElement).getNodeName();
+                    e.result = ((DBNNode) firstElement).getNodeType() + " " + ((DBNNode) firstElement).getNodeName();
                 }
             }
         });
