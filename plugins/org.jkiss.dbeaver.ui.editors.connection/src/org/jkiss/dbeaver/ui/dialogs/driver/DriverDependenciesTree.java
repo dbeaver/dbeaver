@@ -143,7 +143,7 @@ class DriverDependenciesTree {
         filesTree.removeAll();
         int totalItems = 1;
         for (DBPDriverDependencies.DependencyNode node : dependencies.getLibraryMap()) {
-            if (node.library.getType().equals(DBPDriverLibrary.FileType.license) && editable) {
+            if (editable && node.library.getType().equals(DBPDriverLibrary.FileType.license)) {
                 continue;
             }
             DBPDriverLibrary library = node.library;
@@ -183,11 +183,11 @@ class DriverDependenciesTree {
     private void grayOutInstalledArtifact(DBPDriverDependencies.DependencyNode node, TreeItem item) {
         Path localFile = node.library.getLocalFile();
         try {
-            if ((localFile != null && Files.exists(localFile) && Files.size(localFile) > 0) && editable) {
+            if (editable && localFile != null && Files.exists(localFile) && Files.size(localFile) > 0) {
                 item.setForeground(filesTree.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
             }
         } catch (IOException ex) {
-            log.error("Error reading" + node.library.getDisplayName() + " local file", ex);
+            log.error("Error reading " + node.library.getDisplayName() + " local file", ex);
         }
     }
 
