@@ -359,6 +359,9 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         }
         Accessible accessible = tree.getAccessible();
         accessible.addAccessibleListener(new AccessibleAdapter() {
+
+            Object lastSelection = null;
+
             @Override
             public void getName(AccessibleEvent e) {
                 TreeViewer viewer = navigatorTree.getViewer();
@@ -367,6 +370,10 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                     return;
                 }
                 Object firstElement = selection.getFirstElement();
+                if (firstElement == lastSelection) {
+                    // Already read
+                    return;
+                }
                 if (firstElement instanceof DBNDataSource) {
                     DBNDataSource dbnDataSource = (DBNDataSource) firstElement;
                     DBPDataSourceContainer sourceContainer = dbnDataSource.getDataSourceContainer();
@@ -381,6 +388,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 } else if (firstElement instanceof DBNNode) {
                     e.result = ((DBNNode) firstElement).getNodeType() + " " + ((DBNNode) firstElement).getNodeName();
                 }
+                lastSelection = firstElement;
             }
         });
     }
