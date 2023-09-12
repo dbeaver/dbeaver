@@ -105,7 +105,9 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
         }
 
         {
-            handlersFolder = new TabFolder(divider, SWT.TOP | SWT.FLAT);
+            Composite handlersComp = UIUtils.createComposite(divider, 1);
+            preCreateHandlerControls(handlersComp);
+            handlersFolder = new TabFolder(handlersComp, SWT.TOP | SWT.FLAT);
             handlersFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
             for (NetworkHandlerDescriptor nhd : NetworkHandlerRegistry.getInstance().getDescriptors()) {
                 if (!nhd.hasObjectTypes() && isHandlerApplicable(nhd)) {
@@ -118,6 +120,8 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
                     updateControlsState();
                 }
             });
+
+            postCreateHandlerControls(handlersComp);
         }
 
         divider.setWeights(300, 700);
@@ -135,6 +139,10 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
 
     protected boolean isInitOnCreate() {
         return true;
+    }
+
+    public DBWNetworkProfile getSelectedProfile() {
+        return selectedProfile;
     }
 
     public void loadSettings() {
@@ -157,6 +165,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
                 } else {
                     selectedProfile = (DBWNetworkProfile) selection[0].getData();
                 }
+                updateSelectedProfile(selectedProfile);
                 updateControlsState();
             }
         });
@@ -336,6 +345,18 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
         enableHandlerContent(descriptor);
     }
 
+    protected void updateSelectedProfile(DBWNetworkProfile profile) {
+
+    }
+
+    protected void preCreateHandlerControls(Composite composite) {
+
+    }
+
+    protected void postCreateHandlerControls(Composite composite) {
+
+    }
+
     private void enableHandlerContent(NetworkHandlerDescriptor descriptor)
     {
         HandlerBlock handlerBlock = configurations.get(descriptor);
@@ -385,6 +406,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
                 if (selectedProfile == null) {
                     selectedProfile = profile;
                     profilesTable.select(0);
+                    updateSelectedProfile(selectedProfile);
                 }
 
                 for (NetworkHandlerDescriptor nhd : allHandlers) {
