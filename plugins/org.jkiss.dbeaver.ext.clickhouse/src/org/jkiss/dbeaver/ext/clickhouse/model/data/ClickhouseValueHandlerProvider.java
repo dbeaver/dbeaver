@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.clickhouse.model.data;
 
+import org.jkiss.dbeaver.ext.clickhouse.ClickhouseConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
@@ -49,7 +50,7 @@ public class ClickhouseValueHandlerProvider implements DBDValueHandlerProvider {
             } else {
                 return new JDBCNumberValueHandler(type, preferences);
             }
-        } else if (dataKind == DBPDataKind.STRING && "ipv4".equals(lowerTypeName)) {
+        } else if (dataKind == DBPDataKind.STRING && ClickhouseConstants.DATA_TYPE_IPV4.equals(lowerTypeName)) {
             return ClikhouseInetTypeValueHandler.INSTANCE;
         }
         return null;
