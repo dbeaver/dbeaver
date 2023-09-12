@@ -676,7 +676,7 @@
                     id="jdbcx"
                     label="JDBCX"
                     class="io.github.jdbcx.WrappedDriver"
-                    sampleURL="jdbcx:[extension:]vendor://{host}[:{port}][/{database}]"
+                    sampleURL="jdbcx:[extension:][vendor://{host}[:{port}][/{database}]]"
                     defaultPort=""
                     icon="icons/jdbcx_icon.png"
                     iconBig="icons/jdbcx_icon_big.png"
@@ -684,7 +684,8 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/jdbcx/jdbcx"
                     categories="codeql,graphql,prompt,prql,rest,script,shell,sql"
-                    singleConnection="true">
+                    singleConnection="true"
+                    propagateDriverProperties="true">
                     <file type="jar" path="maven:/io.github.jdbcx:jdbcx-driver:RELEASE" load-optional-dependencies="true"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
                 </driver>
