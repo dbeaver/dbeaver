@@ -169,8 +169,8 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
         if (this.tableSize == null) {
             resetSize();
         }
-        tableSize[SIZE_IDX_MEM] = (long) JDBCUtils.safeGetInt(dbResult, "MEMORY_SIZE");
-        tableSize[SIZE_IDX_DISK] = (long) JDBCUtils.safeGetInt(dbResult, "DISK_SIZE");
+        tableSize[SIZE_IDX_MEM] = (long) JDBCUtils.safeGetLong(dbResult, "MEMORY_SIZE");
+        tableSize[SIZE_IDX_DISK] = (long) JDBCUtils.safeGetLong(dbResult, "DISK_SIZE");
     }
 
     protected void resetSize() {
