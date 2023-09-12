@@ -601,9 +601,10 @@
              notation="org.jkiss.dbeaver.erd.ui.notation.impl.IDEF1XDiagramNotation">
        </erdnotaion>
        <erdnotaion
-             id="org.jkiss.dbeaver.erd.ui.erdnotaion3"
+             description="Charles Bachman diagram style"
+             id="org.jkiss.dbeaver.erd.notaion.bachman"
              isDefault="true"
-             name="org.jkiss.dbeaver.erd.ui.erdnotaion3"
+             name="Bachman"
              notation="org.jkiss.dbeaver.erd.ui.notation.impl.BachmanDiagramNotation">
        </erdnotaion>
     </extension>

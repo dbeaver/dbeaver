@@ -32,7 +32,7 @@ import org.osgi.framework.BundleContext;
  */
 public class ERDUIActivator extends AbstractUIPlugin {
 
-    public static final String PLUGIN_ID = "org.jkiss.dbeaver.erd.ui";
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.erd.ui"; //$NON-NLS-0$
 
     private static final Log log = Log.getLog(ERDUIActivator.class);
     private static ERDUIActivator plugin;
