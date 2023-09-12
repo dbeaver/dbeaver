@@ -154,7 +154,7 @@
                     <folder type="org.jkiss.dbeaver.model.access.DBAPrivilege" label="%tree.user_privileges.node.name" icon="#info" description="User privileges">
                         <items label="%tree.privilege.node.name" path="privileges" property="privileges" icon="#info" navigable="false" virtual="true"/>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLPlugin" label="%tree.plugin.node.name" icon="#info" description="Database plugins">
+                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLPlugin" label="%tree.plugin.node.name" icon="#info" description="Database plugins" visibleIf="connected &amp;&amp; object.dataSource.supportsPlugins()">
                         <items label="%tree.plugin.node.name" path="plugins" property="plugins" icon="#info" navigable="false" virtual="true"/>
                     </folder>
                 </folder>
