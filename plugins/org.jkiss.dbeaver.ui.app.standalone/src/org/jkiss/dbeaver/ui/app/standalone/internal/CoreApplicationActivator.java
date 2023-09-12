@@ -43,6 +43,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.hooks.bundle.EventHook;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -158,8 +159,7 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
 
 
     private void migrateFromEclipseStorage(Path storagePath) throws Exception {
-        Path oldLocation = Path.of(StorageUtils.getDefaultLocation().toURI());
-
+        Path oldLocation = new File(StorageUtils.getDefaultLocation().getPath()).toPath();
         Files.createDirectories(storagePath.getParent());
         Files.copy(oldLocation, storagePath, StandardCopyOption.REPLACE_EXISTING);
     }
@@ -171,7 +171,8 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
                 .resolve(DBEAVER_SECURE_FILE);
 
         if (!Files.exists(storagePath)) {
-            if (Files.exists(Path.of(StorageUtils.getDefaultLocation().toURI()))) {
+            File defaultLocation = new File(StorageUtils.getDefaultLocation().getPath());
+            if (defaultLocation.exists()) {
                 migrateFromEclipseStorage(storagePath);
             } else {
                 Files.createDirectories(storagePath.getParent());

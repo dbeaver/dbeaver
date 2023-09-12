@@ -492,6 +492,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     @Override
     protected void doSetInput(IEditorInput input) throws CoreException {
+        if (getDocumentProvider() instanceof NonFileDocumentProvider) {
+            setDocumentProvider((IDocumentProvider) null);
+        }
+
         handleInputChange(input);
 
         final IFile file = GeneralUtils.adapt(input, IFile.class);

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.oceanbase.mysql.model;
+package org.jkiss.dbeaver.ext.oceanbase.model;
 
 import java.sql.ResultSet;
 
@@ -26,11 +26,9 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.CommonUtils;
 
 public class OceanbaseMySQLViewColumn extends MySQLTableColumn {
@@ -38,11 +36,6 @@ public class OceanbaseMySQLViewColumn extends MySQLTableColumn {
         super(table);
         loadInfo(dbResult);
         setPersisted(true);
-    }
-
-    OceanbaseMySQLViewColumn(DBRProgressMonitor monitor, MySQLTableBase table, DBSEntityAttribute source)
-            throws DBException {
-        super(monitor, table, source);
     }
 
     private void loadInfo(ResultSet dbResult) throws DBException {
