@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfileProvider;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -427,6 +428,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     public DBWNetworkProfile getNetworkProfile(String source, String name) {
         if (!CommonUtils.isEmpty(source)) {
             // Search in external sources
+            DBWNetworkProfileProvider profileProvider = RuntimeUtils.getObjectAdapter(this.getProject(), DBWNetworkProfileProvider.class);
+            if (profileProvider != null) {
+                return profileProvider.getNetworkProfile(source, name);
+            }
             return null;
         }
         // Search in project profiles
