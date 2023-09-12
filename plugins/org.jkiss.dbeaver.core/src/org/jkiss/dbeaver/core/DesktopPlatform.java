@@ -214,7 +214,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
             this.queryManager.dispose();
             //queryManager = null;
         }
-        DataSourceProviderRegistry.getInstance().dispose();
+        DataSourceProviderRegistry.dispose();
 
         if (isStandalone() && workspace != null && !application.isExclusiveMode()) {
             try {

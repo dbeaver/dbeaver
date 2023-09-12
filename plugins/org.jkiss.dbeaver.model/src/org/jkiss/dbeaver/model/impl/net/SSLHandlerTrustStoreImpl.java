@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.net;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
@@ -33,6 +34,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyStore;
 import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -52,6 +54,7 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
 
     public static final String PROP_SSL_KEYSTORE = "ssl.keystore";
     public static final String PROP_SSL_KEYSTORE_VALUE = PROP_SSL_KEYSTORE + CERT_VALUE_SUFFIX;
+    public static final String PROP_SSL_KEYSTORE_PASSWORD = "ssl.keystore.password";
 
     public static final String PROP_SSL_SELF_SIGNED_CERT = "ssl.self-signed-cert";
     public static final String PROP_SSL_METHOD = "ssl.method";
@@ -78,7 +81,9 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
         {
             if (method == SSLConfigurationMethod.KEYSTORE && keyStore != null) {
                 monitor.subTask("Load keystore");
-                final String password = sslConfig.getPassword();
+                final String password = sslConfig.getPassword() == null ?
+                    sslConfig.getSecureProperty(PROP_SSL_KEYSTORE_PASSWORD) :
+                    sslConfig.getPassword();
 
                 char[] keyStorePasswordData = CommonUtils.isEmpty(password) ? new char[0] : password.toCharArray();
                 securityManager.addCertificate(dataSource.getContainer(), CERT_TYPE, keyStore, keyStorePasswordData);
@@ -191,5 +196,24 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
         context.init(null, CertificateGenHelper.NON_VALIDATING_TRUST_MANAGERS, new SecureRandom());
 
         return context.getSocketFactory();
+    }
+
+    /**
+     * Reads trust store file contents.
+     */
+    public static byte[] readTrustStoreData(@NotNull DBWHandlerConfiguration configuration, @NotNull String property) throws DBException {
+        var propertyValue = configuration.getSecureProperty(property);
+        if (!CommonUtils.isEmpty(propertyValue)) {
+            try {
+                return Files.readAllBytes(Path.of(propertyValue));
+            } catch (IOException e) {
+                throw new DBException("Error reading file '" + property + "' data", e);
+            }
+        }
+        var valueProperty = configuration.getSecureProperty(property + SSLHandlerTrustStoreImpl.CERT_VALUE_SUFFIX);
+        if (!CommonUtils.isEmpty(valueProperty)) {
+            return Base64.getDecoder().decode(valueProperty);
+        }
+        return null;
     }
 }

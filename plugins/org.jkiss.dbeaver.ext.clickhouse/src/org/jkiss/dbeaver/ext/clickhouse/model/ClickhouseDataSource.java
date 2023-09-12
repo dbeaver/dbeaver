@@ -102,7 +102,7 @@ public class ClickhouseDataSource extends GenericDataSource {
         properties.put(ClickhouseConstants.SSL_PARAM, "true");
         try {
             if ("com_clickhouse".equals(getContainer().getDriver().getId())) {
-                if (DBWorkbench.isDistributed()) {
+                if (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
                     String clientCertProp =
                         sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT_VALUE);
                     if (!CommonUtils.isEmpty(clientCertProp)) {
@@ -130,7 +130,7 @@ public class ClickhouseDataSource extends GenericDataSource {
                     properties.put(ClickhouseConstants.SSL_MODE, mode.toLowerCase());
                 }
             }
-            if (DBWorkbench.isDistributed()) {
+            if (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
                 String caCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT_VALUE);
                 if (!CommonUtils.isEmpty(caCertProp)) {
                     properties.put(ClickhouseConstants.SSL_ROOT_CERTIFICATE, saveCertificateToFile(caCertProp));

@@ -1448,4 +1448,5 @@
             <item commandId="org.jkiss.dbeaver.ui.editors.sql.show.variables" defaultVisibility="true"/>
         </toolBar>
     </extension>
+
 </plugin>

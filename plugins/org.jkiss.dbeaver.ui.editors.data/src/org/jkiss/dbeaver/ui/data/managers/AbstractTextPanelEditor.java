@@ -239,7 +239,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
                         textViewer.doOperation(ISourceViewer.FORMAT);
                     }
                 } catch (Exception e) {
-                    log.debug("Error formatting text", e);
+                    log.debug("Error formatting text: " + e.getMessage());
                 } finally {
                     if (!oldEditable) {
                         textViewer.setEditable(false);

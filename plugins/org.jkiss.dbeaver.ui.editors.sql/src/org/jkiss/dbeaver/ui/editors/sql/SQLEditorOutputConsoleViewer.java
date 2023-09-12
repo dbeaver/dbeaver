@@ -28,9 +28,9 @@ import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.TextConsoleViewer;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.UIStyles;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
@@ -124,8 +124,13 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
         if (outputFont != null) {
             getTextWidget().setFont(outputFont);
         }
-        getTextWidget().setForeground(UIStyles.getDefaultTextForeground());
-        getTextWidget().setBackground(UIStyles.getDefaultTextBackground());
+        if (UIStyles.isDarkHighContrastTheme()) {
+            getTextWidget().setForeground(UIUtils.COLOR_WHITE);
+            getTextWidget().setBackground(UIStyles.getDefaultWidgetBackground());
+        } else {
+            getTextWidget().setForeground(UIStyles.getDefaultTextForeground());
+            getTextWidget().setBackground(UIStyles.getDefaultTextBackground());
+        }
     }
 
     public StyledText getText() {

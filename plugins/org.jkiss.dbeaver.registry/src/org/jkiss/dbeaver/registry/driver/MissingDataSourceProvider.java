@@ -53,7 +53,9 @@ public class MissingDataSourceProvider implements DBPDataSourceProvider {
     @NotNull
     @Override
     public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
-        throw new DBException("Corrupted datasource configuration. Driver '" + container.getDriver().getFullName() + "' not found.");
+        throw new DBException("Error: invalid datasource configuration:\n"
+                + "The specified driver '" + container.getDriver().getFullName() + "' could not be found.\n"
+                + "This error may occur if the configuration was created in a different edition of DBeaver.");
     }
 
     @Override

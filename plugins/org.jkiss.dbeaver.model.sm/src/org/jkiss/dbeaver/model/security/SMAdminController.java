@@ -104,7 +104,7 @@ public interface SMAdminController extends SMController {
 
     void updateTeam(String teamId, String name, String description) throws DBException;
 
-    void deleteTeam(String teamId) throws DBException;
+    void deleteTeam(String teamId, boolean force) throws DBException;
 
     ///////////////////////////////////////////
     // Credentials
