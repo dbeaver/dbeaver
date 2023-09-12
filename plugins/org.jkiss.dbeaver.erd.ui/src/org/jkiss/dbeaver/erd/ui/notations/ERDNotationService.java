@@ -24,8 +24,8 @@ public interface ERDNotationService<T extends ERDNotationDescriptor> {
 
     Collection<T> getERDNotations();
 
-    void setActiveNotation(T notation);
+    T getNotation(String id);
 
-    T getActiveNotation();
+    T getDefaultNotation();
 
 }

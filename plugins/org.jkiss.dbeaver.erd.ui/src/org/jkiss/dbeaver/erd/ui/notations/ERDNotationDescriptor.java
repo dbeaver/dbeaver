@@ -20,20 +20,23 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 
 public class ERDNotationDescriptor {
-    public static final String ERD_STYLE_NOTATION_EXT_ATTRIBUTE_ID = "id"; //$NON-NLS-N$
-    public static final String ERD_STYLE_NOTATION_EXT_ATTRIBUTE_NAME = "name"; //$NON-NLS-N$
-    public static final String ERD_STYLE_NOTATION_EXT_ATTRIBUTE_DESCRIPTION = "description"; //$NON-NLS-N$
-    public static final String ERD_STYLE_NOTATION_EXT_ATTRIBUTE_NOTATION = "notation"; //$NON-NLS-N$
+    public static final String ERD_STYLE_NOTATION_EXT_ATTRIBUTE_ID = "id"; // $NON-NLS-N$
+    public static final String ERD_STYLE_NOTATION_EXT_ATTRIBUTE_NAME = "name"; // $NON-NLS-N$
+    public static final String ERD_STYLE_NOTATION_EXT_ATTRIBUTE_DESCRIPTION = "description"; // $NON-NLS-N$
+    public static final String ERD_STYLE_NOTATION_EXT_ATTRIBUTE_DEFAULT = "isDefault"; // $NON-NLS-N$
+    public static final String ERD_STYLE_NOTATION_EXT_ATTRIBUTE_NOTATION = "notation"; // $NON-NLS-N$
 
     private String id;
     private String name;
     private String description;
+    private boolean isDefault = false;
     private ERDNotation notation;
 
     public ERDNotationDescriptor(IConfigurationElement cf) throws CoreException {
         this.id = cf.getAttribute(ERD_STYLE_NOTATION_EXT_ATTRIBUTE_ID);
         this.name = cf.getAttribute(ERD_STYLE_NOTATION_EXT_ATTRIBUTE_NAME);
         this.description = cf.getAttribute(ERD_STYLE_NOTATION_EXT_ATTRIBUTE_DESCRIPTION);
+        this.isDefault = Boolean.valueOf(cf.getAttribute(ERD_STYLE_NOTATION_EXT_ATTRIBUTE_DEFAULT));
         this.notation = (ERDNotation) cf.createExecutableExtension(ERD_STYLE_NOTATION_EXT_ATTRIBUTE_NOTATION);
     }
 
@@ -48,32 +51,20 @@ public class ERDNotationDescriptor {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public ERDNotation getNotation() {
         return notation;
     }
 
-    public void setNotation(ERDNotation notation) {
-        this.notation = notation;
+    public boolean isDefault() {
+        return isDefault;
     }
 
 }

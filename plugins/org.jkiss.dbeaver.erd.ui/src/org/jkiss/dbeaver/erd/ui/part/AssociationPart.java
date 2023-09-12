@@ -124,7 +124,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     protected void setConnectionRouting(PolylineConnection conn) {
         ERDNotationService<ERDNotationDescriptor> erdNotationService = ERDUIActivator.getDefault().getERDNotationService();
-        ERDNotationDescriptor erdNotationDescriptor = erdNotationService.getActiveNotation();
+        ERDNotationDescriptor erdNotationDescriptor = erdNotationService.getDefaultNotation();
         ERDAssociation association = getAssociation();
         ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
         erdNotationDescriptor.getNotation().applyNotation(conn, cLayer, association, getSource(), getTarget());
