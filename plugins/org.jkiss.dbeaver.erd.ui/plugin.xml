@@ -20,6 +20,7 @@
 <plugin>
 
     <extension-point id="org.jkiss.dbeaver.erd.ui.export.format" name="ERD Export Formats" schema="schema/org.jkiss.dbeaver.ext.erd.export.format.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.erd.ui.notation.style" name="ER Diagram Notation Style Specification" schema="schema/org.jkiss.dbeaver.erd.ui.notation.style.exsd"/>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor
@@ -589,6 +590,15 @@
             message="%confirm.erd_open_exported_file.message"
             toggleMessage="%confirm.erd_open_exported_file.toggleMessage"
             group="%editor.erd.name"/>
+    </extension>
+    <extension
+          point="org.jkiss.dbeaver.erd.ui.notation.style">
+       <erdnotaion
+             description="Integration DEFinition for information modeling (IDEF1X) style"
+             id="org.jkiss.dbeaver.erd.notaion.idef1x"
+             name="IDEF1X"
+             notation="org.jkiss.dbeaver.erd.ui.notation.impl.IDEF1XDiagramNotation">
+       </erdnotaion>
     </extension>
 
 </plugin>

@@ -7,7 +7,6 @@ Bundle-Version: 3.0.73.qualifier
 Bundle-Release-Date: 20230904
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Activator: org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator
-Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.core.expressions,
@@ -31,3 +30,5 @@ Export-Package: org.jkiss.dbeaver.erd.ui,
  org.jkiss.dbeaver.erd.ui.part,
  org.jkiss.dbeaver.erd.ui.policy
 Automatic-Module-Name: org.jkiss.dbeaver.erd.ui
+Bundle-ActivationPolicy: lazy
+Service-Component: OSGI-INF/org.jkiss.dbeaver.erd.notation.service.xml

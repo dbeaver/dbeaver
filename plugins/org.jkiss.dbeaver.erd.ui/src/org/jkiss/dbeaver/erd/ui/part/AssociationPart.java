@@ -20,7 +20,6 @@
 package org.jkiss.dbeaver.erd.ui.part;
 
 import org.eclipse.draw2d.*;
-import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.Rectangle;
@@ -38,6 +37,8 @@ import org.jkiss.dbeaver.erd.ui.editor.ERDHighlightingHandle;
 import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
+import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
+import org.jkiss.dbeaver.erd.ui.notations.ERDNotationService;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationEditPolicy;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -122,45 +123,11 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     }
 
     protected void setConnectionRouting(PolylineConnection conn) {
+        ERDNotationService<ERDNotationDescriptor> erdNotationService = ERDUIActivator.getDefault().getERDNotationService();
+        ERDNotationDescriptor erdNotationDescriptor = erdNotationService.getActiveNotation();
         ERDAssociation association = getAssociation();
-        // Set router and initial bends
         ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
-        conn.setConnectionRouter(cLayer.getConnectionRouter());
-        if (!CommonUtils.isEmpty(association.getInitBends())) {
-            List<AbsoluteBendpoint> connBends = new ArrayList<>();
-            for (int[] bend : association.getInitBends()) {
-                connBends.add(new AbsoluteBendpoint(bend[0], bend[1]));
-            }
-            conn.setRoutingConstraint(connBends);
-        } else if (association.getTargetEntity() != null && association.getTargetEntity() == association.getSourceEntity()) {
-            EditPart entityPart = getSource();
-            if (entityPart == null) {
-                entityPart = getTarget();
-            }
-            final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-            if (entityPart instanceof GraphicalEditPart && (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store))) {
-                // Self link
-                final IFigure entityFigure = ((GraphicalEditPart) entityPart).getFigure();
-                //EntityPart entity = (EntityPart) connEdge.source.getParent().data;
-                //final Dimension entitySize = entity.getFigure().getSize();
-                final Dimension figureSize = entityFigure.getMinimumSize();
-                int entityWidth = figureSize.width;
-                int entityHeight = figureSize.height;
-
-                List<RelativeBendpoint> bends = new ArrayList<>();
-                {
-                    RelativeBendpoint bp1 = new RelativeBendpoint(conn);
-                    bp1.setRelativeDimensions(new Dimension(entityWidth, entityHeight / 2), new Dimension(entityWidth / 2, entityHeight / 2));
-                    bends.add(bp1);
-                }
-                {
-                    RelativeBendpoint bp2 = new RelativeBendpoint(conn);
-                    bp2.setRelativeDimensions(new Dimension(-entityWidth, entityHeight / 2), new Dimension(entityWidth, entityHeight));
-                    bends.add(bp2);
-                }
-                conn.setRoutingConstraint(bends);
-            }
-        }
+        erdNotationDescriptor.getNotation().applyNotation(conn, cLayer, association, getSource(), getTarget());
     }
 
     protected void setConnectionStyles(PolylineConnection conn) {
