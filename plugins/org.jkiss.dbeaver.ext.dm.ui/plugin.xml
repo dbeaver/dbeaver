@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.dm.dataSourceWizardView"
+                dataSource="dm"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.dm.ui.views.DMConnectionPage"
+        />
+        <view
+                id="org.jkiss.dbeaver.ext.dm.dataSourceEditorView"
+                dataSource="dm"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.dm.ui.views.DMConnectionPage"
+        />
+    </extension>
+</plugin>
