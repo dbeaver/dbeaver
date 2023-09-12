@@ -964,7 +964,7 @@ public class UIUtils {
                 scrolledComposite.setMinSize(content.computeSize(SWT.DEFAULT, SWT.DEFAULT));
             }
         });
-        scrolledComposite.setSize(content.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+        scrolledComposite.setMinSize(content.computeSize(SWT.DEFAULT, SWT.DEFAULT));
     }
 
     public static Composite createPlaceholder(@NotNull Composite parent, int columns, int spacing) {
