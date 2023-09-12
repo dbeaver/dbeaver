@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.erd.ui.notation.impl;
 
+import org.eclipse.draw2d.ConnectionEndpointLocator;
+import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.swt.SWT;
@@ -23,98 +25,69 @@ import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDUtils;
-import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
-import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
 import org.jkiss.dbeaver.erd.ui.part.AssociationPart.CircleDecoration;
-import org.jkiss.dbeaver.erd.ui.part.AssociationPart.RhombusDecoration;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 public class BachmanDiagramNotation implements ERDNotation {
 
+    private static final String LABEL_0_TO_1 = "0..1";
+    private static final String LABEL_1 = "1";
+    private static final String LABEL_1_TO_N = "1..n";
+    private static final int CIRCLE_RADIUS = 5;
+
     @Override
     public void applyNotation(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
-        boolean identifying = ERDUtils.isIdentifyingAssociation(association);
         DBSEntityConstraintType constraintType = association.getObject().getConstraintType();
-        if (constraintType == DBSEntityConstraintType.INHERITANCE) {
-            final PolygonDecoration srcDec = new PolygonDecoration();
-            srcDec.setTemplate(PolygonDecoration.TRIANGLE_TIP);
-            srcDec.setFill(true);
-            srcDec.setBackgroundColor(bckColor);
-            srcDec.setScale(10, 6);
-            conn.setTargetDecoration(srcDec);
-        } else if (constraintType.isAssociation() &&
-            association.getSourceEntity() instanceof ERDEntity &&
-            association.getTargetEntity() instanceof ERDEntity) {
+        if (constraintType == DBSEntityConstraintType.PRIMARY_KEY) {
+            // source 0..1
             final CircleDecoration sourceDecor = new CircleDecoration();
-          
-            sourceDecor.setRadius(4);
+            sourceDecor.setRadius(CIRCLE_RADIUS);
             sourceDecor.setFill(true);
             sourceDecor.setBackgroundColor(frgColor);
             conn.setSourceDecoration(sourceDecor);
-            
-            final CircleDecoration targetDecor = new CircleDecoration();
-            targetDecor.setRadius(4);
-            targetDecor.setFill(true);
-            targetDecor.setBackgroundColor(frgColor);
-//         
-            conn.setTargetDecoration(targetDecor);
-            
-            
-//            if (ERDUtils.isOptionalAssociation(association)) {
-//                
-//                final CircleDecoration targetDecor = new CircleDecoration();
-//                targetDecor.setRadius(4);
-//                targetDecor.setFill(true);
-//                targetDecor.setBackgroundColor(bckColor);
-//               
-//                conn.setTargetDecoration(targetDecor);
-//            }
-        }
 
-        conn.setLineWidth(2);
-        if (!identifying || constraintType.isLogical()) {
-            final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-            if (store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)) {
-                conn.setLineStyle(SWT.LINE_DOT);
+        } else if (constraintType.isAssociation() &&
+            association.getSourceEntity() instanceof ERDEntity &&
+            association.getTargetEntity() instanceof ERDEntity) {
+            // source - 1..n
+            final PolygonDecoration sourceDecor = new PolygonDecoration();
+            sourceDecor.setTemplate(PolygonDecoration.TRIANGLE_TIP);
+
+            sourceDecor.setScale(15, 5);
+            sourceDecor.setFill(true);
+            sourceDecor.setBackgroundColor(frgColor);
+            ConnectionEndpointLocator srcEndpointLocator = new ConnectionEndpointLocator(conn, false);
+            srcEndpointLocator.setVDistance(15);
+            conn.add(new Label(LABEL_1_TO_N), srcEndpointLocator);
+            conn.setSourceDecoration(sourceDecor);
+
+            if (ERDUtils.isOptionalAssociation(association)) {
+                // target - 0..1
+                final CircleDecoration targetDecor = new CircleDecoration();
+                targetDecor.setRadius(CIRCLE_RADIUS);
+                targetDecor.setFill(true);
+                targetDecor.setBackgroundColor(bckColor);
+
+                ConnectionEndpointLocator trgEndpointLocator = new ConnectionEndpointLocator(conn, true);
+                trgEndpointLocator.setVDistance(15);
+                conn.add(new Label(LABEL_0_TO_1), trgEndpointLocator);
+                conn.setTargetDecoration(targetDecor);
+
             } else {
-                conn.setLineStyle(SWT.LINE_CUSTOM);
+                // target - 1
+                final CircleDecoration targetDecor = new CircleDecoration();
+                targetDecor.setRadius(CIRCLE_RADIUS);
+                targetDecor.setFill(true);
+                targetDecor.setBackgroundColor(frgColor);
+                ConnectionEndpointLocator trgEndpointLocator = new ConnectionEndpointLocator(conn, true);
+                trgEndpointLocator.setVDistance(15);
+                conn.add(new Label(LABEL_1), trgEndpointLocator);
+                conn.setTargetDecoration(targetDecor);
             }
-            conn.setLineDash(
-                constraintType.isLogical() ? new float[] { 4 } : new float[] { 5 });
         }
-//        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-//        conn.setConnectionRouter(cLayer.getConnectionRouter());
-//        if (!CommonUtils.isEmpty(association.getInitBends())) {
-//            List<AbsoluteBendpoint> connBends = new ArrayList<>();
-//            for (int[] bend : association.getInitBends()) {
-//                connBends.add(new AbsoluteBendpoint(bend[0], bend[1]));
-//            }
-//            conn.setRoutingConstraint(connBends);
-//        } else if (association.getTargetEntity() != null && association.getTargetEntity() == association.getSourceEntity()) {
-//            EditPart entityPart = source;
-//            if (entityPart == null) {
-//                entityPart = target;
-//            }
-//            if (entityPart instanceof GraphicalEditPart
-//                && (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)
-//                    || ERDAttributeVisibility.isHideAttributeAssociations(store))) {
-//                final IFigure entityFigure = ((GraphicalEditPart) entityPart).getFigure();
-//                final Dimension figureSize = entityFigure.getMinimumSize();
-//                int entityWidth = figureSize.width;
-//                int entityHeight = figureSize.height;
-//                List<RelativeBendpoint> bends = new ArrayList<>();
-//                RelativeBendpoint bpSource = new RelativeBendpoint(conn);
-//                bpSource.setRelativeDimensions(new Dimension(entityWidth, entityHeight / 2),
-//                    new Dimension(entityWidth / 2, entityHeight / 2));
-//                bends.add(bpSource);
-//                RelativeBendpoint bpTarget = new RelativeBendpoint(conn);
-//                bpTarget.setRelativeDimensions(new Dimension(-entityWidth, entityHeight / 2), new Dimension(entityWidth, entityHeight));
-//                bends.add(bpTarget);
-//                conn.setRoutingConstraint(bends);
-//            }
-//        }
+        conn.setLineWidth(2);
+        conn.setLineStyle(SWT.LINE_CUSTOM);
     }
 
 }
