@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.erd.ui.notations;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 
-public class ERDNotationDescriptor {
+public class ERDNotationDescriptor extends AbstractDescriptor {
+
     public static final String ERD_STYLE_NOTATION_EXT_ATTRIBUTE_ID = "id"; // $NON-NLS-N$
     public static final String ERD_STYLE_NOTATION_EXT_ATTRIBUTE_NAME = "name"; // $NON-NLS-N$
     public static final String ERD_STYLE_NOTATION_EXT_ATTRIBUTE_DESCRIPTION = "description"; // $NON-NLS-N$
@@ -32,19 +34,13 @@ public class ERDNotationDescriptor {
     private boolean isDefault = false;
     private ERDNotation notation;
 
-    public ERDNotationDescriptor(IConfigurationElement cf) throws CoreException {
+    protected ERDNotationDescriptor(IConfigurationElement cf) throws CoreException {
+        super(cf);
         this.id = cf.getAttribute(ERD_STYLE_NOTATION_EXT_ATTRIBUTE_ID);
         this.name = cf.getAttribute(ERD_STYLE_NOTATION_EXT_ATTRIBUTE_NAME);
         this.description = cf.getAttribute(ERD_STYLE_NOTATION_EXT_ATTRIBUTE_DESCRIPTION);
         this.isDefault = Boolean.valueOf(cf.getAttribute(ERD_STYLE_NOTATION_EXT_ATTRIBUTE_DEFAULT));
         this.notation = (ERDNotation) cf.createExecutableExtension(ERD_STYLE_NOTATION_EXT_ATTRIBUTE_NOTATION);
-    }
-
-    public ERDNotationDescriptor(String id, String name, String description, ERDNotation notation) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.notation = notation;
     }
 
     public String getId() {

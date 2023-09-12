@@ -596,9 +596,15 @@
        <erdnotaion
              description="Integration DEFinition for information modeling (IDEF1X) style"
              id="org.jkiss.dbeaver.erd.notaion.idef1x"
-             isDefault="true"
+             isDefault="false"
              name="IDEF1X"
              notation="org.jkiss.dbeaver.erd.ui.notation.impl.IDEF1XDiagramNotation">
+       </erdnotaion>
+       <erdnotaion
+             id="org.jkiss.dbeaver.erd.ui.erdnotaion3"
+             isDefault="true"
+             name="org.jkiss.dbeaver.erd.ui.erdnotaion3"
+             notation="org.jkiss.dbeaver.erd.ui.notation.impl.BachmanDiagramNotation">
        </erdnotaion>
     </extension>
 

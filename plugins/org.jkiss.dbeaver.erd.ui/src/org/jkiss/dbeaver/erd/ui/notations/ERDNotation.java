@@ -16,18 +16,13 @@
  */
 package org.jkiss.dbeaver.erd.ui.notations;
 
-import org.eclipse.draw2d.ConnectionLayer;
 import org.eclipse.draw2d.PolylineConnection;
-import org.eclipse.gef.EditPart;
+import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
 
 /**
  * Interface of ER Diagram style notation
  */
 public interface ERDNotation {
-    public String applyNotation(PolylineConnection conn,
-        ConnectionLayer cLayer,
-        ERDAssociation association,
-        EditPart source,
-        EditPart target);
+    public void applyNotation(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor);
 }

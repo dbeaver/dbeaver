@@ -16,20 +16,16 @@
  */
 package org.jkiss.dbeaver.erd.ui.internal;
 
-import org.eclipse.core.runtime.*;
 import org.eclipse.gef.internal.InternalImages;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
-import org.jkiss.dbeaver.erd.ui.notations.ERDNotationService;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.osgi.framework.BundleContext;
-import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -37,13 +33,11 @@ import org.osgi.util.tracker.ServiceTracker;
 public class ERDUIActivator extends AbstractUIPlugin {
 
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.erd.ui";
-    public static final String ERD_STYLE_NOTATION_EXT = "org.jkiss.dbeaver.erd.ui.notation.style";
+
     private static final Log log = Log.getLog(ERDUIActivator.class);
     private static ERDUIActivator plugin;
     private static BundleContext context;
     private DBPPreferenceStore preferences;
-    private ERDNotationService<ERDNotationDescriptor> erdNotationService;
-    private ServiceTracker<ERDNotationService<ERDNotationDescriptor>, ERDNotationService<ERDNotationDescriptor>> serviceTracker;
 
     public ERDUIActivator() {
         // no specific
@@ -55,46 +49,11 @@ public class ERDUIActivator extends AbstractUIPlugin {
         ERDUIActivator.context = context;
         ERDUIActivator.plugin = this;
         preferences = new BundlePreferenceStore(getBundle());
-        registerERDService(context);
-        registerERDNotations();
         // Switch off D3D because of Sun XOR painting bug
         // See http://www.jgraph.com/forum/viewtopic.php?t=4066
         System.setProperty("sun.java2d.d3d", Boolean.FALSE.toString()); //$NON-NLS-1$
         // Overload GEF images
         overloadGEFImage();
-    }
-
-    private void registerERDService(BundleContext context) {
-        String erdServiceClassName = ERDNotationService.class.getName();
-        serviceTracker = new ServiceTracker<>(context, erdServiceClassName, null);
-        serviceTracker.open();
-        erdNotationService = serviceTracker.getService();
-        if (erdNotationService == null) {
-            log.error("OSGI Service ERDNotationService is unreachable or null");
-        }
-    }
-
-    private void registerERDNotations() {
-        IExtensionRegistry registry = RegistryFactory.getRegistry();
-        IExtensionPoint ep = registry.getExtensionPoint(PLUGIN_ID, ERD_STYLE_NOTATION_EXT);
-        if (ep == null) {
-            ep = registry.getExtensionPoint(ERD_STYLE_NOTATION_EXT);
-            if (ep == null) {
-                log.error("Extension point:[" + ERD_STYLE_NOTATION_EXT + "] not found");
-                return;
-            }
-        }
-        IConfigurationElement[] configurationElements = ep.getConfigurationElements();
-        for (IConfigurationElement cf : configurationElements) {
-            try {
-                ERDNotationDescriptor notationDescriptor = new ERDNotationDescriptor(cf);
-                if (erdNotationService != null) {
-                    erdNotationService.addNotation(notationDescriptor);
-                }
-            } catch (CoreException e) {
-                log.error(e.getStatus());
-            }
-        }
     }
 
     private void overloadGEFImage() {
@@ -139,7 +98,4 @@ public class ERDUIActivator extends AbstractUIPlugin {
         return preferences;
     }
 
-    public ERDNotationService<ERDNotationDescriptor> getERDNotationService() {
-        return erdNotationService;
-    }
 }

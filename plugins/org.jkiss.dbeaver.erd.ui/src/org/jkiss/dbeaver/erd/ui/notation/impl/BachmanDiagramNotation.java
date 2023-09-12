@@ -31,11 +31,10 @@ import org.jkiss.dbeaver.erd.ui.part.AssociationPart.RhombusDecoration;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
-public class IDEF1XDiagramNotation implements ERDNotation {
+public class BachmanDiagramNotation implements ERDNotation {
 
     @Override
     public void applyNotation(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
-
         boolean identifying = ERDUtils.isIdentifyingAssociation(association);
         DBSEntityConstraintType constraintType = association.getObject().getConstraintType();
         if (constraintType == DBSEntityConstraintType.INHERITANCE) {
@@ -49,17 +48,29 @@ public class IDEF1XDiagramNotation implements ERDNotation {
             association.getSourceEntity() instanceof ERDEntity &&
             association.getTargetEntity() instanceof ERDEntity) {
             final CircleDecoration sourceDecor = new CircleDecoration();
-            sourceDecor.setRadius(3);
+          
+            sourceDecor.setRadius(4);
             sourceDecor.setFill(true);
             sourceDecor.setBackgroundColor(frgColor);
-            
             conn.setSourceDecoration(sourceDecor);
-            if (ERDUtils.isOptionalAssociation(association)) {
-                final RhombusDecoration targetDecor = new RhombusDecoration();
-                targetDecor.setBackgroundColor(bckColor);
-               
-                conn.setTargetDecoration(targetDecor);
-            }
+            
+            final CircleDecoration targetDecor = new CircleDecoration();
+            targetDecor.setRadius(4);
+            targetDecor.setFill(true);
+            targetDecor.setBackgroundColor(frgColor);
+//         
+            conn.setTargetDecoration(targetDecor);
+            
+            
+//            if (ERDUtils.isOptionalAssociation(association)) {
+//                
+//                final CircleDecoration targetDecor = new CircleDecoration();
+//                targetDecor.setRadius(4);
+//                targetDecor.setFill(true);
+//                targetDecor.setBackgroundColor(bckColor);
+//               
+//                conn.setTargetDecoration(targetDecor);
+//            }
         }
 
         conn.setLineWidth(2);
@@ -73,7 +84,6 @@ public class IDEF1XDiagramNotation implements ERDNotation {
             conn.setLineDash(
                 constraintType.isLogical() ? new float[] { 4 } : new float[] { 5 });
         }
-
 //        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
 //        conn.setConnectionRouter(cLayer.getConnectionRouter());
 //        if (!CommonUtils.isEmpty(association.getInitBends())) {
@@ -106,4 +116,5 @@ public class IDEF1XDiagramNotation implements ERDNotation {
 //            }
 //        }
     }
+
 }
