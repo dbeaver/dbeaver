@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.fs.nio2.NIO2FileStore;
 import org.jkiss.dbeaver.model.fs.nio2.NIO2FileSystem;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -46,6 +47,19 @@ public class DBNFileSystemNIO2Resource extends DBNResource implements DBNLazyNod
 
     @Override
     protected DBNNode[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
+        refreshResource(monitor, false);
+        return super.readChildNodes(monitor);
+    }
+
+    @Override
+    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
+        children = null;
+        refreshResource(monitor, true);
+        fireNodeEvent(new DBNEvent(source, DBNEvent.Action.UPDATE, DBNEvent.NodeChange.REFRESH, this));
+        return this;
+    }
+
+    private void refreshResource(@NotNull DBRProgressMonitor monitor, boolean invalidateCache) throws DBException {
         final IResource resource = getResource();
         final NIO2FileStore store;
 
@@ -53,6 +67,10 @@ public class DBNFileSystemNIO2Resource extends DBNResource implements DBNLazyNod
             store = (NIO2FileStore) EFS.getStore(resource.getLocationURI());
         } catch (CoreException e) {
             throw new DBException(e.getMessage(), e);
+        }
+
+        if (invalidateCache) {
+            store.purgeCachedChildren();
         }
 
         try {
@@ -63,8 +81,6 @@ public class DBNFileSystemNIO2Resource extends DBNResource implements DBNLazyNod
         } finally {
             store.setAllowedToLoadChildNames(false);
         }
-
-        return super.readChildNodes(monitor);
     }
 
     @Nullable

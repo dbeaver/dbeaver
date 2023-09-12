@@ -93,6 +93,10 @@ public class NIO2FileStore extends FileStore {
         return childNames != null;
     }
 
+    public void purgeCachedChildren() {
+        childNames = null;
+    }
+
     @Override
     public IFileInfo fetchInfo(int options, IProgressMonitor monitor) {
         checkOptions(options, EFS.NONE);

@@ -63,7 +63,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
 
     private IResource resource;
     private DBPResourceHandler handler;
-    private DBNNode[] children;
+    protected DBNNode[] children;
     private DBPImage resourceImage;
 
     public DBNResource(DBNNode parentNode, IResource resource, DBPResourceHandler handler) {
