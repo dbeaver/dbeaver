@@ -130,6 +130,8 @@ public class DBNFileSystemList extends DBNNode implements NIOListener {
         final Path path = fileStore.getPath();
         final DBFVirtualFileSystemRoot root = fileStore.getRoot();
 
+        System.out.println("Resource changed (path=" + path + ", action=" + action + ")");
+
         if (children == null) {
             return;
         }
@@ -141,13 +143,13 @@ public class DBNFileSystemList extends DBNNode implements NIOListener {
         for (DBNFileSystem fs : children) {
             if (CommonUtils.equalObjects(fs.getFileSystem(), root.getFileSystem())) {
                 final DBNFileSystemResource rootNode = fs.getRoot(root);
+                final String[] parts = CommonUtils.removeLeadingSlash(path.toUri().getRawPath()).split("/");
+
                 if (rootNode != null) {
-                    final int names = path.getNameCount();
                     DBNFileSystemResource parentNode = rootNode;
 
-                    for (int i = 0; i < names - 1; i++) {
-                        final Path name = path.getName(i);
-                        parentNode = parentNode.getChild(name.toString());
+                    for (int i = 0; i < parts.length - 1; i++) {
+                        parentNode = parentNode.getChild(parts[i]);
 
                         if (parentNode == null) {
                             return;
@@ -156,10 +158,10 @@ public class DBNFileSystemList extends DBNNode implements NIOListener {
 
                     switch (action) {
                         case CREATE:
-                            parentNode.addChildResource(path.getFileName().toString(), fileStore.fetchInfo().isDirectory());
+                            parentNode.addChildResource(parts[parts.length - 1], fileStore.fetchInfo().isDirectory());
                             break;
                         case DELETE:
-                            parentNode.removeChildResource(path.getFileName().toString());
+                            parentNode.removeChildResource(parts[parts.length - 1]);
                             break;
                         default:
                             break;
