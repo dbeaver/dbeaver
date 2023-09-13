@@ -594,18 +594,25 @@
     <extension
           point="org.jkiss.dbeaver.erd.ui.notation.style">
        <erdnotaion
-             description="Integration DEFinition for information modeling (IDEF1X) style"
+             description="Integration DEFinition for information modeling (IDEF1X) notation"
              id="org.jkiss.dbeaver.erd.notaion.idef1x"
              isDefault="false"
              name="IDEF1X"
              notation="org.jkiss.dbeaver.erd.ui.notation.impl.IDEF1XDiagramNotation">
        </erdnotaion>
        <erdnotaion
-             description="Charles Bachman diagram style"
+             description="Charles Bachman diagram notation"
              id="org.jkiss.dbeaver.erd.notaion.bachman"
-             isDefault="true"
+             isDefault="false"
              name="Bachman"
              notation="org.jkiss.dbeaver.erd.ui.notation.impl.BachmanDiagramNotation">
+       </erdnotaion>
+       <erdnotaion
+             description="Crow’s Foot diagram notation"
+             id="org.jkiss.dbeaver.erd.notaion.crowsfoot"
+             isDefault="true"
+             name="Crows Foot"
+             notation="org.jkiss.dbeaver.erd.ui.notation.impl.CrowsFootDiagramNotation">
        </erdnotaion>
     </extension>
 

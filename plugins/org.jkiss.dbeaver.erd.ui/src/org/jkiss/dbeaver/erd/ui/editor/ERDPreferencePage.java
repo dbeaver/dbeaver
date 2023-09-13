@@ -81,8 +81,16 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         createGridGroup(store, composite);
         createPrintGroup(store, composite);
         createRoutingGroup(store, composite);
+        createNotationGroup(store,composite);
 
         return composite;
+    }
+
+    private void createNotationGroup(DBPPreferenceStore store, Composite composite) {
+        Group contentsGroup = UIUtils.createControlGroup(composite, ERDUIMessages.erd_preference_page_title_routing, 1,
+            GridData.FILL | GridData.FILL, 0);
+        Combo erdNotationType = UIUtils.createLabelCombo(contentsGroup, ERDUIMessages.erd_preference_page_title_routing_combo,
+            SWT.DROP_DOWN | SWT.READ_ONLY);
     }
 
     private void createRoutingGroup(DBPPreferenceStore store, Composite composite) {

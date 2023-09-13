@@ -1162,7 +1162,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 EntityDiagram diagram = getDiagram();
                 ERDAttributeVisibility attrVisibility = CommonUtils.valueOf(ERDAttributeVisibility.class, CommonUtils.toString(event.getNewValue()));
                 diagram.setAttributeVisibility(attrVisibility);
-                refreshEntityAndAttributes();
+                 refreshEntityAndAttributes();
             } else if (ERDConstants.PREF_ATTR_STYLES.equals(event.getProperty())) {
                 refreshEntityAndAttributes();
             } else if (ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS.equals(event.getProperty()) || ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS.equals(event.getProperty())) {

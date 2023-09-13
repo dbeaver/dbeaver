@@ -18,8 +18,11 @@ package org.jkiss.dbeaver.erd.ui.notation.impl;
 
 import org.eclipse.draw2d.ConnectionEndpointLocator;
 import org.eclipse.draw2d.Label;
-import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.PolylineConnection;
+import org.eclipse.draw2d.PolylineDecoration;
+import org.eclipse.draw2d.RotatableDecoration;
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
@@ -29,9 +32,9 @@ import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
 import org.jkiss.dbeaver.erd.ui.part.AssociationPart.CircleDecoration;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
-public class BachmanDiagramNotation implements ERDNotation {
+public class CrowsFootDiagramNotation implements ERDNotation {
 
-    private static final int LBL_DISTANCE = 10;
+    private static final int LBL_DISTANCE = 5;
     private static final String LABEL_0_TO_1 = "0..1";
     private static final String LABEL_1 = "1";
     private static final String LABEL_1_TO_N = "1..n";
@@ -52,11 +55,8 @@ public class BachmanDiagramNotation implements ERDNotation {
             association.getSourceEntity() instanceof ERDEntity &&
             association.getTargetEntity() instanceof ERDEntity) {
             // source - 1..n
-            final PolygonDecoration sourceDecor = new PolygonDecoration();
-            sourceDecor.setTemplate(PolygonDecoration.TRIANGLE_TIP);
-
-            sourceDecor.setScale(15, 5);
-            sourceDecor.setFill(true);
+            final CrowsFootDecoration sourceDecor = new CrowsFootDecoration();
+            
             sourceDecor.setBackgroundColor(frgColor);
             ConnectionEndpointLocator srcEndpointLocator = new ConnectionEndpointLocator(conn, false);
             srcEndpointLocator.setVDistance(LBL_DISTANCE);
@@ -93,8 +93,39 @@ public class BachmanDiagramNotation implements ERDNotation {
 
     @Override
     public void applyNotationForEntities(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
-        // TODO Auto-generated method stub
-        
+    }
+
+    public static class CrowsFootDecoration implements RotatableDecoration {
+        private  PointList GEOMETRY = new PointList();
+
+     
+
+        public CrowsFootDecoration() {
+//            GEOMETRY.addPoint(0, 0);
+//            GEOMETRY.addPoint(-1, 1);
+//            GEOMETRY.addPoint(-2, 0);
+//            GEOMETRY.addPoint(-1, -1);
+//            TRIANGLE_TIP.addPoint(-1, 1);
+//                  TRIANGLE_TIP.addPoint(0, 0);
+//                  TRIANGLE_TIP.addPoint(-1, -1);
+//            
+//            GEOMETRY.addPoint(1, -1);
+//            GEOMETRY.addPoint(-2, 0);
+//            GEOMETRY.addPoint(1, 1);            
+            
+            GEOMETRY.addPoint(0, -1);
+            GEOMETRY.addPoint(-1, 0);
+            GEOMETRY.addPoint(0, 1); 
+            
+            
+            
+            
+            setTemplate(GEOMETRY);
+            //setFill(true);
+            setScale(10,5);
+           
+            //setStart(new Point(-1, -1));
+        }
     }
 
 }

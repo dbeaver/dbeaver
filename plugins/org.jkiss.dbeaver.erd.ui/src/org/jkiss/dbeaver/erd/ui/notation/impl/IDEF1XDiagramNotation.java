@@ -35,7 +35,7 @@ public class IDEF1XDiagramNotation implements ERDNotation {
     private static final int CIRCLE_RADIUS = 5;
 
     @Override
-    public void applyNotation(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
+    public void applyNotationForArrows(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
 
         boolean identifying = ERDUtils.isIdentifyingAssociation(association);
         DBSEntityConstraintType constraintType = association.getObject().getConstraintType();
@@ -70,5 +70,11 @@ public class IDEF1XDiagramNotation implements ERDNotation {
             }
             conn.setLineDash(constraintType.isLogical() ? new float[] { 4 } : new float[] { 5 });
         }
+    }
+
+    @Override
+    public void applyNotationForEntities(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
+        // TODO Auto-generated method stub
+        
     }
 }

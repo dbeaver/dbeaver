@@ -164,12 +164,12 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     }
 
     protected void setConnectionStyles(PolylineConnection conn) {
-        ERDNotationRegistry notationRegistry = ERDNotationRegistry.getRegistry();
+        ERDNotationRegistry notationRegistry = ERDNotationRegistry.getInstance();
         ERDNotationDescriptor defaultNotation = notationRegistry.getDefaultNotation();
         if (defaultNotation != null) {
             Color background = getParent().getViewer().getControl().getBackground();
             Color foreground = getParent().getViewer().getControl().getForeground();
-            defaultNotation.getNotation().applyNotation(conn, getAssociation(), background, foreground);
+            defaultNotation.getNotation().applyNotationForArrows(conn, getAssociation(), background, foreground);
         }
     }
 

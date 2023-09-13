@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.Log;
 
 public class ERDNotationRegistry {
 
-    private Log logger = Log.getLog(ERDNotationRegistry.class);
+    private Log log = Log.getLog(ERDNotationRegistry.class);
     private Map<String, ERDNotationDescriptor> notations = new LinkedHashMap<>();
     private ERDNotationDescriptor defaultNotation;
     private static ERDNotationRegistry instance;
@@ -41,13 +41,13 @@ public class ERDNotationRegistry {
             try {
                 addNotation(new ERDNotationDescriptor(c));
             } catch (CoreException e) {
-                logger.error(e.getStatus());
+                log.error(e.getStatus());
             }
         });
 
     }
 
-    public static synchronized ERDNotationRegistry getRegistry() {
+    public static synchronized ERDNotationRegistry getInstance() {
         if (instance == null) {
             instance = new ERDNotationRegistry(Platform.getExtensionRegistry());
         }
@@ -60,20 +60,20 @@ public class ERDNotationRegistry {
 
     public void addNotation(ERDNotationDescriptor notation) {
         if (notations.containsKey(notation.getId())) {
-            logger.error("ER Diagram Notation already defined for id:" + notation.getId());
+            log.error("ER Diagram Notation already defined for id:" + notation.getId());
         }
         if (notation.isDefault()) {
             if (defaultNotation == null) {
                 defaultNotation = notation;
             } else {
-                logger.error("The default ERD Notation already defined for id:" + defaultNotation.getId());
+                log.error("The default ERD Notation already defined for id:" + defaultNotation.getId());
             }
         }
     }
 
     public ERDNotationDescriptor getNotation(String id) {
         if (!notations.containsKey(id)) {
-            logger.error("ERD Notation not defined for key:" + id);
+            log.error("ERD Notation not defined for key:" + id);
             return null;
         }
         return notations.get(id);
