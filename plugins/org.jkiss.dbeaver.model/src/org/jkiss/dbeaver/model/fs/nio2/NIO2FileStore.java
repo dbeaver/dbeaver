@@ -28,6 +28,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
+import org.jkiss.dbeaver.model.fs.nio.NIOListener;
+import org.jkiss.dbeaver.model.fs.nio.NIOMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -143,6 +145,8 @@ public class NIO2FileStore extends FileStore {
         } catch (IOException e) {
             throw new CoreException(Status.error("Unable to delete file", e));
         }
+
+        NIOMonitor.notifyResourceChange(this, NIOListener.Action.DELETE);
     }
 
     @Override
@@ -154,22 +158,29 @@ public class NIO2FileStore extends FileStore {
         } catch (IOException e) {
             throw new CoreException(Status.error("Unable to move resource", e));
         }
+
+        if (destination instanceof NIO2FileStore) {
+            NIOMonitor.notifyResourceChange((NIO2FileStore) destination, NIOListener.Action.CREATE);
+        }
     }
 
     @Override
     public void move(IFileStore destination, int options, IProgressMonitor monitor) throws CoreException {
         checkOptions(options, EFS.OVERWRITE);
 
-        try {
-            Files.move(path, getPath(destination), getCopyOptions(options));
-        } catch (IOException e) {
-            throw new CoreException(Status.error("Unable to move resource", e));
-        }
+        copy(destination, options, monitor);
+        delete(options, monitor);
     }
 
     @Override
     public IFileStore mkdir(int options, IProgressMonitor monitor) throws CoreException {
         checkOptions(options, EFS.SHALLOW);
+
+        final NIO2FileInfo info = (NIO2FileInfo) fetchInfo();
+
+        if (info.exists() && info.isDirectory()) {
+            return this;
+        }
 
         try {
             if (CommonUtils.isBitSet(options, EFS.SHALLOW)) {
@@ -180,6 +191,11 @@ public class NIO2FileStore extends FileStore {
         } catch (IOException e) {
             throw new CoreException(Status.error("Unable to create directories", e));
         }
+
+        info.setExists(true);
+        info.setDirectory(true);
+
+        NIOMonitor.notifyResourceChange(this, NIOListener.Action.CREATE);
 
         return this;
     }
@@ -220,6 +236,21 @@ public class NIO2FileStore extends FileStore {
     @Override
     public URI toURI() {
         return NIO2FileSystem.toURI(project, root, path);
+    }
+
+    @NotNull
+    public DBPProject getProject() {
+        return project;
+    }
+
+    @NotNull
+    public DBFVirtualFileSystemRoot getRoot() {
+        return root;
+    }
+
+    @NotNull
+    public Path getPath() {
+        return path;
     }
 
     @NotNull

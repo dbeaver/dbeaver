@@ -87,7 +87,7 @@ public class NIO2FileSystem extends FileSystem {
         final DBNProject projectNode = navigator != null ? navigator.getRoot().getProjectNode(project) : null;
         final DBNFileSystemNIO2List fileSystemsNode = projectNode != null ? projectNode.getExtraNode(DBNFileSystemNIO2List.class) : null;
         final DBNFileSystemNIO2 fileSystemNode = fileSystemsNode != null ? fileSystemsNode.getFileSystem(fsRootParts[0], fsRootParts[1]) : null;
-        final DBNFileSystemNIO2Resource fileSystemRootNode = fileSystemsNode != null ? fileSystemNode.getRoot(fsRootParts[2]) : null;
+        final DBNFileSystemNIO2Resource fileSystemRootNode = fileSystemNode != null ? fileSystemNode.getRoot(fsRootParts[2]) : null;
 
         if (fileSystemRootNode == null) {
             log.error("The " + SCHEME + " URI contains unrecognized project/filesystem: " + uri);

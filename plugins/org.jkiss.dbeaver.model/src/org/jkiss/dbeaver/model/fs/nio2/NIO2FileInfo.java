@@ -30,7 +30,7 @@ public class NIO2FileInfo implements IFileInfo {
 
     private final Path path;
     private volatile Boolean directory;
-    private final boolean exists;
+    private boolean exists;
 
     public NIO2FileInfo(@NotNull Path path) {
         this.path = path;
@@ -40,6 +40,14 @@ public class NIO2FileInfo implements IFileInfo {
     @Override
     public boolean exists() {
         return exists;
+    }
+
+    public void setExists(boolean exists) {
+        this.exists = exists;
+    }
+
+    public void setDirectory(boolean directory) {
+        this.directory = directory;
     }
 
     @Override

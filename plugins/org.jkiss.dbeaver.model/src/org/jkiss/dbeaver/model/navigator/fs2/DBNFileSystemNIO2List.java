@@ -21,22 +21,34 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
+import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
+import org.jkiss.dbeaver.model.fs.nio.NIOListener;
+import org.jkiss.dbeaver.model.fs.nio.NIOMonitor;
+import org.jkiss.dbeaver.model.fs.nio2.NIO2FileStore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Objects;
 
 /**
  * Represents a root for all filesystems.
+ *
+ * @see org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot
+ * @see org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem
  */
-public class DBNFileSystemNIO2List extends DBNNode {
+public class DBNFileSystemNIO2List extends DBNNode implements NIOListener {
     private DBNFileSystemNIO2[] children;
 
     public DBNFileSystemNIO2List(@NotNull DBNProject parent) {
         super(parent);
+
+        NIOMonitor.addListener(this);
     }
 
     @Nullable
@@ -97,5 +109,50 @@ public class DBNFileSystemNIO2List extends DBNNode {
         }
 
         return children;
+    }
+
+    @Override
+    public void resourceChanged(@NotNull NIO2FileStore fileStore, @NotNull Action action) {
+        final Path path = fileStore.getPath();
+        final DBFVirtualFileSystemRoot root = fileStore.getRoot();
+
+        if (children == null) {
+            return;
+        }
+
+        if (!Objects.equals(getOwnerProject().getEclipseProject(), fileStore.getProject().getEclipseProject())) {
+            return;
+        }
+
+        for (DBNFileSystemNIO2 fs : children) {
+            if (CommonUtils.equalObjects(fs.getFileSystem(), root.getFileSystem())) {
+                final DBNFileSystemNIO2Resource rootNode = fs.getRoot(root);
+                if (rootNode != null) {
+                    final int names = path.getNameCount();
+                    DBNFileSystemNIO2Resource parentNode = rootNode;
+
+                    for (int i = 0; i < names - 1; i++) {
+                        final Path name = path.getName(i);
+                        parentNode = parentNode.getChild(name.toString());
+
+                        if (parentNode == null) {
+                            return;
+                        }
+                    }
+
+                    switch (action) {
+                        case CREATE:
+                            parentNode.addChildResource(path.getFileName().toString(), fileStore.fetchInfo().isDirectory());
+                            break;
+                        case DELETE:
+                            parentNode.removeChildResource(path.getFileName().toString());
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                break;
+            }
+        }
     }
 }

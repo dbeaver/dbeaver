@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
+import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -28,7 +29,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.util.Arrays;
 
 /**
- * Represents a filesystem that may have multiple roots (devices).
+ * Represents a filesystem that may have multiple roots.
+ *
+ * @see org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot
  */
 public class DBNFileSystemNIO2 extends DBNNode implements DBNLazyNode {
     private final DBFVirtualFileSystem fileSystem;
@@ -55,6 +58,20 @@ public class DBNFileSystemNIO2 extends DBNNode implements DBNLazyNode {
         return null;
     }
 
+    @Nullable
+    public DBNFileSystemNIO2Resource getRoot(@NotNull DBFVirtualFileSystemRoot root) {
+        if (children == null) {
+            return null;
+        }
+
+        for (DBNFileSystemNIO2Resource child : children) {
+            if (child.getRoot() == root) {
+                return child;
+            }
+        }
+
+        return null;
+    }
 
     @Override
     public String getNodeType() {
@@ -91,7 +108,7 @@ public class DBNFileSystemNIO2 extends DBNNode implements DBNLazyNode {
         if (children == null) {
             children = Arrays.stream(fileSystem.getRootFolders(monitor))
                 .map(root -> new DBNFileSystemNIO2Resource(this, null, root))
-               // .sorted(Comparator.comparing(DBNNode::getNodeName, String.CASE_INSENSITIVE_ORDER))
+                // .sorted(Comparator.comparing(DBNNode::getNodeName, String.CASE_INSENSITIVE_ORDER))
                 .toArray(DBNFileSystemNIO2Resource[]::new);
         }
 
