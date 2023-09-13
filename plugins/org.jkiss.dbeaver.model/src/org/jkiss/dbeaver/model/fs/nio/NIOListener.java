@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.fs.nio;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.fs.nio2.NIOFileStore;
 
 /**
  * NIOListener

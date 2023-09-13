@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.navigator.fs2;
+package org.jkiss.dbeaver.model.navigator.fs;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -23,9 +23,9 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
+import org.jkiss.dbeaver.model.fs.nio.NIOFileStore;
 import org.jkiss.dbeaver.model.fs.nio.NIOListener;
 import org.jkiss.dbeaver.model.fs.nio.NIOMonitor;
-import org.jkiss.dbeaver.model.fs.nio2.NIOFileStore;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
