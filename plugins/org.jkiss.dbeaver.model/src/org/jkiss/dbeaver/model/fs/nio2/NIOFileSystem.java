@@ -32,9 +32,9 @@ import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.model.navigator.fs2.DBNFileSystemNIO2;
-import org.jkiss.dbeaver.model.navigator.fs2.DBNFileSystemNIO2List;
-import org.jkiss.dbeaver.model.navigator.fs2.DBNFileSystemNIO2Resource;
+import org.jkiss.dbeaver.model.navigator.fs2.DBNFileSystem;
+import org.jkiss.dbeaver.model.navigator.fs2.DBNFileSystemList;
+import org.jkiss.dbeaver.model.navigator.fs2.DBNFileSystemResource;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -50,17 +50,17 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * URI format: {@code dbvfs://{project-name}/{fs-type}/{fs-id}/{fs-root-id}?{fs-specific-path}}
  */
-public class NIO2FileSystem extends FileSystem {
+public class NIOFileSystem extends FileSystem {
     private static final String SCHEME = "dbvfs";
-    private static final Log log = Log.getLog(NIO2FileSystem.class);
+    private static final Log log = Log.getLog(NIOFileSystem.class);
 
-    private final Map<URI, WeakReference<NIO2FileStore>> fileStoreCache = new ConcurrentHashMap<>();
+    private final Map<URI, WeakReference<NIOFileStore>> fileStoreCache = new ConcurrentHashMap<>();
 
     @Override
     public IFileStore getStore(URI uri) {
-        final WeakReference<NIO2FileStore> cachedFileStore = fileStoreCache.get(uri);
+        final WeakReference<NIOFileStore> cachedFileStore = fileStoreCache.get(uri);
         if (cachedFileStore != null) {
-            final NIO2FileStore fileStore = cachedFileStore.get();
+            final NIOFileStore fileStore = cachedFileStore.get();
             if (fileStore != null) {
                 return fileStore;
             }
@@ -85,9 +85,9 @@ public class NIO2FileSystem extends FileSystem {
         final DBPProject project = workspace.getProject(projectName);
         final DBNModel navigator = project.getNavigatorModel();
         final DBNProject projectNode = navigator != null ? navigator.getRoot().getProjectNode(project) : null;
-        final DBNFileSystemNIO2List fileSystemsNode = projectNode != null ? projectNode.getExtraNode(DBNFileSystemNIO2List.class) : null;
-        final DBNFileSystemNIO2 fileSystemNode = fileSystemsNode != null ? fileSystemsNode.getFileSystem(fsRootParts[0], fsRootParts[1]) : null;
-        final DBNFileSystemNIO2Resource fileSystemRootNode = fileSystemNode != null ? fileSystemNode.getRoot(fsRootParts[2]) : null;
+        final DBNFileSystemList fileSystemsNode = projectNode != null ? projectNode.getExtraNode(DBNFileSystemList.class) : null;
+        final DBNFileSystem fileSystemNode = fileSystemsNode != null ? fileSystemsNode.getFileSystem(fsRootParts[0], fsRootParts[1]) : null;
+        final DBNFileSystemResource fileSystemRootNode = fileSystemNode != null ? fileSystemNode.getRoot(fsRootParts[2]) : null;
 
         if (fileSystemRootNode == null) {
             log.error("The " + SCHEME + " URI contains unrecognized project/filesystem: " + uri);
@@ -95,7 +95,7 @@ public class NIO2FileSystem extends FileSystem {
         }
 
         try {
-            final NIO2FileStore fileStore = new NIO2FileStore(
+            final NIOFileStore fileStore = new NIOFileStore(
                 project,
                 fileSystemRootNode.getRoot(),
                 fileSystemRootNode.getRoot().getRootPath(new VoidProgressMonitor()).resolve(fsPath)
@@ -115,7 +115,7 @@ public class NIO2FileSystem extends FileSystem {
         if (!folder.exists() || !folder.isLinked()) {
             try {
                 folder.createLink(
-                    NIO2FileSystem.toURI(project, root, null),
+                    NIOFileSystem.toURI(project, root, null),
                     IResource.REPLACE | IResource.ALLOW_MISSING_LOCAL,
                     new NullProgressMonitor()
                 );

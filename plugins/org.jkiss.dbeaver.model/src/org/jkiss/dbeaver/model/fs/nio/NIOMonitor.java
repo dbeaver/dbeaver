@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.model.fs.nio;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.fs.nio2.NIO2FileStore;
+import org.jkiss.dbeaver.model.fs.nio2.NIOFileStore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +45,7 @@ public abstract class NIOMonitor {
         }
     }
 
-    public static void notifyResourceChange(@NotNull NIO2FileStore fileStore, @NotNull NIOListener.Action action) {
+    public static void notifyResourceChange(@NotNull NIOFileStore fileStore, @NotNull NIOListener.Action action) {
         NIOListener[] lc;
         synchronized (listeners) {
             lc = listeners.toArray(new NIOListener[0]);

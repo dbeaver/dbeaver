@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.fs.nio.NIOListener;
 import org.jkiss.dbeaver.model.fs.nio.NIOMonitor;
-import org.jkiss.dbeaver.model.fs.nio2.NIO2FileStore;
+import org.jkiss.dbeaver.model.fs.nio2.NIOFileStore;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
@@ -44,22 +44,22 @@ import java.util.Objects;
  * @see org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot
  * @see org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem
  */
-public class DBNFileSystemNIO2List extends DBNNode implements NIOListener {
-    private DBNFileSystemNIO2[] children;
+public class DBNFileSystemList extends DBNNode implements NIOListener {
+    private DBNFileSystem[] children;
 
-    public DBNFileSystemNIO2List(@NotNull DBNProject parent) {
+    public DBNFileSystemList(@NotNull DBNProject parent) {
         super(parent);
 
         NIOMonitor.addListener(this);
     }
 
     @Nullable
-    public DBNFileSystemNIO2 getFileSystem(@Nullable String type, @NotNull String id) {
+    public DBNFileSystem getFileSystem(@Nullable String type, @NotNull String id) {
         if (children == null) {
             return null;
         }
 
-        for (DBNFileSystemNIO2 fileSystem : children) {
+        for (DBNFileSystem fileSystem : children) {
             final DBFVirtualFileSystem fs = fileSystem.getFileSystem();
 
             if ((type == null || fs.getType().equals(type)) && fs.getId().equals(id)) {
@@ -105,9 +105,9 @@ public class DBNFileSystemNIO2List extends DBNNode implements NIOListener {
         if (children == null) {
             children = Arrays.stream(DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProviders())
                 .flatMap(provider -> Arrays.stream(provider.getInstance().getAvailableFileSystems(monitor, getModel().getModelAuthContext())))
-                .map(filesystem -> new DBNFileSystemNIO2(this, filesystem))
+                .map(filesystem -> new DBNFileSystem(this, filesystem))
                 .sorted(Comparator.comparing(DBNNode::getNodeName, String.CASE_INSENSITIVE_ORDER))
-                .toArray(DBNFileSystemNIO2[]::new);
+                .toArray(DBNFileSystem[]::new);
         }
 
         return children;
@@ -131,7 +131,7 @@ public class DBNFileSystemNIO2List extends DBNNode implements NIOListener {
     }
 
     @Override
-    public void resourceChanged(@NotNull NIO2FileStore fileStore, @NotNull Action action) {
+    public void resourceChanged(@NotNull NIOFileStore fileStore, @NotNull Action action) {
         final Path path = fileStore.getPath();
         final DBFVirtualFileSystemRoot root = fileStore.getRoot();
 
@@ -143,12 +143,12 @@ public class DBNFileSystemNIO2List extends DBNNode implements NIOListener {
             return;
         }
 
-        for (DBNFileSystemNIO2 fs : children) {
+        for (DBNFileSystem fs : children) {
             if (CommonUtils.equalObjects(fs.getFileSystem(), root.getFileSystem())) {
-                final DBNFileSystemNIO2Resource rootNode = fs.getRoot(root);
+                final DBNFileSystemResource rootNode = fs.getRoot(root);
                 if (rootNode != null) {
                     final int names = path.getNameCount();
-                    DBNFileSystemNIO2Resource parentNode = rootNode;
+                    DBNFileSystemResource parentNode = rootNode;
 
                     for (int i = 0; i < names - 1; i++) {
                         final Path name = path.getName(i);

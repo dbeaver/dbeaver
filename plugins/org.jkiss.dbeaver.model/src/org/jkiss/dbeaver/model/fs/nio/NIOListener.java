@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.model.fs.nio;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.fs.nio2.NIO2FileStore;
+import org.jkiss.dbeaver.model.fs.nio2.NIOFileStore;
 
 /**
  * NIOListener
@@ -30,6 +30,6 @@ public interface NIOListener {
         CHANGE
     }
 
-    void resourceChanged(@NotNull NIO2FileStore fileStore, @NotNull Action action);
+    void resourceChanged(@NotNull NIOFileStore fileStore, @NotNull Action action);
 
 }

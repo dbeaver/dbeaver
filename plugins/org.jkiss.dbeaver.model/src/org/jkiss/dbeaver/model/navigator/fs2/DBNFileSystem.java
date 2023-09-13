@@ -34,23 +34,23 @@ import java.util.Arrays;
  *
  * @see org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot
  */
-public class DBNFileSystemNIO2 extends DBNNode implements DBNLazyNode {
+public class DBNFileSystem extends DBNNode implements DBNLazyNode {
     private final DBFVirtualFileSystem fileSystem;
 
-    private DBNFileSystemNIO2Resource[] children;
+    private DBNFileSystemResource[] children;
 
-    public DBNFileSystemNIO2(@NotNull DBNFileSystemNIO2List parent, @NotNull DBFVirtualFileSystem fileSystem) {
+    public DBNFileSystem(@NotNull DBNFileSystemList parent, @NotNull DBFVirtualFileSystem fileSystem) {
         super(parent);
         this.fileSystem = fileSystem;
     }
 
     @Nullable
-    public DBNFileSystemNIO2Resource getRoot(@NotNull String path) {
+    public DBNFileSystemResource getRoot(@NotNull String path) {
         if (children == null) {
             return null;
         }
 
-        for (DBNFileSystemNIO2Resource root : children) {
+        for (DBNFileSystemResource root : children) {
             if (root.getRoot().getRootId().equals(path)) {
                 return root;
             }
@@ -60,12 +60,12 @@ public class DBNFileSystemNIO2 extends DBNNode implements DBNLazyNode {
     }
 
     @Nullable
-    public DBNFileSystemNIO2Resource getRoot(@NotNull DBFVirtualFileSystemRoot root) {
+    public DBNFileSystemResource getRoot(@NotNull DBFVirtualFileSystemRoot root) {
         if (children == null) {
             return null;
         }
 
-        for (DBNFileSystemNIO2Resource child : children) {
+        for (DBNFileSystemResource child : children) {
             if (child.getRoot() == root) {
                 return child;
             }
@@ -108,12 +108,12 @@ public class DBNFileSystemNIO2 extends DBNNode implements DBNLazyNode {
     public DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException {
         if (children == null) {
             children = Arrays.stream(fileSystem.getRootFolders(monitor))
-                .map(root -> new DBNFileSystemNIO2Resource(this, null, root))
+                .map(root -> new DBNFileSystemResource(this, null, root))
                 // .sorted(Comparator.comparing(DBNNode::getNodeName, String.CASE_INSENSITIVE_ORDER))
-                .toArray(DBNFileSystemNIO2Resource[]::new);
+                .toArray(DBNFileSystemResource[]::new);
         }
 
-        for (DBNFileSystemNIO2Resource root : children) {
+        for (DBNFileSystemResource root : children) {
             root.link();
         }
 

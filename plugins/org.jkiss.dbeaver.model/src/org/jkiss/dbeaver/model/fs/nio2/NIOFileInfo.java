@@ -25,14 +25,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class NIO2FileInfo implements IFileInfo {
-    private static final Log log = Log.getLog(NIO2FileInfo.class);
+public class NIOFileInfo implements IFileInfo {
+    private static final Log log = Log.getLog(NIOFileInfo.class);
 
     private final Path path;
     private volatile Boolean directory;
     private boolean exists;
 
-    public NIO2FileInfo(@NotNull Path path) {
+    public NIOFileInfo(@NotNull Path path) {
         this.path = path;
         this.exists = true;
     }
@@ -151,6 +151,6 @@ public class NIO2FileInfo implements IFileInfo {
 
     @Override
     public int compareTo(IFileInfo o) {
-        return path.compareTo(((NIO2FileInfo) o).path);
+        return path.compareTo(((NIOFileInfo) o).path);
     }
 }

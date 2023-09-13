@@ -29,8 +29,8 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
-import org.jkiss.dbeaver.model.fs.nio2.NIO2FileStore;
-import org.jkiss.dbeaver.model.fs.nio2.NIO2FileSystem;
+import org.jkiss.dbeaver.model.fs.nio2.NIOFileStore;
+import org.jkiss.dbeaver.model.fs.nio2.NIOFileSystem;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -40,12 +40,12 @@ import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 
-public class DBNFileSystemNIO2Resource extends DBNResource implements DBNLazyNode {
-    private static final Log log = Log.getLog(DBNFileSystemNIO2Resource.class);
+public class DBNFileSystemResource extends DBNResource implements DBNLazyNode {
+    private static final Log log = Log.getLog(DBNFileSystemResource.class);
 
     private DBFVirtualFileSystemRoot root;
 
-    public DBNFileSystemNIO2Resource(@NotNull DBNNode parent, @Nullable IResource resource, @NotNull DBFVirtualFileSystemRoot root) {
+    public DBNFileSystemResource(@NotNull DBNNode parent, @Nullable IResource resource, @NotNull DBFVirtualFileSystemRoot root) {
         super(parent, resource, ((DBPWorkspaceDesktop) DBWorkbench.getPlatform().getWorkspace()).getDefaultResourceHandler());
         this.root = root;
     }
@@ -88,14 +88,14 @@ public class DBNFileSystemNIO2Resource extends DBNResource implements DBNLazyNod
     }
 
     @Nullable
-    public DBNFileSystemNIO2Resource getChild(@NotNull String name) {
+    public DBNFileSystemResource getChild(@NotNull String name) {
         if (children == null) {
             return null;
         }
 
         for (DBNNode child : children) {
             if (child.getNodeName().equals(name)) {
-                return (DBNFileSystemNIO2Resource) child;
+                return (DBNFileSystemResource) child;
             }
         }
 
@@ -103,7 +103,7 @@ public class DBNFileSystemNIO2Resource extends DBNResource implements DBNLazyNod
     }
 
     public boolean isRoot() {
-        return getParentNode() instanceof DBNFileSystemNIO2;
+        return getParentNode() instanceof DBNFileSystem;
     }
 
     void addChildResource(@NotNull String name, boolean directory) {
@@ -120,7 +120,7 @@ public class DBNFileSystemNIO2Resource extends DBNResource implements DBNLazyNod
             return;
         }
 
-        final DBNFileSystemNIO2Resource child = new DBNFileSystemNIO2Resource(this, member, root);
+        final DBNFileSystemResource child = new DBNFileSystemResource(this, member, root);
 
         children = ArrayUtils.add(DBNNode.class, children, child);
         sortChildren(children);
@@ -132,7 +132,7 @@ public class DBNFileSystemNIO2Resource extends DBNResource implements DBNLazyNod
             return;
         }
 
-        final DBNFileSystemNIO2Resource child = getChild(name);
+        final DBNFileSystemResource child = getChild(name);
 
         if (child == null) {
             log.debug("Can't find member called " + name + " in resource " + getResource());
@@ -145,10 +145,10 @@ public class DBNFileSystemNIO2Resource extends DBNResource implements DBNLazyNod
 
     private void refreshResource(@NotNull DBRProgressMonitor monitor, boolean invalidateCache) throws DBException {
         final IResource resource = getResource();
-        final NIO2FileStore store;
+        final NIOFileStore store;
 
         try {
-            store = (NIO2FileStore) EFS.getStore(resource.getLocationURI());
+            store = (NIOFileStore) EFS.getStore(resource.getLocationURI());
         } catch (CoreException e) {
             throw new DBException(e.getMessage(), e);
         }
@@ -170,7 +170,7 @@ public class DBNFileSystemNIO2Resource extends DBNResource implements DBNLazyNod
     @Nullable
     @Override
     protected DBNNode makeNode(IResource resource) {
-        final DBNFileSystemNIO2Resource child = new DBNFileSystemNIO2Resource(this, resource, root);
+        final DBNFileSystemResource child = new DBNFileSystemResource(this, resource, root);
         getHandler().updateNavigatorNodeFromResource(child, resource);
         return child;
     }
@@ -178,7 +178,7 @@ public class DBNFileSystemNIO2Resource extends DBNResource implements DBNLazyNod
     @Override
     public boolean needsInitialization() {
         try {
-            final NIO2FileStore store = (NIO2FileStore) EFS.getStore(getResource().getLocationURI());
+            final NIOFileStore store = (NIOFileStore) EFS.getStore(getResource().getLocationURI());
             return !store.childrenCached();
         } catch (CoreException e) {
             return true;
@@ -205,6 +205,6 @@ public class DBNFileSystemNIO2Resource extends DBNResource implements DBNLazyNod
     }
 
     public void link() {
-        setResource(NIO2FileSystem.toResource(getOwnerProject(), root, null));
+        setResource(NIOFileSystem.toResource(getOwnerProject(), root, null));
     }
 }

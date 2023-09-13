@@ -45,18 +45,18 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
-public class NIO2FileStore extends FileStore {
-    private static final Log log = Log.getLog(NIO2FileStore.class);
+public class NIOFileStore extends FileStore {
+    private static final Log log = Log.getLog(NIOFileStore.class);
 
     private final DBPProject project;
     private final DBFVirtualFileSystemRoot root;
     private final Path path;
 
     private volatile String[] childNames;
-    private volatile NIO2FileInfo info;
+    private volatile NIOFileInfo info;
     private boolean allowedToLoadChildNames;
 
-    public NIO2FileStore(@NotNull DBPProject project, @NotNull DBFVirtualFileSystemRoot root, @NotNull Path path) {
+    public NIOFileStore(@NotNull DBPProject project, @NotNull DBFVirtualFileSystemRoot root, @NotNull Path path) {
         this.project = project;
         this.root = root;
         this.path = path;
@@ -77,7 +77,7 @@ public class NIO2FileStore extends FileStore {
                 if (childNames == null) {
                     try (Stream<Path> stream = Files.list(path)) {
                         childNames = stream
-                            .filter(NIO2FileStore::isValidPath)
+                            .filter(NIOFileStore::isValidPath)
                             .map(Path::getFileName)
                             .map(Path::toString)
                             .toArray(String[]::new);
@@ -106,7 +106,7 @@ public class NIO2FileStore extends FileStore {
         if (info == null) {
             synchronized (this) {
                 if (info == null) {
-                    info = new NIO2FileInfo(path);
+                    info = new NIOFileInfo(path);
                 }
             }
         }
@@ -159,8 +159,8 @@ public class NIO2FileStore extends FileStore {
             throw new CoreException(Status.error("Unable to move resource", e));
         }
 
-        if (destination instanceof NIO2FileStore) {
-            NIOMonitor.notifyResourceChange((NIO2FileStore) destination, NIOListener.Action.CREATE);
+        if (destination instanceof NIOFileStore) {
+            NIOMonitor.notifyResourceChange((NIOFileStore) destination, NIOListener.Action.CREATE);
         }
     }
 
@@ -176,7 +176,7 @@ public class NIO2FileStore extends FileStore {
     public IFileStore mkdir(int options, IProgressMonitor monitor) throws CoreException {
         checkOptions(options, EFS.SHALLOW);
 
-        final NIO2FileInfo info = (NIO2FileInfo) fetchInfo();
+        final NIOFileInfo info = (NIOFileInfo) fetchInfo();
 
         if (info.exists() && info.isDirectory()) {
             return this;
@@ -208,7 +208,7 @@ public class NIO2FileStore extends FileStore {
             name = name.substring(0, index);
         }
 
-        return getFileSystem().getStore(NIO2FileSystem.toURI(project, root, path.resolve(name)));
+        return getFileSystem().getStore(NIOFileSystem.toURI(project, root, path.resolve(name)));
     }
 
     @Override
@@ -227,7 +227,7 @@ public class NIO2FileStore extends FileStore {
         final Path parent = path.getParent();
 
         if (parent != null) {
-            return getFileSystem().getStore(NIO2FileSystem.toURI(project, root, parent));
+            return getFileSystem().getStore(NIOFileSystem.toURI(project, root, parent));
         } else {
             return null;
         }
@@ -235,7 +235,7 @@ public class NIO2FileStore extends FileStore {
 
     @Override
     public URI toURI() {
-        return NIO2FileSystem.toURI(project, root, path);
+        return NIOFileSystem.toURI(project, root, path);
     }
 
     @NotNull
@@ -255,8 +255,8 @@ public class NIO2FileStore extends FileStore {
 
     @NotNull
     private static Path getPath(@NotNull IFileStore fileStore) throws CoreException {
-        if (fileStore instanceof NIO2FileStore) {
-            return ((NIO2FileStore) fileStore).path;
+        if (fileStore instanceof NIOFileStore) {
+            return ((NIOFileStore) fileStore).path;
         } else if (fileStore instanceof LocalFile) {
             return new File(fileStore.toURI()).toPath();
         } else {
