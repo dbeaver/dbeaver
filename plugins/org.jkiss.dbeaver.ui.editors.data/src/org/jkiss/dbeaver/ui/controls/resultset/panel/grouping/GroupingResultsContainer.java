@@ -228,7 +228,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
             dataFilter = new DBDDataFilter(groupingViewer.getModel().getDataFilter());
         }
 
-        boolean isDefaultGrouping = groupFunctions.size() == 1 && groupFunctions.get(0).equals(getDefaultFunction());
+        boolean isDefaultGrouping = groupFunctions.size() == 1 && groupFunctions.get(0).equalsIgnoreCase(getDefaultFunction());
         String defaultSorting = dataSource.getContainer().getPreferenceStore().getString(ResultSetPreferences.RS_GROUPING_DEFAULT_SORTING);
         if (!CommonUtils.isEmpty(defaultSorting) && isDefaultGrouping) {
             if (false/*dialect.supportsOrderByIndex()*/) {

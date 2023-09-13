@@ -2,7 +2,7 @@
 <?pde version="3.5"?>
 
 <product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.ui.app.standalone.product"
-    application="org.jkiss.dbeaver.ui.app.standalone.standalone" version="23.1.4.qualifier" useFeatures="true"
+    application="org.jkiss.dbeaver.ui.app.standalone.standalone" version="23.2.0.qualifier" useFeatures="true"
     includeLaunchers="true">
 
     <configIni use="default">
@@ -61,7 +61,6 @@
         <plugin id="org.eclipse.osgi" autoStart="true" startLevel="-1"/>
         <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2"/>
         <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1"/>
-        <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4"/>
         <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2"/>
         <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2"/>
         <!-- This is important because simpleconfigurator conflicts with update.configurator -->

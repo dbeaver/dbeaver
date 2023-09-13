@@ -359,14 +359,16 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             // Read plugins
             {
                 plugins = new ArrayList<>();
-                try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW PLUGINS")) {
-                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                        while (dbResult.next()) {
-                            plugins.add(new MySQLPlugin(this, dbResult));
+                if (supportsPlugins()) {
+                    try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW PLUGINS")) {
+                        try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                            while (dbResult.next()) {
+                                plugins.add(new MySQLPlugin(this, dbResult));
+                            }
                         }
+                    } catch (SQLException e) {
+                        log.debug("Error reading plugins information", e);
                     }
-                } catch (SQLException e) {
-                    log.debug("Error reading plugins information", e);
                 }
             }
 
@@ -774,7 +776,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         }
     }
 
-    static class CatalogCache extends JDBCObjectCache<MySQLDataSource, MySQLCatalog> {
+    public class CatalogCache extends JDBCObjectCache<MySQLDataSource, MySQLCatalog> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLDataSource owner) throws SQLException {
@@ -792,9 +794,14 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
         @Override
         protected MySQLCatalog fetchObject(@NotNull JDBCSession session, @NotNull MySQLDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
-            return new MySQLCatalog(owner, resultSet);
+            return createCatalogInstance(owner, resultSet);
         }
 
+    }
+
+    @NotNull
+    public MySQLCatalog createCatalogInstance(@NotNull MySQLDataSource owner, @NotNull JDBCResultSet resultSet) {
+        return new MySQLCatalog(owner, resultSet);
     }
 
     public boolean isMariaDB() {
@@ -876,6 +883,16 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
     public boolean supportsAlterView() {
         return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-alter-view"), false);
+    }
+
+    /**
+     * Checks plugins list reading is supported.
+     *
+     * @return {@code true} if plugins list reading is supported
+     */
+    @Association
+    public boolean supportsPlugins() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-plugins"), true);
     }
 
 

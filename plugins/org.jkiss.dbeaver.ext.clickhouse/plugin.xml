@@ -96,9 +96,18 @@
                 label="SSL"
                 description="SSL settings"
                 secured="false"
+                desktop="false"
                 pinned="true"
                 order="100"
                 handlerClass="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseSSLImpl">
+            <propertyGroup label="SSL Settings">
+                <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured,password" length="MULTILINE"/>
+                <property id="ssl.client.cert.value" label="Client Certificate" type="file" description="Choose client certificate file" features="secured,password" length="MULTILINE"/>
+                <property id="ssl.client.key.value" label="Client Private Key" type="file" description="Choose client private key file" features="secured,password" length="MULTILINE"/>
+            </propertyGroup>
+            <propertyGroup label="Advanced Settings">
+                <property id="ssl.mode" label="SSL mode" type="string" description="Is certificate verification required" validValues="STRICT,NONE" defaultValue="STRICT"/>
+            </propertyGroup>
             <objectType name="org.jkiss.dbeaver.ext.clickhouse.ClickhouseDataSourceProvider"/>
         </handler>
     </extension>
@@ -117,6 +126,7 @@
             <type kind="NUMERIC"/>
             <type name="BOOL"/>
             <type name="UUID"/>
+            <type name="IPV4"/>
         </provider>
     </extension>
 

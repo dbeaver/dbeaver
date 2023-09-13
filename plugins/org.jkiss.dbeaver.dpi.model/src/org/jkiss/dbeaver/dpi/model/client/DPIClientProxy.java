@@ -50,7 +50,7 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
     private final String objectToString;
     private final Integer objectHashCode;
     private transient Object objectInstance;
-    private final Map<String, Object> objectContainers;
+    private Map<String, Object> objectContainers;
     private Map<String, Object> objectProperties;
     private Map<Class<?>, Object> factoryObjects;
 
@@ -89,6 +89,11 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
 
     public Object getObjectInstance() {
         return objectInstance;
+    }
+
+    @Override
+    public String toString() {
+        return objectToString;
     }
 
     @Override
@@ -187,6 +192,11 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
                 objectProperties = new HashMap<>();
             }
             objectProperties.put(getElementKey(method, args), result);
+        } else if (containerAnno != null) {
+            if (objectContainers == null) {
+                objectContainers = new HashMap<>();
+            }
+            objectContainers.put(method.getName(), result);
         }
 
         return result;

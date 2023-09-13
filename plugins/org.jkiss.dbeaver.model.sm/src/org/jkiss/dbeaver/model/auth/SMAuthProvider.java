@@ -40,7 +40,7 @@ public interface SMAuthProvider<AUTH_SESSION extends SMSession> {
     String validateLocalAuth(
         @NotNull DBRProgressMonitor monitor,
         @NotNull SMController securityController,
-        @NotNull Map<String, Object> providerConfig,
+        @NotNull SMAuthProviderCustomConfiguration providerConfig,
         @NotNull Map<String, Object> userCredentials,
         @Nullable String activeUserId) throws DBException;
 

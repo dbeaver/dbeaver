@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.websocket.event.session;
 
-package org.jkiss.dbeaver.model.auth;
+import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
-/**
- * Federated session
- */
-public interface SMSessionFederated extends SMSession {
-
-
+public class WSAccessTokenExpiredEvent extends WSAbstractSessionEvent {
+    public WSAccessTokenExpiredEvent() {
+        super(WSEventType.ACCESS_TOKEN_EXPIRED);
+    }
 }

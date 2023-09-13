@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.oceanbase.data;
+package org.jkiss.dbeaver.model.auth;
 
-import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider;
-
-public class OceanbaseValueHandlerProvider extends JDBCStandardValueHandlerProvider{
+/**
+ * Federated session
+ */
+public interface SMSessionExternal extends SMSession {
 
 
 }

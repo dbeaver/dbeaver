@@ -446,6 +446,7 @@
                     category="Db2"
                     class="com.ibm.db2.jcc.DB2Driver"
                     sampleURL="jdbc:db2://{host}[:{port}]/{database}"
+                    supportedConfigurationTypes="MANUAL,URL"
                     useURL="false"
                     icon="icons/db2_icon.png"
                     iconBig="icons/db2_icon_big.png"

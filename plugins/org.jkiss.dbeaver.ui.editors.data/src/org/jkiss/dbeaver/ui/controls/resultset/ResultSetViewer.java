@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -45,6 +42,7 @@ import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -61,10 +59,7 @@ import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.sql.*;
@@ -76,15 +71,11 @@ import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.controls.TabFolderReorder;
-import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
-import org.jkiss.dbeaver.ui.controls.VerticalButton;
-import org.jkiss.dbeaver.ui.controls.VerticalFolder;
+import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.CustomizeColorsAction;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.ResetAllColorAction;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.ResetRowColorAction;
-import org.jkiss.dbeaver.ui.controls.resultset.colors.SetRowColorAction;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelDescriptor;
@@ -114,11 +105,19 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-
 /**
  * ResultSetViewer
  *
@@ -228,6 +227,7 @@ public class ResultSetViewer extends Viewer
     private boolean actionsDisabled;
     private volatile boolean isUIUpdateRunning;
 
+    private final boolean isDarkHighContrast;
     private final Color defaultBackground;
     private final Color defaultForeground;
     private VerticalButton recordModeButton;
@@ -260,9 +260,9 @@ public class ResultSetViewer extends Viewer
         }
 
         loadPresentationSettings();
-
-        this.defaultBackground = UIStyles.getDefaultTextBackground();
-        this.defaultForeground = UIStyles.getDefaultTextForeground();
+        isDarkHighContrast = UIStyles.isDarkHighContrastTheme();
+        this.defaultBackground = isDarkHighContrast ? UIStyles.getDefaultWidgetBackground() : UIStyles.getDefaultTextBackground();
+        this.defaultForeground = isDarkHighContrast ? UIUtils.COLOR_WHITE : UIStyles.getDefaultTextForeground();
 
         long decoratorFeatures = decorator.getDecoratorFeatures();
 
@@ -589,7 +589,8 @@ public class ResultSetViewer extends Viewer
         DataFilterRegistry.getInstance().saveDataFilter(dataContainer, model.getDataFilter());
 
         if (filtersPanel != null) {
-            DBeaverNotifications.showNotification(DBeaverNotifications.NT_GENERAL,
+            DBeaverNotifications.showNotification(
+                DBeaverNotifications.NT_GENERIC,
                 "Data filter was saved",
                 filtersPanel.getFilterText(),
                 DBPMessageType.INFORMATION, null);
@@ -703,7 +704,7 @@ public class ResultSetViewer extends Viewer
         if (filtersPanel == null) {
             return defaultBackground;
         }
-        return UIStyles.getDefaultTextBackground();
+        return isDarkHighContrast ? UIStyles.getDefaultWidgetBackground() : UIStyles.getDefaultTextBackground();
     }
 
     @NotNull
@@ -2942,7 +2943,13 @@ public class ResultSetViewer extends Viewer
         viewMenu.add(new Separator());
         if (model.getDocumentAttribute() == null) {
             if (valueController != null) {
-                viewMenu.add(new SetRowColorAction(this, attr, valueController.getValue()));
+                String bindingText = attr.getName()
+                    + " = "
+                    + UITextUtils.getShortText(this.getControl(), CommonUtils.toString(valueController.getValue()), 100);
+                String msgSelectRowColor = NLS.bind(ResultSetMessages.actions_name_color_by, bindingText);
+                // select row color
+                viewMenu.add(ActionUtils.makeCommandContribution(this.getSite(),
+                    ResultSetHandlerMain.CMD_SELECT_ROW_COLOR, msgSelectRowColor, null));
                 for (DBVColorOverride mapping : getColorOverrides(attr, valueController.getValue())) {
                     viewMenu.add(new ResetRowColorAction(this, mapping, valueController.getValue()));
                 }
