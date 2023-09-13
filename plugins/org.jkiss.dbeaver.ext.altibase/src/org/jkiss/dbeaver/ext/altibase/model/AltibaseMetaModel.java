@@ -74,7 +74,7 @@ import java.util.Map;
 public class AltibaseMetaModel extends GenericMetaModel {
 
     private static final Log log = Log.getLog(AltibaseMetaModel.class);
-    public static boolean DBMS_METADATA = true;
+    //public static boolean DBMS_METADATA = true;
 
     public AltibaseMetaModel() {
     }
@@ -172,26 +172,26 @@ public class AltibaseMetaModel extends GenericMetaModel {
     public String getIndexDDL(DBRProgressMonitor monitor, AltibaseTableIndex sourceObject, 
             Map<String, Object> options) throws DBException {
         StringBuilder ddl = new StringBuilder();
+        String schemaName = sourceObject.getTable().getSchema().getName();
+        String ddlFromMetadata;
         
-        if (sourceObject.isSystemGenerated()) {
-            ddl.append("-- System generated index. Not for user creation.")
-            .append(AltibaseConstants.NEW_LINE).append("/*").append(AltibaseConstants.NEW_LINE);
-        }
-
-        if (DBMS_METADATA) {
-            String schemaName = sourceObject.getTable().getSchema().getName();
-            ddl.append(getDDLFromDbmsMetadata(monitor, sourceObject, schemaName, "INDEX"));
-            ddl.append(";");
+        ddlFromMetadata = getDDLFromDbmsMetadata(monitor, sourceObject, schemaName, AltibaseConstants.DBOBJ_INDEX);
+        
+        if (CommonUtils.isEmpty(ddlFromMetadata)) {
+            ddl.append(String.format(AltibaseConstants.NO_DDL_WITHOUT_DBMS_METADATA, AltibaseConstants.DBOBJ_INDEX));
+        } else {
+            if (sourceObject.isSystemGenerated()) {
+                ddl.append("-- System generated index. Not for user creation.")
+                .append(AltibaseConstants.NEW_LINE).append("/*").append(AltibaseConstants.NEW_LINE);
+            }
+            
+            ddl.append(ddlFromMetadata).append(";");
+            
+            if (sourceObject.isSystemGenerated()) {
+                ddl.append(AltibaseConstants.NEW_LINE).append("*/");
+            }
         }
         
-        if (sourceObject.isSystemGenerated()) {
-            ddl.append(AltibaseConstants.NEW_LINE).append("*/");
-        }
-
-        if (!DBMS_METADATA || ddl.length() < 5) {
-            ddl.append(AltibaseConstants.NO_DBMS_METADATA);
-        }
-
         return ddl.toString();
     }
     
@@ -199,11 +199,15 @@ public class AltibaseMetaModel extends GenericMetaModel {
     public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, 
             Map<String, Object> options) throws DBException {
         StringBuilder ddl = new StringBuilder();
+        String schemaName = sourceObject.getContainer().getName();
+        String ddlFromMetadata;
 
-        if (DBMS_METADATA) {
-            String schemaName = sourceObject.getContainer().getName();
-            ddl.append(getDDLFromDbmsMetadata(monitor, sourceObject, schemaName, sourceObject.getTableType()));
-            ddl.append(";").append(AltibaseConstants.NEW_LINE);
+        ddlFromMetadata = getDDLFromDbmsMetadata(monitor, sourceObject, schemaName, sourceObject.getTableType());
+        
+        if (CommonUtils.isEmpty(ddlFromMetadata)) {
+            ddl.append(AltibaseConstants.NO_DBMS_METADATA).append(super.getTableDDL(monitor, sourceObject, options));
+        } else {
+            ddl.append(ddlFromMetadata).append(";").append(AltibaseConstants.NEW_LINE);
 
             // Comment
             addTableDependentDdl(ddl, "COMMENT", monitor, sourceObject, schemaName);
@@ -217,11 +221,6 @@ public class AltibaseMetaModel extends GenericMetaModel {
                         .append(AltibaseConstants.NEW_LINE);
                 }
             }
-        }
-
-        if (!DBMS_METADATA || ddl.length() < 5) {
-            ddl = new StringBuilder();
-            ddl.append(AltibaseConstants.NO_DBMS_METADATA).append(super.getTableDDL(monitor, sourceObject, options));
         }
 
         return ddl.toString();
@@ -248,15 +247,11 @@ public class AltibaseMetaModel extends GenericMetaModel {
             Map<String, Object> options) throws DBException {
         String ddl = null;
 
-        if (DBMS_METADATA) {
-            ddl = getDDLFromDbmsMetadata(monitor, sourceObject, sourceObject.getSchemaName(), "SYNONYM");
-        }
-
-        if (!DBMS_METADATA || CommonUtils.isEmpty(ddl)) {
+        ddl = getDDLFromDbmsMetadata(monitor, sourceObject, sourceObject.getSchemaName(), "SYNONYM");
+        
+        if (CommonUtils.isEmpty(ddl)) {
             ddl = AltibaseConstants.NO_DBMS_METADATA + sourceObject.getBuiltDdlLocaly();
-        }
-
-        if (CommonUtils.isNotEmpty(ddl)) {
+        } else {
             ddl += ";";
         }
 
@@ -267,42 +262,52 @@ public class AltibaseMetaModel extends GenericMetaModel {
     @Override
     public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, 
             Map<String, Object> options) throws DBException {
-        String ddl = null;
-
-        if (DBMS_METADATA) {
-            ddl = getDDLFromDbmsMetadata(monitor, sourceObject, sourceObject.getSchema().getName(), 
-                    AltibaseUtils.getDmbsMetaDataObjTypeName(sourceObject.getTableType()));
-        }
-
-        if (!DBMS_METADATA || CommonUtils.isEmpty(ddl)) {
-            String sql = "SELECT "
-                    + " parse "
+        
+        String ddl = getDDLFromDbmsMetadata(monitor, sourceObject, sourceObject.getSchema().getName(), 
+                AltibaseUtils.getDmbsMetaDataObjTypeName(sourceObject.getTableType()));
+        
+        if (CommonUtils.isEmpty(ddl)) {
+            String sql;
+            if (sourceObject instanceof AltibaseMaterializedView) {
+                sql = "SELECT"
+                        + " parse"
+                        + " FROM"
+                            + " SYSTEM_.SYS_VIEW_PARSE_ VP"
+                            + " ,SYSTEM_.SYS_USERS_ U"
+                            + " ,SYSTEM_.SYS_MATERIALIZED_VIEWS_ MV"
+                        + " WHERE"
+                            + " U.USER_NAME = ?"
+                            + " AND MV.MVIEW_NAME = ?"
+                            + " AND VP.USER_ID = U.USER_ID"
+                            + " AND VP.VIEW_ID = MV.VIEW_ID"
+                        + " ORDER BY"
+                            + " SEQ_NO ASC";
+            } else {
+                sql = "SELECT "
+                        + " parse "
                     + " FROM "
-                    + " SYSTEM_.SYS_VIEW_PARSE_ VP, SYSTEM_.SYS_USERS_ U, SYSTEM_.SYS_TABLES_ T"
+                        + " SYSTEM_.SYS_VIEW_PARSE_ VP, SYSTEM_.SYS_USERS_ U, SYSTEM_.SYS_TABLES_ T"
                     + " WHERE"
-                    + " U.USER_NAME = ?"
-                    + " AND T.TABLE_NAME = ?"
-                    + " AND T.TABLE_TYPE = 'V'"
-                    + " AND VP.USER_ID = U.USER_ID"
-                    + " AND VP.VIEW_ID = T.TABLE_ID"
+                        + " U.USER_NAME = ?"
+                        + " AND T.TABLE_NAME = ?"
+                        + " AND T.TABLE_TYPE = 'V'"
+                        + " AND VP.USER_ID = U.USER_ID"
+                        + " AND VP.VIEW_ID = T.TABLE_ID"
                     + " ORDER BY SEQ_NO ASC";
+            }
 
             ddl = getViewProcDDLFromCatalog(monitor, sourceObject, sourceObject.getSchema().getName(), sql);
         }
-
+        
         return (ddl.length() < 5) ? "-- View definition not available" : ddl;
     }
 
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
-        String ddl = null;
-
-        if (DBMS_METADATA) {
-            ddl = getDDLFromDbmsMetadata(monitor, sourceObject, 
+        String ddl = getDDLFromDbmsMetadata(monitor, sourceObject, 
                     sourceObject.getSchema().getName(), ((AltibaseProcedureStandAlone) sourceObject).getProcedureTypeName());
-        }
-
-        if (!DBMS_METADATA || CommonUtils.isEmpty(ddl)) {
+        
+        if (CommonUtils.isEmpty(ddl)) {
             String sql = "SELECT "
                     + " parse "
                     + " FROM "
@@ -314,12 +319,6 @@ public class AltibaseMetaModel extends GenericMetaModel {
                     + " AND PP.PROC_OID = P.PROC_OID"
                     + " ORDER BY SEQ_NO ASC";
             ddl = getViewProcDDLFromCatalog(monitor, sourceObject, sourceObject.getSchema().getName(), sql);
-        }
-
-        if (ddl.length() < 5) {
-            ddl = "-- Source code not available";
-        } else {
-            //ddl += ";" + AltibaseUtils.NEW_LINE + "/";
         }
 
         return ddl;
@@ -344,14 +343,13 @@ public class AltibaseMetaModel extends GenericMetaModel {
      * Get a specific Package DDL
      */
     public String getPackageDDL(DBRProgressMonitor monitor, AltibasePackage sourceObject, int packageType) throws DBException {
-        String ddl = null;
-
-        if (DBMS_METADATA) {
-            ddl = getDDLFromDbmsMetadata(monitor, sourceObject, sourceObject.getSchema().getName(), 
+        boolean hasDbmsMetadata;
+        String ddl = getDDLFromDbmsMetadata(monitor, sourceObject, sourceObject.getSchema().getName(), 
                     (packageType == AltibaseConstants.PACKAGE_TYPE_SPEC) ? "PACKAGE_SPEC" : "PACKAGE_BODY");
-        }
-
-        if (!DBMS_METADATA || CommonUtils.isEmpty(ddl)) {
+        
+        hasDbmsMetadata = ddl.startsWith("--");
+        
+        if (hasDbmsMetadata || CommonUtils.isEmpty(ddl)) {
             String sql = "SELECT "
                     + " parse "
                     + " FROM "
@@ -365,13 +363,9 @@ public class AltibaseMetaModel extends GenericMetaModel {
                     + " AND PP.PACKAGE_TYPE = " + packageType
                     + " ORDER BY PP.PACKAGE_TYPE, SEQ_NO ASC";
 
-            ddl = getViewProcDDLFromCatalog(monitor, sourceObject, sourceObject.getSchema().getName(), sql);
+            ddl = getViewProcDDLFromCatalog(monitor, sourceObject, sourceObject.getSchema().getName(), sql, hasDbmsMetadata);
         }
-
-        if (ddl.length() < 5) {
-            ddl = "-- Source code not available";
-        }
-
+        
         return ddl;
     }
 
@@ -573,11 +567,9 @@ public class AltibaseMetaModel extends GenericMetaModel {
             schemaName = trigger.getParentObject().getName();
         }
 
-        if (DBMS_METADATA) {
-            ddl = getDDLFromDbmsMetadata(monitor, trigger, schemaName, "TRIGGER");
-        }
-
-        if (!DBMS_METADATA || CommonUtils.isEmpty(ddl)) {
+        ddl = getDDLFromDbmsMetadata(monitor, trigger, schemaName, "TRIGGER");
+        
+        if (CommonUtils.isEmpty(ddl)) {
             String sql = "SELECT "
                     + " substring"
                     + " FROM"
@@ -591,13 +583,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
 
             ddl = getTriggerDDLFromCatalog(monitor, trigger, schemaName, sql);
         }
-
-        if (ddl.length() < 1) {
-            ddl = "-- Source code not available";
-        } else {
-            //ddl += AltibaseConstants.PSM_POSTFIX;
-        }
-
+        
         return ddl;
     }
 
@@ -985,21 +971,30 @@ public class AltibaseMetaModel extends GenericMetaModel {
      * Get DDL source for View/Procedure/Function/Typeset
      */
     private String getViewProcDDLFromCatalog(DBRProgressMonitor monitor, DBSObject sourceObject, String schemaName, String sql) {
-        return geDDLFromCatalog(monitor, sourceObject, schemaName, sql, "PARSE");
+        return geDDLFromCatalog(monitor, sourceObject, schemaName, sql, "PARSE", false);
+    }
+    
+    /**
+     * Get DDL source for Package
+     */
+    private String getViewProcDDLFromCatalog(DBRProgressMonitor monitor, DBSObject sourceObject, String schemaName, String sql, 
+            boolean hasDbmsMetdata) {
+        return geDDLFromCatalog(monitor, sourceObject, schemaName, sql, "PARSE", hasDbmsMetdata);
     }
 
     /**
      * Get DDL source for Trigger
      */
     private String getTriggerDDLFromCatalog(DBRProgressMonitor monitor, DBSObject sourceObject, String schemaName, String sql) {
-        return geDDLFromCatalog(monitor, sourceObject, schemaName, sql, "SUBSTRING");
+        return geDDLFromCatalog(monitor, sourceObject, schemaName, sql, "SUBSTRING", false);
     }
 
     /**
      * Get DDL source from DBMS catalog (meta tables): View/Procedure/Function/Typeset/Trigger
      */
-    private String geDDLFromCatalog(DBRProgressMonitor monitor, DBSObject sourceObject, String schemaName, String sql, String colname) {
-        StringBuilder ddl = new StringBuilder(AltibaseConstants.NO_DBMS_METADATA);
+    private String geDDLFromCatalog(DBRProgressMonitor monitor, DBSObject sourceObject, String schemaName, String sql, 
+            String colname, boolean hasDbmsMetdata) {
+        StringBuilder ddl = new StringBuilder( hasDbmsMetdata ? "" : AltibaseConstants.NO_DBMS_METADATA );
         String content = null;
         JDBCPreparedStatement jpstmt = null;
         JDBCResultSet jrs = null;
@@ -1061,6 +1056,11 @@ public class AltibaseMetaModel extends GenericMetaModel {
                 cstmt.execute();
 
                 ddl = cstmt.getString(1);
+            }
+        } catch (SQLException se) {
+            // It's too long to fetch the target string.
+            if (se.getSQLState().equals("22026")) {
+                ddl = "-- DDL is too long to be fetched.";
             }
         } catch (Exception e) {
             log.warn("Can't read DDL from DBMS_METADATA", e);

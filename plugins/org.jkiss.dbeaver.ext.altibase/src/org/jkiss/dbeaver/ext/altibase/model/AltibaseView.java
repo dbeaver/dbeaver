@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
 public class AltibaseView extends GenericView {
-    
+
     public AltibaseView(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
     }

@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -50,6 +51,9 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
     private transient volatile Long[] tableSize;
     private static final int SIZE_IDX_MEM = 0;
     private static final int SIZE_IDX_DISK = 1;
+    
+    private String tablespace;
+    private boolean partitioned;
     
     public AltibaseTable(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
@@ -124,8 +128,43 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         tableSize = null;
         getTableSize(monitor);
+        getTablespace(monitor);
 
         return super.refreshObject(monitor);
+    }
+    
+    ///////////////////////////////////
+    // Tablespace
+    @Property(viewable = true, order = 15, editable = false)
+    public String getTablespace(DBRProgressMonitor monitor) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load tablespace")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT tbs_name, is_partitioned FROM system_.sys_tables_ t, system_.sys_users_ u "
+                + "WHERE u.user_id = t.user_id AND u.user_name = ? AND t.table_name = ?")) {
+                dbStat.setString(1, getSchema().getName());
+                dbStat.setString(2, getName());
+
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        tablespace = JDBCUtils.safeGetString(dbResult, 1);
+                        partitioned = JDBCUtils.safeGetString(dbResult, 2).equals("Y");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DBCException("Error reading tablespace naame", e);
+        }
+        
+        return tablespace;
+    }
+    
+    @Property(viewable = true, order = 16, editable = false)
+    public boolean getPartitionedTable(DBRProgressMonitor monitor) throws DBException {
+        if (tablespace == null) {
+            getTablespace(monitor);
+        }
+        
+        return partitioned;
     }
     
     ///////////////////////////////////
@@ -185,4 +224,5 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
     public DBPPropertySource getStatProperties() {
         return null;
     }
+
 }

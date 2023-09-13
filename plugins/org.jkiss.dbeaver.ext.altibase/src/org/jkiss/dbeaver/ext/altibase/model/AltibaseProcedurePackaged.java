@@ -44,7 +44,7 @@ public class AltibaseProcedurePackaged extends AltibaseProcedureBase {
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        return "-- Unable to get pacakge depedent object source";
+        return "-- Unable to get package dependent object source";
     }
 
     /**

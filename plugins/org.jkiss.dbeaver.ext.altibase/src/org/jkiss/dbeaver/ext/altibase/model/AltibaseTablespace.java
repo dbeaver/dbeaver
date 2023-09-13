@@ -29,10 +29,12 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 import org.jkiss.utils.ByteNumberFormat;
 
 import java.sql.ResultSet;
@@ -484,4 +486,20 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
         }
     }
 
+    static Object resolveTablespaceReference(DBRProgressMonitor monitor, DBSObjectLazy<AltibaseDataSource> referrer, @Nullable Object propertyId) throws DBException
+    {
+        final AltibaseDataSource dataSource = referrer.getDataSource();
+        return AltibaseUtils.resolveLazyReference(monitor, dataSource, dataSource.tablespaceCache, referrer, propertyId);
+    }
+
+    public static class TablespaceReferenceValidator implements IPropertyCacheValidator<DBSObjectLazy<AltibaseDataSource>> {
+        @Override
+        public boolean isPropertyCached(DBSObjectLazy<AltibaseDataSource> object, Object propertyId)
+        {
+            return
+                object.getLazyReference(propertyId) instanceof AltibaseTablespace ||
+                object.getLazyReference(propertyId) == null ||
+                object.getDataSource().tablespaceCache.isFullyCached();
+        }
+    }
 }

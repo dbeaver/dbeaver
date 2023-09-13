@@ -64,6 +64,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     private static final Log log = Log.getLog(AltibaseDataSource.class);
 
     final TablespaceCache tablespaceCache = new TablespaceCache();
+    final UserCache userCache = new UserCache();
     private boolean hasStatistics;
     
     private GenericSchema publicSchema;
@@ -247,6 +248,36 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
                 @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new AltibaseTablespace(owner, resultSet);
         }
+    }
+    
+    /**
+     * Get User cache
+     */
+    static class UserCache extends JDBCObjectCache<AltibaseDataSource, AltibaseUser> {
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull AltibaseDataSource owner) throws SQLException {
+            return session.prepareStatement(
+                "SELECT u.*, tbs1.name AS default_tbs_name, tbs2.name AS temp_tbs_name "
+                + "FROM SYSTEM_.SYS_USERS_ u, V$TABLESPACES tbs1, V$TABLESPACES tbs2 "
+                + "WHERE u.user_type = 'U' AND u.DEFAULT_TBS_ID = tbs1.id AND u.TEMP_TBS_ID = tbs2.id "
+                + "ORDER BY user_name");
+        }
+
+        @Override
+        protected AltibaseUser fetchObject(@NotNull JDBCSession session, @NotNull AltibaseDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            return new AltibaseUser(owner, resultSet);
+        }
+    }
+    
+    @Association
+    public Collection<AltibaseUser> getUsers(DBRProgressMonitor monitor) throws DBException {
+        return userCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public AltibaseUser getUser(DBRProgressMonitor monitor, String name) throws DBException {
+        return userCache.getObject(monitor, this, name);
     }
     
     ///////////////////////////////////////////////

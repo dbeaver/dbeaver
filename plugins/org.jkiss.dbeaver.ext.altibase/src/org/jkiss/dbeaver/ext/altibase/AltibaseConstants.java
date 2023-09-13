@@ -24,6 +24,7 @@ public class AltibaseConstants {
     public static final String SPACE4 = "    ";
     public static final String PSM_POSTFIX = ";" + AltibaseConstants.NEW_LINE + "/";
 
+    public static final String DBOBJ_INDEX = "INDEX";
     public static final String PUBLIC_USER = "PUBLIC";
     
     public static final String SYSTEM_GENERATED_PREFIX = "__SYS_";
@@ -95,6 +96,9 @@ public class AltibaseConstants {
     
     public static final String NO_DBMS_METADATA = "-- [WARNING] Without DBMS_METADATA package, " 
             + "the generated DDL may not be correct." + NEW_LINE;
+    
+    public static final String NO_DDL_WITHOUT_DBMS_METADATA = 
+            "-- [WARNING] DBMS_METADATA package is required to have DDL for %s." + NEW_LINE;
     
     /*
      * Preference page

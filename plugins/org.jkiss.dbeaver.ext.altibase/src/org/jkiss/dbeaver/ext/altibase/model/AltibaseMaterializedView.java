@@ -19,10 +19,8 @@ package org.jkiss.dbeaver.ext.altibase.model;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
-import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
-public class AltibaseMaterializedView extends GenericView implements DBSObjectWithScript, DBSView {
+public class AltibaseMaterializedView extends GenericView {
 
     public AltibaseMaterializedView(GenericStructContainer container, String tableName, String tableType, 
             JDBCResultSet dbResult) {
