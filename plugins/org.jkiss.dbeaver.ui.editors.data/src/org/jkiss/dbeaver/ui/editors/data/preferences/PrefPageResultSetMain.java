@@ -132,10 +132,10 @@ public class PrefPageResultSetMain extends TargetPrefPage
         rightPane.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // Group of queries settings
-        Group queriesGroup = UIUtils.createControlGroup(leftPane, ResultSetMessages.pref_page_database_general_group_queries, 2,
-            GridData.FILL_HORIZONTAL, 0);
-        resultSetSize = UIUtils.createLabelText(queriesGroup, ResultSetMessages.pref_page_database_general_label_result_set_max_size, "0",
-            SWT.BORDER);
+        Group queriesGroup = UIUtils.createControlGroup(leftPane,
+            ResultSetMessages.pref_page_database_general_group_queries, 2, GridData.FILL_HORIZONTAL, 0);
+        resultSetSize = UIUtils.createLabelText(queriesGroup,
+            ResultSetMessages.pref_page_database_general_label_result_set_max_size, "0", SWT.BORDER);
         resultSetSize.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         resultSetSize.addFocusListener(new FocusAdapter() {
             @Override
@@ -153,16 +153,21 @@ public class PrefPageResultSetMain extends TargetPrefPage
         rereadOnScrollingCheck = UIUtils.createCheckbox(queriesGroup,
             ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling,
             ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling_tip, true, 2);
-        resultSetUseSQLCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_use_sql,
+        resultSetUseSQLCheck = UIUtils.createCheckbox(queriesGroup,
+            ResultSetMessages.pref_page_database_resultsets_label_use_sql,
             ResultSetMessages.pref_page_database_resultsets_label_use_sql_tip, false, 2);
-        orderingModeCombo = UIUtils.createLabelCombo(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_order_mode,
-            ResultSetMessages.pref_page_database_resultsets_label_order_mode_tip, SWT.DROP_DOWN | SWT.READ_ONLY);
+        orderingModeCombo = UIUtils.createLabelCombo(queriesGroup,
+            ResultSetMessages.pref_page_database_resultsets_label_order_mode,
+            ResultSetMessages.pref_page_database_resultsets_label_order_mode_tip,
+            SWT.DROP_DOWN | SWT.READ_ONLY);
         for (ResultSetUtils.OrderingMode mode : ResultSetUtils.OrderingMode.values()) {
             orderingModeCombo.add(mode.getText());
         }
-        readQueryMetadata = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_read_metadata,
+        readQueryMetadata = UIUtils.createCheckbox(queriesGroup,
+            ResultSetMessages.pref_page_database_resultsets_label_read_metadata,
             ResultSetMessages.pref_page_database_resultsets_label_read_metadata_tip, false, 2);
-        readQueryReferences = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_read_references,
+        readQueryReferences = UIUtils.createCheckbox(queriesGroup,
+            ResultSetMessages.pref_page_database_resultsets_label_read_references,
             ResultSetMessages.pref_page_database_resultsets_label_read_references_tip, false, 2);
         queryCancelTimeout = UIUtils.createLabelText(queriesGroup,
             ResultSetMessages.pref_page_database_general_label_result_set_cancel_timeout + UIMessages.label_ms, "0");
@@ -180,21 +185,28 @@ public class PrefPageResultSetMain extends TargetPrefPage
         });
 
         // Group of advanced settings
-        Group advGroup = UIUtils.createControlGroup(leftPane, ResultSetMessages.pref_page_results_group_advanced, 1, GridData.FILL_HORIZONTAL, 0);
-        ignoreColumnLabelCheck = UIUtils.createCheckbox(advGroup, ResultSetMessages.pref_page_database_general_use_column_names,
+        Group advGroup = UIUtils.createControlGroup(leftPane,
+            ResultSetMessages.pref_page_results_group_advanced, 1,
+            GridData.FILL_HORIZONTAL, 0);
+        ignoreColumnLabelCheck = UIUtils.createCheckbox(advGroup,
+            ResultSetMessages.pref_page_database_general_use_column_names,
             ResultSetMessages.pref_page_database_general_use_column_names_tip, false, 1);
-        advUseFetchSize = UIUtils.createCheckbox(advGroup, ResultSetMessages.pref_page_database_resultsets_label_fetch_size,
+        advUseFetchSize = UIUtils.createCheckbox(advGroup,
+            ResultSetMessages.pref_page_database_resultsets_label_fetch_size,
             ResultSetMessages.pref_page_database_resultsets_label_fetch_size_tip, false, 1);
 
         // Group of misc settings
-        Group miscGroup = UIUtils.createControlGroup(rightPane, ResultSetMessages.pref_page_sql_editor_group_misc, 1,
+        Group miscGroup = UIUtils.createControlGroup(rightPane,
+            ResultSetMessages.pref_page_sql_editor_group_misc, 1,
             GridData.FILL_HORIZONTAL, 0);
-        keepStatementOpenCheck = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_database_general_checkbox_keep_cursor,
-            false);
-        newRowsAfter = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_new_rows_after, false);
-        refreshAfterUpdate = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_refresh_after_update,
-            false);
-        useNavigatorFilters = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_use_navigator_filters,
+        keepStatementOpenCheck = UIUtils.createCheckbox(miscGroup,
+            ResultSetMessages.pref_page_database_general_checkbox_keep_cursor, false);
+        newRowsAfter = UIUtils.createCheckbox(miscGroup,
+            ResultSetMessages.pref_page_content_editor_checkbox_new_rows_after, false);
+        refreshAfterUpdate = UIUtils.createCheckbox(miscGroup,
+            ResultSetMessages.pref_page_content_editor_checkbox_refresh_after_update, false);
+        useNavigatorFilters = UIUtils.createCheckbox(miscGroup,
+            ResultSetMessages.pref_page_content_editor_checkbox_use_navigator_filters,
             ResultSetMessages.pref_page_content_editor_checkbox_use_navigator_filters_tip, false, 1);
         useDateTimeEditor = UIUtils.createCheckbox(miscGroup,
             ResultSetMessages.pref_page_content_editor_checkbox_string_editor_for_datetime,
@@ -213,7 +225,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
                 }
             }
         }
-        showErrorsInDialog = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_content_editor_ui_show_errors_in_dialog,
+        showErrorsInDialog = UIUtils.createCheckbox(uiGroup,
+            ResultSetMessages.pref_page_content_editor_ui_show_errors_in_dialog,
             ResultSetMessages.pref_page_content_editor_ui_show_errors_in_dialog_tip, false, 1);
         markCellValueOccurrences = UIUtils.createCheckbox(uiGroup,
             ResultSetMessages.pref_page_content_editor_ui_mark_cell_value_occurrences,
@@ -222,7 +235,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             DataEditorsMessages.pref_page_database_resultsets_label_image_browser,
             false);
         useBrowserCheckbox.setToolTipText(DataEditorsMessages.pref_page_database_resultsets_label_image_browser_tip);
-        
+
         // Group of Missing Key settings
         final Group group = UIUtils.createControlGroup(leftPane,
             ResultSetMessages.pref_page_content_editor_group_editing, 1, GridData.FILL_HORIZONTAL, 0);
