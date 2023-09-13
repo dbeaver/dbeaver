@@ -44,36 +44,6 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode {
         this.fileSystem = fileSystem;
     }
 
-    @Nullable
-    public DBNFileSystemResource getRoot(@NotNull String path) {
-        if (children == null) {
-            return null;
-        }
-
-        for (DBNFileSystemResource root : children) {
-            if (root.getRoot().getRootId().equals(path)) {
-                return root;
-            }
-        }
-
-        return null;
-    }
-
-    @Nullable
-    public DBNFileSystemResource getRoot(@NotNull DBFVirtualFileSystemRoot root) {
-        if (children == null) {
-            return null;
-        }
-
-        for (DBNFileSystemResource child : children) {
-            if (child.getRoot() == root) {
-                return child;
-            }
-        }
-
-        return null;
-    }
-
     @Override
     public String getNodeType() {
         return "filesystem";
@@ -105,7 +75,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode {
     }
 
     @Override
-    public DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException {
+    public DBNFileSystemResource[] getChildren(DBRProgressMonitor monitor) throws DBException {
         if (children == null) {
             children = Arrays.stream(fileSystem.getRootFolders(monitor))
                 .map(root -> new DBNFileSystemResource(this, null, root))
@@ -134,5 +104,47 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode {
     @NotNull
     public DBFVirtualFileSystem getFileSystem() {
         return fileSystem;
+    }
+
+
+    @Nullable
+    public DBNFileSystemResource getRoot(@NotNull String path) {
+        if (children == null) {
+            return null;
+        }
+
+        for (DBNFileSystemResource root : children) {
+            if (root.getRoot().getRootId().equals(path)) {
+                return root;
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public DBNFileSystemResource getRoot(@NotNull DBFVirtualFileSystemRoot root) {
+        if (children == null) {
+            return null;
+        }
+
+        for (DBNFileSystemResource child : children) {
+            if (child.getRoot() == root) {
+                return child;
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public DBNFileSystemResource getChild(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
+        for (DBNFileSystemResource child : getChildren(monitor)) {
+            if (child.getName().equals(name)) {
+                return child;
+            }
+        }
+
+        return null;
     }
 }

@@ -42,6 +42,9 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.navigator.fs2.DBNFileSystem;
+import org.jkiss.dbeaver.model.navigator.fs2.DBNFileSystemList;
+import org.jkiss.dbeaver.model.navigator.fs2.DBNFileSystemResource;
 import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -110,54 +113,54 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
                 UIUtils.createPushButton(s3Group, UIConnectionMessages.controls_client_home_selector_browse, DBeaverIcons.getImage(DBIcon.TREE_FOLDER), new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        // DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(getSite().getProject());
-                        // DBNFileSystems fsRootNode = projectNode.getExtraNode(DBNFileSystems.class);
-                        // if (fsRootNode == null) {
-                        //     DBWorkbench.getPlatformUI().showMessageBox("Cloud support required", "Project file system node not found", true);
-                        //     return;
-                        // }
-                        // DBNNode selectedNode = null;
-                        // String oldS3Path = s3LocationText.getText();
-                        // if (!CommonUtils.isEmpty(oldS3Path) && oldS3Path.startsWith("s3:/")) {
-                        //     selectedNode = findFileSystemNode(fsRootNode, oldS3Path);
-                        // }
-                        // ObjectBrowserDialogBase dialog = new ObjectBrowserDialogBase(
-                        //     s3LocationText.getShell(), "S3 browser",
-                        //     fsRootNode,
-                        //     selectedNode,
-                        //     true)
-                        // {
-                        //     @Override
-                        //     protected boolean matchesResultNode(DBNNode node) {
-                        //         return node instanceof DBNPathBase &&
-                        //             Files.isDirectory(((DBNPathBase) node).getPath());
-                        //     }
-                        //
-                        //     @Override
-                        //     protected ViewerFilter createViewerFilter() {
-                        //         return new ViewerFilter() {
-                        //             @Override
-                        //             public boolean select(Viewer viewer, Object parentElement, Object element) {
-                        //                 return
-                        //                     element instanceof TreeNodeSpecial ||
-                        //                         element instanceof DBNFileSystem ||
-                        //                         (element instanceof DBNNode && matchesResultNode((DBNNode) element));
-                        //             }
-                        //         };
-                        //     }
-                        // };
-                        // if (dialog.open() == IDialogConstants.OK_ID) {
-                        //     List<DBNNode> selectedObjects = dialog.getSelectedObjects();
-                        //     if (selectedObjects.size() == 1) {
-                        //         DBNNode s3Node = selectedObjects.get(0);
-                        //         if (s3Node instanceof DBNPathBase) {
-                        //             String newS3Path = ((DBNPathBase) s3Node).getPath().toString();
-                        //             if (newS3Path.startsWith("s3:/")) {
-                        //                 s3LocationText.setText(newS3Path);
-                        //             }
-                        //         }
-                        //     }
-                        // }
+                        DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(getSite().getProject());
+                        DBNFileSystemList fsRootNode = projectNode.getExtraNode(DBNFileSystemList.class);
+                        if (fsRootNode == null) {
+                            DBWorkbench.getPlatformUI().showMessageBox("Cloud support required", "Project file system node not found", true);
+                            return;
+                        }
+                        DBNNode selectedNode = null;
+                        String oldS3Path = s3LocationText.getText();
+                        if (!CommonUtils.isEmpty(oldS3Path) && oldS3Path.startsWith("s3:/")) {
+                            selectedNode = findFileSystemNode(fsRootNode, oldS3Path);
+                        }
+                        ObjectBrowserDialogBase dialog = new ObjectBrowserDialogBase(
+                            s3LocationText.getShell(), "S3 browser",
+                            fsRootNode,
+                            selectedNode,
+                            true)
+                        {
+                            @Override
+                            protected boolean matchesResultNode(DBNNode node) {
+                                return node instanceof DBNFileSystemResource &&
+                                    Files.isDirectory(((DBNFileSystemResource) node).getPath());
+                            }
+
+                            @Override
+                            protected ViewerFilter createViewerFilter() {
+                                return new ViewerFilter() {
+                                    @Override
+                                    public boolean select(Viewer viewer, Object parentElement, Object element) {
+                                        return
+                                            element instanceof TreeNodeSpecial ||
+                                                element instanceof DBNFileSystem ||
+                                                (element instanceof DBNNode && matchesResultNode((DBNNode) element));
+                                    }
+                                };
+                            }
+                        };
+                        if (dialog.open() == IDialogConstants.OK_ID) {
+                            List<DBNNode> selectedObjects = dialog.getSelectedObjects();
+                            if (selectedObjects.size() == 1) {
+                                DBNNode s3Node = selectedObjects.get(0);
+                                if (s3Node instanceof DBNFileSystemResource) {
+                                    String newS3Path = ((DBNFileSystemResource) s3Node).getPath().toString();
+                                    if (newS3Path.startsWith("s3:/")) {
+                                        s3LocationText.setText(newS3Path);
+                                    }
+                                }
+                            }
+                        }
                     }
                 });
             }
@@ -176,17 +179,17 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
         setControl(settingsGroup);
     }
 
-    // private DBNNode findFileSystemNode(DBNFileSystems fsRootNode, String s3Path) {
-    //     final DBNPathBase[] result = new DBNPathBase[1];
-    //     RuntimeUtils.runTask(monitor -> {
-    //         try {
-    //             result[0] = fsRootNode.findNodeByPath(monitor, s3Path);
-    //         } catch (DBException e) {
-    //             throw new InvocationTargetException(e);
-    //         }
-    //     }, "Load S3 node", 10000);
-    //     return result[0];
-    // }
+    private DBNNode findFileSystemNode(DBNFileSystemList fsRootNode, String s3Path) {
+        final DBNFileSystemResource[] result = new DBNFileSystemResource[1];
+        RuntimeUtils.runTask(monitor -> {
+            try {
+                result[0] = fsRootNode.getNodeByPath(monitor, s3Path);
+            } catch (DBException e) {
+                throw new InvocationTargetException(e);
+            }
+        }, "Load S3 node", 10000);
+        return result[0];
+    }
 
     @Override
     public boolean isComplete() {

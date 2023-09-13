@@ -101,7 +101,7 @@ public class DBNFileSystemList extends DBNNode implements NIOListener {
     }
 
     @Override
-    public DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException {
+    public DBNFileSystem[] getChildren(DBRProgressMonitor monitor) throws DBException {
         if (children == null) {
             children = Arrays.stream(DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProviders())
                 .flatMap(provider -> Arrays.stream(provider.getInstance().getAvailableFileSystems(monitor, getModel().getModelAuthContext())))
@@ -123,11 +123,6 @@ public class DBNFileSystemList extends DBNNode implements NIOListener {
     protected void dispose(boolean reflect) {
         children = null;
         super.dispose(reflect);
-    }
-
-    public void resetFileSystems() {
-        children = null;
-        getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
     }
 
     @Override
@@ -173,5 +168,52 @@ public class DBNFileSystemList extends DBNNode implements NIOListener {
                 break;
             }
         }
+    }
+
+    public void resetFileSystems() {
+        children = null;
+        getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
+    }
+
+    @Nullable
+    public DBNFileSystemResource getRootFolder(@NotNull DBRProgressMonitor monitor, @NotNull String id) throws DBException {
+        for (DBNFileSystem fsNode : getChildren(monitor)) {
+            DBNFileSystemResource rootFolder = fsNode.getChild(monitor, id);
+            if (rootFolder != null) {
+                return rootFolder;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public DBNFileSystemResource getNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull String path) throws DBException {
+        getChildren(monitor);
+
+        DBNFileSystemResource fsNode = null;
+        DBNFileSystemResource curPath = null;
+        for (String name : path.split("/")) {
+            if (name.isEmpty() || (curPath == null && name.endsWith(":"))) {
+                continue;
+            }
+            if (fsNode == null) {
+                fsNode = getRootFolder(monitor, name);
+                if (fsNode == null) {
+                    return null;
+                }
+            } else {
+                if (curPath == null) {
+                    fsNode.getChildren(monitor);
+                    curPath = fsNode.getChild(name);
+                } else {
+                    curPath.getChildren(monitor);
+                    curPath = curPath.getChild(name);
+                }
+                if (curPath == null) {
+                    return null;
+                }
+            }
+        }
+        return curPath == null ? fsNode : curPath;
     }
 }

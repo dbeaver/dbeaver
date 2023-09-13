@@ -106,6 +106,11 @@ public class DBNFileSystemResource extends DBNResource implements DBNLazyNode {
         return getParentNode() instanceof DBNFileSystem;
     }
 
+    @NotNull
+    public java.nio.file.Path getPath() {
+        return getFileStore().getPath();
+    }
+
     void addChildResource(@NotNull String name, boolean directory) {
         if (children == null) {
             return;
@@ -177,11 +182,16 @@ public class DBNFileSystemResource extends DBNResource implements DBNLazyNode {
 
     @Override
     public boolean needsInitialization() {
+        return !getFileStore().childrenCached();
+    }
+
+    @NotNull
+    private NIOFileStore getFileStore() {
         try {
-            final NIOFileStore store = (NIOFileStore) EFS.getStore(getResource().getLocationURI());
-            return !store.childrenCached();
+            return (NIOFileStore) EFS.getStore(getResource().getLocationURI());
         } catch (CoreException e) {
-            return true;
+            // Should never happen
+            throw new IllegalStateException("Can't get EFS store: " + e.getMessage(), e);
         }
     }
 
