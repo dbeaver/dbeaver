@@ -32,6 +32,10 @@ public class ConfigurationFileSelector extends TextWithOpenFile {
         super(parent, title, filterExt, binaryFile);
     }
 
+    public ConfigurationFileSelector(Composite parent, String title, String[] filterExt, boolean binaryFile, boolean secured) {
+        super(parent, title, filterExt, binaryFile, secured);
+    }
+
     @Override
     protected boolean isShowFileContentEditor() {
         return DBWorkbench.isDistributed();

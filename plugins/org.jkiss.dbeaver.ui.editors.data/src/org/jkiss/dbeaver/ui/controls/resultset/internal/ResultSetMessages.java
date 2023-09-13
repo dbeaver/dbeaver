@@ -136,7 +136,6 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_config_panels;
     public static String controls_resultset_config_record;
 
-    public static String sql_editor_resultset_filter_;
     public static String sql_editor_resultset_filter_panel_text_enter_sql_to_filter;
     public static String sql_editor_resultset_filter_panel_text_enter_filter_not_support;
     public static String sql_editor_resultset_filter_panel_btn_apply;
@@ -177,6 +176,8 @@ public class ResultSetMessages extends NLS {
     public static String dialog_row_colors_group_settings_background_color_label;
     public static String dialog_row_colors_group_settings_foreground_color_label;
     public static String dialog_row_colors_group_settings_tip;
+    public static String dialog_row_colors_error_message_title;
+    public static String dialog_row_colors_error_message_text;
 
     public static String dialog_value_view_button_cancel;
     public static String dialog_value_view_button_sat_null;
@@ -243,6 +244,7 @@ public class ResultSetMessages extends NLS {
     public static String dialog_paste_as_insert_nulls_tip;
     public static String dialog_paste_as_null_value_mark_text;
     public static String dialog_paste_as_null_value_mark_tip;
+
 
     // Pref pages
     public static String pref_page_content_editor_checkbox_commit_on_content_apply;

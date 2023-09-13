@@ -372,7 +372,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     }
 
     @Override
-    protected void appendSelectSource(DBRProgressMonitor monitor, StringBuilder query, String tableAlias, DBDPseudoAttribute rowIdAttribute) {
+    protected void appendSelectSource(DBRProgressMonitor monitor, StringBuilder query, String tableAlias, DBDPseudoAttribute rowIdAttribute) throws DBCException {
         if (tableType != null && tableType.getName().equals(OracleConstants.TYPE_NAME_XML)) {
             try {
                 OracleTableColumn xmlColumn = getXMLColumn(monitor);

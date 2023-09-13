@@ -423,18 +423,21 @@ public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConver
     @Override
     public String convertExternalDataType(@NotNull SQLDialect sourceDialect, @NotNull DBSTypedObject sourceTypedObject, @Nullable DBPDataTypeProvider targetTypeProvider) {
         if (targetTypeProvider != null) {
-            String externalTypeName = sourceTypedObject.getTypeName().toLowerCase(Locale.ENGLISH);
-            if (SQLConstants.DATA_TYPE_VARCHAR.equals(externalTypeName)) {
-                long maxLength = sourceTypedObject.getMaxLength();
-                if (maxLength <= 0) {
-                    // Some databases can not have varchar data type without modifiers.
-                    // Like PostgreSQL where varchar without modifiers == text.
-                    // But other databases are more strict in this case
-                    // Let's use another text data type instead
-                    for (String textType : LONG_TEXT_TYPES) {
-                        DBSDataType textDataType = targetTypeProvider.getLocalDataType(textType);
-                        if (textDataType != null) {
-                            return textDataType.getName();
+            String typeName = sourceTypedObject.getTypeName();
+            if (CommonUtils.isNotEmpty(typeName)) {
+                String externalTypeName = typeName.toLowerCase(Locale.ENGLISH);
+                if (SQLConstants.DATA_TYPE_VARCHAR.equals(externalTypeName)) {
+                    long maxLength = sourceTypedObject.getMaxLength();
+                    if (maxLength <= 0) {
+                        // Some databases can not have varchar data type without modifiers.
+                        // Like PostgreSQL where varchar without modifiers == text.
+                        // But other databases are more strict in this case
+                        // Let's use another text data type instead
+                        for (String textType : LONG_TEXT_TYPES) {
+                            DBSDataType textDataType = targetTypeProvider.getLocalDataType(textType);
+                            if (textDataType != null) {
+                                return textDataType.getName();
+                            }
                         }
                     }
                 }

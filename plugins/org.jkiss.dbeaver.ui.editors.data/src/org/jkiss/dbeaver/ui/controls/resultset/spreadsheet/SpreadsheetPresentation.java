@@ -135,6 +135,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     private Color cellHeaderBackground;
     private Color cellHeaderSelectionBackground;
     private Color cellHeaderBorder;
+    private boolean isHighContrastTheme = false;
 
     private boolean showOddRows = true;
     private boolean highlightRowsWithSelectedCells;
@@ -827,6 +828,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         if (spreadsheet.isDisposed()) {
             return;
         }
+        isHighContrastTheme = UIStyles.isHighContrastTheme();
 
         // Cache preferences
         DBPPreferenceStore preferenceStore = getPreferenceStore();
@@ -2399,7 +2401,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
             if (cellSelected) {
                 Color normalColor = getCellBackground(attribute, row, cellValue, rowPosition, false, true);
-                if (normalColor == null || normalColor == backgroundNormal) {
+                if (normalColor == null || normalColor == backgroundNormal || isHighContrastTheme) {
                     return backgroundSelected;
                 }
                 RGB mixRGB = UIUtils.blend(
@@ -2436,7 +2438,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if (!ignoreRowSelection && highlightRowsWithSelectedCells && spreadsheet.isRowSelected(rowPosition)) {
                 Color normalColor = getCellBackground(attribute, row, cellValue, rowPosition, false, true);
                 Color selectedCellColor;
-                if (normalColor == null || normalColor == backgroundNormal) {
+                if (normalColor == null || normalColor == backgroundNormal || isHighContrastTheme) {
                     selectedCellColor = backgroundSelected;
                 } else {
                     RGB mixRGB = UIUtils.blend(
@@ -2490,7 +2492,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
             }
 
-            if (!controller.isRecordMode() && showOddRows) {
+            if (!controller.isRecordMode() && showOddRows  && !spreadsheet.isAccessibilityEnabled() && !isHighContrastTheme) {
                 // Determine odd/even row
                 if (rowBatchSize < 1) {
                     rowBatchSize = 1;

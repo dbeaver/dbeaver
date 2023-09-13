@@ -2,6 +2,7 @@
 <?eclipse version="3.4"?>
 <plugin>
     <extension-point id="org.jkiss.dbeaver.confirmations" name="UI confirmations" schema="schema/org.jkiss.dbeaver.confirmations.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.notifications" name="UI notifications" schema="schema/org.jkiss.dbeaver.notifications.exsd"/>
 
    <extension point="org.eclipse.core.expressions.definitions">
       <definition id="DBeaverPerspectiveActive">
@@ -95,6 +96,12 @@
         </handler>
     </extension>
 
+    <extension point="org.eclipse.e4.ui.css.swt.theme">
+        <stylesheet uri="css/e4-high_contrast_dbeaver_prefstyle.css">
+            <themeid refid="org.eclipse.e4.ui.css.theme.high-contrast"/>
+        </stylesheet>
+    </extension>
+
     <extension point="org.eclipse.ui.themes">
         <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.dbeaver.ui.fonts.label" id="org.jkiss.dbeaver.ui.fonts">
             <description>%themeElementCategory.org.jkiss.dbeaver.ui.fonts.description</description>
@@ -118,5 +125,9 @@
             <fontValue os="macosx" value="Sans-regular-13"/>
         </fontDefinition>
        
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.notifications">
+        <notification id="generic" name="Generic notification" hidden="true"/>
     </extension>
 </plugin>

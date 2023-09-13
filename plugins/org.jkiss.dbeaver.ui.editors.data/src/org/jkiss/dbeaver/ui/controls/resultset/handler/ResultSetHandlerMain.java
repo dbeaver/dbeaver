@@ -28,11 +28,14 @@ import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.FontRegistry;
+import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.widgets.ColorDialog;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Shell;
@@ -44,6 +47,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -59,6 +63,10 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
@@ -67,6 +75,8 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
@@ -128,6 +138,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
     public static final String CMD_ZOOM_OUT = "org.eclipse.ui.edit.text.zoomOut";
 
     public static final String CMD_TOGGLE_ORDER = "org.jkiss.dbeaver.core.resultset.toggleOrder";
+    public static final String CMD_SELECT_ROW_COLOR = "org.jkiss.dbeaver.core.resultset.grid.selectRowColor"; 
 
     public static final String PARAM_EXPORT_WITH_PARAM = "exportWithParameter";
 
@@ -553,7 +564,6 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
 
                 break;
             }
-
             case CMD_TOGGLE_ORDER: {
                 final DBDAttributeBinding attr = rsv.getActivePresentation().getFocusAttribute();
                 if (attr != null) {
@@ -561,9 +571,39 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 }
                 break;
             }
+            case CMD_SELECT_ROW_COLOR: {
+                if (activePart != null) {
+                    ResultSetViewer resultSetViewer = activePart.getAdapter(ResultSetViewer.class);
+                    if (presentation instanceof SpreadsheetPresentation) {
+                        SpreadsheetPresentation ssp = (SpreadsheetPresentation) presentation;
+                        RGB color;
+                        final Shell shell = UIUtils.createCenteredShell(resultSetViewer.getControl().getShell());
+                        try {
+                            ColorDialog cd = new ColorDialog(shell);
+                            color = cd.open();
+                            if (color == null) {
+                                return null;
+                            }
+                        } finally {
+                            UIUtils.disposeCenteredShell(shell);
+                        }
+                        try {
+                            final DBVEntity vEntity = getColorsVirtualEntity(resultSetViewer);
+                            final DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
+                            ResultSetCellLocation currentCellLocation = ssp.getCurrentCellLocation();
+                            Object cellValue = resultSetViewer.getContainer().getResultSetController().getModel()
+                                .getCellValue(currentCellLocation);
+                            vEntity.setColorOverride(attr, cellValue, null, StringConverter.asString(color));
+                            updateColors(resultSetViewer, vEntity, true);
+                        } catch (IllegalStateException e) {
+                            DBWorkbench.getPlatformUI().showError(
+                                ResultSetMessages.dialog_row_colors_error_message_title,
+                                ResultSetMessages.dialog_row_colors_error_message_text, e);
+                        }
+                    }
+                }
+            }
         }
-
-
         return null;
     }
 
@@ -638,6 +678,23 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 element.setTooltip(descriptor.getDescription());
             }
         }
+    }
+    
+    private void updateColors(ResultSetViewer resultSetViewer, DBVEntity entity, boolean refresh) {
+        resultSetViewer.getModel().updateColorMapping(true);
+        entity.persistConfiguration();
+        if (refresh) {
+            resultSetViewer.redrawData(false, false);
+        }
+    }
+
+    @NotNull
+    private DBVEntity getColorsVirtualEntity(ResultSetViewer resultSetViewer) throws IllegalStateException {
+        DBSDataContainer dataContainer = resultSetViewer.getDataContainer();
+        if (dataContainer == null) {
+            throw new IllegalStateException("No data container");
+        }
+        return DBVUtils.getVirtualEntity(dataContainer, true);
     }
 
     static class GotoLineDialog extends InputDialog {

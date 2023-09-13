@@ -154,7 +154,7 @@
                     <folder type="org.jkiss.dbeaver.model.access.DBAPrivilege" label="%tree.user_privileges.node.name" icon="#info" description="User privileges">
                         <items label="%tree.privilege.node.name" path="privileges" property="privileges" icon="#info" navigable="false" virtual="true"/>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLPlugin" label="%tree.plugin.node.name" icon="#info" description="Database plugins">
+                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLPlugin" label="%tree.plugin.node.name" icon="#info" description="Database plugins" visibleIf="connected &amp;&amp; object.dataSource.supportsPlugins()">
                         <items label="%tree.plugin.node.name" path="plugins" property="plugins" icon="#info" navigable="false" virtual="true"/>
                     </folder>
                 </folder>
@@ -196,6 +196,12 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
+                    <provider-properties>
+                        <propertyGroup label="Advanced">
+                            <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
+                        </propertyGroup>
+                    </provider-properties>
+
                 </driver>
                 <driver
                         id="mysql8"
@@ -223,6 +229,11 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
+                    <provider-properties>
+                        <propertyGroup label="Advanced">
+                            <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
+                        </propertyGroup>
+                    </provider-properties>
                 </driver>
                 <driver
                     id="mysql_ndb"
@@ -246,6 +257,11 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
+                    <provider-properties>
+                        <propertyGroup label="Advanced">
+                            <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
+                        </propertyGroup>
+                    </provider-properties>
                 </driver>
 
                 <driver
@@ -271,6 +287,11 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <!--<property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>-->
                     <parameter name="krb5.enabled" value="true"/>
+                    <provider-properties>
+                        <propertyGroup label="Advanced">
+                            <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
+                        </propertyGroup>
+                    </provider-properties>
                 </driver>
             </drivers>
 
@@ -349,6 +370,7 @@
                 description="Secure socket layer"
                 desktop="false"
                 secured="false"
+                pinned="true"
                 order="100"
                 handlerClass="org.jkiss.dbeaver.ext.mysql.model.net.MySQLSSLHandlerImpl">
             <propertyGroup label="SSL Settings">

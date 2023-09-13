@@ -159,7 +159,7 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
     }
 
     @Override
-    public GenericTableBase createTableImpl(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
+    public GenericTableBase createTableOrViewImpl(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         if (tableType != null && isView(tableType)) {
             return new SQLiteView(container, tableName, tableType, dbResult);
         } else {

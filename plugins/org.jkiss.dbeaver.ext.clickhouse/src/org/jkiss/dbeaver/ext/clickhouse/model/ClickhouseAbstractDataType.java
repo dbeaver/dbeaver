@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ext.clickhouse.model;
 
-package org.jkiss.dbeaver.ext.oceanbase.data;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.impl.struct.AbstractDataType;
 
-import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider;
-
-public class OceanbaseValueHandlerProvider extends JDBCStandardValueHandlerProvider{
-
-
+public abstract class ClickhouseAbstractDataType extends AbstractDataType<ClickhouseDataSource> {
+    public ClickhouseAbstractDataType(@NotNull ClickhouseDataSource dataSource) {
+        super(dataSource);
+    }
 }

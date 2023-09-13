@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
-import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -42,22 +41,24 @@ public interface DBSDictionary
     /**
      * Gets enumeration values
      *
-     * @param monitor session
-     * @param keyColumn enumeration column.
-     * @param keyPattern pattern for enumeration values. If null or empty then returns full enumration set
-     * @param preceedingKeys other constrain key values. May be null.
+     * @param monitor               session
+     * @param keyColumn             enumeration column.
+     * @param keyPattern            pattern for enumeration values. If null or empty then returns full enumration set
+     * @param searchText
+     * @param preceedingKeys        other constrain key values. May be null.
      * @param caseInsensitiveSearch use case-insensitive search for {@code keyPattern}
-     * @param sortAsc ascending sorting (irrelevant is {@code sortByValue} is false)
-     * @param sortByValue sort results by value
-     * @param offset enumeration values offset in result set
-     * @param maxResults maximum enumeration values in result set
+     * @param sortAsc               ascending sorting (irrelevant is {@code sortByValue} is false)
+     * @param sortByValue           sort results by value
+     * @param offset                enumeration values offset in result set
+     * @param maxResults            maximum enumeration values in result set
      * @return statement with result set which contains valid enumeration values.
      */
     @NotNull
     List<DBDLabelValuePair> getDictionaryEnumeration(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSEntityAttribute keyColumn,
-        Object keyPattern,
+        @Nullable Object keyPattern,
+        @Nullable String searchText,
         @Nullable List<DBDAttributeValue> preceedingKeys,
         boolean caseInsensitiveSearch,
         boolean sortAsc,
@@ -78,7 +79,6 @@ public interface DBSDictionary
 
     @NotNull
     DBSDictionaryAccessor getDictionaryAccessor(
-        DBCExecutionSource execSource,
         @NotNull DBRProgressMonitor monitor,
         @Nullable List<DBDAttributeValue> precedingKeys,
         @NotNull DBSEntityAttribute keyColumn,

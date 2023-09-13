@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.fieldassist.ComboContentAdapter;
 import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
@@ -45,13 +44,12 @@ import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguageManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.SWTBrowserRegistry;
-import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageDescriptor;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
+import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -74,12 +72,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
     @Nullable
     private Combo clientTimezone;
-
-    private Button longOperationsCheck;
-    private Spinner longOperationsTimeout;
-
-    private Button notificationsEnabled;
-    private Spinner notificationsCloseDelay;
 
     private boolean isStandalone = DesktopPlatform.isStandalone();
     private Combo browserCombo;
@@ -173,31 +165,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             ));
 
         }
-        // Notifications settings
-        {
-            Group notificationsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_notifications, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-
-            notificationsEnabled = UIUtils.createCheckbox(notificationsGroup,
-                CoreMessages.pref_page_ui_general_label_enable_notifications,
-                CoreMessages.pref_page_ui_general_label_enable_notifications_tip, false, 2);
-
-            notificationsCloseDelay = UIUtils.createLabelSpinner(notificationsGroup, CoreMessages.pref_page_ui_general_label_notifications_close_delay, 0, 0, Integer.MAX_VALUE);
-        }
-
-        // Agent settings
-        {
-            Group agentGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_task_bar, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-
-            longOperationsCheck = UIUtils.createCheckbox(agentGroup,
-                    CoreMessages.pref_page_ui_general_label_enable_long_operations,
-                    CoreMessages.pref_page_ui_general_label_enable_long_operations_tip, false, 2);
-
-            longOperationsTimeout = UIUtils.createLabelSpinner(agentGroup, CoreMessages.pref_page_ui_general_label_long_operation_timeout + UIMessages.label_sec, 0, 0, Integer.MAX_VALUE);
-
-            if (RuntimeUtils.isMacOS()) {
-                ControlEnableState.disable(agentGroup);
-            }
-        }
         if (isWindowsDesktopClient()) {
             Group groupObjects = UIUtils.createControlGroup(
                 composite,
@@ -235,8 +202,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             SWTBrowserRegistry.getActiveBrowser();
             browserCombo.select(SWTBrowserRegistry.getActiveBrowser().ordinal());
         }
-        notificationsEnabled.setSelection(store.getBoolean(ModelPreferences.NOTIFICATIONS_ENABLED));
-        notificationsCloseDelay.setSelection(store.getInt(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT));
         final String timezone = store.getString(ModelPreferences.CLIENT_TIMEZONE);
         if (clientTimezone != null) {
             if (DBConstants.DEFAULT_TIMEZONE.equals(timezone)) {
@@ -245,9 +210,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 clientTimezone.setText(TimezoneRegistry.getGMTString(timezone));
             }
         }
-
-        longOperationsCheck.setSelection(store.getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY));
-        longOperationsTimeout.setSelection(store.getInt(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT));
     }
 
     private boolean isWindowsDesktopClient() {
@@ -256,8 +218,8 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
     @Override
     public boolean isValid() {
-        return super.isValid() && clientTimezone != null &&
-            (Arrays.stream(clientTimezone.getItems()).anyMatch(s -> s.equals(clientTimezone.getText())));
+        return super.isValid() && (!isStandalone || clientTimezone != null &&
+            (Arrays.stream(clientTimezone.getItems()).anyMatch(s -> s.equals(clientTimezone.getText()))));
     }
 
     @Override
@@ -272,11 +234,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         if (isWindowsDesktopClient()) {
             SWTBrowserRegistry.setActiveBrowser(SWTBrowserRegistry.BrowserSelection.values()[browserCombo.getSelectionIndex()]);
         }
-        store.setValue(ModelPreferences.NOTIFICATIONS_ENABLED, notificationsEnabled.getSelection());
-        store.setValue(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT, notificationsCloseDelay.getSelection());
-
-        store.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY, longOperationsCheck.getSelection());
-        store.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, longOperationsTimeout.getSelection());
 
         PrefUtils.savePreferenceStore(store);
         if (clientTimezone != null) {

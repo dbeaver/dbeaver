@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.clickhouse.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.clickhouse.ClickhouseConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -24,6 +25,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 
@@ -268,5 +270,16 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
     @Override
     public char getStringEscapeCharacter() {
         return '\\';
+    }
+
+    @NotNull
+    @Override
+    public String getTypeCastClause(@NotNull DBSTypedObject attribute, String expression, boolean isInCondition) {
+        String typeName = attribute.getTypeName();
+        if (isInCondition && CommonUtils.isNotEmpty(typeName) && ClickhouseConstants.DATA_TYPE_IPV4.equals(typeName.toLowerCase())) {
+            return "IPv4StringToNum(" + expression + ")";
+        } else {
+            return super.getTypeCastClause(attribute, expression, isInCondition);
+        }
     }
 }

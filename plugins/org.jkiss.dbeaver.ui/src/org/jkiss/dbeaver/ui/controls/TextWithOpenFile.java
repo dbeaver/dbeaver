@@ -43,7 +43,11 @@ public class TextWithOpenFile extends TextWithOpen
     private boolean openFolder = false;
 
     public TextWithOpenFile(Composite parent, String title, String[] filterExt, int style, boolean binary) {
-        super(parent);
+        this(parent, title, filterExt, style, binary, false);
+    }
+    
+    public TextWithOpenFile(Composite parent, String title, String[] filterExt, int style, boolean binary, boolean secured) {
+        super(parent, secured);
         this.title = title;
         this.filterExt = filterExt;
         this.style = style;
@@ -56,6 +60,10 @@ public class TextWithOpenFile extends TextWithOpen
 
     public TextWithOpenFile(Composite parent, String title, String[] filterExt, boolean binary) {
         this(parent, title, filterExt, SWT.SINGLE | SWT.OPEN, binary);
+    }
+
+    public TextWithOpenFile(Composite parent, String title, String[] filterExt, boolean binary, boolean secured) {
+        this(parent, title, filterExt, SWT.SINGLE | SWT.OPEN, binary, secured);
     }
 
     public void setOpenFolder(boolean openFolder) {

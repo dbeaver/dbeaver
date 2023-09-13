@@ -279,6 +279,12 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         }
 
         if (tableBase instanceof PostgreTableRegular) {
+            if (!alter) {
+                createUsingClause((PostgreTableRegular) tableBase, ddl);
+            }
+        }
+
+        if (tableBase instanceof PostgreTableRegular) {
             PostgreTableRegular table = (PostgreTableRegular) tableBase;
             try {
                 if (!alter) {
@@ -449,6 +455,10 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return withClauseBuilder.toString();
     }
 
+    public void createUsingClause(@NotNull PostgreTableRegular table, @NotNull StringBuilder ddl) {
+        // Do nothing
+    }
+
     @Override
     public boolean supportsPGConstraintExpressionColumn() {
         return true;
@@ -572,5 +582,10 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     @Override
     public boolean supportsAlterTableForViewRename() {
         return false;
+    }
+
+    @Override
+    public boolean supportsNativeClient() {
+        return true;
     }
 }

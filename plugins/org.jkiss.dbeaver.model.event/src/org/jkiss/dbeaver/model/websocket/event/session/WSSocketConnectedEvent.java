@@ -17,10 +17,9 @@
 package org.jkiss.dbeaver.model.websocket.event.session;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.websocket.event.WSAbstractEvent;
 import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
-public class WSSocketConnectedEvent extends WSAbstractEvent {
+public class WSSocketConnectedEvent extends WSAbstractSessionEvent {
 
     private final String applicationRunId;
 

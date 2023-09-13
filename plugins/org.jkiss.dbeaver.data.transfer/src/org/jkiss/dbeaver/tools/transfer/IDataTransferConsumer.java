@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.task.DBTTask;
 
 import java.util.Date;
 import java.util.Map;
@@ -67,6 +68,18 @@ public interface IDataTransferConsumer<SETTINGS extends IDataTransferSettings, P
      * @param last      called in the very end of all transfers
      */
     default void finishTransfer(@NotNull DBRProgressMonitor monitor, @Nullable Exception exception, boolean last) {
+        finishTransfer(monitor, exception, null, last);
+    }
+
+    /**
+     * Finishes this transfer
+     *
+     * @param monitor   monitor
+     * @param exception an exception caught during transfer, or {@code null} if transfer was successful
+     * @param task      a task the transfer was started from
+     * @param last      called in the very end of all transfers
+     */
+    default void finishTransfer(@NotNull DBRProgressMonitor monitor, @Nullable Exception exception, @Nullable DBTTask task, boolean last) {
         finishTransfer(monitor, last);
     }
 

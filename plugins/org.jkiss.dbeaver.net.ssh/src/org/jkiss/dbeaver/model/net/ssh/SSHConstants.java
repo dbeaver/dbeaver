@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.model.net.ssh;
  */
 public class SSHConstants {
 
-    public static final String LOCALHOST_NAME = "127.0.0.1";
     public static final int DEFAULT_SSH_PORT = 22;
     public static final int DEFAULT_CONNECT_TIMEOUT = 10000;
 

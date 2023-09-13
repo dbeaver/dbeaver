@@ -14,25 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ui.notifications;
 
-package org.jkiss.dbeaver.ext.oceanbase.mysql.model;
-
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
-import org.jkiss.dbeaver.model.DBPObjectStatistics;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 
-public class OceanbaseTable extends MySQLTable implements DBPObjectStatistics {
-    
-    public OceanbaseTable(MySQLCatalog catalog)
-    {
-        super(catalog);
-    }
-
-    public OceanbaseTable(DBRProgressMonitor monitor, MySQLCatalog catalog, DBSEntity source) throws DBException {
-        super(monitor, catalog, source);
-    }
-
+public interface NotificationSoundProvider {
+    @NotNull
+    NotificationSound create() throws DBException;
 }

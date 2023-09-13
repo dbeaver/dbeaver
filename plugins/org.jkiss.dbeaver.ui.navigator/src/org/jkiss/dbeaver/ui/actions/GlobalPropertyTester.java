@@ -68,9 +68,7 @@ public class GlobalPropertyTester extends PropertyTester {
             case PROP_CAN_CREATE_CONNECTION:
             {
                 for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
-                    if (project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)
-                        && project.hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER)
-                    ) {
+                    if (project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
                         return true;
                     }
                 }

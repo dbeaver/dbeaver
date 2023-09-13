@@ -40,6 +40,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.data.gis.handlers.WKGUtils;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -353,6 +354,9 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
                 log.error("Error forcing geometry to 2D", e);
             }
             Object targetValue = value.getRawValue();
+            if (WKGUtils.isCurve(targetValue)) {
+                targetValue = WKGUtils.linearize((org.cugos.wkg.Geometry) targetValue);
+            }
             int srid = sourceSRID == 0 ? value.getSRID() : sourceSRID;
             if (srid == GisConstants.SRID_SIMPLE) {
                 srid = attributeSrid;
@@ -367,7 +371,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
                 showMap = true;
                 actualSourceSRID = srid;
             } else {
-                Geometry geometry = value.getGeometry();
+                Geometry geometry = GisTransformUtils.getJtsGeometry(targetValue);
                 if (geometry != null) {
                     try {
                         GisTransformRequest request = new GisTransformRequest(geometry, srid, GisConstants.SRID_4326);
@@ -752,6 +756,12 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
 
         ImageData imageData;
         if (RuntimeUtils.isWindows()) {
+            try {
+                // Some controls overlapping the map may be still in a disappearing process, so let's wait a little #20921
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                // ignore
+            }
             imageData = GISBrowserImageUtils.getControlScreenshotOnWindows(browser);
         } else {
             Image image = new Image(Display.getDefault(), browser.getBounds());
