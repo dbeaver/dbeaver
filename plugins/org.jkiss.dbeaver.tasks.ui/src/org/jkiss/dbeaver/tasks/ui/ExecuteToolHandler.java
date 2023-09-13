@@ -23,9 +23,10 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.task.TaskTypeDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -62,13 +63,20 @@ public class ExecuteToolHandler implements IActionDelegate {
                 DBPProject selectedProject = dataSource.getContainer().getProject();
                 TaskTypeDescriptor taskForObjs = tool.getTaskForObjects(objects);
                 if (taskForObjs != null) {
-                    IStructuredSelection selectedObjects = new StructuredSelection(objects.toArray());
-                    TaskConfigurationWizardDialog.openNewToolTaskDialog(
-                        window,
-                        selectedProject,
-                        taskForObjs.getId(),
-                        selectedObjects
-                    );
+                    if (taskForObjs.requiresMutableDatabase() && DBUtils.isReadOnly(dataSource)) {
+                        DBWorkbench.getPlatformUI().showWarningMessageBox(
+                            TaskUIMessages.task_execute_handler_tool_warn_readonly_title,
+                            NLS.bind(TaskUIMessages.task_execute_handler_tool_warn_readonly_message, dataSource.getName())
+                        );
+                    } else {
+                        IStructuredSelection selectedObjects = new StructuredSelection(objects.toArray());
+                        TaskConfigurationWizardDialog.openNewToolTaskDialog(
+                            window,
+                            selectedProject,
+                            taskForObjs.getId(),
+                            selectedObjects
+                        );
+                    }
                 } else {
                     DBWorkbench.getPlatformUI().showWarningMessageBox(
                         TaskUIMessages.task_execute_handler_tool_error_title,

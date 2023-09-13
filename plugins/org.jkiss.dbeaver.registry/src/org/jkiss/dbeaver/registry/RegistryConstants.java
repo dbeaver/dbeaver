@@ -118,6 +118,7 @@ public class RegistryConstants {
     public static final String ATTR_SINGLETON = "singleton"; //$NON-NLS-1$
     public static final String ATTR_IGNORE_ERRORS = "ignoreErrors"; //$NON-NLS-1$
     public static final String ATTR_DIALECT = "dialect"; //$NON-NLS-1$
+    public static final String ATTR_REQUIRES_MUTABILITY = "requiresMutability"; //$NON-NLS-1$
 
     public static final long DEFAULT_IDLE_TRANSACTION_PERIOD = 1800;
 

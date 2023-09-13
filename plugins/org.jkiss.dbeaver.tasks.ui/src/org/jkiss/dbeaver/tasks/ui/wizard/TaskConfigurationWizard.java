@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.*;
+import org.jkiss.dbeaver.registry.task.TaskConstants;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
@@ -99,7 +100,8 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     }
     
     private boolean isToolTask() {
-        return getCurrentTask().getProperties().getOrDefault("isToolTask", false).equals(true);
+        return getCurrentTask() != null &&
+            getCurrentTask().getProperties().getOrDefault(TaskConstants.TOOL_TASK_PROP, false).equals(true);
     }
 
     public IStructuredSelection getCurrentSelection() {

@@ -473,7 +473,7 @@
         </task>
         <task id="mysqlDatabaseRestore" name="%task.mysqlDatabaseRestore.name" description="%task.mysqlDatabaseRestore.description"
               icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="mysql"
-              handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler"
+              handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler" requiresMutability="true"
               confirmationMessage="%mysqlDatabaseRestore.confirmationMessage" supportsDistributedMode="false">
             <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>

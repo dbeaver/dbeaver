@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskSettingsInput;
+import org.jkiss.dbeaver.registry.task.TaskConstants;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.registry.task.TaskTypeDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -302,7 +303,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
             DBTTask task = project.getTaskManager().createTemporaryTask(taskType, taskType.getName());
             task.setProperties(new HashMap<>());
             if (isToolTask) {
-                task.getProperties().put("isToolTask", true);
+                task.getProperties().put(TaskConstants.TOOL_TASK_PROP, true);
             }
             DBTTaskConfigurator configurator = TaskUIRegistry.getInstance().createConfigurator(taskType);
             TaskConfigurationWizard configWizard = configurator.createTaskConfigWizard(task);

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.registry.task;
 
+import org.apache.commons.jexl3.JexlException.Return;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -139,6 +140,10 @@ public class TaskTypeDescriptor extends DataSourceBindingDescriptor implements D
     @Override
     public boolean isStandalone() {
         return CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_STANDALONE));
+    }
+
+    public boolean requiresMutableDatabase() {
+        return CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_REQUIRES_MUTABILITY), false);
     }
 
     @Nullable

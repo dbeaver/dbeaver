@@ -74,6 +74,8 @@ public class TaskUIMessages extends NLS {
 	public static String task_execute_handler_tool_error_message;
 	public static String task_execute_handler_tool_error_project_message;
 	public static String task_execute_handler_tool_error_apply_message;
+	public static String task_execute_handler_tool_warn_readonly_title;
+	public static String task_execute_handler_tool_warn_readonly_message;
 
 	static {
 		// initialize resource bundle
