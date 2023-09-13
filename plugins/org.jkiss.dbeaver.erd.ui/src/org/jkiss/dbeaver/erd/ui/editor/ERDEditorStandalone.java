@@ -92,7 +92,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
     
     private boolean isProjectResourceEditable() {
         DBPProject project = this.getDiagramProject();
-        return project == null || project.hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER);
+        return project == null || project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
     }
 
     @Override
