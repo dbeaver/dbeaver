@@ -261,4 +261,8 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
     public void loadSettingsFromInput(List<BASE_OBJECT> inputObjects) {
         databaseObjects.addAll(inputObjects);
     }
+
+    public boolean isMutatingTask() {
+        return false;
+    }
 }

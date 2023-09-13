@@ -283,8 +283,16 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
     protected IWizardPage getStartingPage() {
         return getWizard().getStartingPage();
     }
-
+    
     public static int openNewTaskDialog(IWorkbenchWindow window, DBPProject project, String taskTypeId, IStructuredSelection selection) {
+        return openNewTaskDialogImpl(window, project, taskTypeId, selection, false);
+    }
+
+    public static int openNewToolTaskDialog(IWorkbenchWindow window, DBPProject project, String taskTypeId, IStructuredSelection selection) {
+        return openNewTaskDialogImpl(window, project, taskTypeId, selection, true);
+    }
+
+    private static int openNewTaskDialogImpl(IWorkbenchWindow window, DBPProject project, String taskTypeId, IStructuredSelection selection, boolean isToolTask) {
         TaskTypeDescriptor taskType = TaskRegistry.getInstance().getTaskType(taskTypeId);
         if (taskType == null) {
             DBWorkbench.getPlatformUI().showError("Bad task type", "Task type '" + taskTypeId + "' not found");
@@ -293,6 +301,9 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
         try {
             DBTTask task = project.getTaskManager().createTemporaryTask(taskType, taskType.getName());
             task.setProperties(new HashMap<>());
+            if (isToolTask) {
+                task.getProperties().put("isToolTask", true);
+            }
             DBTTaskConfigurator configurator = TaskUIRegistry.getInstance().createConfigurator(taskType);
             TaskConfigurationWizard configWizard = configurator.createTaskConfigWizard(task);
 

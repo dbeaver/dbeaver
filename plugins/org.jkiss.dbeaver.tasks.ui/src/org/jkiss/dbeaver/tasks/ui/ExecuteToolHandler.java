@@ -63,7 +63,7 @@ public class ExecuteToolHandler implements IActionDelegate {
                 TaskTypeDescriptor taskForObjs = tool.getTaskForObjects(objects);
                 if (taskForObjs != null) {
                     IStructuredSelection selectedObjects = new StructuredSelection(objects.toArray());
-                    TaskConfigurationWizardDialog.openNewTaskDialog(
+                    TaskConfigurationWizardDialog.openNewToolTaskDialog(
                         window,
                         selectedProject,
                         taskForObjs.getId(),
