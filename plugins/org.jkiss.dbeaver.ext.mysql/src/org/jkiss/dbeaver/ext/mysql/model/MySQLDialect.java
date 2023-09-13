@@ -127,6 +127,35 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
         "ST_POINTFROMTEXT",
         "ST_POLYFROMTEXT"
     };
+
+    private static final String[] JSON_FUNCTIONS = {
+        "JSON_ARRAY",
+        "JSON_ARRAYAGG",
+        "JSON_ARRAY_APPEND",
+        "JSON_ARRAY_INSERT",
+        "JSON_CONTAINS",
+        "JSON_CONTAINS_PATH",
+        "JSON_DEPTH",
+        "JSON_EXTRACT",
+        "JSON_INSERT",
+        "JSON_KEYS",
+        "JSON_LENGTH",
+        "JSON_MERGE",
+        "JSON_MERGE_PATCH",
+        "JSON_MERGE_PRESERVE",
+        "JSON_OBJECT",
+        "JSON_OBJECTAGG",
+        "JSON_QUOTE",
+        "JSON_REMOVE",
+        "JSON_REPLACE",
+        "JSON_SEARCH",
+        "JSON_SET",
+        "JSON_TABLE",
+        "JSON_TYPE",
+        "JSON_UNQUOTE",
+        "JSON_VALID",
+        "JSON_VALUE"
+    };
     
     private static final Pattern ONE_OR_MORE_DIGITS_PATTERN = Pattern.compile("[0-9]+");
 
@@ -157,6 +186,7 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
         addDataTypes(List.of("CHAR"));
         addFunctions(Arrays.asList(MYSQL_EXTRA_FUNCTIONS));
+        addFunctions(Arrays.asList(JSON_FUNCTIONS));
     }
     
     @Override
