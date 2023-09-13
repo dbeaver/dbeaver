@@ -16,15 +16,40 @@
  */
 package org.jkiss.dbeaver.model.nio;
 
-import org.jkiss.utils.CommonUtils;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 
-import java.net.URI;
-import java.nio.file.spi.FileSystemProvider;
+public abstract class NIOFileBasicAttribute implements BasicFileAttributes {
 
-public abstract class DBNioFileSystemProvider extends FileSystemProvider {
-    protected void validateUri(URI uri) {
-        if (CommonUtils.isEmpty(uri.getScheme()) || !getScheme().equalsIgnoreCase(uri.getScheme())) {
-            throw new IllegalArgumentException("Unsupported uri schema");
-        }
+    @Override
+    public FileTime lastAccessTime() {
+        return null;
     }
+
+    @Override
+    public FileTime creationTime() {
+        return null;
+    }
+
+    @Override
+    public boolean isRegularFile() {
+        return false;
+    }
+
+    @Override
+    public boolean isSymbolicLink() {
+        return false;
+    }
+
+
+    @Override
+    public Object fileKey() {
+        return null;
+    }
+
+    @Override
+    public boolean isOther() {
+        return false;
+    }
+
 }

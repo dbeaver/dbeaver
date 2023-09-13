@@ -22,7 +22,7 @@ import java.nio.file.FileStore;
 import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.FileStoreAttributeView;
 
-public abstract class DBNioFileStore extends FileStore {
+public abstract class NIOFileStore extends FileStore {
     @Override
     public long getUsableSpace() throws IOException {
         throw new UnsupportedEncodingException();

@@ -16,35 +16,45 @@
  */
 package org.jkiss.dbeaver.model.nio;
 
-import java.nio.file.FileSystem;
-import java.nio.file.PathMatcher;
+import org.jkiss.code.NotNull;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.nio.file.attribute.UserPrincipalLookupService;
-import java.util.Set;
 
-public abstract class DBNioFileSystem extends FileSystem {
+public abstract class NIOPath implements Path {
     @Override
-    public String getSeparator() {
-        return "/";
+    public int compareTo(@NotNull Path other) {
+        return toString().compareTo(other.toString());
+    }
+
+    @NotNull
+    @Override
+    public String toString() {
+        return toUri().toString();
     }
 
     @Override
-    public Set<String> supportedFileAttributeViews() {
-        return Set.of();
+    public boolean endsWith(@NotNull Path other) {
+        return toString().equals(other.toString());
     }
 
     @Override
-    public PathMatcher getPathMatcher(String syntaxAndPattern) {
+    public Path getName(int index) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public UserPrincipalLookupService getUserPrincipalLookupService() {
+    public Path subpath(int beginIndex, int endIndex) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public WatchService newWatchService() {
+    public WatchKey register(@NotNull WatchService watcher, @NotNull WatchEvent.Kind<?>[] events, WatchEvent.Modifier... modifiers) throws
+        IOException {
         throw new UnsupportedOperationException();
     }
+
 }
