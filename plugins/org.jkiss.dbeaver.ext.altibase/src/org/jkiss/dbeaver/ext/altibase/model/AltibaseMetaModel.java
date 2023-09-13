@@ -363,7 +363,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
                     + " AND PP.PACKAGE_TYPE = " + packageType
                     + " ORDER BY PP.PACKAGE_TYPE, SEQ_NO ASC";
 
-            ddl = getViewProcDDLFromCatalog(monitor, sourceObject, sourceObject.getSchema().getName(), sql, hasDbmsMetadata);
+            ddl = getPackageDDLFromCatalog(monitor, sourceObject, sourceObject.getSchema().getName(), sql, hasDbmsMetadata);
         }
         
         return ddl;
@@ -977,7 +977,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
     /**
      * Get DDL source for Package
      */
-    private String getViewProcDDLFromCatalog(DBRProgressMonitor monitor, DBSObject sourceObject, String schemaName, String sql, 
+    private String getPackageDDLFromCatalog(DBRProgressMonitor monitor, DBSObject sourceObject, String schemaName, String sql, 
             boolean hasDbmsMetdata) {
         return geDDLFromCatalog(monitor, sourceObject, schemaName, sql, "PARSE", hasDbmsMetdata);
     }
