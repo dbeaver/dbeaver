@@ -31,4 +31,11 @@ public interface DBPNativeClientLocationManager {
     String getProductName(DBPNativeClientLocation location);
 
     String getProductVersion(DBPNativeClientLocation location);
+
+    /**
+     * @return false if provider child doesn't support native clients
+     */
+    default boolean supportsNativeClients() {
+        return true;
+    }
 }
