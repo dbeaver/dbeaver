@@ -67,7 +67,7 @@ public class DBNFileSystemNIO2Resource extends DBNResource implements DBNLazyNod
     @NotNull
     @Override
     public DBPImage getNodeIcon() {
-        if (getParentNode() instanceof DBNFileSystemNIO2) {
+        if (isRoot()) {
             // this is a root node
             return DBIcon.TREE_FOLDER_INFO;
         } else {
@@ -100,6 +100,10 @@ public class DBNFileSystemNIO2Resource extends DBNResource implements DBNLazyNod
         }
 
         return null;
+    }
+
+    public boolean isRoot() {
+        return getParentNode() instanceof DBNFileSystemNIO2;
     }
 
     void addChildResource(@NotNull String name, boolean directory) {
@@ -188,7 +192,7 @@ public class DBNFileSystemNIO2Resource extends DBNResource implements DBNLazyNod
 
     @Override
     public String getNodeName() {
-        if (getParentNode() instanceof DBNFileSystemNIO2) {
+        if (isRoot()) {
             return root.getName();
         } else {
             return getResource().getName();

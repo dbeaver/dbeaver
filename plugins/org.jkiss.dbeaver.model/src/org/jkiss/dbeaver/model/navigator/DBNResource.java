@@ -600,7 +600,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
     }
 
     @Property(viewable = true, order = 11)
-    public String getResourceLastModified() throws CoreException {
+    public String getResourceLastModified() {
         if (resource instanceof IFile) {
             long lastModified = ResourceUtils.getResourceLastModified(resource);
             return lastModified <= 0 ? "" : DATE_FORMAT.format(lastModified);
@@ -642,7 +642,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
     }
 
     @Override
-    public long getStreamSize() throws IOException {
+    public long getStreamSize() {
         return ResourceUtils.getFileLength(resource);
     }
 
