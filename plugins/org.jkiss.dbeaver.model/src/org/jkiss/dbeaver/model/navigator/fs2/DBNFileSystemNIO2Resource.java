@@ -25,6 +25,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.fs.nio2.NIO2FileStore;
@@ -41,7 +43,7 @@ import org.jkiss.utils.ArrayUtils;
 public class DBNFileSystemNIO2Resource extends DBNResource implements DBNLazyNode {
     private static final Log log = Log.getLog(DBNFileSystemNIO2Resource.class);
 
-    private final DBFVirtualFileSystemRoot root;
+    private DBFVirtualFileSystemRoot root;
 
     public DBNFileSystemNIO2Resource(@NotNull DBNNode parent, @Nullable IResource resource, @NotNull DBFVirtualFileSystemRoot root) {
         super(parent, resource, ((DBPWorkspaceDesktop) DBWorkbench.getPlatform().getWorkspace()).getDefaultResourceHandler());
@@ -60,6 +62,29 @@ public class DBNFileSystemNIO2Resource extends DBNResource implements DBNLazyNod
         refreshResource(monitor, true);
         fireNodeEvent(new DBNEvent(source, DBNEvent.Action.UPDATE, DBNEvent.NodeChange.REFRESH, this));
         return this;
+    }
+
+    @NotNull
+    @Override
+    public DBPImage getNodeIcon() {
+        if (getParentNode() instanceof DBNFileSystemNIO2) {
+            // this is a root node
+            return DBIcon.TREE_FOLDER_INFO;
+        } else {
+            return super.getNodeIcon();
+        }
+    }
+
+    @Override
+    public boolean isDisposed() {
+        return root == null || super.isDisposed();
+    }
+
+    @Override
+    protected void dispose(boolean reflect) {
+        children = null;
+        this.root = null;
+        super.dispose(reflect);
     }
 
     @Nullable

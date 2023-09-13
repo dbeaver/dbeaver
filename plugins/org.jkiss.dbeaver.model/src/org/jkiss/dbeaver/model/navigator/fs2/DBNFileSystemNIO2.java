@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.navigator.fs2;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
@@ -90,7 +91,7 @@ public class DBNFileSystemNIO2 extends DBNNode implements DBNLazyNode {
 
     @Override
     public DBPImage getNodeIcon() {
-        return null;
+        return DBIcon.TREE_FOLDER_LINK;
     }
 
     @Override
@@ -121,7 +122,13 @@ public class DBNFileSystemNIO2 extends DBNNode implements DBNLazyNode {
 
     @Override
     public String getNodeItemPath() {
-        return null;
+        return getParentNode().getNodeItemPath() + "/" + getName();
+    }
+
+    @Override
+    protected void dispose(boolean reflect) {
+        children = null;
+        super.dispose(reflect);
     }
 
     @NotNull

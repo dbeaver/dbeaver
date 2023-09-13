@@ -19,12 +19,14 @@ package org.jkiss.dbeaver.model.navigator.fs2;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.fs.nio.NIOListener;
 import org.jkiss.dbeaver.model.fs.nio.NIOMonitor;
 import org.jkiss.dbeaver.model.fs.nio2.NIO2FileStore;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -85,7 +87,7 @@ public class DBNFileSystemNIO2List extends DBNNode implements NIOListener {
 
     @Override
     public DBPImage getNodeIcon() {
-        return null;
+        return DBIcon.TREE_FILE;
     }
 
     @Override
@@ -109,6 +111,23 @@ public class DBNFileSystemNIO2List extends DBNNode implements NIOListener {
         }
 
         return children;
+    }
+
+    @Override
+    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
+        children = null;
+        return this;
+    }
+
+    @Override
+    protected void dispose(boolean reflect) {
+        children = null;
+        super.dispose(reflect);
+    }
+
+    public void resetFileSystems() {
+        children = null;
+        getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
     }
 
     @Override
