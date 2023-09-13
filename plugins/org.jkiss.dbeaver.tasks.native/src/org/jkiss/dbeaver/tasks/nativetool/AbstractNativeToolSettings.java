@@ -41,7 +41,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> implements DBTTaskSettings<BASE_OBJECT>, DBTTaskSettingsInput<BASE_OBJECT> {
+public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
+    implements DBTTaskSettings<BASE_OBJECT>, DBTTaskSettingsInput<BASE_OBJECT> {
 
     private static final Log log = Log.getLog(AbstractNativeToolSettings.class);
 

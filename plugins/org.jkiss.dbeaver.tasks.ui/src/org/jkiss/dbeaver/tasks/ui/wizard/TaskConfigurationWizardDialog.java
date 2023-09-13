@@ -284,16 +284,50 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
     protected IWizardPage getStartingPage() {
         return getWizard().getStartingPage();
     }
-    
-    public static int openNewTaskDialog(IWorkbenchWindow window, DBPProject project, String taskTypeId, IStructuredSelection selection) {
+
+    /**
+     * Opens new task dialog
+     *
+     * @param window - workbench window to get parent shell from
+     * @param project - project for task execution
+     * @param taskTypeId - task id
+     * @param selection - database objects to apply the task to
+     * @return the return code
+     */
+    public static int openNewTaskDialog(
+        @NotNull IWorkbenchWindow window,
+        @NotNull DBPProject project,
+        @NotNull String taskTypeId,
+        @NotNull IStructuredSelection selection
+    ) {
         return openNewTaskDialogImpl(window, project, taskTypeId, selection, false);
     }
 
-    public static int openNewToolTaskDialog(IWorkbenchWindow window, DBPProject project, String taskTypeId, IStructuredSelection selection) {
+    /**
+     * Opens new task dialog for the tool
+     *
+     * @param window - workbench window to get parent shell from
+     * @param project - project for task execution
+     * @param taskTypeId - task id
+     * @param selection - database objects to apply the tool task to
+     * @return the return code
+     */
+    public static int openNewToolTaskDialog(
+        @NotNull IWorkbenchWindow window,
+        @NotNull DBPProject project,
+        @NotNull String taskTypeId,
+        @NotNull IStructuredSelection selection
+    ) {
         return openNewTaskDialogImpl(window, project, taskTypeId, selection, true);
     }
 
-    private static int openNewTaskDialogImpl(IWorkbenchWindow window, DBPProject project, String taskTypeId, IStructuredSelection selection, boolean isToolTask) {
+    private static int openNewTaskDialogImpl(
+        @NotNull IWorkbenchWindow window,
+        @NotNull DBPProject project,
+        @NotNull String taskTypeId,
+        @NotNull IStructuredSelection selection,
+        boolean isToolTask
+    ) {
         TaskTypeDescriptor taskType = TaskRegistry.getInstance().getTaskType(taskTypeId);
         if (taskType == null) {
             DBWorkbench.getPlatformUI().showError("Bad task type", "Task type '" + taskTypeId + "' not found");
