@@ -95,7 +95,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     public abstract void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state);
 
     public boolean isRunTaskOnFinish() {
-        return getCurrentTask() != null && (!getCurrentTask().isTemporary() || isToolTask()) && !getContainer().isSelectorMode();
+        return getCurrentTask() != null && !getCurrentTask().isTemporary() && !getContainer().isSelectorMode();
     }
     
     private boolean isToolTask() {
@@ -239,16 +239,20 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
     @Override
     public boolean performFinish() {
-        if (currentTask != null && !currentTask.isTemporary()) {
-            saveTask();
-        }
-
-        if (isRunTaskOnFinish()) {
-            if (!runTask()) {
-                return false;
+        if (currentTask != null && isToolTask()) {
+            saveConfigurationToTask(currentTask);
+            return runTask();
+        } else {
+            if (currentTask != null && !currentTask.isTemporary()) {
+                saveTask();
+            }
+    
+            if (isRunTaskOnFinish()) {
+                if (!runTask()) {
+                    return false;
+                }
             }
         }
-
         return true;
     }
 
