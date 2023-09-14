@@ -103,7 +103,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         PREDEFINED_TYPES.put("POINTER", new TypeDesc(DBPDataKind.UNKNOWN, Types.OTHER, 0, 0, 0));
         PREDEFINED_TYPES.put("REAL", new TypeDesc(DBPDataKind.NUMERIC, Types.REAL, 38, 127, -84));
         PREDEFINED_TYPES.put("REF", new TypeDesc(DBPDataKind.REFERENCE, Types.OTHER, 0, 0, 0));
-        PREDEFINED_TYPES.put("SIGNED BINARY INTEGER", new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, 38, 127, -84));
+        //PREDEFINED_TYPES.put("SIGNED BINARY INTEGER", new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, 38, 127, -84)); can not be created as a data type
         PREDEFINED_TYPES.put("SMALLINT", new TypeDesc(DBPDataKind.NUMERIC, Types.SMALLINT, 38, 127, -84));
         PREDEFINED_TYPES.put("TABLE", new TypeDesc(DBPDataKind.OBJECT, Types.OTHER, 0, 0, 0));
         PREDEFINED_TYPES.put("TIME", new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP, 0, 0, 0));
