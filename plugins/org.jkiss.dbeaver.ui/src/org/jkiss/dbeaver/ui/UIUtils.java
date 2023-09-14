@@ -961,7 +961,7 @@ public class UIUtils {
         scrolledComposite.addControlListener(new ControlAdapter() {
             @Override
             public void controlResized(ControlEvent e) {
-                scrolledComposite.setMinSize(content.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+                scrolledComposite.setMinHeight(content.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
             }
         });
         scrolledComposite.setMinSize(content.computeSize(SWT.DEFAULT, SWT.DEFAULT));
