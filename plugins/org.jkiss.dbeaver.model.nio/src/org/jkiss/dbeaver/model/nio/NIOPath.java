@@ -17,14 +17,49 @@
 package org.jkiss.dbeaver.model.nio;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.Arrays;
 
 public abstract class NIOPath implements Path {
+    @Nullable
+    protected final String path;
+
+    protected NIOPath(@Nullable String path) {
+        var separator = getFileSystem().getSeparator();
+        if (CommonUtils.isNotEmpty(path) && path.endsWith(separator)) {
+            path = path.substring(0, path.length() - separator.length());
+        }
+        this.path = path;
+    }
+
+    @Override
+    public boolean isAbsolute() {
+        return CommonUtils.isEmpty(path)  // root project path
+            || path.charAt(0) == '/';
+    }
+
+    protected String resolveString(String otherPath) {
+        return NIOUtils.resolve(getFileSystem().getSeparator(), path, otherPath);
+    }
+
+    protected String[] pathParts() {
+        return CommonUtils.isEmpty(path) ? new String[0] : Arrays.stream(path.split(getFileSystem().getSeparator()))
+            .filter(CommonUtils::isNotEmpty)
+            .toArray(String[]::new);
+    }
+
+    @Override
+    public Path relativize(@NotNull Path other) {
+        throw new UnsupportedOperationException();
+    }
+
     @Override
     public int compareTo(@NotNull Path other) {
         return toString().compareTo(other.toString());
@@ -39,16 +74,6 @@ public abstract class NIOPath implements Path {
     @Override
     public boolean endsWith(@NotNull Path other) {
         return toString().equals(other.toString());
-    }
-
-    @Override
-    public Path getName(int index) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Path subpath(int beginIndex, int endIndex) {
-        throw new UnsupportedOperationException();
     }
 
     @Override
