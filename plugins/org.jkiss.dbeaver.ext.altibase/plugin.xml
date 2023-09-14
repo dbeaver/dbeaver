@@ -228,18 +228,21 @@
                 <folder label="%tree.security.node.name" icon="#security" description="Security management">
                     <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibaseUser" label="%tree.users.node.name" icon="#folder_user" description="Users">
                         <items label="%tree.user.node.name" path="users" property="users" icon="#user">
+
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivSystem" label="%tree.system_privileges.node.name" icon="#permissions" description="System Privileges" navigable="false">
+                                <items label="%tree.privilege.node.name" path="sysPrivs" property="systemPrivs" icon="#privilege">
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivObject" label="%tree.object_privileges.node.name" icon="#permissions" description="Objects" navigable="false">
+                                <items label="%tree.privilege.node.name" path="objPrivs" property="objectPrivs" icon="#privilege">
+                                </items>
+                            </folder>
+                            <!--
                             <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivRole" label="%tree.roles.node.name" icon="#folder_role" description="User roles" navigable="false">
                                 <items label="%tree.role.node.name" path="roles" property="rolePrivs" icon="#user_group">
                                 </items>
                             </folder>
-                            <!--<folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivSystem" label="%tree.system_privileges.node.name" icon="#permissions" description="System Privileges" navigable="false">
-                                <items label="%tree.privilege.node.name" path="sysPrivs" property="systemPrivs" icon="#privilege">
-                                </items>
-                            </folder>
-                            <folder type="org.jkiss.dbeaver.ext.altibase.model.AltibasePrivObject" label="%tree.objects.node.name" icon="#permissions" description="Objects" navigable="false">
-                                <items label="%tree.privilege.node.name" path="objectPriv" property="objectPrivs" icon="#privilege">
-                                </items>
-                            </folder>-->
+                            -->
                         </items>
                     </folder>
                     <!--

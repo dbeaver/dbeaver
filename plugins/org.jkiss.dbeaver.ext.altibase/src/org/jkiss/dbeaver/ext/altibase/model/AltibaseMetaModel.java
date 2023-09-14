@@ -1058,7 +1058,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
                 ddl = cstmt.getString(1);
             }
         } catch (SQLException se) {
-            // It's too long to fetch the target string.
+            // Invalid data length.
             if (se.getSQLState().equals("22026")) {
                 ddl = "-- DDL is too long to be fetched.";
             }

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.altibase.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -66,7 +67,7 @@ public class AltibaseSequence extends GenericSequence implements DBPScriptObject
         this.maxValue       = JDBCUtils.safeGetBigDecimal(dbResult, "MAX_SEQ");
         this.incrementBy    = JDBCUtils.safeGetBigDecimal(dbResult, "INCREMENT_SEQ");
         this.cacheSize      = JDBCUtils.safeGetBigDecimal(dbResult, "CACHE_SIZE");
-        this.flagCycle      = JDBCUtils.safeGetBoolean(dbResult, "IS_CYCLE", "YES");
+        this.flagCycle      = JDBCUtils.safeGetBoolean(dbResult, "IS_CYCLE", AltibaseConstants.RESULT_YES_VALUE);
     }
 
     @Override

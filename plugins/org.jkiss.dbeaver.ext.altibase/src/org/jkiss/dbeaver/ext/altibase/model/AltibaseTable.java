@@ -147,7 +147,7 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
                         tablespace = JDBCUtils.safeGetString(dbResult, 1);
-                        partitioned = JDBCUtils.safeGetString(dbResult, 2).equals("Y");
+                        partitioned = JDBCUtils.safeGetBoolean(dbResult, 2, AltibaseConstants.RESULT_Y_VALUE);
                     }
                 }
             }
