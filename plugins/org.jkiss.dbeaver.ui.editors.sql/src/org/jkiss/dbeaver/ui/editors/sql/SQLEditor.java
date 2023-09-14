@@ -844,10 +844,6 @@ public class SQLEditor extends SQLEditorBase implements
         if (QMUtils.isTransactionActive(executionContext)) {
             return true;
         }
-        if (isNonPersistentEditor()) {
-            // Console is always dirty
-            return true;
-        }
         if (extraPresentation instanceof ISaveablePart && ((ISaveablePart) extraPresentation).isDirty()) {
             return true;
         }
