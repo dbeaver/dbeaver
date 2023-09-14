@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.dm.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.dm.DMConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -31,11 +32,11 @@ import java.sql.SQLException;
  * @author Shengkai Bai
  */
 public class DMUtils {
-    public static String getDDL(DBRProgressMonitor monitor, DBSObject object, String objectType, String schema) throws DBException {
+    public static String getDDL(DBRProgressMonitor monitor, DBSObject object, DMConstants.ObjectType objectType, String schema) throws DBException {
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load source code for " + objectType + " '" + object.getName() + "'")) {
             JDBCPreparedStatement dbStat = session.prepareStatement("SELECT DBMS_METADATA.GET_DDL(?,?,?)");
-            dbStat.setString(1, objectType);
+            dbStat.setString(1, objectType.name());
             dbStat.setString(2, object.getName());
             dbStat.setString(3, schema);
 

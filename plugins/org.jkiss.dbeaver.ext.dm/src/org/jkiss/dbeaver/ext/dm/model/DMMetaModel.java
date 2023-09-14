@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.dm.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.dm.DMConstants;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
@@ -81,15 +82,18 @@ public class DMMetaModel extends GenericMetaModel {
 
     @Override
     public JDBCStatement prepareSequencesLoadStatement(JDBCSession session, GenericStructContainer container) throws SQLException {
-        JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT SEQ_OBJ_INNER.NAME,SEQ_OBJ_INNER.INFO1,SEQ_OBJ_INNER.INFO3,SEQ_OBJ_INNER.INFO4 " +
-                        "FROM " +
-                        "SYSOBJECTS SEQ_OBJ_INNER, " +
-                        "SYSOBJECTS SCH_OBJ_INNER " +
-                        "WHERE " +
-                        "SEQ_OBJ_INNER.SUBTYPE$ = 'SEQ' " +
-                        "AND SCH_OBJ_INNER.ID = SEQ_OBJ_INNER.SCHID " +
-                        "AND SCH_OBJ_INNER.name = ?");
+        JDBCPreparedStatement dbStat = session.prepareStatement("SELECT " +
+                "SEQ_OBJ.NAME, " +
+                "SEQ_OBJ.INFO4 AS INCREMENT, " +
+                "SF_SEQUENCE_GET_MAX(SCH_OBJ.NAME,SEQ_OBJ.NAME) AS MAX_VALUE," +
+                "SF_SEQUENCE_GET_MIN(SCH_OBJ.NAME,SEQ_OBJ.NAME) AS MIN_VALUE," +
+                "SF_SEQ_CURRVAL(SCH_OBJ.NAME,SEQ_OBJ.NAME) AS LAST_VALUE " +
+                "FROM " +
+                "SYSOBJECTS SEQ_OBJ, " +
+                "SYSOBJECTS SCH_OBJ " +
+                "WHERE SEQ_OBJ.SCHID = SCH_OBJ.ID " +
+                "AND SEQ_OBJ.SUBTYPE$ = 'SEQ' " +
+                "AND SCH_OBJ.NAME = ?");
         dbStat.setString(1, container.getName());
         return dbStat;
     }
@@ -100,9 +104,11 @@ public class DMMetaModel extends GenericMetaModel {
         if (CommonUtils.isEmpty(name)) {
             return null;
         }
-        Number lastValue = JDBCUtils.safeGetBigDecimal(dbResult, 3);
-        Number incrementBy = JDBCUtils.safeGetBigDecimal(dbResult, 4);
-        return new GenericSequence(container, name, "", lastValue, null, null, incrementBy);
+        Number lastValue = JDBCUtils.safeGetBigDecimal(dbResult, "LAST_VALUE");
+        Number incrementBy = JDBCUtils.safeGetBigDecimal(dbResult, "INCREMENT");
+        Number minValue = JDBCUtils.safeGetBigDecimal(dbResult, "MIN_VALUE");
+        Number maxValue = JDBCUtils.safeGetBigDecimal(dbResult, "MAX_VALUE");
+        return new GenericSequence(container, name, "", lastValue, minValue, maxValue, incrementBy);
     }
 
     @Override
@@ -158,14 +164,14 @@ public class DMMetaModel extends GenericMetaModel {
     @Override
     public String getTriggerDDL(DBRProgressMonitor monitor, GenericTrigger sourceObject) throws DBException {
         if (sourceObject.getContainer() instanceof DMTable) {
-            return DMUtils.getDDL(monitor, sourceObject, "TRIGGER", ((DMTable) sourceObject.getContainer()).getContainer().getName());
+            return DMUtils.getDDL(monitor, sourceObject, DMConstants.ObjectType.TRIGGER, ((DMTable) sourceObject.getContainer()).getContainer().getName());
         }
-        return DMUtils.getDDL(monitor, sourceObject, "TRIGGER", sourceObject.getContainer().getName());
+        return DMUtils.getDDL(monitor, sourceObject, DMConstants.ObjectType.TRIGGER, sourceObject.getContainer().getName());
     }
 
     @Override
     public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
-        return DMUtils.getDDL(monitor, sourceObject, "VIEW", sourceObject.getParentObject().getName());
+        return DMUtils.getDDL(monitor, sourceObject, DMConstants.ObjectType.VIEW, sourceObject.getParentObject().getName());
     }
 
 
@@ -200,4 +206,10 @@ public class DMMetaModel extends GenericMetaModel {
             throw new DBException(e, container.getDataSource());
         }
     }
+
+    @Override
+    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+        return DMUtils.getDDL(monitor, sourceObject, DMConstants.ObjectType.PROCEDURE, sourceObject.getContainer().getName());
+    }
+
 }
