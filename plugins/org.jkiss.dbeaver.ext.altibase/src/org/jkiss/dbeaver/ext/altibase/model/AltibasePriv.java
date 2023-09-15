@@ -1,13 +1,11 @@
 package org.jkiss.dbeaver.ext.altibase.model;
 
-import java.sql.ResultSet;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
 
-public class AltibasePriv extends AltibaseObject<AltibaseUser> implements DBAPrivilege {
+public class AltibasePriv extends AltibaseObject<AltibaseGrantee> implements DBAPrivilege {
 
-    protected AltibasePriv(AltibaseUser user, String name, ResultSet resultSet) {
+    protected AltibasePriv(AltibaseGrantee user, String name) {
         super(user, name, true);
     }
 

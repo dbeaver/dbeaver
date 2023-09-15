@@ -428,7 +428,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
     @Override
     public JDBCStatement prepareSynonymsLoadStatement(@NotNull JDBCSession session, 
             @NotNull GenericStructContainer container) throws SQLException {
-        boolean isPublic = container.getName().equalsIgnoreCase(AltibaseConstants.PUBLIC_USER);
+        boolean isPublic = container.getName().equalsIgnoreCase(AltibaseConstants.USER_PUBLIC);
 
         final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT "

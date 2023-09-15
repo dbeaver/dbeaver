@@ -25,9 +25,12 @@ public class AltibaseConstants {
     public static final String PSM_POSTFIX = ";" + AltibaseConstants.NEW_LINE + "/";
 
     public static final String DBOBJ_INDEX = "INDEX";
-    public static final String PUBLIC_USER = "PUBLIC";
+    public static final String USER_PUBLIC = "PUBLIC";
+    public static final String USER_SYSTEM_ = "SYSTEM_";
+    public static final String USER_SYS = "SYS";
     
     public static final String SYSTEM_GENERATED_PREFIX = "__SYS_";
+    
     
     public static final int PACKAGE_TYPE_SPEC = 6;
     public static final int PACKAGE_TYPE_BODY = 7;

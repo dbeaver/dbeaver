@@ -65,6 +65,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
 
     final TablespaceCache tablespaceCache = new TablespaceCache();
     final UserCache userCache = new UserCache();
+    final RoleCache roleCache = new RoleCache();
     private boolean hasStatistics;
     
     private GenericSchema publicSchema;
@@ -86,7 +87,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         super.initialize(monitor);
 
         // PublicSchema is for global objects such as public synonym.
-        publicSchema = new GenericSchema(this, null, AltibaseConstants.PUBLIC_USER);
+        publicSchema = new GenericSchema(this, null, AltibaseConstants.USER_PUBLIC);
         publicSchema.setVirtual(true);
     }
     
@@ -278,6 +279,36 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     @Association
     public AltibaseUser getUser(DBRProgressMonitor monitor, String name) throws DBException {
         return userCache.getObject(monitor, this, name);
+    }
+    
+    /**
+     * Get Role cache
+     */
+    static class RoleCache extends JDBCObjectCache<AltibaseDataSource, AltibaseRole> {
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull AltibaseDataSource owner) throws SQLException {
+            return session.prepareStatement(
+                "SELECT * "
+                + " FROM SYSTEM_.SYS_USERS_ u "
+                + " WHERE u.user_type = 'R' AND u.user_name <> 'PUBLIC'"
+                + " ORDER BY user_name");
+        }
+
+        @Override
+        protected AltibaseRole fetchObject(@NotNull JDBCSession session, @NotNull AltibaseDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            return new AltibaseRole(owner, resultSet);
+        }
+    }
+    
+    @Association
+    public Collection<AltibaseRole> getRoles(DBRProgressMonitor monitor) throws DBException {
+        return roleCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public AltibaseRole getRole(DBRProgressMonitor monitor, String name) throws DBException {
+        return roleCache.getObject(monitor, this, name);
     }
     
     ///////////////////////////////////////////////

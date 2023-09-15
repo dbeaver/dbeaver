@@ -14,8 +14,8 @@ public class AltibasePrivObject extends AltibasePriv {
     private String objName;
     private boolean grantable;
     
-    protected AltibasePrivObject(AltibaseUser user, ResultSet resultSet) {
-        super(user, JDBCUtils.safeGetString(resultSet, "PRIV_NAME"), resultSet);
+    protected AltibasePrivObject(AltibaseGrantee user, ResultSet resultSet) {
+        super(user, JDBCUtils.safeGetString(resultSet, "PRIV_NAME"));
         grantorName = JDBCUtils.safeGetString(resultSet, "GRANTOR_NAME");
         objType = JDBCUtils.safeGetString(resultSet, "OBJ_TYPE");
         objSchema = JDBCUtils.safeGetString(resultSet, "SCHEMA_NAME");

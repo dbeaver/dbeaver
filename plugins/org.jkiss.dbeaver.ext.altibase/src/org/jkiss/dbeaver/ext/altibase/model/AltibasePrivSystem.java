@@ -11,10 +11,16 @@ public class AltibasePrivSystem extends AltibasePriv {
     private String grantorName;
     private boolean isGranted;
     
-    protected AltibasePrivSystem(AltibaseUser user, ResultSet resultSet) {
-        super(user, JDBCUtils.safeGetString(resultSet, "PRIV_NAME"), resultSet);
+    protected AltibasePrivSystem(AltibaseGrantee user, ResultSet resultSet) {
+        super(user, JDBCUtils.safeGetString(resultSet, "PRIV_NAME"));
         grantorName = JDBCUtils.safeGetString(resultSet, "GRANTOR_NAME");
         isGranted = (grantorName != null);
+    }
+    
+    // For special account: SYSTEM_, SYS account
+    protected AltibasePrivSystem(AltibaseGrantee user, String privName) {
+        super(user, privName);
+        isGranted = true;
     }
     
     @NotNull
