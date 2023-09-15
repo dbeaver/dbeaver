@@ -234,7 +234,17 @@ public abstract class JDBCDataSource extends AbstractDataSource
                         if (driverInstanceFinal == null) {
                             return DriverManager.getConnection(urlFinal, connectPropsFinal);
                         } else {
-                            return driverInstanceFinal.connect(urlFinal, connectPropsFinal);
+                            //catch exception manual
+                            try {
+                                return driverInstanceFinal.connect(urlFinal, connectPropsFinal);
+                            }catch (Exception e){
+                                e.printStackTrace();
+                                if(e.toString().contains("YasException: io fail:IO.EOF") ){
+                                    throw new DBException("YashanDB connection error. Please check whether your ip in your connection information is in the whitelist or not.");
+                                }else{
+                                    throw e;
+                                }
+                            }
                         }
                     };
                     Connection jdbcConnection = null;
