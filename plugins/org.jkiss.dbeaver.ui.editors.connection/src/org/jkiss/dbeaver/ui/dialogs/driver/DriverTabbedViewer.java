@@ -43,6 +43,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * DriverTabbedViewer
@@ -325,6 +326,12 @@ public class DriverTabbedViewer extends StructuredViewer {
         void refreshDrivers() {
             if (listComparator != null) {
                 drivers.sort(listComparator);
+                List<DBPDriver> matchedDriver = drivers.stream().filter(p -> p.getFullName().equals("YashanDB")).collect(Collectors.toList());
+                if(!matchedDriver.isEmpty()){
+                    DBPDriver driverYashanDB = matchedDriver.get(0);
+                    drivers.remove(driverYashanDB);
+                    drivers.add(0, driverYashanDB);
+                }
             }
             if (viewer != null) {
                 viewer.setInput(drivers);
