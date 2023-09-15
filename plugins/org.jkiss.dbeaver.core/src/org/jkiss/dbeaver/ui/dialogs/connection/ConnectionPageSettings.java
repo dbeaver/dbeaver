@@ -79,6 +79,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     private final Set<DataSourceDescriptor> activated = new HashSet<>();
     private IDialogPage[] subPages, extraPages;
     private TabFolder tabFolder;
+    private String driverShield = "YashanDB";
 
     /**
      * Constructor for ConnectionPageSettings
@@ -415,7 +416,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                     if (driverSubstitution != null && !driverSubstitution.getInstance().isNetworkHandlerSupported(descriptor)) {
                         continue;
                     }
-                    subPages = ArrayUtils.add(IDialogPage.class, subPages, new ConnectionPageNetworkHandler(this, descriptor));
+                    if (!Objects.equals(getDriver().getFullName(), driverShield)) {
+                        subPages = ArrayUtils.add(IDialogPage.class, subPages, new ConnectionPageNetworkHandler(this, descriptor));
+                    }
                 }
             }
 
