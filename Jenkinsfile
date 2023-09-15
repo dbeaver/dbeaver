@@ -20,8 +20,6 @@ pipeline{
         _file_browser_pwd = credentials('export-ssh-pwd')
         _export_path = "/root/export/solution/tools/dbeaver/daily/${BRANCH_NAME}"
         _date = "${date}"
-        _commit_id = sh(script: "git rev-parse HEAD", returnStdout: true).trim()
-        _zip_pkg = "dbeaver-23.1-${_commit_id}.zip"
         _merge_build = 'False'
     }
     stages {
@@ -77,6 +75,8 @@ pipeline{
             }
             steps {
                 script {
+                    _commit_id = sh(script: "git rev-parse HEAD", returnStdout: true).trim()
+                    _zip_pkg = "dbeaver-23.1-${_commit_id}.zip"
                     sh '''cd ${WORKSPACE}/product/community/target/products/org.jkiss.dbeaver.core.product && zip -r ${_zip_pkg} linux win32'''
                     sh("sshpass -p ${_file_browser_pwd} ssh root@192.168.19.121 'mkdir -p ${_export_path}/latest' ")
                     sh("sshpass -p ${_file_browser_pwd} ssh root@192.168.19.121 'rm -rf ${_export_path}/latest/dbeaver*' ")
