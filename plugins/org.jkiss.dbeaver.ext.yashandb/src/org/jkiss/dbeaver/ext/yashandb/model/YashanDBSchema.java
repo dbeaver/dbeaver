@@ -838,7 +838,7 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
             final boolean isPublic = owner.isPublic();
             JDBCPreparedStatement dbStat = session.prepareStatement(
                     isPublic ?
-                            "SELECT * FROM " + YashanDBUtils.getSysSchemaPrefix(owner.getDataSource()) + "USER_RECYCLEBIN" :
+                            "SELECT * FROM " + YashanDBUtils.getSysSchemaPrefix(owner.getDataSource()) + "DBA_RECYCLEBIN" :
                             "SELECT * FROM " + YashanDBUtils.getSysSchemaPrefix(owner.getDataSource()) + "DBA_RECYCLEBIN WHERE OWNER=?");
             if (!isPublic) {
                 dbStat.setString(1, owner.getName());
