@@ -54,6 +54,7 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
 
     final public DBLinkCache dbLinkCache = new DBLinkCache();
 
+    final public PublicSynonymCache publicSynonymCache=new PublicSynonymCache();
 
     private boolean isAdmin;
     private boolean isAdminVisible;
@@ -156,6 +157,7 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
         this.userCache.clearCache();
         this.profileCache.clearCache();
         this.dbLinkCache.clearCache();
+        this.publicSynonymCache.clearCache();
         this.initialize(monitor);
 
         return this;
@@ -366,8 +368,8 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
     }
 
     @Association
-    public Collection<YashanDBSynonym> getPublicSynonyms(DBRProgressMonitor monitor) throws DBException {
-        return publicSchema.getSynonyms(monitor);
+    public Collection<YashanDBPublicSynonym> getPublicSynonyms(DBRProgressMonitor monitor) throws DBException {
+        return publicSynonymCache.getAllObjects(monitor,this);
     }
 
     @Association
@@ -545,6 +547,32 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
             return new YashanDBDBLink( owner, dbResult);
         }
 
+    }
+
+    static class PublicSynonymCache extends JDBCObjectCache<YashanDBDataSource, YashanDBPublicSynonym> {
+
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull YashanDBDataSource owner)
+                throws SQLException {
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT OWNER, SYNONYM_NAME, MAX(TABLE_OWNER) as TABLE_OWNER, MAX(TABLE_NAME) as TABLE_NAME, MAX(DB_LINK) as DB_LINK, MAX(OBJECT_TYPE) as OBJECT_TYPE FROM (\n" +
+                            "SELECT S.*, NULL OBJECT_TYPE FROM ALL_SYNONYMS S WHERE S.OWNER = 'PUBLIC'\n" +
+                            "UNION ALL\n" +
+                            "SELECT S.*,O.OBJECT_TYPE FROM ALL_SYNONYMS S, ALL_OBJECTS O\n" +
+                            "WHERE S.OWNER = 'PUBLIC'\n" +
+                            "AND O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND O.SUBOBJECT_NAME IS NULL\n" +
+                            ")\n" +
+                            "GROUP BY OWNER, SYNONYM_NAME\n" +
+                            "ORDER BY SYNONYM_NAME");
+            return dbStat;
+        }
+
+        @Override
+        protected YashanDBPublicSynonym fetchObject(@NotNull JDBCSession session, @NotNull YashanDBDataSource owner, @NotNull JDBCResultSet dbResult)
+                throws SQLException, DBException {
+            return new YashanDBPublicSynonym( owner, dbResult);
+        }
     }
 
     @Override
