@@ -16,7 +16,7 @@ import java.sql.ResultSet;
 import java.util.Map;
 import java.util.Objects;
 
-public class YashanDBPublicSynonym extends YashanDBGlobalObject implements DBSAlias{
+public class YashanDBPublicSynonym extends YashanDBGlobalObject implements DBSAlias {
     private String name;
     private String objectOwner;
     private String objectTypeName;
@@ -24,16 +24,14 @@ public class YashanDBPublicSynonym extends YashanDBGlobalObject implements DBSAl
     private String dbLink;
     private boolean isPublic;
 
-
-
     protected YashanDBPublicSynonym(YashanDBDataSource source, ResultSet dbResult) {
-        super(source,dbResult!=null);
-        this.name=JDBCUtils.safeGetString(dbResult,"SYNONYM_NAME");
+        super(source, dbResult != null);
+        this.name = JDBCUtils.safeGetString(dbResult, "SYNONYM_NAME");
         this.objectTypeName = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
         this.objectOwner = JDBCUtils.safeGetString(dbResult, "TABLE_OWNER");
         this.objectName = JDBCUtils.safeGetString(dbResult, "TABLE_NAME");
         this.dbLink = JDBCUtils.safeGetString(dbResult, "DB_LINK");
-        this.isPublic= Objects.requireNonNull(JDBCUtils.safeGetString(dbResult, "OWNER")).equalsIgnoreCase("PUBLIC");
+        this.isPublic = Objects.requireNonNull(JDBCUtils.safeGetString(dbResult, "OWNER")).equalsIgnoreCase("PUBLIC");
     }
 
     public YashanDBObjectType getObjectType() {
@@ -42,7 +40,7 @@ public class YashanDBPublicSynonym extends YashanDBGlobalObject implements DBSAl
 
     @NotNull
     @Override
-    @Property(viewable = true,  order = 1)
+    @Property(viewable = true, order = 1)
     public String getName() {
         return name;
     }
@@ -62,7 +60,7 @@ public class YashanDBPublicSynonym extends YashanDBGlobalObject implements DBSAl
         return objectTypeName;
     }
 
-    @Property(viewable = true,order = 5)
+    @Property(viewable = true, order = 5)
     public boolean getIsPublic() {
         return isPublic;
     }
@@ -81,7 +79,9 @@ public class YashanDBPublicSynonym extends YashanDBGlobalObject implements DBSAl
                 objectName);
     }
 
-    /** Cross-database access is not currently supported in Yashan, use String as return instead.*/
+    /**
+     * Cross-database access is not currently supported in Yashan, use String as return instead.
+     */
     @Property(viewable = true, order = 7)
     public String getDbLink() throws DBException {
         return dbLink;

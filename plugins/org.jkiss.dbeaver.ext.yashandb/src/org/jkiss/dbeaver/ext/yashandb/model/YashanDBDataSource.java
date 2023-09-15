@@ -54,7 +54,7 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
 
     final public DBLinkCache dbLinkCache = new DBLinkCache();
 
-    final public PublicSynonymCache publicSynonymCache=new PublicSynonymCache();
+    final public PublicSynonymCache publicSynonymCache = new PublicSynonymCache();
 
     private boolean isAdmin;
     private boolean isAdminVisible;
@@ -152,7 +152,7 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
 
         this.dataTypeCache.clearCache();
         this.schemaCache.clearCache();
-        publicSchema.refreshObject(monitor);
+        this.publicSchema.refreshObject(monitor);
         this.tablespaceCache.clearCache();
         this.userCache.clearCache();
         this.profileCache.clearCache();
@@ -359,7 +359,7 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
 
     @Association
     public Collection<YashanDBDBLink> getPublicDatabaseLinks(DBRProgressMonitor monitor) throws DBException {
-        return dbLinkCache.getAllObjects(monitor,this);
+        return dbLinkCache.getAllObjects(monitor, this);
     }
 
     ///////////////////////////
@@ -369,14 +369,13 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
 
     @Association
     public Collection<YashanDBPublicSynonym> getPublicSynonyms(DBRProgressMonitor monitor) throws DBException {
-        return publicSynonymCache.getAllObjects(monitor,this);
+        return publicSynonymCache.getAllObjects(monitor, this);
     }
 
     @Association
     public Collection<YashanDBRecycledObject> getUserRecycledObjects(DBRProgressMonitor monitor) throws DBException {
         return publicSchema.getRecycledObjects(monitor);
     }
-
 
 
     @Nullable
@@ -544,7 +543,7 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
         @Override
         protected YashanDBDBLink fetchObject(@NotNull JDBCSession session, @NotNull YashanDBDataSource owner, @NotNull JDBCResultSet dbResult)
                 throws SQLException, DBException {
-            return new YashanDBDBLink( owner, dbResult);
+            return new YashanDBDBLink(owner, dbResult);
         }
 
     }
@@ -571,7 +570,7 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
         @Override
         protected YashanDBPublicSynonym fetchObject(@NotNull JDBCSession session, @NotNull YashanDBDataSource owner, @NotNull JDBCResultSet dbResult)
                 throws SQLException, DBException {
-            return new YashanDBPublicSynonym( owner, dbResult);
+            return new YashanDBPublicSynonym(owner, dbResult);
         }
     }
 
@@ -582,8 +581,6 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
             return ErrorType.CONNECTION_LOST;
         return super.discoverErrorType(error);
     }
-
-
 
 
 }
