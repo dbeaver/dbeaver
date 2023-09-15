@@ -164,4 +164,5 @@ public class AltibaseConstants {
     
     public static final String RESULT_YES_VALUE = "YES";
     public static final String RESULT_Y_VALUE = "Y";
+    public static final String RESULT_1_VALUE = "1";
 }

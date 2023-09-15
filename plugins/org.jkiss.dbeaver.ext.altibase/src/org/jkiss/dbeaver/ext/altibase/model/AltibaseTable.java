@@ -33,7 +33,10 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
@@ -43,6 +46,7 @@ import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
+import java.util.Collection;
 
 public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPObjectStatistics {
 
@@ -54,6 +58,8 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
     
     private String tablespace;
     private boolean partitioned;
+    
+    private final TablePrivCache tablePrivCache = new TablePrivCache();
     
     public AltibaseTable(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
@@ -223,6 +229,52 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
     @Override
     public DBPPropertySource getStatProperties() {
         return null;
+    }
+    
+    @Association
+    public Collection<AltibasePrivTable> getTablePrivs(DBRProgressMonitor monitor) throws DBException
+    {
+        return tablePrivCache.getAllObjects(monitor, this);
+    }
+    
+    static class TablePrivCache extends JDBCObjectCache<AltibaseTable, AltibasePrivTable> {
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull AltibaseTable tableBase) throws SQLException
+        {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT"
+                    + " grantor.user_name AS grantor_name"
+                    + " , grantee.user_name AS grantee_name"
+                    + " , DECODE(grantee.user_type, 'U', 'User', 'R', 'Role') as grantee_type"
+                    + " ,p.priv_name AS priv_name"
+                    + " ,g.with_grant_option AS with_grant_option"
+                + " FROM"
+                    + " system_.sys_users_ schema"
+                    + " ,system_.sys_users_ grantor"
+                    + " ,system_.sys_users_ grantee"
+                    + " ,system_.sys_grant_object_ g"
+                    + " ,system_.sys_privileges_ p"
+                    + " ,system_.sys_tables_ t"
+                + " WHERE"
+                    + " schema.user_name = ? AND t.table_name = ?"
+                    + " AND schema.user_id = t.user_id"
+                    + " AND g.grantee_id = grantee.user_id"
+                    + " AND g.grantor_id = grantor.user_id"
+                    + " AND g.priv_id = p.priv_id"
+                    + " AND p.priv_type = 1"
+                    + " AND g.obj_id = t.table_id"
+                + " ORDER BY priv_name, grantor_name, grantee_name");
+            dbStat.setString(1, tableBase.getSchema().getName());
+            dbStat.setString(2, tableBase.getName());
+            return dbStat;
+        }
+
+        @Override
+        protected AltibasePrivTable fetchObject(@NotNull JDBCSession session, @NotNull AltibaseTable tableBase, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
+        {
+            return new AltibasePrivTable(tableBase, resultSet);
+        }
     }
 
 }

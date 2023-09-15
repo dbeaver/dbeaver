@@ -311,6 +311,14 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         return roleCache.getObject(monitor, this, name);
     }
     
+    public AltibaseGrantee getGrantee(DBRProgressMonitor monitor, String name) throws DBException {
+        AltibaseUser user = userCache.getObject(monitor, this, name);
+        if (user != null) {
+            return user;
+        }
+        return roleCache.getObject(monitor, this, name);
+    }
+    
     ///////////////////////////////////////////////
     // Statistics
 
