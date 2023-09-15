@@ -28,17 +28,21 @@ package org.jkiss.dbeaver.model.nio;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
-import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.file.OpenOption;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
+import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-// copy of jdk.nio.zipfs.ByteArrayChannel
-public class ByteArrayChannel implements SeekableByteChannel {
+// modification of of jdk.nio.zipfs.ByteArrayChannel
+public abstract class ByteArrayChannel implements SeekableByteChannel {
 
     private final ReadWriteLock rwlock = new ReentrantReadWriteLock();
-    private byte buf[];
+    private final Set<? extends OpenOption> options;
+
+    protected byte buf[];
 
     /*
      * The current position of this channel.
@@ -51,26 +55,17 @@ public class ByteArrayChannel implements SeekableByteChannel {
     private int last;
 
     private boolean closed;
-    private boolean readonly;
 
-    /*
-     * Creates a {@code ByteArrayChannel} with size {@code sz}.
-     */
-    public ByteArrayChannel(int sz, boolean readonly) {
-        this.buf = new byte[sz];
-        this.pos = this.last = 0;
-        this.readonly = readonly;
-    }
 
     /*
      * Creates a ByteArrayChannel with its 'pos' at 0 and its 'last' at buf's end.
      * Note: no defensive copy of the 'buf', used directly.
      */
-    public ByteArrayChannel(byte[] buf, boolean readonly) {
+    public ByteArrayChannel(byte[] buf, Set<? extends OpenOption> options) {
+        this.options = options;
         this.buf = buf;
         this.pos = 0;
         this.last = buf.length;
-        this.readonly = readonly;
     }
 
     @Override
@@ -121,16 +116,12 @@ public class ByteArrayChannel implements SeekableByteChannel {
 
     @Override
     public SeekableByteChannel truncate(long size) throws IOException {
-        if (readonly)
-            throw new NonWritableChannelException();
         ensureOpen();
         throw new UnsupportedOperationException();
     }
 
     @Override
     public int write(ByteBuffer src) throws IOException {
-        if (readonly)
-            throw new NonWritableChannelException();
         beginWrite();
         try {
             ensureOpen();
@@ -164,6 +155,15 @@ public class ByteArrayChannel implements SeekableByteChannel {
             return;
         beginWrite();
         try {
+            if (options.contains(StandardOpenOption.CREATE_NEW)) {
+                createNewFile();
+            }
+            if (options.contains(StandardOpenOption.WRITE) && buf != null) {
+                writeToFile();
+            }
+            if (options.contains(StandardOpenOption.DELETE_ON_CLOSE)) {
+                deleteFile();
+            }
             closed = true;
             buf = null;
             pos = 0;
@@ -172,6 +172,12 @@ public class ByteArrayChannel implements SeekableByteChannel {
             endWrite();
         }
     }
+
+    protected abstract void createNewFile() throws IOException;
+
+    protected abstract void writeToFile() throws IOException;
+
+    protected abstract void deleteFile() throws IOException;
 
     /**
      * Creates a newly allocated byte array. Its size is the current

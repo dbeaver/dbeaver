@@ -21,18 +21,17 @@ import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
+import java.nio.file.*;
 import java.util.Arrays;
 
 public abstract class NIOPath implements Path {
     @Nullable
     protected final String path;
+    protected final FileSystem fileSystem;
 
-    protected NIOPath(@Nullable String path) {
-        var separator = getFileSystem().getSeparator();
+    protected NIOPath(@Nullable String path, FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+        var separator = fileSystem.getSeparator();
         if (CommonUtils.isNotEmpty(path) && path.endsWith(separator)) {
             path = path.substring(0, path.length() - separator.length());
         }

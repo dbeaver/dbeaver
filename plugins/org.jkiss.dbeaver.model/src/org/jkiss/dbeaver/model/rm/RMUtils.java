@@ -66,6 +66,14 @@ public class RMUtils {
         }
     }
 
+    public static String getProjectName(@NotNull String projectId) throws DBException {
+        int divPos = projectId.indexOf("_");
+        if (divPos <= 0) {
+            throw new DBException("Bad project ID");
+        }
+        return projectId.substring(divPos + 1);
+    }
+
     /**
      * Different types of project have different location on the workspace. Method returns path to the project.
      *
