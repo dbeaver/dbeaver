@@ -101,8 +101,8 @@ class DBeaverSettingsImporter {
             //System.getProperty(StandardConstants.ENV_USER_HOME),
             DBConstants.DEFAULT_DRIVERS_FOLDER);
 
-        Image dbeaverIcon = AbstractUIPlugin.imageDescriptorFromPlugin(DBeaverApplication.APPLICATION_PLUGIN_ID, "icons/dbeaver32.png").createImage();
-        Image dbeaverLogo = AbstractUIPlugin.imageDescriptorFromPlugin(DBeaverApplication.APPLICATION_PLUGIN_ID, "icons/dbeaver64.png").createImage();
+        Image dbeaverIcon = AbstractUIPlugin.imageDescriptorFromPlugin(DBeaverApplication.APPLICATION_PLUGIN_ID, "icons/dbeaver_for_yashandb32.png").createImage();
+        Image dbeaverLogo = AbstractUIPlugin.imageDescriptorFromPlugin(DBeaverApplication.APPLICATION_PLUGIN_ID, "icons/dbeaver_for_yashan64.png").createImage();
 
         // Hide splash if any
         WorkbenchPlugin.unsetSplashShell(display);

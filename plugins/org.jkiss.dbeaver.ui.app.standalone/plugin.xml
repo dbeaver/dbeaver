@@ -44,7 +44,7 @@
             <property name="email" value="%productEmail"/>
             <property name="versionUpdateURL" value="https://dbeaver.io/product/version.xml"/>
             <property name="earlyAccessURL" value="https://dbeaver.io/files/ea"/>
-            <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
+            <property name="windowImages" value="/icons/dbeaver_for_yashandb16.png,/icons/dbeaver_for_yashandb32.png,/icons/dbeaver_for_yashandb48.png,/icons/dbeaver_for_yashan64.png,/icons/dbeaver_for_yashandb256.png"/>
             <property name="appName" value="DBeaver"/>
             <property name="appEdition" value="ce"/>
             <property name="startupForegroundColor" value="000000"/>
@@ -69,7 +69,7 @@
             <property name="subTitle" value="%productSubTitle"/>
             <property name="website" value="%productWebsite"/>
             <property name="email" value="%productEmail"/>
-            <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
+            <property name="windowImages" value="/icons/dbeaver_for_yashandb16.png,/icons/dbeaver_for_yashandb32.png,/icons/dbeaver_for_yashandb48.png,/icons/dbeaver_for_yashan64.png,/icons/dbeaver_for_yashandb256.png"/>
             <property name="appName" value="DBeaver CE"/>
             <property name="startupForegroundColor" value="000000"/>
             <property name="versionInfoCoord" value="155,265"/>

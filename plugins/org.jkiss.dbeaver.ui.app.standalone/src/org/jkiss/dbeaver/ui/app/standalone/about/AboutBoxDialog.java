@@ -49,6 +49,9 @@ import org.jkiss.utils.CommonUtils;
 import java.io.InputStream;
 import java.net.URL;
 import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * About box
@@ -65,7 +68,7 @@ public class AboutBoxDialog extends InformationDialog
 
     private Image ABOUT_IMAGE = AbstractUIPlugin.imageDescriptorFromPlugin(
         Platform.getProduct().getDefiningBundle().getSymbolicName(),
-        "icons/dbeaver_about.png").createImage();
+        "icons/dbeaver_for_yashandb_about.png").createImage();
     private Image splashImage;
 
     public AboutBoxDialog(Shell shell)
@@ -133,7 +136,7 @@ public class AboutBoxDialog extends InformationDialog
             Label nameLabel = new Label(group, SWT.NONE);
             nameLabel.setBackground(background);
             nameLabel.setFont(NAME_FONT);
-            nameLabel.setText(product.getName());
+            nameLabel.setText("DBeaver for YashanDB");
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalAlignment = GridData.CENTER;
             nameLabel.setLayoutData(gd);
@@ -205,6 +208,7 @@ public class AboutBoxDialog extends InformationDialog
             imageLabel.setImage(ABOUT_IMAGE);
         }
 
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
         Text versionLabel = new Text(group, SWT.NONE);
         versionLabel.setEditable(false);
         versionLabel.setBackground(background);
@@ -215,17 +219,23 @@ public class AboutBoxDialog extends InformationDialog
 
         Label releaseTimeLabel = new Label(group, SWT.NONE);
         releaseTimeLabel.setBackground(background);
-        releaseTimeLabel.setText("Release date: " + DateFormat.getDateInstance(DateFormat.LONG).format(GeneralUtils.getProductReleaseDate()));
+        try {
+            releaseTimeLabel.setText("Release date: " + DateFormat.getDateInstance(DateFormat.LONG).format(dateFormat.parse(dateFormat.format(GeneralUtils.getProductReleaseDate()))));
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         releaseTimeLabel.setLayoutData(gd);
 
+        /*
         Label authorLabel = new Label(group, SWT.NONE);
         authorLabel.setBackground(background);
         authorLabel.setText(product.getProperty(PRODUCT_PROP_COPYRIGHT));
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         authorLabel.setLayoutData(gd);
+        */
 
         Link siteLink = UIUtils.createLink(group, UIUtils.makeAnchor(product.getProperty(PRODUCT_PROP_WEBSITE)), new SelectionAdapter() {
             @Override

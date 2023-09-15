@@ -356,18 +356,19 @@ public class GeneralUtils {
         }
 
         final Dictionary<String, String> headers = definingBundle.getHeaders();
-        final String releaseDate = headers.get("Bundle-Release-Date");
-        if (releaseDate != null) {
-            try {
-                return new SimpleDateFormat(DEFAULT_DATE_PATTERN).parse(releaseDate);
-            } catch (ParseException e) {
-                log.debug(e);
-            }
-        }
         final String buildTime = headers.get("Build-Time");
         if (buildTime != null) {
             try {
                 return new SimpleDateFormat(DEFAULT_TIMESTAMP_PATTERN).parse(buildTime);
+            } catch (ParseException e) {
+                log.debug(e);
+            }
+        }
+
+        final String releaseDate = headers.get("Bundle-Release-Date");
+        if (releaseDate != null) {
+            try {
+                return new SimpleDateFormat(DEFAULT_DATE_PATTERN).parse(releaseDate);
             } catch (ParseException e) {
                 log.debug(e);
             }
