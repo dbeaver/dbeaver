@@ -385,10 +385,10 @@
                         <items label="%tree.data_type.node.name" path="type" property="localDataTypes"
                                icon="#data_type"/>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.yashandb.model.YashanDBSynonym"
+                    <folder type="org.jkiss.dbeaver.ext.yashandb.model.YashanDBPublicSynonym"
                             label="%tree.public_synonyms.node.name"
                             icon="#synonyms" description="Public synonyms">
-                        <items label="%tree.synonym.node.name" path="synonym" property="publicSynonyms"
+                        <items label="%tree.public_synonyms.node.name" path="publicSynonyms" property="publicSynonyms"
                                icon="#synonym"/>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.yashandb.model.YashanDBDBLink" label="%tree.public_database_links.node.name"
@@ -516,7 +516,7 @@
                         icon="icons/yashandb_icon.png"
                         iconBig="icons/yashandb_big@2x.png"
                         description="yashandb"
-                        webURL="http://cod-doc.yasdb.com/"
+                        webURL="https://doc.yashandb.com/"
                         categories="sql,analytic,columns">
                     <replace provider="generic" driver="yashandb"/>
                     <file type="jar" path="platform:/plugin/org.jkiss.dbeaver.ext.yashandb/driver/yashandb-jdbc-1.4.7.jar"
