@@ -1,0 +1,48 @@
+{
+    "default": true,
+    "search-replace": {
+        "rules": [
+            {
+                "name": "BR",
+                "message": "Do not use <BR>, use <br> instead of it.",
+                "search": "<BR>",
+                "replace": "<br>",
+                "skipCode": true
+            },
+            {
+                "name": "bold_with_spec",
+                "message": "Do not with specical code in bold, such as **xx:**",
+                "searchPattern": "/\\*\\*(.*?)([\\:\\：\\;\\；]+)\\*\\*/g",
+                "replace": "**$1**$2",
+                "skipCode": true
+            },
+            {
+                "name": "unsport ~~~",
+                "message": "Do not use ~~~, ``` instead of it",
+                "search": "~~~",
+                "replace": "```",
+                "skipCode": true
+            },
+            {
+                "name": "span_link_first",
+                "message": "<span> with id for link, must in line header",
+                "searchPattern": "/\\S+(.*?)\\<span\\s+id=/g",
+                "replace": "<span id=",
+                "skipCode": true
+            }
+        ]
+    },
+    "MD007": {
+        "indent": 4
+    },
+    "line-length": false,
+    "no-inline-html": false,
+    "first-line-heading": false,
+    "no-alt-text": false,
+    "MD036": false,
+    "MD051": false,
+    "MD003": false,
+    "MD024": false,
+    "MD028": false,
+    "fenced-code-language": false
+}
