@@ -17,14 +17,18 @@
 
 package org.jkiss.dbeaver.ext.dm.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.sql.Types;
 
 /**
  * @author Shengkai Bai
@@ -39,4 +43,63 @@ public class DMDataSource extends GenericDataSource {
         return new JDBCDataSourceInfo(metaData);
     }
 
+    @Override
+    public DBPDataKind resolveDataKind(String typeName, int valueType) {
+        return getDataKind(typeName, valueType);
+    }
+
+    @NotNull
+    public static DBPDataKind getDataKind(@NotNull String typeName, int valueType) {
+        switch (valueType) {
+            case Types.JAVA_OBJECT:
+                if ("interval day".equalsIgnoreCase(typeName)) {
+                    return DBPDataKind.DATETIME;
+                }
+                if ("interval day() to hour".equalsIgnoreCase(typeName)) {
+                    return DBPDataKind.DATETIME;
+                }
+                if ("interval day() to minute".equalsIgnoreCase(typeName)) {
+                    return DBPDataKind.DATETIME;
+                }
+                if ("interval day() to second".equalsIgnoreCase(typeName)) {
+                    return DBPDataKind.DATETIME;
+                }
+                if ("interval hour".equalsIgnoreCase(typeName)) {
+                    return DBPDataKind.DATETIME;
+                }
+                if ("interval hour() to minute".equalsIgnoreCase(typeName)) {
+                    return DBPDataKind.DATETIME;
+                }
+                if ("interval hour() to second".equalsIgnoreCase(typeName)) {
+                    return DBPDataKind.DATETIME;
+                }
+                if ("interval minute".equalsIgnoreCase(typeName)) {
+                    return DBPDataKind.DATETIME;
+                }
+                if ("interval minute() to second".equalsIgnoreCase(typeName)) {
+                    return DBPDataKind.DATETIME;
+                }
+                if ("interval month".equalsIgnoreCase(typeName)) {
+                    return DBPDataKind.DATETIME;
+                }
+                if ("interval second".equalsIgnoreCase(typeName)) {
+                    return DBPDataKind.DATETIME;
+                }
+                if ("interval year".equalsIgnoreCase(typeName)) {
+                    return DBPDataKind.DATETIME;
+                }
+                if ("interval year() to month".equalsIgnoreCase(typeName)) {
+                    return DBPDataKind.DATETIME;
+                }
+                if ("time with time zone".equalsIgnoreCase(typeName)) {
+                    return DBPDataKind.DATETIME;
+                }
+                if ("timestamp with time zone".equalsIgnoreCase(typeName)) {
+                    return DBPDataKind.DATETIME;
+                }
+
+        }
+        return GenericDataSource.getDataKind(typeName, valueType);
+
+    }
 }

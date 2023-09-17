@@ -45,7 +45,7 @@
                                 <icon if="object.abstractTable" icon="#table_alias"/>
                                 <icon if="object.sharedTable" icon="#table_shared"/>
 
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn"
+                                <folder type="org.jkiss.dbeaver.ext.dm.model.DMTableColumn"
                                         label="%tree.columns.node.name" icon="#columns"
                                         description="%tree.columns.node.tip">
                                     <items label="%tree.column.node.name" path="attribute" property="attributes"
@@ -119,7 +119,7 @@
                                 icon="#folder_view" description="%tree.tviews.node.tip"
                                 visibleIf="object.dataSource.metaModel.supportsViews(object.dataSource)">
                             <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn"
+                                <folder type="org.jkiss.dbeaver.ext.dm.model.DMTableColumn"
                                         label="%tree.columns.node.name" icon="#columns" description="View columns">
                                     <items label="%tree.column.node.name" path="attribute" property="attributes"
                                            icon="#column">
@@ -225,6 +225,8 @@
                  objectType="org.jkiss.dbeaver.ext.dm.model.DMSchema"/>
         <manager class="org.jkiss.dbeaver.ext.dm.edit.DMTableManager"
                  objectType="org.jkiss.dbeaver.ext.dm.model.DMTable"/>
+        <manager class="org.jkiss.dbeaver.ext.dm.edit.DMTableColumnManager"
+                 objectType="org.jkiss.dbeaver.ext.dm.model.DMTableColumn"/>
         <manager class="org.jkiss.dbeaver.ext.dm.edit.DMSequenceManager"
                  objectType="org.jkiss.dbeaver.ext.generic.model.GenericSequence"/>
 
