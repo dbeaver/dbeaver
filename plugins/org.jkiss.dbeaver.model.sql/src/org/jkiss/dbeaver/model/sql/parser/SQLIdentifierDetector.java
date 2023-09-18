@@ -102,7 +102,7 @@ public class SQLIdentifierDetector extends TPWordDetector {
 
     public boolean isQuoted(String token) {
         for (String[] quoteString : quoteStrings) {
-            if (token.startsWith(quoteString[0])) {
+            if (quoteString[0] != null && token.startsWith(quoteString[0])) {
                 return true;
             }
         }
