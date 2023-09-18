@@ -113,7 +113,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         PREDEFINED_TYPES.put("TIMESTAMP WITH TZ", new TypeDesc(DBPDataKind.DATETIME, OracleConstants.DATA_TYPE_TIMESTAMP_WITH_TIMEZONE, 0, 0, 0));
         PREDEFINED_TYPES.put("TIMESTAMP WITH LOCAL TIME ZONE", new TypeDesc(DBPDataKind.DATETIME, OracleConstants.DATA_TYPE_TIMESTAMP_WITH_LOCAL_TIMEZONE, 0, 0, 0));
         PREDEFINED_TYPES.put("TIMESTAMP WITH TIME ZONE", new TypeDesc(DBPDataKind.DATETIME, OracleConstants.DATA_TYPE_TIMESTAMP_WITH_TIMEZONE, 0, 0, 0));
-        PREDEFINED_TYPES.put("UNSIGNED BINARY INTEGER", new TypeDesc(DBPDataKind.NUMERIC, Types.BIGINT, 38, 127, -84));
+        //PREDEFINED_TYPES.put("UNSIGNED BINARY INTEGER", new TypeDesc(DBPDataKind.NUMERIC, Types.BIGINT, 38, 127, -84)); can not be created as a data type
         PREDEFINED_TYPES.put("UROWID", new TypeDesc(DBPDataKind.ROWID, Types.ROWID, 0, 0, 0));
         PREDEFINED_TYPES.put("VARCHAR", new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("VARCHAR2", new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, 0, 0, 0));
