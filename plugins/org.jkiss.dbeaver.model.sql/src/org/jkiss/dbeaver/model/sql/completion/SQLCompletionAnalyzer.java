@@ -708,7 +708,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             for (Pair<String, String> name : names) {
                 final String tableName = name.getFirst();
                 final String tableAlias = name.getSecond();
-                if (!hasProposal(proposals, tableName)) {
+                if (!CommonUtils.isEmpty(tableName) && !hasProposal(proposals, tableName)) {
                     proposals.add(
                         0,
                         SQLCompletionAnalyzer.createCompletionProposal(
