@@ -319,9 +319,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             }
             showErrorsInDialog.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG));
             markCellValueOccurrences.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES));
-            int maxEditiingContentSize = store.getInt(ModelPreferences.EDITING_CONTENT_MAX_SIZE_KBYTES);
-            maxEditingContentSize.setText(String.valueOf(maxEditiingContentSize));
-            
+            maxEditingContentSize.setText(String.valueOf(store.getInt(ModelPreferences.EDITING_CONTENT_MAX_SIZE_KBYTES)));
             updateOptionsEnablement();
         } catch (Exception e) {
             log.warn(e);

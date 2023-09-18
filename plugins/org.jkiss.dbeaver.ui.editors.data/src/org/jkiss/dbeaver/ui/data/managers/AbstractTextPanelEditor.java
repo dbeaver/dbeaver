@@ -120,7 +120,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         editor.addContextMenuContributor(manager -> contributeTextEditorActions(manager, editorControl));
         editorPaintListener = new PanelEditorPaintListener();
         editorControl.addPaintListener(editorPaintListener);
-        editorControl.addListener(SWT.RESIZE, new Listener() {
+        editorControl.addListener(SWT.Resize, new Listener() {
 
             @Override
             public void handleEvent(Event event) {
