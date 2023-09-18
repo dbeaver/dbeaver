@@ -38,6 +38,11 @@ public enum WSEventType {
         WSEventTopic.SESSION_LOG,
         WSSessionLogUpdatedEvent.class
     ),
+    SESSION_LOG_MESSAGE_ADDED(
+        "cb_session_log_message_added",
+        WSEventTopic.SESSION_LOG,
+        WSErrorEvent.class
+    ),
 
     SESSION_WEBSOCKET_CONNECTED("cb_session_websocket_connected", WSEventTopic.SESSION, WSSocketConnectedEvent.class),
     SESSION_STATE("cb_session_state", WSEventTopic.SESSION, WSSessionStateEvent.class),
