@@ -26,6 +26,8 @@ import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
 import org.eclipse.gef.editpolicies.ConnectionEndpointEditPolicy;
+import org.eclipse.gmf.runtime.draw2d.ui.figures.PolylineConnectionEx;
+import org.eclipse.gmf.runtime.draw2d.ui.internal.figures.ConnectionLayerEx;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.AccessibleEvent;
@@ -95,9 +97,21 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     @Override
     protected IFigure createFigure() {
-        PolylineConnection conn = new PolylineConnection();
+        PolylineConnectionEx conn = new PolylineConnectionEx() {
+            @Override
+            public boolean isRoundingBendpoints() {
+                final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+                return store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI);
+            }
+        };
+        conn.disablePartialJumpLinks(true);
+        conn.setRoutingStyles(false, true);
 
+        conn.setJumpLinksStyles(PolylineConnectionEx.JUMPLINK_FLAG_ABOVE, false, true, false, false);
+        conn.setRoundedBendpointsRadius(15);
         conn.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_LINES_FOREGROUND));
+
+        conn.setRoutingStyles(true, true);
 
         boolean showComments = getDiagramPart().getDiagram().hasAttributeStyle(ERDViewStyle.COMMENTS);
         if (showComments) {
@@ -124,7 +138,9 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     protected void setConnectionRouting(PolylineConnection conn) {
         ERDAssociation association = getAssociation();
         // Set router and initial bends
-        ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
+        ConnectionLayerEx cLayer = (ConnectionLayerEx) getLayer(LayerConstants.CONNECTION_LAYER);
+
+
         conn.setConnectionRouter(cLayer.getConnectionRouter());
         if (!CommonUtils.isEmpty(association.getInitBends())) {
             List<AbsoluteBendpoint> connBends = new ArrayList<>();

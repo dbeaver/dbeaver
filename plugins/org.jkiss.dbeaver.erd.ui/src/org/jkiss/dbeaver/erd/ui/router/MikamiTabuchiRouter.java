@@ -23,6 +23,7 @@ import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.PrecisionPoint;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.gmf.runtime.draw2d.ui.internal.routers.OrthogonalRouter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -40,7 +41,7 @@ import java.util.stream.Collectors;
  * 3. Continue until a line from source intersects another line from target
  * 4. Backtrace from interception
  */
-public class MikamiTabuchiRouter {
+public class MikamiTabuchiRouter implements OrthogonalRouter {
 
     private static final Log log = Log.getLog(MikamiTabuchiRouter.class);
     private static final int SOURCE_VERTICAL_LINES = 0;
@@ -48,7 +49,7 @@ public class MikamiTabuchiRouter {
     private static final int TARGET_VERTICAL_LINES = 2;
     private static final int TARGET_HORIZONTAL_LINES = 3;
 
-    private int spacing = 15;
+    private int spacing = 20;
     private final Set<Rectangle> obstacles = new HashSet<>();
 
     private PrecisionPoint start;
@@ -219,6 +220,10 @@ public class MikamiTabuchiRouter {
 
     public void setSpacing(int spacing) {
         this.spacing = spacing;
+    }
+
+    public int getSpacing() {
+        return spacing;
     }
 
     public boolean updateObstacle(Rectangle rectangle, Rectangle newBounds) {

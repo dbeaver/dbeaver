@@ -19,7 +19,10 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.erd.model;visibility:=reexport,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.base,
- org.jkiss.dbeaver.ui.navigator
+ org.jkiss.dbeaver.ui.navigator,
+ org.eclipse.gmf.runtime.draw2d.ui;bundle-version="1.9.2",
+ org.eclipse.gmf.runtime.diagram.ui;bundle-version="1.9.1",
+ org.eclipse.gmf.runtime.diagram.ui.render;bundle-version="1.7.2"
 Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.erd.ui,
  org.jkiss.dbeaver.erd.ui.command,

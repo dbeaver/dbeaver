@@ -30,6 +30,7 @@ import org.eclipse.gef.palette.ToolEntry;
 import org.eclipse.gef.tools.SelectionTool;
 import org.eclipse.gef.ui.parts.AbstractEditPartViewer;
 import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
+import org.eclipse.gmf.runtime.diagram.ui.parts.DiagramGraphicalViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
@@ -73,7 +74,7 @@ import java.util.*;
  * error messages to
  * @author Serge Rider
  */
-public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPropertyChangeListener, DBPEventListener {
+public class ERDGraphicalViewer extends DiagramGraphicalViewer implements IPropertyChangeListener, DBPEventListener {
     private static final Log log = Log.getLog(ERDGraphicalViewer.class);
 
     private ERDEditorPart editor;

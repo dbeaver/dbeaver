@@ -21,8 +21,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.PrintFigureOperation;
+import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.gef.*;
@@ -36,6 +35,11 @@ import org.eclipse.gef.ui.palette.FlyoutPaletteComposite;
 import org.eclipse.gef.ui.palette.PaletteViewerProvider;
 import org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette;
 import org.eclipse.gef.ui.properties.UndoablePropertySheetEntry;
+import org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramRootEditPart;
+import org.eclipse.gmf.runtime.diagram.ui.figures.BorderItemsAwareFreeFormLayer;
+import org.eclipse.gmf.runtime.draw2d.ui.internal.figures.ConnectionLayerEx;
+import org.eclipse.gmf.runtime.draw2d.ui.internal.mapmode.IdentityMapMode;
+
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -238,9 +242,27 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     {
         try {
             // Use reflection to make it compile with older Eclipse versions
-            rootPart = ScalableFreeformRootEditPart.class
-                .getConstructor(Boolean.TYPE)
-                .newInstance(false);
+            rootPart = new DiagramRootEditPart() {
+                @Override
+                protected ScalableFreeformLayeredPane createScalableFreeformLayeredPane() {
+                    return new DiagramRootEditPart.DiagramScalableFreeformLayeredPane(new IdentityMapMode());
+                }
+
+                @Override
+                protected LayeredPane createPrintableLayers() {
+                    FreeformLayeredPane layeredPane = new FreeformLayeredPane();
+                    layeredPane.add(new BorderItemsAwareFreeFormLayer(), "Primary Layer");
+                    ConnectionLayerEx connectionLayerEx = new ConnectionLayerEx() {
+                        @Override
+                        public ConnectionRouter getConnectionRouter() {
+                            return connectionRouter;
+                        }
+                    };
+                    layeredPane.add(connectionLayerEx, "Connection Layer");
+                    layeredPane.add(new FreeformLayer(), "Decoration Printable Layer");
+                    return layeredPane;
+                }
+            };
         } catch (Throwable e) {
             rootPart = new ScalableFreeformRootEditPart();
         }

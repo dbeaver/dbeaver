@@ -24,6 +24,7 @@ import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.commands.CommandStackEvent;
 import org.eclipse.gef.commands.CommandStackEventListener;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
+import org.eclipse.gmf.runtime.draw2d.ui.internal.routers.ObliqueRouter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
@@ -141,15 +142,15 @@ public class DiagramPart extends PropertyAwarePart {
         if ((control.getStyle() & SWT.MIRRORED) == 0) {
             cLayer.setAntialias(SWT.ON);
         }
-
-        FanRouter router = new FanRouter();
+        FanRouter router = new org.eclipse.gmf.runtime.draw2d.ui.internal.routers.FanRouter();
         router.setSeparation(15);
+
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
         //router.setNextRouter(new BendpointConnectionRouter());
         if (store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)) {
             router.setNextRouter(new MikamiTabuchiConnectionRouter(figure));
         } else {
-            router.setNextRouter(new ShortestPathConnectionRouter(figure));
+            router.setNextRouter(new ObliqueRouter());
         }
 
 //        router.setNextRouter(new ManhattanConnectionRouter());
