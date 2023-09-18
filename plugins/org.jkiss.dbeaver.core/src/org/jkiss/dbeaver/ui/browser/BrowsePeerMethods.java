@@ -33,6 +33,7 @@ public class BrowsePeerMethods {
 
     /**
      * Checks if request can be opened in SWT browser
+     *
      * @return true if request is redirectable
      */
     public static boolean canBrowseInSWTBrowser() {
@@ -55,8 +56,8 @@ public class BrowsePeerMethods {
 
     /**
      * Open URI via SWT browser API
-     * @param uri uri to open
      *
+     * @param uri uri to open
      * @return was it opened successfully
      */
     public static boolean browseInSWTBrowser(URI uri) {

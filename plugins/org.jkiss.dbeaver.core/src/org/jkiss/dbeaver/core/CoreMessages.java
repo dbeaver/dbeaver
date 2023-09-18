@@ -351,7 +351,7 @@ public class CoreMessages extends NLS {
     public static String pref_page_ui_general_combo_browser;
     public static String pref_page_ui_general_combo_browser_tip;
     public static String pref_page_ui_general_check_browser_auth;
-	public static String pref_page_ui_general_check_browser_auth_tip;
+    public static String pref_page_ui_general_check_browser_auth_tip;
     public static String pref_page_ui_general_combo_language;
     public static String pref_page_ui_general_combo_timezone;
     public static String pref_page_ui_general_combo_timezone_tip;
