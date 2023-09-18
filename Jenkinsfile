@@ -42,7 +42,7 @@ pipeline{
                 script {
                     cleanWs()
                     checkout scm
-                    sh "source /etc/profile && mvn clean package -o"
+                    sh "source /etc/profile && mvn clean package -Pall-platforms -o"
                 }
             }
         }
