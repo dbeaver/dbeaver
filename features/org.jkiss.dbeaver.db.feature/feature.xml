@@ -97,7 +97,7 @@
          unpack="false"/>
 
    <plugin
-           id="org.jkiss.dbeaver.ext.dm"
+           id="org.jkiss.dbeaver.ext.dameng"
            download-size="0"
            install-size="0"
            version="0.0.0"
