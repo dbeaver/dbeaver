@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.erd.ui.notation.impl;
+package org.jkiss.dbeaver.erd.ui.notation.idef1x;
 
 import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.PolylineConnection;
@@ -36,7 +36,6 @@ public class IDEF1XDiagramNotation implements ERDNotation {
 
     @Override
     public void applyNotationForArrows(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
-
         boolean identifying = ERDUtils.isIdentifyingAssociation(association);
         DBSEntityConstraintType constraintType = association.getObject().getConstraintType();
         if (constraintType == DBSEntityConstraintType.INHERITANCE) {
@@ -74,7 +73,6 @@ public class IDEF1XDiagramNotation implements ERDNotation {
 
     @Override
     public void applyNotationForEntities(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
-        // TODO Auto-generated method stub
         
     }
 }

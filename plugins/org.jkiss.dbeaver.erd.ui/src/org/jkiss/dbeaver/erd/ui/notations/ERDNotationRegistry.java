@@ -16,15 +16,21 @@
  */
 package org.jkiss.dbeaver.erd.ui.notations;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 
 public class ERDNotationRegistry {
@@ -54,17 +60,20 @@ public class ERDNotationRegistry {
         return instance;
     }
 
-    public Collection<ERDNotationDescriptor> getERDNotations() {
-        return notations.values();
+    @NotNull
+    public List<ERDNotationDescriptor> getERDNotations() {
+        return notations.values().stream().collect(Collectors.toList());
     }
 
-    public void addNotation(ERDNotationDescriptor notation) {
-        if (notations.containsKey(notation.getId())) {
-            log.error("ER Diagram Notation already defined for id:" + notation.getId());
+    public void addNotation(ERDNotationDescriptor descriptor) {
+        if (notations.containsKey(descriptor.getId())) {
+            log.error("ER Diagram Notation already defined for id:" + descriptor.getId());
+            return;
         }
-        if (notation.isDefault()) {
+        notations.put(descriptor.getId(), descriptor);
+        if (descriptor.isDefault()) {
             if (defaultNotation == null) {
-                defaultNotation = notation;
+                defaultNotation = descriptor;
             } else {
                 log.error("The default ERD Notation already defined for id:" + defaultNotation.getId());
             }
@@ -82,5 +91,9 @@ public class ERDNotationRegistry {
 
     public ERDNotationDescriptor getDefaultNotation() {
         return this.defaultNotation;
+    }
+
+    public Optional<ERDNotationDescriptor> getERDNotationByName(String text) {
+        return notations.values().stream().filter(p->p.getName().equals(text)).findFirst();
     }
 }

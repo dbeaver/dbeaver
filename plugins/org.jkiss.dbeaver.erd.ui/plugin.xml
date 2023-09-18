@@ -598,21 +598,21 @@
              id="org.jkiss.dbeaver.erd.notaion.idef1x"
              isDefault="false"
              name="IDEF1X"
-             notation="org.jkiss.dbeaver.erd.ui.notation.impl.IDEF1XDiagramNotation">
+             notation="org.jkiss.dbeaver.erd.ui.notation.idef1x.IDEF1XDiagramNotation">
        </erdnotaion>
        <erdnotaion
              description="Charles Bachman diagram notation"
              id="org.jkiss.dbeaver.erd.notaion.bachman"
              isDefault="false"
              name="Bachman"
-             notation="org.jkiss.dbeaver.erd.ui.notation.impl.BachmanDiagramNotation">
+             notation="org.jkiss.dbeaver.erd.ui.notation.bachman.BachmanDiagramNotation">
        </erdnotaion>
        <erdnotaion
              description="Crow’s Foot diagram notation"
              id="org.jkiss.dbeaver.erd.notaion.crowsfoot"
              isDefault="true"
              name="Crows Foot"
-             notation="org.jkiss.dbeaver.erd.ui.notation.impl.CrowsFootDiagramNotation">
+             notation="org.jkiss.dbeaver.erd.ui.notation.crowsfoot.CrowsFootDiagramNotation">
        </erdnotaion>
     </extension>
 

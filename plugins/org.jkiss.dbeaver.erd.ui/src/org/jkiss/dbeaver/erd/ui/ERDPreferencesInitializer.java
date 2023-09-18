@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.erd.ui;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
+import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
+import org.jkiss.dbeaver.erd.ui.notations.ERDNotationRegistry;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -34,6 +36,10 @@ public class ERDPreferencesInitializer extends AbstractPreferenceInitializer {
       PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS, true);
       PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS, false);
       PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_ROUTING_TYPE, ERDUIConstants.ROUTING_SHORTEST_PATH);
+      ERDNotationDescriptor defaultNotation = ERDNotationRegistry.getInstance().getDefaultNotation();
+      if (defaultNotation != null) {
+          PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_NOTATION_TYPE, defaultNotation.getId());
+      }
       PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS, true);
       PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS, true);
 

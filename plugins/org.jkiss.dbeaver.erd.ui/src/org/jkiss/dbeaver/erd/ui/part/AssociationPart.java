@@ -29,6 +29,7 @@ import org.eclipse.gef.editpolicies.ConnectionEndpointEditPolicy;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.graphics.Color;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
@@ -57,7 +58,7 @@ import java.util.List;
  * @author Serge Rider
  */
 public class AssociationPart extends PropertyAwareConnectionPart {
-
+    Log log = Log.getLog(this.getClass());
     // Keep original line width to visualize selection
     private Integer oldLineWidth;
 
@@ -164,12 +165,14 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     }
 
     protected void setConnectionStyles(PolylineConnection conn) {
-        ERDNotationRegistry notationRegistry = ERDNotationRegistry.getInstance();
-        ERDNotationDescriptor defaultNotation = notationRegistry.getDefaultNotation();
-        if (defaultNotation != null) {
+        ERDNotationDescriptor diagramNotation = getDiagramPart().getDiagram().getDiagramNotation();
+        if (diagramNotation == null) {
+            log.error("Diagram notation is not defined");
+        }
+        if (diagramNotation != null) {
             Color background = getParent().getViewer().getControl().getBackground();
             Color foreground = getParent().getViewer().getControl().getForeground();
-            defaultNotation.getNotation().applyNotationForArrows(conn, getAssociation(), background, foreground);
+            diagramNotation.getNotation().applyNotationForArrows(conn, getAssociation(), background, foreground);
         }
     }
 

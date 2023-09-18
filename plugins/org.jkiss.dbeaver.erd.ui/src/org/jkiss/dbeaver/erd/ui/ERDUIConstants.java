@@ -32,8 +32,8 @@ public class ERDUIConstants {
     public static final String PREF_PRINT_MARGIN_BOTTOM = "erd.print.margin-bottom";
     public static final String PREF_PRINT_MARGIN_LEFT = "erd.print.margin-left";
     public static final String PREF_PRINT_MARGIN_RIGHT = "erd.print.margin-right";
-
     public static final String PREF_ROUTING_TYPE = "erd.routing.type";
+    public static final String PREF_NOTATION_TYPE = "erd.notation.type";
     public static final int PRINT_MODE_DEFAULT = PrintFigureOperation.TILE;
     public static final int PRINT_MARGIN_DEFAULT = 0;
 
@@ -43,7 +43,6 @@ public class ERDUIConstants {
     public static final String PREF_DIAGRAM_SHOW_PARTITIONS = "erd.diagram.show.partitions";
     public static final String PREF_DIAGRAM_CHANGE_BORDER_COLORS = "erd.diagram.change.borders.colors";
     public static final String PREF_DIAGRAM_CHANGE_HEADER_COLORS = "erd.diagram.change.header.colors";
-    public static final String PREF_DIAGRAM_NOTATION_STYLE = "erd.diagram.notation.style";
     public static final String PREF_GRID_ENABLED = "erd.grid.enabled";
     public static final String PREF_GRID_SNAP_ENABLED = "erd.grid.snap";
     public static final String PREF_GRID_WIDTH = "erd.grid.width";

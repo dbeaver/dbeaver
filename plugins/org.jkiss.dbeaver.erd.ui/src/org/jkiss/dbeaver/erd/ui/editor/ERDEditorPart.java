@@ -81,6 +81,8 @@ import org.jkiss.dbeaver.erd.ui.model.ERDContentProviderDecorated;
 import org.jkiss.dbeaver.erd.ui.model.ERDDecorator;
 import org.jkiss.dbeaver.erd.ui.model.ERDDecoratorDefault;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
+import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
+import org.jkiss.dbeaver.erd.ui.notations.ERDNotationRegistry;
 import org.jkiss.dbeaver.erd.ui.part.*;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
@@ -852,6 +854,14 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
     }
 
+    public void fillNotationsMenu(IMenuManager menu) {
+        MenuManager ntMenu = new MenuManager(ERDUIMessages.menu_notation_style);
+        for (ERDNotationDescriptor ntType : ERDNotationRegistry.getInstance().getERDNotations()) {
+            ntMenu.add(new ChangeERDNotationStyleAction(ntType));
+        }
+        menu.add(ntMenu);
+    }
+
     public void fillPartContextMenu(IMenuManager menu, IStructuredSelection selection) {
         if (selection.isEmpty()) {
             return;
@@ -1077,6 +1087,29 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         {
             getDiagram().setAttributeStyle(style, !isChecked());
             refreshEntityAndAttributes();
+        }
+    }
+    
+    private class ChangeERDNotationStyleAction extends Action {
+        private final ERDNotationDescriptor notation;
+
+        public ChangeERDNotationStyleAction(ERDNotationDescriptor notation) {
+            super(notation.getName(), AS_CHECK_BOX);
+            this.notation = notation;
+        }
+
+        @Override
+        public boolean isChecked() {
+            if (notation == null || getDiagram().getDiagramNotation() == null) {
+                return false;
+            }
+            return notation.getId().equals(getDiagram().getDiagramNotation().getId());
+        }
+
+        @Override
+        public void run() {
+            getDiagram().setDiagramNotation(notation);
+            refreshDiagram(true, true);
         }
     }
 
