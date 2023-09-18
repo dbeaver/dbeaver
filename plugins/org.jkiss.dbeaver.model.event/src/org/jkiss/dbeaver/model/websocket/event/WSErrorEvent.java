@@ -22,7 +22,10 @@ import org.jkiss.code.Nullable;
 public class WSErrorEvent extends WSAbstractEvent {
     String errorMessage;
 
-    public WSErrorEvent(@NotNull WSEventType eventType, @Nullable String sessionId, @Nullable String userId, @Nullable String errorMessage) {
+    public WSErrorEvent(@NotNull WSEventType eventType,
+                        @Nullable String sessionId,
+                        @Nullable String userId,
+                        @Nullable String errorMessage) {
         super(eventType, sessionId, userId);
         this.errorMessage = errorMessage;
     }
