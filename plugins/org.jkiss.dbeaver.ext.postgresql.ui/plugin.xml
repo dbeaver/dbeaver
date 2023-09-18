@@ -195,9 +195,9 @@
                     label="%tools.backup.db.name"
                     icon="#export"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreObject"/>
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreObject" if="object.dataSource.serverType.supportsNativeClient()"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema" if="object.dataSource.serverType.supportsNativeClient()"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase" if="object.dataSource.serverType.supportsNativeClient()"/>
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolBackupAll"
@@ -206,7 +206,7 @@
                     label="%tools.backup.all.db.name"
                     icon="#export"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase" if="object.dataSource.serverType.supportsNativeClient()"/>
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolRestore"
@@ -215,8 +215,8 @@
                     label="%tools.restore.db.name"
                     icon="#import"
                     singleton="true">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase" if="object.dataSource.serverType.supportsNativeClient()"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema" if="object.dataSource.serverType.supportsNativeClient()"/>
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolScript"
