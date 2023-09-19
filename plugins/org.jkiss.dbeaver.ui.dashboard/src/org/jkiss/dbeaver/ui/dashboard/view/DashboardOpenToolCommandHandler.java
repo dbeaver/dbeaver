@@ -14,34 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.tools.fdw;
+package org.jkiss.dbeaver.ui.dashboard.view;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
+import java.util.List;
 
-public class PostgreFDWConfigToolCommandHandler extends AbstractHandler {
+public class DashboardOpenToolCommandHandler extends AbstractHandler {
+
     @Override
     public Object execute(ExecutionEvent event) {
-        for (DBSObject object : NavigatorUtils.getSelectedObjects(HandlerUtil.getCurrentSelection(event))) {
-            PostgreDatabase database;
-            if (object instanceof PostgreObject) {
-                database = ((PostgreObject) object).getDatabase();
-            } else {
-                continue;
-            }
-            ActiveWizardDialog dialog = new ActiveWizardDialog(
-                HandlerUtil.getActiveWorkbenchWindow(event),
-                new PostgreFDWConfigWizard(database));
-            dialog.setFinishButtonLabel("Install");
-            dialog.open();
+        List<DBSObject> selectedObjects = NavigatorUtils.getSelectedObjects(HandlerUtil.getCurrentSelection(event));
+        // Just open dashboard view
+        if (selectedObjects.isEmpty()) {
+            return null;
         }
-        return null;
+        DBSObject object = selectedObjects.iterator().next();
+        DBPDataSource dataSource = object.getDataSource();
+        if (dataSource == null) {
+            return null;
+        }
+        DBPDataSourceContainer dataSourceContainer = dataSource.getContainer();
+        if (dataSourceContainer == null) {
+            return null;
+        }
+        return DashboardView.openView(HandlerUtil.getActiveWorkbenchWindow(event), dataSourceContainer);
     }
+
 }
