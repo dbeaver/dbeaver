@@ -26,21 +26,21 @@ import org.jkiss.dbeaver.erd.model.ERDAssociation;
 public interface ERDNotation {
     /**
      *Method designed to display diagram relation notation
-     * 
-     *@param conn        - connection class specification
-     *@param association - ERD association
-     *@param bckColor    - back end color
-     *@param frgColor    - front end color
+     *
+     * @param conn        - connection class specification
+     * @param association - ERD association
+     * @param bckColor    - back end color
+     * @param frgColor    - front end color
      */
     public void applyNotationForArrows(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor);
 
     /**
      * Method designed to display diagram entity notation
      *
-     *@param conn        - connection class specification
-     *@param association - ERD association
-     *@param bckColor    - back end color
-     *@param frgColor    - front end color
+     * @param conn        - connection class specification
+     * @param association - ERD association
+     * @param bckColor    - back end color
+     * @param frgColor    - front end color
      */
     public void applyNotationForEntities(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor);
 }
