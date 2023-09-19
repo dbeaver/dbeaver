@@ -45,6 +45,8 @@ public class YashanDBValueHandlerProvider implements DBDValueHandlerProvider {
                 return new YashanDBTimestampValueHandler(preferences);
             case Types.VARBINARY:
                 return YashanDBRAWValueHandler.INSTANCE;
+            case Types.JAVA_OBJECT:
+                return YashanDBJSONValueHandler.INSTANCE;
         }
         return null;
     }

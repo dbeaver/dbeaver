@@ -91,12 +91,9 @@ public class YashanDBDataType extends YashanDBObject<DBSObject> implements DBSDa
         PREDEFINED_TYPES.put("ROWID", new TypeDesc(DBPDataKind.ROWID, Types.ROWID, 0, 0, 0));
         PREDEFINED_TYPES.put("NCLOB", new TypeDesc(DBPDataKind.CONTENT, Types.NCLOB, 0, 0, 0));
         PREDEFINED_TYPES.put("RAW", new TypeDesc(DBPDataKind.BINARY, Types.VARBINARY, 0, 0, 0));
-        // ????
-        PREDEFINED_TYPES.put("CURSOR", new TypeDesc(DBPDataKind.OBJECT, -10, 0, 0, 0));
-        // ????
-        PREDEFINED_TYPES.put("RECOED", new TypeDesc(DBPDataKind.OBJECT, 0, 0, 0, 0));
+
         PREDEFINED_TYPES.put("BOOLEAN", new TypeDesc(DBPDataKind.BOOLEAN, Types.BOOLEAN, 0, 0, 0));
-        PREDEFINED_TYPES.put("UNKNOWN", new TypeDesc(DBPDataKind.UNKNOWN, 0, 0, 0, 0));
+        PREDEFINED_TYPES.put("JSON", new TypeDesc(DBPDataKind.CONTENT, Types.JAVA_OBJECT,0, 0,0));
 
         for (TypeDesc type : PREDEFINED_TYPES.values()) {
             PREDEFINED_TYPE_IDS.put(type.valueType, type);
