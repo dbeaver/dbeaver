@@ -51,7 +51,11 @@ public class DamengSequenceManager extends SQLObjectEditor<GenericSequence, Dame
 
     @Override
     protected GenericSequence createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
-        return new GenericSequence((GenericStructContainer) container, "NEW_SEQUENCE", null, 0, 1, Long.MAX_VALUE, 1);
+        GenericStructContainer structContainer = (GenericStructContainer) container;
+        DamengSchema schema = (DamengSchema) structContainer.getSchema();
+        GenericSequence sequence = new GenericSequence((GenericStructContainer) container, "NEW_SEQUENCE", null, 0, 1, Long.MAX_VALUE, 1);
+        setNewObjectName(monitor, schema, sequence);
+        return sequence;
     }
 
     @Override
