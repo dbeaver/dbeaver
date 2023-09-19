@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
-import org.jkiss.dbeaver.erd.ui.notations.ERDNotationRegistry;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationEditPolicy;
 import org.jkiss.dbeaver.model.DBIcon;
