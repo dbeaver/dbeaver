@@ -58,7 +58,7 @@ public class ERDNotationDescriptor extends AbstractDescriptor {
     /**
      * The method instantiate ERDNotation object
      * 
-     *@return Notation instance 
+     * @return - Notation instance
      */
     public ERDNotation getNotation() {
         if (notation == null) {
