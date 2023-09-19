@@ -67,6 +67,4 @@ public class YashanDBPlanNode extends AbstractExecutionPlanNode implements DBCPl
     }
 
 
-
-
 }

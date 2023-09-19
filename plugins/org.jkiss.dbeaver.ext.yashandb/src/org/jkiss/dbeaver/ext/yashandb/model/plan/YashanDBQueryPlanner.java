@@ -34,7 +34,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * YashanDB execution plan node
  */
-public class YashanDBQueryPlanner  extends AbstractExecutionPlanSerializer implements DBCQueryPlanner/*, DBCSavedQueryPlanner*/ {
+public class YashanDBQueryPlanner extends AbstractExecutionPlanSerializer implements DBCQueryPlanner/*, DBCSavedQueryPlanner*/ {
     @Override
     public DBPDataSource getDataSource() {
         return null;
