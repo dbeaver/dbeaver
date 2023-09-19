@@ -49,7 +49,7 @@ public void setIsSupportSquareBracketQuotation(boolean value) { isSupportSquareB
 }
 
 // root rule for script
-sqlQueries: (sqlQuery Semicolon?)* EOF; // EOF - don't stop early. must match all input
+sqlQueries: sqlQuery (Semicolon sqlQuery)* Semicolon? EOF; // EOF - don't stop early. must match all input
 sqlQuery: directSqlDataStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|sqlDataStatement;
 
 directSqlDataStatement: (deleteStatement|selectStatement|insertStatement|updateStatement);
@@ -173,9 +173,9 @@ queryTerm: (nonJoinQueryTerm|joinedTable);
 queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
 
 // from
-fromClause: FROM tableReference ((Comma tableReference)+)?;
+fromClause: FROM tableReference (Comma tableReference)*;
 nonjoinedTableReference: (tableName (PARTITION anyProperty)? (correlationSpecification)?)|(derivedTable correlationSpecification);
-tableReference: (nonjoinedTableReference|joinedTable|tableReferenceHints)*; // * to handle incomplete queries
+tableReference: nonjoinedTableReference|joinedTable|tableReferenceHints|(.*?); // '.*' to handle incomplete queries
 tableReferenceHints: (tableHintKeywords|anyWord)+ anyProperty; // dialect-specific options, should be described and moved to dialects in future
 joinedTable: (nonjoinedTableReference|(LeftParen joinedTable RightParen)) (naturalJoinTerm|crossJoinTerm)+;
 correlationSpecification: (AS)? correlationName (LeftParen derivedColumnList RightParen)?;
@@ -252,7 +252,7 @@ likePredicate: matchValue (NOT)? LIKE pattern (ESCAPE escapeCharacter)?;
 matchValue: characterValueExpression;
 pattern: characterValueExpression;
 escapeCharacter: characterValueExpression;
-nullPredicate: rowValueConstructor IS (NOT)? NULL;
+nullPredicate: rowValueConstructor IS (NOT? NULL | NOTNULL);
 quantifiedComparisonPredicate: rowValueConstructor compOp quantifier tableSubquery;
 quantifier: (all|some);
 all: ALL;
@@ -278,7 +278,7 @@ referencingColumns: referenceColumnList;
 orderByClause: ORDER BY sortSpecificationList;
 sortSpecificationList: sortSpecification ((Comma sortSpecification)+)?;
 sortSpecification: sortKey (orderingSpecification)?;
-sortKey: (columnReference|UnsignedInteger);
+sortKey: columnReference | UnsignedInteger | anyWordsWithProperty;
 orderingSpecification: (ASC|DESC);
 
 // schema definition
