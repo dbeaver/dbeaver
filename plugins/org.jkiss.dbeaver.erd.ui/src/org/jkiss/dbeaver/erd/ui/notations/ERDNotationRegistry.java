@@ -51,8 +51,8 @@ public class ERDNotationRegistry {
 
     /**
      * Registry instance
-     * 
-     * @return - registry instance
+     *
+     *@return - registry instance
      */
     public static synchronized ERDNotationRegistry getInstance() {
         if (instance == null) {
@@ -68,8 +68,8 @@ public class ERDNotationRegistry {
 
     /**
      * Add new notation
-     * 
-     * @param descriptor - notation descriptor
+     *
+     *@param descriptor - notation descriptor
      */
     public void addNotation(@NotNull ERDNotationDescriptor descriptor) {
         if (notations.containsKey(descriptor.getId())) {
@@ -88,9 +88,9 @@ public class ERDNotationRegistry {
 
     /**
      * Get notation by identifier
-     * 
-     * @param id - notation descriptor identifier
-     * @return - ERDNotationDescriptor
+     *
+     *@param id - notation descriptor identifier
+     *@return - ERDNotationDescriptor
      */
     public ERDNotationDescriptor getNotation(String id) {
         if (!notations.containsKey(id)) {
@@ -106,9 +106,9 @@ public class ERDNotationRegistry {
 
     /**
      * Return notation from registry by name
-     * 
-     * @param name - notation name
-     * @return - Optional<ERDNotationDescriptor>
+     *
+     *@param name - notation name
+     *@return - Optional ERDNotationDescriptor
      */
     public Optional<ERDNotationDescriptor> getERDNotationByName(String name) {
         return notations.values().stream().filter(p -> p.getName().equals(name)).findFirst();
