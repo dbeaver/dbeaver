@@ -26,34 +26,29 @@ public class WSSubjectPermissionEvent extends WSAbstractEvent {
 
     private final SMSubjectType subjectType;
     private final String subjectId;
-    private final boolean subjectConnectionsChanged;
 
     protected WSSubjectPermissionEvent(
         @NotNull WSEventType eventType,
         @NotNull SMSubjectType subjectType,
         @NotNull String subjectId,
-        boolean subjectConnectionsChanged,
         @Nullable String sessionId,
         @Nullable String userId
     ) {
         super(eventType, sessionId, userId);
         this.subjectType = subjectType;
         this.subjectId = subjectId;
-        this.subjectConnectionsChanged = subjectConnectionsChanged;
     }
 
     public static WSSubjectPermissionEvent update(
         @Nullable String sessionId,
         @Nullable String userId,
         @NotNull SMSubjectType subjectType,
-        @NotNull String subjectId,
-        boolean subjectConnectionsChanged
+        @NotNull String subjectId
     ) {
         return new WSSubjectPermissionEvent(
             WSEventType.SUBJECT_PERMISSIONS_UPDATED,
             subjectType,
             subjectId,
-            subjectConnectionsChanged,
             sessionId,
             userId
         );
@@ -67,7 +62,4 @@ public class WSSubjectPermissionEvent extends WSAbstractEvent {
         return subjectType;
     }
 
-    public boolean isSubjectConnectionsChanged() {
-        return subjectConnectionsChanged;
-    }
 }
