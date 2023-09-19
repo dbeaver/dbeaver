@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.erd.ui.notations;
 
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.swt.graphics.Color;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
 
 /**
@@ -25,14 +26,18 @@ import org.jkiss.dbeaver.erd.model.ERDAssociation;
  */
 public interface ERDNotation {
     /**
-     *Method designed to display diagram relation notation
+     * Method designed to display diagram relation notation
      *
      * @param conn        - connection class specification
      * @param association - ERD association
      * @param bckColor    - back end color
      * @param frgColor    - front end color
      */
-    public void applyNotationForArrows(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor);
+    public void applyNotationForArrows(
+        @NotNull PolylineConnection conn,
+        @NotNull ERDAssociation association,
+        @NotNull Color bckColor,
+        @NotNull Color frgColor);
 
     /**
      * Method designed to display diagram entity notation
@@ -42,5 +47,9 @@ public interface ERDNotation {
      * @param bckColor    - back end color
      * @param frgColor    - front end color
      */
-    public void applyNotationForEntities(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor);
+    public void applyNotationForEntities(
+        @NotNull PolylineConnection conn,
+        @NotNull ERDAssociation association,
+        @NotNull Color bckColor,
+        @NotNull Color frgColor);
 }
