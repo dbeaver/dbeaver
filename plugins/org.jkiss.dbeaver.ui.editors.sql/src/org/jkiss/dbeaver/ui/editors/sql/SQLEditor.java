@@ -2475,6 +2475,12 @@ public class SQLEditor extends SQLEditorBase implements
         } else {
             // Execute statement under cursor or selected text (if selection present)
             SQLScriptElement sqlQuery = extractActiveQuery();
+            //todo:yashandb执行计划相关的支持目前不完善，暂时当做普通查询拼接explain查询展示结果
+            if(("YashanDB explain plan").equals(getDataSourceContainer().getDescription())&&sqlQuery instanceof SQLQuery){
+                this.getDataSourceContainer().setDescription(null);
+                ((SQLQuery) sqlQuery).setText("explain "+sqlQuery.getText());
+                ((SQLQuery) sqlQuery).setOriginalText("explain "+sqlQuery.getOriginalText());
+            }
             if (sqlQuery == null) {
                 ResultSetViewer activeViewer = getActiveResultSetViewer();
                 if (activeViewer != null) {
