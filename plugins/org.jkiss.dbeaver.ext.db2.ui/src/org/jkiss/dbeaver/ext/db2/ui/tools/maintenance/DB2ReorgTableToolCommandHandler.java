@@ -17,29 +17,28 @@
  */
 package org.jkiss.dbeaver.ext.db2.ui.tools.maintenance;
 
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.DBException;
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
  * DB2 table reorg action
  */
-public class DB2ReorgTableTool implements IUserInterfaceTool {
-
+public class DB2ReorgTableToolCommandHandler extends AbstractHandler {
     @Override
-    public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
-    {
-        List<DB2Table> tables = CommonUtils.filterCollection(objects, DB2Table.class);
+    public Object execute(ExecutionEvent event) {
+        List<DBSObject> selectedObjects = NavigatorUtils.getSelectedObjects(HandlerUtil.getCurrentSelection(event));
+        List<DB2Table> tables = CommonUtils.filterCollection(selectedObjects, DB2Table.class);
         if (!tables.isEmpty()) {
-            DB2ReorgTableDialog dialog = new DB2ReorgTableDialog(activePart.getSite(), tables);
-            dialog.open();
+            DB2ReorgTableDialog dialog = new DB2ReorgTableDialog(HandlerUtil.getActivePart(event).getSite(), tables);
+            return dialog.open();
         }
+        return null;
     }
 }

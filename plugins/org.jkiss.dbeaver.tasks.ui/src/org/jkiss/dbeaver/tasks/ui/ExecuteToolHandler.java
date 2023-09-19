@@ -16,12 +16,16 @@
  */
 package org.jkiss.dbeaver.tasks.ui;
 
+import org.eclipse.core.commands.Command;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.expressions.EvaluationContext;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IActionDelegate;
+import org.eclipse.ui.ISources;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -34,6 +38,7 @@ import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
 import org.jkiss.dbeaver.tools.registry.ToolDescriptor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
+import java.util.Collections;
 import java.util.List;
 
 public class ExecuteToolHandler implements IActionDelegate {
@@ -77,10 +82,20 @@ public class ExecuteToolHandler implements IActionDelegate {
                         );
                     }
                 } else {
-                    DBWorkbench.getPlatformUI().showWarningMessageBox(
-                        TaskUIMessages.task_execute_handler_tool_error_title,
-                        TaskUIMessages.task_execute_handler_tool_error_apply_message
-                    );
+                    Command cmd = tool.getCommandForObjects(objects);
+                    if (cmd != null) {
+                        ISelection selection = new StructuredSelection(objects);
+                        EvaluationContext context = new EvaluationContext(null, selection);
+                        context.addVariable(ISources.ACTIVE_CURRENT_SELECTION_NAME, selection);
+
+                        ExecutionEvent event = new ExecutionEvent(cmd, Collections.EMPTY_MAP, null, context);
+                        cmd.executeWithChecks(event);
+                    } else {
+                        DBWorkbench.getPlatformUI().showWarningMessageBox(
+                            TaskUIMessages.task_execute_handler_tool_error_title, 
+                            TaskUIMessages.task_execute_handler_tool_error_apply_message
+                        );
+                    }
                 }
             } else {
                 DBWorkbench.getPlatformUI().showWarningMessageBox(

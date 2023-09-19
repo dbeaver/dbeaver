@@ -17,16 +17,19 @@
 
 package org.jkiss.dbeaver.tools.registry;
 
+import org.eclipse.core.commands.Command;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.registry.task.TaskTypeDescriptor;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -46,6 +49,7 @@ public class ToolDescriptor extends AbstractDescriptor {
     private final ToolGroupDescriptor group;
 
     private final Set<String> toolImplTaskIds;
+    private final Set<ToolCommandRef> toolCommandRefs;
 
     public ToolDescriptor(IConfigurationElement config) {
         super(config);
@@ -57,8 +61,9 @@ public class ToolDescriptor extends AbstractDescriptor {
         String groupId = config.getAttribute(RegistryConstants.ATTR_GROUP);
         this.group = CommonUtils.isEmpty(groupId) ? null : ToolsRegistry.getInstance().getToolGroup(groupId);
         this.toolImplTaskIds = Stream.of(config.getChildren("task"))
-            .map(e -> e.getAttribute(RegistryConstants.ATTR_ID))
-            .collect(Collectors.toSet());
+            .map(e -> e.getAttribute(RegistryConstants.ATTR_ID)).collect(Collectors.toSet());
+        this.toolCommandRefs = Stream.of(config.getChildren("command"))
+            .map(e -> new ToolCommandRef(e)).collect(Collectors.toSet());
     }
 
     public String getId() {
@@ -106,6 +111,16 @@ public class ToolDescriptor extends AbstractDescriptor {
         }
         return null;
     }
+    
+    @Nullable
+    public Command getCommandForObjects(@NotNull Collection<DBSObject> objects) {
+        for (ToolCommandRef cmdRef : toolCommandRefs) {
+            if (objects.stream().allMatch(cmdRef::appliesTo)) {
+                return cmdRef.getCommand();
+            }
+        }
+        return null;
+    }
 
     /**
      * Checks if the tool tasks could be applied to the given object
@@ -120,6 +135,26 @@ public class ToolDescriptor extends AbstractDescriptor {
                 return true;
             }
         }
+        for (ToolCommandRef cmdRef : toolCommandRefs) {
+            if (cmdRef.appliesTo(item)) {
+                return true;
+            }
+        }
         return false;
+    }
+    
+    private static class ToolCommandRef extends AbstractContextDescriptor {
+        public final String commandId;
+        private Command command = null;
+        
+        public ToolCommandRef(@NotNull IConfigurationElement e) {
+            super(e);
+            this.commandId = e.getAttribute(RegistryConstants.ATTR_ID);
+        }
+
+        @Nullable
+        public Command getCommand() {
+            return command != null ? command : (command = ActionUtils.findCommand(commandId));
+        }
     }
 }

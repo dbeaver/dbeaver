@@ -284,18 +284,38 @@
                 label="Configuration"
                 icon="#tools"/>
             <tool
-                class="org.jkiss.dbeaver.ext.postgresql.tools.fdw.PostgreFDWConfigTool"
                 description="Foreign Data Wrappers configurator"
                 id="org.jkiss.dbeaver.ext.postgresql.tools.fdw.PostgreFDWConfigTool"
                 label="Foreign data wrappers configurator"
                 icon="#server"
                 singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreObject"/>
+                <command id="org.jkiss.dbeaver.ext.postgresql.ui.fdw">
+                    <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreObject"/>
+                </command>
             </tool>
 
         </tools>
     </extension>
 
+    <extension point="org.eclipse.ui.commands">
+    	<command id="org.jkiss.dbeaver.ext.postgresql.ui.fdw" name="Foreign data wrappers configurator"/>
+    </extension>
+    
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.ext.postgresql.ui.fdw" class="org.jkiss.dbeaver.ext.postgresql.tools.fdw.PostgreFDWConfigToolCommandHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                            <instanceof value="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
+                        </adapt>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+    </extension>
+    
     <extension point="org.jkiss.dbeaver.task.ui">
         <configurator type="pgDatabaseBackup" class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreTaskConfigurator"/>
         <configurator type="pgDatabaseRestore" class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreTaskConfigurator"/>
