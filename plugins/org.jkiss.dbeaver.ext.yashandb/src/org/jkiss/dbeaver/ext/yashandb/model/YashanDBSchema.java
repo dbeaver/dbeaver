@@ -214,15 +214,79 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
             String tableOper = "=";
             JDBCPreparedStatement dbStat = null;
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append("SELECT  O.*,t.OWNER,t.TABLE_TYPE,t.TABLESPACE_NAME,t.PARTITIONED,t.TEMPORARY,t.NUM_ROWS "
-                    + "FROM (SELECT * FROM " + YashanDBUtils.isAdminPriv(getDataSource(), "OBJECTS") +
-                    " o where O.OWNER= ? AND O.OBJECT_NAME NOT LIKE '%BIN$%' and O.OBJECT_TYPE IN ('TABLE','VIEW','MATERIALIZED VIEW')" +
-                    (object == null && objectName == null ? "" : " AND O.OBJECT_NAME" + tableOper + "?") +
-                    (object instanceof YashanDBTable ? " AND O.OBJECT_TYPE='TABLE'" : "") +
-                    (object instanceof YashanDBView ? " AND O.OBJECT_TYPE='VIEW'" : "") +
-                    (object instanceof YashanDBMaterializedView?" AND O.OBJECT_TYPE='MATERIALIZED VIEW'":"")+
-                    ") O LEFT JOIN " + YashanDBUtils.isAdminPriv(owner.getDataSource(), "TABLES") + " t "
-                    + "on t.OWNER= O.OWNER AND t.TABLE_NAME = o.OBJECT_NAME");
+
+            stringBuilder.append("SELECT\n" +
+                    "\tO.OWNER, \n" +
+                    "\tO.OBJECT_NAME, \n" +
+                    "\tO.SUBOBJECT_NAME, \n" +
+                    "\tO.OBJECT_ID, \n" +
+                    "\tO.DATA_OBJECT_ID, \n" +
+                    "\tO.OBJECT_TYPE, CREATED, \n" +
+                    "\tO.LAST_DDL_TIME, \n" +
+                    "\tO.\"TIMESTAMP\", \n" +
+                    "\tO.STATUS, \n" +
+                    "\tO.\"TEMPORARY\", \n" +
+                    "\tO.\"GENERATED\", \n" +
+                    "\tO.SECONDARY, \n" +
+                    "\tO.NAMESPACE, \n" +
+                    "\tO.SHARING, \n" +
+                    "\tO.EDITIONABLE, \n" +
+                    "\tO.DATABASE_MAINTAINED, \n" +
+                    "\tO.APPLICATION, \n" +
+                    "\tO.DUPLICATED, \n" +
+                    "\tt.OWNER,\n" +
+                    "\tt.SHARDED, \n" +
+                    "\tt.TABLE_TYPE,\n" +
+                    "\tt.TABLESPACE_NAME,\n" +
+                    "\tt.PARTITIONED,\n" +
+                    "\tt.TEMPORARY,\n" +
+                    "\tt.NUM_ROWS\n" +
+                    "FROM\n" +
+                    "\t(\n" +
+                    "\tSELECT\n" +
+                    "\t\tOWNER, \n" +
+                    "\t\tOBJECT_NAME, \n" +
+                    "\t\tSUBOBJECT_NAME, \n" +
+                    "\t\tOBJECT_ID, \n" +
+                    "\t\tDATA_OBJECT_ID, \n" +
+                    "\t\tOBJECT_TYPE, CREATED, \n" +
+                    "\t\tLAST_DDL_TIME, \n" +
+                    "\t\t\"TIMESTAMP\", \n" +
+                    "\t\tSTATUS, \n" +
+                    "\t\t\"TEMPORARY\", \n" +
+                    "\t\t\"GENERATED\", \n" +
+                    "\t\tSECONDARY, \n" +
+                    "\t\tNAMESPACE, \n" +
+                    "\t\tSHARING, \n" +
+                    "\t\tEDITIONABLE, \n" +
+                    "\t\tDATABASE_MAINTAINED, \n" +
+                    "\t\tAPPLICATION, \n" +
+                    "\t\tDUPLICATED, \n" +
+                    "\t\tSHARDED\n" +
+                    "\tFROM ")
+                    .append(YashanDBUtils.isAdminPriv(getDataSource(), "OBJECTS"))
+                    .append("  o\n" +
+                            "\tWHERE\n" +
+                            "\t\tO.OWNER = ? \n" +
+                            "\t\tAND O.OBJECT_NAME NOT LIKE '%BIN$%'\n" +
+                            "\t\tAND O.OBJECT_TYPE IN ('TABLE', 'VIEW', 'MATERIALIZED VIEW')");
+
+            if(!(object == null && objectName == null)){
+                stringBuilder.append(" AND O.OBJECT_NAME ").append(tableOper).append(" ? ");
+            }
+
+            if(object instanceof YashanDBTable){
+               stringBuilder.append(" AND O.OBJECT_TYPE='TABLE'");
+            } else if(object instanceof YashanDBView){
+               stringBuilder.append(" AND O.OBJECT_TYPE='VIEW'");
+            } else if(object instanceof YashanDBMaterializedView){
+               stringBuilder.append(" AND O.OBJECT_TYPE='MATERIALIZED VIEW'");
+            }
+
+            stringBuilder.append(") O\n" +
+                    "LEFT JOIN ").append(YashanDBUtils.isAdminPriv(owner.getDataSource(), "TABLES")).append(" t ON\n" +
+                    "\tt.OWNER = O.OWNER\n" +
+                    "\tAND t.TABLE_NAME = o.OBJECT_NAME");
 
             dbStat = session.prepareStatement(stringBuilder.toString());
             dbStat.setString(1, owner.getName());

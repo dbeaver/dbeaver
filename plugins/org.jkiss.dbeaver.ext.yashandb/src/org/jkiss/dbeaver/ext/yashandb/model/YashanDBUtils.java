@@ -127,7 +127,7 @@ public class YashanDBUtils {
      * make sure the current schema is admin role.
      */
     public static String isAdminPriv(YashanDBDataSource dataSource, String viewName) {
-        return dataSource.isAdminVisible() == true ? "DBA_" + viewName : "ALL_" + viewName;
+        return dataSource.isAdminVisible() ? "DBA_" + viewName : "ALL_" + viewName;
     }
 
     public static String getAdminAllViewPrefix(DBRProgressMonitor monitor, YashanDBDataSource dataSource, String viewName) {

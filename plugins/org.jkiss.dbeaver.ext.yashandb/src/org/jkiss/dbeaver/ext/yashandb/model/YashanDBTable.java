@@ -1,7 +1,6 @@
 package org.jkiss.dbeaver.ext.yashandb.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -14,13 +13,13 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.ByteNumberFormat;
@@ -30,8 +29,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @Author: donghy
@@ -57,9 +58,11 @@ public class  YashanDBTable extends YashanDBTablePhysical implements DBPScriptOb
     };
 
     // the priorities of table that will be showed on right UI.
-    private YashanDBDataType tableType;
+    private String shardedKey;
+    private String tableType;
     private boolean temporary;
     private boolean secondary;
+    private boolean sharded;
     private transient volatile Long tableSize;
 
     /**
@@ -107,26 +110,42 @@ public class  YashanDBTable extends YashanDBTablePhysical implements DBPScriptOb
     public YashanDBTable(DBRProgressMonitor monitor, YashanDBSchema schema, ResultSet dbResult) {
         super(schema, dbResult);
 
-        String typeOwner = JDBCUtils.safeGetString(dbResult, "TABLE_TYPE_OWNER");
-        if (!CommonUtils.isEmpty(typeOwner)) {
-            tableType = YashanDBDataType.resolveDataType(monitor, schema.getDataSource(), typeOwner,
-                    JDBCUtils.safeGetString(dbResult, "TABLE_TYPE"));
+        String objectType = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
+        if(objectType == null){
+            log.error("Can't Get Object Type, query Yashan table failed");
         }
-        this.temporary = JDBCUtils.safeGetBoolean(dbResult, "TEMPORARY", "Y");
-        this.secondary = JDBCUtils.safeGetBoolean(dbResult, "SECONDARY", "Y");
+        if("TABLE".equals(objectType)){
+            String tType = JDBCUtils.safeGetString(dbResult, "TABLE_TYPE");
+            this.tableType = Objects.isNull(tType) ? "N/A" : tType;
+            this.temporary = JDBCUtils.safeGetBoolean(dbResult, "TEMPORARY", "Y");
+            this.secondary = JDBCUtils.safeGetBoolean(dbResult, "SECONDARY", "Y");
+            this.sharded = JDBCUtils.safeGetBoolean(dbResult, "SHARDED", "Y");
+
+            // if table is partition, need to get partition keys.
+            if(this.sharded){
+                String objectName = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
+                assert objectName != null;
+                List<String> distKeyColumns = getDistKeyColumns(monitor, schema.getName(), objectName);
+                shardedKey = String.join(",", distKeyColumns);
+            }
+        }
     }
 
     /**
      * viewable equals false, this priority will not be showed in right UI.
      */
-    @Property(viewable = false, order = 10)
+    @Property(viewable = true, order = 10)
     public boolean isTemporary() {
         return temporary;
     }
 
-    @Property(viewable = false, order = 11)
+    @Property(hidden = true, order = 11)
     public boolean isSecondary() {
         return secondary;
+    }
+
+    public boolean isSharded() {
+        return sharded;
     }
 
     void fetchTableSize(JDBCResultSet dbResult) throws SQLException {
@@ -143,9 +162,38 @@ public class  YashanDBTable extends YashanDBTablePhysical implements DBPScriptOb
         return false;
     }
 
-    @Property(viewable = false, order = 5)
-    public YashanDBDataType getTableType() {
-        return tableType;
+    @Property(viewable = true, length = PropertyLength.TINY, order = 5)
+    public String getTableType() {
+        return this.tableType;
+    }
+
+    @Property(viewable = false, hidden = true, visibleIf = LSCTablePropertyValidator.class, order = 6)
+    public String getShardedKey() {
+        return this.shardedKey;
+    }
+
+    private List<String> getDistKeyColumns(DBRProgressMonitor monitor, String schema, String tableName){
+        final String distKeyView = getDataSource().isAdminVisible() ? "DBA_DIST_KEY_COLUMNS" : "ALL_DIST_KEY_COLUMNS";
+        final String sql = String.format("SELECT OWNER, NAME, COLUMN_NAME, COLUMN_POSITION  FROM %s WHERE OWNER = ? AND NAME = ?", distKeyView);
+
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Get dist key columns")){
+            try (JDBCPreparedStatement statement = session.prepareStatement(sql)) {
+                statement.setString(1, schema);
+                statement.setString(2, tableName);
+                JDBCResultSet resultSet = statement.executeQuery();
+                int row = resultSet.getRow();
+                List<String> shardedKeys = new ArrayList<>(row);
+                while (resultSet.next()){
+                    shardedKeys.add(resultSet.getString("COlUMN_NAME"));
+                }
+                return shardedKeys;
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
+            }
+        } catch (DBCException e) {
+            log.error("Get dist key columns failed", e);
+        }
+        return Collections.emptyList();
     }
 
     /**
@@ -385,6 +433,13 @@ public class  YashanDBTable extends YashanDBTablePhysical implements DBPScriptOb
             return ENABLE_REFERENTIAL_INTEGRITY_STATEMENT;
         }
         return DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
+    }
+
+    public static class LSCTablePropertyValidator implements IPropertyValueValidator<YashanDBTable, Object> {
+        @Override
+        public boolean isValidValue(YashanDBTable object, Object value) throws IllegalArgumentException {
+            return object.isSharded();
+        }
     }
 
 }
