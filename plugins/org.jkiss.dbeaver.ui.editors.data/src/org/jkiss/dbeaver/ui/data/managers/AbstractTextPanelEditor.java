@@ -318,7 +318,8 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
             return;
         }
         try {
-            int maxContentSize = DBWorkbench.getPlatform().getPreferenceStore().getInt(ModelPreferences.REPRESENTATION_CONTENT_MAX_SIZE_KBYTES)
+            int maxContentSize = DBWorkbench.getPlatform().getPreferenceStore()
+                .getInt(ModelPreferences.REPRESENTATION_CONTENT_MAX_SIZE_KBYTES)
                 * 1000;
             if (editor == null) {
                 log.error("Editor is null or undefined");
