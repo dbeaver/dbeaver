@@ -72,8 +72,10 @@ public class GreenplumSchema extends PostgreSchema {
     @Override
     public List<? extends PostgreTable> getTables(DBRProgressMonitor monitor) throws DBException {
         List<? extends PostgreTable> postgreTables = super.getTables(monitor);
-        // Remove external tables from the list. Store is different folder.
-        return postgreTables.stream().filter(e -> !(e instanceof GreenplumExternalTable)).collect(Collectors.toCollection(ArrayList::new));
+        // Remove external tables from the list. Store them in a different folder.
+        return postgreTables.stream()
+            .filter(e -> !(e instanceof GreenplumExternalTable))
+            .collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Override
@@ -84,7 +86,8 @@ public class GreenplumSchema extends PostgreSchema {
             // Starting Greenplum version 7 external tables are marked as foreign tables.
             // Lets's remove external tables from the list foreign tables. Store is the External tables folder.
             return foreignTables.stream()
-                .filter(e -> !(e instanceof GreenplumExternalTable)).collect(Collectors.toCollection(ArrayList::new));
+                .filter(e -> !(e instanceof GreenplumExternalTable))
+                .collect(Collectors.toCollection(ArrayList::new));
         }
         return foreignTables;
     }
