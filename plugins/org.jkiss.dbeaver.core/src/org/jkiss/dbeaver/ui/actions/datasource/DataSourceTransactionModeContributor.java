@@ -43,11 +43,16 @@ import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public class DataSourceTransactionModeContributor extends DataSourceMenuContributor {
     private static final Log log = Log.getLog(DataSourceTransactionModeContributor.class);
+    private final String driverShield = "YashanDB";
+    private final String transactionMode = "Serializable";
+
+    private final String dbDeployment= "isDistributed";
 
     @Override
     protected void fillContributionItems(final List<IContributionItem> menuItems) {
@@ -96,9 +101,30 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
                 if (!txi.isEnabled()) {
                     continue;
                 }
-                menuItems.add(ActionUtils.makeActionContribution(
-                        new TransactionIsolationAction(executionContext, txi, txi.equals(txnLevelCurrent)),
-                        true));
+
+                boolean isDistributed = false;
+                if (dataSource.getInfo().getDatabaseProductName().equals(driverShield)){
+                    Field[] fields = dataSource.getClass().getDeclaredFields();
+                    for(Field field: fields) {
+                        field.setAccessible(true);
+                        if(field.getName().equals(dbDeployment)){
+                            try {
+                                isDistributed = field.getBoolean(dataSource);
+                            } catch (IllegalAccessException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    }
+                }
+
+                if ( isDistributed && txi.getTitle().equals(transactionMode)){
+                    continue;
+                }
+                else {
+                    menuItems.add(ActionUtils.makeActionContribution(
+                            new TransactionIsolationAction(executionContext, txi, txi.equals(txnLevelCurrent)),
+                            true));
+                }
             }
         }
     }
