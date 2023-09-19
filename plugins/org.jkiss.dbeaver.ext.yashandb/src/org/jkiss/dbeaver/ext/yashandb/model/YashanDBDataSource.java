@@ -6,9 +6,14 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ext.yashandb.model.plan.YashanDBQueryPlanner;
 import org.jkiss.dbeaver.ext.yashandb.model.session.YashanDBServerSessionManager;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
@@ -402,18 +407,20 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new YashanDBStructureAssistant(this));
         }
+
+        //todo:后续需要再放开
         //else if (adapter == DBCServerOutputReader.class) {
         //    return adapter.cast(outputReader);
         //} else if (adapter == DBAServerSessionManager.class) {
         //    return adapter.cast(new YashanDBServerSessionManager(this));
-        //} else if (adapter == DBCQueryPlanner.class) {
-        //    return adapter.cast(new YashanDBQueryPlanner(this));
-        //} else if(adapter == DBAUserPasswordManager.class) {
+        //}  else if(adapter == DBAUserPasswordManager.class) {
         //    return adapter.cast(new YashanDBChangeUserPasswordManager(this));
         //}
 
         if (adapter == DBAServerSessionManager.class) {
             return adapter.cast(new YashanDBServerSessionManager(this));
+        } else if (adapter == DBCQueryPlanner.class) {
+            return adapter.cast(new YashanDBQueryPlanner(this));
         }
 
         return super.getAdapter(adapter);

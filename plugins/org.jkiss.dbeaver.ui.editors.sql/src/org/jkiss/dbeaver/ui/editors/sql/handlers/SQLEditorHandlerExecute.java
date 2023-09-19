@@ -144,7 +144,13 @@ public class SQLEditorHandlerExecute extends AbstractHandler
                 editor.processSQL(false, false, new SQLQueryTransformerAllRows(), null);
                 break;
             case SQLEditorCommands.CMD_EXPLAIN_PLAN:
-                editor.explainQueryPlan();
+                // todo:yashandb执行计划相关的支持目前不完善，暂时当做普通查询拼接explain查询展示结果
+                if(editor.getDataSource().toString().contains("YashanDB")){
+                    editor.getDataSourceContainer().setDescription("YashanDB explain plan");
+                    editor.processSQL(false, false);
+                }else {
+                    editor.explainQueryPlan();
+                }
                 break;
             case SQLEditorCommands.CMD_LOAD_PLAN:
                 editor.loadQueryPlan();
