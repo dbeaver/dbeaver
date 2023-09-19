@@ -143,8 +143,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     private CLabel createMessageBar(Composite cmpsBase) {
         UIUtils.createHorizontalLine(cmpsBase);
         messageBar = new CLabel(cmpsBase, SWT.RIGHT);
-        GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-        messageBar.setLayoutData(layoutData);
+        messageBar.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
         messageBar.setFont(UIUtils.getMonospaceFont());
         return messageBar;
     }
