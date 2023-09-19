@@ -181,6 +181,8 @@ public class CoreMessages extends NLS {
 	public static String dialog_project_export_wizard_start_message_configure_settings;
 	public static String dialog_project_export_wizard_start_message_empty_output_directory;
 	public static String dialog_project_export_wizard_start_title;
+	public static String dialog_project_export_wizard_file_overwrite_window_title;
+	public static String dialog_project_export_wizard_file_overwrite_confirm;
 	public static String dialog_project_export_wizard_window_title;
 
     public static String dialog_workspace_import_wizard_window_title;

@@ -217,4 +217,9 @@ public interface PostgreServerExtension {
      * or use standard {@code ALTER VIEW schema.view RENAME TO schema.view_new}.
      */
     boolean supportsAlterTableForViewRename();
+
+    /**
+     * True if database can use pg_dump and pg_restore clients without errors.
+     */
+    boolean supportsNativeClient();
 }

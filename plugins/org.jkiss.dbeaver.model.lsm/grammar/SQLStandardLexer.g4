@@ -142,6 +142,7 @@ NAMES: N A M E S ;
 NATURAL: N A T U R A L ;
 NO: N O ;
 NOT: N O T ;
+NOTNULL: N O T N U L L;
 NULL: N U L L ;
 NULLIF: N U L L I F ;
 ON: O N ;
@@ -204,7 +205,7 @@ ZONE: Z O N E ;
 
 // symbols
 EqualsOperator: '=';
-NotEqualsOperator: '<>';
+NotEqualsOperator: '<>' | '!=';
 RightParen: ')';
 LeftParen: '(';
 SingleQuote: '\'';
