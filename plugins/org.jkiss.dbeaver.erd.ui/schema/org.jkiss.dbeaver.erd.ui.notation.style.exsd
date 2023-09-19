@@ -18,7 +18,7 @@
       </annotation>
       <complexType>
          <sequence minOccurs="1" maxOccurs="unbounded">
-            <element ref="erdnotaion"/>
+            <element ref="erdNotation"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -47,7 +47,7 @@
       </complexType>
    </element>
 
-   <element name="erdnotaion">
+   <element name="erdNotation">
       <complexType>
          <attribute name="id" type="string" use="required">
             <annotation>
@@ -89,4 +89,10 @@
          </attribute>
       </complexType>
    </element>
+
+
+
+
+
+
 </schema>

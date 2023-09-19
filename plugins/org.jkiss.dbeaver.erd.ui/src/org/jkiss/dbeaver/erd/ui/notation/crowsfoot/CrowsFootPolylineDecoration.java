@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.erd.ui.notations.ERDAssociationType;
 public class CrowsFootPolylineDecoration extends PolylineDecoration {
     private static PointList geometryList = new PointList();
     private ERDAssociationType association;
-    private static final int DIAMETR = 8;
+    private static final int DIAMETER = 8;
 
     static {
         // points: crowsfoot
@@ -54,7 +54,7 @@ public class CrowsFootPolylineDecoration extends PolylineDecoration {
     protected void outlineShape(Graphics g) {
         PointList crowsFootPoints = getPoints();
         Point point;
-        int radius = DIAMETR / 2;
+        int radius = DIAMETER / 2;
         switch (association) {
             case ZERO_OR_ONE:
                 g.drawLine(crowsFootPoints.getPoint(3), crowsFootPoints.getPoint(4));
@@ -84,8 +84,8 @@ public class CrowsFootPolylineDecoration extends PolylineDecoration {
                 g.drawLine(crowsFootPoints.getPoint(0), crowsFootPoints.getPoint(1));
                 g.drawLine(crowsFootPoints.getPoint(1), crowsFootPoints.getPoint(2));
                 point = crowsFootPoints.getPoint(7);
-                g.fillOval(point.x - radius, point.y - radius, DIAMETR, DIAMETR);
-                g.drawOval(point.x - radius, point.y - radius, DIAMETR, DIAMETR);
+                g.fillOval(point.x - radius, point.y - radius, DIAMETER, DIAMETER);
+                g.drawOval(point.x - radius, point.y - radius, DIAMETER, DIAMETER);
                 break;
             default:
                 // no default behavior

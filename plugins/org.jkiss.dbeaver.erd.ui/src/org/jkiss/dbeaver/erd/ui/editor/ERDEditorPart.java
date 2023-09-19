@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.erd.ui.editor;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.draw2d.IFigure;
@@ -1206,6 +1207,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             } else if (ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS.equals(event.getProperty()) ||
                 ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS.equals(event.getProperty()) ||
                 ERDUIConstants.PREF_ROUTING_TYPE.equals(event.getProperty())) {
+                doSave(new NullProgressMonitor());
                 refreshDiagram(true, true);
             } else if (ERDUIConstants.PREF_NOTATION_TYPE.equals(event.getProperty())) {
                 DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
