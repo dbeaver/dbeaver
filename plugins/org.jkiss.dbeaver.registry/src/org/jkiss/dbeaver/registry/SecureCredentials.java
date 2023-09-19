@@ -41,6 +41,7 @@ public class SecureCredentials {
     public SecureCredentials(@NotNull DBPDataSourceContainer dataSource) {
         this.userName = dataSource.getConnectionConfiguration().getUserName();
         this.userPassword = dataSource.isSavePassword() ? dataSource.getConnectionConfiguration().getUserPassword() : null;
+        this.properties = dataSource.getConnectionConfiguration().getAuthProperties();
     }
 
     public SecureCredentials(@NotNull DBAAuthProfile profile) {

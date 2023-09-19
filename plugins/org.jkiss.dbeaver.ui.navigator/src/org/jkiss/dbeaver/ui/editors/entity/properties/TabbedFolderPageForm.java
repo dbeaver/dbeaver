@@ -178,7 +178,11 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
         curPropertySource = input.getPropertySource();
         List<DBPPropertyDescriptor> allProps = formEditor.filterProperties(curPropertySource.getProperties());
 
-        boolean objectPersisted = input.getDatabaseObject().isPersisted();
+        DBSObject databaseObject = input.getDatabaseObject();
+        if (databaseObject == null) {
+            return;
+        }
+        boolean objectPersisted = databaseObject.isPersisted();
         boolean objectStateChanged = objectPersisted != lastPersistedState;
         lastPersistedState = objectPersisted;
 

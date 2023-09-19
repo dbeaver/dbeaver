@@ -142,6 +142,7 @@ NAMES: N A M E S ;
 NATURAL: N A T U R A L ;
 NO: N O ;
 NOT: N O T ;
+NOTNULL: N O T N U L L;
 NULL: N U L L ;
 NULLIF: N U L L I F ;
 ON: O N ;
@@ -156,6 +157,7 @@ PARTITION: P A R T I T I O N ;
 PRESERVE: P R E S E R V E ;
 PRIMARY: P R I M A R Y ;
 READ: R E A D ;
+RECURSIVE: R E C U R S I V E;
 REFERENCES: R E F E R E N C E S ;
 REPEATABLE: R E P E A T A B L E ;
 RESTRICT: R E S T R I C T ;
@@ -203,7 +205,7 @@ ZONE: Z O N E ;
 
 // symbols
 EqualsOperator: '=';
-NotEqualsOperator: '<>';
+NotEqualsOperator: '<>' | '!=';
 RightParen: ')';
 LeftParen: '(';
 SingleQuote: '\'';
@@ -256,7 +258,7 @@ LineComment
    ;
 
 // special characters and character sequences
-fragment NonquoteCharacter: ~'~';
+fragment NonquoteCharacter: ~'\'';
 QuoteSymbol: SingleQuote SingleQuote;
 Introducer: Underscore;
 fragment NewLine: ([\r][\n])|[\n]|[\r];
@@ -279,10 +281,10 @@ fragment IdentifierPart: (IdentifierStart|Digit);
 
 
 // string literals
-NationalCharacterStringLiteral: 'N' SingleQuote ((CharacterRepresentation)+)? SingleQuote (((Separator)+ SingleQuote ((CharacterRepresentation)+)? SingleQuote)+)?;
+NationalCharacterStringLiteral: 'N' SingleQuote CharacterRepresentation* SingleQuote ((Separator)+ SingleQuote CharacterRepresentation* SingleQuote)*;
 CharacterRepresentation: (NonquoteCharacter|QuoteSymbol);
-BitStringLiteral: 'B' SingleQuote ((Bit)+)? SingleQuote (((Separator)+ SingleQuote ((Bit)+)? SingleQuote)+)?;
-HexStringLiteral: 'X' SingleQuote ((Hexit)+)? SingleQuote (((Separator)+ SingleQuote ((Hexit)+)? SingleQuote)+)?;
-StringLiteralContent: SingleQuote ((CharacterRepresentation)+)? SingleQuote (((Separator)+ SingleQuote ((CharacterRepresentation)+)? SingleQuote)+)?;
+BitStringLiteral: 'B' SingleQuote Bit* SingleQuote ((Separator)+ SingleQuote Bit* SingleQuote)*;
+HexStringLiteral: 'X' SingleQuote Hexit* SingleQuote ((Separator)+ SingleQuote Hexit* SingleQuote)*;
+StringLiteralContent: SingleQuote CharacterRepresentation* SingleQuote ((Separator)+ SingleQuote CharacterRepresentation* SingleQuote)*;
 
 WS: Separator;
