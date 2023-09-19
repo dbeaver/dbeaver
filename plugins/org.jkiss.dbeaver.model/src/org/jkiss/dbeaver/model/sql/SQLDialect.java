@@ -49,13 +49,11 @@ public interface SQLDialect {
     int USAGE_PRIV = 8;
     int USAGE_ALL = Integer.MAX_VALUE;
 
-
-
     enum MultiValueInsertMode {
         NOT_SUPPORTED,
         GROUP_ROWS,
         PLAIN,
-        INSERT_ALL;
+        INSERT_ALL
     }
     @NotNull
     SQLDialectQueryGenerator getQueryGenerator();
@@ -128,6 +126,7 @@ public interface SQLDialect {
     DBPKeywordType getKeywordType(@NotNull String word);
     @NotNull
     List<String> getMatchedKeywords(@NotNull String word);
+
     boolean isKeywordStart(@NotNull String word);
 
     boolean isEntityQueryWord(@NotNull String word);
@@ -243,7 +242,6 @@ public interface SQLDialect {
     boolean isWordPart(int ch);
 
     boolean validIdentifierStart(char c);
-
     /**
      * Checks that specified character is a valid identifier part. Non-valid characters should be quoted in queries.
      * @param c character
@@ -251,6 +249,7 @@ public interface SQLDialect {
      * @return true or false
      */
     boolean validIdentifierPart(char c, boolean quoted);
+
     boolean useCaseInsensitiveNameLookup();
 
     boolean hasCaseSensitiveFiltration();
@@ -280,7 +279,7 @@ public interface SQLDialect {
     boolean supportsAliasInConditions();
 
     /**
-     * Returns offset and limit query parts. Limit is not supported in some databases.
+     * Returns offset and limit query parts. Limit syntax is different for databases.
      */
     String getOffsetLimitQueryPart();
 
