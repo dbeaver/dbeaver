@@ -102,6 +102,9 @@ import java.util.stream.Stream;
 public class NavigatorUtils {
 
     private static final Log log = Log.getLog(NavigatorUtils.class);
+    private static final String driverShield = "YashanDB";
+    private static final String firstLevelDirectory = "Global metadata";
+    private static final String secondaryDirectory = "Types";
 
     public static DBNNode getSelectedNode(ISelectionProvider selectionProvider)
     {
@@ -232,8 +235,21 @@ public class NavigatorUtils {
             @Override
             public void menuShown(MenuEvent e)
             {
+
                 Menu m = (Menu)e.widget;
                 DBNNode node = getSelectedNode(viewer.getSelection());
+                if (node.getNodeItemPath().contains(driverShield) &&
+                        node.getParentNode().getName().equals(secondaryDirectory) &&
+                        node.getParentNode().getParentNode().getName().equals(firstLevelDirectory)){
+
+                    for (MenuItem item: m.getItems()){
+                        if ( item.getText().equals("Delete\tDelete") ){
+                            Object menu = m.getData();
+                            item.setEnabled(false);
+                        }
+                    }
+
+                }
                 if (node != null && !node.isLocked() && node.allowsOpen()) {
                     String commandID = NavigatorUtils.getNodeActionCommand(DBXTreeNodeHandler.Action.open, node, NavigatorCommands.CMD_OBJECT_OPEN);
                     // Dirty hack
