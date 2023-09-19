@@ -24,6 +24,21 @@ import org.jkiss.dbeaver.erd.model.ERDAssociation;
  * Interface of ER Diagram style notation
  */
 public interface ERDNotation {
+    /**
+     * 
+     * @param conn
+     * @param association
+     * @param bckColor
+     * @param frgColor
+     */
     public void applyNotationForArrows(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor);
+
+    /**
+     * 
+     * @param conn
+     * @param association
+     * @param bckColor
+     * @param frgColor
+     */
     public void applyNotationForEntities(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor);
 }

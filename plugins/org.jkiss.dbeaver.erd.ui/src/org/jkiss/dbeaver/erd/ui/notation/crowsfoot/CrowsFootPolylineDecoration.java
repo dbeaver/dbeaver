@@ -52,45 +52,44 @@ public class CrowsFootPolylineDecoration extends PolylineDecoration {
 
     @Override
     protected void outlineShape(Graphics g) {
-
         PointList crowsFootPoints = getPoints();
         Point point;
         int radius = DIAMETR / 2;
         switch (association) {
-        case ZERO_OR_ONE:
-            g.drawLine(crowsFootPoints.getPoint(3), crowsFootPoints.getPoint(4));
-            point = crowsFootPoints.getPoint(7);
-            g.fillOval(point.x - 4, point.y - 4, 8, 8);
-            g.drawOval(point.x - 4, point.y - 4, 8, 8);
-            break;
-        case ONE_ONLY:
-            g.drawLine(crowsFootPoints.getPoint(3), crowsFootPoints.getPoint(4));
-            g.drawLine(crowsFootPoints.getPoint(5), crowsFootPoints.getPoint(6));
-            break;
-        case ZERO:
-            point = crowsFootPoints.getPoint(7);
-            g.fillOval(point.x - 4, point.y - 4, 8, 8);
-            g.drawOval(point.x - 4, point.y - 4, 8, 8);
-            break;
-        case MANY:
-            g.drawLine(crowsFootPoints.getPoint(0), crowsFootPoints.getPoint(1));
-            g.drawLine(crowsFootPoints.getPoint(1), crowsFootPoints.getPoint(2));
-            break;
-        case ONE_OR_MANY:
-            g.drawLine(crowsFootPoints.getPoint(0), crowsFootPoints.getPoint(1));
-            g.drawLine(crowsFootPoints.getPoint(1), crowsFootPoints.getPoint(2));
-            g.drawLine(crowsFootPoints.getPoint(3), crowsFootPoints.getPoint(4));
-            break;
-        case ZERO_OR_MANY:
-            g.drawLine(crowsFootPoints.getPoint(0), crowsFootPoints.getPoint(1));
-            g.drawLine(crowsFootPoints.getPoint(1), crowsFootPoints.getPoint(2));
-            point = crowsFootPoints.getPoint(7);
-            g.fillOval(point.x - radius, point.y - radius, DIAMETR, DIAMETR);
-            g.drawOval(point.x - radius, point.y - radius, DIAMETR, DIAMETR);
-            break;
-        default:
-            // no default behavior
-            break;
+            case ZERO_OR_ONE:
+                g.drawLine(crowsFootPoints.getPoint(3), crowsFootPoints.getPoint(4));
+                point = crowsFootPoints.getPoint(7);
+                g.fillOval(point.x - 4, point.y - 4, 8, 8);
+                g.drawOval(point.x - 4, point.y - 4, 8, 8);
+                break;
+            case ONE_ONLY:
+                g.drawLine(crowsFootPoints.getPoint(3), crowsFootPoints.getPoint(4));
+                g.drawLine(crowsFootPoints.getPoint(5), crowsFootPoints.getPoint(6));
+                break;
+            case ZERO:
+                point = crowsFootPoints.getPoint(7);
+                g.fillOval(point.x - 4, point.y - 4, 8, 8);
+                g.drawOval(point.x - 4, point.y - 4, 8, 8);
+                break;
+            case MANY:
+                g.drawLine(crowsFootPoints.getPoint(0), crowsFootPoints.getPoint(1));
+                g.drawLine(crowsFootPoints.getPoint(1), crowsFootPoints.getPoint(2));
+                break;
+            case ONE_OR_MANY:
+                g.drawLine(crowsFootPoints.getPoint(0), crowsFootPoints.getPoint(1));
+                g.drawLine(crowsFootPoints.getPoint(1), crowsFootPoints.getPoint(2));
+                g.drawLine(crowsFootPoints.getPoint(3), crowsFootPoints.getPoint(4));
+                break;
+            case ZERO_OR_MANY:
+                g.drawLine(crowsFootPoints.getPoint(0), crowsFootPoints.getPoint(1));
+                g.drawLine(crowsFootPoints.getPoint(1), crowsFootPoints.getPoint(2));
+                point = crowsFootPoints.getPoint(7);
+                g.fillOval(point.x - radius, point.y - radius, DIAMETR, DIAMETR);
+                g.drawOval(point.x - radius, point.y - radius, DIAMETR, DIAMETR);
+                break;
+            default:
+                // no default behavior
+                break;
         }
     }
 }

@@ -148,10 +148,10 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         }
     }
 
-    private void createStyleGroup(DBPPreferenceStore store, Composite composite){
+    private void createStyleGroup(DBPPreferenceStore store, Composite composite) {
         ERDViewStyle[] enabledStyles = ERDViewStyle.getDefaultStyles(store);
-
-        Group elemsGroup = UIUtils.createControlGroup(composite, ERDUIMessages.erd_preference_page_title_attribute_style, 1, GridData.FILL_BOTH, 0);
+        Group elemsGroup = UIUtils.createControlGroup(composite, ERDUIMessages.erd_preference_page_title_attribute_style, 1,
+            GridData.FILL_BOTH, 0);
         for (ERDViewStyle style : ERDViewStyle.values()) {
             Button check = new Button(elemsGroup, SWT.CHECK);
             check.setData(style);
