@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.erd.ui.notations;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +47,6 @@ public class ERDNotationRegistry {
                 log.error(e.getStatus());
             }
         });
-
     }
 
     public static synchronized ERDNotationRegistry getInstance() {
@@ -86,7 +82,6 @@ public class ERDNotationRegistry {
             return null;
         }
         return notations.get(id);
-
     }
 
     public ERDNotationDescriptor getDefaultNotation() {
@@ -94,6 +89,6 @@ public class ERDNotationRegistry {
     }
 
     public Optional<ERDNotationDescriptor> getERDNotationByName(String text) {
-        return notations.values().stream().filter(p->p.getName().equals(text)).findFirst();
+        return notations.values().stream().filter(p -> p.getName().equals(text)).findFirst();
     }
 }

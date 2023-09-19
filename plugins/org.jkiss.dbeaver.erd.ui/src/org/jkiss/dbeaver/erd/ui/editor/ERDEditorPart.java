@@ -1198,7 +1198,15 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                  refreshEntityAndAttributes();
             } else if (ERDConstants.PREF_ATTR_STYLES.equals(event.getProperty())) {
                 refreshEntityAndAttributes();
-            } else if (ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS.equals(event.getProperty()) || ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS.equals(event.getProperty())) {
+            } else if (ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS.equals(event.getProperty()) ||
+                ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS.equals(event.getProperty()) ||
+                ERDUIConstants.PREF_ROUTING_TYPE.equals(event.getProperty())) {
+                refreshDiagram(true, true);
+            } else if (ERDUIConstants.PREF_NOTATION_TYPE.equals(event.getProperty())) {
+                DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+                ERDNotationDescriptor notation = ERDNotationRegistry.getInstance()
+                    .getNotation(store.getString(ERDUIConstants.PREF_NOTATION_TYPE));
+                getDiagram().setDiagramNotation(notation);
                 refreshDiagram(true, true);
             }
         }

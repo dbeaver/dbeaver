@@ -26,16 +26,11 @@ import org.jkiss.dbeaver.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDUtils;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
+import org.jkiss.dbeaver.erd.ui.notations.ERDNotationBase;
 import org.jkiss.dbeaver.erd.ui.part.AssociationPart.CircleDecoration;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
-public class BachmanDiagramNotation implements ERDNotation {
-
-    private static final int LBL_DISTANCE = 10;
-    private static final String LABEL_0_TO_1 = "0..1";
-    private static final String LABEL_1 = "1";
-    private static final String LABEL_1_TO_N = "1..n";
-    private static final int CIRCLE_RADIUS = 5;
+public class BachmanDiagramNotation extends ERDNotationBase implements ERDNotation {
 
     @Override
     public void applyNotationForArrows(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
@@ -59,7 +54,7 @@ public class BachmanDiagramNotation implements ERDNotation {
             sourceDecor.setFill(true);
             sourceDecor.setBackgroundColor(frgColor);
             ConnectionEndpointLocator srcEndpointLocator = new ConnectionEndpointLocator(conn, false);
-            srcEndpointLocator.setVDistance(LBL_DISTANCE);
+            srcEndpointLocator.setVDistance(LBL_V_DISTANCE);
             conn.add(new Label(LABEL_1_TO_N), srcEndpointLocator);
             conn.setSourceDecoration(sourceDecor);
 
@@ -71,7 +66,7 @@ public class BachmanDiagramNotation implements ERDNotation {
                 targetDecor.setBackgroundColor(bckColor);
 
                 ConnectionEndpointLocator trgEndpointLocator = new ConnectionEndpointLocator(conn, true);
-                trgEndpointLocator.setVDistance(LBL_DISTANCE);
+                trgEndpointLocator.setVDistance(LBL_V_DISTANCE);
                 conn.add(new Label(LABEL_0_TO_1), trgEndpointLocator);
                 conn.setTargetDecoration(targetDecor);
 
@@ -82,7 +77,7 @@ public class BachmanDiagramNotation implements ERDNotation {
                 targetDecor.setFill(true);
                 targetDecor.setBackgroundColor(frgColor);
                 ConnectionEndpointLocator trgEndpointLocator = new ConnectionEndpointLocator(conn, true);
-                trgEndpointLocator.setVDistance(LBL_DISTANCE);
+                trgEndpointLocator.setVDistance(LBL_V_DISTANCE);
                 conn.add(new Label(LABEL_1), trgEndpointLocator);
                 conn.setTargetDecoration(targetDecor);
             }
@@ -93,8 +88,7 @@ public class BachmanDiagramNotation implements ERDNotation {
 
     @Override
     public void applyNotationForEntities(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
-        // TODO Auto-generated method stub
-        
+        // nothing
     }
 
 }

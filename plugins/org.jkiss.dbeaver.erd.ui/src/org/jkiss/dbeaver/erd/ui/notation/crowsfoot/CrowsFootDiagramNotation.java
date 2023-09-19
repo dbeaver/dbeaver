@@ -26,14 +26,10 @@ import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDUtils;
 import org.jkiss.dbeaver.erd.ui.notations.ERDAssociationType;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
+import org.jkiss.dbeaver.erd.ui.notations.ERDNotationBase;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
-public class CrowsFootDiagramNotation implements ERDNotation {
-
-    private static final String LABEL_0_TO_1 = "(0..1)";
-    private static final String LABEL_1 = "(1)";
-    private static final String LABEL_1_TO_N = "(1..n)";
-
+public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNotation {
     @Override
     public void applyNotationForArrows(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
         DBSEntityConstraintType constraintType = association.getObject().getConstraintType();
@@ -51,13 +47,11 @@ public class CrowsFootDiagramNotation implements ERDNotation {
             sourceDecor.setFill(true);
             sourceDecor.setBackgroundColor(bckColor);
             conn.setSourceDecoration(sourceDecor);
-
-//            ConnectionEndpointLocator srcEndpointLocator = new ConnectionEndpointLocator(conn, false);
-//            srcEndpointLocator.setVDistance(-10);
-//            srcEndpointLocator.setUDistance(5);
-//            Label label = new Label(LABEL_1_TO_N);
-//            conn.add(label, srcEndpointLocator);
-
+            ConnectionEndpointLocator srcEndpointLocator = new ConnectionEndpointLocator(conn, false);
+            srcEndpointLocator.setVDistance(-10);
+            srcEndpointLocator.setUDistance(5);
+            Label label = new Label(LABEL_1_TO_N);
+            conn.add(label, srcEndpointLocator);
             if (ERDUtils.isOptionalAssociation(association)) {
                 // target - 0..1
                 final CrowsFootPolylineDecoration targetDecor = new CrowsFootPolylineDecoration(ERDAssociationType.ZERO_OR_ONE);
@@ -73,10 +67,10 @@ public class CrowsFootDiagramNotation implements ERDNotation {
                 final CrowsFootPolylineDecoration targetDecor = new CrowsFootPolylineDecoration(ERDAssociationType.ONE_ONLY);
                 targetDecor.setFill(true);
                 targetDecor.setBackgroundColor(bckColor);
-//                ConnectionEndpointLocator trgEndpointLocator = new ConnectionEndpointLocator(conn, true);
-//                trgEndpointLocator.setVDistance(-5);
-//                trgEndpointLocator.setUDistance(10);
-//                conn.add(new Label(LABEL_1), trgEndpointLocator);
+                ConnectionEndpointLocator trgEndpointLocator = new ConnectionEndpointLocator(conn, true);
+                trgEndpointLocator.setVDistance(-5);
+                trgEndpointLocator.setUDistance(10);
+                conn.add(new Label(LABEL_1), trgEndpointLocator);
                 conn.setTargetDecoration(targetDecor);
             }
         }
@@ -86,6 +80,7 @@ public class CrowsFootDiagramNotation implements ERDNotation {
 
     @Override
     public void applyNotationForEntities(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
+        // nothing
     }
 
 }

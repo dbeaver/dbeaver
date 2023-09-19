@@ -596,7 +596,7 @@
        <erdnotaion
              description="Integration DEFinition for information modeling (IDEF1X) notation"
              id="org.jkiss.dbeaver.erd.notaion.idef1x"
-             isDefault="false"
+             isDefault="true"
              name="IDEF1X"
              notation="org.jkiss.dbeaver.erd.ui.notation.idef1x.IDEF1XDiagramNotation">
        </erdnotaion>
@@ -610,7 +610,7 @@
        <erdnotaion
              description="Crow’s Foot diagram notation"
              id="org.jkiss.dbeaver.erd.notaion.crowsfoot"
-             isDefault="true"
+             isDefault="false"
              name="Crows Foot"
              notation="org.jkiss.dbeaver.erd.ui.notation.crowsfoot.CrowsFootDiagramNotation">
        </erdnotaion>

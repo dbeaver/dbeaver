@@ -26,14 +26,13 @@ import org.jkiss.dbeaver.erd.model.ERDUtils;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
+import org.jkiss.dbeaver.erd.ui.notations.ERDNotationBase;
 import org.jkiss.dbeaver.erd.ui.part.AssociationPart.CircleDecoration;
 import org.jkiss.dbeaver.erd.ui.part.AssociationPart.RhombusDecoration;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
-public class IDEF1XDiagramNotation implements ERDNotation {
-    private static final int CIRCLE_RADIUS = 5;
-
+public class IDEF1XDiagramNotation extends ERDNotationBase implements ERDNotation {
     @Override
     public void applyNotationForArrows(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
         boolean identifying = ERDUtils.isIdentifyingAssociation(association);
@@ -73,6 +72,6 @@ public class IDEF1XDiagramNotation implements ERDNotation {
 
     @Override
     public void applyNotationForEntities(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
-        
+        // nothing
     }
 }
