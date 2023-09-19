@@ -37,6 +37,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -58,6 +60,7 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
 
     private boolean isAdmin;
     private boolean isAdminVisible;
+    private boolean isDistributed;
     private boolean useRuleHint;
     private boolean resolveGeometryAsStruct = true;
     private boolean hasStatistics;
@@ -127,6 +130,21 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
                     if (showAdmin != null) {
                         isAdminVisible = CommonUtils.getBoolean(showAdmin, false);
                     }
+                }
+                // Query the database deployment status.(standalone or distributed).
+                String distSql = "SELECT 1 FROM DV$INSTANCE LIMIT 1";
+                try (PreparedStatement dbStat = session.prepareStatement(distSql)) {
+                    ResultSet resultSet = dbStat.executeQuery();
+                    int row = resultSet.getRow();
+                    if(row >= 0){
+                        this.isDistributed = true;
+                    }
+                } catch (Exception e) {
+                    if(!e.getMessage().contains("missing or invalid table name")){
+                        throw new DBException("Database deployment status query exception.");
+                    }
+                    log.warn("==Unable to query the dv$instances view, set the database deployment status to standalone.==");
+                    this.isDistributed = false;
                 }
             } catch (SQLException e) {
                 log.warn(e);
