@@ -856,9 +856,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     /**
-     * Fill popup menu by erd notations
-     * 
-     * @param menu
+     * Fill ERD notations popup menu 
+     * @param menu - root node
      */
     public void fillNotationsMenu(IMenuManager menu) {
         MenuManager ntMenu = new MenuManager(ERDUIMessages.menu_notation_style);

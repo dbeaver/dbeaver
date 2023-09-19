@@ -49,6 +49,11 @@ public class ERDNotationRegistry {
         });
     }
 
+    /**
+     * Registry instance
+     * 
+     * @return - registry instance
+     */
     public static synchronized ERDNotationRegistry getInstance() {
         if (instance == null) {
             instance = new ERDNotationRegistry(Platform.getExtensionRegistry());
@@ -61,7 +66,12 @@ public class ERDNotationRegistry {
         return notations.values().stream().collect(Collectors.toList());
     }
 
-    public void addNotation(ERDNotationDescriptor descriptor) {
+    /**
+     * Add new notation
+     * 
+     * @param descriptor - notation descriptor
+     */
+    public void addNotation(@NotNull ERDNotationDescriptor descriptor) {
         if (notations.containsKey(descriptor.getId())) {
             log.error("ER Diagram Notation already defined for id:" + descriptor.getId());
             return;
@@ -76,6 +86,12 @@ public class ERDNotationRegistry {
         }
     }
 
+    /**
+     * Get notation by identifier
+     * 
+     * @param id - notation descriptor identifier
+     * @return - ERDNotationDescriptor
+     */
     public ERDNotationDescriptor getNotation(String id) {
         if (!notations.containsKey(id)) {
             log.error("ERD Notation not defined for key:" + id);
@@ -88,7 +104,13 @@ public class ERDNotationRegistry {
         return this.defaultNotation;
     }
 
-    public Optional<ERDNotationDescriptor> getERDNotationByName(String text) {
-        return notations.values().stream().filter(p -> p.getName().equals(text)).findFirst();
+    /**
+     * Return notation from registry by name
+     * 
+     * @param name - notation name
+     * @return - Optional<ERDNotationDescriptor>
+     */
+    public Optional<ERDNotationDescriptor> getERDNotationByName(String name) {
+        return notations.values().stream().filter(p -> p.getName().equals(name)).findFirst();
     }
 }
