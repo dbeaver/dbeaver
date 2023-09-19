@@ -702,6 +702,11 @@ public class OracleSQLDialect extends JDBCSQLDialect
         return false;
     }
 
+    @Override
+    public String getOffsetLimitQueryPart() {
+        return "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+    }
+
     @Nullable
     @Override
     public String getAutoIncrementKeyword() {

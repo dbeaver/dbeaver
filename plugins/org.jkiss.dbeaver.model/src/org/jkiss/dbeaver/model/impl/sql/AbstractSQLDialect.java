@@ -622,6 +622,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
+    public String getOffsetLimitQueryPart() {
+        return "OFFSET ? LIMIT ?";
+    }
+
+    @Override
     public boolean supportsAliasInHaving() {
         return true;
     }
