@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ERDNotationRegistry {
 
@@ -41,13 +40,13 @@ public class ERDNotationRegistry {
 
     private ERDNotationRegistry(IExtensionRegistry registry) {
         IConfigurationElement[] cfgElements = registry.getConfigurationElementsFor(EXTENSION_ID);
-        Stream.of(cfgElements).forEach(c -> {
+        for (IConfigurationElement cfe : cfgElements) {
             try {
-                addNotation(new ERDNotationDescriptor(c));
+                addNotation(new ERDNotationDescriptor(cfe));
             } catch (CoreException e) {
                 log.error(e.getStatus());
             }
-        });
+        }
     }
 
     /**

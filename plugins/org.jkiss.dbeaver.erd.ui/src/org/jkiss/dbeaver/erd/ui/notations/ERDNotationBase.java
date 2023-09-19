@@ -17,7 +17,7 @@
 
 package org.jkiss.dbeaver.erd.ui.notations;
 
-public class ERDNotationBase {
+public abstract class ERDNotationBase {
     protected static final String LABEL_0_TO_1 = "0..1";
     protected static final String LABEL_1 = "1";
     protected static final String LABEL_1_TO_N = "1..n";
