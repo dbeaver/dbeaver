@@ -306,7 +306,10 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     }
 
     @Override
-    public void primeEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull StyledText control, @Nullable DBDContent value)
+    public void primeEditorValue(
+        @NotNull DBRProgressMonitor monitor, 
+        @NotNull StyledText control, 
+        @Nullable DBDContent value)
             throws DBException {
         if (value == null) {
             log.error("Content value (LOB) is null");
