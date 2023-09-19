@@ -285,6 +285,19 @@ public class PostgreSchema implements
         throws DBException {
         final ArrayList<? extends PostgreTable> tables = getTableCache().getTypedObjects(monitor, this, PostgreTable.class)
             .stream()
+            .filter(table -> !table.isPartition() && !(table instanceof PostgreTableForeign))
+            .collect(Collectors.toCollection(ArrayList::new));
+        if (getDataSource().supportsReadingKeysWithColumns()) {
+            // Read constraints with columns
+            constraintCache.getAllObjects(monitor, this);
+        }
+        return tables;
+    }
+
+    @Association
+    public List<? extends PostgreTable> getForeignTables(DBRProgressMonitor monitor) throws DBException {
+        final ArrayList<? extends PostgreTable> tables = getTableCache().getTypedObjects(monitor, this, PostgreTableForeign.class)
+            .stream()
             .filter(table -> !table.isPartition())
             .collect(Collectors.toCollection(ArrayList::new));
         if (getDataSource().supportsReadingKeysWithColumns()) {
