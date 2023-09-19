@@ -22,11 +22,11 @@ import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 
 public class ERDNotationDescriptor extends AbstractDescriptor {
 
-    public static final String ERD_STYLE_NOTATION_EXT_ATTRIBUTE_ID = "id"; // $NON-NLS-N$
-    public static final String ERD_STYLE_NOTATION_EXT_ATTRIBUTE_NAME = "name"; // $NON-NLS-N$
-    public static final String ERD_STYLE_NOTATION_EXT_ATTRIBUTE_DESCRIPTION = "description"; // $NON-NLS-N$
-    public static final String ERD_STYLE_NOTATION_EXT_ATTRIBUTE_DEFAULT = "isDefault"; // $NON-NLS-N$
-    public static final String ERD_STYLE_NOTATION_EXT_ATTRIBUTE_NOTATION = "notation"; // $NON-NLS-N$
+    private static final String EXT_ATTRIBUTE_ID = "id"; // $NON-NLS-N$
+    private static final String EXT_ATTRIBUTE_NAME = "name"; // $NON-NLS-N$
+    private static final String EXT_ATTRIBUTE_DESCRIPTION = "description"; // $NON-NLS-N$
+    private static final String EXT_ATTRIBUTE_DEFAULT = "isDefault"; // $NON-NLS-N$
+    private static final String EXT_ATTRIBUTE_NOTATION = "notation"; // $NON-NLS-N$
 
     private String id;
     private String name;
@@ -36,11 +36,11 @@ public class ERDNotationDescriptor extends AbstractDescriptor {
 
     protected ERDNotationDescriptor(IConfigurationElement cf) throws CoreException {
         super(cf);
-        this.id = cf.getAttribute(ERD_STYLE_NOTATION_EXT_ATTRIBUTE_ID);
-        this.name = cf.getAttribute(ERD_STYLE_NOTATION_EXT_ATTRIBUTE_NAME);
-        this.description = cf.getAttribute(ERD_STYLE_NOTATION_EXT_ATTRIBUTE_DESCRIPTION);
-        this.isDefault = Boolean.valueOf(cf.getAttribute(ERD_STYLE_NOTATION_EXT_ATTRIBUTE_DEFAULT));
-        this.notation = (ERDNotation) cf.createExecutableExtension(ERD_STYLE_NOTATION_EXT_ATTRIBUTE_NOTATION);
+        this.id = cf.getAttribute(EXT_ATTRIBUTE_ID);
+        this.name = cf.getAttribute(EXT_ATTRIBUTE_NAME);
+        this.description = cf.getAttribute(EXT_ATTRIBUTE_DESCRIPTION);
+        this.isDefault = Boolean.valueOf(cf.getAttribute(EXT_ATTRIBUTE_DEFAULT));
+        this.notation = (ERDNotation) cf.createExecutableExtension(EXT_ATTRIBUTE_NOTATION);
     }
 
     public String getId() {

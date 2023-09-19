@@ -1099,7 +1099,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     private class ChangeERDNotationStyleAction extends Action {
         private final ERDNotationDescriptor notation;
 
-        public ChangeERDNotationStyleAction(ERDNotationDescriptor notation) {
+        public ChangeERDNotationStyleAction(@NotNull ERDNotationDescriptor notation) {
             super(notation.getName(), AS_CHECK_BOX);
             this.notation = notation;
         }

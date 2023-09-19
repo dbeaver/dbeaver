@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 
 import java.util.LinkedHashMap;
@@ -52,7 +53,7 @@ public class ERDNotationRegistry {
     /**
      * Registry instance
      *
-     *@return - registry instance
+     * @return - registry instance
      */
     public static synchronized ERDNotationRegistry getInstance() {
         if (instance == null) {
@@ -69,9 +70,9 @@ public class ERDNotationRegistry {
     /**
      * Add new notation
      *
-     *@param descriptor - notation descriptor
+     * @param descriptor - notation descriptor
      */
-    public void addNotation(@NotNull ERDNotationDescriptor descriptor) {
+    private void addNotation(@NotNull ERDNotationDescriptor descriptor) {
         if (notations.containsKey(descriptor.getId())) {
             log.error("ER Diagram Notation already defined for id:" + descriptor.getId());
             return;
@@ -92,7 +93,8 @@ public class ERDNotationRegistry {
      *@param id - notation descriptor identifier
      *@return - ERDNotationDescriptor
      */
-    public ERDNotationDescriptor getNotation(String id) {
+    @Nullable
+    public ERDNotationDescriptor getNotation(@NotNull String id) {
         if (!notations.containsKey(id)) {
             log.error("ERD Notation not defined for key:" + id);
             return null;
@@ -100,6 +102,7 @@ public class ERDNotationRegistry {
         return notations.get(id);
     }
 
+    @Nullable
     public ERDNotationDescriptor getDefaultNotation() {
         return this.defaultNotation;
     }
@@ -107,8 +110,8 @@ public class ERDNotationRegistry {
     /**
      * Return notation from registry by name
      *
-     *@param name - notation name
-     *@return - Optional ERDNotationDescriptor
+     * @param name - notation name
+     * @return - Optional ERDNotationDescriptor
      */
     public Optional<ERDNotationDescriptor> getERDNotationByName(String name) {
         return notations.values().stream().filter(p -> p.getName().equals(name)).findFirst();
