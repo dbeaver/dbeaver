@@ -24,9 +24,7 @@ public class YashanDBProcedurePackaged extends YashanDBProcedureBase<YashanDBPac
         super(ownerPackage,
                 JDBCUtils.safeGetString(dbResult, "PROCEDURE_NAME"),
                 0l,
-                DBSProcedureType.valueOf(JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE").equals("UDF") ? "FUNCTION" : "PROCEDURE"));
-//                Objects.equals(JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE"), "UDF") ?
-//                        DBSProcedureType.FUNCTION:DBSProcedureType.PROCEDURE);
+                DBSProcedureType.valueOf(("UDF").equals(JDBCUtils.safeGetString(dbResult, "PROCEDURE_TYPE")) ? "FUNCTION" : "PROCEDURE"));
     }
 
     @NotNull

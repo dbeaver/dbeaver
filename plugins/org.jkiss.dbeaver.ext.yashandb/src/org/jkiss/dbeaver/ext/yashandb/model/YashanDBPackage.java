@@ -199,10 +199,14 @@ public class YashanDBPackage extends YashanDBSchemaObject
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull YashanDBPackage owner)
                 throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT P.*,CASE WHEN A.DATA_TYPE IS NULL THEN 'PROCEDURE' ELSE 'UDF' END as PROCEDURE_TYPE FROM ALL_PROCEDURES P\n" +
-                            "LEFT OUTER JOIN ALL_ARGUMENTS A ON A.OWNER=P.OWNER  AND A.OBJECT_NAME=P.PROCEDURE_NAME AND A.ARGUMENT_NAME IS NULL AND A.DATA_LEVEL=0\n" +
-                            "WHERE P.OWNER=? AND P.OBJECT_NAME=?\n" +
-                            "ORDER BY P.PROCEDURE_NAME");
+                    "SELECT P.PROCEDURE_NAME ,P.OBJECT_NAME ,P.PROCEDURE_NAME ,P.OBJECT_ID ,P.SUBPROGRAM_ID ,P.OBJECT_TYPE ,P.AGGREGATE ,P.PIPELINED ," +
+                            "P.IMPLTYPEOWNER ,P.IMPLTYPENAME ,P.PARALLEL ,P.INTERFACE ,P.\"DETERMINISTIC\" ,P.AUTHID ,P.RESULT_CACHE ,P.ORIGIN_CON_ID ,P.POLYMORPHIC ," +
+                            "CASE MIN(A.POSITION) WHEN 0 THEN 'UDF' WHEN 1 THEN 'PROCEDURE' END as PROCEDURE_TYPE FROM ALL_PROCEDURES P\n" +
+                            "LEFT OUTER JOIN ALL_ARGUMENTS A ON A.OWNER=P.OWNER  AND A.OBJECT_NAME=P.OBJECT_NAME AND  A.SUBPROGRAM_NAME = P.PROCEDURE_NAME \n" +
+                            "WHERE P.OWNER=? AND P.OBJECT_NAME=? \n" +
+                            "group BY P.PROCEDURE_NAME ,P.OBJECT_NAME ,P.PROCEDURE_NAME ,P.OBJECT_ID ,P.SUBPROGRAM_ID ,P.OBJECT_TYPE ,P.AGGREGATE ," +
+                            "P.PIPELINED ,P.IMPLTYPEOWNER ,P.IMPLTYPENAME ,P.PARALLEL ,P.INTERFACE ,P.\"DETERMINISTIC\" ,P.AUTHID ,P.RESULT_CACHE ,P.ORIGIN_CON_ID ,P.POLYMORPHIC"
+            );
             dbStat.setString(1, owner.getSchema().getName());
             dbStat.setString(2, owner.getName());
             return dbStat;
