@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.erd.ui.editor.ERDHighlightingHandle;
 import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
+import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationEditPolicy;
@@ -164,14 +165,19 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     }
 
     protected void setConnectionStyles(PolylineConnection conn) {
-        ERDNotationDescriptor diagramNotation = getDiagramPart().getDiagram().getDiagramNotation();
-        if (diagramNotation == null) {
-            log.error("Diagram notation is not defined");
+        ERDNotationDescriptor diagramNotationDescriptor = getDiagramPart().getDiagram().getDiagramNotation();
+        if (diagramNotationDescriptor == null) {
+            log.error("ERD notation descriptor is not defined");
         }
-        if (diagramNotation != null) {
+        if (diagramNotationDescriptor != null) {
             Color background = getParent().getViewer().getControl().getBackground();
             Color foreground = getParent().getViewer().getControl().getForeground();
-            diagramNotation.getNotation().applyNotationForArrows(conn, getAssociation(), background, foreground);
+            ERDNotation notation = diagramNotationDescriptor.getNotation();
+            if (notation != null) {
+                notation.applyNotationForArrows(conn, getAssociation(), background, foreground);
+            } else {
+                log.error("ERD notation instance not created for id: " + diagramNotationDescriptor.getId());
+            }
         }
     }
 

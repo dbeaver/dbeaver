@@ -18,29 +18,29 @@ package org.jkiss.dbeaver.erd.ui.notations;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 
 public class ERDNotationDescriptor extends AbstractDescriptor {
-
-    private static final String EXT_ATTRIBUTE_ID = "id"; // $NON-NLS-N$
-    private static final String EXT_ATTRIBUTE_NAME = "name"; // $NON-NLS-N$
-    private static final String EXT_ATTRIBUTE_DESCRIPTION = "description"; // $NON-NLS-N$
-    private static final String EXT_ATTRIBUTE_DEFAULT = "isDefault"; // $NON-NLS-N$
-    private static final String EXT_ATTRIBUTE_NOTATION = "notation"; // $NON-NLS-N$
 
     private String id;
     private String name;
     private String description;
     private boolean isDefault = false;
     private ERDNotation notation;
+    private ObjectType lazyWrapper;
+
+    Log log = Log.getLog(ERDNotationDescriptor.class.getName());
 
     protected ERDNotationDescriptor(IConfigurationElement cf) throws CoreException {
         super(cf);
-        this.id = cf.getAttribute(EXT_ATTRIBUTE_ID);
-        this.name = cf.getAttribute(EXT_ATTRIBUTE_NAME);
-        this.description = cf.getAttribute(EXT_ATTRIBUTE_DESCRIPTION);
-        this.isDefault = Boolean.valueOf(cf.getAttribute(EXT_ATTRIBUTE_DEFAULT));
-        this.notation = (ERDNotation) cf.createExecutableExtension(EXT_ATTRIBUTE_NOTATION);
+        this.id = cf.getAttribute(RegistryConstants.ATTR_ID);
+        this.name = cf.getAttribute(RegistryConstants.ATTR_NAME);
+        this.description = cf.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        this.isDefault = Boolean.valueOf(cf.getAttribute(RegistryConstants.ATTR_IS_DEFAULT));
+        this.lazyWrapper = new ObjectType(cf.getAttribute(RegistryConstants.ATTR_NOTATION));
     }
 
     public String getId() {
@@ -56,6 +56,13 @@ public class ERDNotationDescriptor extends AbstractDescriptor {
     }
 
     public ERDNotation getNotation() {
+        if (notation == null) {
+            try {
+                notation = lazyWrapper.createInstance(ERDNotation.class);
+            } catch (DBException e) {
+                log.error(e.getMessage());
+            }
+        }
         return notation;
     }
 
