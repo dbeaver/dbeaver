@@ -18,6 +18,9 @@ package org.jkiss.dbeaver.ext.dameng;
 
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Shengkai Bai
  */
@@ -72,5 +75,25 @@ public class DamengConstants {
         MATERIALIZED_VIEW,
         MATERIALIZED_VIEW_LOG,
         PROFILE,
+    }
+
+    public static final List<String> INTERVAL_TYPES = new ArrayList<>();
+
+    static {
+        INTERVAL_TYPES.add("interval day");
+        INTERVAL_TYPES.add("interval day() to hour");
+        INTERVAL_TYPES.add("interval day() to minute");
+        INTERVAL_TYPES.add("interval day() to second");
+        INTERVAL_TYPES.add("interval hour");
+        INTERVAL_TYPES.add("interval hour() to minute");
+        INTERVAL_TYPES.add("interval hour() to second");
+        INTERVAL_TYPES.add("interval minute");
+        INTERVAL_TYPES.add("interval minute() to second");
+        INTERVAL_TYPES.add("interval month");
+        INTERVAL_TYPES.add("interval second");
+        INTERVAL_TYPES.add("interval year");
+        INTERVAL_TYPES.add("interval year() to month");
+        INTERVAL_TYPES.add("time with time zone");
+        INTERVAL_TYPES.add("timestamp with time zone");
     }
 }
