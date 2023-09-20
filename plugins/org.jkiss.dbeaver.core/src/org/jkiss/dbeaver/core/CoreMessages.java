@@ -181,6 +181,8 @@ public class CoreMessages extends NLS {
 	public static String dialog_project_export_wizard_start_message_configure_settings;
 	public static String dialog_project_export_wizard_start_message_empty_output_directory;
 	public static String dialog_project_export_wizard_start_title;
+	public static String dialog_project_export_wizard_file_overwrite_window_title;
+	public static String dialog_project_export_wizard_file_overwrite_confirm;
 	public static String dialog_project_export_wizard_window_title;
 
     public static String dialog_workspace_import_wizard_window_title;
@@ -343,7 +345,6 @@ public class CoreMessages extends NLS {
     public static String pref_page_query_manager_checkbox_store_log_file;
     public static String pref_page_query_manager_logs_folder;
 	public static String pref_page_query_manager_label_days_to_store_log;
-	public static String pref_page_query_manager_label_entries_per_page;
 	public static String pref_page_query_manager_log_file_hint;
 
 	public static String pref_page_ui_general_checkbox_automatic_updates;

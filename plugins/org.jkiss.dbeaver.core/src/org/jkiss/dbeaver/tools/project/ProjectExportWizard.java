@@ -119,6 +119,19 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
         String archiveName = exportData.getArchiveFileName() + ExportConstants.ARCHIVE_FILE_EXT;
         File archiveFile = new File(exportData.getOutputFolder(), archiveName);
+        
+        if (archiveFile.exists()) {
+            boolean overwrite = DBWorkbench.getPlatformUI().confirmAction(
+                CoreMessages.dialog_project_export_wizard_file_overwrite_window_title,
+                NLS.bind(CoreMessages.dialog_project_export_wizard_file_overwrite_confirm, archiveName),
+                true
+            );
+
+            if (!overwrite) {
+                return;
+            }
+        }
+        
         FileOutputStream exportStream = new FileOutputStream(archiveFile);
 
         try {

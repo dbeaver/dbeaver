@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.websocket.event.datasource.WSDatasourceFolderEven
 import org.jkiss.dbeaver.model.websocket.event.permissions.WSObjectPermissionEvent;
 import org.jkiss.dbeaver.model.websocket.event.permissions.WSSubjectPermissionEvent;
 import org.jkiss.dbeaver.model.websocket.event.resource.WSResourceUpdatedEvent;
+import org.jkiss.dbeaver.model.websocket.event.session.WSOutputDBLogEvent;
 import org.jkiss.dbeaver.model.websocket.event.session.WSSessionExpiredEvent;
 import org.jkiss.dbeaver.model.websocket.event.session.WSSessionStateEvent;
 import org.jkiss.dbeaver.model.websocket.event.session.WSSocketConnectedEvent;
@@ -77,7 +78,9 @@ public enum WSEventType {
     RM_PROJECT_ADDED("cb_rm_project_added", WSEventTopic.PROJECTS, WSProjectUpdateEvent.class),
     RM_PROJECT_REMOVED("cb_rm_project_removed", WSEventTopic.PROJECTS, WSProjectUpdateEvent.class),
 
-    WORKSPACE_CONFIG_CHANGED("cb_workspace_config_changed", WSEventTopic.WORKSPACE_CONFIG, WSWorkspaceConfigurationChangedEvent.class);
+    WORKSPACE_CONFIG_CHANGED("cb_workspace_config_changed", WSEventTopic.WORKSPACE_CONFIG, WSWorkspaceConfigurationChangedEvent.class),
+
+    DB_LOG_UPDATED("cb_database_output_log_updated", WSEventTopic.DB_OUTPUT_LOG, WSOutputDBLogEvent.class);
 
     private final String eventId;
     private final WSEventTopic topic;

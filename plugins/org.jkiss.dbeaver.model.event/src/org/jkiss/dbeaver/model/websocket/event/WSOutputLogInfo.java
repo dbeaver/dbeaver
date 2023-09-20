@@ -14,16 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.clickhouse;
+package org.jkiss.dbeaver.model.websocket.event;
 
-public class ClickhouseConstants {
-    public static final String SSL_PARAM = "ssl"; //$NON-NLS-1$
-    public static final String SSL_PATH = "sslcert"; //$NON-NLS-1$
-    public static final String SSL_KEY_PASSWORD = "sslkey"; //$NON-NLS-1$
-    public static final String SSL_MODE_CONF = "ssl.mode"; //$NON-NLS-1$
-    public static final String SSL_MODE = "sslmode"; //$NON-NLS-1$
+import org.jkiss.code.Nullable;
 
-    public static final String SSL_ROOT_CERTIFICATE = "sslrootcert"; //$NON-NLS-1$
+public class WSOutputLogInfo {
+    @Nullable
+    private final String severity;
+    private final String message;
 
-    public static final String DATA_TYPE_IPV4 = "ipv4";
+    public WSOutputLogInfo(@Nullable String severity, String message) {
+        this.message = message;
+        this.severity = severity;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public String getSeverity() {
+        return severity;
+    }
 }
