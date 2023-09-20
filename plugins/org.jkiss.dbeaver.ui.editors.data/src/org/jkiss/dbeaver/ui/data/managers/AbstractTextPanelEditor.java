@@ -53,7 +53,9 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.storage.StringContentStorage;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -71,9 +73,11 @@ import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsActivator;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -379,21 +383,25 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         });
     }
 
-    private void showRestrictedContent(@NotNull DBDContent value) {
+    private void showRestrictedContent(@NotNull DBDContent value) throws DBCException, IOException {
         int maxContentSize = DBWorkbench.getPlatform().getPreferenceStore()
             .getInt(ModelPreferences.REPRESENTATION_CONTENT_MAX_SIZE_KBYTES);
-        byte[] bytes = CommonUtils.toString(value).getBytes();
-        byte[] restrictedBytes = Arrays.copyOfRange(bytes, 0, maxContentSize);
-        UIUtils.asyncExec(() -> {
-            if (editor != null) {
-                String msg = NLS.bind(ResultSetMessages.panel_editor_text_content_limitation_lbl, maxContentSize);
-                editor.setInput(new StringEditorInput("Limited Content ", new String(restrictedBytes), true,
-                    StandardCharsets.UTF_8.name()));
-                messageBar.setForeground(UIStyles.getErrorTextForeground());
-                messageBar.setText(msg);
-                messageBar.setImage(UIUtils.getShardImage(ISharedImages.IMG_OBJS_WARN_TSK));
-            }
-        });
+        DBDContentStorage contents = value.getContents(new VoidProgressMonitor());
+        try (final InputStream stream = contents.getContentStream()) {
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream((int) contents.getContentLength());
+            IOUtils.copyStream(stream, buffer);
+            byte[] displaingContentBytes = Arrays.copyOfRange(buffer.toByteArray(), 0, maxContentSize * 1000);
+            UIUtils.asyncExec(() -> {
+                if (editor != null) {
+                    String msg = NLS.bind(ResultSetMessages.panel_editor_text_content_limitation_lbl, maxContentSize);
+                    editor.setInput(new StringEditorInput("Limited Content ", new String(displaingContentBytes), true,
+                        StandardCharsets.UTF_8.name()));
+                    messageBar.setForeground(UIStyles.getErrorTextForeground());
+                    messageBar.setText(msg);
+                    messageBar.setImage(UIUtils.getShardImage(ISharedImages.IMG_OBJS_WARN_TSK));
+                }
+            });
+        }
     }
 
     @Nullable
