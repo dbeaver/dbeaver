@@ -63,13 +63,14 @@ public class ERDUIMessages extends NLS {
     public static String erd_editor_control_action_configuration;
     //ERD editor action item control
 
-    public static String erd_preference_page_title_routing;
+    public static String erd_preference_page_title_advanced;
     public static String erd_preference_page_title_attribute_style;
     public static String erd_preference_page_title_attributes_visibility;
     public static String erd_preference_page_title_diagram_contents;
     public static String erd_preference_page_title_shows_views;
     public static String erd_preference_page_title_shows_partitions;
     public static String erd_preference_page_title_routing_combo;
+    public static String erd_preference_page_title_notation_combo;
     public static String erd_preference_page_title_color_pref;
     public static String erd_preference_page_title_change_border_colors;
     public static String erd_preference_page_title_change_header_colors;
@@ -100,6 +101,7 @@ public class ERDUIMessages extends NLS {
     public static String erd_view_style_selection_item_alphabetical_order;
     public static String erd_view_style_selection_item_alphabetical_order_action;
     public static String menu_view_style;
+    public static String menu_notation_style;
     public static String menu_attribute_visibility;
     public static String menu_attribute_visibility_default;
     public static String menu_attribute_visibility_entity;

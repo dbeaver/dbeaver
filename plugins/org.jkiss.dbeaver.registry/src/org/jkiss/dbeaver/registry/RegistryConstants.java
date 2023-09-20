@@ -231,5 +231,7 @@ public class RegistryConstants {
     public static final String ATTR_CONFIGURATION_TYPE = "configurationType";
     public static final String ATTR_SUPPORTS_DISTRIBUTED_MODE = "supportsDistributedMode";
     public static final String ATTR_DEPRECATED = "deprecated";
+    public static final String ATTR_IS_DEFAULT = "isDefault"; // $NON-NLS-N$
+    public static final String ATTR_NOTATION = "notation"; // $NON-NLS-N$
 
 }
