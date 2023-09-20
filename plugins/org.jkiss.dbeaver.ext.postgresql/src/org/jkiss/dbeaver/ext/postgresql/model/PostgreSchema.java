@@ -406,7 +406,7 @@ public class PostgreSchema implements
         for (PostgreTable table : this.getTables(monitor)) {
             table.resetSuperInheritance();
         }
-
+        resetPartitionsInheritance(monitor);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT i.inhrelid relid, pc.relnamespace parent_ns, pc.oid parent_oid, i.inhseqno\n" +
@@ -443,6 +443,14 @@ public class PostgreSchema implements
                 }
             } catch (SQLException e) {
                 throw new DBCException(e, session.getExecutionContext());
+            }
+        }
+    }
+
+    private void resetPartitionsInheritance(DBRProgressMonitor monitor) throws DBException {
+        for (PostgreTable table : getTableCache().getTypedObjects(monitor, this, PostgreTable.class)) {
+            if (table.isPartition()) {
+                table.resetSuperInheritance();
             }
         }
     }
