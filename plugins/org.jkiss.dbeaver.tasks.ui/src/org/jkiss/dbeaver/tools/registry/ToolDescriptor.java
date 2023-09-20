@@ -156,5 +156,13 @@ public class ToolDescriptor extends AbstractDescriptor {
         public Command getCommand() {
             return command != null ? command : (command = ActionUtils.findCommand(commandId));
         }
+        
+        @Override
+        protected Object adaptType(DBPObject object) {
+            if (object instanceof DBSObject) {
+                return ((DBSObject) object).getDataSource();
+            }
+            return super.adaptType(object);
+        }
     }
 }
