@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -51,6 +52,48 @@ public class YashanDBTableManager extends SQLTableManager<YashanDBTable, YashanD
         return table;
     }
 
+    @Override
+    protected String beginCreateTableStatement(DBRProgressMonitor monitor, YashanDBTable table, String tableName, Map<String, Object> options) throws DBException {
+        StringBuilder createPreSQL = new StringBuilder();
+        createPreSQL.append("CREATE");
+        boolean isView = DBUtils.isView(table);
+        if(!isView && table.isEditTemporary()){
+            createPreSQL.append(" GLOBAL TEMPORARY ");
+        }
+        createPreSQL.append(isView ? " VIEW " : " TABLE ")
+                .append(tableName)
+                .append(" (")
+                .append(GeneralUtils.getDefaultLineSeparator());
+
+        return createPreSQL.toString();
+    }
+
+    @Override
+    protected String endCreateTableStatement(DBRProgressMonitor monitor, YashanDBTable table, String tableName, Map<String, Object> options) throws DBException{
+        StringBuilder createSufSQL = new StringBuilder(GeneralUtils.getDefaultLineSeparator());
+        if(table.getTablespace() != null){
+            String spaceName = "";
+            if(table.getTablespace() instanceof YashanDBTablespace){
+                YashanDBTablespace tablespace = (YashanDBTablespace) table.getTablespace();
+                spaceName = tablespace.getName();
+            }else {
+                spaceName = String.valueOf(table.getTablespace());
+            }
+            if(table.isEditTemporary() && !"TEMP".equals(spaceName)){
+                throw new DBException("The temporary table's tablespace setting is incorrect; only the TEMP tablespace is currently supported.");
+            }
+            createSufSQL.append(table.getDataSource().isDistributed() ? "TABLESPACE SET " : "TABLESPACE ")
+                    .append(spaceName)
+                    .append(GeneralUtils.getDefaultLineSeparator());
+        }
+        if(table.getEditTableType() != null){
+            createSufSQL.append("ORGANIZATION ")
+                    .append(table.getEditTableType())
+                    .append(GeneralUtils.getDefaultLineSeparator());
+        }
+        return createSufSQL.toString();
+    }
+
     @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, YashanDBTable> getObjectsCache(YashanDBTable object) {
@@ -80,6 +123,7 @@ public class YashanDBTableManager extends SQLTableManager<YashanDBTable, YashanD
                                          List<DBEPersistAction> actions, NestedObjectCommand<YashanDBTable, PropertyHandler> command,
                                          Map<String, Object> options) throws DBException {
         YashanDBTable table = command.getObject();
+        // table comment
         if (command.getProperty("comment") != null) {
             actions.add(new SQLDatabasePersistAction(
                     "Comment table",
@@ -87,14 +131,7 @@ public class YashanDBTableManager extends SQLTableManager<YashanDBTable, YashanD
                             table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
                             " IS " + SQLUtils.quoteString(table, table.getComment())));
         }
-
-//        if (command.getProperty("comment") == null) {
-//            actions.add(new SQLDatabasePersistAction(
-//                    "Comment table",
-//                    "COMMENT ON TABLE " +
-//                            table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
-//                            " IS '" + "'"));
-//        }
+        // column comments
         if (!table.isPersisted()) {
             // Column comments for the newly created table
             for (YashanDBTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {

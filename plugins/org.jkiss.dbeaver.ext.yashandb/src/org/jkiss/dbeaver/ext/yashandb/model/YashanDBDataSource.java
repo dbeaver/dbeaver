@@ -219,6 +219,10 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
         return isAdmin || isAdminVisible;
     }
 
+    public boolean isDistributed(){
+        return isDistributed;
+    }
+
     public boolean isAdmin() {
         return isAdmin;
     }

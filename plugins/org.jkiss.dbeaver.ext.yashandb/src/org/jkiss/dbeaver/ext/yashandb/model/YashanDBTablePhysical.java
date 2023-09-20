@@ -103,7 +103,7 @@ public abstract class YashanDBTablePhysical extends YashanDBTableBase implements
      * get table space list which will be showed in right UI.
      * Setting updatable false, which tablespace cannot be updated and edited.
      */
-    @Property(viewable = true, order = 22, editable = true, updatable = false, listProvider = TablespaceListProvider.class)
+    @Property(viewable = true, order = 22, editable = true, length = PropertyLength.MULTILINE, updatable = false, listProvider = TablespaceListProvider.class)
     @LazyProperty(cacheValidator = YashanDBTablespace.TablespaceReferenceValidator.class)
     public Object getTablespace(DBRProgressMonitor monitor) throws DBException {
         return YashanDBTablespace.resolveTablespaceReference(monitor, this, null);
