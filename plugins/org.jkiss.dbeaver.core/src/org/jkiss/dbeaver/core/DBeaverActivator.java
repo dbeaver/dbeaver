@@ -19,7 +19,10 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.jkiss.awt.injector.ProxyInjector;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.browser.BrowsePeerMethods;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
@@ -67,6 +70,14 @@ public class DBeaverActivator extends AbstractUIPlugin {
         } catch (MissingResourceException x) {
             coreResourceBundle = null;
         }
+        if (DesktopPlatform.isStandalone()) {
+            injectProxyPeer();
+        }
+    }
+
+    private void injectProxyPeer() throws NoSuchFieldException, IllegalAccessException {
+        ProxyInjector proxyInjector = new ProxyInjector();
+        proxyInjector.injectBrowseInteraction(BrowsePeerMethods::canBrowseInSWTBrowser, BrowsePeerMethods::browseInSWTBrowser);
     }
 
     @Override

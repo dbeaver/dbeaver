@@ -28,7 +28,8 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.ui.views,
  org.jkiss.dbeaver.ui.views.process,
  org.jkiss.dbeaver.ui.views.qm
-Bundle-ClassPath: .
+Bundle-ClassPath: .,
+ lib/awt.injector-1.0.0.jar
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.filesystem,
  org.eclipse.core.resources,
@@ -39,6 +40,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.editors,
  org.eclipse.ui.forms,
  org.eclipse.ui.views,
+ org.eclipse.ui.browser,
  org.eclipse.ui.workbench,
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.ui.ide,
