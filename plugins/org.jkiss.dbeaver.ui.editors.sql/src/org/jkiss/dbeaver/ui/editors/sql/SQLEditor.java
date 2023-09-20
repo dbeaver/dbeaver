@@ -18,9 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFileState;
-import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.*;
@@ -50,6 +48,7 @@ import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.IMenuService;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.rulers.IColumnSupport;
@@ -844,10 +843,6 @@ public class SQLEditor extends SQLEditorBase implements
         }
         if (QMUtils.isTransactionActive(executionContext)) {
             return true;
-        }
-        if (isNonPersistentEditor()) {
-            // Console is never dirty
-            return false;
         }
         if (extraPresentation instanceof ISaveablePart && ((ISaveablePart) extraPresentation).isDirty()) {
             return true;
@@ -3050,6 +3045,11 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public void doSave(IProgressMonitor monitor) {
+        if (isNonPersistentEditor()) {
+            saveAsNewScript();
+            return;
+        }
+
         if (!EditorUtils.isInAutoSaveJob()) {
             monitor.beginTask("Save data changes...", 1);
             try {
@@ -3164,7 +3164,6 @@ public class SQLEditor extends SQLEditorBase implements
             IEditorInput input = new FileStoreEditorInput(fileStore);
 
             EditorUtils.setInputDataSource(input, new SQLNavigatorContext(getDataSourceContainer(), getExecutionContext()));
-
             setInput(input);
         } catch (CoreException e) {
             DBWorkbench.getPlatformUI().showError("File save", "Can't open SQL editor from external file", e);
@@ -3174,6 +3173,27 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public void saveToExternalFile() {
         saveToExternalFile(getScriptDirectory());
+    }
+
+    public void saveAsNewScript() {
+        final SQLNavigatorContext context = new SQLNavigatorContext(getDataSourceContainer(), getExecutionContext());
+        final IDocument document = getDocument();
+
+        if (document == null) {
+            return;
+        }
+
+        try {
+            final IFile script = SQLEditorUtils.createNewScript(getProject(), null, context);
+            final byte[] contents = document.get().getBytes(ResourcesPlugin.getEncoding());
+            script.setContents(new ByteArrayInputStream(contents), IResource.FORCE, new NullProgressMonitor());
+
+            final FileEditorInput input = new FileEditorInput(script);
+            EditorUtils.setInputDataSource(input, context);
+            setInput(input);
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError("File save", "Can't save as new script file", e);
+        }
     }
 
     @Nullable
