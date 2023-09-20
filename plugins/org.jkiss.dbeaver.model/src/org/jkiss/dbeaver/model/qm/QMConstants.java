@@ -29,7 +29,6 @@ public class QMConstants {
 
     public static final String PROP_OBJECT_TYPES = PROP_PREFIX + "objectTypes";
     public static final String PROP_QUERY_TYPES = PROP_PREFIX + "queryTypes";
-    public static final String PROP_ENTRIES_PER_PAGE = PROP_PREFIX + "maxEntries";
     public static final String PROP_HISTORY_DAYS = PROP_PREFIX + "historyDays";
     public static final String PROP_STORE_LOG_FILE = PROP_PREFIX + "storeLogs";
     public static final String PROP_LOG_DIRECTORY = PROP_PREFIX + "logDirectory";

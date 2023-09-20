@@ -37,7 +37,6 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.*;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
-import org.eclipse.ui.menus.CommandContributionItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -137,6 +136,16 @@ public class DBeaverStackRenderer extends StackRenderer {
             if (localFile == null && workbenchPart instanceof SQLEditor) {
                 new MenuItem(menu, SWT.SEPARATOR);
                 addActionItem(workbenchPart, menu, IWorkbenchCommandConstants.FILE_SAVE_AS);
+
+                final MenuItem saveAsScriptItem = new MenuItem(menu, SWT.PUSH);
+                saveAsScriptItem.setText(SQLEditorMessages.sql_editor_prefs_save_as_script_text);
+                saveAsScriptItem.setToolTipText(SQLEditorMessages.sql_editor_prefs_save_as_script_tip);
+                saveAsScriptItem.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        ((SQLEditor) workbenchPart).saveAsNewScript();
+                    }
+                });
             }
             
             if (workbenchPart instanceof SQLEditor) {

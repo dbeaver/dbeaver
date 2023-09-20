@@ -621,7 +621,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         reloadInProgress = true;
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
-        this.entriesPerPage = Math.max(MIN_ENTRIES_PER_PAGE, store.getInt(QMConstants.PROP_ENTRIES_PER_PAGE));
         this.defaultFilter = new DefaultEventFilter();
 
         clearLog();

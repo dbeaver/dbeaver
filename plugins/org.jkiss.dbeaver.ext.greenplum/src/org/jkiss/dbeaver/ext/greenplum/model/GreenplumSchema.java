@@ -37,6 +37,8 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class GreenplumSchema extends PostgreSchema {
 
@@ -65,6 +67,29 @@ public class GreenplumSchema extends PostgreSchema {
     @Association
     public Collection<? extends JDBCTable> getExternalTables(DBRProgressMonitor monitor) throws DBException {
         return new ArrayList<>(getTableCache().getTypedObjects(monitor, this, GreenplumExternalTable.class));
+    }
+
+    @Override
+    public List<? extends PostgreTable> getTables(DBRProgressMonitor monitor) throws DBException {
+        List<? extends PostgreTable> postgreTables = super.getTables(monitor);
+        // Remove external tables from the list. Store them in a different folder.
+        return postgreTables.stream()
+            .filter(e -> !(e instanceof GreenplumExternalTable))
+            .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    @Override
+    public List<? extends PostgreTable> getForeignTables(DBRProgressMonitor monitor) throws DBException {
+        List<? extends PostgreTable> foreignTables = super.getForeignTables(monitor);
+        GreenplumDataSource dataSource = getDataSource();
+        if (dataSource.isServerVersionAtLeast(7, 0) && dataSource.isHasAccessToExttable()) {
+            // Starting Greenplum version 7 external tables are marked as foreign tables.
+            // Lets's remove external tables from the list foreign tables. Store is the External tables folder.
+            return foreignTables.stream()
+                .filter(e -> !(e instanceof GreenplumExternalTable))
+                .collect(Collectors.toCollection(ArrayList::new));
+        }
+        return foreignTables;
     }
 
     public class GreenplumTableCache extends TableCache {
