@@ -252,14 +252,6 @@ public class PrefPageResultSetMain extends TargetPrefPage
             }
 
         });
-        representationContentMaxSize.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyReleased(KeyEvent e) {
-                if (representationContentMaxSize.getText().length() < 3) {
-                    representationContentMaxSize.setText("100");
-                }
-            }
-        });
         representationContentMaxSize.setTextLimit(6);
         return composite;
     }
@@ -310,11 +302,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             }
             showErrorsInDialog.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG));
             markCellValueOccurrences.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES));
-            int maxRepresentationContentSize = store.getInt(ModelPreferences.REPRESENTATION_CONTENT_MAX_SIZE_KBYTES);
-            if (maxRepresentationContentSize < 100) {
-                maxRepresentationContentSize = 100;
-            }
-            representationContentMaxSize.setText(String.valueOf(maxRepresentationContentSize));
+            representationContentMaxSize.setText(String.valueOf(store.getInt(ModelPreferences.REPRESENTATION_CONTENT_MAX_SIZE_KBYTES)));
             updateOptionsEnablement();
         } catch (Exception e) {
             log.warn(e);
