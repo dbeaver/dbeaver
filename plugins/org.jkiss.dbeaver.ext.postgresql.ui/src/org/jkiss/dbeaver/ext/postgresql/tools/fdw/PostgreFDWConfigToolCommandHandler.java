@@ -16,26 +16,20 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tools.fdw;
 
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.DBException;
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
-import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
-import java.util.Collection;
 
-/**
- * Database import
- */
-public class PostgreFDWConfigTool implements IUserInterfaceTool
-{
+public class PostgreFDWConfigToolCommandHandler extends AbstractHandler {
     @Override
-    public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
-    {
-        for (DBSObject object : objects) {
+    public Object execute(ExecutionEvent event) {
+        for (DBSObject object : NavigatorUtils.getSelectedObjects(HandlerUtil.getCurrentSelection(event))) {
             PostgreDatabase database;
             if (object instanceof PostgreObject) {
                 database = ((PostgreObject) object).getDatabase();
@@ -43,10 +37,11 @@ public class PostgreFDWConfigTool implements IUserInterfaceTool
                 continue;
             }
             ActiveWizardDialog dialog = new ActiveWizardDialog(
-                window,
+                HandlerUtil.getActiveWorkbenchWindow(event),
                 new PostgreFDWConfigWizard(database));
             dialog.setFinishButtonLabel("Install");
             dialog.open();
         }
+        return null;
     }
 }

@@ -17,29 +17,30 @@
  */
 package org.jkiss.dbeaver.ext.db2.ui.tools;
 
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.DBException;
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
-
-import java.util.Collection;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 /**
  * Manage the "Database/Tools" menu for DB2
  * 
  * @author Denis Forveille
  */
-public class DB2ToolShowError implements IUserInterfaceTool {
+public class DB2ShowErrorToolCommandHandler extends AbstractHandler {
     @Override
-    public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
-    {
-        for (DBSObject object : objects) {
+    public Object execute(ExecutionEvent event) {
+        for (DBSObject object : NavigatorUtils.getSelectedObjects(HandlerUtil.getCurrentSelection(event))) {
             if (object.getDataSource() instanceof DB2DataSource) {
-                DB2ToolShowErrorDialog dialog = new DB2ToolShowErrorDialog(window, (DB2DataSource)object.getDataSource());
-                dialog.open();
+                DB2ToolShowErrorDialog dialog = new DB2ToolShowErrorDialog(
+                    HandlerUtil.getActiveWorkbenchWindow(event),
+                    (DB2DataSource) object.getDataSource()
+                );
+                return dialog.open();
             }
         }
+        return null;
     }
 }
