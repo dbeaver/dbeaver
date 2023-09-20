@@ -20,7 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 public class WSErrorEvent extends WSAbstractEvent {
-    String errorMessage;
+    private final String errorMessage;
 
     public WSErrorEvent(@NotNull WSEventType eventType,
                         @Nullable String sessionId,
