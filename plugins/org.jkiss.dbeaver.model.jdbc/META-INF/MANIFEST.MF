@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver JDBC Model
 Bundle-SymbolicName: org.jkiss.dbeaver.model.jdbc;singleton:=true
-Bundle-Version: 1.0.6.qualifier
+Bundle-Version: 1.0.7.qualifier
 Bundle-Release-Date: 20230904
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
