@@ -22,6 +22,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -58,6 +60,7 @@ public class NIOFileInfo implements IFileInfo {
     @Override
     public boolean getAttribute(int attribute) {
         if (true) {
+            // Attribute reading is expensive, disable for good
             return false;
         }
 
@@ -86,6 +89,11 @@ public class NIOFileInfo implements IFileInfo {
 
     @Override
     public String getStringAttribute(int attribute) {
+        if (true) {
+            // Attribute reading is expensive, disable for good
+            return null;
+        }
+
         try {
             switch (attribute) {
                 case EFS.ATTRIBUTE_LINK_TARGET:
@@ -123,7 +131,7 @@ public class NIOFileInfo implements IFileInfo {
 
     @Override
     public String getName() {
-        return path.getFileName().toString();
+        return URLDecoder.decode(path.getFileName().toString(), StandardCharsets.UTF_8);
     }
 
     @Override

@@ -35,6 +35,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -78,6 +80,7 @@ public class NIOFileStore extends FileStore {
                             .filter(NIOFileStore::isValidPath)
                             .map(Path::getFileName)
                             .map(Path::toString)
+                            .map(name -> URLDecoder.decode(name, StandardCharsets.UTF_8))
                             .toArray(String[]::new);
                     } catch (IOException e) {
                         throw new CoreException(Status.error("Unable to get child names", e));
@@ -216,7 +219,7 @@ public class NIOFileStore extends FileStore {
         if (names == 0) {
             return "/";
         } else {
-            return path.getName(names - 1).toString();
+            return URLDecoder.decode(path.getName(names - 1).toString(), StandardCharsets.UTF_8);
         }
     }
 

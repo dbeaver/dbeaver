@@ -130,8 +130,6 @@ public class DBNFileSystemList extends DBNNode implements NIOListener {
         final Path path = fileStore.getPath();
         final DBFVirtualFileSystemRoot root = fileStore.getRoot();
 
-        System.out.println("Resource changed (path=" + path + ", action=" + action + ")");
-
         if (children == null) {
             return;
         }
@@ -143,7 +141,7 @@ public class DBNFileSystemList extends DBNNode implements NIOListener {
         for (DBNFileSystem fs : children) {
             if (CommonUtils.equalObjects(fs.getFileSystem(), root.getFileSystem())) {
                 final DBNFileSystemResource rootNode = fs.getRoot(root);
-                final String[] parts = CommonUtils.removeLeadingSlash(path.toUri().getRawPath()).split("/");
+                final String[] parts = CommonUtils.removeLeadingSlash(path.toUri().getPath()).split("/");
 
                 if (rootNode != null) {
                     DBNFileSystemResource parentNode = rootNode;
@@ -167,6 +165,7 @@ public class DBNFileSystemList extends DBNNode implements NIOListener {
                             break;
                     }
                 }
+
                 break;
             }
         }
