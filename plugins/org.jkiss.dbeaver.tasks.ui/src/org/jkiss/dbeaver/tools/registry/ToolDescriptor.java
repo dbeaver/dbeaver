@@ -112,6 +112,13 @@ public class ToolDescriptor extends AbstractDescriptor {
         return null;
     }
     
+
+    /**
+     * Return command for the selected command
+     *
+     * @param objects - selected objects
+     * @return corresponding command or null
+     */
     @Nullable
     public Command getCommandForObjects(@NotNull Collection<DBSObject> objects) {
         for (ToolCommandRef cmdRef : toolCommandRefs) {
