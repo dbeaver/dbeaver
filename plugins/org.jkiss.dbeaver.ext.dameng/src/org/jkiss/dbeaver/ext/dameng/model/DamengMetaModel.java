@@ -132,7 +132,7 @@ public class DamengMetaModel extends GenericMetaModel {
     @Override
     public JDBCStatement prepareTableTriggersLoadStatement(JDBCSession session, GenericStructContainer container, GenericTableBase table) throws SQLException {
         JDBCPreparedStatement dbStat = session.prepareStatement("SELECT " +
-                "TABTRIG_OBJ_INNER.NAME,TAB_OBJ_INNER.NAME,* " +
+                "TABTRIG_OBJ_INNER.NAME AS TRIGGER_NAME, TAB_OBJ_INNER.NAME AS OWNER,* " +
                 "FROM " +
                 "SYSOBJECTS TABTRIG_OBJ_INNER, " +
                 "SYSOBJECTS TAB_OBJ_INNER " +
@@ -146,6 +146,14 @@ public class DamengMetaModel extends GenericMetaModel {
     }
 
     @Override
+    public GenericTrigger createTableTriggerImpl(JDBCSession session, GenericStructContainer genericStructContainer, GenericTableBase genericTableBase, String triggerName, JDBCResultSet resultSet) throws DBException {
+        if (CommonUtils.isEmpty(triggerName)) {
+            triggerName = JDBCUtils.safeGetString(resultSet, "TRIGGER_NAME");
+        }
+        return new GenericTableTrigger(genericTableBase, triggerName, null);
+    }
+
+    @Override
     public JDBCStatement prepareContainerTriggersLoadStatement(JDBCSession session, GenericStructContainer forParent) throws SQLException {
         JDBCPreparedStatement dbStat = session.prepareStatement("SELECT TABTRIG_OBJ_INNER.NAME " +
                 "FROM " +
@@ -153,7 +161,7 @@ public class DamengMetaModel extends GenericMetaModel {
                 "SYSOBJECTS SCH_OBJ_INNER " +
                 "WHERE " +
                 "TABTRIG_OBJ_INNER.SUBTYPE$ = 'TRIG' " +
-                "AND TABTRIG_OBJ_INNER.SCHID = SCH_OBJ_INNER.ID " +
+                "AND TABTRIG_OBJ_INNER.PID = SCH_OBJ_INNER.ID " +
                 "AND SCH_OBJ_INNER.NAME = ?");
         dbStat.setString(1, forParent.getName());
         return dbStat;
