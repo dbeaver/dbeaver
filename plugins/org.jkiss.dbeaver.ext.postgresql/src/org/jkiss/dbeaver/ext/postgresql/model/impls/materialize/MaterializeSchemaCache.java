@@ -36,7 +36,6 @@ public class MaterializeSchemaCache extends PostgreDatabase.SchemaCache {
             return null;
         }
             
-        }
         return new MaterializeSchema(owner, name, resultSet);
     }
 }
