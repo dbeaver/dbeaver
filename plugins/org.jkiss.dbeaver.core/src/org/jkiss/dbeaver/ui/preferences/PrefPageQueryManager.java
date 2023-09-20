@@ -35,10 +35,12 @@ import org.jkiss.dbeaver.model.qm.QMObjectType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -111,33 +113,57 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
             Control infoLabel = UIUtils.createInfoLabel(storageSettings, CoreMessages.pref_page_query_manager_log_file_hint);
             infoLabel.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 2, 1));
         }
-        performDefaults();
+        setValues();
 
         return composite;
     }
 
-    @Override
-    protected void performDefaults()
-    {
+    private void setValues() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         Collection<QMObjectType> objectTypes = QMObjectType.fromString(store.getString(QMConstants.PROP_OBJECT_TYPES));
         Collection<String> queryTypes = CommonUtils.splitString(store.getString(QMConstants.PROP_QUERY_TYPES), ',');
 
+        checkObjectTypes(objectTypes);
+        checkQueryTypes(queryTypes);
+
+        textHistoryDays.setText(store.getString(QMConstants.PROP_HISTORY_DAYS));
+
+        checkStoreLog.setSelection(store.getBoolean(QMConstants.PROP_STORE_LOG_FILE));
+        textOutputFolder.setText(store.getString(QMConstants.PROP_LOG_DIRECTORY));
+        UIUtils.enableWithChildren(textOutputFolder.getParent(), checkStoreLog.getSelection());
+        UIUtils.enableWithChildren(textHistoryDays, checkStoreLog.getSelection());
+    }
+
+    private void checkObjectTypes(Collection<QMObjectType> objectTypes) {
         checkObjectTypeSessions.setSelection(objectTypes.contains(QMObjectType.session));
         checkObjectTypeTxn.setSelection(objectTypes.contains(QMObjectType.txn));
         checkObjectTypeQueries.setSelection(objectTypes.contains(QMObjectType.query));
+    }
 
+    private void checkQueryTypes(Collection<String> queryTypes) {
         checkQueryTypeUser.setSelection(queryTypes.contains(DBCExecutionPurpose.USER.name()));
         checkQueryTypeUserFiltered.setSelection(queryTypes.contains(DBCExecutionPurpose.USER_FILTERED.name()));
         checkQueryTypeScript.setSelection(queryTypes.contains(DBCExecutionPurpose.USER_SCRIPT.name()));
         checkQueryTypeUtil.setSelection(queryTypes.contains(DBCExecutionPurpose.UTIL.name()));
         checkQueryTypeMeta.setSelection(queryTypes.contains(DBCExecutionPurpose.META.name()));
         checkQueryTypeDDL.setSelection(queryTypes.contains(DBCExecutionPurpose.META_DDL.name()));
+    }
 
-        textHistoryDays.setText(store.getString(QMConstants.PROP_HISTORY_DAYS));
+    @Override
+    protected void performDefaults() {
+        Collection<QMObjectType> objectTypes = Arrays.asList(QMObjectType.txn, QMObjectType.query);
+        Collection<String> queryTypes = Arrays.asList(
+            DBCExecutionPurpose.USER.name(),
+            DBCExecutionPurpose.USER_FILTERED.name(),
+            DBCExecutionPurpose.USER_SCRIPT.name());
 
-        checkStoreLog.setSelection(store.getBoolean(QMConstants.PROP_STORE_LOG_FILE));
-        textOutputFolder.setText(store.getString(QMConstants.PROP_LOG_DIRECTORY));
+        checkObjectTypes(objectTypes);
+        checkQueryTypes(queryTypes);
+
+        textHistoryDays.setText("90");
+
+        checkStoreLog.setSelection(false);
+        textOutputFolder.setText(GeneralUtils.getMetadataFolder().toAbsolutePath().toString());
         UIUtils.enableWithChildren(textOutputFolder.getParent(), checkStoreLog.getSelection());
         UIUtils.enableWithChildren(textHistoryDays, checkStoreLog.getSelection());
 

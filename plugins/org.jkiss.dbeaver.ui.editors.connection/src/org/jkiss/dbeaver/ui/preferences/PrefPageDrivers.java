@@ -143,18 +143,13 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
             tip.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
         }
 
-        performDefaults();
+        setValues();
 
         return composite;
     }
 
-    @Override
-    protected void performDefaults()
-    {
+    private void setValues() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-
-        versionUpdateCheck.setSelection(store.getBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE));
-
         proxyHostText.setText(store.getString(ModelPreferences.UI_PROXY_HOST));
         proxyPortSpinner.setSelection(store.getInt(ModelPreferences.UI_PROXY_PORT));
         proxyUserText.setText(store.getString(ModelPreferences.UI_PROXY_USER));
@@ -168,6 +163,22 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
             }
         }
         proxyPasswordText.setText(passwordString);
+        customDriversHome.setText(store.getString(ModelPreferences.UI_DRIVERS_HOME));
+
+        sourceList.removeAll();
+        for (String source : DriverDescriptor.getDriversSources()) {
+            sourceList.add(source);
+        }
+    }
+
+    @Override
+    protected void performDefaults() {
+        versionUpdateCheck.setSelection(false);
+
+        proxyHostText.setText("");
+        proxyPortSpinner.setSelection(1080);
+        proxyUserText.setText("");
+        proxyPasswordText.setText("");
         customDriversHome.setText(DriverDescriptor.getCustomDriversHome().toAbsolutePath().toString());
 
         sourceList.removeAll();

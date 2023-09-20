@@ -165,16 +165,13 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
             booleanNullPanel = new BooleanPanel(group, BooleanState.NULL);
         }
 
-        performDefaults();
+        setValues();
 
         return composite;
     }
 
-    @Override
-    protected void performDefaults()
-    {
+    private void setValues() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-
         keepEditorsOnRestart.setSelection(store.getBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS));
         keepEditorsOnDisconnect.setSelection(store.getBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS_ON_DISCONNECT));
         refreshEditorOnOpen.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN));
@@ -184,6 +181,19 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
         syncEditorDataSourceWithNavigator.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
 
         notifyBooleanStylesChanged(BooleanStyleSet.getDefaultStyles(store));
+    }
+
+    @Override
+    protected void performDefaults() {
+        keepEditorsOnRestart.setSelection(true);
+        keepEditorsOnDisconnect.setSelection(true);
+        refreshEditorOnOpen.setSelection(false);
+        editorFullName.setSelection(false);
+        showTableGrid.setSelection(true);
+        showPreviewOnSave.setSelection(true);
+        syncEditorDataSourceWithNavigator.setSelection(false);
+
+        notifyBooleanStylesChanged(BooleanStyleSet.getDefaultStyleSet());
     }
 
     @Override

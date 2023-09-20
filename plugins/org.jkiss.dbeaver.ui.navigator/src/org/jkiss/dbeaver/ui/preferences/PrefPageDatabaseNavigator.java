@@ -147,14 +147,12 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             restoreStateDepthText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         }
 
-        performDefaults();
+        setValue();
 
         return composite;
     }
 
-    @Override
-    protected void performDefaults()
-    {
+    private void setValue() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         expandOnConnectCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_EXPAND_ON_CONNECT));
@@ -193,6 +191,29 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
                 defaultEditorPageCombo.select(defaultEditorPageCombo.getItemCount() - 1);
             }
         }
+    }
+
+    @Override
+    protected void performDefaults() {
+        expandOnConnectCheck.setSelection(false);
+        restoreFilterCheck.setSelection(false);
+        restoreStateDepthText.setText("0");
+        showObjectTipsCheck.setSelection(true);
+        showToolTipsCheck.setSelection(true);
+        showContentsInToolTipsContents.setSelection(false);
+        sortCaseInsensitiveCheck.setSelection(false);
+        sortFoldersFirstCheck.setSelection(true);
+        showConnectionHostCheck.setSelection(true);
+        showObjectsDescriptionCheck.setSelection(false);
+        showStatisticsCheck.setSelection(true);
+        showNodeActionsCheck.setSelection(true);
+        colorAllNodesCheck.setSelection(false);
+        showResourceFolderPlaceholdersCheck.setSelection(true);
+        groupByDriverCheck.setSelection(false);
+        longListFetchSizeText.setText("5000");
+        objDoubleClickBehavior.select(NavigatorPreferences.DoubleClickBehavior.EDIT.ordinal());
+        dsDoubleClickBehavior.select(NavigatorPreferences.DoubleClickBehavior.EXPAND.ordinal());
+        defaultEditorPageCombo.select(0);
     }
 
     @Override

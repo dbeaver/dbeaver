@@ -185,14 +185,12 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             ));
         }
 
-        performDefaults();
+        setValue();
 
         return composite;
     }
 
-    @Override
-    protected void performDefaults()
-    {
+    private void setValue() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         if (isStandalone) {
@@ -209,6 +207,20 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             } else {
                 clientTimezone.setText(TimezoneRegistry.getGMTString(timezone));
             }
+        }
+    }
+
+    @Override
+    protected void performDefaults() {
+        if (isStandalone) {
+            automaticUpdateCheck.setSelection(true);
+        }
+        if (isWindowsDesktopClient()) {
+            SWTBrowserRegistry.getActiveBrowser();
+            browserCombo.select(SWTBrowserRegistry.getDefaultBrowser().ordinal());
+        }
+        if (clientTimezone != null) {
+            clientTimezone.setText(DBConstants.DEFAULT_TIMEZONE);
         }
     }
 

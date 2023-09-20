@@ -26,6 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.LogOutputStream;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -36,6 +37,8 @@ import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
+
+import java.io.File;
 
 /**
  * PrefPageErrorHandle
@@ -99,13 +102,12 @@ public class PrefPageErrorLogs extends AbstractPrefPage implements IWorkbenchPre
             tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false , 2, 1));
         }
 
-        performDefaults();
+        setValues();
 
         return composite;
     }
 
-    @Override
-    protected void performDefaults() {
+    private void setValues() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         logsDebugEnabled.setSelection(store.getBoolean(DBeaverPreferences.LOGS_DEBUG_ENABLED));
@@ -116,6 +118,16 @@ public class PrefPageErrorLogs extends AbstractPrefPage implements IWorkbenchPre
 
         int debugLogFilesMaxCount = DBWorkbench.getPlatform().getPreferenceStore().getInt(LogOutputStream.LOGS_MAX_FILES_COUNT);
         logFilesMaxCountSpinner.setSelection(debugLogFilesMaxCount);
+    }
+
+    @Override
+    protected void performDefaults() {
+        logsDebugEnabled.setSelection(true);
+        logsDebugLocation.setText("${" + SystemVariablesResolver.VAR_WORKSPACE + "}" +
+            File.separator + ".metadata" + File.separator + DBConstants.DEBUG_LOG_FILE_NAME);
+
+        logFilesMaxSizeSpinner.setSelection((int) (LogOutputStream.DEFAULT_MAX_LOG_SIZE / 1024));
+        logFilesMaxCountSpinner.setSelection(LogOutputStream.DEFAULT_MAX_LOG_FILES_COUNT);
 
         super.performDefaults();
     }

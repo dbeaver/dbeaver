@@ -410,10 +410,13 @@ public class PrefPageDataFormat extends TargetPrefPage
 
     @Override
     protected void performDefaults() {
-        DBPPreferenceStore targetPreferenceStore = getTargetPreferenceStore();
-        clearPreferences(targetPreferenceStore);
         formatterProfile = null;
-        loadPreferences(targetPreferenceStore);
+        refreshProfileList();
+        setCurrentProfile(getDefaultProfile());
+        datetimeNativeFormatCheck.setSelection(false);
+        numericNativeFormatCheck.setSelection(false);
+        numericScientificFormatCheck.setSelection(false);
+        numericScientificFormatCheck.setEnabled(false);
         reloadSample();
         super.performDefaults();
     }

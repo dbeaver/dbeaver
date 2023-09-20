@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.gis.GisConstants;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
@@ -67,10 +68,9 @@ public class PrefPageGIS extends AbstractPrefPage implements IWorkbenchPreferenc
 
     @Override
     protected void performDefaults() {
-        final DBPPreferenceStore preferences = GISViewerActivator.getDefault().getPreferences();
-        defaultSridText.setText(preferences.getDefaultString(GeometryViewerConstants.PREF_DEFAULT_SRID));
-        maxObjectsText.setText(preferences.getDefaultString(GeometryViewerConstants.PREF_MAX_OBJECTS_RENDER));
-        minZoomLevelSpinner.setSelection(preferences.getDefaultInt(GeometryViewerConstants.PREF_MIN_ZOOM_LEVEL));
+        defaultSridText.setText(CommonUtils.toString(GisConstants.SRID_4326));
+        maxObjectsText.setText(CommonUtils.toString(GeometryViewerConstants.DEFAULT_MAX_OBJECTS_RENDER));
+        minZoomLevelSpinner.setSelection(GeometryViewerConstants.DEFAULT_MAX_ZOOM_LEVEL);
     }
 
     @Override

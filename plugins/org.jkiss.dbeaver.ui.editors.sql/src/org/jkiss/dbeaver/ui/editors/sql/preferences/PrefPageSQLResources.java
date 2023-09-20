@@ -35,6 +35,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
@@ -45,7 +46,6 @@ import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.*;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -220,30 +220,19 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
             }
         }
 
-        performDefaults();
+        setValues();
 
         return composite;
     }
 
-    @Override
-    protected void performDefaults()
-    {
+    private void setValues() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         bindEmbeddedReadCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ));
         bindEmbeddedWriteCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_WRITE));
-        try {
-            SQLScriptBindingType bindingType = SQLScriptBindingType.valueOf(store.getString(SQLPreferenceConstants.SCRIPT_BIND_COMMENT_TYPE));
-            for (Control ch : commentTypeComposite.getChildren()) {
-                if (ch instanceof Button && ch.getData() == bindingType) {
-                    ((Button) ch).setSelection(true);
-                }
-            }
-        } catch (IllegalArgumentException e) {
-            log.error(e);
-        }
-        enableCommentType();
 
+        setScriptBindingTypes(SQLScriptBindingType.valueOf(store.getString(SQLPreferenceConstants.SCRIPT_BIND_COMMENT_TYPE)));
+        enableCommentType();
         deleteEmptyCombo.setText(SQLPreferenceConstants.EmptyScriptCloseBehavior.getByName(
             store.getString(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY)).getTitle());
         autoFoldersCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS));
@@ -255,6 +244,37 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
         );
         setSQLTemplateText(SQLEditorUtils.getNewScriptTemplate(store), false);
         sqlTemplateEnabledCheckbox.setSelection(store.getBoolean(SQLPreferenceConstants.NEW_SCRIPT_TEMPLATE_ENABLED));
+        UIUtils.enableWithChildren(sqlTemplateViewerComposite, sqlTemplateEnabledCheckbox.getSelection());
+    }
+
+    private void setScriptBindingTypes(SQLScriptBindingType bindingType) {
+        try {
+            for (Control ch : commentTypeComposite.getChildren()) {
+                if (ch instanceof Button && ch.getData() == bindingType) {
+                    ((Button) ch).setSelection(true);
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            log.error(e);
+        }
+    }
+
+    @Override
+    protected void performDefaults() {
+        bindEmbeddedReadCheck.setSelection(true);
+        bindEmbeddedWriteCheck.setSelection(false);
+        setScriptBindingTypes(SQLScriptBindingType.NAME);
+        enableCommentType();
+
+        deleteEmptyCombo.setText(SQLPreferenceConstants.EmptyScriptCloseBehavior.DELETE_NEW.name());
+        autoFoldersCheck.setSelection(false);
+        connectionFoldersCheck.setSelection(false);
+        scriptTitlePattern.setText(SQLEditor.DEFAULT_TITLE_PATTERN);
+        scriptFileNamePattern.setText(SQLEditor.DEFAULT_SCRIPT_FILE_NAME);
+        bigScriptFileSizeBoundarySpinner.setSelection((int) (SQLEditor.MAX_FILE_LENGTH_FOR_RULES / 1024));
+        setSQLTemplateText(
+            SQLUtils.generateCommentLine(null, SQLEditorMessages.pref_page_sql_editor_new_script_template_template), false);
+        sqlTemplateEnabledCheckbox.setSelection(false);
         UIUtils.enableWithChildren(sqlTemplateViewerComposite, sqlTemplateEnabledCheckbox.getSelection());
 
         super.performDefaults();
