@@ -19,6 +19,7 @@ Export-Package: org.jkiss.dbeaver.ext.yashandb,
  org.jkiss.dbeaver.ext.yashandb.data,
  org.jkiss.dbeaver.ext.yashandb.model,
  org.jkiss.dbeaver.ext.yashandb.model.session,
+ org.jkiss.dbeaver.ext.yashandb.model.lock,
  org.jkiss.dbeaver.ext.yashandb.model.source,
  org.jkiss.dbeaver.ext.yashandb.model.plan,
  org.jkiss.dbeaver.ext.yashandb.tasks

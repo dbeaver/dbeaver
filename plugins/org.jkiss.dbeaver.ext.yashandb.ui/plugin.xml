@@ -49,12 +49,23 @@
                 id="org.jkiss.dbeaver.ext.yashandb.ui.editors.YashanDBSessionEditor"
                 contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
         </editor>
+        <editor
+                name="Lock Manager"
+                icon="#locked"
+                class="org.jkiss.dbeaver.ext.yashandb.ui.editors.YashanDBLockEditor"
+                id="org.jkiss.dbeaver.ext.yashandb.ui.editors.YashanDBLockEditor">
+        </editor>
+
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <editorContribution editorId="org.jkiss.dbeaver.ext.yashandb.ui.editors.YashanDBSessionEditor" category="connectionEditor" label="Sessions" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
             <supports dataSource="yashandb"/>
         </editorContribution>
+        <editorContribution editorId="org.jkiss.dbeaver.ext.yashandb.ui.editors.YashanDBLockEditor" category="connectionEditor" label="%editor.lock_manager.name" icon="#locked">-->
+            <supports dataSource="yashandb"/>
+        </editorContribution>
+
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceView">
