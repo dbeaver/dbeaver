@@ -314,6 +314,27 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
             .toArray();
     }
 
+    private void readNewEnumValues(DBRProgressMonitor monitor) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Refresh enum values")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT e.enumlabel \n" +
+                    "FROM pg_catalog.pg_enum e\n" +
+                    "WHERE e.enumtypid=?\n" +
+                    "ORDER BY e.enumsortorder")) {
+                dbStat.setLong(1, getObjectId());
+                try (JDBCResultSet rs = dbStat.executeQuery()) {
+                    List<String> values = new ArrayList<>();
+                    while (rs.nextRow()) {
+                        values.add(JDBCUtils.safeGetString(rs, 1));
+                    }
+                    enumValues = values.toArray();
+                }
+            } catch (SQLException e) {
+                throw new DBException("Error reading enum values", e, getDataSource());
+            }
+        }
+    }
+
     public static String[] getOidTypes() {
       return OID_TYPES;
     }
@@ -627,9 +648,13 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
 
     @Property(viewable = true, order = 16, visibleIf = EnumTypeValidator.class)
     public Object[] getEnumValues(DBRProgressMonitor monitor) {
-        if (typeCategory == PostgreTypeCategory.E && enumValues == null) {
+        if (typeCategory == PostgreTypeCategory.E && ArrayUtils.isEmpty(enumValues)) {
             try {
                 readEnumValues(monitor);
+                if (ArrayUtils.isEmpty(enumValues)) {
+                    // Probably new objects not cached yet. Let's read them.
+                    readNewEnumValues(monitor);
+                }
             } catch (DBException e) {
                 log.error("Can't read enum values of type " + getFullTypeName());
                 enumValues = new Object[]{0};
