@@ -41,7 +41,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * ERDPreferencePage
@@ -106,7 +105,9 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         notationType = UIUtils.createLabelCombo(contentsGroup, ERDUIMessages.erd_preference_page_title_notation_combo,
             SWT.DROP_DOWN | SWT.READ_ONLY);
         List<ERDNotationDescriptor> erdNotations = ERDNotationRegistry.getInstance().getERDNotations();
-        erdNotations.stream().forEach(c -> notationType.add(c.getName()));
+        for (ERDNotationDescriptor notation : erdNotations) {
+            notationType.add(notation.getName());
+        }
         ERDNotationDescriptor notation = ERDNotationRegistry.getInstance().getNotation(store.getString(ERDUIConstants.PREF_NOTATION_TYPE));
         if (notation != null) {
             notationType.select(erdNotations.indexOf(notation));
@@ -217,8 +218,10 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         store.setValue(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS, contentsShowViews.getSelection());
         store.setValue(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS, contentsShowPartitions.getSelection());
         store.setValue(ERDUIConstants.PREF_ROUTING_TYPE, routingType.getText());
-        Optional<ERDNotationDescriptor> erdNotation = ERDNotationRegistry.getInstance().getERDNotationByName(notationType.getText());
-        erdNotation.ifPresent(d -> store.setValue(ERDUIConstants.PREF_NOTATION_TYPE, d.getId()));
+        ERDNotationDescriptor erdNotation = ERDNotationRegistry.getInstance().getERDNotationByName(notationType.getText());
+        if (erdNotation != null) {
+            store.setValue(ERDUIConstants.PREF_NOTATION_TYPE, erdNotation.getId());
+        }
         store.setValue(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS, changeBorderColors.getSelection());
         store.setValue(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS, changeHeaderColors.getSelection());
 

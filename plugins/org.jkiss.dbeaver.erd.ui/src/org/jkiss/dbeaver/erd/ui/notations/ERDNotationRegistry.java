@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.Log;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ERDNotationRegistry {
@@ -110,9 +109,15 @@ public class ERDNotationRegistry {
      * Return notation from registry by name
      *
      * @param name - notation name
-     * @return - Optional ERDNotationDescriptor
+     * @return - ERDNotationDescriptor
      */
-    public Optional<ERDNotationDescriptor> getERDNotationByName(String name) {
-        return notations.values().stream().filter(p -> p.getName().equals(name)).findFirst();
+    @Nullable
+    public ERDNotationDescriptor getERDNotationByName(String name) {
+        for (ERDNotationDescriptor descriptor : notations.values()) {
+            if (descriptor.getName().equals(name)) {
+                return descriptor;
+            }
+        }
+        return null;
     }
 }

@@ -58,7 +58,7 @@ import java.util.List;
  * @author Serge Rider
  */
 public class AssociationPart extends PropertyAwareConnectionPart {
-    Log log = Log.getLog(this.getClass());
+    private static final Log log = Log.getLog(AssociationPart.class);
     // Keep original line width to visualize selection
     private Integer oldLineWidth;
 
