@@ -29,7 +29,7 @@ public class MaterializeSchemaCache extends PostgreDatabase.SchemaCache {
     protected MaterializeSchema fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner,
             @NotNull JDBCResultSet resultSet) throws SQLException {
         String name = JDBCUtils.safeGetString(resultSet, "nspname");
-       if (name == null) {
+        if (name == null) {
             return null;
         }
         if (MaterializeSchema.isUtilitySchema(name) && !owner.getDataSource().getContainer().getNavigatorSettings().isShowUtilityObjects()) {
