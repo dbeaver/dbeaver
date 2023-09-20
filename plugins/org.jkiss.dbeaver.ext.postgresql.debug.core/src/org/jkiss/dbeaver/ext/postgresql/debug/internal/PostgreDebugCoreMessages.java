@@ -27,6 +27,10 @@ public class PostgreDebugCoreMessages extends NLS {
 
     public static String PostgreSqlDebugCore_e_procedure_required;
     public static String PostgreSqlDebugCore_launch_configuration_name;
+
+    public static String PostgreSqlDebugCore_parameter_type_not_fit_message;
+    public static String PostgreSqlDebugCore_parameters_not_set_message;
+    
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, PostgreDebugCoreMessages.class);
