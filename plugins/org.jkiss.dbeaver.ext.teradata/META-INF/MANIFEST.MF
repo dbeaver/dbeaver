@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Teradata Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.teradata;singleton:=true
-Bundle-Version: 1.0.181.qualifier
+Bundle-Version: 1.0.182.qualifier
 Bundle-Release-Date: 20230904
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic
