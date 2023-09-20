@@ -4122,6 +4122,7 @@ public class ResultSetViewer extends Viewer
     @NotNull
     public String getActiveQueryText() {
         DBCStatistics statistics = getModel().getStatistics();
+        statistics.setQueryText(getModel().getAttribute(0).getDataContainer().getName());
         String queryText = statistics == null ? null : statistics.getQueryText();
         if (queryText == null || queryText.isEmpty()) {
             DBSDataContainer dataContainer = getDataContainer();
