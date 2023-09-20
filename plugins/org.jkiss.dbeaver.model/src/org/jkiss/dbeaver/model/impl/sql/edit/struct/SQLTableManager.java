@@ -64,7 +64,11 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     protected String beginCreateTableStatement(DBRProgressMonitor monitor, OBJECT_TYPE table, String tableName, Map<String, Object> options) throws DBException {
         return "CREATE " + getCreateTableType(table) + " " + tableName + " (" + GeneralUtils.getDefaultLineSeparator(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
-    
+
+    protected String endCreateTableStatement(DBRProgressMonitor monitor, OBJECT_TYPE table, String tableName, Map<String, Object> options) throws DBException {
+        return "";
+    }
+
     protected boolean hasAttrDeclarations(OBJECT_TYPE table) {
         return true;
     }
@@ -152,7 +156,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
             createQuery = new StringBuilder().append(createQuery.substring(0, createQuery.length()-2));
             createQuery.append("\n)");
         }
-        
+        createQuery.append(endCreateTableStatement(monitor, table, tableName, options));
         actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, createQuery.toString()) );
     }
 

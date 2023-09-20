@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -60,7 +61,9 @@ public class  YashanDBTable extends YashanDBTablePhysical implements DBPScriptOb
     // the priorities of table that will be showed on right UI.
     private String shardedKey;
     private String tableType;
+    private String editTableType;
     private boolean temporary;
+    private boolean editTemporary;
     private boolean secondary;
     private boolean sharded;
     private transient volatile Long tableSize;
@@ -134,9 +137,18 @@ public class  YashanDBTable extends YashanDBTablePhysical implements DBPScriptOb
     /**
      * viewable equals false, this priority will not be showed in right UI.
      */
-    @Property(viewable = true, order = 10)
+    @Property(viewable = true, visibleIf = ListTablePropertyValidator.class, order = 10)
     public boolean isTemporary() {
         return temporary;
+    }
+
+    @Property(viewable = true, editable = true, updatable = false, visibleIf = EditTablePropertyValidator.class, order = 11)
+    public boolean isEditTemporary() {
+        return editTemporary;
+    }
+
+    public void setEditTemporary(boolean editTemporary) {
+        this.editTemporary = editTemporary;
     }
 
     @Property(hidden = true, order = 11)
@@ -162,9 +174,34 @@ public class  YashanDBTable extends YashanDBTablePhysical implements DBPScriptOb
         return false;
     }
 
-    @Property(viewable = true, length = PropertyLength.TINY, order = 5)
+    @Property(viewable = true, visibleIf = ListTablePropertyValidator.class  , length = PropertyLength.TINY, order = 5)
     public String getTableType() {
         return this.tableType;
+    }
+
+    @Property(viewable = true, editable = true, updatable = false, length = PropertyLength.MULTILINE, visibleIf = EditTablePropertyValidator.class, listProvider = TableTypeListProvider.class, order = 6)
+    public String getEditTableType() {
+        return editTableType;
+    }
+
+    public void setEditTableType(String editTableType) {
+        this.editTableType = editTableType;
+    }
+
+    public static class TableTypeListProvider implements IPropertyValueListProvider<YashanDBTable> {
+
+        @Override
+        public boolean allowCustomValue() {
+            return false;
+        }
+
+        @Override
+        public Object[] getPossibleValues(YashanDBTable object) {
+            if(object.isEditTemporary()){
+                return List.of( "HEAP").toArray(new String[0]);
+            }
+            return (object.getDataSource().isDistributed() ? List.of("LSC") : List.of("HEAP", "LSC")).toArray(new String[0]);
+        }
     }
 
     @Property(viewable = false, hidden = true, visibleIf = LSCTablePropertyValidator.class, order = 6)
@@ -442,4 +479,17 @@ public class  YashanDBTable extends YashanDBTablePhysical implements DBPScriptOb
         }
     }
 
+    public static class ListTablePropertyValidator implements IPropertyValueValidator<YashanDBTable, Object> {
+        @Override
+        public boolean isValidValue(YashanDBTable object, Object value) throws IllegalArgumentException {
+            return object.getTableType() != null && !object.getDataSource().isDistributed();
+        }
+    }
+
+    public static class EditTablePropertyValidator implements IPropertyValueValidator<YashanDBTable, Object> {
+        @Override
+        public boolean isValidValue(YashanDBTable object, Object value) throws IllegalArgumentException {
+            return object.getTableType() == null && !object.getDataSource().isDistributed();
+        }
+    }
 }
