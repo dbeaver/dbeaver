@@ -435,10 +435,10 @@ public class PostgreSchema implements
     }
 
     private void resetPartitionsInheritance(DBRProgressMonitor monitor) throws DBException {
-        List<PostgreTable> partitions = getTableCache().getTypedObjects(monitor, this, PostgreTable.class).stream()
-            .filter(PostgreTableBase::isPartition).collect(Collectors.toList());
-        for (PostgreTable partition : partitions) {
-            partition.resetSuperInheritance();
+        for (PostgreTable table : getTableCache().getTypedObjects(monitor, this, PostgreTable.class)) {
+            if (table.isPartition()) {
+                table.resetSuperInheritance();
+            }
         }
     }
 
