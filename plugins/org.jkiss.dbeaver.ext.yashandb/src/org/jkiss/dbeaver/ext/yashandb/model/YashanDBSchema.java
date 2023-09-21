@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -67,6 +68,7 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
     private volatile boolean hasStatistics;
     final public DataTypeCache dataTypeCache = new DataTypeCache();
     final public TriggerCache triggerCache = new TriggerCache();
+    final public SortKeyCache sortKeyCache = new SortKeyCache();
     final public TableTriggerCache tableTriggerCache = new TableTriggerCache();
     final public SequenceCache sequenceCache = new SequenceCache();
     final public ForeignKeyCache foreignKeyCache = new ForeignKeyCache();
@@ -742,6 +744,59 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
         }
     }
 
+    class SortKeyCache extends JDBCCompositeCache<YashanDBSchema, YashanDBTableBase, YashanDBTableSortKey, YashanDBTableSortKeyColumn>{
+
+        protected SortKeyCache() {
+            super(tableCache, YashanDBTableBase.class, "TABLE_NAME", "COLUMN_NAME");
+        }
+
+        protected SortKeyCache(JDBCStructCache<YashanDBSchema, ?, ?> parentCache, Class<YashanDBTableBase> parentType, Object parentColumnName, Object objectColumnName) {
+            super(parentCache, parentType, parentColumnName, objectColumnName);
+        }
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, YashanDBSchema yashanDBSchema, YashanDBTableBase forParent) throws SQLException {
+            String sortKeySql = "SELECT OWNER, TABLE_NAME, COLUMN_NAME, COLUMN_POSITION FROM %s WHERE OWNER = ? AND TABLE_NAME = ?";
+            sortKeySql = String.format(sortKeySql, forParent.getDataSource().isAdmin() ? "DBA_SORT_KEY_COLUMNS" : "ALL_SORT_KEY_COLUMNS");
+            final JDBCPreparedStatement dbStmt = session.prepareStatement(sortKeySql);
+            dbStmt.setString(1, forParent.getSchema().getName());
+            dbStmt.setString(2, forParent.getName());
+            return dbStmt;
+        }
+
+        @Override
+        protected YashanDBTableSortKey fetchObject(JDBCSession session, YashanDBSchema yashanDBSchema, YashanDBTableBase yashanDBTableBase, String childName, JDBCResultSet resultSet) throws SQLException, DBException {
+            return new YashanDBTableSortKey(yashanDBTableBase, resultSet);
+        }
+
+        @Override
+        protected YashanDBTableSortKeyColumn[] fetchObjectRow(JDBCSession session, YashanDBTableBase table, YashanDBTableSortKey forObject, JDBCResultSet resultSet) throws SQLException, DBException {
+            final YashanDBTableBase refTable = YashanDBTableBase.findTable(
+                    session.getProgressMonitor(),
+                    table.getDataSource(),
+                    JDBCUtils.safeGetString(resultSet, "TABLE_OWNER"),
+                    JDBCUtils.safeGetString(resultSet, "TABLE_NAME")
+            );
+            if (refTable != null) {
+                final String columnName = JDBCUtils.safeGetString(resultSet, "COLUMN_NAME");
+                assert columnName != null;
+                final YashanDBTableColumn tableColumn = refTable.getAttribute(session.getProgressMonitor(), columnName);
+                if(tableColumn != null){
+                    return new YashanDBTableSortKeyColumn[]{
+                            new YashanDBTableSortKeyColumn(session.getProgressMonitor(), forObject, tableColumn, resultSet)
+                    };
+                }
+            }
+            return new YashanDBTableSortKeyColumn[]{};
+        }
+
+        @Override
+        protected void cacheChildren(DBRProgressMonitor monitor, YashanDBTableSortKey object, List<YashanDBTableSortKeyColumn> children) {
+            object.setColumns(children);
+        }
+    }
+
+
     /**
      * TableTrigger cache implementation.
      */
@@ -1175,6 +1230,7 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
         indexCache.clearCache();
         foreignKeyCache.clearCache();
         triggerCache.clearCache();
+        sortKeyCache.clearCache();
         tableTriggerCache.clearCache();
         schemaDBLinkCache.clearCache();
         sequenceCache.clearCache();

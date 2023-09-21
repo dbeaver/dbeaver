@@ -246,7 +246,13 @@ public abstract class YashanDBTableBase extends JDBCTable<YashanDBDataSource, Ya
     public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
         getContainer().constraintCache.clearObjectCache(this);
         getContainer().tableTriggerCache.clearObjectCache(this);
+        getContainer().sortKeyCache.clearObjectCache(this);
         return getContainer().tableCache.refreshObject(monitor, getContainer(), this);
+    }
+
+    @Association
+    public Collection<YashanDBTableSortKey> getSortKeys(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getContainer().sortKeyCache.getObjects(monitor, getContainer(), this);
     }
 
     @Nullable

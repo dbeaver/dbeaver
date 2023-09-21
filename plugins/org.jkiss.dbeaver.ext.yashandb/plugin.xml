@@ -26,6 +26,13 @@
                                            icon="#column">
                                     </items>
                                 </folder>
+                                <folder type="org.jkiss.dbeaver.ext.yashandb.model.YashanDBTableSortKey"
+                                        label="%tree.sort_keys.node.name" icon="#foreign-keys"
+                                        description="Table sort keys">
+                                    <items label="%tree.sort_key.node.name" path="sortKey"
+                                           property="sortKeys" icon="#foreign-key">
+                                    </items>
+                                </folder>
                                 <folder type="org.jkiss.dbeaver.ext.yashandb.model.YashanDBTableConstraint"
                                         label="%tree.constraints.node.name" icon="#constraints"
                                         description="Table constraints">
