@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
+import org.jkiss.dbeaver.model.sql.DBSQLException;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
@@ -236,6 +237,11 @@ public class DesktopUI implements DBPPlatformUI {
 
     @Override
     public UserResponse showError(@Nullable String title, @Nullable String message, @NotNull Throwable error) {
+        String errorMsg=error.toString();
+        if(error instanceof DBSQLException &&errorMsg.contains("YAS-04253 PL/SQL compiling errors")&&errorMsg.contains("YAS-05329 no attributes found in object type")){
+            title="Warning:unusable customized type";
+            message="Type has been created successfully, but cannot be used!";
+        }
         return showError(title, message, GeneralUtils.makeExceptionStatus(error));
     }
 
