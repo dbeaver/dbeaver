@@ -562,9 +562,8 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull YashanDBDataSource owner)
                 throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT * FROM " + YashanDBUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "DB_LINKS") + //" WHERE OWNER=? " +
+                    "SELECT * FROM " + YashanDBUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "DB_LINKS") + " WHERE OWNER= 'PUBLIC'" +
                             " ORDER BY DB_LINK");
-//            dbStat.setString(1, owner.getName());
             return dbStat;
         }
 
