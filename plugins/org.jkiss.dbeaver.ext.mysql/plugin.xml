@@ -338,6 +338,8 @@
 
             <datasource id="mysql"/>
             <type name="FLOAT"/>
+            <type name="DOUBLE"/>
+            <type name="DOUBLE PRECISION"/>
             <type name="ENUM"/>
             <type name="SET"/>
             <type standard="DATE"/>
