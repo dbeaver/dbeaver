@@ -48,21 +48,19 @@ public class YashanDBSynonym extends YashanDBSchemaObject implements DBSAlias, D
 
     @NotNull
     @Override
-    @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
+    @Property(viewable = true, editable = true,valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     public String getName() {
         return super.getName();
     }
 
 
 
-    @Property(viewable = true,editable = true, order = 2)
+    @Property(viewable = true,editable = true,updatable = true, order = 2)
     public String getObjectOwner() {
-//        final YashanDBSchema schema = getDataSource().schemaCache.getCachedObject(objectOwner);
-//        return schema == null ? objectOwner : schema;
         return objectOwner;
     }
 
-    @Property(viewable = true,editable = true, order = 3)
+    @Property(viewable = true,editable = true, order = 3,updatable = true)
     public String getObjectName() {
         return objectName;
     }
@@ -136,7 +134,7 @@ public class YashanDBSynonym extends YashanDBSchemaObject implements DBSAlias, D
 
     public String buildStatement(){
         StringBuffer stmt=new StringBuffer();
-        stmt.append("CREATE ");
+        stmt.append("CREATE OR REPLACE ");
         if(isPublic) {
             stmt.append("PUBLIC SYNONYM ").append(getName()).append(" ");
         }else {

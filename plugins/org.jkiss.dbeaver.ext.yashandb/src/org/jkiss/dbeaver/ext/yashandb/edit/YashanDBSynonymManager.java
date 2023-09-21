@@ -53,15 +53,19 @@ public class YashanDBSynonymManager extends SQLObjectEditor<YashanDBSynonym, Yas
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         String sql = command.getObject().buildStatement();
         actions.add(new SQLDatabasePersistAction("Create Synonym", sql));
-
     }
 
 
     @Override
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
-        String sql = "DROP "+(command.getObject().getIsPublic()?"PUBLIC":"")+ " SYNONYM " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL);
+        String sql = "DROP " + (command.getObject().getIsPublic() ? "PUBLIC" : "") + " SYNONYM " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL);
         DBEPersistAction action = new SQLDatabasePersistAction("Drop Synonym", sql);
         actions.add(action);
     }
 
+    @Override
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, SQLObjectEditor<YashanDBSynonym, YashanDBSchema>.ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+        String sql = command.getObject().buildStatement();
+        actions.add(new SQLDatabasePersistAction("Modify Synonym", sql));
+    }
 }
