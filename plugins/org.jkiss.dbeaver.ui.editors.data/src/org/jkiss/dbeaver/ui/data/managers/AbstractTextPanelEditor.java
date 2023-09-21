@@ -320,14 +320,14 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
             return;
         }
         try {
-            int maxContentSize = DBWorkbench.getPlatform().getPreferenceStore().getInt(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE) * 1000;
+            int maxContentLength = DBWorkbench.getPlatform().getPreferenceStore().getInt(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE) * 1000;
             if (editor == null) {
                 log.error("Editor is null or undefined");
                 return;
             }
             resetEditorInput();
-            if (value.getContentLength() > maxContentSize) {
-                showRestrictedContent(value);
+            if (value.getContentLength() > maxContentLength) {
+                showLimitedContent(value, maxContentLength);
             } else {
                 showRegularContent(monitor);
             }
@@ -381,16 +381,15 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         });
     }
 
-    private void showRestrictedContent(@NotNull DBDContent value) throws DBCException, IOException {
-        int maxContentSize = DBWorkbench.getPlatform().getPreferenceStore().getInt(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE);
+    private void showLimitedContent(@NotNull DBDContent value, int lengthInBytes) throws DBCException, IOException {
         DBDContentStorage contents = value.getContents(new VoidProgressMonitor());
         try (final InputStream stream = contents.getContentStream()) {
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream((int) contents.getContentLength());
-            IOUtils.copyStream(stream, buffer);
-            byte[] displaingContentBytes = Arrays.copyOfRange(buffer.toByteArray(), 0, maxContentSize * 1000);
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream(lengthInBytes);
+            IOUtils.copyStream(stream, buffer, lengthInBytes);
+            byte[] displaingContentBytes = Arrays.copyOfRange(buffer.toByteArray(), 0, lengthInBytes);
             UIUtils.asyncExec(() -> {
                 if (editor != null) {
-                    String msg = NLS.bind(ResultSetMessages.panel_editor_text_content_limitation_lbl, maxContentSize);
+                    String msg = NLS.bind(ResultSetMessages.panel_editor_text_content_limitation_lbl, lengthInBytes);
                     editor.setInput(new StringEditorInput("Limited Content ", new String(displaingContentBytes), true,
                         StandardCharsets.UTF_8.name()));
                     messageBar.setForeground(UIStyles.getErrorTextForeground());
