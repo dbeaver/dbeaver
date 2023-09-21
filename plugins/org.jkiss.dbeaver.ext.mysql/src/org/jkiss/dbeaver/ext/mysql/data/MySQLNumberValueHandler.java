@@ -59,6 +59,11 @@ public class MySQLNumberValueHandler extends JDBCNumberValueHandler {
     }
 
     @Override
+    protected boolean isReadDecimalsAsDouble() {
+        return true;
+    }
+
+    @Override
     protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType,
                                  int paramIndex, Object value) throws SQLException, DBCException {
         if (value instanceof String) {

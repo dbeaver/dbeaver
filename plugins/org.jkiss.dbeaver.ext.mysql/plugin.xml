@@ -337,7 +337,7 @@
             label="MySQL data types provider">
 
             <datasource id="mysql"/>
-
+            <type name="FLOAT"/>
             <type name="ENUM"/>
             <type name="SET"/>
             <type standard="DATE"/>
