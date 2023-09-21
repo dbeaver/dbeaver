@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
@@ -78,7 +77,7 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
     final public JobCache jobCache = new JobCache();
     final public RecycleBin recycleBin = new RecycleBin();
     final public SchedulerJobCache schedulerJobCache = new SchedulerJobCache();
-//    final public DBLinkCache dbLinkCache = new DBLinkCache();
+    final public SchemaDBLinkCache schemaDBLinkCache = new SchemaDBLinkCache();
 
 
     private long id;
@@ -956,26 +955,26 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
 
     }
 
-//    static class DBLinkCache extends JDBCObjectCache<YashanDBSchema, YashanDBDBLink> {
-//
-//        @NotNull
-//        @Override
-//        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull YashanDBSchema owner)
-//                throws SQLException {
-//            JDBCPreparedStatement dbStat = session.prepareStatement(
-//                    "SELECT * FROM " + YashanDBUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "DB_LINKS") + //" WHERE OWNER=? " +
-//                            " ORDER BY DB_LINK");
-////            dbStat.setString(1, owner.getName());
-//            return dbStat;
-//        }
-//
-//        @Override
-//        protected YashanDBDBLink fetchObject(@NotNull JDBCSession session, @NotNull YashanDBSchema owner, @NotNull JDBCResultSet dbResult)
-//                throws SQLException, DBException {
-//            return new YashanDBDBLink(session.getProgressMonitor(), owner, dbResult);
-//        }
-//
-//    }
+    static class SchemaDBLinkCache extends JDBCObjectCache<YashanDBSchema, YashanDBSchemaDBLink> {
+
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull YashanDBSchema owner)
+                throws SQLException {
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT * FROM " + YashanDBUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "DB_LINKS") + " WHERE OWNER=? " +
+                            " ORDER BY DB_LINK");
+            dbStat.setString(1, owner.getName());
+            return dbStat;
+        }
+
+        @Override
+        protected YashanDBSchemaDBLink fetchObject(@NotNull JDBCSession session, @NotNull YashanDBSchema owner, @NotNull JDBCResultSet dbResult)
+                throws SQLException, DBException {
+            return new YashanDBSchemaDBLink(session.getProgressMonitor(), owner, dbResult);
+        }
+
+    }
 
 
     ////////////////////////////////////////////////////////////////////
@@ -1123,11 +1122,11 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
         return schedulerJobCache.getAllObjects(monitor, this);
     }
 
-//    @Association
-//    public Collection<YashanDBDBLink> getDatabaseLinks(DBRProgressMonitor monitor)
-//            throws DBException {
-//        return dbLinkCache.getAllObjects(monitor, this);
-//    }
+    @Association
+    public Collection<YashanDBSchemaDBLink> getDatabaseLinks(DBRProgressMonitor monitor)
+            throws DBException {
+        return schemaDBLinkCache.getAllObjects(monitor, this);
+    }
 
     //////////////////////////////////////////////////////////////
     private List<SpecialPosition> parsePositions(String value) {
@@ -1177,6 +1176,7 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
         foreignKeyCache.clearCache();
         triggerCache.clearCache();
         tableTriggerCache.clearCache();
+        schemaDBLinkCache.clearCache();
         sequenceCache.clearCache();
         proceduresCache.clearCache();
         packageCache.clearCache();
