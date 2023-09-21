@@ -934,6 +934,39 @@ public class UIUtils {
         return ph;
     }
 
+    /**
+     * Creates {@link ScrolledComposite} from the {@link Composite}
+     *
+     * @param parent composite parent
+     * @return ScrolledComposite
+     */
+    @NotNull
+    public static ScrolledComposite createScrolledComposite(@NotNull Composite parent) {
+        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL);
+        scrolledComposite.setLayout(new GridLayout(1, false));
+        scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        return scrolledComposite;
+    }
+
+    /**
+     * Configures created composite to detect resize and be appropriately sized with its contents
+     *
+     * @param scrolledComposite composite to configure
+     * @param content it's contents
+     */
+    public static void configureScrolledComposite(@NotNull ScrolledComposite scrolledComposite, @NotNull Control content) {
+        scrolledComposite.setContent(content);
+        scrolledComposite.setExpandHorizontal(true);
+        scrolledComposite.setExpandVertical(true);
+        scrolledComposite.addControlListener(new ControlAdapter() {
+            @Override
+            public void controlResized(ControlEvent e) {
+                scrolledComposite.setMinHeight(content.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+            }
+        });
+        scrolledComposite.setMinSize(content.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+    }
+
     public static Composite createPlaceholder(@NotNull Composite parent, int columns, int spacing) {
         Composite ph = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(columns, false);

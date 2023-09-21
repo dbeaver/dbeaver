@@ -36,7 +36,7 @@ public class SQLiteViewManager extends GenericViewManager {
         if (!command.hasProperty(DBConstants.PROP_ID_DESCRIPTION) || command.getProperties().size() > 1) {
             actions.add(new SQLDatabasePersistAction(
                 "Drop view",
-                "DROP " + getDropViewType(command.getObject()) + " " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)
+                "DROP " + getViewType(command.getObject()) + " " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)
             ));
         }
         super.addObjectModifyActions(monitor, executionContext, actions, command, options);

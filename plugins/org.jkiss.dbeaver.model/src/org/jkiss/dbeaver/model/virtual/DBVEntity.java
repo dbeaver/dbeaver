@@ -769,6 +769,11 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         public void close() throws Exception {
             // do nothing
         }
+
+        @Override
+        public List<DBDLabelValuePair> getValues(long offset, int pageSize) throws DBException {
+            return Collections.emptyList();
+        }
     };
 
     @NotNull
