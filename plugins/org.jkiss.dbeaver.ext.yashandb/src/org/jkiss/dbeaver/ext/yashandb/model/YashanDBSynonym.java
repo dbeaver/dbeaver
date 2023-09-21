@@ -57,8 +57,6 @@ public class YashanDBSynonym extends YashanDBSchemaObject implements DBSAlias, D
 
     @Property(viewable = true,editable = true,updatable = true, order = 2)
     public String getObjectOwner() {
-//        final YashanDBSchema schema = getDataSource().schemaCache.getCachedObject(objectOwner);
-//        return schema == null ? objectOwner : schema;
         return objectOwner;
     }
 
@@ -77,7 +75,7 @@ public class YashanDBSynonym extends YashanDBSchemaObject implements DBSAlias, D
         return isPublic;
     }
 
-    @Property(viewable = true,editable = true, linkPossible = true, order = 6,updatable = true)
+    @Property(viewable = true,editable = true, linkPossible = true, order = 6)
     public Object getObject(DBRProgressMonitor monitor) throws DBException {
         if (objectTypeName == null) {
             return null;
