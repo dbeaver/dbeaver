@@ -263,6 +263,29 @@ public class YashanDBUtils {
 
     }
 
+    public static boolean isYashanDBObject(Object object) {
+        if (object == null) {
+            return false;
+        }
+        String className = object.getClass().getName();
+        return className.equals(YashanDBConstants.YASHANDB_OBJECT_CLASS);
+    }
+
+    public static Object extractYashanDBObjectValue(Object object) {
+        if (object == null) {
+            return null;
+        }
+        if (!isYashanDBObject(object)) {
+            return object;
+        }
+        try {
+            return object.getClass().getMethod("getValue").invoke(object);
+        } catch (Exception e) {
+            log.debug("Can't extract value from " + object.getClass().getName(), e);
+        }
+        return null;
+    }
+
     public static boolean getObjectStatus(
             DBRProgressMonitor monitor,
             YashanDBStatefulObject object,

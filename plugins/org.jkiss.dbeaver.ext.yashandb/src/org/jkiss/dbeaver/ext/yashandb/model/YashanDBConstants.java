@@ -49,6 +49,8 @@ public class YashanDBConstants {
     public static final String PROP_METADATA_USE_SYS_SCHEMA = DBConstants.INTERNAL_PROP_PREFIX + "meta-use-sys-schema@";
     public static final String PROP_METADATA_USE_SIMPLE_CONSTRAINTS = DBConstants.INTERNAL_PROP_PREFIX + "meta-use-simple-constraints@";
     public static final String PROP_SEARCH_METADATA_IN_SYNONYMS = "yashan.meta-search-in-synonyms";
+    public static final String YASHANDB_OBJECT_CLASS = "com.yashandb.jdbc.YashanDBobject";
+    public static final String TYPE_GEOGRAPHY = "geography";
 
     public static final String USER_PUBLIC = "PUBLIC";
     public static final String YES = "YES";
@@ -102,6 +104,7 @@ public class YashanDBConstants {
     public static final String TIMESTAMP_CLASS_NAME = "com.yashandb.util.YasTimestamp";
     public static final String TIME_CLASS_NAME = "com.yashandb.util.YasTime";
     public static final String YASBLOB_CLASS_NAME = "com.yashandb.jdbc.YasBlob";
+    public static final String GEOMETRY_CLASS_NAME = "com.yashandb.jdbc.Geometry";
 
 
     public static final String PLAN_TABLE_DEFINITION =

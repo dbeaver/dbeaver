@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.yashandb.data;
 
+import org.jkiss.dbeaver.ext.yashandb.model.YashanDBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -47,6 +48,12 @@ public class YashanDBValueHandlerProvider implements DBDValueHandlerProvider {
                 return YashanDBRAWValueHandler.INSTANCE;
             case Types.JAVA_OBJECT:
                 return YashanDBJSONValueHandler.INSTANCE;
+            default:
+                switch (typedObject.getTypeName()){
+                    case YashanDBConstants.TYPE_GEOGRAPHY:
+                        return YashanDBGeometryValueHandler.INSTANCE;
+                }
+
         }
         return null;
     }

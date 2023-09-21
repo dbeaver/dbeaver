@@ -94,6 +94,7 @@ public class YashanDBDataType extends YashanDBObject<DBSObject> implements DBSDa
 
         PREDEFINED_TYPES.put("BOOLEAN", new TypeDesc(DBPDataKind.BOOLEAN, Types.BOOLEAN, 0, 0, 0));
         PREDEFINED_TYPES.put("JSON", new TypeDesc(DBPDataKind.CONTENT, Types.JAVA_OBJECT,0, 0,0));
+        PREDEFINED_TYPES.put("GEOMETRY", new TypeDesc(DBPDataKind.CONTENT, Types.JAVA_OBJECT,0, 0,0));
 
         for (TypeDesc type : PREDEFINED_TYPES.values()) {
             PREDEFINED_TYPE_IDS.put(type.valueType, type);
