@@ -147,7 +147,7 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
                     this.isDistributed = false;
                 }
             } catch (SQLException e) {
-                log.warn(e);
+                log.warn(e.getMessage());
             }
         }
 
