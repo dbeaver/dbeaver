@@ -21,8 +21,6 @@ import org.eclipse.core.commands.Command;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -82,8 +80,6 @@ public class PrefPageResultSetMain extends TargetPrefPage
     private Button ignoreColumnLabelCheck;
     private Button useDateTimeEditor;
     private Button useBrowserCheckbox;
-    
-    private Text representationContentMaxSize; 
 
     public PrefPageResultSetMain()
     {
@@ -114,8 +110,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG) ||
             store.contains(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES) ||
             store.contains(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL) ||
-            store.contains(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER) ||
-            store.contains(ModelPreferences.REPRESENTATION_CONTENT_MAX_SIZE_KBYTES);
+            store.contains(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER);
     }
 
     @Override
@@ -239,20 +234,6 @@ public class PrefPageResultSetMain extends TargetPrefPage
             }
         });
        
-        final Group representingContent = UIUtils.createControlGroup(leftPane,
-            ResultSetMessages.pref_page_content_editor_group_representation_content, 1, GridData.HORIZONTAL_ALIGN_FILL, 0);
-        Label lblRepresentationContentSize = UIUtils.createControlLabel(representingContent,
-            DataEditorsMessages.pref_page_editor_representation_content);
-        lblRepresentationContentSize.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1, 1));
-        representationContentMaxSize = new Text(representingContent, SWT.BORDER);
-        representationContentMaxSize.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1, 1));
-        representationContentMaxSize.addVerifyListener(e -> {
-            if (!e.text.matches("[0-9]*")) { //$NON-NLS-1$
-                e.doit = false;
-            }
-
-        });
-        representationContentMaxSize.setTextLimit(6);
         return composite;
     }
 
@@ -302,7 +283,6 @@ public class PrefPageResultSetMain extends TargetPrefPage
             }
             showErrorsInDialog.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG));
             markCellValueOccurrences.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES));
-            representationContentMaxSize.setText(String.valueOf(store.getInt(ModelPreferences.REPRESENTATION_CONTENT_MAX_SIZE_KBYTES)));
             updateOptionsEnablement();
         } catch (Exception e) {
             log.warn(e);
@@ -340,7 +320,6 @@ public class PrefPageResultSetMain extends TargetPrefPage
             }
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG, showErrorsInDialog.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES, markCellValueOccurrences.getSelection());
-            store.setValue(ModelPreferences.REPRESENTATION_CONTENT_MAX_SIZE_KBYTES, representationContentMaxSize.getText());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -374,7 +353,6 @@ public class PrefPageResultSetMain extends TargetPrefPage
         store.setToDefault(ResultSetPreferences.RESULT_SET_CONFIRM_BEFORE_SAVE);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG);
         store.setToDefault(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES);
-        store.setToDefault(ModelPreferences.REPRESENTATION_CONTENT_MAX_SIZE_KBYTES);
 
         updateOptionsEnablement();
     }

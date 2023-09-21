@@ -49,7 +49,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -63,6 +62,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditorPersistent;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -320,9 +320,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
             return;
         }
         try {
-            int maxContentSize = DBWorkbench.getPlatform().getPreferenceStore()
-                .getInt(ModelPreferences.REPRESENTATION_CONTENT_MAX_SIZE_KBYTES)
-                * 1000;
+            int maxContentSize = DBWorkbench.getPlatform().getPreferenceStore().getInt(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE) * 1000;
             if (editor == null) {
                 log.error("Editor is null or undefined");
                 return;
@@ -384,8 +382,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     }
 
     private void showRestrictedContent(@NotNull DBDContent value) throws DBCException, IOException {
-        int maxContentSize = DBWorkbench.getPlatform().getPreferenceStore()
-            .getInt(ModelPreferences.REPRESENTATION_CONTENT_MAX_SIZE_KBYTES);
+        int maxContentSize = DBWorkbench.getPlatform().getPreferenceStore().getInt(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE);
         DBDContentStorage contents = value.getContents(new VoidProgressMonitor());
         try (final InputStream stream = contents.getContentStream()) {
             ByteArrayOutputStream buffer = new ByteArrayOutputStream((int) contents.getContentLength());
