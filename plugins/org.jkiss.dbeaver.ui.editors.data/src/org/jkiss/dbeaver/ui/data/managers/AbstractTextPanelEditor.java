@@ -73,16 +73,13 @@ import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsActivator;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.IOUtils;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.stream.Stream;
 
 /**
@@ -383,20 +380,22 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
 
     private void showLimitedContent(@NotNull DBDContent value, int lengthInBytes) throws DBCException, IOException {
         DBDContentStorage contents = value.getContents(new VoidProgressMonitor());
+        byte[] displaingContentBytes = new byte[lengthInBytes];
         try (final InputStream stream = contents.getContentStream()) {
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream(lengthInBytes);
-            IOUtils.copyStream(stream, buffer, lengthInBytes);
-            byte[] displaingContentBytes = Arrays.copyOfRange(buffer.toByteArray(), 0, lengthInBytes);
-            UIUtils.asyncExec(() -> {
-                if (editor != null) {
-                    String msg = NLS.bind(ResultSetMessages.panel_editor_text_content_limitation_lbl, lengthInBytes);
-                    editor.setInput(new StringEditorInput("Limited Content ", new String(displaingContentBytes), true,
-                        StandardCharsets.UTF_8.name()));
-                    messageBar.setForeground(UIStyles.getErrorTextForeground());
-                    messageBar.setText(msg);
-                    messageBar.setImage(UIUtils.getShardImage(ISharedImages.IMG_OBJS_WARN_TSK));
-                }
-            });
+            displaingContentBytes = stream.readNBytes(lengthInBytes);
+            if (displaingContentBytes != null && displaingContentBytes.length > 0) {
+                final String content = new String(displaingContentBytes);
+                UIUtils.asyncExec(() -> {
+                    if (editor != null) {
+                        String msg = NLS.bind(ResultSetMessages.panel_editor_text_content_limitation_lbl, lengthInBytes / 1000);
+                        editor.setInput(new StringEditorInput("Limited Content ", content, true,
+                            StandardCharsets.UTF_8.name()));
+                        messageBar.setForeground(UIStyles.getErrorTextForeground());
+                        messageBar.setText(msg);
+                        messageBar.setImage(UIUtils.getShardImage(ISharedImages.IMG_OBJS_WARN_TSK));
+                    }
+                });
+            }
         }
     }
 
