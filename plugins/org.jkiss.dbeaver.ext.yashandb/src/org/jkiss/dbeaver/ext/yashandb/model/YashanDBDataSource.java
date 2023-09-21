@@ -5,18 +5,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.yashandb.model.plan.YashanDBQueryPlanner;
 import org.jkiss.dbeaver.ext.yashandb.model.session.YashanDBServerSessionManager;
-import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -28,7 +24,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
-import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -37,15 +32,13 @@ import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStatisticsCollector, IAdaptable {
 
@@ -69,6 +62,8 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
     private boolean useRuleHint;
     private boolean resolveGeometryAsStruct = true;
     private boolean hasStatistics;
+
+    private static List<String> prohibitDataTypeDistributed = new ArrayList<>(List.of("BIT","BLOB","ROWID","UROWID","NCHAR","NCLOB","NVARCHAR"));
 
     private final Map<String, Boolean> availableViews = new HashMap<>();
 
@@ -265,7 +260,11 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
 
     @Override
     public Collection<? extends DBSDataType> getLocalDataTypes() {
-        return dataTypeCache.getCachedObjects();
+        List<YashanDBDataType> typeObjects = dataTypeCache.getCachedObjects();
+        if (isDistributed){
+            typeObjects = typeObjects.stream().filter(s -> !prohibitDataTypeDistributed.contains(s.getName())).collect(Collectors.toList());
+        }
+        return typeObjects;
     }
 
     @Override
