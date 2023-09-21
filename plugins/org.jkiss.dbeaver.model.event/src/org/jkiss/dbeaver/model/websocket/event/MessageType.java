@@ -16,26 +16,9 @@
  */
 package org.jkiss.dbeaver.model.websocket.event;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-
-public class WSErrorEvent extends WSAbstractEvent {
-    private final String errorMessage;
-
-    public WSErrorEvent(@NotNull WSEventType eventType,
-                        @Nullable String sessionId,
-                        @Nullable String userId,
-                        @Nullable String errorMessage) {
-        super(eventType, sessionId, userId);
-        this.errorMessage = errorMessage;
-    }
-
-    public WSErrorEvent(@NotNull WSEventType eventType, String errorMessage) {
-        super(eventType);
-        this.errorMessage = errorMessage;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
+public enum MessageType {
+    DEBUG,
+    INFO,
+    WARNING,
+    ERROR
 }
