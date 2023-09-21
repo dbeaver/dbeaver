@@ -170,7 +170,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
                 previewFolder.setSelection(sqlViewItem);
 
-                if (planner != null) {
+                if (planner != null&&!(planner.toString().contains("YashanDBQueryPlanner"))){
                     createPlannerTab(previewFolder);
                 }
 
