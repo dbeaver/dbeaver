@@ -61,6 +61,7 @@ public class MappingRulesDialog extends BaseDialog {
     private int originalNameCaseSelection;
     private int originalReplaceSelection;
     private int originalMaxTypeLength;
+    private boolean originalSaveSettingsValue;
 
     MappingRulesDialog(@NotNull Shell parentShell, @NotNull DBPDataSource dataSource, @NotNull List<Object> elementList) {
         super(parentShell, DTUIMessages.mappings_rules_dialog_title, null);
@@ -76,6 +77,8 @@ public class MappingRulesDialog extends BaseDialog {
         originalMaxTypeLength = dbpPreferenceStore.contains(DTConstants.PREF_MAX_TYPE_LENGTH) ?
             dbpPreferenceStore.getInt(DTConstants.PREF_MAX_TYPE_LENGTH) : store.contains(DTConstants.PREF_MAX_TYPE_LENGTH) ?
             store.getInt(DTConstants.PREF_MAX_TYPE_LENGTH) : store.getDefaultInt(DTConstants.PREF_MAX_TYPE_LENGTH);
+        originalSaveSettingsValue = store.contains(DTConstants.PREF_SAVE_LOCAL_SETTINGS) ?
+            store.getBoolean(DTConstants.PREF_SAVE_LOCAL_SETTINGS) : true;
     }
 
     @Override
@@ -127,7 +130,7 @@ public class MappingRulesDialog extends BaseDialog {
         saveSettings = UIUtils.createCheckbox(
             mappingGroup,
             DTUIMessages.mappings_rules_dialog_save_settings_checkbox,
-            store.contains(DTConstants.PREF_SAVE_LOCAL_SETTINGS) ? store.getBoolean(DTConstants.PREF_SAVE_LOCAL_SETTINGS) : true);
+            originalSaveSettingsValue);
         saveSettings.setToolTipText(DTUIMessages.mappings_rules_dialog_save_settings_checkbox_tip);
         GridData gd2 = new GridData();
         gd2.horizontalSpan = 2;
@@ -159,6 +162,15 @@ public class MappingRulesDialog extends BaseDialog {
             } else {
                 return;
             }
+        } else if (originalSaveSettingsValue != saveSettings.getSelection()) {
+            store.setValue(DTConstants.PREF_SAVE_LOCAL_SETTINGS, saveSettings.getSelection());
+            if (saveSettings.getSelection()) {
+                // User want just to save local settings as global
+                store.setValue(DTConstants.PREF_NAME_CASE_MAPPING, nameCaseCombo.getSelectionIndex());
+                store.setValue(DTConstants.PREF_REPLACE_MAPPING, replaceCombo.getSelectionIndex());
+                store.setValue(DTConstants.PREF_MAX_TYPE_LENGTH, typeLengthSpinner.getSelection());
+            }
+            PrefUtils.savePreferenceStore(store);
         }
         super.okPressed();
     }
