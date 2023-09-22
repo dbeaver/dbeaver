@@ -34,6 +34,7 @@ public interface SQLEditorCommands
     String CMD_EXECUTE_ALL_ROWS = "org.jkiss.dbeaver.ui.editors.sql.run.all.rows"; //$NON-NLS-1$
     String CMD_EXPLAIN_PLAN = "org.jkiss.dbeaver.ui.editors.sql.run.explain"; //$NON-NLS-1$
     String CMD_LOAD_PLAN = "org.jkiss.dbeaver.ui.editors.sql.load.plan"; //$NON-NLS-1$
+    String CMD_TOGGLE_USE_TAB_PER_RESULT = "org.jkiss.dbeaver.ui.editors.sql.toggle.useTabPerResult"; //$NON-NLS-1$
     String CMD_SQL_EDITOR_DEF_COMMAND = "org.jkiss.dbeaver.core.sql.editor.defaultCommand";
     String CMD_SQL_EDITOR_OPEN = "org.jkiss.dbeaver.core.sql.editor.open";
     String CMD_SQL_EDITOR_NEW = "org.jkiss.dbeaver.core.sql.editor.create";

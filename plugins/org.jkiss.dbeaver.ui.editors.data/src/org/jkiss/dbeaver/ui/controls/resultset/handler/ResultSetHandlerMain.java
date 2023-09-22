@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.handler;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.expressions.IEvaluationContext;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.IAction;
@@ -37,6 +38,7 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.ColorDialog;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchCommandConstants;
@@ -142,13 +144,22 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
 
     public static final String PARAM_EXPORT_WITH_PARAM = "exportWithParameter";
 
-    public static IResultSetController getActiveResultSet(IWorkbenchPart activePart) {
+    @Nullable
+    public static IResultSetController getActiveResultSet(@Nullable IWorkbenchPart activePart) {
+        return getActiveResultSet(activePart, false);
+    }
+    
+    public static IResultSetController getActiveResultSet(@Nullable IWorkbenchPart activePart, boolean underMouseCursor) {
         if (activePart != null) {
             IWorkbenchPartSite site = activePart.getSite();
             if (site != null && site.getPart() != null && !Workbench.getInstance().isClosing()) {
                 Shell shell = site.getShell();
                 if (shell != null) {
-                    for (Control focusControl = shell.getDisplay().getFocusControl(); focusControl != null; focusControl = focusControl.getParent()) {
+                    Display display = shell.getDisplay();
+                    for (Control focusControl = underMouseCursor ? display.getCursorControl() : display.getFocusControl();
+                         focusControl != null;
+                         focusControl = focusControl.getParent()
+                    ) {
                         ResultSetViewer viewer = (ResultSetViewer) focusControl.getData(ResultSetViewer.CONTROL_ID);
                         if (viewer != null) {
                             return viewer;
