@@ -31,8 +31,7 @@ import java.util.Map;
  * @Author dengqh
  * @Date 2023/7/6 18:44
  */
-public class YashanDBMaterializedView extends YashanDBTableBase implements YashanDBSourceObject, DBSObjectLazy<YashanDBDataSource>
-{
+public class YashanDBMaterializedView extends YashanDBTableBase implements YashanDBSourceObject, DBSObjectLazy<YashanDBDataSource> {
     private static final Log log = Log.getLog(YashanDBMaterializedView.class);
 
     @Override
@@ -58,62 +57,52 @@ public class YashanDBMaterializedView extends YashanDBTableBase implements Yasha
         private String staleness;
 
         @Property(viewable = false, order = 14)
-        public boolean isUpdatable()
-        {
+        public boolean isUpdatable() {
             return updatable;
         }
 
         @Property(viewable = false, order = 15)
-        public boolean isRewriteEnabled()
-        {
+        public boolean isRewriteEnabled() {
             return rewriteEnabled;
         }
 
         @Property(viewable = false, order = 16)
-        public String getRewriteCapability()
-        {
+        public String getRewriteCapability() {
             return rewriteCapability;
         }
 
         @Property(viewable = false, order = 17)
-        public String getRefreshMode()
-        {
+        public String getRefreshMode() {
             return refreshMode;
         }
 
         @Property(viewable = false, order = 18)
-        public String getRefreshMethod()
-        {
+        public String getRefreshMethod() {
             return refreshMethod;
         }
 
         @Property(viewable = false, order = 19)
-        public String getBuildMode()
-        {
+        public String getBuildMode() {
             return buildMode;
         }
 
         @Property(viewable = false, order = 20)
-        public String getFastRefreshable()
-        {
+        public String getFastRefreshable() {
             return fastRefreshable;
         }
 
         @Property(viewable = false, order = 21)
-        public String getLastRefreshType()
-        {
+        public String getLastRefreshType() {
             return lastRefreshType;
         }
 
         @Property(viewable = false, order = 22)
-        public Date getLastRefreshDate()
-        {
+        public Date getLastRefreshDate() {
             return lastRefreshDate;
         }
 
         @Property(viewable = false, order = 23)
-        public String getStaleness()
-        {
+        public String getStaleness() {
             return staleness;
         }
 
@@ -123,39 +112,18 @@ public class YashanDBMaterializedView extends YashanDBTableBase implements Yasha
     private String query;
     private YashanDBDDLFormat currentDDLFormat;
 
-    public YashanDBMaterializedView(YashanDBSchema schema, String name)
-    {
+    public YashanDBMaterializedView(YashanDBSchema schema, String name) {
         super(schema, name, false);
     }
 
     public YashanDBMaterializedView(
             YashanDBSchema schema,
-            ResultSet dbResult)
-    {
+            ResultSet dbResult) {
         super(schema, dbResult);
     }
 
-//    @Property(viewable = true, order = 10)
-//    @LazyProperty(cacheValidator = YashanDBTablespace.TablespaceReferenceValidator.class)
-//    public Object getContainer(DBRProgressMonitor monitor) throws DBException
-//    {
-//        return getAdditionalInfo(monitor).container;
-//    }
-
-//    @PropertyGroup()
-//    @LazyProperty(cacheValidator = AdditionalInfoValidator.class)
-//    public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBCException {
-//        synchronized (additionalInfo) {
-//            if (!additionalInfo.loaded && monitor != null) {
-//                loadAdditionalInfo(monitor);
-//            }
-//            return additionalInfo;
-//        }
-//    }
-
     @Override
-    public YashanDBSourceType getSourceType()
-    {
+    public YashanDBSourceType getSourceType() {
         return YashanDBSourceType.MATERIALIZED_VIEW;
     }
 
@@ -166,40 +134,12 @@ public class YashanDBMaterializedView extends YashanDBTableBase implements Yasha
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
-    {
-        if(query!=null) return query;
-        return "YashanDB cannot get MaterializedView DDL now!";
-//        if (query == null) {
-//            currentDDLFormat = YashanDBDDLFormat.getCurrentFormat(getDataSource());
-//        }
-//        YashanDBDDLFormat newFormat = YashanDBDDLFormat.FULL;
-//        boolean isFormatInOptions = !CommonUtils.isEmpty(options) && options.containsKey(YashanDBDDLFormat.PREF_KEY_DDL_FORMAT);
-//        if (isFormatInOptions) {
-//            newFormat = (YashanDBDDLFormat) options.get(YashanDBDDLFormat.PREF_KEY_DDL_FORMAT);
-//        }
-//        if (query == null || currentDDLFormat != newFormat && isPersisted()) {
-//            try {
-//                if (query == null || !isFormatInOptions) {
-//                    query = YashanDBUtils.getDDL(monitor, getTableTypeName(), this, currentDDLFormat, options);
-//                } else {
-//                    query = YashanDBUtils.getDDL(monitor, getTableTypeName(), this, newFormat, options);
-//                    currentDDLFormat = newFormat;
-//                }
-//            } catch (DBException e) {
-//                String message = e.getMessage();
-//                if (message != null) {
-//                    message = message.replace("*/", "* /");
-//                }
-//                query = "/*\nError generating materialized view DDL:\n" + message + "\n*/";
-//                log.warn("Error getting view definition from system package", e);
-//            }
-//        }
-//        return query;
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        if (query != null) return query;
+        return YashanDBUtils.getTableOrViewDDL(monitor, "MATERIALIZED VIEW", this, options);
     }
 
-    public void setObjectDefinitionText(String source)
-    {
+    public void setObjectDefinitionText(String source) {
         this.query = source;
     }
 
@@ -211,67 +151,19 @@ public class YashanDBMaterializedView extends YashanDBTableBase implements Yasha
         this.currentDDLFormat = currentDDLFormat;
     }
 
-//    private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
-//    {
-//        if (!isPersisted()) {
-//            additionalInfo.loaded = true;
-//            return;
-//        }
-//        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
-//            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-//                    "SELECT * FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "MVIEWS") + " WHERE OWNER=? AND MVIEW_NAME=?")) {
-//                dbStat.setString(1, getSchema().getName());
-//                dbStat.setString(2, getName());
-//                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-//                    if (dbResult.next()) {
-//                        additionalInfo.mviewValid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "COMPILE_STATE"));
-//                        additionalInfo.container = JDBCUtils.safeGetString(dbResult, "CONTAINER_NAME");
-//                        additionalInfo.updatable = JDBCUtils.safeGetBoolean(dbResult, "UPDATABLE", "Y");
-//                        additionalInfo.rewriteEnabled = JDBCUtils.safeGetBoolean(dbResult, "REWRITE_ENABLED", "Y");
-//                        additionalInfo.rewriteCapability = JDBCUtils.safeGetString(dbResult, "REWRITE_CAPABILITY");
-//                        additionalInfo.refreshMode = JDBCUtils.safeGetString(dbResult, "REFRESH_MODE");
-//                        additionalInfo.refreshMethod = JDBCUtils.safeGetString(dbResult, "REFRESH_METHOD");
-//                        additionalInfo.buildMode = JDBCUtils.safeGetString(dbResult, "BUILD_MODE");
-//                        additionalInfo.fastRefreshable = JDBCUtils.safeGetString(dbResult, "FAST_REFRESHABLE");
-//                        additionalInfo.lastRefreshType = JDBCUtils.safeGetString(dbResult, "LAST_REFRESH_TYPE");
-//                        additionalInfo.lastRefreshDate = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REFRESH_DATE");
-//                        additionalInfo.staleness = JDBCUtils.safeGetString(dbResult, "STALENESS");
-//                    }
-//                    additionalInfo.loaded = true;
-//                }
-//            } catch (SQLException e) {
-//                throw new DBCException(e, session.getExecutionContext());
-//            }
-//        }
-//    }
-
-//    @Override
-//    public DBEPersistAction[] getCompileActions(DBRProgressMonitor monitor)
-//    {
-//        return new DBEPersistAction[] {
-//                new OracleObjectPersistAction(
-//                        OracleObjectType.MATERIALIZED_VIEW,
-//                        "Compile materialized view",
-//                        "ALTER MATERIALIZED VIEW " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " COMPILE"
-//                )};
-//    }
-
     @NotNull
     @Override
-    public DBSObjectState getObjectState()
-    {
+    public DBSObjectState getObjectState() {
         return valid ? DBSObjectState.NORMAL : DBSObjectState.INVALID;
     }
 
     @Override
-    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException
-    {
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
         this.valid = YashanDBUtils.getObjectStatus(monitor, this, YashanDBObjectType.MATERIALIZED_VIEW);
     }
 
     @Override
-    public Object getLazyReference(Object propertyId)
-    {
+    public Object getLazyReference(Object propertyId) {
         return additionalInfo.container;
     }
 
@@ -290,19 +182,9 @@ public class YashanDBMaterializedView extends YashanDBTableBase implements Yasha
         return "MATERIALIZED_VIEW";
     }
 
-//    protected String queryTableComment(JDBCSession session) throws SQLException {
-//        return JDBCUtils.queryString(
-//                session,
-//                "SELECT COMMENTS FROM ALL_MVIEW_COMMENTS WHERE OWNER=? AND MVIEW_NAME=?",
-//                getSchema().getName(),
-//                getName());
-//    }
-
     @Override
-    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         getContainer().constraintCache.clearObjectCache(this);
-
         return getContainer().tableCache.refreshObject(monitor, getContainer(), this);
     }
 
