@@ -4,25 +4,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.yashandb.model.source.YashanDBSourceObject;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Date;
 import java.util.Map;
 
@@ -106,6 +96,10 @@ public class YashanDBMaterializedView extends YashanDBTableBase implements Yasha
             return staleness;
         }
 
+    }
+
+    public String getComment(DBRProgressMonitor monitor) {
+        return null;
     }
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
