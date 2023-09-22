@@ -192,10 +192,10 @@
                                         visibleIf="true">
                                     <items label="%tree.method.node.name" path="method" property="methods"
                                            icon="#procedure">
-                                        <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name"
-                                               path="parameter" property="parameters" icon="#argument" navigable="false"
-                                               inline="false">
-                                        </items>
+<!--                                        <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name"-->
+<!--                                               path="parameter" property="parameters" icon="#argument" navigable="false"-->
+<!--                                               inline="false">-->
+<!--                                        </items>-->
                                     </items>
                                 </folder>
                             </items>
