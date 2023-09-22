@@ -922,10 +922,12 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull YashanDBSchema owner) throws SQLException {
-            return session.prepareStatement(
-                    "SELECT * FROM " + YashanDBUtils.isAdminPriv(owner.getDataSource(), "JOBS") +
-                            " ORDER BY JOB"
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT a.*,o.OBJECT_NAME FROM " + YashanDBUtils.isAdminPriv(owner.getDataSource(), "JOBS") +
+                            " a JOIN DBA_OBJECTS o ON o.object_id = a.job WHERE SCHEMA_USER=? ORDER BY JOB"
             );
+             dbStat.setString(1, owner.getName());
+             return dbStat;
         }
 
         @Override

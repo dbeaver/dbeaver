@@ -33,9 +33,9 @@ import java.sql.ResultSet;
 import java.util.Date;
 import java.util.Map;
 
-public class YashanDBJob extends YashanDBSchemaObject implements YashanDBSourceObject {
+public class YashanDBJob extends YashanDBSchemaObject  implements YashanDBSourceObject{
 
-    private final long job;
+    private final String job;
     private final String loginUser;
     private final String privilegedUser;
     private final String schemaUser;
@@ -50,8 +50,8 @@ public class YashanDBJob extends YashanDBSchemaObject implements YashanDBSourceO
     private final boolean broken;
 
     public YashanDBJob(@NotNull YashanDBSchema schema, @NotNull ResultSet resultSet) {
-        super(schema, String.valueOf(JDBCUtils.safeGetInt(resultSet, "JOB")), true);
-        this.job = JDBCUtils.safeGetLong(resultSet, "JOB");
+        super(schema, JDBCUtils.safeGetString(resultSet, "OBJECT_NAME"), true);
+        this.job = JDBCUtils.safeGetString(resultSet, "OBJECT_NAME");
         this.loginUser = JDBCUtils.safeGetString(resultSet, "LOG_USER");
         this.privilegedUser = JDBCUtils.safeGetString(resultSet, "PRIV_USER");
         this.schemaUser = JDBCUtils.safeGetString(resultSet, "SCHEMA_USER");
@@ -66,7 +66,7 @@ public class YashanDBJob extends YashanDBSchemaObject implements YashanDBSourceO
         this.broken = JDBCUtils.safeGetBoolean(resultSet, "BROKEN", "Y");
     }
 
-    public long getJob() {
+    public String getJob() {
         return job;
     }
 
@@ -147,6 +147,7 @@ public class YashanDBJob extends YashanDBSchemaObject implements YashanDBSourceO
     }
 
     @Override
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         if (CommonUtils.isEmpty(this.action)) {
             return "-- Source unavailable";

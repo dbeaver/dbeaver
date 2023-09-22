@@ -106,6 +106,12 @@ public class NavigatorUtils {
     private static final String firstLevelDirectory = "Global metadata";
     private static final String secondaryDirectory = "Types";
 
+    private static final String JOB_DIRECTORY = "Jobs";
+
+    private static final String SCHEMA_DIRECTORY = "Schemas";
+
+    private static final String CREATE_NEW_JOB = "Create New Job";
+
     public static DBNNode getSelectedNode(ISelectionProvider selectionProvider)
     {
         if (selectionProvider == null) {
@@ -250,6 +256,18 @@ public class NavigatorUtils {
                     }
 
                 }
+
+                if (node.getNodeItemPath().contains(driverShield) &&
+                       node.getName().equals(JOB_DIRECTORY) &&
+                        node.getParentNode().getParentNode().getName().equals(SCHEMA_DIRECTORY)){
+                    for (MenuItem item: m.getItems()){
+                        if ( item.getText().contains(CREATE_NEW_JOB) ){
+                            Object menu = m.getData();
+                            item.setEnabled(false);
+                        }
+                    }
+                }
+
                 if (node != null && !node.isLocked() && node.allowsOpen()) {
                     String commandID = NavigatorUtils.getNodeActionCommand(DBXTreeNodeHandler.Action.open, node, NavigatorCommands.CMD_OBJECT_OPEN);
                     // Dirty hack
