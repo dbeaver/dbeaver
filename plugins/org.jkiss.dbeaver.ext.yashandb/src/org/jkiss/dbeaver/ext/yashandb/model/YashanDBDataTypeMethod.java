@@ -33,7 +33,8 @@ public class YashanDBDataTypeMethod extends YashanDBDataTypeMember implements DB
     private boolean flagOverriding;
 
     private YashanDBDataType resultType;
-    private YashanDBDataTypeModifier resultTypeMod;
+    //todo:目前缺少ALL_METHOD_RESULTS视图无法查询结果修饰符属性，不做展示
+//    private YashanDBDataTypeModifier resultTypeMod;
 //    private final ParameterCache parameterCache;
 
     public YashanDBDataTypeMethod(YashanDBDataType dataType) {
@@ -58,8 +59,8 @@ public class YashanDBDataTypeMethod extends YashanDBDataTypeMember implements DB
                     getDataSource(),
                     JDBCUtils.safeGetString(dbResult, "RESULT_TYPE_OWNER"),
                     resultTypeName);
-            this.resultTypeMod = YashanDBDataTypeModifier.resolveTypeModifier(
-                    JDBCUtils.safeGetString(dbResult, "RESULT_TYPE_MOD"));
+//            this.resultTypeMod = YashanDBDataTypeModifier.resolveTypeModifier(
+//                    JDBCUtils.safeGetString(dbResult, "RESULT_TYPE_MOD"));
         }
     }
 
@@ -73,10 +74,11 @@ public class YashanDBDataTypeMethod extends YashanDBDataTypeMember implements DB
         return resultType;
     }
 
-    @Property(id = "dataTypeMod", viewable = true, order = 7)
-    public YashanDBDataTypeModifier getResultTypeMod() {
-        return resultTypeMod;
-    }
+    //todo:目前缺少ALL_METHOD_RESULTS视图无法查询结果修饰符属性，不做展示
+//    @Property(id = "dataTypeMod", viewable = true, order = 7)
+//    public YashanDBDataTypeModifier getResultTypeMod() {
+//        return resultTypeMod;
+//    }
 
     @Property(viewable = true, order = 8)
     public boolean isFinal() {
