@@ -590,6 +590,8 @@
                  objectType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBUserProfile"/>
         <manager class="org.jkiss.dbeaver.ext.yashandb.edit.YashanDBDBLinkManager"
                  objectType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBDBLink"/>
+        <manager class="org.jkiss.dbeaver.ext.yashandb.edit.YashanDBJobManager"
+                 objectType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBJob"/>
         <manager class="org.jkiss.dbeaver.ext.yashandb.edit.YashanDBSchedulerJobManager"
                  objectType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBSchedulerJob"/>
         <manager class="org.jkiss.dbeaver.ext.yashandb.edit.YashanDBSynonymManager"
