@@ -67,7 +67,7 @@ public class YashanDBViewManager extends SQLTableManager<YashanDBView, YashanDBS
 
     @Override
     protected void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
-        createOrReplaceViewQuery(monitor, actions, command, options);
+        createOrReplaceViewQuery(monitor, actions, command, options, true);
     }
 
     @Override
@@ -80,13 +80,13 @@ public class YashanDBViewManager extends SQLTableManager<YashanDBView, YashanDBS
 
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
-        createOrReplaceViewQuery(monitor, actionList, command, options);
+        createOrReplaceViewQuery(monitor, actionList, command, options, false);
     }
 
-    private void createOrReplaceViewQuery(DBRProgressMonitor monitor, @NotNull List<DBEPersistAction> actions, DBECommandComposite<YashanDBView, PropertyHandler> command, Map<String, Object> options) throws DBException {
+    private void createOrReplaceViewQuery(DBRProgressMonitor monitor, @NotNull List<DBEPersistAction> actions, DBECommandComposite<YashanDBView, PropertyHandler> command, Map<String, Object> options, boolean isCreate) throws DBException {
         final YashanDBView view = command.getObject();
         boolean hasComment = command.hasProperty("comment");
-        if (!hasComment || command.getProperties().size() > 1) {
+        if (!hasComment || command.getProperties().size() > 1 || (isCreate && command.getProperties().size() == 1)) {
             String viewText = view.getViewText().trim();
             List<SQLScriptElement> sqlScriptElements = SQLScriptParser.parseScript(view.getDataSource(), viewText);
             if (sqlScriptElements.size() > 1) {
@@ -100,7 +100,6 @@ public class YashanDBViewManager extends SQLTableManager<YashanDBView, YashanDBS
             }
             actions.add(new SQLDatabasePersistAction("Create view", viewText));
         }
-
         if (hasComment || (CommonUtils.getOption(options, DBPScriptObject.OPTION_OBJECT_SAVE) && CommonUtils.isNotEmpty(view.getComment()))) {
             actions.add(new SQLDatabasePersistAction(
                     "Comment table",
