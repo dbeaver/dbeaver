@@ -112,6 +112,10 @@ public class NavigatorUtils {
 
     private static final String CREATE_NEW_JOB = "Create New Job";
 
+    private static final String YASHANDB_TABLE_CONSTRAINTS = "Table constraints";
+
+    private static final String YASHANDB_TABLE_TRIGGERS = "Triggers";
+
     public static DBNNode getSelectedNode(ISelectionProvider selectionProvider)
     {
         if (selectionProvider == null) {
@@ -244,26 +248,28 @@ public class NavigatorUtils {
 
                 Menu m = (Menu)e.widget;
                 DBNNode node = getSelectedNode(viewer.getSelection());
-                if (node.getNodeItemPath().contains(driverShield) &&
-                        node.getParentNode().getName().equals(secondaryDirectory) &&
-                        node.getParentNode().getParentNode().getName().equals(firstLevelDirectory)){
+                if (node != null){
+                    if (node.getNodeItemPath().contains(driverShield) &&
+                            node.getParentNode().getName().equals(secondaryDirectory) &&
+                            node.getParentNode().getParentNode().getName().equals(firstLevelDirectory)){
 
-                    for (MenuItem item: m.getItems()){
-                        if ( item.getText().equals("Delete\tDelete") ){
-                            Object menu = m.getData();
-                            item.setEnabled(false);
+                        for (MenuItem item: m.getItems()){
+                            if ( item.getText().equals("Delete\tDelete") ){
+                                Object menu = m.getData();
+                                item.setEnabled(false);
+                            }
                         }
+
                     }
 
-                }
-
-                if (node.getNodeItemPath().contains(driverShield) &&
-                       node.getName().equals(JOB_DIRECTORY) &&
-                        node.getParentNode().getParentNode().getName().equals(SCHEMA_DIRECTORY)){
-                    for (MenuItem item: m.getItems()){
-                        if ( item.getText().contains(CREATE_NEW_JOB) ){
-                            Object menu = m.getData();
-                            item.setEnabled(false);
+                    if (node.getNodeItemPath().contains(driverShield) &&
+                            node.getName().equals(JOB_DIRECTORY) &&
+                            node.getParentNode().getParentNode().getName().equals(SCHEMA_DIRECTORY)){
+                        for (MenuItem item: m.getItems()){
+                            if ( item.getText().contains(CREATE_NEW_JOB) ){
+                                Object menu = m.getData();
+                                item.setEnabled(false);
+                            }
                         }
                     }
                 }
@@ -317,8 +323,13 @@ public class NavigatorUtils {
         if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
             addSetDefaultObjectAction(workbenchSite, manager, selectedNode);
         }
+        if (!(selectedNode != null &&
+                selectedNode.getNodeItemPath().contains(driverShield) &&
+                (selectedNode.getNodeDescription().equals(YASHANDB_TABLE_CONSTRAINTS) ||
+                        selectedNode.getNodeDescription().equals(YASHANDB_TABLE_TRIGGERS)))){
+            manager.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS));
+        }
 
-        manager.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS));
 
         manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS));
         manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS_END));
