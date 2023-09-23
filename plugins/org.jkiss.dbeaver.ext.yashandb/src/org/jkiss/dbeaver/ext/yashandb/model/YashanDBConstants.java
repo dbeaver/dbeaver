@@ -68,6 +68,8 @@ public class YashanDBConstants {
     public static final String TYPE_LONG = "LONG";
     public static final String TYPE_LONG_RAW = "LONG RAW";
     public static final String TYPE_OCTET = "OCTET";
+    public static final String TYPE_GEOMETRY = "GEOMETRY";
+    public static final String TYPE_JSON = "JSON";
     public static final String TYPE_INTERVAL_YEAR_MONTH = "INTERVAL YEAR TO MONTH";
     public static final String TYPE_INTERVAL_DAY_SECOND = "INTERVAL DAY TO SECOND";
 
