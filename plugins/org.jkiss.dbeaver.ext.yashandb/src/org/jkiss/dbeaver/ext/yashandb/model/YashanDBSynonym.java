@@ -3,6 +3,7 @@ package org.jkiss.dbeaver.ext.yashandb.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -16,7 +17,7 @@ import java.sql.ResultSet;
 import java.util.Map;
 import java.util.Objects;
 
-public class YashanDBSynonym extends YashanDBSchemaObject implements DBSAlias, DBPScriptObject {
+public class YashanDBSynonym extends YashanDBSchemaObject implements DBSAlias, DBPScriptObject, DBPRefreshableObject {
 
     private String objectOwner;
     private String objectTypeName;
@@ -150,7 +151,13 @@ public class YashanDBSynonym extends YashanDBSchemaObject implements DBSAlias, D
     }
 
     @Override
+    @Property(hidden = true,updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         return buildStatement();
+    }
+
+    @Override
+    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+        return  getSchema().synonymCache.refreshObject(monitor, getSchema(), this);
     }
 }
