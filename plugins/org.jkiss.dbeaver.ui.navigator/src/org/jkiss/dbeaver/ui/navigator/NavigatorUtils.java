@@ -206,9 +206,9 @@ public class NavigatorUtils {
     }
 
     public static void addContextMenu(
-        @Nullable final IWorkbenchSite workbenchSite,
-        @NotNull final Viewer viewer,
-        @NotNull ISelectionProvider selectionProvider)
+            @Nullable final IWorkbenchSite workbenchSite,
+            @NotNull final Viewer viewer,
+            @NotNull ISelectionProvider selectionProvider)
     {
         MenuManager menuMgr = createContextMenu(workbenchSite, viewer, selectionProvider, null);
         if (workbenchSite instanceof IWorkbenchPartSite) {
@@ -219,18 +219,18 @@ public class NavigatorUtils {
     }
 
     public static MenuManager createContextMenu(
-        @Nullable final IWorkbenchSite workbenchSite,
-        @NotNull final Viewer viewer,
-        @NotNull final IMenuListener menuListener)
+            @Nullable final IWorkbenchSite workbenchSite,
+            @NotNull final Viewer viewer,
+            @NotNull final IMenuListener menuListener)
     {
         return createContextMenu(workbenchSite, viewer, viewer, menuListener);
     }
 
     public static MenuManager createContextMenu(
-        @Nullable final IWorkbenchSite workbenchSite,
-        @NotNull final Viewer viewer,
-        @NotNull final ISelectionProvider selectionProvider,
-        @Nullable final IMenuListener menuListener)
+            @Nullable final IWorkbenchSite workbenchSite,
+            @NotNull final Viewer viewer,
+            @NotNull final ISelectionProvider selectionProvider,
+            @Nullable final IMenuListener menuListener)
     {
         final Control control = viewer.getControl();
         final MenuManager menuMgr = new MenuManager();
@@ -249,6 +249,8 @@ public class NavigatorUtils {
                 Menu m = (Menu)e.widget;
                 DBNNode node = getSelectedNode(viewer.getSelection());
                 if (node != null){
+                    String objectType = ((DBNDatabaseFolder) node.getParentNode()).getMeta().getType();
+
                     if (node.getNodeItemPath().contains(driverShield) &&
                             node.getParentNode().getName().equals(secondaryDirectory) &&
                             node.getParentNode().getParentNode().getName().equals(firstLevelDirectory)){
@@ -268,6 +270,18 @@ public class NavigatorUtils {
                         for (MenuItem item: m.getItems()){
                             if ( item.getText().contains(CREATE_NEW_JOB) ){
                                 Object menu = m.getData();
+                                item.setEnabled(false);
+                            }
+                        }
+                    }
+
+                    //todo:目前表对象的导入导出数据功能无法完全保证可用，先屏蔽这功能
+                    if (objectType.contains("YashanDBMaterializedView") || objectType.contains("YashanDBView")
+                            || objectType.contains("YashanDBTable") || objectType.contains("YashanDBSchema")) {
+                        for (MenuItem item : m.getItems()) {
+                            String optionName = item.getText();
+                            if (optionName.equalsIgnoreCase("Import Data") || optionName.equalsIgnoreCase("Export Data")
+                                    || optionName.equalsIgnoreCase("导入数据") || optionName.equalsIgnoreCase("导出数据")) {
                                 item.setEnabled(false);
                             }
                         }
@@ -366,7 +380,7 @@ public class NavigatorUtils {
                 DBCExecutionContextDefaults contextDefaults = defaultContext.getContextDefaults();
                 if (contextDefaults != null) {
                     if ((selectedObject instanceof DBSCatalog && contextDefaults.supportsCatalogChange() && contextDefaults.getDefaultCatalog() != selectedObject) ||
-                        (selectedObject instanceof DBSSchema && contextDefaults.supportsSchemaChange() && contextDefaults.getDefaultSchema() != selectedObject))
+                            (selectedObject instanceof DBSSchema && contextDefaults.supportsSchemaChange() && contextDefaults.getDefaultSchema() != selectedObject))
                     {
                         addSetActive = true;
                     }
@@ -417,18 +431,18 @@ public class NavigatorUtils {
     public static void addDragAndDropSupport(final Viewer viewer, boolean enableDrag, boolean enableDrop) {
         if (enableDrag) {
             Transfer[] dragTransferTypes = new Transfer[] {
-                TextTransfer.getInstance(),
-                TreeNodeTransfer.getInstance(),
-                DatabaseObjectTransfer.getInstance(),
-                EditorInputTransfer.getInstance(),
-                FileTransfer.getInstance()
+                    TextTransfer.getInstance(),
+                    TreeNodeTransfer.getInstance(),
+                    DatabaseObjectTransfer.getInstance(),
+                    EditorInputTransfer.getInstance(),
+                    FileTransfer.getInstance()
             };
-            
-            if (RuntimeUtils.isGtk()) { 
+
+            if (RuntimeUtils.isGtk()) {
                 // TextTransfer should be the last on GTK due to platform' DND implementation inconsistency
                 ArrayUtils.reverse(dragTransferTypes);
             }
-            
+
             int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
 
             final DragSource source = new DragSource(viewer.getControl(), operations);
@@ -467,8 +481,8 @@ public class NavigatorUtils {
                                 nodeName = object.getName();
                                 nodeObject = object;
                             } else if (nextSelected instanceof DBNStreamData
-                                && ((DBNStreamData) nextSelected).supportsStreamData()
-                                && (EditorInputTransfer.getInstance().isSupportedType(event.dataType)
+                                    && ((DBNStreamData) nextSelected).supportsStreamData()
+                                    && (EditorInputTransfer.getInstance().isSupportedType(event.dataType)
                                     || FileTransfer.getInstance().isSupportedType(event.dataType)))
                             {
                                 String fileName = node.getNodeName();
@@ -514,23 +528,23 @@ public class NavigatorUtils {
                             event.data = info.keySet();
                         } else if (DatabaseObjectTransfer.getInstance().isSupportedType(event.dataType)) {
                             event.data = info.values().stream()
-                                .map(TransferInfo::getObject)
-                                .filter(Objects::nonNull)
-                                .collect(Collectors.toList());
+                                    .map(TransferInfo::getObject)
+                                    .filter(Objects::nonNull)
+                                    .collect(Collectors.toList());
                         } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
                             event.data = info.values().stream()
-                                .map(TransferInfo::getName)
-                                .collect(Collectors.joining(CommonUtils.getLineSeparator()));
+                                    .map(TransferInfo::getName)
+                                    .collect(Collectors.joining(CommonUtils.getLineSeparator()));
                         } else if (EditorInputTransfer.getInstance().isSupportedType(event.dataType)) {
                             event.data = info.values().stream()
-                                .map(TransferInfo::createEditorInputData)
-                                .filter(Objects::nonNull)
-                                .toArray(EditorInputTransfer.EditorInputData[]::new);
+                                    .map(TransferInfo::createEditorInputData)
+                                    .filter(Objects::nonNull)
+                                    .toArray(EditorInputTransfer.EditorInputData[]::new);
                         } else if (FileTransfer.getInstance().isSupportedType(event.dataType)) {
                             event.data = info.values().stream()
-                                .map(TransferInfo::getName)
-                                .filter(name -> Files.exists(Path.of(name)))
-                                .toArray(String[]::new);
+                                    .map(TransferInfo::getName)
+                                    .filter(name -> Files.exists(Path.of(name)))
+                                    .toArray(String[]::new);
                         }
                     } else {
                         if (TreeNodeTransfer.getInstance().isSupportedType(event.dataType)) {
@@ -841,7 +855,7 @@ public class NavigatorUtils {
         DBNNode selectedNode = getSelectedNode(navigatorViewer.getSelection());
         DBPProject nodeProject = selectedNode.getOwnerProject();
         if (!(selectedNode instanceof DBNDatabaseNode)
-            || (nodeProject != null && !nodeProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT))
+                || (nodeProject != null && !nodeProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT))
         ) {
             return false;
         }
@@ -869,22 +883,22 @@ public class NavigatorUtils {
                 if (editorContextDefaults != null) {
                     final DBSObject dbObject = dbsObject;
                     RuntimeUtils.runTask(monitor -> {
-                            try {
-                                monitor.beginTask("Change default object", 1);
-                                if (dbObject instanceof DBSCatalog && dbObject != editorContextDefaults.getDefaultCatalog()) {
-                                    monitor.subTask("Change default catalog");
-                                    editorContextDefaults.setDefaultCatalog(monitor, (DBSCatalog) dbObject, null);
-                                } else if (dbObject instanceof DBSSchema && dbObject != editorContextDefaults.getDefaultSchema()) {
-                                    monitor.subTask("Change default schema");
-                                    editorContextDefaults.setDefaultSchema(monitor, (DBSSchema) dbObject);
+                                try {
+                                    monitor.beginTask("Change default object", 1);
+                                    if (dbObject instanceof DBSCatalog && dbObject != editorContextDefaults.getDefaultCatalog()) {
+                                        monitor.subTask("Change default catalog");
+                                        editorContextDefaults.setDefaultCatalog(monitor, (DBSCatalog) dbObject, null);
+                                    } else if (dbObject instanceof DBSSchema && dbObject != editorContextDefaults.getDefaultSchema()) {
+                                        monitor.subTask("Change default schema");
+                                        editorContextDefaults.setDefaultSchema(monitor, (DBSSchema) dbObject);
+                                    }
+                                    monitor.worked(1);
+                                    monitor.done();
+                                } catch (DBCException e) {
+                                    throw new InvocationTargetException(e);
                                 }
-                                monitor.worked(1);
-                                monitor.done();
-                            } catch (DBCException e) {
-                                throw new InvocationTargetException(e);
-                            }
-                        }, "Set active object",
-                        dbObject.getDataSource().getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT));
+                            }, "Set active object",
+                            dbObject.getDataSource().getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT));
                 }
             }
         }
@@ -912,9 +926,9 @@ public class NavigatorUtils {
                             objectManager.openObjectEditor(window, (DBNObjectNode) node);
                         } catch (Exception e) {
                             DBWorkbench.getPlatformUI().showError(
-                                "Error opening object",
-                                "Error while opening object '" + ((DBNObjectNode) node).getNodeObject() + "'",
-                                e);
+                                    "Error opening object",
+                                    "Error while opening object '" + ((DBNObjectNode) node).getNodeObject() + "'",
+                                    e);
                         }
                     }
                     return;
@@ -922,9 +936,9 @@ public class NavigatorUtils {
             }
             Object activePage = parameters == null ? null : parameters.get(MultiPageDatabaseEditor.PARAMETER_ACTIVE_PAGE);
             NavigatorHandlerObjectOpen.openEntityEditor(
-                (DBNNode) node,
-                CommonUtils.toString(activePage, null),
-                window);
+                    (DBNNode) node,
+                    CommonUtils.toString(activePage, null),
+                    window);
         }
     }
 
