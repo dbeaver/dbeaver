@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.ui.controls.CSmartSelector;
 import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,6 +52,7 @@ public class YashanDBDebugPanelFunction implements DBGConfigurationPanel {
     private CSmartCombo<YashanDBProcedureStandalone> functionCombo;
     private YashanDBProcedureStandalone selectedFunction;
     private Map<DBSProcedureParameter, Object> parameterValues = new HashMap<>();
+    private Map<DBSProcedureParameter, Object> parameterTypes = new HashMap<>();
     private Table parametersTable;
 
     @Override
@@ -150,7 +152,7 @@ public class YashanDBDebugPanelFunction implements DBGConfigurationPanel {
         }
         for (String string : strings) {
             TableItem item = new TableItem(parametersTable, SWT.NONE);
-            
+
             item.setText(0, string);
             item.setText(1, string);
             item.setText(2, string);
@@ -217,23 +219,34 @@ public class YashanDBDebugPanelFunction implements DBGConfigurationPanel {
 
             @Override
             protected Control createEditor(Table table, int index, TableItem item) {
-                if (index != 1) {
+                if (index != 1 && index != 2) {
                     return null;
                 }
-                DBSProcedureParameter param = (DBSProcedureParameter) item.getData();
-                Text editor = new Text(table, SWT.BORDER);
-                editor.setText(CommonUtils.toString(parameterValues.get(param), ""));
-                editor.selectAll();
-                return editor;
+                if(index==1) {
+                    DBSProcedureParameter param = (DBSProcedureParameter) item.getData();
+                    Text editor = new Text(table, SWT.BORDER);
+                    editor.setText(CommonUtils.toString(parameterValues.get(param), ""));
+                    editor.selectAll();
+                    return editor;
+                }else {
+                    DBSProcedureParameter param = (DBSProcedureParameter) item.getData();
+                    Text editor = new Text(table, SWT.BORDER);
+                    editor.setText(CommonUtils.toString(parameterTypes.get(param), ""));
+                    editor.selectAll();
+                    return editor;
+                }
             }
 
             @Override
             protected void saveEditorValue(Control control, int index, TableItem item) {
                 DBSProcedureParameter param = (DBSProcedureParameter) item.getData();
                 String newValue = ((Text) control).getText();
-                item.setText(1, newValue);
-
-                parameterValues.put(param, newValue);
+                item.setText(index, newValue);
+                if(index==1) {
+                    parameterValues.put(param, newValue);
+                }else if(index==2){
+                    parameterTypes.put(param,newValue);
+                }
                 container.updateDialogState();
             }
         };
@@ -272,6 +285,18 @@ public class YashanDBDebugPanelFunction implements DBGConfigurationPanel {
                 }
             }
 
+            @SuppressWarnings("unchecked")
+            List<String> paramTypes = (List<String>) configuration.get(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS_TYPE);
+            if (paramTypes != null) {
+                List<YashanDBProcedureArgument> parameters = selectedFunction.getInputParams();
+                if (parameters.size() == paramTypes.size()) {
+                    for (int i = 0; i < parameters.size(); i++) {
+                        YashanDBProcedureArgument param = parameters.get(i);
+                        parameterTypes.put(param, paramTypes.get(i));
+                    }
+                }
+            }
+
             updateParametersTable();
         }
         if (selectedFunction != null) {
@@ -289,7 +314,21 @@ public class YashanDBDebugPanelFunction implements DBGConfigurationPanel {
             item.setText(0, param.getName());
             Object value = parameterValues.get(param);
             item.setText(1, CommonUtils.toString(value, ""));
-            item.setText(2, param.getParameterType().getFullTypeName());
+            Object type=parameterTypes.get(param);
+            if (type == null) {
+                Field[] fields = param.getClass().getDeclaredFields();
+                for(Field field: fields) {
+                    field.setAccessible(true);
+                    if(field.getName().equals("type")){
+                        try {
+                            type = field.get(param);
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            }
+            item.setText(2, CommonUtils.toString(type, ""));
             item.setText(3, param.getParameterKind().getTitle());
         }
 
@@ -307,11 +346,15 @@ public class YashanDBDebugPanelFunction implements DBGConfigurationPanel {
 //            configuration.put(YashanDBDebugConstants.ATTR_DATABASE_NAME, selectedFunction.getDatabase().getName());
             configuration.put(YashanDBDebugConstants.ATTR_SCHEMA_NAME, selectedFunction.getSchema().getName());
             List<String> paramValues = new ArrayList<>();
+            List<String> paramTypes=new ArrayList<>();
             for (YashanDBProcedureArgument param : selectedFunction.getInputParams()) {
                 Object value = parameterValues.get(param);
                 paramValues.add(value == null ? null : value.toString());
+                Object type=parameterTypes.get(param);
+                paramTypes.add(type==null?null:type.toString());
             }
             configuration.put(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS, paramValues);
+            configuration.put(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS_TYPE,paramTypes);
 
             //YANGMENG,可以会返回参数名字
             //LinkedHashMap<String, String> params =
@@ -323,6 +366,7 @@ public class YashanDBDebugPanelFunction implements DBGConfigurationPanel {
 //            configuration.remove(YashanDBDebugConstants.ATTR_DATABASE_NAME);
             configuration.remove(YashanDBDebugConstants.ATTR_SCHEMA_NAME);
             configuration.remove(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS);
+            configuration.remove(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS_TYPE);
         }
     }
 
