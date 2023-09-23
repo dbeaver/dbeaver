@@ -335,6 +335,7 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
             if (forTable != null) {
                 sql.append(" AND c.TABLE_NAME=?");
             }
+            sql.append("AND USER_GENERATED = 'Y'");
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             dbStat.setString(1, owner.getName());
