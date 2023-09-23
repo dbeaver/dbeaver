@@ -63,6 +63,8 @@ public class AboutBoxDialog extends InformationDialog
     public static final String PRODUCT_PROP_WEBSITE = "website"; //$NON-NLS-1$
     public static final String PRODUCT_PROP_EMAIL = "email"; //$NON-NLS-1$
 
+    public static final String PRODUCT_VERSION = "V23.1.0.";
+
     private final Font NAME_FONT,TITLE_FONT;
     private static final Log log = Log.getLog(AboutBoxDialog.class);
 
@@ -212,7 +214,7 @@ public class AboutBoxDialog extends InformationDialog
         Text versionLabel = new Text(group, SWT.NONE);
         versionLabel.setEditable(false);
         versionLabel.setBackground(background);
-        versionLabel.setText(CoreMessages.dialog_about_label_version + GeneralUtils.getProductVersion().toString());
+        versionLabel.setText(CoreMessages.dialog_about_label_version + PRODUCT_VERSION + dateFormat.format(GeneralUtils.getProductReleaseDate()));
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         versionLabel.setLayoutData(gd);
