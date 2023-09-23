@@ -338,6 +338,8 @@ public class NavigatorUtils {
             addSetDefaultObjectAction(workbenchSite, manager, selectedNode);
         }
         if (!(selectedNode != null &&
+                selectedNode.getNodeItemPath() != null &&
+                selectedNode.getNodeDescription() != null &&
                 selectedNode.getNodeItemPath().contains(driverShield) &&
                 (selectedNode.getNodeDescription().equals(YASHANDB_TABLE_CONSTRAINTS) ||
                         selectedNode.getNodeDescription().equals(YASHANDB_TABLE_TRIGGERS)))){

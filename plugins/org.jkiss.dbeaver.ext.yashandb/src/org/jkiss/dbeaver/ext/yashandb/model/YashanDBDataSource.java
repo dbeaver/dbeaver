@@ -63,7 +63,7 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
     private boolean resolveGeometryAsStruct = true;
     private boolean hasStatistics;
 
-    private static List<String> prohibitDataTypeDistributed = new ArrayList<>(List.of("BIT","BLOB","ROWID","UROWID","NCHAR","NCLOB","NVARCHAR"));
+    private static List<String> prohibitDataTypeDistributed = new ArrayList<>(List.of("BIT","BLOB","ROWID","UROWID","NCHAR","NCLOB","NVARCHAR","GEOMETRY"));
 
     private final Map<String, Boolean> availableViews = new HashMap<>();
 
