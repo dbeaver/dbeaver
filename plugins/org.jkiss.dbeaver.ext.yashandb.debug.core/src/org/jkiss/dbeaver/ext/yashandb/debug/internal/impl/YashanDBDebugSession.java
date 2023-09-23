@@ -76,6 +76,33 @@ public class YashanDBDebugSession extends DBGJDBCSession {
 
     private static final int LOCAL_TIMEOT = 1000 * LOCAL_WAIT; // 50 sec
 
+    public static final List<String> NOT_COMMAS_VALUE_TYPES = new ArrayList<String>(){{
+        add(YashanDBDebugConstants.YASHANDB_TINYINT);
+        add(YashanDBDebugConstants.YASHANDB_SMALLINT);
+        add(YashanDBDebugConstants.YASHANDB_INT);
+        add(YashanDBDebugConstants.YASHANDB_BIGINT);
+        add(YashanDBDebugConstants.YASHANDB_FLOAT);
+        add(YashanDBDebugConstants.YASHANDB_DOUBLE);
+        add(YashanDBDebugConstants.YASHANDB_NUMBER);
+    }};
+
+    public static final List<String> COMMAS_VALUE_TYPES = new ArrayList<String>(){{
+        add(YashanDBDebugConstants.YASHANDB_CHAR);
+        add(YashanDBDebugConstants.YASHANDB_VARCHAR);
+        add(YashanDBDebugConstants.YASHANDB_NCHAR);
+        add(YashanDBDebugConstants.YASHANDB_NVARCHAR);
+        add(YashanDBDebugConstants.YASHANDB_BOOLEAN);
+        add(YashanDBDebugConstants.YASHANDB_DATE);
+        add(YashanDBDebugConstants.YASHANDB_TIME);
+        add(YashanDBDebugConstants.YASHANDB_TIMESTAMP);
+        add(YashanDBDebugConstants.YASHANDB_BLOB);
+        add(YashanDBDebugConstants.YASHANDB_CLOB);
+        add(YashanDBDebugConstants.YASHANDB_NCLOB);
+        add(YashanDBDebugConstants.YASHANDB_RAW);
+        add(YashanDBDebugConstants.YASHANDB_ROWID);
+        add(YashanDBDebugConstants.YASHANDB_UROWID);
+    }};
+
     private static final Log log = Log.getLog(YashanDBDebugSession.class);
 
     private Collection<YashanDBProcedureStandalone> procedures;
@@ -93,13 +120,13 @@ public class YashanDBDebugSession extends DBGJDBCSession {
      * attached to postgres procedure by attach method
      */
     YashanDBDebugSession(DBRProgressMonitor monitor, DBGBaseController controller)
-        throws DBGException {
+            throws DBGException {
         super(controller);
         YashanDBDataSource dataSource = (YashanDBDataSource) controller.getDataSourceContainer().getDataSource();
         try {
             YashanDBDataSource instance;
-                YashanDBProcedureStandalone function = YashanDBDebugCore.resolveFunction(monitor, controller.getDataSourceContainer(), controller.getDebugConfiguration(), null, null);
-                instance = function.getDataSource();
+            YashanDBProcedureStandalone function = YashanDBDebugCore.resolveFunction(monitor, controller.getDataSourceContainer(), controller.getDebugConfiguration(), null, null);
+            instance = function.getDataSource();
 
             this.controllerConnection = new YashanDBDataBase(instance).openIsolatedContext(monitor,"YashanDB Debug controller session",null);
 
@@ -195,7 +222,7 @@ public class YashanDBDebugSession extends DBGJDBCSession {
                         fireEvent(new DBGEvent(this, DBGEvent.TERMINATE, DBGEvent.CLIENT_REQUEST));
                     }
                 }
-				return null;
+                return null;
             }
         }, "continue");
         log.debug("continue for realized");
@@ -462,7 +489,7 @@ public class YashanDBDebugSession extends DBGJDBCSession {
 //                        log.debug(String.format("Return %d src char(s)", src.length()));
 //                        return src;
 //                    }
-                    return null;
+        return null;
 //                }
 //            }
 //        } catch (SQLException e) {
@@ -554,7 +581,7 @@ public class YashanDBDebugSession extends DBGJDBCSession {
 //            case LOCAL:
 //                return sessionId > 0;
 //            default:
-                return true;
+        return true;
 //        }
     }
 
@@ -579,7 +606,7 @@ public class YashanDBDebugSession extends DBGJDBCSession {
                 try {
                     yasConnection.close();
                 } catch (SQLException e) {
-                   yasConnection=null;
+                    yasConnection=null;
                 }
             }
         }
@@ -629,7 +656,7 @@ public class YashanDBDebugSession extends DBGJDBCSession {
             //procedures = ((YashanDBDataSource) getController().getDataSourceContainer().getDataSource())
             //        .getSchema(monitor, configuration.get(YashanDBDebugConstants.ATTR_SCHEMA_NAME).toString()).getProcedures(monitor);
 
-             executionContext =
+            executionContext =
                     (JDBCExecutionContext) controllerConnection.getOwnerInstance().openIsolatedContext(monitor, "Debug process session", null);
 
             try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.USER, "Run SQL command")) {
@@ -667,6 +694,7 @@ public class YashanDBDebugSession extends DBGJDBCSession {
             //parameter init
             YashanDBProcedureStandalone function = YashanDBDebugCore.resolveFunction(monitor, controllerConnection.getDataSource().getContainer(), configuration, null, null);
             List<String> parameterValues = (List<String>) configuration.get(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS);
+            List<String> parameterTypes=(List<String>) configuration.get(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS_TYPE);
 
             //param vaild
             List<YashanDBProcedureArgument> inputParams = function.getInputParams();
@@ -680,17 +708,17 @@ public class YashanDBDebugSession extends DBGJDBCSession {
             Collection<YashanDBProcedureArgument> parameters = function.getParameters(monitor);
             List<YashanDBProcedureArgument> inOutParams = parameters.stream()
                     .filter(t -> t.getParameterKind().equals(DBSProcedureParameterKind.IN) ||
-                    t.getParameterKind().equals(DBSProcedureParameterKind.OUT) ||
-                    t.getParameterKind().equals(DBSProcedureParameterKind.INOUT)).collect(Collectors.toList());
+                            t.getParameterKind().equals(DBSProcedureParameterKind.OUT) ||
+                            t.getParameterKind().equals(DBSProcedureParameterKind.INOUT)).collect(Collectors.toList());
 
             //不管是函数还是存储过程, 都区分有参数和无参数
             StringBuilder startSql = null;
             if (function.getSourceType().equals(YashanDBSourceType.UDF)){
-                startSql = getAnonymousSqlBuilder(yashanDBDebugObjectDescriptor, parameterValues, inOutParams, true);
+                startSql = getAnonymousSqlBuilder(yashanDBDebugObjectDescriptor, parameterValues, parameterTypes, inOutParams, true);
             }else {
-                startSql = getAnonymousSqlBuilder(yashanDBDebugObjectDescriptor, parameterValues, inOutParams, false);
+                startSql = getAnonymousSqlBuilder(yashanDBDebugObjectDescriptor, parameterValues, parameterTypes, inOutParams, false);
             }
-            
+
             log.debug("YashanDB debug start sql: \t"+startSql);
 
             //Connection connection1 = executionContext.getConnection(monitor);
@@ -712,13 +740,13 @@ public class YashanDBDebugSession extends DBGJDBCSession {
             yasConnection=(YasConnection) getYSConnection(connectionConfiguration.getUrl(),
                     connectionConfiguration.getUserName(), connectionConfiguration.getUserPassword());
             sessionStatement = yasConnection.createDebugStatement(startSql.toString(), yashanDBDebugObjectDescriptor.getOid(),
-                                    yashanDBDebugObjectDescriptor.getSubprogramId(),
-                                    yashanDBDebugObjectDescriptor.getVersion());
+                    yashanDBDebugObjectDescriptor.getSubprogramId(),
+                    yashanDBDebugObjectDescriptor.getVersion());
 
             //breakpoint init
             sessionStatement.pdbgStart();
 
-           getController().fireEvent(new DBGEvent(this, DBGEvent.SUSPEND, DBGEvent.MODEL_SPECIFIC));
+            getController().fireEvent(new DBGEvent(this, DBGEvent.SUSPEND, DBGEvent.MODEL_SPECIFIC));
         } catch (Exception e) {
             e.printStackTrace();
             if (sessionStatement != null && sessionStatement.isDebugOn())
@@ -744,6 +772,7 @@ public class YashanDBDebugSession extends DBGJDBCSession {
      */
     private static StringBuilder getAnonymousSqlBuilder(YashanDBDebugObjectDescriptor yashanDBDebugObjectDescriptor,
                                                         List<String> parameterValues,
+                                                        List<String> parameterTypes,
                                                         List<YashanDBProcedureArgument> inOutParams,
                                                         boolean isFunction) throws DBGException {
         StringBuilder startSql;
@@ -759,6 +788,7 @@ public class YashanDBDebugSession extends DBGJDBCSession {
                 //param besic info
                 DBSProcedureParameterKind inOutParamParameterKind = inOutParam.getParameterKind();
                 int inOutParamTypeID = inOutParam.getTypeID();
+                String dataType = inOutParam.getType().toString();
                 YashanDBDataType inOutParamType = (YashanDBDataType)inOutParam.getType();
                 String paramName = inOutParam.getName();
                 int typeID = inOutParamType.getTypeID();
@@ -768,89 +798,36 @@ public class YashanDBDebugSession extends DBGJDBCSession {
                 long dataLengthFromAllArguments = inOutParam.getMaxLength();
                 if (inOutParamParameterKind.equals(DBSProcedureParameterKind.IN) || inOutParamParameterKind.equals(DBSProcedureParameterKind.INOUT)){
                     //TODO: maybe null
-                    switch (inOutParamTypeID){
-                        case Types.VARCHAR:
-                        case Types.CHAR:
-                        case Types.LONGVARCHAR:
-                        case Types.OTHER:
-                        case Types.VARBINARY:
-                            //DataType.RAW
-                            //RAW,CHAR需要特殊处理, 保持和oracle一致
-                            //varchar的参数长度特殊处理一下, 要不然报错YAS-00109 work stack overflow, try to push 32004 bytes
-                            startSql.append(paramName).append(" ").append(
-                                            typeID == (Types.CHAR) ||
-                                                    typeID == Types.VARBINARY ||
-                                                    (typeID == Types.OTHER && inOutParamType.getName().equals("JSON") //JSON
-                                                    ) ? "VARCHAR" : inOutParamType.toString())
-                                    .append("(").append(chars.contains(typeID)? varcharLength: dataLengthFromAllArguments).append(") ").append(":=")
-                                    .append('\'').append(parameterValues.get(parameterIndex)).append('\'').append(";\n");
-                            break;
-                        case Types.DATE:
-                        case Types.TIMESTAMP:
-                        case Types.TIME:
-                        case Types.BLOB:
-                        case Types.CLOB:
-                        case Types.ROWID:
-                            startSql.append(paramName).append(" ").append(inOutParamType.toString()).append(":=")
-                                    .append('\'').append(parameterValues.get(parameterIndex)).append('\'').append(";\n");
-                            break;
-                        case Types.INTEGER:
-                        case Types.BIGINT:
-                        case Types.TINYINT:
-                        case Types.NUMERIC:
-                        case Types.SMALLINT:
-                        case Types.TIME_WITH_TIMEZONE:
-                        case Types.TIMESTAMP_WITH_TIMEZONE:
-                        case Types.BIT:
-                            startSql.append(paramName).append(" ").append(inOutParamType.toString())
-                                    .append("(").append(dataLengthFromAllArguments).append(") ").append(":=")
+                    if (NOT_COMMAS_VALUE_TYPES.contains(dataType)){
+                        startSql.append(paramName).append(" ").append(parameterTypes.get(parameterIndex)).append(":=")
+                                .append(parameterValues.get(parameterIndex)).append(";\n");
+                    } else if (COMMAS_VALUE_TYPES.contains(dataType)) {
+                        startSql.append(paramName).append(" ").append(parameterTypes.get(parameterIndex)).append(":=")
+                                .append('\'').append(parameterValues.get(parameterIndex)).append('\'').append(";\n");
+                    } else if (dataType.equals(YashanDBDebugConstants.YASHANDB_JSON)
+                            || dataType.equals(YashanDBDebugConstants.YASHANDB_INTERVAL_YEAR_TO_MONTH)
+                            || dataType.equals(YashanDBDebugConstants.YASHANDB_INTERVAL_DAY_TO_SECOND)) {
+                        if (parameterValues.get(parameterIndex).startsWith("JSON(\'{") || parameterValues.get(parameterIndex).startsWith("INTERVAL ") ){
+                            startSql.append(paramName).append(" ").append(parameterTypes.get(parameterIndex)).append(":=")
                                     .append(parameterValues.get(parameterIndex)).append(";\n");
-                            break;
-                        case Types.BOOLEAN:
-                        case Types.FLOAT:
-                        case Types.DOUBLE:
-                            startSql.append(paramName).append(" ").append(inOutParamType.toString()).append(":=")
-                                    .append(parameterValues.get(parameterIndex)).append(";\n");
-                            break;
-                        default:
-                            throw new DBGException("param inOutParamType error");
+                        } else {
+                            startSql.append(paramName).append(" ").append(parameterTypes.get(parameterIndex)).append(":=")
+                                    .append('\'').append(parameterValues.get(parameterIndex)).append('\'').append(";\n");
+                        }
+                    } else {
+                        throw new DBGException("param inOutParamType error");
                     }
                     //TODO: 暂时用下标, 实在不行用map
                     parameterIndex++;
                 }else {
                     //out
-                    switch (inOutParamTypeID){
-                        case Types.VARCHAR:
-                        case Types.CHAR:
-                        case Types.LONGVARCHAR:
-                        case Types.OTHER:
-                        case Types.VARBINARY:
-                            startSql.append(paramName).append(" ").append(inOutParamType.toString())
-                                    .append("(").append(chars.contains(typeID)? varcharLength: dataLengthFromAllArguments).append(") ").append(";\n");
-                            break;
-                        case Types.INTEGER:
-                        case Types.BIGINT:
-                        case Types.TINYINT:
-                        case Types.NUMERIC:
-                        case Types.SMALLINT:
-                        case Types.TIME_WITH_TIMEZONE:
-                        case Types.TIMESTAMP_WITH_TIMEZONE:
-                        case Types.BIT:
-                            startSql.append(paramName).append(" ").append(inOutParamType.toString()).append("(").append(dataLengthFromAllArguments).append(");\n");
-                            break;
-                        case Types.BOOLEAN:
-                        case Types.FLOAT:
-                        case Types.DOUBLE:
-                        case Types.CLOB:
-                        case Types.BLOB:
-                        case Types.TIMESTAMP:
-                        case Types.DATE:
-                        case Types.TIME:
-                        case Types.ROWID:
-                            startSql.append(paramName).append(" ").append(inOutParamType.toString()).append(";\n");
-                            break;
-                        default:
-                            throw new DBGException("param inOutParamType error");
+                    if (NOT_COMMAS_VALUE_TYPES.contains(dataType) || COMMAS_VALUE_TYPES.contains(dataType)
+                            || dataType.equals(YashanDBDebugConstants.YASHANDB_JSON)
+                            || dataType.equals(YashanDBDebugConstants.YASHANDB_INTERVAL_YEAR_TO_MONTH)
+                            || dataType.equals(YashanDBDebugConstants.YASHANDB_INTERVAL_DAY_TO_SECOND)){
+                        startSql.append(paramName).append(" ").append(parameterTypes.get(parameterIndex)).append(";\n");
+                    } else {
+                        throw new DBGException("param inOutParamType error");
                     }
                 }
             }
