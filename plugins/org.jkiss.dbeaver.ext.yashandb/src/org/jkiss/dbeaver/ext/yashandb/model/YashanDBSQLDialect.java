@@ -579,6 +579,8 @@ public class YashanDBSQLDialect extends JDBCSQLDialect implements SQLDataTypeCon
             case YashanDBConstants.TYPE_LONG_RAW:
             case YashanDBConstants.TYPE_OCTET:
             case YashanDBConstants.TYPE_INTERVAL_YEAR_MONTH:
+            case YashanDBConstants.TYPE_GEOMETRY:
+            case YashanDBConstants.TYPE_JSON:
                 // Don't add modifiers to these types
                 return "";
         }
