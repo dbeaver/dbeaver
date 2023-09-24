@@ -112,6 +112,10 @@ public class NavigatorUtils {
 
     private static final String CREATE_NEW_JOB = "Create New Job";
 
+    private static final String CREATE_NEW_LINK = "Create New Database Link";
+
+    private static final String DATABASE_LINK = "Database Links";
+
     private static final String YASHANDB_TABLE_CONSTRAINTS = "Table constraints";
 
     private static final String YASHANDB_TABLE_TRIGGERS = "Triggers";
@@ -257,7 +261,6 @@ public class NavigatorUtils {
 
                         for (MenuItem item: m.getItems()){
                             if ( item.getText().equals("Delete\tDelete") ){
-                                Object menu = m.getData();
                                 item.setEnabled(false);
                             }
                         }
@@ -269,7 +272,17 @@ public class NavigatorUtils {
                             node.getParentNode().getParentNode().getName().equals(SCHEMA_DIRECTORY)){
                         for (MenuItem item: m.getItems()){
                             if ( item.getText().contains(CREATE_NEW_JOB) ){
-                                Object menu = m.getData();
+                                item.setEnabled(false);
+                            }
+                        }
+                    }
+
+
+
+                    if (node.getNodeItemPath().contains(driverShield) &&
+                             node.getName().equals(DATABASE_LINK) || node.getParentNode().getName().equals(DATABASE_LINK))   {
+                        for (MenuItem item: m.getItems()){
+                            if (item.getText().contains(CREATE_NEW_LINK)){
                                 item.setEnabled(false);
                             }
                         }
