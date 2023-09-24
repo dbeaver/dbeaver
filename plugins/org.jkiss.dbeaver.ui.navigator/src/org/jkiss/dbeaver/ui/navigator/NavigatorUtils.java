@@ -114,6 +114,8 @@ public class NavigatorUtils {
 
     private static final String CREATE_NEW_LINK = "Create New Database Link";
 
+    private static final String DELETE = "Delete\tDelete";
+
     private static final String DATABASE_LINK = "Database Links";
 
     private static final String YASHANDB_TABLE_CONSTRAINTS = "Table constraints";
@@ -260,7 +262,7 @@ public class NavigatorUtils {
                             node.getParentNode().getParentNode().getName().equals(firstLevelDirectory)){
 
                         for (MenuItem item: m.getItems()){
-                            if ( item.getText().equals("Delete\tDelete") ){
+                            if ( item.getText().equals(DELETE) ){
                                 item.setEnabled(false);
                             }
                         }
@@ -282,7 +284,7 @@ public class NavigatorUtils {
                     if (node.getNodeItemPath().contains(driverShield) &&
                              node.getName().equals(DATABASE_LINK) || node.getParentNode().getName().equals(DATABASE_LINK))   {
                         for (MenuItem item: m.getItems()){
-                            if (item.getText().contains(CREATE_NEW_LINK)){
+                            if (item.getText().contains(CREATE_NEW_LINK) || item.getText().contains(DELETE)){
                                 item.setEnabled(false);
                             }
                         }
