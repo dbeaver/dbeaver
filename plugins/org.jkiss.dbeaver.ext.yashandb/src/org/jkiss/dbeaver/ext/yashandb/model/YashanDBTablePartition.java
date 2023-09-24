@@ -1,14 +1,10 @@
 package org.jkiss.dbeaver.ext.yashandb.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
-import org.jkiss.dbeaver.model.struct.DBSEntityType;
-import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 
 import java.sql.ResultSet;
@@ -30,6 +26,8 @@ public class YashanDBTablePartition extends YashanDBPartitionBase<YashanDBTableP
     //TMP
     private String partitionType;
 
+    private String value;
+
     private List<YashanDBTableColumn> columns;
 
     public List<YashanDBTableColumn> getColumns() {
@@ -45,6 +43,7 @@ public class YashanDBTablePartition extends YashanDBPartitionBase<YashanDBTableP
             boolean subpartition,
             ResultSet dbResult) {
         super(yashandbTable, subpartition, dbResult);
+        this.partitionType = JDBCUtils.safeGetString(dbResult, "PARTITIONING_TYPE");
     }
 
     @Association
@@ -72,6 +71,14 @@ public class YashanDBTablePartition extends YashanDBPartitionBase<YashanDBTableP
 
     public void setPartitionType(String partitionType) {
         this.partitionType = partitionType;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 
     public void addColumn(YashanDBTableColumn column)

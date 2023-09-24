@@ -247,6 +247,7 @@ public abstract class YashanDBTableBase extends JDBCTable<YashanDBDataSource, Ya
         getContainer().constraintCache.clearObjectCache(this);
         getContainer().tableTriggerCache.clearObjectCache(this);
         getContainer().sortKeyCache.clearObjectCache(this);
+        getContainer().partitionCache.clearCache();
         return getContainer().tableCache.refreshObject(monitor, getContainer(), this);
     }
 

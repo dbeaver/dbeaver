@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -20,8 +21,12 @@ import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @Author: donghy
@@ -53,6 +58,119 @@ public class YashanDBTableManager extends SQLTableManager<YashanDBTable, YashanD
     }
 
     @Override
+    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions
+            , SQLStructEditor<YashanDBTable, YashanDBSchema>.StructCreateCommand command, Map<String, Object> options) throws DBException {
+
+        final YashanDBTable table = command.getObject();
+
+        final NestedObjectCommand tableProps = command.getObjectCommands().get(table);
+        if (tableProps == null) {
+            log.warn("Object change command not found"); //$NON-NLS-1$
+            return;
+        }
+        final String tableName = DBUtils.getEntityScriptName(table, options);
+
+        final String slComment = SQLUtils.getDialectFromObject(table).getSingleLineComments()[0];
+        final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
+        StringBuilder createQuery = new StringBuilder(100);
+        createQuery.append(beginCreateTableStatement(monitor, table, tableName, options));
+        boolean hasNestedDeclarations = false;
+
+        final Collection<NestedObjectCommand> orderedCommands = getNestedOrderedCommands(command);
+
+        for (NestedObjectCommand nestedCommand : orderedCommands) {
+            if (nestedCommand.getObject() == table) {
+                continue;
+            }
+            if (excludeFromDDL(nestedCommand, orderedCommands)) {
+                continue;
+            }
+            if(nestedCommand.getObject() instanceof YashanDBTablePartition){
+              continue;
+            }
+            final String nestedDeclaration = nestedCommand.getNestedDeclaration(monitor, table, options);
+
+            if (!CommonUtils.isEmpty(nestedDeclaration)) {
+                // Insert nested declaration
+                if (hasNestedDeclarations) {
+                    // Check for embedded comment
+                    int lastLFPos = createQuery.lastIndexOf(lineSeparator);
+                    int lastCommentPos = createQuery.lastIndexOf(slComment);
+                    if (lastCommentPos != -1) {
+                        while (lastCommentPos > 0 && Character.isWhitespace(createQuery.charAt(lastCommentPos - 1))) {
+                            lastCommentPos--;
+                        }
+                    }
+                    if (lastCommentPos < 0 || lastCommentPos < lastLFPos) {
+                        createQuery.append(","); //$NON-NLS-1$
+                    } else {
+                        createQuery.insert(lastCommentPos, ","); //$NON-NLS-1$
+                    }
+                    createQuery.append(lineSeparator);
+                }
+                if (!hasNestedDeclarations && !hasAttrDeclarations(table)) {
+                    createQuery.append("(\n\t").append(nestedDeclaration); //$NON-NLS-1$
+                } else {
+                    createQuery.append("\t").append(nestedDeclaration); //$NON-NLS-1$
+                }
+                hasNestedDeclarations = true;
+            } else {
+                // This command should be executed separately
+                final DBEPersistAction[] nestedActions = nestedCommand.getPersistActions(monitor, executionContext, options);
+                if (nestedActions != null) {
+                    Collections.addAll(actions, nestedActions);
+                }
+            }
+        }
+        if (hasAttrDeclarations(table) || hasNestedDeclarations) {
+            createQuery.append(lineSeparator);
+            createQuery.append(")"); //$NON-NLS-1$
+        }
+
+        appendTableModifiers(monitor, table, tableProps, createQuery, false);
+        // set tablespace, set table type
+        createQuery.append(endCreateTableStatement(monitor, table, tableName, options));
+        // set partitions
+        List<NestedObjectCommand> partitionCommands = orderedCommands.stream().filter(o -> o.getObject() instanceof YashanDBTablePartition).collect(Collectors.toList());
+        if(!partitionCommands.isEmpty()){
+            List<String> partitions = new ArrayList<>();
+            for (NestedObjectCommand partitionCommand : partitionCommands) {
+                partitions.add(partitionCommand.getNestedDeclaration(monitor, table, options));
+            }
+            createQuery.append(createPartitionStatement(partitionCommands, partitions));
+        }
+        actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, createQuery.toString()) );
+    }
+
+    private String createPartitionStatement(List<NestedObjectCommand> partitionCommands, List<String> partitions) {
+        NestedObjectCommand partitionCommand = partitionCommands.get(0);
+        YashanDBTablePartition partition = (YashanDBTablePartition) partitionCommand.getObject();
+        String partitionType = partition.getPartitionType();
+
+        StringBuilder partSQL = new StringBuilder("PARTITION BY ");
+        String collect = partition.getColumns().stream().map(YashanDBTableColumn::getName).collect(Collectors.joining(","));
+
+        switch (partitionType) {
+            case "RANGE":
+                partSQL.append("RANGE");
+                break;
+            case "LIST":
+                partSQL.append("LIST");
+                break;
+            default:
+                partSQL.append("HASH");
+
+        }
+        partSQL.append("(")
+                .append(collect)
+                .append(")")
+                .append("\n(")
+                .append(String.join(",\n", partitions))
+                .append(")");
+        return partSQL.toString();
+    }
+
+    @Override
     protected String beginCreateTableStatement(DBRProgressMonitor monitor, YashanDBTable table, String tableName, Map<String, Object> options) throws DBException {
         StringBuilder createPreSQL = new StringBuilder();
         createPreSQL.append("CREATE");
@@ -72,16 +190,7 @@ public class YashanDBTableManager extends SQLTableManager<YashanDBTable, YashanD
     protected String endCreateTableStatement(DBRProgressMonitor monitor, YashanDBTable table, String tableName, Map<String, Object> options) throws DBException{
         StringBuilder createSufSQL = new StringBuilder(GeneralUtils.getDefaultLineSeparator());
         if(table.getTablespace() != null){
-            String spaceName = "";
-            if(table.getTablespace() instanceof YashanDBTablespace){
-                YashanDBTablespace tablespace = (YashanDBTablespace) table.getTablespace();
-                spaceName = tablespace.getName();
-            }else {
-                spaceName = String.valueOf(table.getTablespace());
-            }
-            if(table.isEditTemporary() && !"TEMP".equals(spaceName)){
-                throw new DBException("The temporary table's tablespace setting is incorrect; only the TEMP tablespace is currently supported.");
-            }
+            String spaceName = getSpaceName(table);
             createSufSQL.append(table.getDataSource().isDistributed() ? "TABLESPACE SET " : "TABLESPACE ")
                     .append(spaceName)
                     .append(GeneralUtils.getDefaultLineSeparator());
@@ -92,6 +201,20 @@ public class YashanDBTableManager extends SQLTableManager<YashanDBTable, YashanD
                     .append(GeneralUtils.getDefaultLineSeparator());
         }
         return createSufSQL.toString();
+    }
+
+    private static String getSpaceName(YashanDBTable table) throws DBException {
+        String spaceName;
+        if(table.getTablespace() instanceof YashanDBTablespace){
+            YashanDBTablespace tablespace = (YashanDBTablespace) table.getTablespace();
+            spaceName = tablespace.getName();
+        }else {
+            spaceName = String.valueOf(table.getTablespace());
+        }
+        if(table.isEditTemporary() && !"TEMP".equals(spaceName)){
+            throw new DBException("The temporary table's tablespace setting is incorrect; only the TEMP tablespace is currently supported.");
+        }
+        return spaceName;
     }
 
     @Nullable
