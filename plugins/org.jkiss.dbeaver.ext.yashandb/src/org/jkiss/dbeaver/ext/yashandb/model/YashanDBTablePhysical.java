@@ -159,7 +159,9 @@ public abstract class YashanDBTablePhysical extends YashanDBTableBase implements
     public Collection<YashanDBTablePartition> getPartitions(DBRProgressMonitor monitor)
             throws DBException {
         List<YashanDBTablePartition> objects = getContainer().partitionCache.getObjects(monitor, getContainer(), this);
-        objects.sort(Comparator.comparingInt(YashanDBPartitionBase::getPosition));
+        if(objects != null){
+            objects.sort(Comparator.comparingInt(YashanDBPartitionBase::getPosition));
+        }
         return objects;
     }
 

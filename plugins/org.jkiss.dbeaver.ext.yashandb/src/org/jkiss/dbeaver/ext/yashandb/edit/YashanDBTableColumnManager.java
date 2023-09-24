@@ -10,7 +10,9 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -37,8 +39,9 @@ public class YashanDBTableColumnManager extends SQLTableColumnManager<YashanDBTa
         return object.getParentObject().getContainer().tableCache.getChildrenCache(object.getParentObject());
     }
 
+    @Override
     protected ColumnModifier[] getSupportedModifiers(YashanDBTableColumn column, Map<String, Object> options) {
-        return new ColumnModifier[]{DataTypeModifier, DefaultModifier, NullNotNullModifier};
+        return new ColumnModifier[] { DataTypeModifier, DefaultModifier, NullNotNullModifierConditional };
     }
 
     /**
