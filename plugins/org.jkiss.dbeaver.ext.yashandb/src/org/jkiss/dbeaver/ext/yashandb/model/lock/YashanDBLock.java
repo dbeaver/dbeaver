@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.yashandb.model.lock;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBDataSource;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 
 import java.sql.Date;
@@ -122,13 +123,13 @@ public class YashanDBLock implements DBAServerLock {
 		return wait_pid;
 	}
 
- 	@Property(viewable = true, order = 3)
+ 	@Property(viewable = true, order = 3, visibleIf = YashanDBLockColumnsValueValidator.class)
 	public String getWait_user()
 	{
 		return wait_user;
 	}
 
- 	@Property(viewable = true, order = 4)
+ 	@Property(viewable = true, order = 4, visibleIf = YashanDBLockColumnsValueValidator.class)
 	public String getOname()
 	{
 		return oname;
@@ -141,19 +142,19 @@ public class YashanDBLock implements DBAServerLock {
 	}
 
 
- 	@Property(viewable = true, order = 6)
+ 	@Property(viewable = true, order = 6, visibleIf = YashanDBLockColumnsValueValidator.class)
 	public int getHold_sid()
 	{
 		return hold_sid;
 	}
 
- 	@Property(viewable = true, order = 7)
+ 	@Property(viewable = true, order = 7, visibleIf = YashanDBLockColumnsValueValidator.class)
 	public int getHold_pid()
 	{
 		return hold_pid;
 	}
 
- 	@Property(viewable = true, order = 8)
+ 	@Property(viewable = true, order = 8, visibleIf = YashanDBLockColumnsValueValidator.class)
 	public String getHold_user()
 	{
 		return hold_user;
@@ -171,7 +172,7 @@ public class YashanDBLock implements DBAServerLock {
 		return status;
 	}
 
- 	@Property(viewable = true, order = 11)
+ 	@Property(viewable = true, order = 11, visibleIf = YashanDBLockColumnsValueValidator.class)
 	public String getEvent()
 	{
 		return event;
@@ -185,5 +186,13 @@ public class YashanDBLock implements DBAServerLock {
 	public YashanDBDataSource getDataSource() {
 		return dataSource;
 	}
- 	
+
+
+	public static class YashanDBLockColumnsValueValidator implements IPropertyValueValidator<YashanDBLock, Object> {
+
+		@Override
+		public boolean isValidValue(YashanDBLock lock, Object value) throws IllegalArgumentException {
+			return !lock.getDataSource().isDistributed();
+		}
+	}
 }

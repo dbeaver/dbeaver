@@ -124,6 +124,24 @@ public class YashanDBLockManager extends LockGraphManager implements DBAServerLo
             "AND loc.REQUEST IN ('ts', 'tx') " +
             "ORDER BY CASE WHEN hcli_osuser IS NULL THEN 0 ELSE 1 END, waiting_session";
 
+    private static final String HEAP_LOCK_QUERY = "SELECT " +
+            "  DISTINCT LOC.SID waiting_session, " +
+            "  SES.SERIAL# serial, " +
+            "  PRO.THREAD_ID wait_pid, " +
+            "  SES.USERNAME owner, " +
+            "  PRO.START_TIME logon_time, " +
+            "  PRO.STATUS status " +
+            "FROM " +
+            "   DV$LOCK  LOC " +
+            "JOIN DV$SESSION SES ON " +
+            "  LOC.GROUP_ID = SES.GROUP_ID " +
+            "  AND LOC.GROUP_NODE_ID = SES.GROUP_NODE_ID " +
+            "  AND LOC.SID = SES.SID " +
+            "JOIN  DV$PROCESS  PRO ON " +
+            "  SES.PADDR = PRO.THREAD_ADDR " +
+            "  AND PRO.GROUP_ID = SES.GROUP_ID " +
+            "  AND PRO.GROUP_NODE_ID = SES.GROUP_NODE_ID";
+
     private static final String LOCK_ITEM_QUERY = "SELECT LOC.sid, " +
             "CASE " +
             "   WHEN loc.LMODE IS NOT NULL THEN loc.LMODE " +
@@ -138,6 +156,13 @@ public class YashanDBLockManager extends LockGraphManager implements DBAServerLo
             " s.sid = loc.sid " +
             "WHERE LOC.sid = ?";
 
+    private static final String HEAP_LOCK_ITEM_QUERY =  "SELECT " +
+            "  LMODE lock_type, " +
+            "  ID1 lock_id1, " +
+            "  ID2 lock_id2 " +
+            " FROM " +
+            "  DV$LOCK  loc " +
+            "  WHERE SID = ?";
     private final YashanDBDataSource dataSource;
 
     public YashanDBLockManager(YashanDBDataSource dataSource) {
@@ -155,8 +180,12 @@ public class YashanDBLockManager extends LockGraphManager implements DBAServerLo
 
             Map<Object, YashanDBLock> locks = new HashMap<>(10);
 
-            String sql = LOCK_QUERY;
-
+            String sql;
+            if (dataSource.isDistributed()){
+                sql = HEAP_LOCK_QUERY;
+            }else {
+                sql = LOCK_QUERY;
+            }
 
             try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(sql)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -184,7 +213,12 @@ public class YashanDBLockManager extends LockGraphManager implements DBAServerLo
 
             List<YashanDBLockItem> locks = new ArrayList<>();
 
-            String sql = LOCK_ITEM_QUERY;
+            String sql;
+            if (dataSource.isDistributed()){
+                sql = HEAP_LOCK_ITEM_QUERY;
+            }else {
+                sql = LOCK_ITEM_QUERY;
+            }
 
 
             try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(sql)) {
