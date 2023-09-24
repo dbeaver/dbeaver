@@ -102,26 +102,44 @@ import java.util.stream.Stream;
 public class NavigatorUtils {
 
     private static final Log log = Log.getLog(NavigatorUtils.class);
-    private static final String driverShield = "YashanDB";
-    private static final String firstLevelDirectory = "Global metadata";
-    private static final String secondaryDirectory = "Types";
+    private static final String DRIVER = "YashanDB";
+    private static final String GLOBAL_META = "Global metadata";
+
+    private static final String CH_GLOBAL_META = "全局元数据";
+
+    private static final String TYPE = "Types";
+
+    private static final String CH_TYPE = "类型";
 
     private static final String JOB_DIRECTORY = "Jobs";
 
     private static final String SCHEMA_DIRECTORY = "Schemas";
 
+    private static final String CH_SCHEMA_DIRECTORY = "模式";
+
     private static final String CREATE_NEW_JOB = "Create New Job";
+
+    private static final String CH_CREATE_NEW_JOB = "新建 Job";
 
     private static final String CREATE_NEW_LINK = "Create New Database Link";
 
+    private static final String CH_CREATE_NEW_LINK = "新建 数据库连接";
+
     private static final String DELETE = "Delete\tDelete";
 
+    private static final String CH_DELETE = "删除\tDelete";
+
     private static final String DATABASE_LINK = "Database Links";
+
+    private static final String CH_DATABASE_LINK = "数据库连接";
 
     private static final String YASHANDB_TABLE_CONSTRAINTS = "Table constraints";
 
     private static final String YASHANDB_TABLE_TRIGGERS = "Triggers";
 
+    private static final String CH_META_TABLE = "表";
+
+    private static final String META_TABLE = "Tables";
     public static DBNNode getSelectedNode(ISelectionProvider selectionProvider)
     {
         if (selectionProvider == null) {
@@ -255,49 +273,59 @@ public class NavigatorUtils {
                 Menu m = (Menu)e.widget;
                 DBNNode node = getSelectedNode(viewer.getSelection());
                 if (node != null){
-                    String objectType = ((DBNDatabaseFolder) node.getParentNode()).getMeta().getType();
 
-                    if (node.getNodeItemPath().contains(driverShield) &&
-                            node.getParentNode().getName().equals(secondaryDirectory) &&
-                            node.getParentNode().getParentNode().getName().equals(firstLevelDirectory)){
+                    if (node.getNodeItemPath().contains(DRIVER) &&
+                            (node.getParentNode().getName().equals(TYPE) ||
+                            node.getParentNode().getName().equals(CH_TYPE)) &&
+                            (node.getParentNode().getParentNode().getName().equals(GLOBAL_META) ||
+                            node.getParentNode().getParentNode().getName().equals(CH_GLOBAL_META))){
 
                         for (MenuItem item: m.getItems()){
-                            if ( item.getText().equals(DELETE) ){
+                            if ( item.getText().equals(DELETE) || item.getText().equals(CH_DELETE)){
                                 item.setEnabled(false);
                             }
                         }
 
                     }
 
-                    if (node.getNodeItemPath().contains(driverShield) &&
-                            node.getName().equals(JOB_DIRECTORY) &&
-                            node.getParentNode().getParentNode().getName().equals(SCHEMA_DIRECTORY)){
+                    if (node.getNodeItemPath().contains(DRIVER) &&
+                            node.getName().contains(JOB_DIRECTORY)){
                         for (MenuItem item: m.getItems()){
-                            if ( item.getText().contains(CREATE_NEW_JOB) ){
+                            if ( item.getText().contains(CREATE_NEW_JOB) || item.getText().contains(CH_CREATE_NEW_JOB)){
                                 item.setEnabled(false);
                             }
                         }
                     }
 
 
-
-                    if (node.getNodeItemPath().contains(driverShield) &&
-                             node.getName().equals(DATABASE_LINK) || node.getParentNode().getName().equals(DATABASE_LINK))   {
+                    if (node.getNodeItemPath().contains(DRIVER) &&
+                             node.getName().equals(DATABASE_LINK)
+                            || node.getName().equals(CH_DATABASE_LINK)
+                            || node.getParentNode().getName().equals(DATABASE_LINK)
+                            || node.getParentNode().getName().equals(CH_DATABASE_LINK))   {
                         for (MenuItem item: m.getItems()){
-                            if (item.getText().contains(CREATE_NEW_LINK) || item.getText().contains(DELETE)){
+                            if (item.getText().contains(CREATE_NEW_LINK) ||
+                                    item.getText().contains(DELETE) ||
+                                    item.getText().contains(CH_DELETE) ||
+                                    item.getText().contains(CH_CREATE_NEW_LINK)){
                                 item.setEnabled(false);
                             }
                         }
                     }
 
-                    //todo:目前表对象的导入导出数据功能无法完全保证可用，先屏蔽这功能
-                    if (objectType.contains("YashanDBMaterializedView") || objectType.contains("YashanDBView")
-                            || objectType.contains("YashanDBTable") || objectType.contains("YashanDBSchema")) {
-                        for (MenuItem item : m.getItems()) {
-                            String optionName = item.getText();
-                            if (optionName.equalsIgnoreCase("Import Data") || optionName.equalsIgnoreCase("Export Data")
-                                    || optionName.equalsIgnoreCase("导入数据") || optionName.equalsIgnoreCase("导出数据")) {
-                                item.setEnabled(false);
+                    if (node.getParentNode().getName()!= null &&
+                            node.getParentNode().getName().equals(META_TABLE) ||
+                            node.getParentNode().getName().equals(CH_META_TABLE)){
+                        String objectType = ((DBNDatabaseFolder) node.getParentNode()).getMeta().getType();
+                        //todo:目前表对象的导入导出数据功能无法完全保证可用，先屏蔽这功能
+                        if (objectType.contains("YashanDBMaterializedView") || objectType.contains("YashanDBView")
+                                || objectType.contains("YashanDBTable") || objectType.contains("YashanDBSchema")) {
+                            for (MenuItem item : m.getItems()) {
+                                String optionName = item.getText();
+                                if (optionName.equalsIgnoreCase("Import Data") || optionName.equalsIgnoreCase("Export Data")
+                                        || optionName.equalsIgnoreCase("导入数据") || optionName.equalsIgnoreCase("导出数据")) {
+                                    item.setEnabled(false);
+                                }
                             }
                         }
                     }
@@ -355,7 +383,7 @@ public class NavigatorUtils {
         if (!(selectedNode != null &&
                 selectedNode.getNodeItemPath() != null &&
                 selectedNode.getNodeDescription() != null &&
-                selectedNode.getNodeItemPath().contains(driverShield) &&
+                selectedNode.getNodeItemPath().contains(DRIVER) &&
                 (selectedNode.getNodeDescription().equals(YASHANDB_TABLE_CONSTRAINTS) ||
                         selectedNode.getNodeDescription().equals(YASHANDB_TABLE_TRIGGERS)))){
             manager.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS));
