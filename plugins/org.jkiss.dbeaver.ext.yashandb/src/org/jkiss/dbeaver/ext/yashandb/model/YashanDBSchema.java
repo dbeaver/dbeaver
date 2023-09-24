@@ -937,10 +937,11 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull YashanDBSchema owner,
                                                     @Nullable YashanDBProcedureStandalone object, @Nullable String objectName) throws SQLException {
-            //todo: DBA_PROCEDURES 必须用吧dba视图
+            //todo: DBA_PROCEDURES 必须用dba视图
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT o.*, a.SUBPROGRAM_ID  FROM " + YashanDBUtils.isAdminPriv(owner.getDataSource(), "OBJECTS o join DBA_PROCEDURES a on " +
-                            "o.OBJECT_id=a.OBJECT_id") +
+                    "SELECT o.*, a.SUBPROGRAM_ID  FROM " + YashanDBUtils.isAdminPriv(owner.getDataSource(), "OBJECTS")+" o join "+
+                            YashanDBUtils.isAdminPriv(owner.getDataSource(),"PROCEDURES")+" a on " +
+                            "o.OBJECT_id=a.OBJECT_id" +
                             " WHERE o.OBJECT_TYPE IN ('PROCEDURE','UDF') " +
                             "AND o.OWNER=? " +
                             (object == null && objectName == null ? "" : "AND o.OBJECT_NAME=? ") +
@@ -992,8 +993,8 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
             final boolean isPublic = owner.isPublic();
             JDBCPreparedStatement dbStat = session.prepareStatement(
                     isPublic ?
-                            "SELECT * FROM " + YashanDBUtils.getSysSchemaPrefix(owner.getDataSource()) + "DBA_RECYCLEBIN" :
-                            "SELECT * FROM " + YashanDBUtils.getSysSchemaPrefix(owner.getDataSource()) + "DBA_RECYCLEBIN WHERE OWNER=?");
+                            "SELECT * FROM " + YashanDBUtils.getSysSchemaPrefix(owner.getDataSource()) + YashanDBUtils.isAdminPriv(owner.getDataSource(), "RECYCLEBIN"):
+                            "SELECT * FROM " + YashanDBUtils.getSysSchemaPrefix(owner.getDataSource()) + YashanDBUtils.isAdminPriv(owner.getDataSource(), "RECYCLEBIN")+" WHERE OWNER=?");
             if (!isPublic) {
                 dbStat.setString(1, owner.getName());
             }
@@ -1015,7 +1016,7 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull YashanDBSchema owner) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT a.*,o.OBJECT_NAME FROM " + YashanDBUtils.isAdminPriv(owner.getDataSource(), "JOBS") +
-                            " a JOIN DBA_OBJECTS o ON o.object_id = a.job WHERE SCHEMA_USER=? ORDER BY JOB"
+                            " a JOIN "+YashanDBUtils.isAdminPriv(owner.getDataSource(), "OBJECTS")+" o ON o.object_id = a.job WHERE SCHEMA_USER=? ORDER BY JOB"
             );
              dbStat.setString(1, owner.getName());
              return dbStat;
