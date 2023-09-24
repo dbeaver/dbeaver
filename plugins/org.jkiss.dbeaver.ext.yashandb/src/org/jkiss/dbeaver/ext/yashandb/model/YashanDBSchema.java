@@ -50,6 +50,7 @@ import java.util.stream.Collectors;
 /**
  * YashanDBSchema
  */
+@SuppressWarnings("ALL")
 public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, DBPRefreshableObject,
         DBPSystemObject, DBSProcedureContainer, DBPObjectStatisticsCollector {
     private static final Log log = Log.getLog(YashanDBSchema.class);
@@ -68,6 +69,7 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
     private volatile boolean hasStatistics;
     final public DataTypeCache dataTypeCache = new DataTypeCache();
     final public TriggerCache triggerCache = new TriggerCache();
+    final public PartitionCache partitionCache = new PartitionCache();
     final public SortKeyCache sortKeyCache = new SortKeyCache();
     final public TableTriggerCache tableTriggerCache = new TableTriggerCache();
     final public SequenceCache sequenceCache = new SequenceCache();
@@ -476,6 +478,39 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
         }
     }
 
+      class PartitionCache extends JDBCCompositeCache<YashanDBSchema, YashanDBTablePhysical, YashanDBTablePartition, YashanDBTablePartition> {
+
+         protected PartitionCache() {
+             super(tableCache, YashanDBTablePhysical.class, "TABLE_NAME", "PARTITION_NAME");
+         }
+
+         @Override
+         protected JDBCStatement prepareObjectsStatement(JDBCSession session, YashanDBSchema yashanDBSchema, YashanDBTablePhysical forParent) throws SQLException {
+             final JDBCPreparedStatement dbStat = session.prepareStatement(
+                     "SELECT aps.PARTITIONING_TYPE, atp.* FROM ALL_TAB_PARTITIONS atp \n" +
+                             "LEFT JOIN ALL_PART_TABLES aps \n" +
+                             "ON atp.TABLE_OWNER = aps.OWNER AND atp.TABLE_NAME = aps.TABLE_NAME\n" +
+                             "WHERE  atp.TABLE_OWNER = ? AND atp.TABLE_NAME=? ORDER BY atp.PARTITION_POSITION");
+             dbStat.setString(1, yashanDBSchema.getName());
+             dbStat.setString(2, forParent.getName());
+             return dbStat;
+         }
+
+         @Override
+         protected YashanDBTablePartition fetchObject(JDBCSession session, YashanDBSchema yashanDBSchema, YashanDBTablePhysical yashanDBTablePhysical, String childName, JDBCResultSet resultSet) throws SQLException, DBException {
+             return new YashanDBTablePartition(yashanDBTablePhysical, false, resultSet);
+         }
+
+         @Override
+         protected YashanDBTablePartition[] fetchObjectRow(JDBCSession session, YashanDBTablePhysical table, YashanDBTablePartition forObject, JDBCResultSet resultSet) throws SQLException, DBException {
+             return new YashanDBTablePartition[0];
+         }
+
+         @Override
+         protected void cacheChildren(DBRProgressMonitor monitor, YashanDBTablePartition object, List<YashanDBTablePartition> children) {
+
+         }
+     }
 
     class SpecialPosition {
 
@@ -1233,6 +1268,7 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
         indexCache.clearCache();
         foreignKeyCache.clearCache();
         triggerCache.clearCache();
+        partitionCache.clearCache();
         sortKeyCache.clearCache();
         tableTriggerCache.clearCache();
         schemaDBLinkCache.clearCache();

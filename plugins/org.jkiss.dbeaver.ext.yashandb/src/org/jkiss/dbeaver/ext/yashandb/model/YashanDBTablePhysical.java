@@ -27,6 +27,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -42,7 +43,8 @@ public abstract class YashanDBTablePhysical extends YashanDBTableBase implements
     private Object tablespace;
     private boolean partitioned;
     private PartitionInfo partitionInfo;
-    private PartitionCache partitionCache;
+
+    private Collection<YashanDBTablePartition> partitions;
 
     protected YashanDBTablePhysical(YashanDBSchema schema, String name) {
         super(schema, name, false);
@@ -57,7 +59,6 @@ public abstract class YashanDBTablePhysical extends YashanDBTableBase implements
         this.rowCount = JDBCUtils.safeGetLong(dbResult, "NUM_ROWS");
         this.tablespace = JDBCUtils.safeGetString(dbResult, "TABLESPACE_NAME");
         this.partitioned = JDBCUtils.safeGetBoolean(dbResult, "PARTITIONED", "Y");
-        this.partitionCache = partitioned ? new PartitionCache() : null;
     }
 
     /**
@@ -157,24 +158,19 @@ public abstract class YashanDBTablePhysical extends YashanDBTableBase implements
     @Association
     public Collection<YashanDBTablePartition> getPartitions(DBRProgressMonitor monitor)
             throws DBException {
-        if (partitionCache == null) {
-            return null;
-        } else {
-            this.partitionCache.getAllObjects(monitor, this);
-            this.partitionCache.loadChildren(monitor, this, null);
-            return this.partitionCache.getAllObjects(monitor, this);
-        }
+        List<YashanDBTablePartition> objects = getContainer().partitionCache.getObjects(monitor, getContainer(), this);
+        objects.sort(Comparator.comparingInt(YashanDBPartitionBase::getPosition));
+        return objects;
+    }
+
+    public void setPartitions(Collection<YashanDBTablePartition> partitions) {
+        this.partitions = partitions;
     }
 
     @Association
     public Collection<YashanDBTablePartition> getSubPartitions(DBRProgressMonitor monitor, YashanDBTablePartition partition)
             throws DBException {
-        if (partitionCache == null) {
-            return null;
-        } else {
-            this.partitionCache.getAllObjects(monitor, this);
-            return this.partitionCache.getChildren(monitor, this, partition);
-        }
+        return getContainer().partitionCache.getObjects(monitor, getContainer(), this);
     }
 
     @Override
@@ -214,51 +210,6 @@ public abstract class YashanDBTablePhysical extends YashanDBTableBase implements
     /**
      * Partitioning showed in Statistics.
      */
-
-    private static class PartitionCache extends JDBCStructCache<YashanDBTablePhysical, YashanDBTablePartition, YashanDBTablePartition> {
-
-        protected PartitionCache() {
-            super("PARTITION_NAME");
-        }
-
-        @NotNull
-        @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull YashanDBTablePhysical table) throws SQLException {
-            final JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT * FROM ALL_TAB_PARTITIONS " +
-                            "WHERE TABLE_OWNER=? AND TABLE_NAME=? " +
-                            "ORDER BY PARTITION_POSITION");
-            dbStat.setString(1, table.getContainer().getName());
-            dbStat.setString(2, table.getName());
-            return dbStat;
-        }
-
-        @Override
-        protected YashanDBTablePartition fetchObject(@NotNull JDBCSession session, @NotNull YashanDBTablePhysical table, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
-            return new YashanDBTablePartition(table, false, resultSet);
-        }
-
-        @Override
-        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull YashanDBTablePhysical table, @Nullable YashanDBTablePartition forObject) throws SQLException {
-            final JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT * FROM ALL_TAB_PARTITIONS " +
-                            "WHERE TABLE_OWNER=? AND TABLE_NAME=? " +
-                            (forObject == null ? "" : "AND PARTITION_NAME=? ") +
-                            "ORDER BY PARTITION_POSITION");
-            dbStat.setString(1, table.getContainer().getName());
-            dbStat.setString(2, table.getName());
-            if (forObject != null) {
-                dbStat.setString(3, forObject.getName());
-            }
-            return dbStat;
-        }
-
-        @Override
-        protected YashanDBTablePartition fetchChild(@NotNull JDBCSession session, @NotNull YashanDBTablePhysical table, @NotNull YashanDBTablePartition parent, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
-            return new YashanDBTablePartition(table, true, dbResult);
-        }
-
-    }
 
     public static class PartitionInfo extends YashanDBPartitionBase.PartitionInfoBase {
 

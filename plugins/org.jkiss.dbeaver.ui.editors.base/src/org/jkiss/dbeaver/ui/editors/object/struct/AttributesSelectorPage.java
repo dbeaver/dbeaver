@@ -262,7 +262,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         fillAttributes(entity);
     }
 
-    private void fillAttributes(final DBSEntity entity)
+    protected void fillAttributes(final DBSEntity entity)
     {
         if (entity == null) {
             return;
@@ -315,7 +315,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         loadJob.schedule();
     }
 
-    private void preselectAttributes() {
+    protected void preselectAttributes() {
         IStructuredSelection selection = getCurrentSelection();
         if (selection == null) {
             return;
@@ -344,7 +344,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
     }
 
     @Nullable
-    private static IStructuredSelection getCurrentSelection() {
+    protected static IStructuredSelection getCurrentSelection() {
         IWorkbenchPart part = UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart();
         if (part == null) { //fixme it's a copy from navigator utils
             return null;

@@ -90,10 +90,6 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         createQuery.append(beginCreateTableStatement(monitor, table, tableName, options));
         boolean hasNestedDeclarations = false;
         final Collection<NestedObjectCommand> orderedCommands = getNestedOrderedCommands(command);
-        
-        List<String> tmpPartion = new ArrayList<>();
-        options.put("yasfrist", true);
-        
         for (NestedObjectCommand nestedCommand : orderedCommands) {
             if (nestedCommand.getObject() == table) {
                 continue;
@@ -102,13 +98,6 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 continue;
             }
             final String nestedDeclaration = nestedCommand.getNestedDeclaration(monitor, table, options);
-            
-            if (nestedCommand.getObject().getClass().toString().toUpperCase().contains("YASHANDBTABLEPARTITION")){
-                tmpPartion.add(nestedDeclaration);
-                options.put("yasfrist", false);
-                continue;
-            }
-            
             if (!CommonUtils.isEmpty(nestedDeclaration)) {
                 // Insert nested declaration
                 if (hasNestedDeclarations) {
@@ -121,16 +110,16 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                         }
                     }
                     if (lastCommentPos < 0 || lastCommentPos < lastLFPos) {
-                          createQuery.append(","); //$NON-NLS-1$
+                        createQuery.append(","); //$NON-NLS-1$
                     } else {
-                           createQuery.insert(lastCommentPos, ","); //$NON-NLS-1$
+                        createQuery.insert(lastCommentPos, ","); //$NON-NLS-1$
                     }
                     createQuery.append(lineSeparator);
                 }
                 if (!hasNestedDeclarations && !hasAttrDeclarations(table)) {
-                    createQuery.append("(\n\t").append(nestedDeclaration); //$NON-NLS-1$  
+                    createQuery.append("(\n\t").append(nestedDeclaration); //$NON-NLS-1$
                 } else {
-                 createQuery.append("\t").append(nestedDeclaration); //$NON-NLS-1$
+                    createQuery.append("\t").append(nestedDeclaration); //$NON-NLS-1$
                 }
                 hasNestedDeclarations = true;
             } else {
@@ -147,16 +136,6 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         }
 
         appendTableModifiers(monitor, table, tableProps, createQuery, false);
-        
-      //TMP PART
-        if (!tmpPartion.isEmpty()){
-            for (String s : tmpPartion) {
-                createQuery.append(s);
-            }
-            createQuery = new StringBuilder().append(createQuery.substring(0, createQuery.length()-2));
-            createQuery.append("\n)");
-        }
-        createQuery.append(endCreateTableStatement(monitor, table, tableName, options));
         actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, createQuery.toString()) );
     }
 
