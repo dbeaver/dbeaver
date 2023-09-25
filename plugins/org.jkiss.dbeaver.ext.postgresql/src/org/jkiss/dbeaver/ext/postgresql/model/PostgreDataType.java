@@ -305,13 +305,15 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
     }
 
     private void readEnumValues(@NotNull DBRProgressMonitor monitor) throws DBException {
-        List<PostgreEnumValue> cachedObjects = getDatabase().getEnumValueCache()
-            .getAllObjects(monitor, getDatabase());
-        enumValues = cachedObjects.stream()
-            .filter(e -> e.getEnumTypId() == getObjectId())
-            .sorted(Comparator.comparing(PostgreEnumValue::getEnumSortOrder))
-            .map(PostgreEnumValue::getEnumLabel)
-            .toArray();
+        if (getDataSource().isSupportsEnumTable()) {
+            List<PostgreEnumValue> cachedObjects = getDatabase().getEnumValueCache()
+                .getAllObjects(monitor, getDatabase());
+            enumValues = cachedObjects.stream()
+                .filter(e -> e.getEnumTypId() == getObjectId())
+                .sorted(Comparator.comparing(PostgreEnumValue::getEnumSortOrder))
+                .map(PostgreEnumValue::getEnumLabel)
+                .toArray();
+        }
     }
 
     private void readNewEnumValues(DBRProgressMonitor monitor) throws DBException {
