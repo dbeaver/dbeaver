@@ -47,7 +47,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
-import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.Section;
@@ -138,6 +137,7 @@ import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.io.*;
 import java.net.URI;
@@ -269,7 +269,10 @@ public class SQLEditor extends SQLEditorBase implements
         public void widgetDisposed(DisposeEvent e) {
             Object data = e.widget.getData();
             if (data instanceof QueryResultsContainer) {
-                QueryProcessor processor = ((QueryResultsContainer) data).queryProcessor;
+                data = ((QueryResultsContainer) data).queryProcessor;
+            }
+            if (data instanceof QueryProcessor) {
+                QueryProcessor processor = (QueryProcessor) data;
                 List<QueryResultsContainer> containers = processor.getResultContainers();
                 for (int index = containers.indexOf(data) + 1; index < containers.size(); index++) {
                     QueryResultsContainer container = containers.get(index);
@@ -877,6 +880,8 @@ public class SQLEditor extends SQLEditorBase implements
                 Object tabControl = activeResultsTab.getData();
                 if (tabControl instanceof QueryResultsContainer) {
                     return ((QueryResultsContainer) tabControl).viewer;
+                } else if (tabControl instanceof SingleTabQueryProcessor) {
+                    return ((SingleTabQueryProcessor) tabControl).getFirstResults().viewer;
                 }
             }
         }
@@ -903,6 +908,9 @@ public class SQLEditor extends SQLEditorBase implements
                 Object tabControl = activeResultsTab.getData();
                 if (tabControl instanceof QueryResultsContainer) {
                     tabControl = ((QueryResultsContainer) tabControl).viewer;
+                }
+                if (tabControl instanceof SingleTabQueryProcessor) {
+                    tabControl = ((SingleTabQueryProcessor) tabControl).getFirstResults().viewer;
                 }
                 if (tabControl instanceof IAdaptable) {
                     T adapter = ((IAdaptable) tabControl).getAdapter(required);
@@ -1328,6 +1336,8 @@ public class SQLEditor extends SQLEditorBase implements
                 Object data = e.item.getData();
                 if (data instanceof QueryResultsContainer) {
                     setActiveResultsContainer((QueryResultsContainer) data);
+                } else if (data instanceof SingleTabQueryProcessor) {  
+                    setActiveResultsContainer(((SingleTabQueryProcessor) data).getFirstResults());
                 } else if (data instanceof SQLEditorPresentationPanel) {
                     extraPresentationCurrentPanel = ((SQLEditorPresentationPanel) data);
                     extraPresentationCurrentPanel.activatePanel();
@@ -1344,6 +1354,9 @@ public class SQLEditor extends SQLEditorBase implements
             CTabItem item = (CTabItem) event.item;
             if (item.getData() instanceof QueryResultsContainer) {
                 ((MultiTabsQueryResultsContainer) item.getData()).resultsTab = item;
+            }
+            if (item.getData() instanceof SingleTabQueryProcessor) {
+                ((SingleTabQueryProcessor) item.getData()).resultsTab = item;
             }
         });
         restoreSashRatio(resultsSash, SQLPreferenceConstants.RESULTS_PANEL_RATIO);
@@ -1406,15 +1419,16 @@ public class SQLEditor extends SQLEditorBase implements
             Menu menu = menuMgr.createContextMenu(resultTabs);
             menuMgr.addMenuListener(manager -> {
                 final CTabItem activeTab = getActiveResultsTab();
-                if (activeTab != null && activeTab.getData() instanceof QueryResultsContainer) {
-                    final QueryResultsContainer container = (QueryResultsContainer) activeTab.getData();
+                boolean activeTabHasSingleResult = activeTab != null && activeTab.getData() instanceof QueryResultsContainer;
+                boolean activeTabHasMultipleResults = activeTab != null && activeTab.getData() instanceof SingleTabQueryProcessor;
+                if (activeTabHasSingleResult || activeTabHasMultipleResults) {
                     int pinnedTabsCount = 0;
                     int resultTabsCount = 0;
 
                     for (CTabItem item : resultTabs.getItems()) {
-                        if (item.getData() instanceof QueryResultsContainer) {
+                        if (item.getData() instanceof QueryProcessingComponent) {
                             resultTabsCount++;
-                            if (((QueryResultsContainer) item.getData()).isPinned()) {
+                            if (item.getData() instanceof QueryResultsContainer && ((QueryResultsContainer) item.getData()).isPinned()) {
                                 pinnedTabsCount++;
                             }
                         }
@@ -1431,21 +1445,23 @@ public class SQLEditor extends SQLEditorBase implements
                                 }
                             });
 
-                            manager.add(new Action(SQLEditorMessages.action_result_tabs_close_query_tabs) {
-                                @Override
-                                public void run() {
-                                    final QueryProcessor processor = ((QueryResultsContainer) activeTab.getData()).queryProcessor;
-                                    final List<CTabItem> tabs = new ArrayList<>();
-                                    for (QueryResultsContainer container : processor.getResultContainers()) {
-                                        if (!container.isPinned() && container.queryProcessor == processor) {
-                                            tabs.add(container.getResultsTab());
+                            if (activeTabHasSingleResult) {
+                                manager.add(new Action(SQLEditorMessages.action_result_tabs_close_query_tabs) {
+                                    @Override
+                                    public void run() {
+                                        final QueryProcessor processor = ((QueryResultsContainer) activeTab.getData()).queryProcessor;
+                                        final List<CTabItem> tabs = new ArrayList<>();
+                                        for (QueryResultsContainer container : processor.getResultContainers()) {
+                                            if (!container.isPinned() && container.queryProcessor == processor) {
+                                                tabs.add(container.getResultsTab());
+                                            }
+                                        }
+                                        for (CTabItem tab : tabs) {
+                                            tab.dispose();
                                         }
                                     }
-                                    for (CTabItem tab : tabs) {
-                                        tab.dispose();
-                                    }
-                                }
-                            });
+                                });
+                            }
 
                             manager.add(new Action(SQLEditorMessages.action_result_tabs_close_other_tabs) {
                                 @Override
@@ -1459,7 +1475,12 @@ public class SQLEditor extends SQLEditorBase implements
                                     for (CTabItem tab : tabs) {
                                         tab.dispose();
                                     }
-                                    setActiveResultsContainer((QueryResultsContainer) activeTab.getData());
+                                    if (activeTabHasSingleResult) {
+                                        setActiveResultsContainer((QueryResultsContainer) activeTab.getData());
+                                    }
+                                    if (activeTabHasMultipleResults) {
+                                        setActiveResultsContainer(((SingleTabQueryProcessor) activeTab.getData()).getFirstResults());
+                                    }
                                 }
                             });
 
@@ -1501,7 +1522,8 @@ public class SQLEditor extends SQLEditorBase implements
                         }
                     }
 
-                    if (container.hasData()) {
+                    final QueryResultsContainer container = activeTabHasSingleResult ? (QueryResultsContainer) activeTab.getData() : null;
+                    if (container != null && container.hasData()) {
                         final boolean isPinned = container.isPinned();
 
                         manager.add(new Separator());
@@ -1880,7 +1902,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private void setResultTabSelection(CTabItem item) {
         if (item != null) {
-            if (isResultSetAutoFocusEnabled || !(item.getData() instanceof QueryResultsContainer) || resultTabs.getItemCount() == 1) {
+            if (isResultSetAutoFocusEnabled || !(item.getData() instanceof QueryProcessingComponent) || resultTabs.getItemCount() == 1) {
                 resultTabs.setSelection(item);
             }
         }
@@ -2873,9 +2895,17 @@ public class SQLEditor extends SQLEditorBase implements
     private int closeExtraResultTabs(@Nullable QueryProcessor queryProcessor, boolean confirmClose, boolean keepFirstTab) {
         List<CTabItem> tabsToClose = new ArrayList<>();
         for (CTabItem item : resultTabs.getItems()) {
-            if (item.getData() instanceof QueryResultsContainer && item.getShowClose() && !isPinned(item)) {
-                QueryResultsContainer resultsProvider = (QueryResultsContainer)item.getData();
-                if (queryProcessor != null && queryProcessor != resultsProvider.queryProcessor) {
+            if (item.getShowClose() && !isPinned(item)) {
+                QueryProcessor resultsProcessor;
+                if (item.getData() instanceof QueryResultsContainer) {
+                    resultsProcessor = ((QueryResultsContainer) item.getData()).queryProcessor;
+                } 
+                else if (item.getData() instanceof QueryProcessor) {
+                    resultsProcessor = (QueryProcessor) item.getData();
+                } else {
+                    resultsProcessor = null;
+                }
+                if (queryProcessor != null && queryProcessor != resultsProcessor) {
                     continue;
                 }
                 if (queryProcessor != null && queryProcessor.resultContainers.size() < 2 && keepFirstTab) {
@@ -3422,7 +3452,9 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private QueryProcessor createQueryProcessor(boolean setSelection, boolean singleQuery, boolean makeDefault) {
-        final QueryProcessor queryProcessor = useTabPerQuery(singleQuery) ? new MultiTabsQueryProcessor(makeDefault) : new SingleTabQueryProcessor(makeDefault);
+        final QueryProcessor queryProcessor = useTabPerQuery(singleQuery)
+            ? new MultiTabsQueryProcessor(makeDefault)
+            : new SingleTabQueryProcessor(makeDefault);
         curQueryProcessor = queryProcessor;
         curResultsContainer = queryProcessor.getFirstResults();
         if (setSelection) {
@@ -3891,35 +3923,11 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
     
-    private class ResultSetSection {
-        public final Section section;
-        public final Composite contents;
-        
-        public ResultSetSection(@NotNull Composite parent) {
-            section = new Section(parent, Section.TWISTIE | Section.EXPANDED);
-            section.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-            contents = UIUtils.createComposite(section, 1);
-            section.setClient(contents);
-        }
-        
-        public void setHeader(@NotNull String text) {
-            section.setText(text);
-        }
-
-        public void setDescription(@NotNull String toolTip) {
-            section.setToolTipText(toolTip);
-        }
-
-        public boolean isDisposed() {
-            return section.isDisposed();
-        }
-    }
-    
     class SingleTabQueryProcessor extends QueryProcessor {
         private boolean tabCreated;
         private CTabItem resultsTab;
         private ScrolledComposite tabContentScroller;
-        private Composite tabContent;
+        private Composite sectionsContainer;
         
         SingleTabQueryProcessor(boolean makeDefault) {
             super(makeDefault);
@@ -3928,11 +3936,7 @@ public class SQLEditor extends SQLEditorBase implements
         @NotNull
         @Override
         protected QueryResultsContainer createQueryResultsContainer(int resultSetNumber, int resultSetIndex, boolean makeDefault) {
-            ResultSetSection section = prepareNewResultSetSection(makeDefault);
-            SingleTabQueryResultsContainer rsc = new SingleTabQueryResultsContainer(
-                section, this, resultSetNumber, resultSetIndex, makeDefault);
-            adjustContentScroller(rsc);
-            return rsc;
+            return new SingleTabQueryResultsContainer(createSection(makeDefault), this, resultSetNumber, resultSetIndex, makeDefault);
         }
         
         @Override
@@ -3941,101 +3945,32 @@ public class SQLEditor extends SQLEditorBase implements
             int resultSetIndex,
             @NotNull DBSDataContainer dataContainer
         ) {
-            ResultSetSection section = prepareNewResultSetSection(false);
-            SingleTabQueryResultsContainer rsc = new SingleTabQueryResultsContainer(
-                section, this, resultSetNumber, resultSetIndex, dataContainer);
-            adjustContentScroller(rsc);
-            return rsc;
+            return new SingleTabQueryResultsContainer(createSection(false), this, resultSetNumber, resultSetIndex, dataContainer);
         }
 
         @NotNull
-        private ResultSetSection prepareNewResultSetSection(boolean makeDefault) {
+        private Pair<Section, Composite> createSection(boolean makeDefault) {
             if (!tabCreated) {
                 tabCreated = true;
                 prepareResultSetContainerHost(makeDefault);
             }
 
-            ResultSetSection section = new ResultSetSection(tabContent);
-            section.section.addExpansionListener(new ExpansionAdapter() {
+            Section section = new Section(sectionsContainer, Section.TWISTIE | Section.EXPANDED);
+            section.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+            Composite contents = UIUtils.createComposite(section, 1);
+            section.setClient(contents);
+            section.addExpansionListener(new ExpansionAdapter() {
                 @Override
                 public void expansionStateChanged(ExpansionEvent e) {
                     relayoutContents();
                 }
             });
-            return section;
+            return new Pair<>(section, contents);
         }
         
-        private void adjustContentScroller(@NotNull SingleTabQueryResultsContainer rsc) {
-            Composite control = rsc.viewer.getControl();
-            GridData freeLayout = GridDataFactory.swtDefaults()
-                .align(GridData.FILL, GridData.FILL).grab(true, false).create();
-            GridData constrainedLayout = GridDataFactory.swtDefaults()
-                .align(GridData.FILL, GridData.FILL).grab(true, false).hint(10, 300).create();
-            control.setLayoutData(constrainedLayout);
-            
-            rsc.section.contents.setData(ResultSetViewer.CONTROL_ID, rsc.viewer);
-            //rsc.section.contents.addMouseListener(new MouseAdapter() {
-            //    @Override
-            //    public void mouseDown(MouseEvent e) {
-            //        System.out.println("MMM");
-            //    }
-            //});
-            Listener displayListener = event -> {
-                if (control.isVisible()) {
-                    Point clickedPoint = ((Control) event.widget).toDisplay(event.x, event.y);
-                    if (control.getClientArea().contains(control.toControl(clickedPoint)) && !rsc.viewer.isPresentationInFocus()) {
-                        for (Control c = control; c != null && !c.isFocusControl(); c = c.getParent()) {
-                            if (c == rsc.section.contents) {
-                                control.setFocus();
-                                break;
-                            }
-                        }
-                    }
-                }
-            };
-            control.getDisplay().addFilter(SWT.MouseDown, displayListener);
-            control.addDisposeListener(e -> control.getDisplay().removeFilter(SWT.MouseDown, displayListener));
-            
-            Label line = new Label(rsc.section.contents, SWT.SEPARATOR | SWT.HORIZONTAL);
-            line.setLayoutData(
-                GridDataFactory.swtDefaults().align(GridData.FILL, GridData.FILL).grab(true, false).hint(10, 10).create()
-            );
-            line.setCursor(line.getDisplay().getSystemCursor(SWT.CURSOR_SIZENS));
-            line.addMouseMoveListener(e -> {
-                if ((e.stateMask & SWT.BUTTON1) != 0) {
-                    // b = rsc.section.contents.getChildren()[0]; // same as control
-                    Tracker tracker = new Tracker(tabContent,  SWT.RESIZE | SWT.DOWN);
-                    tracker.setStippled(true);
-                    tracker.setCursor(tracker.getDisplay().getSystemCursor(SWT.CURSOR_SIZENS));
-                    Point size = control.getSize();
-                    Point origin = tabContent.toControl(control.toDisplay(control.getLocation()));
-                    tracker.setRectangles(new Rectangle[] { new Rectangle(origin.x, origin.y, size.x, size.y + line.getSize().y / 2) });
-                    if (tracker.open()) {
-                        Rectangle after = tracker.getRectangles()[0];
-                        int newHeight = after.height - line.getSize().y / 2;
-                        if (newHeight != constrainedLayout.heightHint) {
-                            constrainedLayout.heightHint = newHeight;
-                            control.setLayoutData(constrainedLayout);
-                            relayoutContents();
-                        }
-                    }
-                    tracker.dispose();
-                }
-            });
-            line.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseDoubleClick(MouseEvent e) {
-                    control.setLayoutData(control.getLayoutData() == constrainedLayout ? freeLayout : constrainedLayout);
-                    relayoutContents();
-                }
-            });
-            
-            relayoutContents();
-        }
-        
-        private void relayoutContents() {
-            tabContentScroller.setMinSize(tabContent.computeSize(tabContentScroller.getBorderWidth(), SWT.DEFAULT));
-            tabContent.layout();
+        public void relayoutContents() {
+            tabContentScroller.setMinSize(sectionsContainer.computeSize(tabContentScroller.getBorderWidth(), SWT.DEFAULT));
+            sectionsContainer.layout();
         }
         
         private void prepareResultSetContainerHost(boolean makeDefault) {
@@ -4057,10 +3992,10 @@ public class SQLEditor extends SQLEditorBase implements
             resultsTab.addDisposeListener(resultTabDisposeListener);
             UIUtils.disposeControlOnItemDispose(resultsTab);
             
-            tabContent = new Composite(tabContentScroller, SWT.NONE);
-            tabContent.setLayout(new GridLayout(1, false));
-            tabContent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-            tabContentScroller.setContent(tabContent);
+            sectionsContainer = new Composite(tabContentScroller, SWT.NONE);
+            sectionsContainer.setLayout(new GridLayout(1, false));
+            sectionsContainer.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+            tabContentScroller.setContent(sectionsContainer);
         }
     }
     
@@ -4623,35 +4558,97 @@ public class SQLEditor extends SQLEditorBase implements
     
     class SingleTabQueryResultsContainer extends QueryResultsContainer {
         private final SingleTabQueryProcessor queryProcessor;
-        private final ResultSetSection section;
+        private final Section section;
 
         SingleTabQueryResultsContainer(
-            @NotNull ResultSetSection section,
+            @NotNull Pair<Section, Composite> sectionAndContents,
             @NotNull SingleTabQueryProcessor queryProcessor,
             int resultSetNumber,
             int resultSetIndex,
             boolean makeDefault
         ) {
-            super(section.contents, queryProcessor, resultSetNumber, resultSetIndex, makeDefault);
+            super(sectionAndContents.getSecond(), queryProcessor, resultSetNumber, resultSetIndex, makeDefault);
             this.queryProcessor = queryProcessor;
-            this.section = section;
+            this.section = sectionAndContents.getFirst();
+            this.setupSection(sectionAndContents.getSecond());
         }
         SingleTabQueryResultsContainer(
-            @NotNull ResultSetSection section,
+            @NotNull Pair<Section, Composite> sectionAndContents,
             @NotNull SingleTabQueryProcessor queryProcessor,
             int resultSetNumber,
             int resultSetIndex,
             @NotNull DBSDataContainer dataContainer
         ) {
-            super(section.contents, queryProcessor, resultSetNumber, resultSetIndex, dataContainer);
+            super(sectionAndContents.getSecond(), queryProcessor, resultSetNumber, resultSetIndex, dataContainer);
             this.queryProcessor = queryProcessor;
-            this.section = section;
+            this.section = sectionAndContents.getFirst();
+            this.setupSection(sectionAndContents.getSecond());
+        }
+        
+        private void setupSection(@NotNull Composite sectionContents) {
+            Composite control = this.viewer.getControl();
+            GridData freeLayout = GridDataFactory.swtDefaults()
+                .align(GridData.FILL, GridData.FILL).grab(true, false).create();
+            GridData constrainedLayout = GridDataFactory.swtDefaults()
+                .align(GridData.FILL, GridData.FILL).grab(true, false).hint(10, 300).create();
+            control.setLayoutData(constrainedLayout);
+            
+            sectionContents.setData(ResultSetViewer.CONTROL_ID, this.viewer);
+
+            Label line = new Label(sectionContents, SWT.SEPARATOR | SWT.HORIZONTAL); // resultset resizing thumb
+            line.setLayoutData(GridDataFactory.swtDefaults().align(GridData.FILL, GridData.FILL).grab(true, false).hint(10, 10).create());
+            line.setCursor(line.getDisplay().getSystemCursor(SWT.CURSOR_SIZENS));
+            line.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseDoubleClick(MouseEvent e) {
+                    control.setLayoutData(control.getLayoutData() == constrainedLayout ? freeLayout : constrainedLayout);
+                    queryProcessor.relayoutContents();
+                }
+            });
+            line.addMouseMoveListener(e -> {
+                if ((e.stateMask & SWT.BUTTON1) != 0) {
+                    Tracker tracker = new Tracker(queryProcessor.sectionsContainer,  SWT.RESIZE | SWT.DOWN);
+                    tracker.setStippled(true);
+                    tracker.setCursor(tracker.getDisplay().getSystemCursor(SWT.CURSOR_SIZENS));
+                    Point size = control.getSize();
+                    Point origin = queryProcessor.sectionsContainer.toControl(control.toDisplay(control.getLocation()));
+                    tracker.setRectangles(new Rectangle[] { new Rectangle(origin.x, origin.y, size.x, size.y + line.getSize().y / 2) });
+                    if (tracker.open()) {
+                        Rectangle after = tracker.getRectangles()[0];
+                        int newHeight = after.height - line.getSize().y / 2;
+                        if (newHeight != constrainedLayout.heightHint) {
+                            constrainedLayout.heightHint = newHeight;
+                            control.setLayoutData(constrainedLayout);
+                            queryProcessor.relayoutContents();
+                        }
+                    }
+                    tracker.dispose();
+                }
+            });
+
+            Listener displayListener = event -> { // for the contextfull tool buttons critical for one resultset to be focused 
+                if (control.isVisible()) {
+                    Point clickedPoint = ((Control) event.widget).toDisplay(event.x, event.y);
+                    if (control.getClientArea().contains(control.toControl(clickedPoint)) && !this.viewer.isPresentationInFocus()) {
+                        for (Control c = control; c != null && !c.isFocusControl(); c = c.getParent()) {
+                            if (c == sectionContents) {
+                                control.setFocus();
+                                break;
+                            }
+                        }
+                    }
+                }
+            };
+            control.getDisplay().addFilter(SWT.MouseDown, displayListener);
+            control.addDisposeListener(e -> control.getDisplay().removeFilter(SWT.MouseDown, displayListener));
+            
+            queryProcessor.relayoutContents();
         }
         
         @Override
         public void setTabName(@NotNull String tabName) {
             super.setTabName(tabName);
-            section.setHeader(tabName);
+            section.setText(tabName);
         }
 
         @Override
@@ -4659,7 +4656,7 @@ public class SQLEditor extends SQLEditorBase implements
             super.updateResultsName(resultSetName, toolTip);
             if (!section.isDisposed()) {
                 if (!CommonUtils.isEmpty(resultSetName)) {
-                    section.setHeader(resultSetName);
+                    section.setText(resultSetName);
                 }
                 if (toolTip != null) {
                     section.setDescription(toolTip);
@@ -4682,21 +4679,10 @@ public class SQLEditor extends SQLEditorBase implements
         public void setPinned(boolean pinned) {
             setTabPinned(queryProcessor.resultsTab, pinned);
         }
-        
-        @Override
-        public void detach() {
-            super.detach();
 
-            if (detached) {
-                // TODO dispose resultSetViewerContainer
-                // resultsTab.dispose(); resultsTab = null;
-            }
-        }
-        
         @Override
         protected void dispose() {
-            // TODO dispose resultSetViewerContainer
-            // UIUtils.syncExec(resultsTab::dispose);
+            UIUtils.syncExec(section::dispose);
         }
     }
 
@@ -4705,7 +4691,6 @@ public class SQLEditor extends SQLEditorBase implements
         int tabIndex = 0;
         if (!makeDefault) {
             for (int i = tabCount; i > 0; i--) {
-                System.out.println(resultTabs.getItem(i - 1).getData());
                 if (resultTabs.getItem(i - 1).getData() instanceof QueryProcessingComponent) {
                     tabIndex = i;
                     break;
@@ -4732,6 +4717,10 @@ public class SQLEditor extends SQLEditorBase implements
         for (CTabItem tab : resultTabs.getItems()) {
             if (tab.getData() instanceof QueryResultsContainer) {
                 maxIndex = Math.max(maxIndex, ((QueryResultsContainer) tab.getData()).getResultSetIndex());
+            }
+            if (tab.getData() instanceof SingleTabQueryProcessor) {
+                List<QueryResultsContainer> results = ((SingleTabQueryProcessor) tab.getData()).getResultContainers();
+                maxIndex = Math.max(maxIndex, results.get(results.size() - 1).getResultSetIndex());
             }
         }
         return maxIndex;

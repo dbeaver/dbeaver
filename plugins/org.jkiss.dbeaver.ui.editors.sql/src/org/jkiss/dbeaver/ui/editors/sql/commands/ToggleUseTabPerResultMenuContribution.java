@@ -1,3 +1,19 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2023 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.ui.editors.sql.commands;
 
 
@@ -40,13 +56,14 @@ public class ToggleUseTabPerResultMenuContribution extends ActionContributionIte
 
     private static Action action = null;
 
-    private static abstract class CommandAction extends Action {
+    private abstract static  class CommandAction extends Action {
         protected final Command command;
 
         public CommandAction(@NotNull IServiceLocator serviceLocator, String commandId) {
             Command command = ActionUtils.findCommand(commandId);
             Throwable error;
-            String label, tooltip;
+            String label;
+            String tooltip;
             try {
                 label = command.getName();
                 tooltip = command.getDescription();
@@ -56,11 +73,11 @@ public class ToggleUseTabPerResultMenuContribution extends ActionContributionIte
                 tooltip = null;
                 error = e;
             }
+
             if (error != null || command == null) {
                 final String errorMessage = "Failed to resolve command parameters for unknown command '" + commandId + "'";
-                throw command == null ? new RuntimeException(errorMessage) : new RuntimeException(errorMessage, error);
+                throw command == null ? new RuntimeException(errorMessage) : new RuntimeException(errorMessage, error); // TODO: exception
             }
-
             this.command = command;
             ICommandImageService service = serviceLocator.getService(ICommandImageService.class);
             this.setImageDescriptor(service.getImageDescriptor(
@@ -81,25 +98,19 @@ public class ToggleUseTabPerResultMenuContribution extends ActionContributionIte
         @Override
         public void run() {
             try {
-                executeCommand(true);
+                executeCommand();
             } catch (CommandException e) {
                 DBWorkbench.getPlatformUI().showError("Command action error", "An error occurred during command action execution", e);
             }
         }
 
-        protected void executeCommand(boolean withChecks)
-                throws ExecutionException, NotDefinedException, NotEnabledException, NotHandledException {
-            // ISelection selection = new StructuredSelection(objects);
+        protected void executeCommand() throws ExecutionException, NotDefinedException, NotEnabledException, NotHandledException {
             ISelection selection = new StructuredSelection();
             EvaluationContext context = new EvaluationContext(null, selection);
             context.addVariable(ISources.ACTIVE_CURRENT_SELECTION_NAME, selection);
 
             ExecutionEvent event = new ExecutionEvent(command, Collections.EMPTY_MAP, null, context);
-            if (withChecks) {
-                command.executeWithChecks(event);
-            } else {
-                command.execute(event);
-            }
+            command.executeWithChecks(event);
         }
 
     }
