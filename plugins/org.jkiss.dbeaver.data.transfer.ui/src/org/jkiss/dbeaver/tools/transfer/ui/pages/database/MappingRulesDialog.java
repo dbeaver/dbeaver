@@ -26,7 +26,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -244,12 +243,12 @@ public class MappingRulesDialog extends BaseDialog {
             return targetName;
         }
         String finalName;
-            MappingNameCase nameCase = MappingNameCase.getCaseBySelectionId(nameCaseCombo.getSelectionIndex());
-            if (nameCase != MappingNameCase.DEFAULT) {
-                finalName = nameCase.getIdentifierCase().transform(targetName);
-            } else {
-                finalName = dataSource.getSQLDialect().storesUnquotedCase().transform(targetName);
-            }
+        MappingNameCase nameCase = MappingNameCase.getCaseBySelectionId(nameCaseCombo.getSelectionIndex());
+        if (nameCase != MappingNameCase.DEFAULT) {
+            finalName = nameCase.getIdentifierCase().transform(targetName);
+        } else {
+            finalName = dataSource.getSQLDialect().storesUnquotedCase().transform(targetName);
+        }
         if (CommonUtils.isNotEmpty(finalName) && finalName.contains(" ")) {
             MappingReplaceMechanism replaceMechanism =
                 MappingReplaceMechanism.getCaseBySelectionId(replaceCombo.getSelectionIndex());
