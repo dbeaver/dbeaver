@@ -194,8 +194,6 @@ public class MappingRulesDialog extends BaseDialog {
                     }
                     DBSAttributeBase source = mapping.getSource();
                     mapping.setTargetName(getTransformedName(
-                        changeNameCase,
-                        changeReplaceMechanism,
                         source != null ? source.getName() : mapping.getTargetName()));
                     if (changeDataTypeLength && source instanceof DBSTypedObjectExt2) {
                         int maxDataTypeLength = typeLengthSpinner.getSelection();
@@ -205,7 +203,7 @@ public class MappingRulesDialog extends BaseDialog {
                     }
                 }
                 if (mappingType == DatabaseMappingType.create && (changeNameCase || changeReplaceMechanism)) {
-                    container.setTargetName(getTransformedName(changeNameCase, changeReplaceMechanism, getOriginalTargetName(container)));
+                    container.setTargetName(getTransformedName(getOriginalTargetName(container)));
                 }
             }
         }
@@ -241,26 +239,25 @@ public class MappingRulesDialog extends BaseDialog {
     }
 
     @Nullable
-    private String getTransformedName(boolean changeNameCase, boolean changeReplaceMechanism, String targetName) {
+    private String getTransformedName(String targetName) {
         if (CommonUtils.isEmpty(targetName)) {
             return targetName;
         }
-        String finalName = targetName;
-        if (changeNameCase) {
+        String finalName;
             MappingNameCase nameCase = MappingNameCase.getCaseBySelectionId(nameCaseCombo.getSelectionIndex());
             if (nameCase != MappingNameCase.DEFAULT) {
                 finalName = nameCase.getIdentifierCase().transform(targetName);
             } else {
-                finalName = DBObjectNameCaseTransformer.transformName(dataSource, targetName);
+                finalName = dataSource.getSQLDialect().storesUnquotedCase().transform(targetName);
             }
-        }
-        if (changeReplaceMechanism && CommonUtils.isNotEmpty(finalName) && finalName.contains(" ")) {
+        if (CommonUtils.isNotEmpty(finalName) && finalName.contains(" ")) {
             MappingReplaceMechanism replaceMechanism =
                 MappingReplaceMechanism.getCaseBySelectionId(replaceCombo.getSelectionIndex());
             if (MappingReplaceMechanism.UNDERSCORES == replaceMechanism) {
                 finalName = finalName.replaceAll(" ", "_");
             } else if (MappingReplaceMechanism.CAMELCASE == replaceMechanism
-                && dataSource.getSQLDialect().storesUnquotedCase() != DBPIdentifierCase.UPPER
+                && !(nameCase == MappingNameCase.DEFAULT && dataSource.getSQLDialect().storesUnquotedCase() == DBPIdentifierCase.UPPER)
+                && nameCase != MappingNameCase.UPPER // No need to transform upper case names
             ) {
                 String camelCaseName = CommonUtils.toCamelCase(finalName);
                 if (CommonUtils.isNotEmpty(camelCaseName)) {

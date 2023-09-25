@@ -286,7 +286,8 @@ public class DatabaseTransferUtils {
             if (MappingReplaceMechanism.UNDERSCORES == mechanism) {
                 finalName = finalName.replaceAll(" ", "_");
             } else if (MappingReplaceMechanism.CAMELCASE == mechanism
-                && dataSource.getSQLDialect().storesUnquotedCase() != DBPIdentifierCase.UPPER
+                && !(nameCase == MappingNameCase.DEFAULT && dataSource.getSQLDialect().storesUnquotedCase() == DBPIdentifierCase.UPPER)
+                && nameCase != MappingNameCase.UPPER // No need to transform upper case names
             ) {
                 String camelCaseName = CommonUtils.toCamelCase(finalName);
                 if (CommonUtils.isNotEmpty(camelCaseName)) {
