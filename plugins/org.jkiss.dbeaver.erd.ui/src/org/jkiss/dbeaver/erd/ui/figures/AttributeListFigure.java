@@ -71,7 +71,7 @@ public class AttributeListFigure extends Figure {
 
         @Override
         public Insets getInsets(IFigure figure) {
-            return new Insets(5, 0, 5, 0);
+            return new Insets(5, 3, 3, 3);
         }
 
         @Override

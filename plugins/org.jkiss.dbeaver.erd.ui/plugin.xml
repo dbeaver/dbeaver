@@ -20,7 +20,6 @@
 <plugin>
 
     <extension-point id="org.jkiss.dbeaver.erd.ui.export.format" name="ERD Export Formats" schema="schema/org.jkiss.dbeaver.ext.erd.export.format.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.erd.ui.notation.style" name="ER Diagram Notation Style Specification" schema="schema/org.jkiss.dbeaver.erd.ui.notation.style.exsd"/>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor
@@ -590,30 +589,6 @@
             message="%confirm.erd_open_exported_file.message"
             toggleMessage="%confirm.erd_open_exported_file.toggleMessage"
             group="%editor.erd.name"/>
-    </extension>
-    <extension
-          point="org.jkiss.dbeaver.erd.ui.notation.style">
-       <erdNotation
-             description="Integration DEFinition for information modeling (IDEF1X) notation"
-             id="org.jkiss.dbeaver.erd.notaion.idef1x"
-             isDefault="true"
-             name="IDEF1X"
-             notation="org.jkiss.dbeaver.erd.ui.notation.idef1x.IDEF1XDiagramNotation">
-       </erdNotation>
-       <erdNotation
-             description="Charles Bachman diagram notation"
-             id="org.jkiss.dbeaver.erd.notaion.bachman"
-             isDefault="false"
-             name="Bachman"
-             notation="org.jkiss.dbeaver.erd.ui.notation.bachman.BachmanDiagramNotation">
-       </erdNotation>
-       <erdNotation
-             description="Crow’s Foot diagram notation"
-             id="org.jkiss.dbeaver.erd.notaion.crowsfoot"
-             isDefault="false"
-             name="Crows Foot"
-             notation="org.jkiss.dbeaver.erd.ui.notation.crowsfoot.CrowsFootDiagramNotation">
-       </erdNotation>
     </extension>
 
 </plugin>
