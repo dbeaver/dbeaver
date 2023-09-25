@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.exasol.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -36,9 +37,6 @@ public class ExasolConsumerGroup extends ExasolPriority implements DBPRefreshabl
 	private String groupName;
 	private Integer cpuWeight;
 	private Integer precedence;
-
-	
-
 	private BigDecimal groupRamLimit; 
 	private BigDecimal userRamLimit; 
 	private BigDecimal sessionRamLimit; 
@@ -47,8 +45,16 @@ public class ExasolConsumerGroup extends ExasolPriority implements DBPRefreshabl
 	private Boolean persisted;
 	private BigDecimal groupId = new BigDecimal(-1);
 	
-	public ExasolConsumerGroup(ExasolDataSource dataSource, String name, Integer precedence, Integer cpuWeight, BigDecimal groupRamLimit, 
-			BigDecimal userRamLimit, BigDecimal sessionRamLimit, String comment) {
+	public ExasolConsumerGroup(
+		@NotNull ExasolDataSource dataSource,
+		@NotNull String name,
+		@Nullable Integer precedence,
+		@NotNull Integer cpuWeight,
+		@Nullable BigDecimal groupRamLimit,
+		@Nullable BigDecimal userRamLimit,
+		@Nullable BigDecimal sessionRamLimit,
+		@Nullable String comment
+	) {
 		super(dataSource, name, comment);
 		this.cpuWeight = cpuWeight;
 		this.groupRamLimit = groupRamLimit;
@@ -61,7 +67,7 @@ public class ExasolConsumerGroup extends ExasolPriority implements DBPRefreshabl
 	    this.dataSource = dataSource;
 	}
 	
-	public ExasolConsumerGroup(ExasolDataSource dataSource, ResultSet dbResult) {
+	public ExasolConsumerGroup(@NotNull ExasolDataSource dataSource, @Nullable ResultSet dbResult) {
 		super(dataSource, "", "");
 		this.dataSource = dataSource;
 		if (dbResult != null) {
@@ -88,6 +94,7 @@ public class ExasolConsumerGroup extends ExasolPriority implements DBPRefreshabl
 		return this.dataSource.getContainer();
 	}
 
+	@NotNull
 	@Override
 	public ExasolDataSource getDataSource()
 	{

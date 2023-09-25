@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,15 @@ public class ExasolConsumerGroupManager extends SQLObjectEditor<ExasolConsumerGr
     @Override
     protected ExasolConsumerGroup createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
                                                        Object container, Object copyFrom, Map<String, Object> options) throws DBException {
-    	return new ExasolConsumerGroup((ExasolDataSource) container, "PG", null, null, null, null, null, null);
+    	return new ExasolConsumerGroup(
+    	    (ExasolDataSource) container,
+            "PG",
+            null,
+            1,
+            null,
+            null,
+            null,
+            null);
     }
 
     @Override
@@ -72,12 +81,12 @@ public class ExasolConsumerGroupManager extends SQLObjectEditor<ExasolConsumerGr
         if (group.getSessionRamLimit() != null)
         	script+=String.format(",SESSION_TEMP_DB_RAM_LIMIT=%d", group.getSessionRamLimit().longValue());
         if (group.getPrecedence() != null)
-        	script+=String.format(",PRECEDENCE=%d", group.getPrecedence().intValue());
+        	script+=String.format(",PRECEDENCE=%d", group.getPrecedence());
         
 
         actions.add(new SQLDatabasePersistAction(ExasolMessages.manager_consumer_create, script));
 
-        if (!group.getDescription().isEmpty()) {
+        if (CommonUtils.isNotEmpty(group.getDescription())) {
             actions.add(getCommentCommand(group));
         }
     }
@@ -111,7 +120,7 @@ public class ExasolConsumerGroupManager extends SQLObjectEditor<ExasolConsumerGr
     	if (com.containsKey("cpuWeight"))
     		alters.add(String.format("CPU_WEIGHT=%d",group.getCpuWeight()));
     	if (com.containsKey("precedence"))
-    		alters.add(String.format("PRECEDENCE=%d",group.getPrecedence().intValue()));
+    		alters.add(String.format("PRECEDENCE=%d", group.getPrecedence()));
     	if (com.containsKey("groupRamLimit"))
     		alters.add(String.format("GROUP_TEMP_DB_RAM_LIMIT=%d",group.getGroupRamLimit().longValue()));
     	if (com.containsKey("userRamLimit"))
@@ -120,7 +129,7 @@ public class ExasolConsumerGroupManager extends SQLObjectEditor<ExasolConsumerGr
     		alters.add(String.format("SESSION_TEMP_DB_RAM_LIMIT=%d",group.getSessionRamLimit().longValue()));
     	
     	if (alters.size() >0) {
-    		String modifyPart = alters.stream().collect(Collectors.joining(", "));
+    		String modifyPart = String.join(", ", alters);
     		actionList.add(
     				new SQLDatabasePersistAction(ExasolMessages.manager_consumer_alter,
     						String.format("ALTER CONSUMER GROUP %s SET %s",DBUtils.getQuotedIdentifier(group), modifyPart)
