@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.erd.model.ERDAttributeVisibility;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
+import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
+import org.jkiss.dbeaver.erd.ui.notations.ERDNotationRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
@@ -61,6 +63,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     private Button gridCheck;
     private Button snapCheck;
     private Combo routingType;
+    private Combo notationType;
     private Spinner spinnerGridWidth;
     private Spinner spinnerGridHeight;
 
@@ -80,14 +83,17 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         createStyleGroup(store, composite);
         createGridGroup(store, composite);
         createPrintGroup(store, composite);
-        createRoutingGroup(store, composite);
-
+        createAdvancedGroup(store, composite);
         return composite;
     }
 
-    private void createRoutingGroup(DBPPreferenceStore store, Composite composite) {
-        Group contentsGroup = UIUtils.createControlGroup(composite, ERDUIMessages.erd_preference_page_title_routing, 1 , GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
-        routingType = UIUtils.createLabelCombo(contentsGroup, ERDUIMessages.erd_preference_page_title_routing_combo, SWT.DROP_DOWN | SWT.READ_ONLY);
+    private void createAdvancedGroup(DBPPreferenceStore store, Composite composite) {
+        Group contentsGroup = UIUtils.createControlGroup(composite, ERDUIMessages.erd_preference_page_title_advanced, 2,
+            GridData.HORIZONTAL_ALIGN_FILL, 0);
+        contentsGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
+        // routing
+        routingType = UIUtils.createLabelCombo(contentsGroup, ERDUIMessages.erd_preference_page_title_routing_combo,
+            SWT.DROP_DOWN | SWT.READ_ONLY);
         routingType.add(ERDUIConstants.ROUTING_SHORTEST_PATH);
         routingType.add(ERDUIConstants.ROUTING_MIKAMI);
         if (!CommonUtils.isEmpty(store.getString(ERDUIConstants.PREF_ROUTING_TYPE))) {
@@ -95,28 +101,43 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         } else {
             routingType.setText(ERDUIConstants.ROUTING_SHORTEST_PATH);
         }
+        // notation
+        notationType = UIUtils.createLabelCombo(contentsGroup, ERDUIMessages.erd_preference_page_title_notation_combo,
+            SWT.DROP_DOWN | SWT.READ_ONLY);
+        List<ERDNotationDescriptor> erdNotations = ERDNotationRegistry.getInstance().getERDNotations();
+        for (ERDNotationDescriptor notation : erdNotations) {
+            notationType.add(notation.getName());
+        }
+        ERDNotationDescriptor notation = ERDNotationRegistry.getInstance().getNotation(store.getString(ERDUIConstants.PREF_NOTATION_TYPE));
+        if (notation != null) {
+            notationType.select(erdNotations.indexOf(notation));
+        } else {
+            notationType.select(erdNotations.indexOf(ERDNotationRegistry.getInstance().getDefaultNotation()));
+        }
     }
 
-    private void createContentsGroup(DBPPreferenceStore store, Composite composite)
-    {
-        Group contentsGroup = UIUtils.createControlGroup(composite, ERDUIMessages.erd_preference_page_title_diagram_contents, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
-        //((GridData)contentsGroup.getLayoutData()).horizontalSpan = 2;
-        contentsShowViews = UIUtils.createCheckbox(contentsGroup, ERDUIMessages.erd_preference_page_title_shows_views, store.getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS));
-        contentsShowPartitions = UIUtils.createCheckbox(contentsGroup, ERDUIMessages.erd_preference_page_title_shows_partitions, store.getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS));
+    private void createContentsGroup(DBPPreferenceStore store, Composite composite) {
+        Group contentsGroup = UIUtils.createControlGroup(composite, ERDUIMessages.erd_preference_page_title_diagram_contents, 1,
+            GridData.FILL_BOTH, 0);
+        contentsShowViews = UIUtils.createCheckbox(contentsGroup, ERDUIMessages.erd_preference_page_title_shows_views,
+            store.getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS));
+        contentsShowPartitions = UIUtils.createCheckbox(contentsGroup, ERDUIMessages.erd_preference_page_title_shows_partitions,
+            store.getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS));
     }
 
     private void createColorPrefGroup(DBPPreferenceStore store, Composite composite) {
-        Group contentsGroup = UIUtils.createControlGroup(composite, ERDUIMessages.erd_preference_page_title_color_pref, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
-        //((GridData)contentsGroup.getLayoutData()).horizontalSpan = 2;
-        changeBorderColors = UIUtils.createCheckbox(contentsGroup, ERDUIMessages.erd_preference_page_title_change_border_colors, store.getBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS));
-        changeHeaderColors = UIUtils.createCheckbox(contentsGroup, ERDUIMessages.erd_preference_page_title_change_header_colors, store.getBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS));
+        Group contentsGroup = UIUtils.createControlGroup(composite, ERDUIMessages.erd_preference_page_title_color_pref, 1,
+            GridData.FILL_BOTH, 0);
+        changeBorderColors = UIUtils.createCheckbox(contentsGroup, ERDUIMessages.erd_preference_page_title_change_border_colors,
+            store.getBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS));
+        changeHeaderColors = UIUtils.createCheckbox(contentsGroup, ERDUIMessages.erd_preference_page_title_change_header_colors,
+            store.getBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS));
     }
 
-    private void createVisibilityGroup(DBPPreferenceStore store, Composite composite)
-    {
+    private void createVisibilityGroup(DBPPreferenceStore store, Composite composite) {
         ERDAttributeVisibility defaultVisibility = ERDAttributeVisibility.getDefaultVisibility(store);
-
-        Group elemsGroup = UIUtils.createControlGroup(composite, ERDUIMessages.erd_preference_page_title_attributes_visibility, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+        Group elemsGroup = UIUtils.createControlGroup(composite, ERDUIMessages.erd_preference_page_title_attributes_visibility, 1,
+             GridData.FILL_BOTH, 0);
         for (ERDAttributeVisibility visibility : ERDAttributeVisibility.values()) {
             Button radio = new Button(elemsGroup, SWT.RADIO);
             radio.setData(visibility);
@@ -128,11 +149,10 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         }
     }
 
-    private void createStyleGroup(DBPPreferenceStore store, Composite composite)
-    {
+    private void createStyleGroup(DBPPreferenceStore store, Composite composite) {
         ERDViewStyle[] enabledStyles = ERDViewStyle.getDefaultStyles(store);
-
-        Group elemsGroup = UIUtils.createControlGroup(composite, ERDUIMessages.erd_preference_page_title_attribute_style, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+        Group elemsGroup = UIUtils.createControlGroup(composite, ERDUIMessages.erd_preference_page_title_attribute_style, 1,
+            GridData.FILL_BOTH, 0);
         for (ERDViewStyle style : ERDViewStyle.values()) {
             Button check = new Button(elemsGroup, SWT.CHECK);
             check.setData(style);
@@ -144,19 +164,22 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         }
     }
 
-    private void createGridGroup(DBPPreferenceStore store, Composite composite)
-    {
-        Group gridGroup = UIUtils.createControlGroup(composite, ERDUIMessages.pref_page_erd_group_grid, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-        gridCheck = UIUtils.createCheckbox(gridGroup, ERDUIMessages.pref_page_erd_checkbox_grid_enabled, null, store.getBoolean(ERDUIConstants.PREF_GRID_ENABLED), 2);
-        snapCheck = UIUtils.createCheckbox(gridGroup, ERDUIMessages.pref_page_erd_checkbox_snap_to_grid, null, store.getBoolean(ERDUIConstants.PREF_GRID_SNAP_ENABLED), 2);
-
-        spinnerGridWidth = UIUtils.createLabelSpinner(gridGroup, ERDUIMessages.pref_page_erd_spinner_grid_width, store.getInt(ERDUIConstants.PREF_GRID_WIDTH), 5, Short.MAX_VALUE);
-        spinnerGridHeight = UIUtils.createLabelSpinner(gridGroup, ERDUIMessages.pref_page_erd_spinner_grid_height, store.getInt(ERDUIConstants.PREF_GRID_HEIGHT), 5, Short.MAX_VALUE);
+    private void createGridGroup(DBPPreferenceStore store, Composite composite) {
+        Group gridGroup = UIUtils.createControlGroup(composite, ERDUIMessages.pref_page_erd_group_grid, 2,
+            GridData.FILL_BOTH, 0);
+        gridCheck = UIUtils.createCheckbox(gridGroup, ERDUIMessages.pref_page_erd_checkbox_grid_enabled, null,
+            store.getBoolean(ERDUIConstants.PREF_GRID_ENABLED), 2);
+        snapCheck = UIUtils.createCheckbox(gridGroup, ERDUIMessages.pref_page_erd_checkbox_snap_to_grid, null,
+            store.getBoolean(ERDUIConstants.PREF_GRID_SNAP_ENABLED), 2);
+        spinnerGridWidth = UIUtils.createLabelSpinner(gridGroup, ERDUIMessages.pref_page_erd_spinner_grid_width,
+            store.getInt(ERDUIConstants.PREF_GRID_WIDTH), 5, Short.MAX_VALUE);
+        spinnerGridHeight = UIUtils.createLabelSpinner(gridGroup, ERDUIMessages.pref_page_erd_spinner_grid_height,
+            store.getInt(ERDUIConstants.PREF_GRID_HEIGHT), 5, Short.MAX_VALUE);
     }
 
     private void createPrintGroup(DBPPreferenceStore store, Composite composite)
     {
-        Group printGroup = UIUtils.createControlGroup(composite, ERDUIMessages.pref_page_erd_group_print, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+        Group printGroup = UIUtils.createControlGroup(composite, ERDUIMessages.pref_page_erd_group_print, 2, GridData.FILL_BOTH, 0);
         modeCombo = UIUtils.createLabelCombo(printGroup, ERDUIMessages.pref_page_erd_combo_page_mode, SWT.READ_ONLY | SWT.DROP_DOWN);
         modeCombo.add(ERDUIMessages.pref_page_erd_item_tile);
         modeCombo.add(ERDUIMessages.pref_page_erd_item_fit_page);
@@ -195,6 +218,10 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         store.setValue(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS, contentsShowViews.getSelection());
         store.setValue(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS, contentsShowPartitions.getSelection());
         store.setValue(ERDUIConstants.PREF_ROUTING_TYPE, routingType.getText());
+        ERDNotationDescriptor erdNotation = ERDNotationRegistry.getInstance().getERDNotationByName(notationType.getText());
+        if (erdNotation != null) {
+            store.setValue(ERDUIConstants.PREF_NOTATION_TYPE, erdNotation.getId());
+        }
         store.setValue(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS, changeBorderColors.getSelection());
         store.setValue(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS, changeHeaderColors.getSelection());
 

@@ -119,6 +119,7 @@ public class RegistryConstants {
     public static final String ATTR_SINGLETON = "singleton"; //$NON-NLS-1$
     public static final String ATTR_IGNORE_ERRORS = "ignoreErrors"; //$NON-NLS-1$
     public static final String ATTR_DIALECT = "dialect"; //$NON-NLS-1$
+    public static final String ATTR_REQUIRES_MUTABILITY = "requiresMutability"; //$NON-NLS-1$
 
     public static final long DEFAULT_IDLE_TRANSACTION_PERIOD = 1800;
 
@@ -172,6 +173,7 @@ public class RegistryConstants {
     public static final String TAG_DATA_SOURCE = "data-source"; //$NON-NLS-1$
     public static final String TAG_EVENT = "event"; //$NON-NLS-1$
     public static final String TAG_EVENTS = "events"; //$NON-NLS-1$
+    public static final String TAG_AUTH_PROPERTIES = "auth-properties"; //$NON-NLS-1$
     public static final String TAG_PROVIDER_PROPERTIES = "provider-properties"; //$NON-NLS-1$
     public static final String TAG_PROVIDER_PROPERTY = "provider-property"; //$NON-NLS-1$
     public static final String TAG_CUSTOM_PROPERTY = "custom-property"; //$NON-NLS-1$
@@ -229,5 +231,7 @@ public class RegistryConstants {
     public static final String ATTR_CONFIGURATION_TYPE = "configurationType";
     public static final String ATTR_SUPPORTS_DISTRIBUTED_MODE = "supportsDistributedMode";
     public static final String ATTR_DEPRECATED = "deprecated";
+    public static final String ATTR_IS_DEFAULT = "isDefault"; // $NON-NLS-N$
+    public static final String ATTR_NOTATION = "notation"; // $NON-NLS-N$
 
 }
