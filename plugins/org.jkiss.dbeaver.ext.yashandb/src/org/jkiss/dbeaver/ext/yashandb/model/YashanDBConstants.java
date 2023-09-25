@@ -65,6 +65,8 @@ public class YashanDBConstants {
     public static final String TYPE_NAME_VARCHAR2 = "VARCHAR2";
     public static final String TYPE_NUMBER = "NUMBER";
     public static final String TYPE_DECIMAL = "DECIMAL";
+    public static final String TYPE_FLOAT = "FLOAT";
+    public static final String TYPE_DOUBLE = "DOUBLE";
     public static final String TYPE_LONG = "LONG";
     public static final String TYPE_LONG_RAW = "LONG RAW";
     public static final String TYPE_OCTET = "OCTET";

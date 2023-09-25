@@ -543,6 +543,14 @@ public class YashanDBSQLDialect extends JDBCSQLDialect implements SQLDataTypeCon
                                          @NotNull DBPDataKind dataKind) {
         Integer scale;
         switch (typeName) {
+            case YashanDBConstants.TYPE_FLOAT:
+            case YashanDBConstants.TYPE_DOUBLE:
+                if(column.getPrecision() == null){
+                    return String.format("(%s)", column.getScale());
+                }
+                int d = CommonUtils.toInt(column.getScale());
+                int m = CommonUtils.toInt(column.getPrecision());
+                return m == 0 && d == 0 ? "(1, 0)" : String.format("(%s, %s)", m, d);
             case YashanDBConstants.TYPE_NUMBER:
             case YashanDBConstants.TYPE_DECIMAL:
                 DBSDataType dataType = DBUtils.getDataType(column);
