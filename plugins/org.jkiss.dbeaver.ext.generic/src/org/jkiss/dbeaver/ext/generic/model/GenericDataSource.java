@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * GenericDataSource
@@ -639,6 +640,19 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
             if (container == null) {
                 log.debug("Schema '" + schemaName + "' not found");
                 return null;
+            }
+        } else if (container == null && getMetaModel().supportsNullSchemas() && !CommonUtils.isEmpty(schemas.getCachedObjects())) {
+            // This is very strange case from Spanner. He supports one main empty schema name and system schemas.
+            // So use default schema as container for this case.
+            List<GenericSchema> nonSystemSchemas = schemas.getCachedObjects()
+                .stream()
+                .filter(e -> !e.isSystem())
+                .collect(Collectors.toList());
+            if (nonSystemSchemas.size() == 1) {
+                GenericSchema schema = nonSystemSchemas.get(0);
+                if (GenericConstants.DEFAULT_NULL_SCHEMA_NAME.equals(schema.getName())) {
+                    container = schema;
+                }
             }
         }
         if (container == null) {
