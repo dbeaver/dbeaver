@@ -54,7 +54,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 /**
  * GenericDataSource
@@ -619,6 +618,16 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return super.createQueryTransformer(type);
     }
 
+    /**
+     * Find table in a parent container by container name or in default container.
+     *
+     * @param monitor for schemas and tables searching
+     * @param catalogName nullable catalog name for search (can be a parent or a grandparent)
+     * @param schemaName nullable schema name for search
+     * @param tableName not null table name for search
+     * @return generic table base object by name from parent by parent's name
+     * @throws DBException for schema or table incorrect searching
+     */
     @Nullable
     public GenericTableBase findTable(
         @NotNull DBRProgressMonitor monitor,
