@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -120,7 +121,9 @@ public abstract class NativeToolConfigPanel<OBJECT_TYPE extends DBSObject> imple
                 @Override
                 protected boolean isDataSourceVisible(DBNDataSource dataSource) {
                     try {
-                        return providerClass.isInstance(dataSource.getDataSourceContainer().getDriver().getDataSourceProvider());
+                        DBPDriver driver = dataSource.getDataSourceContainer().getDriver();
+                        return providerClass.isInstance(driver.getDataSourceProvider()) &&
+                            (driver.getNativeClientManager() != null && driver.getNativeClientManager().supportsNativeClients());
                     } catch (Exception e) {
                         log.debug(e);
                         return false;

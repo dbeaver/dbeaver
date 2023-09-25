@@ -88,17 +88,11 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     @Override
     public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener)
     {
-        ScrolledComposite scrolledComposite = UIUtils.createScrolledComposite(parent);
-
-        final Composite composite = new Composite(scrolledComposite, SWT.NONE);
+        final Composite composite = new Composite(parent, SWT.NONE);
         final GridData gridData = new GridData(GridData.FILL_BOTH);
         gridData.widthHint = UIUtils.getFontHeight(composite) * 80;
         composite.setLayoutData(gridData);
         composite.setLayout(new GridLayout(1, false));
-
-        scrolledComposite.setContent(composite);
-        scrolledComposite.setExpandHorizontal(true);
-        scrolledComposite.setExpandVertical(true);
         {
             Group settingsGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_settings, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
             credentialsPanel = new CredentialsPanel(settingsGroup, true);
@@ -109,7 +103,6 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             group.addExpansionListener(new ExpansionAdapter() {
                 @Override
                 public void expansionStateChanged(ExpansionEvent e) {
-                    scrolledComposite.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
                     UIUtils.resizeShell(parent.getShell());
                 }
             });
@@ -147,7 +140,6 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             group.addExpansionListener(new ExpansionAdapter() {
                 @Override
                 public void expansionStateChanged(ExpansionEvent e) {
-                    scrolledComposite.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
                     UIUtils.resizeShell(parent.getShell());
                 }
             });

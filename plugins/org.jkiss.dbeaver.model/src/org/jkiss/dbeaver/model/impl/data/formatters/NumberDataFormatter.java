@@ -135,6 +135,10 @@ public class NumberDataFormatter implements DBDDataFormatter {
         if (nativeSpecialValues && (CommonUtils.isNaN(value) || CommonUtils.isInfinite(value))) {
             return value.toString();
         }
+        if (value instanceof Float || value instanceof Double) {
+            // Convert to BigDecimal so we don't have rounding issues with high minimum fraction digits set
+            value = new BigDecimal(value.toString());
+        }
         try {
             synchronized (this) {
                 buffer.setLength(0);
