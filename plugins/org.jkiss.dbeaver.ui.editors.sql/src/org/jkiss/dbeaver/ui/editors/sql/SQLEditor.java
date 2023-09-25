@@ -115,7 +115,7 @@ import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddIn;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInsRegistry;
-import org.jkiss.dbeaver.ui.editors.sql.commands.ToggleUseTabPerResultMenuContribution;
+import org.jkiss.dbeaver.ui.editors.sql.commands.MultipleResultsPerTabMenuContribution;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
@@ -184,20 +184,14 @@ public class SQLEditor extends SQLEditorBase implements
 
     private static final String SIDE_TOP_TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side.top";
     private static final String SIDE_BOTTOM_TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side.bottom";
-    // private static final String RESULT_TABS_TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.resultTabs";
 
-    private static final String USE_TAB_PER_RESULT_PROPERTY = "org.jkiss.dbeaver.ui.editors.sql.useTabPerResult.isEnabled";
+    private static final String MULTIPLE_RESULTS_PER_TAB_PROPERTY = "org.jkiss.dbeaver.ui.editors.sql.multipleResultsPerTab.isEnabled";
 
-    private static final QualifiedName USE_TAB_PER_RESULT_PROP_NAME = new QualifiedName(
-        SQLEditorActivator.PLUGIN_ID, USE_TAB_PER_RESULT_PROPERTY
+    private static final QualifiedName MULTIPLE_RESULTS_PER_TAB_PROP_NAME = new QualifiedName(
+        SQLEditorActivator.PLUGIN_ID, MULTIPLE_RESULTS_PER_TAB_PROPERTY
     );
 
-
-    //    private static final String TOOLBAR_GROUP_PANELS = "panelToggles";
-
     public static final String VIEW_PART_PROP_NAME = "org.jkiss.dbeaver.ui.editors.sql.SQLEditor";
-
-
 
     public static final String DEFAULT_TITLE_PATTERN = "<${" + SQLPreferenceConstants.VAR_CONNECTION_NAME + "}> ${" + SQLPreferenceConstants.VAR_FILE_NAME + "}";
     public static final String DEFAULT_SCRIPT_FILE_NAME = "Script";
@@ -717,10 +711,10 @@ public class SQLEditor extends SQLEditorBase implements
 
     public void refreshActions() {
         // Redraw toolbar to refresh action sets
-        this.updateUseTabPerResultToolItem();
+        this.updateMultipleResultsPerTabToolItem();
         topBarMan.getControl().redraw();
         bottomBarMan.getControl().redraw();
-        ToggleUseTabPerResultMenuContribution.syncWithEditor(this);
+        MultipleResultsPerTabMenuContribution.syncWithEditor(this);
     }
 
     private class OpenContextJob extends AbstractJob {
@@ -1111,7 +1105,7 @@ public class SQLEditor extends SQLEditorBase implements
         bottomBar.pack();
         bottomBarMan.update(true);
         
-        updateUseTabPerResultToolItem();
+        updateMultipleResultsPerTabToolItem();
     }
 
     private void createPresentationSwitchBar(Composite sqlEditorPanel) {
@@ -1179,42 +1173,44 @@ public class SQLEditor extends SQLEditorBase implements
         return res;
     }
 
-    private void updateUseTabPerResultToolItem() {
-        ToolItem toolItem = getViewToolItem(SQLEditorCommands.CMD_TOGGLE_USE_TAB_PER_RESULT);
+    private void updateMultipleResultsPerTabToolItem() {
+        ToolItem toolItem = getViewToolItem(SQLEditorCommands.CMD_MULTIPLE_RESULTS_PER_TAB);
         if (toolItem != null) {
-            boolean useTabPerResult = this.isUseTabPerResultEnabled();
-            toolItem.setImage(useTabPerResult
-                ? ToggleUseTabPerResultMenuContribution.TRUE_IMAGE
-                : ToggleUseTabPerResultMenuContribution.FALSE_IMAGE
+            boolean multipleResultsPerTab = this.isMultipleResultsPerTabEnabled();
+            toolItem.setImage(multipleResultsPerTab
+                ? MultipleResultsPerTabMenuContribution.FALSE_IMAGE
+                : MultipleResultsPerTabMenuContribution.TRUE_IMAGE
             );
-            toolItem.setSelection(useTabPerResult);
+            toolItem.setSelection(multipleResultsPerTab);
         }
     }
 
     private boolean useTabPerQuery(boolean singleQuery) {
-        return singleQuery || isUseTabPerResultEnabled();
+        return singleQuery || !isMultipleResultsPerTabEnabled();
     }
 
-    public boolean isUseTabPerResultEnabled() {
+    public boolean isMultipleResultsPerTabEnabled() {
         return CommonUtils.toBoolean(this.getEditorCustomProperty(
-            USE_TAB_PER_RESULT_PROPERTY, 
-            USE_TAB_PER_RESULT_PROP_NAME, 
-            SQLPreferenceConstants.USE_TAB_PER_RESULT, 
-            "true"
+            MULTIPLE_RESULTS_PER_TAB_PROPERTY, MULTIPLE_RESULTS_PER_TAB_PROP_NAME,
+            SQLPreferenceConstants.MULTIPLE_RESULTS_PER_TAB,
+            "false"
         ).value);
     }
 
-    public void toggleUseTabPerResult() {
-        boolean wasEnabled = isUseTabPerResultEnabled();
+    /**
+     * Changes mode of showing result for script execution - multiple results per tab or one tab per result.
+     */
+    public void toggleMultipleResultsPerTab() {
+        boolean wasEnabled = isMultipleResultsPerTabEnabled();
         this.setEditorCustomProperty(
-                USE_TAB_PER_RESULT_PROPERTY, 
-                USE_TAB_PER_RESULT_PROP_NAME, 
-                SQLPreferenceConstants.USE_TAB_PER_RESULT,
-                Boolean.toString(!wasEnabled),
-                "true"
+            MULTIPLE_RESULTS_PER_TAB_PROPERTY, MULTIPLE_RESULTS_PER_TAB_PROP_NAME,
+            SQLPreferenceConstants.MULTIPLE_RESULTS_PER_TAB,
+            Boolean.toString(!wasEnabled),
+            "false"
         );
     }
-    
+
+    // TODO: move to sql utils?
     public class CustomPropValueInfo {
         public final String value;
         public final boolean isInitial;
@@ -1225,6 +1221,15 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    /**
+     * Get SQL Editor property value
+     *
+     * @param partPropName - name of the workbench part property
+     * @param filePropName - name of the file property
+     * @param globalPrefName - name of the global preference property
+     * @param defaultValue - default value if the specified property doesn't exist
+     * @return property value info
+     */
     @NotNull
     public CustomPropValueInfo getEditorCustomProperty(
         @NotNull String partPropName,
@@ -1263,12 +1268,22 @@ public class SQLEditor extends SQLEditorBase implements
         DBPPreferenceStore prefStore = this.getActivePreferenceStore();
         return prefStore.contains(globalPrefName) ? this.getActivePreferenceStore().getString(globalPrefName) : defaultValue;
     }
-    
+
+    /**
+     * Set SQL Editor property value
+     *
+     * @param partPropName - name of the workbench part property
+     * @param filePropName - name of the file property
+     * @param globalPrefName - name of the global preference property
+     * @param value - a value to set or null
+     * @param defaultValue - to set if the value is null
+     * @return determines if the property was changed
+     */
     public boolean setEditorCustomProperty(
         @NotNull String partPropName,
         @NotNull QualifiedName filePropName,
         @NotNull String globalPrefName,
-        @NotNull String value,
+        @Nullable String value,
         @NotNull String defaultValue
     ) {
         boolean changed;
@@ -1277,7 +1292,7 @@ public class SQLEditor extends SQLEditorBase implements
             this.setPartProperty(partPropName, defaultValue);
             changed = true;
         } else {
-            if (CommonUtils.equalObjects(oldValue, value.toString())) {
+            if (CommonUtils.equalObjects(oldValue, value)) {
                 changed = false;
             } else {
                 this.setPartProperty(partPropName, value);
@@ -1300,29 +1315,6 @@ public class SQLEditor extends SQLEditorBase implements
     
     private void createResultTabs() {
         resultTabs = new CTabFolder(resultsSash, SWT.TOP | SWT.FLAT);
-        
-//        {
-//            Composite resultTabsRight = new Composite(resultTabs, SWT.NONE);
-//            resultTabsRight.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-//            resultTabsRight.setLayout(new FillLayout());
-//            ToolBar resultTabsToolBar = new ToolBar(resultTabsRight, SWT.HORIZONTAL | SWT.RIGHT);
-//            ToolBarManager manager = new ToolBarManager(resultTabsToolBar);
-//            manager.add(ActionUtils.makeActionContribution(tabPerExecAction = new Action("Tab per exec", Action.AS_CHECK_BOX) { 
-//                public void run() {
-//                }
-//            }, true));
-//            
-//            final IMenuService menuService = getSite().getService(IMenuService.class);
-//            if (menuService != null) {
-//                menuService.populateContributionManager(manager, RESULT_TABS_TOOLBAR_CONTRIBUTION_ID);
-//            }
-//            manager.update(true);
-//            
-//            Point trSize = resultTabsRight.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-//            resultTabs.setTabHeight(trSize.y);
-//            resultTabs.setTopRight(resultTabsRight, SWT.RIGHT | SWT.WRAP);
-//        }
-        
         CSSUtils.setCSSClass(resultTabs, DBStyles.COLORED_BY_CONNECTION_TYPE);
         resultTabsReorder = new TabFolderReorder(resultTabs);
         resultTabs.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -2265,7 +2257,7 @@ public class SQLEditor extends SQLEditorBase implements
                 addIn.init(this);
                 addIns.add(addIn);
             } catch (Throwable ex) {
-                log.error("Error during SQL editor add-in initialilzation", ex); //$NON-NLS-1$
+                log.error("Error during SQL editor add-in initialization", ex); //$NON-NLS-1$
             }
         }
     }
@@ -2660,8 +2652,7 @@ public class SQLEditor extends SQLEditorBase implements
                     elements = xQueries;
                 }
             }
-        }
-        catch (DBException e) {
+        } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Bad query", "Can't execute query", e);
             return false;
         }
@@ -3192,8 +3183,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private void closeAllJobs()
-    {
+    private void closeAllJobs() {
         for (QueryProcessor queryProcessor : queryProcessors) {
             queryProcessor.closeJob();
         }
@@ -3208,8 +3198,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    public void handleDataSourceEvent(final DBPEvent event)
-    {
+    public void handleDataSourceEvent(final DBPEvent event) {
         final boolean dsEvent = event.getObject() == getDataSourceContainer();
         final boolean objectEvent = event.getObject() != null && event.getObject().getDataSource() == getDataSource();
         final boolean registryEvent = getDataSourceContainer() != null && event.getData() == getDataSourceContainer().getRegistry(); 
@@ -3274,14 +3263,12 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    public boolean isSaveAsAllowed()
-    {
+    public boolean isSaveAsAllowed() {
         return true;
     }
 
     @Override
-    public void doSaveAs()
-    {
+    public void doSaveAs() {
         saveToExternalFile();
     }
 
@@ -3295,8 +3282,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    public int promptToSaveOnClose()
-    {
+    public int promptToSaveOnClose() {
         int jobsRunning = getTotalQueryRunning();
         if (jobsRunning > 0) {
             log.warn("There are " + jobsRunning + " SQL job(s) still running in the editor");
@@ -3411,8 +3397,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Nullable
-    private ResultSetViewer getActiveResultSetViewer()
-    {
+    private ResultSetViewer getActiveResultSetViewer() {
         if (curResultsContainer != null) {
             return curResultsContainer.getResultSetController();
         }
@@ -3498,15 +3483,15 @@ public class SQLEditor extends SQLEditorBase implements
             case SQLPreferenceConstants.SCRIPT_TITLE_PATTERN:
                 setPartName(getEditorName());
                 return;
-            case SQLPreferenceConstants.USE_TAB_PER_RESULT: {
-                updateUseTabPerResultToolItem();
+            case SQLPreferenceConstants.MULTIPLE_RESULTS_PER_TAB: {
+                updateMultipleResultsPerTabToolItem();
                 return;
             }
         }
 
         UIUtils.asyncExec(() -> {
             topBarMan.update(true);
-            this.updateUseTabPerResultToolItem();
+            this.updateMultipleResultsPerTabToolItem();
         });
 
         fireDataSourceChanged(event);
@@ -4572,6 +4557,7 @@ public class SQLEditor extends SQLEditorBase implements
             this.section = sectionAndContents.getFirst();
             this.setupSection(sectionAndContents.getSecond());
         }
+
         SingleTabQueryResultsContainer(
             @NotNull Pair<Section, Composite> sectionAndContents,
             @NotNull SingleTabQueryProcessor queryProcessor,
@@ -4587,13 +4573,13 @@ public class SQLEditor extends SQLEditorBase implements
         
         private void setupSection(@NotNull Composite sectionContents) {
             Composite control = this.viewer.getControl();
-            GridData freeLayout = GridDataFactory.swtDefaults()
-                .align(GridData.FILL, GridData.FILL).grab(true, false).create();
+            sectionContents.setData(ResultSetViewer.CONTROL_ID, this.viewer);
+
             GridData constrainedLayout = GridDataFactory.swtDefaults()
                 .align(GridData.FILL, GridData.FILL).grab(true, false).hint(10, 300).create();
             control.setLayoutData(constrainedLayout);
-            
-            sectionContents.setData(ResultSetViewer.CONTROL_ID, this.viewer);
+            GridData freeLayout = GridDataFactory.swtDefaults()
+                .align(GridData.FILL, GridData.FILL).grab(true, false).create();
 
             Label line = new Label(sectionContents, SWT.SEPARATOR | SWT.HORIZONTAL); // resultset resizing thumb
             line.setLayoutData(GridDataFactory.swtDefaults().align(GridData.FILL, GridData.FILL).grab(true, false).hint(10, 10).create());

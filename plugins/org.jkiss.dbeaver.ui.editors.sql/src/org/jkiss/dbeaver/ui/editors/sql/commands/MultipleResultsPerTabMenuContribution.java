@@ -46,13 +46,13 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import java.util.Collections;
 
 
-public class ToggleUseTabPerResultMenuContribution extends ActionContributionItem {
+public class MultipleResultsPerTabMenuContribution extends ActionContributionItem {
 
-    private static final ImageDescriptor useTabPerResultImageTrue = DBeaverIcons.getImageDescriptor(UIIcon.SQL_USE_TAB_PER_RESULT_TRUE);
-    private static final ImageDescriptor useTabPerResultImageFalse = DBeaverIcons.getImageDescriptor(UIIcon.SQL_USE_TAB_PER_RESULT_FALSE);
+    private static final ImageDescriptor multipleResultsPerTabImageFalse = DBeaverIcons.getImageDescriptor(UIIcon.SQL_MULTIPLE_RESULTS_PER_TAB_FALSE);
+    private static final ImageDescriptor multipleResultsPerTabImageTrue = DBeaverIcons.getImageDescriptor(UIIcon.SQL_MULTIPLE_RESULTS_PER_TAB_TRUE);
 
-    public static Image TRUE_IMAGE = useTabPerResultImageTrue.createImage();
-    public static Image FALSE_IMAGE = useTabPerResultImageFalse.createImage();
+    public static Image TRUE_IMAGE = multipleResultsPerTabImageFalse.createImage();
+    public static Image FALSE_IMAGE = multipleResultsPerTabImageTrue.createImage();
 
     private static Action action = null;
 
@@ -61,23 +61,19 @@ public class ToggleUseTabPerResultMenuContribution extends ActionContributionIte
 
         public CommandAction(@NotNull IServiceLocator serviceLocator, String commandId) {
             Command command = ActionUtils.findCommand(commandId);
-            Throwable error;
+            if (command == null) {
+                throw new IllegalArgumentException("Failed to resolve command by id '" + commandId + "'");
+            }
             String label;
             String tooltip;
             try {
                 label = command.getName();
                 tooltip = command.getDescription();
-                error = null;
             } catch (Throwable e) {
-                label = null;
-                tooltip = null;
-                error = e;
+                final String errorMessage = "Failed to resolve command parameters for unknown command '" + commandId + "'";
+                throw new IllegalArgumentException(errorMessage, e);
             }
 
-            if (error != null || command == null) {
-                final String errorMessage = "Failed to resolve command parameters for unknown command '" + commandId + "'";
-                throw command == null ? new RuntimeException(errorMessage) : new RuntimeException(errorMessage, error); // TODO: exception
-            }
             this.command = command;
             ICommandImageService service = serviceLocator.getService(ICommandImageService.class);
             this.setImageDescriptor(service.getImageDescriptor(
@@ -90,9 +86,6 @@ public class ToggleUseTabPerResultMenuContribution extends ActionContributionIte
             this.setText(label);
             this.setDescription(tooltip);
             this.setToolTipText(tooltip);
-
-//            this.setEnabled(isEnabled());
-//            this.setChecked(isChecked());
         }
 
         @Override
@@ -115,28 +108,27 @@ public class ToggleUseTabPerResultMenuContribution extends ActionContributionIte
 
     }
 
-    private static class ToggleUseTabPerResultAction extends CommandAction {
-        public ToggleUseTabPerResultAction() {
-            super(PlatformUI.getWorkbench(), SQLEditorCommands.CMD_TOGGLE_USE_TAB_PER_RESULT);
+    private static class MultipleResultsPerTabAction extends CommandAction {
+        public MultipleResultsPerTabAction() {
+            super(PlatformUI.getWorkbench(), SQLEditorCommands.CMD_MULTIPLE_RESULTS_PER_TAB);
         }
-    }   
-
+    }
     
     // this thing instantiated once for the main menu and then each time on editor context menu preparation 
     
-    public ToggleUseTabPerResultMenuContribution() {
+    public MultipleResultsPerTabMenuContribution() {
         super(getContributedAction());
     }
 
     @NotNull
     private static Action getContributedAction() {
-        return action != null ? action : (action = new ToggleUseTabPerResultAction());
+        return action != null ? action : (action = new MultipleResultsPerTabAction());
     }
     
     public static void syncWithEditor(@NotNull SQLEditor editor) {
         Action action = getContributedAction();
-        boolean useTabPerResult = editor.isUseTabPerResultEnabled();
-        action.setImageDescriptor(useTabPerResult ? useTabPerResultImageTrue : useTabPerResultImageFalse);
-        action.setChecked(useTabPerResult);
+        boolean multipleResultsPerTab = editor.isMultipleResultsPerTabEnabled();
+        action.setImageDescriptor(multipleResultsPerTab ? multipleResultsPerTabImageTrue : multipleResultsPerTabImageFalse);
+        action.setChecked(multipleResultsPerTab);
     }
 }

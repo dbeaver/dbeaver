@@ -140,8 +140,8 @@ public class SQLEditorHandlerExecute extends AbstractHandler {
             case SQLEditorCommands.CMD_LOAD_PLAN:
                 editor.loadQueryPlan();
                 break;
-            case SQLEditorCommands.CMD_TOGGLE_USE_TAB_PER_RESULT:
-                editor.toggleUseTabPerResult();
+            case SQLEditorCommands.CMD_MULTIPLE_RESULTS_PER_TAB:
+                editor.toggleMultipleResultsPerTab();
                 break;
             default:
                 log.error("Unsupported SQL editor command: " + actionId);
