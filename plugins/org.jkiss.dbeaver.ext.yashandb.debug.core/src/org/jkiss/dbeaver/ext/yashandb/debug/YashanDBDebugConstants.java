@@ -31,6 +31,7 @@ public class YashanDBDebugConstants {
     public static final String YASHANDB_TINYINT = "TINYINT";
     public static final String YASHANDB_SMALLINT = "SMALLINT";
     public static final String YASHANDB_INT = "INT";
+    public static final String YASHANDB_INTEGER = "INTEGER";
     public static final String YASHANDB_BIGINT = "BIGINT";
     public static final String YASHANDB_FLOAT = "FLOAT";
     public static final String YASHANDB_DOUBLE = "DOUBLE";

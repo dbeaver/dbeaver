@@ -80,6 +80,7 @@ public class YashanDBDebugSession extends DBGJDBCSession {
         add(YashanDBDebugConstants.YASHANDB_TINYINT);
         add(YashanDBDebugConstants.YASHANDB_SMALLINT);
         add(YashanDBDebugConstants.YASHANDB_INT);
+        add(YashanDBDebugConstants.YASHANDB_INTEGER);
         add(YashanDBDebugConstants.YASHANDB_BIGINT);
         add(YashanDBDebugConstants.YASHANDB_FLOAT);
         add(YashanDBDebugConstants.YASHANDB_DOUBLE);
