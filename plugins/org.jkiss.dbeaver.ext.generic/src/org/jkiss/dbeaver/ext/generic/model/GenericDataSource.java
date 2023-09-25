@@ -619,8 +619,13 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return super.createQueryTransformer(type);
     }
 
-    GenericTableBase findTable(@NotNull DBRProgressMonitor monitor, String catalogName, String schemaName, String tableName)
-        throws DBException {
+    @Nullable
+    public GenericTableBase findTable(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable String catalogName,
+        @Nullable String schemaName,
+        @NotNull String tableName
+    ) throws DBException {
         GenericObjectContainer container = null;
         if (!CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(catalogs)) {
             container = getCatalog(catalogName);
@@ -641,22 +646,12 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                 log.debug("Schema '" + schemaName + "' not found");
                 return null;
             }
-        } else if (container == null && getMetaModel().supportsNullSchemas() && !CommonUtils.isEmpty(schemas.getCachedObjects())) {
-            // This is very strange case from Spanner. He supports one main empty schema name and system schemas.
-            // So use default schema as container for this case.
-            List<GenericSchema> nonSystemSchemas = schemas.getCachedObjects()
-                .stream()
-                .filter(e -> !e.isSystem())
-                .collect(Collectors.toList());
-            if (nonSystemSchemas.size() == 1) {
-                GenericSchema schema = nonSystemSchemas.get(0);
-                if (GenericConstants.DEFAULT_NULL_SCHEMA_NAME.equals(schema.getName())) {
-                    container = schema;
-                }
-            }
         }
         if (container == null) {
             container = structureContainer;
+        }
+        if (container == null) {
+            return null;
         }
         return container.getTable(monitor, tableName);
     }
