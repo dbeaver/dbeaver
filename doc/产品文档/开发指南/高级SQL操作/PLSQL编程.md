@@ -11,7 +11,6 @@
 
 DBeaver For YashanDB不支持将DBMS_OUTPUT等输出文本至结果栏。
 
-本示例参考 [YashanDB Doc (yasdb.com)](https://cod-doc.yasdb.com/yashandb/alpha/zh/开发手册/PLSQL参考手册/PLSQL语句/DML Statement.html#常规用法) 
 
 准备表和数据如下：
 

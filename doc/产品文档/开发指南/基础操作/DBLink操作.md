@@ -1,4 +1,4 @@
-使用DBeaver For YashanDB管理DBLink，请确保当前用户具有以下权限
+使用DBeaver For YashanDB管理DBLink，请确保当前用户具有以下权限：
 
 | 权限                        | 说明               |
 | --------------------------- | ------------------ |

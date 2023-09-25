@@ -2,7 +2,7 @@
 
 ## CREATE TABLE
 
-这里参考YashanDB文档给的创建分区表的示例。 [YashanDB Doc (yasdb.com)](https://cod-doc.yasdb.com/yashandb/alpha/zh/开发手册/SQL参考手册/SQL语句/CREATE TABLE.html#table-partition-description) 
+这里参考YashanDB文档给的创建分区表的示例。
 
 ```sql
 DROP TABLE IF EXISTS sales_info_range;
@@ -21,7 +21,7 @@ PARTITION BY RANGE(year)
  PARTITION p_sales_info_range_3 VALUES LESS THAN('2031'));
 ```
 
-在数据库导航中，选择需要建表的Schema，右键选择
+在数据库导航中，选择需要建表的Schema，右键选择：
 
 ![新建编辑器](./image/DDL/新建编辑器.png)
 
