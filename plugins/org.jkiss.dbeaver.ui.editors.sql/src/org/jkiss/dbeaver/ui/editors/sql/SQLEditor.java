@@ -4659,7 +4659,7 @@ public class SQLEditor extends SQLEditorBase implements
                     section.setText(resultSetName);
                 }
                 if (toolTip != null) {
-                    section.setDescription(toolTip);
+                    section.setToolTipText(toolTip);
                 }
             }
         }
