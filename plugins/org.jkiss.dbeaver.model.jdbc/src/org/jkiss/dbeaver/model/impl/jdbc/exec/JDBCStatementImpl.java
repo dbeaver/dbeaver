@@ -329,6 +329,11 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         try {
             return handleExecuteResult(getOriginal().execute(sql));
         } catch (Throwable e) {
+            if (e.getMessage().contains("YAS-04225 invalid word VIEW")){
+                throw this.handleExecuteError(new Throwable("is not supported create constraint on view"));
+            }else if (e.getMessage().contains("YAS-04115 \"BEFORE|AFTER|INSTEAD|FOR\" expected but missing")){
+                throw this.handleExecuteError(new Throwable("is not supported create trigger on view"));
+            }
             throw this.handleExecuteError(e);
         } finally {
             this.afterExecute();
