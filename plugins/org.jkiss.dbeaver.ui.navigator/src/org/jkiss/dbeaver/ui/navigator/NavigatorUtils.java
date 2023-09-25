@@ -329,6 +329,12 @@ public class NavigatorUtils {
                             }
                         }
                     }
+                }else {
+                    for (MenuItem item: m.getItems()){
+                        if ( item.getText().contains(CREATE_NEW_JOB) || item.getText().contains(CH_CREATE_NEW_JOB)){
+                            item.setEnabled(false);
+                        }
+                    }
                 }
 
                 if (node != null && !node.isLocked() && node.allowsOpen()) {
@@ -380,16 +386,7 @@ public class NavigatorUtils {
         if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
             addSetDefaultObjectAction(workbenchSite, manager, selectedNode);
         }
-        if (!(selectedNode != null &&
-                selectedNode.getNodeItemPath() != null &&
-                selectedNode.getNodeDescription() != null &&
-                selectedNode.getNodeItemPath().contains(DRIVER) &&
-                (selectedNode.getNodeDescription().equals(YASHANDB_TABLE_CONSTRAINTS) ||
-                        selectedNode.getNodeDescription().equals(YASHANDB_TABLE_TRIGGERS)))){
-            manager.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS));
-        }
-
-
+        manager.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS));
         manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS));
         manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS_END));
 
