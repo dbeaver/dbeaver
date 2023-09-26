@@ -157,16 +157,9 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                 }
             }
         }
-        if (ArrayUtils.isEmpty(settings.getInitConsumers())) {
-            nodes.addAll(registry.getAvailableConsumers(objectTypes));
-        } else {
-            for (IDataTransferConsumer<?, ?> target : settings.getInitConsumers()) {
-                DataTransferNodeDescriptor node = registry.getNodeByType(target.getClass());
-                if (node != null && !nodes.contains(node)) {
-                    nodes.add(node);
-                }
-            }
-        }
+
+        // Include add consumers to they can be later changed even in saved tasks
+        nodes.addAll(registry.getAvailableConsumers(objectTypes));
 
         boolean settingsChanged = nodeSettings.size() != nodes.size();
         if (!settingsChanged) {
