@@ -16,16 +16,21 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.ai.preferences;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.AISettings;
-import org.jkiss.dbeaver.model.ai.gpt3.GPTCompletionEngine;
+import org.jkiss.dbeaver.model.ai.*;
+import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
+import org.jkiss.dbeaver.model.ai.format.DefaultRequestFormatter;
+import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
@@ -33,71 +38,209 @@ import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.sql.ai.format.DefaultFormattingConfigurator;
+import org.jkiss.dbeaver.ui.editors.sql.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
     private static final Log log = Log.getLog(AIPreferencePage.class);
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ai";
     private final AISettings settings;
 
-    private IObjectPropertyConfigurator<GPTCompletionEngine, AISettings> configurator;
+    private DAICompletionEngine<?> completionEngine;
+    private IAIFormatter formatter;
+
+    private IObjectPropertyConfigurator<IAIFormatter, AISettings> formatterConfigurator;
+    private Combo serviceCombo;
+
+    private final Map<String, String> serviceNameMappings = new HashMap<>();
+    private final Map<String, EngineConfiguratorPage> engineConfiguratorMapping = new HashMap<>();
+    EngineConfiguratorPage activeEngineConfiguratorPage;
+    private Button enableAICheck;
 
     public AIPreferencePage() {
-        UIPropertyConfiguratorDescriptor cfgDescriptor = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(GPTCompletionEngine.class.getName());
+        try {
+            formatter = AIFormatterRegistry.getInstance().getFormatter(AIConstants.CORE_FORMATTER);
+        } catch (DBException e) {
+            log.error("Formatter not found", e);
+            formatter = new DefaultRequestFormatter();
+        }
+        UIPropertyConfiguratorDescriptor cfgDescriptor =
+            UIPropertyConfiguratorRegistry.getInstance().getDescriptor(formatter.getClass().getName());
         if (cfgDescriptor != null) {
             try {
-                configurator = (IObjectPropertyConfigurator)cfgDescriptor.createConfigurator();
+                formatterConfigurator = cfgDescriptor.createConfigurator();
             } catch (DBException e) {
                 log.error(e);
             }
         }
-        if (configurator == null) {
-            configurator = new AIConfiguratorDefault();
+        if (formatterConfigurator == null) {
+            formatterConfigurator = new DefaultFormattingConfigurator();
         }
         settings = AISettings.getSettings();
+        String activeEngine = settings.getActiveEngine();
+        try {
+            completionEngine = AIEngineRegistry.getInstance().getCompletionEngine(activeEngine);
+        } catch (DBException e) {
+            log.error("Error getting engine configuration");
+        }
+    }
+
+    @Nullable
+    private IObjectPropertyConfigurator<DAICompletionEngine<?>, AIEngineSettings> createEngineConfigurator() {
+        UIPropertyConfiguratorDescriptor engineDescriptor =
+            UIPropertyConfiguratorRegistry.getInstance().getDescriptor(completionEngine.getClass().getName());
+        if (engineDescriptor != null) {
+            try {
+                return engineDescriptor.createConfigurator();
+            } catch (DBException e) {
+                log.error(e);
+            }
+        }
+        return null;
     }
 
     @Override
     protected void performDefaults() {
-        configurator.loadSettings(settings);
+        enableAICheck.setSelection(!settings.isAiDisabled());
+        formatterConfigurator.loadSettings(settings);
     }
 
     @Override
     public boolean performOk() {
+        settings.setAiDisabled(!enableAICheck.getSelection());
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-
-        configurator.saveSettings(settings);
-
+        settings.setActiveEngine(serviceNameMappings.get(serviceCombo.getText()));
+        if (!serviceCombo.getText().isEmpty()) {
+            for (Map.Entry<String, EngineConfiguratorPage> entry : engineConfiguratorMapping.entrySet()) {
+                AIEngineSettings engineConfiguration = settings.getEngineConfiguration(entry.getKey());
+                entry.getValue().saveSettings(engineConfiguration);
+            }
+        }
+        formatterConfigurator.saveSettings(settings);
+        if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+            settings.saveSettings();
+        }
         try {
             store.save();
         } catch (IOException e) {
             log.debug(e);
         }
 
-        if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
-            settings.saveSettings();
+        for (AIEngineRegistry.EngineDescriptor engine : AIEngineRegistry.getInstance().getCompletionEngines()) {
+            try {
+                engine.createInstance().getServiceMap().clear();
+            } catch (DBException e) {
+                log.error("Error clearing existing services");
+            }
         }
-
         return true;
     }
 
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite placeholder = UIUtils.createPlaceholder(parent, 1);
-        placeholder.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Composite composite = UIUtils.createComposite(parent, 1);
+        enableAICheck = UIUtils.createCheckbox(
+            composite,
+            AIUIMessages.gpt_preference_page_checkbox_enable_ai_label,
+            AIUIMessages.gpt_preference_page_checkbox_enable_ai_tip,
+            false,
+            2);
 
-        GPTCompletionEngine engine = new GPTCompletionEngine();
-        configurator.createControl(placeholder, engine, () -> {});
+        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        formatterConfigurator.createControl(composite, formatter, () -> {});
+        Composite serviceComposite = UIUtils.createComposite(composite, 2);
+        serviceComposite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        serviceCombo = UIUtils.createLabelCombo(serviceComposite, "Service", SWT.DROP_DOWN | SWT.READ_ONLY);
+        List<AIEngineRegistry.EngineDescriptor> completionEngines = AIEngineRegistry.getInstance()
+            .getCompletionEngines();
+        for (int i = 0; i < completionEngines.size(); i++) {
+            serviceCombo.add(completionEngines.get(i).getLabel());
+            serviceNameMappings.put(completionEngines.get(i).getLabel(), completionEngines.get(i).getId());
+            if (completionEngines.get(i).getId().equals(settings.getActiveEngine())) {
+                serviceCombo.select(i);
+            }
+        }
+
+        final Group engineGroup = UIUtils.createControlGroup(composite, "Engine Settings", 2, SWT.BORDER, 5);
+        engineGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+        if (completionEngine != null) {
+            drawConfiguratorComposite(settings.getActiveEngine(), engineGroup);
+        }
+        serviceCombo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                String id = serviceNameMappings.get(serviceCombo.getText());
+                try {
+                    completionEngine = AIEngineRegistry.getInstance().getCompletionEngine(id);
+                } catch (DBException ex) {
+                    log.error("Error getting engine configuration");
+                    return;
+                }
+                if (activeEngineConfiguratorPage != null) {
+                    activeEngineConfiguratorPage.disposeControl();
+                }
+                drawConfiguratorComposite(id, engineGroup);
+                engineGroup.layout(true, true);
+                UIUtils.resizeShell(parent.getShell());
+            }
+        });
         performDefaults();
 
-        return placeholder;
+        return composite;
+    }
+
+    private void drawConfiguratorComposite(@NotNull String id, @NotNull Group engineGroup) {
+        activeEngineConfiguratorPage = engineConfiguratorMapping.get(id);
+
+        if (activeEngineConfiguratorPage == null) {
+            IObjectPropertyConfigurator<DAICompletionEngine<?>, AIEngineSettings> engineConfigurator
+                = createEngineConfigurator();
+            activeEngineConfiguratorPage = new EngineConfiguratorPage(engineConfigurator);
+            activeEngineConfiguratorPage.createControl(engineGroup, completionEngine);
+            activeEngineConfiguratorPage.loadSettings(settings.getEngineConfiguration(id));
+            engineConfiguratorMapping.put(id, activeEngineConfiguratorPage);
+        } else {
+            activeEngineConfiguratorPage.createControl(engineGroup, completionEngine);
+        }
     }
 
     @Override
     public void init(IWorkbench workbench) {
 
+    }
+
+    private static class EngineConfiguratorPage {
+        private final IObjectPropertyConfigurator<DAICompletionEngine<?>, AIEngineSettings> configurator;
+        private Composite composite;
+
+        EngineConfiguratorPage(IObjectPropertyConfigurator<DAICompletionEngine<?>, AIEngineSettings> configurator) {
+            this.configurator = configurator;
+        }
+
+        private void createControl(Composite parent, DAICompletionEngine<?> engine) {
+            composite = UIUtils.createComposite(parent, 2);
+            composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            configurator.createControl(composite, engine, () -> {});
+        }
+
+        private void disposeControl() {
+            composite.dispose();
+        }
+
+        private void loadSettings(AIEngineSettings settings) {
+            configurator.loadSettings(settings);
+        }
+
+        private void saveSettings(AIEngineSettings settings) {
+            configurator.saveSettings(settings);
+        }
     }
 }

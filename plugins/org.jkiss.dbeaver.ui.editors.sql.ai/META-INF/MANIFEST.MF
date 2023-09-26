@@ -6,8 +6,10 @@ Bundle-SymbolicName: org.jkiss.dbeaver.ui.editors.sql.ai;singleton:=true
 Bundle-Version: 1.0.17.qualifier
 Import-Package: org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.model.ai.internal
-Export-Package: org.jkiss.dbeaver.ui.editors.sql.ai.preferences,
- org.jkiss.dbeaver.ui.editors.sql.ai.popup
+Export-Package: org.jkiss.dbeaver.ui.editors.sql.ai.format,
+ org.jkiss.dbeaver.ui.editors.sql.ai.openai,
+ org.jkiss.dbeaver.ui.editors.sql.ai.popup,
+ org.jkiss.dbeaver.ui.editors.sql.ai.preferences
 Bundle-Release-Date: 20230925
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy

@@ -550,13 +550,6 @@ public class UIUtils {
         return new Font(normalFont.getDevice(), data);
     }
 
-    public static ScrolledComposite createScrolledComposite(@NotNull Composite parent) {
-        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL);
-        scrolledComposite.setLayout(new GridLayout(1, false));
-        scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        return scrolledComposite;
-    }
-
     public static Group createControlGroup(Composite parent, String label, int columns, int layoutStyle, int widthHint)
     {
         Group group = new Group(parent, SWT.NONE);
