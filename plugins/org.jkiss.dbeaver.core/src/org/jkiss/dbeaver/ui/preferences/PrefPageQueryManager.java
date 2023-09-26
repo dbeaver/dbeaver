@@ -60,6 +60,7 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
     private Button checkQueryTypeMeta;
     private Button checkQueryTypeDDL;
     private Text textHistoryDays;
+    private Text textEntriesPerPage;
     private Button checkStoreLog;
     private Text textOutputFolder;
 
@@ -92,6 +93,11 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         checkObjectTypeTxn = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_transactions, false);
         //checkObjectTypeScripts = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_scripts, false);
         checkObjectTypeQueries = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_queries, false);
+
+        {
+            Group viewSettings = UIUtils.createControlGroup(composite, CoreMessages.pref_page_query_manager_group_settings, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            textEntriesPerPage = UIUtils.createLabelText(viewSettings, CoreMessages.pref_page_query_manager_label_entries_per_page, "", SWT.BORDER, new GridData(50, SWT.DEFAULT)); //$NON-NLS-2$
+        }
 
         {
             Group storageSettings = UIUtils.createControlGroup(composite, CoreMessages.pref_page_query_manager_group_storage, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
@@ -156,6 +162,8 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
             DBCExecutionPurpose.USER.name(),
             DBCExecutionPurpose.USER_FILTERED.name(),
             DBCExecutionPurpose.USER_SCRIPT.name());
+        textHistoryDays.setText(store.getString(QMConstants.PROP_HISTORY_DAYS));
+        textEntriesPerPage.setText(store.getString(QMConstants.PROP_ENTRIES_PER_PAGE));
 
         checkObjectTypes(objectTypes);
         checkQueryTypes(queryTypes);
@@ -187,12 +195,16 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         if (checkQueryTypeDDL.getSelection()) queryTypes.add(DBCExecutionPurpose.META_DDL.name());
 
         Integer historyDays = UIUtils.getTextInteger(textHistoryDays);
+        Integer entriesPerPage = UIUtils.getTextInteger(textEntriesPerPage);
 
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.setValue(QMConstants.PROP_OBJECT_TYPES, QMObjectType.toString(objectTypes));
         store.setValue(QMConstants.PROP_QUERY_TYPES, CommonUtils.makeString(queryTypes, ','));
         if (historyDays != null) {
             store.setValue(QMConstants.PROP_HISTORY_DAYS, Math.max(1, historyDays));
+        }
+        if (entriesPerPage != null) {
+            store.setValue(QMConstants.PROP_ENTRIES_PER_PAGE, Math.max(1, entriesPerPage));
         }
         store.setValue(QMConstants.PROP_STORE_LOG_FILE, checkStoreLog.getSelection());
         store.setValue(QMConstants.PROP_LOG_DIRECTORY, textOutputFolder.getText());

@@ -776,23 +776,23 @@
               icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="postgresql"
               handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupHandler" supportsDistributedMode="false">
             <datasource id="postgresql"/>
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreObject"/>
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreObject" if="object.dataSource.serverType.supportsNativeClient()"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema" if="object.dataSource.serverType.supportsNativeClient()"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase" if="object.dataSource.serverType.supportsNativeClient()"/>
         </task>
         <task id="pgDatabaseRestore" name="%task.pgDatabaseRestore.name" description="%task.pgDatabaseRestore.description"
               icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="postgresql"
-              handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreHandler"
+              handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreHandler" requiresMutability="true"
               confirmationMessage="%pgDatabaseRestore.confirmationMessage" supportsDistributedMode="false">
             <datasource id="postgresql"/>
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase" if="object.dataSource.serverType.supportsNativeClient()"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema" if="object.dataSource.serverType.supportsNativeClient()"/>
         </task>
         <task id="pgDatabaseBackupAll" name="%task.pgDatabaseBackupAll.name" description="%task.pgDatabaseBackupAll.description"
               icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="postgresql"
               handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupAllHandler" supportsDistributedMode="false">
             <datasource id="postgresql"/>
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase" if="object.dataSource.serverType.supportsNativeClient()"/>
         </task>
         <task id="pgScriptExecute" name="%task.pgScriptExecute.name" description="%task.pgScriptExecute.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png" type="postgresql" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreScriptExecuteHandler">
             <datasource id="postgresql"/>

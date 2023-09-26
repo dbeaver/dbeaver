@@ -175,7 +175,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
     }
 
     private void initEnumTypesCache(@NotNull DBRProgressMonitor monitor) throws DBException {
-        enumValueCache.getAllObjects(monitor, this);
+        if (((PostgreDataSource) dataSource).isSupportsEnumTable()) {
+            enumValueCache.getAllObjects(monitor, this);
+        }
     }
 
     private void readDatabaseInfo(DBRProgressMonitor monitor) throws DBCException {
@@ -573,6 +575,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return PostgreUtils.getDefaultDataTypeName(dataKind);
     }
 
+    /**
+     * @return enum values cache. Do not use is if database do not support enams. Check {@code PostgreDatasource#isSupportsEnumTable}
+     */
     EnumValueCache getEnumValueCache() {
         return enumValueCache;
     }
@@ -1394,6 +1399,10 @@ public class PostgreDatabase extends JDBCRemoteInstance
             @NotNull JDBCSession session,
             @NotNull PostgreDatabase database
         ) throws SQLException {
+            if (!database.getDataSource().isSupportsEnumTable()) {
+                // For those who missed previous warnings
+                return session.prepareStatement("SELECT 1");
+            }
             return session.prepareStatement("SELECT * FROM pg_catalog.pg_enum");
         }
 
