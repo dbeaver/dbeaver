@@ -142,8 +142,8 @@ import org.jkiss.utils.Pair;
 import java.io.*;
 import java.net.URI;
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -195,6 +195,11 @@ public class SQLEditor extends SQLEditorBase implements
 
     public static final String DEFAULT_TITLE_PATTERN = "<${" + SQLPreferenceConstants.VAR_CONNECTION_NAME + "}> ${" + SQLPreferenceConstants.VAR_FILE_NAME + "}";
     public static final String DEFAULT_SCRIPT_FILE_NAME = "Script";
+    
+    private static final EditorPartContextualProperty multipleResultsPerTabProperty = EditorPartContextualProperty.setup(
+        MULTIPLE_RESULTS_PER_TAB_PROPERTY, MULTIPLE_RESULTS_PER_TAB_PROP_NAME,
+        SQLPreferenceConstants.MULTIPLE_RESULTS_PER_TAB, CommonUtils.toString(false));
+    
     private ResultSetOrientation resultSetOrientation = ResultSetOrientation.HORIZONTAL;
     private CustomSashForm resultsSash;
     private Composite sqlEditorPanel;
@@ -1190,11 +1195,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public boolean isMultipleResultsPerTabEnabled() {
-        return CommonUtils.toBoolean(this.getEditorCustomProperty(
-            MULTIPLE_RESULTS_PER_TAB_PROPERTY, MULTIPLE_RESULTS_PER_TAB_PROP_NAME,
-            SQLPreferenceConstants.MULTIPLE_RESULTS_PER_TAB,
-            "false"
-        ).value);
+        return CommonUtils.toBoolean(multipleResultsPerTabProperty.getPropertyValue(this).value);
     }
 
     /**
@@ -1202,117 +1203,9 @@ public class SQLEditor extends SQLEditorBase implements
      */
     public void toggleMultipleResultsPerTab() {
         boolean wasEnabled = isMultipleResultsPerTabEnabled();
-        this.setEditorCustomProperty(
-            MULTIPLE_RESULTS_PER_TAB_PROPERTY, MULTIPLE_RESULTS_PER_TAB_PROP_NAME,
-            SQLPreferenceConstants.MULTIPLE_RESULTS_PER_TAB,
-            Boolean.toString(!wasEnabled),
-            "false"
-        );
+        multipleResultsPerTabProperty.setPropertyValue(this, Boolean.toString(!wasEnabled));
     }
 
-    // TODO: move to sql utils?
-    public class CustomPropValueInfo {
-        public final String value;
-        public final boolean isInitial;
-        
-        public CustomPropValueInfo(@NotNull String value, boolean isInitial) {
-            this.value = value;
-            this.isInitial = isInitial;
-        }
-    }
-
-    /**
-     * Get SQL Editor property value
-     *
-     * @param partPropName - name of the workbench part property
-     * @param filePropName - name of the file property
-     * @param globalPrefName - name of the global preference property
-     * @param defaultValue - default value if the specified property doesn't exist
-     * @return property value info
-     */
-    @NotNull
-    public CustomPropValueInfo getEditorCustomProperty(
-        @NotNull String partPropName,
-        @NotNull QualifiedName filePropName,
-        @NotNull String globalPrefName,
-        @NotNull String defaultValue
-    ) {
-        String value = this.getPartProperty(partPropName);
-        boolean isInitial;
-        if (value == null) {
-            value = this.getEditorCustomPropertyInitial(filePropName, globalPrefName, defaultValue);
-            isInitial = true;
-        } else {
-            isInitial = false;
-        }
-        return new CustomPropValueInfo(value, isInitial);
-    }
-
-    @NotNull
-    private String getEditorCustomPropertyInitial(
-        @NotNull QualifiedName filePropName,
-        @NotNull String globalPrefName,
-        @NotNull String defaultValue
-    ) {
-        IFile activeFile = EditorUtils.getFileFromInput(this.getEditorInput());
-        if (activeFile != null && activeFile.exists()) {
-            try {
-                String value = activeFile.getPersistentProperty(filePropName);
-                if (value != null) {
-                    return value;
-                }
-            } catch (CoreException e) {
-                log.debug(e.getMessage(), e);
-            }
-        }
-        DBPPreferenceStore prefStore = this.getActivePreferenceStore();
-        return prefStore.contains(globalPrefName) ? this.getActivePreferenceStore().getString(globalPrefName) : defaultValue;
-    }
-
-    /**
-     * Set SQL Editor property value
-     *
-     * @param partPropName - name of the workbench part property
-     * @param filePropName - name of the file property
-     * @param globalPrefName - name of the global preference property
-     * @param value - a value to set or null
-     * @param defaultValue - to set if the value is null
-     * @return determines if the property was changed
-     */
-    public boolean setEditorCustomProperty(
-        @NotNull String partPropName,
-        @NotNull QualifiedName filePropName,
-        @NotNull String globalPrefName,
-        @Nullable String value,
-        @NotNull String defaultValue
-    ) {
-        boolean changed;
-        String oldValue = this.getPartProperty(partPropName);
-        if (value == null) {
-            this.setPartProperty(partPropName, defaultValue);
-            changed = true;
-        } else {
-            if (CommonUtils.equalObjects(oldValue, value)) {
-                changed = false;
-            } else {
-                this.setPartProperty(partPropName, value);
-                IFile activeFile = EditorUtils.getFileFromInput(this.getEditorInput());
-                if (activeFile != null) {
-                    try {
-                        activeFile.setPersistentProperty(filePropName, value);
-                    } catch (CoreException e) {
-                        log.debug(e.getMessage(), e);
-                    }
-                }
-                changed = true;
-            }
-        }
-        if (changed) {
-            this.getActivePreferenceStore().firePropertyChangeEvent(globalPrefName, oldValue, value);
-        }
-        return changed;
-    }
-    
     private void createResultTabs() {
         resultTabs = new CTabFolder(resultsSash, SWT.TOP | SWT.FLAT);
         CSSUtils.setCSSClass(resultTabs, DBStyles.COLORED_BY_CONNECTION_TYPE);
@@ -2692,10 +2585,12 @@ public class SQLEditor extends SQLEditorBase implements
             return false;
         }
 
-        if (curQueryProcessor instanceof SingleTabQueryProcessor || useTabPerQuery(queries.size() == 1)) {
+        // Single-tabbed mode always uses new tab
+        boolean useSingleTab = !useTabPerQuery(queries.size() == 1);
+        if (useSingleTab) {
             newTab = true;
         }
-
+        
         final DBPDataSourceContainer container = getDataSourceContainer();
         if (checkSession) {
             try {
@@ -2821,9 +2716,15 @@ public class SQLEditor extends SQLEditorBase implements
                         }
                     }
                 }
-
                 // Just create a new query processor
                 if (!foundSuitableTab) {
+                    // If we already have useless multi-tabbed processor, but we want single-tabbed, then get rid of the useless one  
+                    if (useSingleTab && curQueryProcessor instanceof MultiTabsQueryProcessor 
+                        && curQueryProcessor.getResultContainers().size() == 1
+                        && !curQueryProcessor.getFirstResults().viewer.hasData()
+                    ) {
+                        curQueryProcessor.getFirstResults().dispose();
+                    }
                     createQueryProcessor(true, isSingleQuery, false);
                 }
             }
@@ -2886,17 +2787,9 @@ public class SQLEditor extends SQLEditorBase implements
     private int closeExtraResultTabs(@Nullable QueryProcessor queryProcessor, boolean confirmClose, boolean keepFirstTab) {
         List<CTabItem> tabsToClose = new ArrayList<>();
         for (CTabItem item : resultTabs.getItems()) {
-            if (item.getShowClose() && !isPinned(item)) {
-                QueryProcessor resultsProcessor;
-                if (item.getData() instanceof QueryResultsContainer) {
-                    resultsProcessor = ((QueryResultsContainer) item.getData()).queryProcessor;
-                } 
-                else if (item.getData() instanceof QueryProcessor) {
-                    resultsProcessor = (QueryProcessor) item.getData();
-                } else {
-                    resultsProcessor = null;
-                }
-                if (queryProcessor != null && queryProcessor != resultsProcessor) {
+            if (item.getData() instanceof QueryResultsContainer && item.getShowClose() && !isPinned(item)) {
+                QueryResultsContainer resultsProvider = (QueryResultsContainer)item.getData();
+                if (queryProcessor != null && queryProcessor != resultsProvider.queryProcessor) {
                     continue;
                 }
                 if (queryProcessor != null && queryProcessor.resultContainers.size() < 2 && keepFirstTab) {
@@ -3964,12 +3857,11 @@ public class SQLEditor extends SQLEditorBase implements
             tabContentScroller.setExpandVertical(true);
         
             int tabIndex = obtainDesiredTabIndex(makeDefault);
-            int queryIndex = queryProcessors.indexOf(this);
-            
             resultsTab = new CTabItem(resultTabs, SWT.NONE, tabIndex);
             resultsTab.setImage(IMG_DATA_GRID);
             resultsTab.setData(this);
             resultsTab.setShowClose(true);
+            int queryIndex = queryProcessors.indexOf(this);
             resultsTab.setText(getResultsTabName(0, queryIndex, null));
             CSSUtils.setCSSClass(resultsTab, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
@@ -4612,9 +4504,10 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             });
 
-            Listener displayListener = event -> { // for the contextfull tool buttons critical for one resultset to be focused 
-                if (control.isVisible()) {
-                    Point clickedPoint = ((Control) event.widget).toDisplay(event.x, event.y);
+            Listener displayListener = event -> { // for the contextual tool buttons it's critical for one result set to be focused
+                Control clickedWidget = (Control) event.widget;
+                if (clickedWidget.getShell() == control.getShell() && control.isVisible()) {
+                    Point clickedPoint = clickedWidget.toDisplay(event.x, event.y);
                     if (control.getClientArea().contains(control.toControl(clickedPoint)) && !this.viewer.isPresentationInFocus()) {
                         for (Control c = control; c != null && !c.isFocusControl(); c = c.getParent()) {
                             if (c == sectionContents) {

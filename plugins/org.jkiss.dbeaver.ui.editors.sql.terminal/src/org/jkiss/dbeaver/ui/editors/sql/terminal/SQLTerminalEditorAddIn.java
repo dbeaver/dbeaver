@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.terminal;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -35,10 +33,11 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
+import org.jkiss.dbeaver.ui.editors.EditorPartContextualProperty;
+import org.jkiss.dbeaver.ui.editors.EditorPartContextualProperty.PartCustomPropertyValueInfo;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorListener;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorListenerDefault;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor.CustomPropValueInfo;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddIn;
 import org.jkiss.dbeaver.ui.editors.sql.terminal.internal.SQLTerminalMessages;
 import org.jkiss.utils.CommonUtils;
@@ -57,6 +56,10 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
     private static final QualifiedName FILE_TERMINAL_VIEW_ENABLED_PROP_NAME = new QualifiedName(
         BUNDLE_NAME, TERMINAL_VIEW_ENABLED_PROPERTY
     );
+    
+    private static final EditorPartContextualProperty terminalViewEnabledPartProperty = EditorPartContextualProperty.setup(
+        TERMINAL_VIEW_ENABLED_PROPERTY, FILE_TERMINAL_VIEW_ENABLED_PROP_NAME, 
+        SQLTerminalPreferencesConstants.SHOW_TERMINAL_VIEW_BY_DEFAULT, CommonUtils.toString(false));
 
     private SQLEditor editor;
     private TerminalViewContext viewContext;
@@ -195,10 +198,7 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
      * and saved in the script file to keep the state between launches.
      */
     public boolean isTerminalViewEnabled() {
-        CustomPropValueInfo info = editor.getEditorCustomProperty(
-            TERMINAL_VIEW_ENABLED_PROPERTY, FILE_TERMINAL_VIEW_ENABLED_PROP_NAME, 
-            SQLTerminalPreferencesConstants.SHOW_TERMINAL_VIEW_BY_DEFAULT, "false"
-        );
+        PartCustomPropertyValueInfo info = terminalViewEnabledPartProperty.getPropertyValue(editor);
         boolean enabled = CommonUtils.toBoolean(info.value);
         if (info.isInitial) {
             editor.setResultSetAutoFocusEnabled(!enabled);
@@ -206,11 +206,8 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
         return enabled;
     }
     
-    private void setConsoleViewEnabled(@Nullable Boolean enabled) {
-        if (editor.setEditorCustomProperty(
-            TERMINAL_VIEW_ENABLED_PROPERTY, FILE_TERMINAL_VIEW_ENABLED_PROP_NAME, 
-            SQLTerminalPreferencesConstants.SHOW_TERMINAL_VIEW_BY_DEFAULT, "false", CommonUtils.toString(enabled)
-        )) {
+    private void setConsoleViewEnabled(boolean enabled) {
+        if (terminalViewEnabledPartProperty.setPropertyValue(editor, CommonUtils.toString(enabled))) {
             editor.setResultSetAutoFocusEnabled(!enabled);
             SQLTerminalFeatures.SQL_TERMINAL_OPEN.use(Map.of("show", enabled));
         }
