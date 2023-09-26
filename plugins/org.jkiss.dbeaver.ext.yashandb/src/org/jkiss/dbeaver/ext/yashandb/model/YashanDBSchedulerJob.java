@@ -590,7 +590,7 @@ public class YashanDBSchedulerJob extends YashanDBSchemaObject implements Yashan
     }
 
     @Override
-    @Property(hidden = true, editable = true,  order = -1)
+    @Property(hidden = true, editable = true,  updatable = true ,order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         if (jobAction == null && monitor != null) {
             monitor.beginTask("Load action for '" + this.getName() + "'...", 1);
