@@ -111,6 +111,7 @@ public class YashanDBDebugPanelFunction implements DBGConfigurationPanel {
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.widthHint = UIUtils.getFontHeight(functionCombo) * 40 + 10;
         functionCombo.setLayoutData(gd);
+        functionCombo.setEnabled(false);
     }
 
     public static void main(String[] args) {
