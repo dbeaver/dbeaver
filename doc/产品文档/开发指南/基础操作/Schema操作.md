@@ -17,4 +17,4 @@
 ## 查看Schema属性
 双击选中的Schema，右侧窗口显示其属性，包括表、视图等对象信息。
 
-![查看schema属性](image/查看schema属性.png)
+![查看schema属性](./image/查看schema属性.png)
