@@ -281,7 +281,7 @@ public interface SQLDialect {
     /**
      * Returns offset and limit query parts. Limit syntax is different for databases.
      */
-    String getOffsetLimitQueryPart();
+    String getOffsetLimitQueryPart(int offset, int limit);
 
     /**
      * Checks whether dialect supports alias for queries with HAVING syntax.

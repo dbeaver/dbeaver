@@ -371,8 +371,8 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
     }
 
     @Override
-    public String getOffsetLimitQueryPart() {
-        return "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+    public String getOffsetLimitQueryPart(int offset, int limit) {
+        return String.format("OFFSET %d ROWS FETCH NEXT %d ROWS ONLY", offset, limit);
     }
 
     @Nullable

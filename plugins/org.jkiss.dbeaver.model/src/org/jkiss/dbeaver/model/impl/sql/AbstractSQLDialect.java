@@ -622,8 +622,8 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
-    public String getOffsetLimitQueryPart() {
-        return "OFFSET ? LIMIT ?";
+    public String getOffsetLimitQueryPart(int offset, int limit) {
+        return String.format("LIMIT %d OFFSET %d", limit, offset);
     }
 
     @Override
