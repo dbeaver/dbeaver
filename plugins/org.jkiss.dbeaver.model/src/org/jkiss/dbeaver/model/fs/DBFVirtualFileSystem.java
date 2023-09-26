@@ -21,7 +21,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.nio.file.spi.FileSystemProvider;
 
 /**
  * Virtual file system
@@ -43,5 +46,10 @@ public interface DBFVirtualFileSystem {
 
     @NotNull
     DBFVirtualFileSystemRoot[] getRootFolders(DBRProgressMonitor monitor, @NotNull DBPProject project) throws DBException;
+
+    FileSystemProvider[] getAvailableFileSystems(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SMSessionContext sessionContext
+    );
 
 }
