@@ -96,6 +96,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private String serverVersion;
 
     private volatile boolean hasStatistics;
+    private boolean supportsEnumTable;
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -440,6 +441,13 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         } catch (Exception e) {
             log.debug("Error reading PostgreSQL version: " + e.getMessage());
             serverVersion = "";
+        }
+
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read pg_enum table availability")) {
+            supportsEnumTable = PostgreUtils.isMetaObjectExists(session, "pg_enum", "*");
+        } catch (Exception e) {
+            log.debug("Error reading pg_enum " + e.getMessage());
+            supportsEnumTable = false;
         }
 
         // Read databases
@@ -891,5 +899,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     public boolean supportsReadingKeysWithColumns() {
         return CommonUtils.toBoolean(
             getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS));
+    }
+
+    public boolean isSupportsEnumTable() {
+        return supportsEnumTable;
     }
 }
