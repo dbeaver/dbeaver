@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.erd.ui.notation.crowsfoot;
 
 import org.eclipse.draw2d.ConnectionEndpointLocator;
-import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -81,5 +80,4 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
     public void applyNotationForEntities(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
         // nothing
     }
-
 }

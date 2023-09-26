@@ -292,7 +292,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     public static class CircleDecoration extends Ellipse implements RotatableDecoration {
 
-        private int radius = 2;
+        private int radius = 4;
         private Point location = new Point();
 
         public CircleDecoration() {

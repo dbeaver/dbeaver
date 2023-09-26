@@ -30,10 +30,10 @@ public abstract class ERDNotationBase {
     protected static final String LABEL_1_TO_N = "1..n";
     protected static final int LBL_V_DISTANCE = -3;
     protected static final int LBL_U_DISTANCE = 3;
-    protected static final int CIRCLE_RADIUS = 5;
-    private IThemeManager themeManager = PlatformUI.getWorkbench().getThemeManager();
+    protected static final int CIRCLE_RADIUS = 4;
 
     protected Font getFont() {
+        final IThemeManager themeManager = PlatformUI.getWorkbench().getThemeManager();
         return themeManager.getCurrentTheme().getFontRegistry().get(ERDUIConstants.PROP_DIAGRAM_FONT);
     }
 

@@ -40,28 +40,10 @@ import java.util.Set;
 public class OrthogonalShortPathRouting extends AbstractRouter {
 
     private static final double DELTA = 30.0;
-    private static int RIGHT = 180;
-    private static int LEFT = 0;
-    private static int UP = 90;
-    private static int DOWN = -90;
-
-    private class LayoutTracker extends LayoutListener.Stub {
-        @Override
-        public void postLayout(IFigure container) {
-            processLayout();
-        }
-
-        @Override
-        public void remove(IFigure child) {
-            removeChild(child);
-        }
-
-        @Override
-        public void setConstraint(IFigure child, Object constraint) {
-            addChild(child);
-        }
-    }
-
+    private static final int RIGHT = 180;
+    private static final int LEFT = 0;
+    private static final int UP = 90;
+    private static final int DOWN = -90;
     private final Map<Connection, Object> constraintMap = new HashMap<>();
     private Map<IFigure, Rectangle> figuresToBounds;
     private Map<Connection, Path> connectionToPaths;
@@ -143,7 +125,7 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
      * default value is 4.
      */
     public int getSpacing() {
-        return 10;// algorithm.getSpacing();
+        return algorithm.getSpacing();
     }
 
     /**
@@ -158,13 +140,6 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
         isDirty = true;
     }
 
-    private void processLayout() {
-        if (staleConnections.isEmpty()) {
-            return;
-        }
-        ((Connection) staleConnections.iterator().next()).revalidate();
-    }
-
     private void processStaleConnections() {
         Iterator<Connection> iter = staleConnections.iterator();
         if (iter.hasNext() && connectionToPaths == null) {
@@ -173,9 +148,9 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
         }
 
         while (iter.hasNext()) {
-            Connection conn = (Connection) iter.next();
+            Connection conn = iter.next();
 
-            Path path = (Path) connectionToPaths.get(conn);
+            Path path = connectionToPaths.get(conn);
             if (path == null) {
                 path = new Path(conn);
                 connectionToPaths.put(conn, path);
@@ -218,7 +193,7 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
         }
         try {
             ignoreInvalidate = true;
-            ((Connection) connectionToPaths.keySet().iterator().next()).revalidate();
+            connectionToPaths.keySet().iterator().next().revalidate();
         } finally {
             ignoreInvalidate = false;
         }
@@ -234,7 +209,7 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
         if (connectionToPaths == null) {
             return;
         }
-        Path path = (Path) connectionToPaths.remove(connection);
+        Path path = connectionToPaths.remove(connection);
         algorithm.removePath(path);
         isDirty = true;
         if (connectionToPaths.isEmpty()) {
@@ -278,15 +253,12 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
                 current.revalidate();
 
                 PointList points = path.getPoints().getCopy();
-                Point ref1, ref2, start, end;
-                ref1 = new PrecisionPoint(points.getPoint(1));
-                ref2 = new PrecisionPoint(points.getPoint(points.size() - 2));
+                Point ref1 = new PrecisionPoint(points.getPoint(1));
+                Point ref2 = new PrecisionPoint(points.getPoint(points.size() - 2));
                 current.translateToAbsolute(ref1);
                 current.translateToAbsolute(ref2);
-
-                start = current.getSourceAnchor().getLocation(ref1).getCopy();
-                end = current.getTargetAnchor().getLocation(ref2).getCopy();
-
+                Point start = current.getSourceAnchor().getLocation(ref1).getCopy();
+                Point end = current.getTargetAnchor().getLocation(ref2).getCopy();
                 current.translateToRelative(start);
                 current.translateToRelative(end);
                 points.setPoint(start, 0);
@@ -347,7 +319,6 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
         }
         i = Math.abs(r.right() - p.x);
         if (i < distance) {
-            distance = i;
             direction = RIGHT;
         }
         return direction;
@@ -420,5 +391,25 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
      */
     public boolean containsConnection(Connection conn) {
         return connectionToPaths != null && connectionToPaths.containsKey(conn);
+    }
+
+    private class LayoutTracker extends LayoutListener.Stub {
+        @Override
+        public void postLayout(IFigure container) {
+            if (staleConnections.isEmpty()) {
+                return;
+            }
+            staleConnections.iterator().next().revalidate();
+        }
+
+        @Override
+        public void remove(IFigure child) {
+            removeChild(child);
+        }
+
+        @Override
+        public void setConstraint(IFigure child, Object constraint) {
+            addChild(child);
+        }
     }
 }
