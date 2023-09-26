@@ -14,27 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
 
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
-
-import java.util.List;
+package org.jkiss.dbeaver.model.secret;
 
 /**
- * External datasource provider origin.
+ * Secret owner
  */
-public interface DBPDataSourceOriginExternal extends DBPDataSourceOrigin {
+public interface DBSSecretSubject {
 
-    /**
-     * Returns external configuration ID.
-     */
-    @Nullable
-    DBPExternalConfiguration getExternalConfiguration();
-
-    /**
-     * Returns network profiles available in this origin
-     */
-    List<DBWNetworkProfile> getAvailableNetworkProfiles();
+    String getSecretSubjectId();
 
 }
