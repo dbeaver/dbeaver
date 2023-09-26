@@ -48,19 +48,18 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
             sourceDecor.setBackgroundColor(bckColor);
             conn.setSourceDecoration(sourceDecor);
             ConnectionEndpointLocator srcEndpointLocator = new ConnectionEndpointLocator(conn, false);
-            srcEndpointLocator.setVDistance(-10);
-            srcEndpointLocator.setUDistance(5);
-            Label label = new Label(LABEL_1_TO_N);
-            conn.add(label, srcEndpointLocator);
+            srcEndpointLocator.setVDistance(LBL_V_DISTANCE);
+            srcEndpointLocator.setUDistance(LBL_U_DISTANCE);
+            conn.add(getLabel(LABEL_1_TO_N, frgColor), srcEndpointLocator);
             if (ERDUtils.isOptionalAssociation(association)) {
                 // target - 0..1
                 final CrowsFootPolylineDecoration targetDecor = new CrowsFootPolylineDecoration(ERDAssociationType.ZERO_OR_ONE);
                 targetDecor.setFill(true);
                 targetDecor.setBackgroundColor(bckColor);
                 ConnectionEndpointLocator trgEndpointLocator = new ConnectionEndpointLocator(conn, true);
-                trgEndpointLocator.setVDistance(-10);
-                trgEndpointLocator.setUDistance(5);
-                conn.add(new Label(LABEL_0_TO_1), trgEndpointLocator);
+                trgEndpointLocator.setVDistance(LBL_V_DISTANCE);
+                trgEndpointLocator.setUDistance(LBL_U_DISTANCE);
+                conn.add(getLabel(LABEL_0_TO_1, frgColor), trgEndpointLocator);
                 conn.setTargetDecoration(targetDecor);
             } else {
                 // target - 1
@@ -68,9 +67,9 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
                 targetDecor.setFill(true);
                 targetDecor.setBackgroundColor(bckColor);
                 ConnectionEndpointLocator trgEndpointLocator = new ConnectionEndpointLocator(conn, true);
-                trgEndpointLocator.setVDistance(-5);
-                trgEndpointLocator.setUDistance(10);
-                conn.add(new Label(LABEL_1), trgEndpointLocator);
+                trgEndpointLocator.setVDistance(LBL_V_DISTANCE);
+                trgEndpointLocator.setUDistance(LBL_U_DISTANCE);
+                conn.add(getLabel(LABEL_1, frgColor), trgEndpointLocator);
                 conn.setTargetDecoration(targetDecor);
             }
         }
