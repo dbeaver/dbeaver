@@ -313,6 +313,9 @@ public class YashanDBUtils {
 
     public static String insertCreateReplace(YashanDBSourceObject object, boolean body, String source) {
         String sourceType = object.getSourceType().name();
+        if(sourceType.equalsIgnoreCase("UDF")){
+            sourceType="FUNCTION";
+        }
         if (body) {
             sourceType += " BODY";
         }
