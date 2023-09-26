@@ -313,9 +313,7 @@ public class NavigatorUtils {
                         }
                     }
 
-                    if (node.getParentNode().getName()!= null &&
-                            node.getParentNode().getName().equals(META_TABLE) ||
-                            node.getParentNode().getName().equals(CH_META_TABLE)){
+                    if (node.getParentNode().getName()!= null){
                         String objectType = ((DBNDatabaseFolder) node.getParentNode()).getMeta().getType();
                         //todo:目前表对象的导入导出数据功能无法完全保证可用，先屏蔽这功能
                         if (objectType.contains("YashanDBMaterializedView") || objectType.contains("YashanDBView")
