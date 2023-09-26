@@ -94,5 +94,11 @@ public class YashanDBSchedulerJobManager extends SQLObjectEditor<YashanDBSchedul
         }
     }
 
+    @Override
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+        actionList.add(new SQLDatabasePersistAction("Modify Job","EXEC DBMS_SCHEDULER.SET_ATTRIBUTE('"+ command.getObject().getOwner()+"."+command.getObject().getName() +"','job_action','"+ command.getProperties().get("objectDefinitionText") + "')"));
+    }
+
+
 
 }
