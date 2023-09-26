@@ -15,4 +15,4 @@ Export-Package: org.jkiss.dbeaver.ext.bigquery,
 Require-Bundle: org.jkiss.dbeaver.ext.generic;visibility:=reexport,
  com.google.guava;resolution:=optional;visibility:=reexport,
  com.google.gson;resolution:=optional;visibility:=reexport,
- slf4j.api;visibility:=reexport
+ org.slf4j.api;visibility:=reexport
