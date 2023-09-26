@@ -3500,15 +3500,18 @@ public class SQLEditor extends SQLEditorBase implements
             resultContainers.add(resultsProvider);
             return resultsProvider;
         }
-        
-        protected abstract QueryResultsContainer createQueryResultsContainer(int resultSetNumber, int resultSetIndex, boolean makeDefault);
 
         private QueryResultsContainer createResultsProvider(DBSDataContainer dataContainer) {
             QueryResultsContainer resultsProvider = createQueryResultsContainer(
-                resultContainers.size(), getMaxResultsTabIndex(), dataContainer );
+                resultContainers.size(),
+                getMaxResultsTabIndex(),
+                dataContainer
+            );
             resultContainers.add(resultsProvider);
             return resultsProvider;
         }
+
+        protected abstract QueryResultsContainer createQueryResultsContainer(int resultSetNumber, int resultSetIndex, boolean makeDefault);
 
         protected abstract QueryResultsContainer createQueryResultsContainer(
             int resultSetNumber,
@@ -3524,6 +3527,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
             return false;
         }
+
 
         @NotNull
         QueryResultsContainer getFirstResults()

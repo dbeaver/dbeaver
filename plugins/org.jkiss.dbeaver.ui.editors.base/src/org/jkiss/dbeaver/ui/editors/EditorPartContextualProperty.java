@@ -71,7 +71,10 @@ public class EditorPartContextualProperty {
         @NotNull String globalPrefName,
         @NotNull String defaultValue
     ) {
-        return knownProps.computeIfAbsent(partPropName, partPropName2 -> new EditorPartContextualProperty(partPropName2, filePropName, globalPrefName, defaultValue));
+        return knownProps.computeIfAbsent(
+            partPropName,
+            partPropName2 -> new EditorPartContextualProperty(partPropName2, filePropName, globalPrefName, defaultValue)
+        );
     }
     
     /**

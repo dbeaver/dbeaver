@@ -48,8 +48,10 @@ import java.util.Collections;
 
 public class MultipleResultsPerTabMenuContribution extends ActionContributionItem {
 
-    private static final ImageDescriptor multipleResultsPerTabImageFalse = DBeaverIcons.getImageDescriptor(UIIcon.SQL_MULTIPLE_RESULTS_PER_TAB_FALSE);
-    private static final ImageDescriptor multipleResultsPerTabImageTrue = DBeaverIcons.getImageDescriptor(UIIcon.SQL_MULTIPLE_RESULTS_PER_TAB_TRUE);
+    private static final ImageDescriptor multipleResultsPerTabImageFalse =
+        DBeaverIcons.getImageDescriptor(UIIcon.SQL_MULTIPLE_RESULTS_PER_TAB_FALSE);
+    private static final ImageDescriptor multipleResultsPerTabImageTrue =
+        DBeaverIcons.getImageDescriptor(UIIcon.SQL_MULTIPLE_RESULTS_PER_TAB_TRUE);
 
     public static Image TRUE_IMAGE = multipleResultsPerTabImageFalse.createImage();
     public static Image FALSE_IMAGE = multipleResultsPerTabImageTrue.createImage();
