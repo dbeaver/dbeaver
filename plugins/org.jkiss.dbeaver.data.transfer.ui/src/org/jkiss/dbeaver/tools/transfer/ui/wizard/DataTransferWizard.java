@@ -217,7 +217,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     }
 
     protected boolean includePipesConfigurationPage() {
-        return (!isTaskEditor() || isNewTaskEditor()) && (settings.isConsumerOptional() || settings.isProducerOptional());
+        return settings.isConsumerOptional() || settings.isProducerOptional();
     }
 
     @Override
