@@ -662,7 +662,7 @@ public class YashanDBDebugSession extends DBGJDBCSession {
 
             try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.USER, "Run SQL command")) {
                 try (Statement stmt = session.createStatement()) {
-                    String sql = "select SUBPROGRAM_ID FROM dba_procedures  " +
+                    String sql = "select SUBPROGRAM_ID FROM all_procedures  " +
                             "WHERE OWNER ='"+yashanDBDebugObjectDescriptor.getOwner()+"' AND OBJECT_NAME ='"+yashanDBDebugObjectDescriptor.getName()+"'" +
                             " AND OWNER ='"+yashanDBDebugObjectDescriptor.getOwner()+"'";
                     log.debug("YashanDB query SUBPROGRAM_ID sql: \t"+sql);
