@@ -131,23 +131,24 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
                         isAdminVisible = CommonUtils.getBoolean(showAdmin, false);
                     }
                 }
-                // Query the database deployment status.(standalone or distributed).
-                String distSql = "SELECT 1 FROM DV$INSTANCE LIMIT 1";
-                try (PreparedStatement dbStat = session.prepareStatement(distSql)) {
-                    ResultSet resultSet = dbStat.executeQuery();
-                    int row = resultSet.getRow();
-                    if(row >= 0){
-                        this.isDistributed = true;
-                    }
-                } catch (Exception e) {
-                    if(!e.getMessage().contains("missing or invalid table name")){
-                        throw new DBException("Database deployment status query exception.");
-                    }
-                    log.warn("==Unable to query the dv$instances view, set the database deployment status to standalone.==");
-                    this.isDistributed = false;
-                }
             } catch (SQLException e) {
                 log.warn(e.getMessage());
+            }
+            // Query the database deployment status.(standalone or distributed).
+            String distSql = "SELECT 1 FROM DV$INSTANCE LIMIT 1";
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Query database deployment information");
+                 PreparedStatement dbStat = session.prepareStatement(distSql)) {
+                ResultSet resultSet = dbStat.executeQuery();
+                int row = resultSet.getRow();
+                if(row >= 0){
+                    this.isDistributed = true;
+                }
+            } catch (Exception e) {
+                if(!e.getMessage().contains("missing or invalid table name")){
+                    throw new DBException("Database deployment status query exception.");
+                }
+                log.warn("==Unable to query the dv$instances view, set the database deployment status to standalone.==");
+                this.isDistributed = false;
             }
         }
 
