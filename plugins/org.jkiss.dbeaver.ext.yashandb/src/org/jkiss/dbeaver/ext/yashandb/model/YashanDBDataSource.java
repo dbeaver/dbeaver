@@ -511,7 +511,7 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull YashanDBDataSource owner) throws SQLException {
             return session.prepareStatement(
-                    "SELECT * FROM DBA_ROLES ORDER BY ROLE");
+                    "SELECT * FROM DBA_ROLES WHERE TYPE LIKE 'NORMAL%' ORDER BY ROLE");
         }
 
         @Override
