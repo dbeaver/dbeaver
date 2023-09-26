@@ -32,8 +32,8 @@ public class ERDUIConstants {
     public static final String PREF_PRINT_MARGIN_BOTTOM = "erd.print.margin-bottom";
     public static final String PREF_PRINT_MARGIN_LEFT = "erd.print.margin-left";
     public static final String PREF_PRINT_MARGIN_RIGHT = "erd.print.margin-right";
-
     public static final String PREF_ROUTING_TYPE = "erd.routing.type";
+    public static final String PREF_NOTATION_TYPE = "erd.notation.type";
     public static final int PRINT_MODE_DEFAULT = PrintFigureOperation.TILE;
     public static final int PRINT_MARGIN_DEFAULT = 0;
 

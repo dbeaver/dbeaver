@@ -131,14 +131,14 @@
 
     <extension point="org.jkiss.dbeaver.tools">
         <tools>
-            <tool
-                class="org.jkiss.dbeaver.ui.dashboard.view.DashboardOpenTool"
-                id="org.jkiss.dbeaver.ui.dashboard.view.DashboardOpenTool"
-                label="%command.org.jkiss.dbeaver.ui.dashboard.open.name"
-                description="%command.org.jkiss.dbeaver.ui.dashboard.open.description"
-                icon="icons/dashboard.png"
-                singleton="false">
-                <objectType name="org.jkiss.dbeaver.model.DBPDataSource"/>
+            <tool id="org.jkiss.dbeaver.ui.dashboard.view.DashboardOpenTool"
+                  label="%command.org.jkiss.dbeaver.ui.dashboard.open.name"
+                  description="%command.org.jkiss.dbeaver.ui.dashboard.open.description"
+                  icon="icons/dashboard.png"
+                  singleton="false">
+                <command id="org.jkiss.dbeaver.ui.dashboard.open">
+                    <objectType name="org.jkiss.dbeaver.model.DBPDataSource"/>
+                </command>
             </tool>
         </tools>
     </extension>
