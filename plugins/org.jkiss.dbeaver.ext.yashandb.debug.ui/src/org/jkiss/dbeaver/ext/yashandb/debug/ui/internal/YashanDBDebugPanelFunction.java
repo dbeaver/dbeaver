@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanel;
 import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanelContainer;
 import org.jkiss.dbeaver.ext.yashandb.debug.YashanDBDebugConstants;
 import org.jkiss.dbeaver.ext.yashandb.debug.core.YashanDBDebugCore;
+import org.jkiss.dbeaver.ext.yashandb.model.YashanDBDataType;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBProcedureArgument;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBProcedureStandalone;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -349,10 +350,22 @@ public class YashanDBDebugPanelFunction implements DBGConfigurationPanel {
             List<String> paramValues = new ArrayList<>();
             List<String> paramTypes=new ArrayList<>();
             for (YashanDBProcedureArgument param : selectedFunction.getInputParams()) {
+
                 Object value = parameterValues.get(param);
                 paramValues.add(value == null ? null : value.toString());
-                Object type=parameterTypes.get(param);
-                paramTypes.add(type==null?null:type.toString());
+
+                Object type = parameterTypes.get(param);
+                if(type == null) {
+                    Object dataType = param.getType();
+                    if(dataType instanceof YashanDBDataType){
+                        String name = ((YashanDBDataType) dataType).getName();
+                        paramTypes.add(name);
+                    }else {
+                        paramTypes.add(String.valueOf(dataType));
+                    }
+                } else {
+                    paramTypes.add(type.toString());
+                }
             }
             configuration.put(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS, paramValues);
             configuration.put(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS_TYPE,paramTypes);
