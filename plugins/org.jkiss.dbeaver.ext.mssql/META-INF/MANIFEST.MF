@@ -13,7 +13,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model.lsm,
  org.jkiss.bundle.antlr4,
  com.github.jsqlparser,
- slf4j.api
+ org.slf4j.api
 Export-Package: org.jkiss.dbeaver.ext.mssql,
  org.jkiss.dbeaver.ext.mssql.auth,
  org.jkiss.dbeaver.ext.mssql.model,

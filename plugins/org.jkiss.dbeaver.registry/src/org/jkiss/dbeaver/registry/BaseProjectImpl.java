@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.secret.DBSSecretSubject;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.task.TaskConstants;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
@@ -46,6 +47,8 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -53,10 +56,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
-public abstract class BaseProjectImpl implements DBPProject {
+public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
 
     private static final Log log = Log.getLog(BaseProjectImpl.class);
 
@@ -637,4 +638,10 @@ public abstract class BaseProjectImpl implements DBPProject {
     public DBNModel getNavigatorModel() {
         return null;
     }
+
+    @Override
+    public String getSecretSubjectId() {
+        return "project/" + getId();
+    }
+
 }
