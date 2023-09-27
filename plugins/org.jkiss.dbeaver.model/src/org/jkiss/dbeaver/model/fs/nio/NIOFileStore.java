@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -71,6 +72,15 @@ public class NIOFileStore extends FileStore {
     public InputStream openInputStream(int options, IProgressMonitor monitor) throws CoreException {
         try {
             return Files.newInputStream(path);
+        } catch (IOException e) {
+            throw new CoreException(GeneralUtils.makeExceptionStatus(e));
+        }
+    }
+
+    @Override
+    public OutputStream openOutputStream(int options, IProgressMonitor monitor) throws CoreException {
+        try {
+            return Files.newOutputStream(path);
         } catch (IOException e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
