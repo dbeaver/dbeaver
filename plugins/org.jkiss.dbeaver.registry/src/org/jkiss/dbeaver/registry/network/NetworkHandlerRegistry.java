@@ -21,12 +21,13 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class NetworkHandlerRegistry {
+public class NetworkHandlerRegistry implements DBWHandlerRegistry {
     private static NetworkHandlerRegistry instance = null;
 
     public synchronized static NetworkHandlerRegistry getInstance() {

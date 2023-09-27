@@ -357,6 +357,7 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_database_general_label_result_set_max_size;
     public static String pref_page_database_general_label_result_set_cancel_timeout;
     public static String pref_page_database_general_label_result_set_cancel_timeout_tip;
+    public static String pref_page_content_editor_group_representation_content;
 
     public static String pref_page_results_group_advanced;
     public static String pref_page_sql_editor_group_misc;
@@ -407,6 +408,7 @@ public class ResultSetMessages extends NLS {
     public static String panel_editor_text_auto_format_name;
     public static String panel_editor_text_encoding_name;
     public static String panel_editor_text_encoding_title;
+    public static String panel_editor_text_content_limitation_lbl;
 
     public static String error_part_button_go_to_error;
 
@@ -470,7 +472,7 @@ public class ResultSetMessages extends NLS {
     public static String reference_value_editor_current_page_value;
     public static String reference_value_editor_current_pagination_value;
     public static String reference_value_editor_define_description_value;
-    public static String reference_value_editor_search_hint_value;
+    public static String reference_value_editor_search_hint_value;    
     
     static {
         // initialize resource bundle

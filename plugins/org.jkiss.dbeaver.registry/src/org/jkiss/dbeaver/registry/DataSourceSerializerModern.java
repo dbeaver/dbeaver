@@ -640,6 +640,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     }
 
                     config.setClientHomeId(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_HOME));
+                    config.setConfigProfileSource(JSONUtils.getString(cfgObject, "config-profile-source"));
                     config.setConfigProfileName(JSONUtils.getString(cfgObject, "config-profile"));
                     config.setConnectionType(
                         DataSourceProviderRegistry.getInstance().getConnectionType(
@@ -1036,6 +1037,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             if (connectionInfo.getCloseIdleInterval() > 0) {
                 JSONUtils.field(json, RegistryConstants.ATTR_CLOSE_IDLE, connectionInfo.getCloseIdleInterval());
             }
+            JSONUtils.fieldNE(json, "config-profile-source", connectionInfo.getConfigProfileSource());
             JSONUtils.fieldNE(json, "config-profile", connectionInfo.getConfigProfileName());
             JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, connectionInfo.getProperties(), true);
             JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROVIDER_PROPERTIES, connectionInfo.getProviderProperties());
