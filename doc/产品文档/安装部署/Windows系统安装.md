@@ -1,4 +1,4 @@
-*本文档介绍了如何在windows系统安装DBeaver*
+本文档介绍了如何在windows系统安装DBeaver。
 
 ## 前置条件
 DBeaver的运行依赖于Java环境，本文档中介绍的DBeaver版本为V23.1，依赖于JDK17及以上版本的Java环境。  
@@ -21,7 +21,7 @@ DBeaver的运行依赖于Java环境，本文档中介绍的DBeaver版本为V23.1
 在编辑框中点击新建按钮，新增Java环境变量值。例如，本地解压的JDK路径为：*D:\jdk-17.0.8*,在新建变量值时定位到此路径下的*bin*目录即可。  
 ![配置jdk变量](./image/Windows系统安装/配置jdk变量.png)
 
-配置完成后点击确定，关闭环境变量窗口，以应用修改。然后使用*Win+R*组合键调出运行窗口，在窗口输入框输入*cmd*，点击确定，弹出cmd命令窗口。在命令窗口中输入*Java -version*，会输出Java版本号，说明Java环境变量配置成功。
+配置完成后点击确定，关闭环境变量窗口，以应用修改。然后使用`Win+R`组合键调出运行窗口，在窗口输入框输入`cmd`，点击确定，弹出cmd命令窗口。在命令窗口中输入`Java -version`，会输出Java版本号，说明Java环境变量配置成功。
 ``` shell
 C:\Users\dengqh>java -version
 openjdk version "17.0.8.1" 2023-08-24 LTS
