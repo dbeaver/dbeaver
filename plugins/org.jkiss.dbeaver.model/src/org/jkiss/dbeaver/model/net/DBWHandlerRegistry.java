@@ -14,27 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.net;
 
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 
 import java.util.List;
 
 /**
- * External datasource provider origin.
+ * Network handler registry
  */
-public interface DBPDataSourceOriginExternal extends DBPDataSourceOrigin {
+public interface DBWHandlerRegistry {
 
-    /**
-     * Returns external configuration ID.
-     */
-    @Nullable
-    DBPExternalConfiguration getExternalConfiguration();
+    List<? extends DBWHandlerDescriptor> getDescriptors();
 
-    /**
-     * Returns network profiles available in this origin
-     */
-    List<DBWNetworkProfile> getAvailableNetworkProfiles();
+    DBWHandlerDescriptor getDescriptor(String id);
+
+    List<? extends DBWHandlerDescriptor> getDescriptors(DBPDataSourceContainer dataSource);
+    List<? extends DBWHandlerDescriptor> getDescriptors(DBPDriver driver);
 
 }
