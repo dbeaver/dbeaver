@@ -148,6 +148,23 @@
                                         </folder>
                                     </items>
                                 </folder>
+                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeign" label="%tree.foreign.tables.node.name" icon="#folder_link" description="%tree.foreign.tables.node.tip" visibleIf="connected &amp;&amp; dataSource.serverType.supportsForeignServers()">
+                                    <items label="%tree.foreignTable.node.name" path="foreignTable" property="foreignTables" icon="#table">
+                                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip" visibleIf="!object.isPartition()">
+                                            <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                            </items>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="%tree.constraints.node.tip">
+                                            <items label="%tree.constraint.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
+                                                <items label="%tree.constraint.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                                </items>
+                                            </items>
+                                        </folder>
+                                        <folder label="%tree.dependencies.node.name" icon="#references" description="%tree.dependencies.node.tip" virtual="true">
+                                            <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="#reference" virtual="true"/>
+                                        </folder>
+                                    </items>
+                                </folder>
                                 <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreView" label="%tree.tviews.node.name" icon="#folder_view" description="%tree.tviews.node.tip">
                                     <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
                                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute" label="%tree.columns.node.name" icon="#columns" description="View columns">
@@ -759,23 +776,23 @@
               icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="postgresql"
               handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupHandler" supportsDistributedMode="false">
             <datasource id="postgresql"/>
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreObject"/>
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreObject" if="object.dataSource.serverType.supportsNativeClient()"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema" if="object.dataSource.serverType.supportsNativeClient()"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase" if="object.dataSource.serverType.supportsNativeClient()"/>
         </task>
         <task id="pgDatabaseRestore" name="%task.pgDatabaseRestore.name" description="%task.pgDatabaseRestore.description"
               icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="postgresql"
-              handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreHandler"
+              handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreHandler" requiresMutability="true"
               confirmationMessage="%pgDatabaseRestore.confirmationMessage" supportsDistributedMode="false">
             <datasource id="postgresql"/>
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase" if="object.dataSource.serverType.supportsNativeClient()"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema" if="object.dataSource.serverType.supportsNativeClient()"/>
         </task>
         <task id="pgDatabaseBackupAll" name="%task.pgDatabaseBackupAll.name" description="%task.pgDatabaseBackupAll.description"
               icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="postgresql"
               handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupAllHandler" supportsDistributedMode="false">
             <datasource id="postgresql"/>
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase" if="object.dataSource.serverType.supportsNativeClient()"/>
         </task>
         <task id="pgScriptExecute" name="%task.pgScriptExecute.name" description="%task.pgScriptExecute.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png" type="postgresql" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreScriptExecuteHandler">
             <datasource id="postgresql"/>

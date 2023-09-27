@@ -35,12 +35,6 @@ public class ExasolConsumerGroupConfigurator implements DBEObjectConfigurator<Ex
                 if (dialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }
-                group.setName(dialog.getName());
-                group.setDescription(dialog.getComment());
-                group.setCpuWeight(dialog.getCpuWeight());
-                group.setSessionRamLimit(dialog.getSessionRamLimit());
-                group.setUserRamLimit(dialog.getUserRamLimit());
-                group.setGroupRamLimit(dialog.getGroupRamLimit());
                 return group;
             }
         }.execute();

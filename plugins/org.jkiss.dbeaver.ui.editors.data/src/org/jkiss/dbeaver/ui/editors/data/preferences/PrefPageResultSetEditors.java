@@ -105,7 +105,7 @@ public class PrefPageResultSetEditors extends TargetPrefPage
 
         {
             Group stringGroup = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_database_resultsets_group_string, 2, SWT.NONE, 0);
-            GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             stringGroup.setLayoutData(gd);
 
@@ -117,7 +117,7 @@ public class PrefPageResultSetEditors extends TargetPrefPage
 
         {
             Group binaryGroup = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_database_resultsets_group_binary, 2, SWT.NONE, 0);
-            GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             binaryGroup.setLayoutData(gd);
 
@@ -133,34 +133,38 @@ public class PrefPageResultSetEditors extends TargetPrefPage
             binaryStringMaxLength = UIUtils.createLabelSpinner(binaryGroup, ResultSetMessages.pref_page_database_resultsets_label_binary_strings_max_length, 0, 0, 10000);
             binaryStringMaxLength.setDigits(0);
             binaryStringMaxLength.setIncrement(1);
+            binaryStringMaxLength.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             memoryContentSize = UIUtils.createLabelSpinner(binaryGroup, ResultSetMessages.pref_page_database_general_label_max_lob_length, 0, 0, 1024 * 1024 * 1024);
             memoryContentSize.setDigits(0);
             memoryContentSize.setIncrement(1);
+            memoryContentSize.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             UIUtils.createControlLabel(binaryGroup, ResultSetMessages.pref_page_content_editor_hex_encoding);
             encodingCombo = UIUtils.createEncodingCombo(binaryGroup, GeneralUtils.getDefaultFileEncoding());
-
+            encodingCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             contentCacheClob = UIUtils.createLabelCheckbox(binaryGroup, ResultSetMessages.pref_page_content_cache_clob, true);
             contentCacheBlob = UIUtils.createLabelCheckbox(binaryGroup, ResultSetMessages.pref_page_content_cache_blob, true);
             contentCacheMaxSize = UIUtils.createLabelSpinner(binaryGroup, ResultSetMessages.pref_page_database_general_label_cache_max_size, 0, 0, Integer.MAX_VALUE);
             contentCacheMaxSize.setDigits(0);
             contentCacheMaxSize.setIncrement(100000);
+            contentCacheMaxSize.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             editLongAsLobCheck = UIUtils.createLabelCheckbox(binaryGroup, ResultSetMessages.pref_page_content_editor_checkbox_edit_long_as_lobs, false);
         }
 
         // Content
         {
-            Group contentGroup = new Group(composite, SWT.NONE);
-            contentGroup.setText(ResultSetMessages.pref_page_content_editor_group_content);
-            contentGroup.setLayout(new GridLayout(2, false));
-
-            maxTextContentSize = UIUtils.createLabelSpinner(contentGroup, ResultSetMessages.pref_page_content_editor_label_max_text_length, 0, 0, Integer.MAX_VALUE);
+            Group contentGroup = UIUtils.createControlGroup(composite,
+                ResultSetMessages.pref_page_content_editor_group_content, 2, GridData.FILL_HORIZONTAL, 0);
+            maxTextContentSize = UIUtils.createLabelSpinner(contentGroup, ResultSetMessages.pref_page_content_editor_label_max_text_length,
+                1000, 1, Integer.MAX_VALUE);
             maxTextContentSize.setDigits(0);
-            maxTextContentSize.setIncrement(1000000);
-
-            commitOnEditApplyCheck = UIUtils.createLabelCheckbox(contentGroup, ResultSetMessages.pref_page_content_editor_checkbox_commit_on_value_apply, false);
-            commitOnContentApplyCheck = UIUtils.createLabelCheckbox(contentGroup, ResultSetMessages.pref_page_content_editor_checkbox_commit_on_content_apply, false);
+            maxTextContentSize.setIncrement(10);
+            maxTextContentSize.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            commitOnEditApplyCheck = UIUtils.createLabelCheckbox(contentGroup,
+                ResultSetMessages.pref_page_content_editor_checkbox_commit_on_value_apply, false);
+            commitOnContentApplyCheck = UIUtils.createLabelCheckbox(contentGroup,
+                ResultSetMessages.pref_page_content_editor_checkbox_commit_on_content_apply, false);
         }
 
         return composite;

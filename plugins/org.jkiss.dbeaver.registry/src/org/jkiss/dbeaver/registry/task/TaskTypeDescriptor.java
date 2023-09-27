@@ -141,6 +141,13 @@ public class TaskTypeDescriptor extends DataSourceBindingDescriptor implements D
         return CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_STANDALONE));
     }
 
+    /**
+     * Defines if task execution is prohibited for readonly connections
+     */
+    public boolean requiresMutableDatabase() {
+        return CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_REQUIRES_MUTABILITY), false);
+    }
+
     @Nullable
     @Override
     public String confirmationMessageIfNeeded() {

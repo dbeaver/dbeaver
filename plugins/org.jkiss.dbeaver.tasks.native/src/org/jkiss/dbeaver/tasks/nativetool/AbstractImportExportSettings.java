@@ -33,6 +33,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 
 public abstract class AbstractImportExportSettings<BASE_OBJECT extends DBSObject> extends AbstractNativeToolSettings<BASE_OBJECT> {
@@ -55,6 +56,12 @@ public abstract class AbstractImportExportSettings<BASE_OBJECT extends DBSObject
 
     public void setOutputFilePattern(String outputFilePattern) {
         this.outputFilePattern = outputFilePattern;
+    }
+    
+    @Override
+    public void loadSettingsFromInput(List<BASE_OBJECT> inputObjects) {
+        super.loadSettingsFromInput(inputObjects);
+        this.fillExportObjectsFromInput();
     }
 
     public void fillExportObjectsFromInput() {
