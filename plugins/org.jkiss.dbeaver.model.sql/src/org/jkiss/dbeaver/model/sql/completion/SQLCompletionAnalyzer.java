@@ -62,6 +62,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -78,7 +79,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     private static final String ENABLE_HIPPIE = "SQLEditor.ContentAssistant.activate.hippie";
     private static final String ENABLE_EXPERIMENTAL_FEATURES = "SQLEditor.ContentAssistant.experimental.enable";
     private static final String MATCH_ANY_PATTERN = "%";
-    private static final String TABLE_TO_ATTRIBUTE_PATTERN = "%s.%s";
+    private static final String TABLE_TO_ATTRIBUTE_PATTERN = "%s%s%s";
     public static final int MAX_ATTRIBUTE_VALUE_PROPOSALS = 50;
     public static final int MAX_STRUCT_PROPOSALS = 100;
     private final SQLCompletionRequest request;
@@ -1589,27 +1590,36 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 replaceString += " " + alias;
             }
         }
-        if (SQLConstants.KEYWORD_WHERE.equals(prevWord)) {
-            // find aliases
-            if (object instanceof JDBCTableColumn<?>) {
-                aliasMode = SQLTableAliasInsertMode
-                    .fromPreferences(((JDBCTableColumn<?>) object).getDataSource().getContainer().getPreferenceStore());
-                if (aliasMode != SQLTableAliasInsertMode.NONE) {
-                    
+        if (SQLConstants.KEYWORD_WHERE.equals(prevWord) && object instanceof JDBCTableColumn<?>) {
+            aliasMode = SQLTableAliasInsertMode
+                .fromPreferences(((JDBCTableColumn<?>) object).getDataSource().getContainer().getPreferenceStore());
+            JDBCTableColumn<?> tableColumn = (JDBCTableColumn<?>) object;
+            DBSEntity parentObject = tableColumn.getParentObject();
+            String tableName = parentObject != null ? parentObject.getName() : tableColumn.getTable().getName();
+            SQLDialect sqlDialect = SQLUtils.getDialectFromObject(object);
+            if (aliasMode != SQLTableAliasInsertMode.NONE) {
+                String query = request.getActiveQuery().getText();
+                STMSource querySource;
+                try {
+                    querySource = STMSource.fromReader(new StringReader(query));
+                    LSMAnalyzer analyzer = LSMDialectRegistry.getInstance().getAnalyzerForDialect(
+                        request.getContext().getDataSource().getSQLDialect());
+                    STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
+                    for (Pair<String, String> pair : getTableAndAliasFromSources(tree)) {
+                        if (pair.getFirst().equals(tableName)) {
+                            alias = pair.getSecond();
+                        }
+                    }
+                    objectName = String.format(TABLE_TO_ATTRIBUTE_PATTERN, alias, sqlDialect.getStructSeparator(), object.getName());
+                    replaceString = objectName;
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
                 }
+            } else {
+                objectName = String.format(TABLE_TO_ATTRIBUTE_PATTERN, tableName, sqlDialect.getStructSeparator(), object.getName());
             }
         }
-       
-        
-//        //
-//        if (SQLConstants.KEYWORD_WHERE.equals(prevWord) && object instanceof JDBCTableColumn<?>) {
-//            JDBCTableColumn<?> tableColumn = (JDBCTableColumn<?>) object;
-//            DBSEntity parentObject = tableColumn.getParentObject();
-//            String tableName = parentObject != null ? parentObject.getName() : tableColumn.getTable().getName();
-//            objectName = String.format(TABLE_TO_ATTRIBUTE_PATTERN, tableName, object.getName());
-//            replaceString = objectName ;
-//        }
-        return createCompletionProposal(
+         return createCompletionProposal(
             request,
             replaceString,
             objectName,
