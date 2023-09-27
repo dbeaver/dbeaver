@@ -1,3 +1,5 @@
+本文档介绍如何在DBeaver中创建，查看YashanDB的schema。
+
 ## 创建Schema
 
 使用当前连接用户创建Schema时，需要此用户具有 CREATE USER权限。
