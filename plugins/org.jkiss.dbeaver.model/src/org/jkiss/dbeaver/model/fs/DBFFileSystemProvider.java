@@ -32,10 +32,13 @@ import java.nio.file.spi.FileSystemProvider;
 public interface DBFFileSystemProvider extends DBPObject {
 
     @Nullable
-    FileSystemProvider createNioFileSystemProvider(
+    // TODO: notnull after s3 nio refactoring?
+    default FileSystemProvider createNioFileSystemProvider(
         @NotNull DBRProgressMonitor monitor,
         @NotNull SMSessionContext sessionContext
-    ) throws DBException;
+    ) throws DBException {
+        return null;
+    }
 
     DBFVirtualFileSystem[] getAvailableFileSystems(
         @NotNull DBRProgressMonitor monitor,
