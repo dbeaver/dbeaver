@@ -113,7 +113,7 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     // Network profiles
 
     @Nullable
-    DBWNetworkProfile getNetworkProfile(String name);
+    DBWNetworkProfile getNetworkProfile(String source, String name);
     @NotNull
     List<DBWNetworkProfile> getNetworkProfiles();
     void updateNetworkProfile(DBWNetworkProfile profile);

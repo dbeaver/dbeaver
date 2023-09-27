@@ -242,6 +242,9 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         // Update splash. Do it AFTER platform startup because platform may initiate some splash shell interactions
         updateSplashHandler();
+        if (RuntimeUtils.isWindows() && isStandalone()) {
+            SWTBrowserRegistry.overrideBrowser();
+        }
 
         // Initialize platform
         DBWorkbench.getPlatform();
@@ -255,9 +258,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             log.error("Can't start instance server", e);
         }
 
-        if (RuntimeUtils.isWindows() && isStandalone()) {
-            SWTBrowserRegistry.overrideBrowser();
-        }
         TimezoneRegistry.overrideTimezone();
 
         if (RuntimeUtils.isWindows()
