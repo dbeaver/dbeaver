@@ -1,4 +1,4 @@
-*本文档介绍了如何在Mac系统安装DBeaver*
+本文档介绍了如何在Mac系统安装DBeaver。
 
 ## 前置条件
 DBeaver的运行依赖于Java环境，本文档中介绍的DBeaver版本为V23.1，依赖于JDK17及以上版本的Java环境。  
@@ -20,7 +20,7 @@ DBeaver的运行依赖于Java环境，本文档中介绍的DBeaver版本为V23.1
 /Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home/bin   #这里以本地安装的jdk路径为准，定位到bin目录即可
 ```
 
-再打开macOS的终端界面，输入如下命令：
+再打开macOS的终端界面，输入如下命令配置环境变量：
 ``` shell
 sudo spctl --master-disable
 sudo xattr -r -d com.apple.quarantine /Users/sics/Downloads/dbeaver/macosx/cocoa/x86_64/Dbeaver.app  #这里的路径以本地解压DBeaver的路径为准
