@@ -28,6 +28,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * NIOContainer
@@ -59,13 +60,10 @@ public abstract class NIOContainer extends NIOResource implements IContainer {
                 backendResources.addFirst(it);
             }
 
-            NIOContainer container = this;
             for (Path it : backendResources) {
                 if (!Files.isDirectory(it)) {
                     return new NIOFile(getRoot(), it);
                 }
-
-                container = new NIOFolder(getRoot(), it);
             }
         }
 
@@ -84,11 +82,11 @@ public abstract class NIOContainer extends NIOResource implements IContainer {
         return findMember(new org.eclipse.core.runtime.Path(path));
     }
 
-    public String getDefaultCharset() throws CoreException {
+    public String getDefaultCharset() {
         return "UTF-8"; //$NON-NLS-1$
     }
 
-    public String getDefaultCharset(boolean checkImplicit) throws CoreException {
+    public String getDefaultCharset(boolean checkImplicit) {
         return getDefaultCharset();
     }
 
@@ -103,16 +101,18 @@ public abstract class NIOContainer extends NIOResource implements IContainer {
     }
 
     public IResource[] members() throws CoreException {
-        List<IResource> members = new ArrayList<IResource>();
+        List<IResource> members = new ArrayList<>();
 
         try {
-            Files.list(getNioPath()).forEach(member -> {
-                if (Files.isDirectory(member)) {
-                    members.add(new NIOFolder(getRoot(), member));
-                } else {
-                    members.add(new NIOFile(getRoot(), member));
-                }
-            });
+            try (Stream<Path> files = Files.list(getNioPath())) {
+                files.forEach(member -> {
+                    if (Files.isDirectory(member)) {
+                        members.add(new NIOFolder(getRoot(), member));
+                    } else {
+                        members.add(new NIOFile(getRoot(), member));
+                    }
+                });
+            }
         } catch (IOException e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
@@ -128,7 +128,7 @@ public abstract class NIOContainer extends NIOResource implements IContainer {
         return members();
     }
 
-    public IFile[] findDeletedMembersWithHistory(int depth, IProgressMonitor monitor) throws CoreException {
+    public IFile[] findDeletedMembersWithHistory(int depth, IProgressMonitor monitor) {
         return new IFile[0];
     }
 
@@ -146,25 +146,9 @@ public abstract class NIOContainer extends NIOResource implements IContainer {
         throw new FeatureNotSupportedException();
     }
 
-    public IResourceFilterDescription[] getFilters() throws CoreException {
+    public IResourceFilterDescription[] getFilters() {
         return new IResourceFilterDescription[0];
     }
-
-    // protected NIOContainer getParent(IPath path)
-    // {
-    // int segmentCount = path.segmentCount();
-    // if (segmentCount > 1)
-    // {
-    // return new NIOFolder(this, path.segment(0)).getParent(path.removeFirstSegments(1));
-    // }
-    //
-    // if (segmentCount == 1)
-    // {
-    // return this;
-    // }
-    //
-    // return null;
-    // }
 
     @Override
     protected boolean visit(IResourceVisitor visitor, int depth) throws CoreException {
