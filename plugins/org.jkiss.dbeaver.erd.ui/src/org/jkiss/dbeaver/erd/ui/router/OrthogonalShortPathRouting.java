@@ -29,6 +29,7 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw2d.graph.Path;
 import org.eclipse.draw2d.graph.ShortestPathRouter;
 import org.jkiss.dbeaver.erd.ui.figures.EntityFigure;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -280,20 +281,19 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
                     direction2 = getDirection(bounds, points.getPoint(points.size() - 1).getCopy());
                 }
                 // from 1-->>2
-                int dX1 = (int) (Math.cos(Math.toRadians(direction1)) * DELTA);
-                int dY1 = (int) (Math.sin(Math.toRadians(direction1)) * DELTA);
+                int dx1 = (int) (Math.cos(Math.toRadians(direction1)) * DELTA);
+                int dy1 = (int) (Math.sin(Math.toRadians(direction1)) * DELTA);
                 // from 1<<--2
-                int dX2 = (int) (Math.cos(Math.toRadians(direction2)) * DELTA);
-                int dY2 = (int) (Math.sin(Math.toRadians(direction2)) * DELTA);
-
-                Point p1 = new Point(start.x + dX1, start.y - dY1);
+                int dx2 = (int) (Math.cos(Math.toRadians(direction2)) * DELTA);
+                int dy2 = (int) (Math.sin(Math.toRadians(direction2)) * DELTA);
+                Point p1 = new Point(start.x + dx1, start.y - dy1);
                 modifiedPoints.addPoint(p1);
                 // add other middle points
                 for (int i = 1; i < points.size() - 1; i++) {
                     modifiedPoints.addPoint(points.getPoint(i));
                 }
                 // before end
-                Point p2 = new Point(end.x - dX2, end.y - dY2);
+                Point p2 = new Point(end.x - dx2, end.y - dy2);
                 modifiedPoints.addPoint(p2);
                 // end
                 modifiedPoints.addPoint(points.getLastPoint());
@@ -355,10 +355,16 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
         algorithm.setSpacing(spacing);
     }
 
+    /**
+     * Checks multiple connections
+     */
     public boolean hasMoreConnections() {
         return connectionToPaths != null && !connectionToPaths.isEmpty();
     }
 
+    /**
+     * @return - return a container 
+     */
     public IFigure getContainer() {
         return container;
     }
