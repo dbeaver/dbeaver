@@ -33,9 +33,9 @@ import java.util.stream.Stream;
 /**
  * NIOContainer
  */
-public abstract class NIOContainer extends NIOResource implements IContainer {
+public abstract class EFSNIOContainer extends EFSNIOResource implements IContainer {
 
-    protected NIOContainer(NIOFileSystemRoot root, Path path) {
+    protected EFSNIOContainer(EFSNIOFileSystemRoot root, Path path) {
         super(root, path);
     }
 
@@ -62,7 +62,7 @@ public abstract class NIOContainer extends NIOResource implements IContainer {
 
             for (Path it : backendResources) {
                 if (!Files.isDirectory(it)) {
-                    return new NIOFile(getRoot(), it);
+                    return new EFSNIOFile(getRoot(), it);
                 }
             }
         }
@@ -92,12 +92,12 @@ public abstract class NIOContainer extends NIOResource implements IContainer {
 
     public IFile getFile(IPath path) {
         Path childBackendFile = getNioPath().resolve(path.toString());
-        return new NIOFile(getRoot(), childBackendFile);
+        return new EFSNIOFile(getRoot(), childBackendFile);
     }
 
     public IFolder getFolder(IPath path) {
         Path childBackendFolder = getNioPath().resolve(path.toString());
-        return new NIOFolder(getRoot(), childBackendFolder);
+        return new EFSNIOFolder(getRoot(), childBackendFolder);
     }
 
     public IResource[] members() throws CoreException {
@@ -107,9 +107,9 @@ public abstract class NIOContainer extends NIOResource implements IContainer {
             try (Stream<Path> files = Files.list(getNioPath())) {
                 files.forEach(member -> {
                     if (Files.isDirectory(member)) {
-                        members.add(new NIOFolder(getRoot(), member));
+                        members.add(new EFSNIOFolder(getRoot(), member));
                     } else {
-                        members.add(new NIOFile(getRoot(), member));
+                        members.add(new EFSNIOFile(getRoot(), member));
                     }
                 });
             }
@@ -162,7 +162,7 @@ public abstract class NIOContainer extends NIOResource implements IContainer {
 
         --depth;
         for (IResource member : members()) {
-            ((NIOResource) member).visit(visitor, depth);
+            ((EFSNIOResource) member).visit(visitor, depth);
         }
 
         return true;

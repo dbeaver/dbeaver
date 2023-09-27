@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.fs.DBFRemoteFileStore;
-import org.jkiss.dbeaver.model.fs.nio.NIOResource;
+import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -416,7 +416,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
                 IResource otherResource = node.getAdapter(IResource.class);
                 if (otherResource != null) {
                     try {
-                        if (otherResource instanceof NIOResource) {
+                        if (otherResource instanceof EFSNIOResource) {
                             otherResource.copy(
                                 resource.getRawLocation().append(otherResource.getName()),
                                 true,

@@ -39,13 +39,13 @@ import java.nio.file.Path;
  * URI format:  dbvfs://project-name/fs-type/fs-id/root-id
  *
  */
-public class NIOFileSystem extends FileSystem {
+public class EFSNIOFileSystem extends FileSystem {
 
     public static final String DBVFS_FS_ID = "dbvfs";
 
-    private static final Log log = Log.getLog(NIOFileSystem.class);
+    private static final Log log = Log.getLog(EFSNIOFileSystem.class);
 
-    public NIOFileSystem() {
+    public EFSNIOFileSystem() {
     }
 
     @Override
@@ -89,7 +89,7 @@ public class NIOFileSystem extends FileSystem {
             log.debug("Invalid " + DBVFS_FS_ID + " URI: " + uri);
             return EFS.getNullFileSystem().getStore(uri);
         }
-        return new NIOFileStore(uri, path);
+        return new EFSNIOFileStore(uri, path);
     }
 
 }

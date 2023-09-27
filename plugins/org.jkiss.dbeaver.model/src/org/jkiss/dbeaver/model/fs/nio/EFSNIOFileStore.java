@@ -33,12 +33,12 @@ import java.nio.file.Path;
 /**
  * NIOFileStore
  */
-public class NIOFileStore extends FileStore {
+public class EFSNIOFileStore extends FileStore {
 
     private final URI dbvfsURI;
     private final Path path;
 
-    public NIOFileStore(URI dbvfsURI, Path path) {
+    public EFSNIOFileStore(URI dbvfsURI, Path path) {
         this.dbvfsURI = dbvfsURI;
         this.path = path;
     }
@@ -50,7 +50,7 @@ public class NIOFileStore extends FileStore {
 
     @Override
     public IFileInfo fetchInfo(int options, IProgressMonitor monitor) throws CoreException {
-        return new NIOFileInfo(path);
+        return new EFSNIOFileInfo(path);
     }
 
     @Override

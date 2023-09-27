@@ -27,10 +27,10 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
-import org.jkiss.dbeaver.model.fs.nio.NIOFile;
-import org.jkiss.dbeaver.model.fs.nio.NIOFileSystemRoot;
-import org.jkiss.dbeaver.model.fs.nio.NIOFolder;
-import org.jkiss.dbeaver.model.fs.nio.NIOResource;
+import org.jkiss.dbeaver.model.fs.nio.EFSNIOFile;
+import org.jkiss.dbeaver.model.fs.nio.EFSNIOFileSystemRoot;
+import org.jkiss.dbeaver.model.fs.nio.EFSNIOFolder;
+import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -101,7 +101,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     // Path's file name may be null (e.g. forFS root folder)
     // Then try to extract it from URI or from toString
     private String getFileName() {
-        return URLDecoder.decode(NIOResource.getPathFileNameOrHost(getPath()), StandardCharsets.UTF_8);
+        return URLDecoder.decode(EFSNIOResource.getPathFileNameOrHost(getPath()), StandardCharsets.UTF_8);
     }
 
     @Override
@@ -363,7 +363,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
                 return null;
             }
             DBFVirtualFileSystemRoot fsRoot = rootNode.getRoot();
-            NIOFileSystemRoot root = new NIOFileSystemRoot(
+            EFSNIOFileSystemRoot root = new EFSNIOFileSystemRoot(
                 getOwnerProject().getEclipseProject(),
                 fsRoot,
                 fsRoot.getFileSystem().getType() + "/" + fsRoot.getFileSystem().getId() + "/" + fsRoot.getRootId()
@@ -371,9 +371,9 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
             Path path = getPath();
             IResource resource;
             if (allowsChildren()) {
-                resource = new NIOFolder(root, path);
+                resource = new EFSNIOFolder(root, path);
             } else {
-                resource = new NIOFile(root, path);
+                resource = new EFSNIOFile(root, path);
             }
             return adapter.cast(resource);
         }
