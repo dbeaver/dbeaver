@@ -363,7 +363,7 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
     }
 
     /**
-     * @return - return a container 
+     * Return a container 
      */
     public IFigure getContainer() {
         return container;
