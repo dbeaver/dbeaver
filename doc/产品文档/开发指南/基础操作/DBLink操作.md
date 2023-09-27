@@ -1,4 +1,4 @@
-## GRANT PERMISSIONS
+## 权限需求
 使用DBeaver For YashanDB管理DBLink，请确保当前用户具有以下权限。
 
 | 权限                          | 说明        |
@@ -11,7 +11,7 @@
 | DROP PUBLIC DATABASE LINK   | 删除公有数据库链接 |
 
 
-## CREATE DATABASE LINK
+## 创建数据库连接
 创建示例SQL语句
 ```sql
 CREATE DATABASE LINK dbeaver CONNECT TO TEST01 IDENTIFIED BY ****** USING '***.***.**.***:****'
