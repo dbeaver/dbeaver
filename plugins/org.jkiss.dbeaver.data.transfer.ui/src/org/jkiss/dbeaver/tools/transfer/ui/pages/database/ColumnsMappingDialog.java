@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingType;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
-import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -66,10 +65,10 @@ class ColumnsMappingDialog extends DialogPage {
     private TableViewer mappingViewer;
     private Font boldFont;
 
-    ColumnsMappingDialog(DataTransferWizard wizard, DatabaseConsumerSettings settings, DatabaseMappingContainer mapping) {
+    ColumnsMappingDialog(DatabaseConsumerSettings settings, DatabaseMappingContainer mapping) {
         this.settings = settings;
         this.mapping = mapping;
-        attributeMappings = mapping.getAttributeMappings(wizard.getRunnableContext());
+        attributeMappings = mapping.getAttributeMappings();
     }
 
     @Override
