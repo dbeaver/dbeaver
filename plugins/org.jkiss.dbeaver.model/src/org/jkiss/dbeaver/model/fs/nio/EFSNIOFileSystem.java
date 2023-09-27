@@ -19,12 +19,14 @@ package org.jkiss.dbeaver.model.fs.nio;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.filesystem.provider.FileSystem;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystem;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystemRoot;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -67,18 +69,26 @@ public class EFSNIOFileSystem extends FileSystem {
                 if (projectNode != null) {
                     DBNFileSystems fileSystemsNode = projectNode.getExtraNode(DBNFileSystems.class);
                     if (fileSystemsNode != null) {
-                        DBNFileSystem fsNode = fileSystemsNode.getFileSystem(fsType, fsId);
-                        if (fsNode != null) {
-                            DBNFileSystemRoot fsNodeRoot = fsNode.getRoot(fsRootPath);
-                            if (fsNodeRoot != null) {
-                                try {
-                                    relPath = CommonUtils.removeLeadingSlash(relPath);
-                                    relPath = URLDecoder.decode(relPath, StandardCharsets.UTF_8);
-                                    path = fsNodeRoot.getPath().resolve(relPath);
-                                } catch (Exception e) {
-                                    log.debug("Error resolving path", e);
+                        try {
+                            fileSystemsNode.getChildren(new VoidProgressMonitor());
+                            DBNFileSystem fsNode = fileSystemsNode.getFileSystem(fsType, fsId);
+                            if (fsNode != null) {
+                                fsNode.getChildren(new VoidProgressMonitor());
+                                DBNFileSystemRoot fsNodeRoot = fsNode.getRoot(fsRootPath);
+                                if (fsNodeRoot != null) {
+                                    try {
+                                        relPath = CommonUtils.removeLeadingSlash(relPath);
+                                        relPath = URLDecoder.decode(relPath, StandardCharsets.UTF_8);
+                                        path = fsNodeRoot.getPath().resolve(relPath);
+                                    } catch (Exception e) {
+                                        log.debug("Error resolving path", e);
+                                    }
                                 }
+                            } else {
+                                log.debug("File system '" + fsType + ":" + fsId + "' not found");
                             }
+                        } catch (DBException e) {
+                            log.debug("Error reading file systems", e);
                         }
                     }
                 }
