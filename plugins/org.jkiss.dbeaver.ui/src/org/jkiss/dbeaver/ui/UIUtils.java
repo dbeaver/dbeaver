@@ -1941,16 +1941,16 @@ public class UIUtils {
         }
     }
 
+    /**
+     * Create centralized shell from default display
+     *
+     */
     public static Shell createCenteredShell(Shell parent) {
-
         final Rectangle bounds = parent.getBounds();
         final int x = bounds.x + bounds.width / 2 - 120;
         final int y = bounds.y + bounds.height / 2 - 170;
-
-        final Shell shell = new Shell( parent );
-
-        shell.setBounds( x, y, 0, 0 );
-
+        final Shell shell = new Shell(Display.getDefault());
+        shell.setBounds(x, y, 0, 0);
         return shell;
     }
 
