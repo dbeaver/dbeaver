@@ -78,7 +78,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     private static final String ENABLE_HIPPIE = "SQLEditor.ContentAssistant.activate.hippie";
     private static final String ENABLE_EXPERIMENTAL_FEATURES = "SQLEditor.ContentAssistant.experimental.enable";
     private static final String MATCH_ANY_PATTERN = "%";
-    private static final String TABLE_TO_ATTRIBUTE_PATTERN = "%s -> %s";
+    private static final String TABLE_TO_ATTRIBUTE_PATTERN = "%s.%s";
     public static final int MAX_ATTRIBUTE_VALUE_PROPOSALS = 50;
     public static final int MAX_STRUCT_PROPOSALS = 100;
     private final SQLCompletionRequest request;
@@ -1487,6 +1487,9 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         @NotNull Map<String, Object> params)
     {
         String alias = null;
+        String objectName = null;
+        String replaceString = null;
+        boolean isSingleObject = true;
         SQLTableAliasInsertMode aliasMode = SQLTableAliasInsertMode.NONE;
         String prevWord = request.getWordDetector().getPrevKeyWord();
         if (SQLConstants.KEYWORD_FROM.equals(prevWord) ||
@@ -1541,57 +1544,71 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     }
                 }
             }
-        }
-        String objectName = useShortName ?
-            object.getName() :
-            DBUtils.getObjectFullName(object, DBPEvaluationContext.DML);
-        if (SQLConstants.KEYWORD_WHERE.equals(prevWord) && object instanceof JDBCTableColumn<?>) {
-            JDBCTableColumn<?> tableColumn = (JDBCTableColumn<?>) object;
-            DBSEntity parentObject = tableColumn.getParentObject();
-            String tableName = parentObject != null ? parentObject.getName() : tableColumn.getTable().getName();
-            objectName = String.format(TABLE_TO_ATTRIBUTE_PATTERN, tableName, object.getName());
-        }
-        boolean isSingleObject = true;
-        String replaceString = null;
-        DBPDataSource dataSource = request.getContext().getDataSource();
-        if (dataSource != null) {
-            // If we replace short name with referenced object
-            // and current active schema (catalog) is not this object's container then
-            // replace with full qualified name
-            if (!request.getContext().isUseShortNames() && object instanceof DBSObjectReference) {
-                if (request.getWordDetector().getFullWord().indexOf(request.getContext().getSyntaxManager().getStructSeparator()) == -1) {
-                    DBSObjectReference structObject = (DBSObjectReference) object;
-                    DBSObject objectContainer = structObject.getContainer();
-                    if (objectContainer != null) {
-                        DBSObject selectedObject = getActiveInstanceObject();
-                        if (selectedObject != null && selectedObject != objectContainer) {
-                            if (DBSProcedure.class.isAssignableFrom(structObject.getObjectClass())) {
-                                // We do not need full routine name with parameters here
-                                replaceString = DBUtils.getFullQualifiedName(dataSource, objectContainer, structObject);
-                            } else {
-                                replaceString = structObject.getFullyQualifiedName(DBPEvaluationContext.DML);
+              objectName = useShortName ?
+                object.getName() :
+                DBUtils.getObjectFullName(object, DBPEvaluationContext.DML);
+            
+            
+            DBPDataSource dataSource = request.getContext().getDataSource();
+            if (dataSource != null) {
+                // If we replace short name with referenced object
+                // and current active schema (catalog) is not this object's container then
+                // replace with full qualified name
+                if (!request.getContext().isUseShortNames() && object instanceof DBSObjectReference) {
+                    if (request.getWordDetector().getFullWord().indexOf(request.getContext().getSyntaxManager().getStructSeparator()) == -1) {
+                        DBSObjectReference structObject = (DBSObjectReference) object;
+                        DBSObject objectContainer = structObject.getContainer();
+                        if (objectContainer != null) {
+                            DBSObject selectedObject = getActiveInstanceObject();
+                            if (selectedObject != null && selectedObject != objectContainer) {
+                                if (DBSProcedure.class.isAssignableFrom(structObject.getObjectClass())) {
+                                    // We do not need full routine name with parameters here
+                                    replaceString = DBUtils.getFullQualifiedName(dataSource, objectContainer, structObject);
+                                } else {
+                                    replaceString = structObject.getFullyQualifiedName(DBPEvaluationContext.DML);
+                                }
+                                isSingleObject = false;
                             }
-                            isSingleObject = false;
                         }
                     }
                 }
+                if (replaceString == null) {
+                    if (request.getContext().isUseFQNames() && object instanceof DBPQualifiedObject) {
+                        replaceString = ((DBPQualifiedObject)object).getFullyQualifiedName(DBPEvaluationContext.DML);
+                    } else {
+                        replaceString = DBUtils.getQuotedIdentifier(dataSource, object.getName());
+                    }
+                }
+            } else {
+                replaceString = DBUtils.getObjectShortName(object);
             }
-            if (replaceString == null) {
-                if (request.getContext().isUseFQNames() && object instanceof DBPQualifiedObject) {
-                    replaceString = ((DBPQualifiedObject)object).getFullyQualifiedName(DBPEvaluationContext.DML);
-                } else {
-                    replaceString = DBUtils.getQuotedIdentifier(dataSource, object.getName());
+            if (!CommonUtils.isEmpty(alias)) {
+                if (aliasMode == SQLTableAliasInsertMode.EXTENDED) {
+                    replaceString += " " + convertKeywordCase(request, "as", false);
+                }
+                replaceString += " " + alias;
+            }
+        }
+        if (SQLConstants.KEYWORD_WHERE.equals(prevWord)) {
+            // find aliases
+            if (object instanceof JDBCTableColumn<?>) {
+                aliasMode = SQLTableAliasInsertMode
+                    .fromPreferences(((JDBCTableColumn<?>) object).getDataSource().getContainer().getPreferenceStore());
+                if (aliasMode != SQLTableAliasInsertMode.NONE) {
+                    
                 }
             }
-        } else {
-            replaceString = DBUtils.getObjectShortName(object);
         }
-        if (!CommonUtils.isEmpty(alias)) {
-            if (aliasMode == SQLTableAliasInsertMode.EXTENDED) {
-                replaceString += " " + convertKeywordCase(request, "as", false);
-            }
-            replaceString += " " + alias;
-        }
+       
+        
+//        //
+//        if (SQLConstants.KEYWORD_WHERE.equals(prevWord) && object instanceof JDBCTableColumn<?>) {
+//            JDBCTableColumn<?> tableColumn = (JDBCTableColumn<?>) object;
+//            DBSEntity parentObject = tableColumn.getParentObject();
+//            String tableName = parentObject != null ? parentObject.getName() : tableColumn.getTable().getName();
+//            objectName = String.format(TABLE_TO_ATTRIBUTE_PATTERN, tableName, object.getName());
+//            replaceString = objectName ;
+//        }
         return createCompletionProposal(
             request,
             replaceString,
