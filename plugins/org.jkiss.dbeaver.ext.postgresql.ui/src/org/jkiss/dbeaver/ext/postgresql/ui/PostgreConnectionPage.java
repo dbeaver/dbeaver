@@ -183,6 +183,11 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         setControl(mainGroup);
     }
 
+    /**
+     * Returns server type for correct classes initialization
+     *
+     * @param driver to read server type from custom properties
+     */
     public PostgreServerType getServerType(DBPDriver driver) {
         return PostgreUtils.getServerType(driver);
     }
