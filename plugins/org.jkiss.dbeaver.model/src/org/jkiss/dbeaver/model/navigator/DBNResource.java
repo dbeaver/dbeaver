@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.internal.resources.Resource;
 import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -27,10 +29,9 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.fs.DBFRemoteFileStore;
-import org.jkiss.dbeaver.model.fs.nio.NIOResource;
+import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.rm.RMConstants;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -41,6 +42,8 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -119,7 +122,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
         if (resource == null || handler == null) {
             return null;
         }
-        return resource.getName();
+        return URLDecoder.decode(resource.getName(), StandardCharsets.UTF_8);
     }
 
 /*
@@ -376,7 +379,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
                 }
             }
         } catch (CoreException e) {
-            throw new DBException("Can't rename resource", e);
+            throw new DBException("Cannot rename resource : " + e.getMessage(), e);
         }
     }
 
@@ -397,58 +400,49 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource, DBNStre
     }
 
     @Override
-    public void dropNodes(Collection<DBNNode> nodes) throws DBException {
-
-        new AbstractJob("Drop files to workspace") {
-            {
-                setUser(true);
-            }
-
-            @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
-                monitor.beginTask("Copy files", nodes.size());
-                try {
-                    if (!resource.exists()) {
-                        if (resource instanceof IFolder) {
-                            ((IFolder) resource).create(true, true, new NullProgressMonitor());
-                        }
+    public void dropNodes(DBRProgressMonitor monitor, Collection<DBNNode> nodes) throws DBException {
+        monitor.beginTask("Copy files", nodes.size());
+        try {
+            if (!resource.exists()) {
+                if (resource instanceof IFolder) {
+                    try {
+                        ((IFolder) resource).create(true, true, new NullProgressMonitor());
+                    } catch (CoreException e) {
+                        throw new DBException("Error creating folder " + resource.getName(), e);
                     }
-                    for (DBNNode node : nodes) {
-                        IResource otherResource = node.getAdapter(IResource.class);
-                        if (otherResource != null) {
-                            try {
-                                if (otherResource instanceof NIOResource) {
-                                    otherResource.copy(
-                                        resource.getRawLocation().append(otherResource.getName()),
-                                        true,
-                                        monitor.getNestedMonitor());
-                                } else {
-                                    if (DBWorkbench.isDistributed() && !CommonUtils.equalObjects(otherResource.getProject(), resource.getProject())) {
-                                        throw new DBException("Cross-project resource move is not supported in distributed workspaces");
-                                    }
-                                    otherResource.move(
-                                        resource.getFullPath().append(otherResource.getName()),
-                                        true,
-                                        monitor.getNestedMonitor());
-                                }
-                                refreshFileStore(monitor);
-                                resource.refreshLocal(IResource.DEPTH_ONE, monitor.getNestedMonitor());
-                            } catch (CoreException e) {
-                                throw new DBException("Can't copy " + otherResource.getName() + " to " + resource.getName(), e);
-                            }
-                        } else {
-                            throw new DBException("Can't get resource from node " + node.getName());
-                        }
-                        monitor.worked(1);
-                    }
-                } catch (Exception e) {
-                    return GeneralUtils.makeExceptionStatus(e);
-                } finally {
-                    monitor.done();
                 }
-                return Status.OK_STATUS;
             }
-        }.schedule();
+            for (DBNNode node : nodes) {
+                IResource otherResource = node.getAdapter(IResource.class);
+                if (otherResource != null) {
+                    try {
+                        if (otherResource instanceof EFSNIOResource) {
+                            otherResource.copy(
+                                resource.getRawLocation().append(otherResource.getName()),
+                                true,
+                                monitor.getNestedMonitor());
+                        } else {
+                            if (DBWorkbench.isDistributed() && !CommonUtils.equalObjects(otherResource.getProject(), resource.getProject())) {
+                                throw new DBException("Cross-project resource move is not supported in distributed workspaces");
+                            }
+                            otherResource.move(
+                                resource.getFullPath().append(otherResource.getName()),
+                                true,
+                                monitor.getNestedMonitor());
+                        }
+                        refreshFileStore(monitor);
+                        resource.refreshLocal(IResource.DEPTH_ONE, monitor.getNestedMonitor());
+                    } catch (CoreException e) {
+                        throw new DBException("Can't copy " + otherResource.getName() + " to " + resource.getName(), e);
+                    }
+                } else {
+                    throw new DBException("Can't get resource from node " + node.getName());
+                }
+                monitor.worked(1);
+            }
+        } finally {
+            monitor.done();
+        }
     }
 
     public boolean supportsPaste(@NotNull DBNNode other) {

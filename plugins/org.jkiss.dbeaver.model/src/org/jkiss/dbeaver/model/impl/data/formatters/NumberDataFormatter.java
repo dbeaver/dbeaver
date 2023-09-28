@@ -66,8 +66,8 @@ public class NumberDataFormatter implements DBDDataFormatter {
         if (minIntDigits != null) {
             numberFormat.setMinimumIntegerDigits(CommonUtils.toInt(minIntDigits));
         }
-        if (type != null && type.getScale() != null) {
-            int typeScale = type.getScale();
+        if (type != null) {
+            int typeScale = type.getScale() != null ? type.getScale() : 0;
             // #6111 + #6914.
             // Here is a trick. We can't set max digiter bigger than scale (otherwise long numbers are corrupted)
             Object maxFractDigits = properties.get(NumberFormatSample.PROP_MAX_FRACT_DIGITS);

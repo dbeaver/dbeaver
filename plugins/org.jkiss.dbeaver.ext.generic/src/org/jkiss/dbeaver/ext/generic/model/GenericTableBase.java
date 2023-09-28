@@ -430,7 +430,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
                         break;
                 }
 
-                if (info.fkTableName == null) {
+                if (CommonUtils.isEmpty(info.fkTableName)) {
                     log.debug("Null FK table name");
                     continue;
                 }
