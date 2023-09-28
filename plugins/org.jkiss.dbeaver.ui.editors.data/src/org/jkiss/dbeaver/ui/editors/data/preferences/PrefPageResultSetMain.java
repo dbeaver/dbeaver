@@ -214,7 +214,6 @@ public class PrefPageResultSetMain extends TargetPrefPage
             useBrowserCheckbox.setToolTipText(DataEditorsMessages.pref_page_database_resultsets_label_image_browser_tip);
 
         }
-
         {
             final Group group = UIUtils.createControlGroup(
                 leftPane,
@@ -243,7 +242,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
                 }
             });
         }
-
+       
         return composite;
     }
 
@@ -293,7 +292,6 @@ public class PrefPageResultSetMain extends TargetPrefPage
             }
             showErrorsInDialog.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG));
             markCellValueOccurrences.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES));
-
             updateOptionsEnablement();
         } catch (Exception e) {
             log.warn(e);

@@ -22,13 +22,13 @@ import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 /**
  * NIOFileSystemRoot
  */
-public class NIOFileSystemRoot {
+public class EFSNIOFileSystemRoot {
 
     private final IProject project;
     private final DBFVirtualFileSystemRoot fsRoot;
     private final String fsPrefix;
 
-    public NIOFileSystemRoot(IProject project, DBFVirtualFileSystemRoot fsRoot, String fsPrefix) {
+    public EFSNIOFileSystemRoot(IProject project, DBFVirtualFileSystemRoot fsRoot, String fsPrefix) {
         this.project = project;
         this.fsRoot = fsRoot;
         this.fsPrefix = fsPrefix;

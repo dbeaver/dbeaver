@@ -35,6 +35,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
@@ -560,6 +561,9 @@ public class GeneralUtils {
     }
 
     private static IStatus makeExceptionStatus(int severity, Throwable ex, boolean nested) {
+        if (ex instanceof InvocationTargetException) {
+            ex = ((InvocationTargetException) ex).getTargetException();
+        }
         if (ex instanceof CoreException) {
             return ((CoreException) ex).getStatus();
         }

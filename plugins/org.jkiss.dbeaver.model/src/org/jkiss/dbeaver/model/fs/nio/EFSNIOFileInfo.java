@@ -25,12 +25,12 @@ import java.nio.file.Path;
 /**
  * NIOFileInfo
  */
-public class NIOFileInfo extends FileInfo {
+public class EFSNIOFileInfo extends FileInfo {
 
     private final Path path;
 
-    public NIOFileInfo(Path path) {
-        super(NIOResource.getPathFileNameOrHost(path));
+    public EFSNIOFileInfo(Path path) {
+        super(EFSNIOResource.getPathFileNameOrHost(path));
         this.path = path;
     }
 

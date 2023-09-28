@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfileProvider;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -231,7 +232,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         synchronized (dataSources) {
             dsCopy = CommonUtils.copyList(dataSources.values());
         }
-        dsCopy.removeIf(ds -> !CommonUtils.equalObjects(ds.getConnectionConfiguration().getConfigProfileName(), profile.getProfileName()));
+        dsCopy.removeIf(ds ->
+            !CommonUtils.equalObjects(ds.getConnectionConfiguration().getConfigProfileSource(), profile.getProfileSource()) ||
+            !CommonUtils.equalObjects(ds.getConnectionConfiguration().getConfigProfileName(), profile.getProfileName()));
         return dsCopy;
     }
 
@@ -422,9 +425,20 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     @Nullable
     @Override
-    public DBWNetworkProfile getNetworkProfile(String name) {
+    public DBWNetworkProfile getNetworkProfile(String source, String name) {
+        if (!CommonUtils.isEmpty(source)) {
+            // Search in external sources
+            DBWNetworkProfileProvider profileProvider = RuntimeUtils.getObjectAdapter(this.getProject(), DBWNetworkProfileProvider.class);
+            if (profileProvider != null) {
+                return profileProvider.getNetworkProfile(source, name);
+            }
+            return null;
+        }
+        // Search in project profiles
         synchronized (networkProfiles) {
-            return networkProfiles.stream().filter(profile -> CommonUtils.equalObjects(profile.getProfileName(), name)).findFirst().orElse(null);
+            return networkProfiles.stream()
+                .filter(profile -> CommonUtils.equalObjects(profile.getProfileName(), name))
+                .findFirst().orElse(null);
         }
     }
 
