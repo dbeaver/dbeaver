@@ -57,7 +57,7 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
 
     private static final Log log = Log.getLog(SQLEditorHandlerOpenObjectConsole.class);
 
-    private static final boolean OPEN_FILE_EDITOR = true;
+    private static final boolean OPEN_FILE_EDITOR = false;
 
     public SQLEditorHandlerOpenObjectConsole()
     {
