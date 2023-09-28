@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -90,6 +91,7 @@ public class DBNModel implements IResourceChangeListener {
     private final List<Function<DBNNode, Boolean>> nodeFilters = new ArrayList<>();
 
     private SMSessionContext modelAuthContext;
+    private DBFFileSystemManager fileSystemManager;
 
     /**
      * Creates navigator model.
@@ -116,6 +118,15 @@ public class DBNModel implements IResourceChangeListener {
 
     public void setModelAuthContext(SMSessionContext modelAuthContext) {
         this.modelAuthContext = modelAuthContext;
+    }
+
+    @Nullable
+    public DBFFileSystemManager getFileSystemManager() {
+        return fileSystemManager;
+    }
+
+    public void setFileSystemManager(@NotNull DBFFileSystemManager fileSystemManager) {
+        this.fileSystemManager = fileSystemManager;
     }
 
     public boolean isGlobal() {

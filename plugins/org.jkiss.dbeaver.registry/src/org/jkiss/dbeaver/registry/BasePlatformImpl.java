@@ -30,11 +30,13 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
+import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
 import org.jkiss.dbeaver.model.fs.DBFRegistry;
 import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.model.task.DBTTaskController;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
@@ -71,7 +73,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     protected OSDescriptor localSystem;
 
     private DBNModel navigatorModel;
-
+    private final DBFFileSystemManager fileSystemManager = new DBFFileSystemManager();
     private final List<IPluginService> activatedServices = new ArrayList<>();
     private DBFileController localFileController;
     private DBTTaskController localTaskController;
@@ -91,9 +93,11 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
             }
         });
 
+        this.fileSystemManager.reloadFileSystems(new LoggingProgressMonitor(),getWorkspace().getAuthContext());
         // Navigator model
         this.navigatorModel = new DBNModel(this, null);
         this.navigatorModel.setModelAuthContext(getWorkspace().getAuthContext());
+        this.navigatorModel.setFileSystemManager(this.fileSystemManager);
         this.navigatorModel.initialize();
 
         if (!getApplication().isExclusiveMode()) {
