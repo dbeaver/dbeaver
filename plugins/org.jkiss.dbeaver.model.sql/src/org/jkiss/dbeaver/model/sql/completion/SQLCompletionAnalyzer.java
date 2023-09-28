@@ -1599,17 +1599,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             SQLDialect sqlDialect = SQLUtils.getDialectFromObject(object);
             if (aliasMode != SQLTableAliasInsertMode.NONE) {
                 String query = request.getActiveQuery().getText();
-                STMSource querySource;
                 try {
-                    querySource = STMSource.fromReader(new StringReader(query));
-                    LSMAnalyzer analyzer = LSMDialectRegistry.getInstance().getAnalyzerForDialect(
-                        request.getContext().getDataSource().getSQLDialect());
-                    STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
-                    for (Pair<String, String> pair : getTableAndAliasFromSources(tree)) {
-                        if (pair.getFirst().equals(tableName)) {
-                            alias = pair.getSecond();
-                        }
-                    }
+                    alias = getAliceFromQueryNTLR(tableName, query);
                     objectName = String.format(TABLE_TO_ATTRIBUTE_PATTERN, alias, sqlDialect.getStructSeparator(), object.getName());
                     replaceString = objectName;
                 } catch (IOException e) {
@@ -1617,6 +1608,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 }
             } else {
                 objectName = String.format(TABLE_TO_ATTRIBUTE_PATTERN, tableName, sqlDialect.getStructSeparator(), object.getName());
+                replaceString = objectName;
             }
         }
          return createCompletionProposal(
@@ -1628,6 +1620,26 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             isSingleObject,
             object,
             params);
+    }
+    
+    @NotNull
+    private String getAliceFromQueryNTLR(
+        @NotNull String tableName,
+        @NotNull String query) throws IOException {
+        String alias = "";
+        STMSource querySource = STMSource.fromReader(new StringReader(query));
+        LSMAnalyzer analyzer = LSMDialectRegistry.getInstance().getAnalyzerForDialect(request.getContext().getDataSource().getSQLDialect());
+        STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
+        for (Pair<String, String> pair : getTableAndAliasFromSources(tree)) {
+            if (pair.getFirst().equals(tableName)) {
+                alias = pair.getSecond();
+                break;
+            }
+        }
+        if (alias.isEmpty()) {
+            alias = tableName;
+        }
+        return alias;
     }
 
     /*
