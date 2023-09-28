@@ -27,8 +27,8 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.*;
 
 /**
@@ -100,7 +100,7 @@ public class StreamProducerSettings implements IDataTransferSettings {
 
             monitor.beginTask("Extract extra entities from stream", 1);
 
-            try (InputStream is = new FileInputStream(entityMapping.getInputFile())) {
+            try (InputStream is = Files.newInputStream(entityMapping.getInputFile())) {
                 return pendingEntityMappings.addAll(importer.readEntitiesInfo(entityMapping, is));
             } catch (Exception e) {
                 settings.getState().addError(e);
@@ -132,7 +132,7 @@ public class StreamProducerSettings implements IDataTransferSettings {
 
         if (entityMapping != null && importer instanceof IStreamDataImporter) {
             IStreamDataImporter sdi = (IStreamDataImporter) importer;
-            try (InputStream is = new FileInputStream(entityMapping.getInputFile())) {
+            try (InputStream is = Files.newInputStream(entityMapping.getInputFile())) {
                 sdi.init(new StreamDataImporterSite(this, entityMapping, procProps));
                 try {
                     columnInfos = sdi.readColumnsInfo(entityMapping, is);

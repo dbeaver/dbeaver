@@ -63,6 +63,10 @@ import org.jkiss.utils.io.ByteOrderMark;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -133,9 +137,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     private DBDAttributeBinding[] columnMetas;
     private DBDAttributeBinding[] columnBindings;
-    private File lobDirectory;
+    private Path lobDirectory;
     private long lobCount;
-    private File outputFile;
+    private Path outputFile;
     private StreamExportSite exportSite;
     private Map<String, Object> processorProperties;
     private StringWriter outputBuffer;
@@ -143,7 +147,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private boolean firstRow = true;
     private TransferParameters parameters;
 
-    private final List<File> outputFiles = new ArrayList<>();
+    private final List<Path> outputFiles = new ArrayList<>();
     private StatOutputStream statStream;
     
     public StreamTransferConsumer() {
@@ -312,43 +316,46 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return behavior == BlobFileConflictBehavior.OVERWRITE;
     }
 
-    private File saveContentToFile(DBRProgressMonitor monitor, DBDContent content)
+    private Path saveContentToFile(DBRProgressMonitor monitor, DBDContent content)
         throws IOException, DBCException {
         DBDContentStorage contents = content.getContents(monitor);
         if (DBUtils.isNullValue(contents)) {
             return null;
         }
         if (lobDirectory == null) {
-            lobDirectory = new File(getOutputFolder(), LOB_DIRECTORY_NAME);
-            if (!lobDirectory.exists()) {
-                if (!lobDirectory.mkdir()) {
-                    throw new IOException("Can't create directory for CONTENT files: " + lobDirectory.getAbsolutePath());
-                }
+            lobDirectory = IOUtils.getPathFromString(getOutputFolder()).resolve(LOB_DIRECTORY_NAME);
+            if (!Files.exists(lobDirectory)) {
+                Files.createDirectory(lobDirectory);
             }
         }
         lobCount++;
         Boolean extractImages = (Boolean) processorProperties.get(StreamConsumerSettings.PROP_EXTRACT_IMAGES);
         String fileExt = (extractImages != null && extractImages) ? ".jpg" : ".data";
-        File lobFile = makeLobFileName(null, fileExt);
-        if (lobFile.isFile()) {
-            if (!resolveOverwriteBlobFileConflict(lobFile.getName())) {
+        Path lobFile = makeLobFileName(null, fileExt);
+        if (Files.isRegularFile(lobFile)) {
+            if (!resolveOverwriteBlobFileConflict(lobFile.getFileName().toString())) {
                 lobFile = makeLobFileName("-" + System.currentTimeMillis(), fileExt);
             }
         }
         
         try (InputStream cs = contents.getContentStream()) {
-            ContentUtils.saveContentToFile(cs, lobFile, monitor);
+            Files.copy(cs, lobFile, StandardCopyOption.REPLACE_EXISTING);
+            // Check for cancel
+            if (monitor.isCanceled()) {
+                // Delete output file
+                Files.delete(lobFile);
+            }
         }
 
         return lobFile;
     }
-    
-    private File makeLobFileName(String suffix, String fileExt) {
-        String name = outputFile.getName() + "-" + lobCount;
+
+    private Path makeLobFileName(String suffix, String fileExt) {
+        String name = outputFile.getFileName().toString() + "-" + lobCount;
         if (CommonUtils.isNotEmpty(suffix)) {
             name += suffix;
         }
-        return new File(lobDirectory, name + fileExt); //$NON-NLS-1$ //$NON-NLS-2$
+        return lobDirectory.resolve(name + fileExt); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     private void initExporter(DBCSession session) throws DBCException {
@@ -470,9 +477,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     
     private void openOutputStreams() throws IOException {
         final boolean truncate;
-        
-        if (outputFile.isFile()) {
-            DataFileConflictBehavior behavior = prepareDataFileConflictBehavior(outputFile.getName());
+
+        boolean fileExists = Files.exists(outputFile);
+        if (fileExists && !Files.isDirectory(outputFile)) {
+            DataFileConflictBehavior behavior = prepareDataFileConflictBehavior(outputFile.getFileName().toString());
             switch (behavior) {
                 case APPEND:
                     truncate = false;
@@ -491,7 +499,13 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             truncate = true;
         }
 
-        this.outputStream = new BufferedOutputStream(new FileOutputStream(outputFile, !truncate), OUT_FILE_BUFFER_SIZE);
+        this.outputStream = new BufferedOutputStream(
+            Files.newOutputStream(
+                outputFile,
+                !fileExists ?
+                    StandardOpenOption.CREATE_NEW :
+                    (truncate ? StandardOpenOption.TRUNCATE_EXISTING : StandardOpenOption.APPEND)),
+            OUT_FILE_BUFFER_SIZE);
         this.outputStream = this.statStream = new StatOutputStream(outputStream);
 
         if (settings.isCompressResults()) {
@@ -655,7 +669,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     @Override
     public String getObjectName() {
-        return settings.isOutputClipboard() ? "Clipboard" : makeOutputFile().getName();
+        return settings.isOutputClipboard() ? "Clipboard" : makeOutputFile().getFileName().toString();
     }
 
     @Override
@@ -665,7 +679,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     @Override
     public String getObjectContainerName() {
-        return settings.isOutputClipboard() ? "Clipboard" : makeOutputFile().getParentFile().getAbsolutePath();
+        return settings.isOutputClipboard() ? "Clipboard" : makeOutputFile().getParent().toAbsolutePath().toString();
     }
 
     @Override
@@ -688,7 +702,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @NotNull
-    public List<File> getOutputFiles() {
+    public List<Path> getOutputFiles() {
         return outputFiles;
     }
 
@@ -726,40 +740,48 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @NotNull
-    public File makeOutputFile() {
+    public Path makeOutputFile() {
         return makeOutputFile(null);
     }
     
     @NotNull
-    private File makeOutputFile(@Nullable String suffix) {
-        final File file = makeOutputFile(suffix, getOutputFolder());
+    private Path makeOutputFile(@Nullable String suffix) {
+        final Path file = makeOutputFile(suffix, getOutputFolder());
 
-        if (!file.exists()) {
-            try (FileOutputStream ignored = new FileOutputStream(file)) {
-                return file;
-            } catch (IOException ignored) {
+        if (!Files.exists(file)) {
+            try {
+                Files.createFile(file);
+            } catch (IOException e) {
                 return makeOutputFile(suffix, getFallbackOutputFolder());
             } finally {
-                file.delete();
+                try {
+                    Files.delete(file);
+                } catch (IOException e) {
+                    log.debug(e);
+                }
             }
         }
         return file;
     }
 
     @NotNull
-    private File makeOutputFile(@Nullable String suffix, @NotNull String outputFolder) {
-        File dir = new File(outputFolder);
-        if (!dir.exists() && !dir.mkdirs()) {
-            log.error("Can't create output directory '" + dir.getAbsolutePath() + "'");
+    private Path makeOutputFile(@Nullable String suffix, @NotNull String outputFolder) {
+        Path dir = IOUtils.getPathFromString(outputFolder);
+        if (!Files.exists(dir)) {
+            try {
+                Files.createDirectories(dir);
+            } catch (IOException e) {
+                log.error("Error creating output folder", e);
+            }
         }
         String fileName = getOutputFileName(suffix);
         if (settings.isCompressResults()) {
             fileName += ".zip";
         }
-        return new File(dir, fileName);
+        return dir.resolve(fileName);
     }
 
-    public String translatePattern(String pattern, final File targetFile) {
+    public String translatePattern(String pattern, final Path targetFile) {
         final Date ts;
         if (parameters.startTimestamp != null) {
             // Use saved timestamp (#7352)
@@ -850,7 +872,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     return project == null ? "" : project.getName();
                 }
                 case VARIABLE_FILE:
-                    return targetFile == null ? "" : targetFile.getAbsolutePath();
+                    return targetFile == null ? "" : targetFile.toAbsolutePath().toString();
                 case VARIABLE_SCRIPT_FILE: {
                     final SQLQueryContainer container = DBUtils.getAdapter(SQLQueryContainer.class, dataContainer);
                     if (container != null) {
@@ -982,7 +1004,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
         @Nullable
         @Override
-        public File getOutputFile() {
+        public Path getOutputFile() {
             return outputFile;
         }
 

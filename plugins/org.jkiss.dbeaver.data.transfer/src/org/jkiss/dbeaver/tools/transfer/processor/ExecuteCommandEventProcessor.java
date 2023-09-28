@@ -26,8 +26,8 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
-import java.io.File;
 import java.util.Map;
 
 public class ExecuteCommandEventProcessor implements IDataTransferEventProcessor<StreamTransferConsumer> {
@@ -37,7 +37,9 @@ public class ExecuteCommandEventProcessor implements IDataTransferEventProcessor
 
     @Override
     public void processEvent(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull StreamTransferConsumer consumer, @Nullable DBTTask task, @NotNull Map<String, Object> processorSettings) throws DBException {
-        final String commandLine = consumer.translatePattern(CommonUtils.toString(processorSettings.get(PROP_COMMAND)), new File(consumer.getOutputFolder(), consumer.getOutputFileName()));
+        final String commandLine = consumer.translatePattern(
+            CommonUtils.toString(processorSettings.get(PROP_COMMAND)),
+            IOUtils.getPathFromString(consumer.getOutputFolder()).resolve(consumer.getOutputFileName()));
         final String workingDirectory = CommonUtils.toString(processorSettings.get(PROP_WORKING_DIRECTORY));
 
         final DBRShellCommand command = new DBRShellCommand(commandLine);

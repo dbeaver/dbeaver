@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 
 import java.io.*;
 import java.net.ServerSocket;
+import java.net.URI;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
@@ -417,5 +418,15 @@ public final class IOUtils {
         }
         return null;
     }
+
+    @NotNull
+    public static Path getPathFromString(@NotNull String pathOrUri) {
+        if (pathOrUri.contains("://")) {
+            return Path.of(URI.create(pathOrUri));
+        } else {
+            return Path.of(pathOrUri);
+        }
+    }
+
 
 }

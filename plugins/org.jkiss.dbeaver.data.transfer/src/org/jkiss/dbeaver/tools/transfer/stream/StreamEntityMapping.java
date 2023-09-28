@@ -33,26 +33,27 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.stream.model.StreamDataSource;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.*;
 
 public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQualifiedObject {
-    private final File inputFile;
+    private final Path inputFile;
     private final DBPDataSource dataSource;
     private final String entityName;
     private final List<StreamDataImporterColumnInfo> streamColumns = new ArrayList<>();
     private final boolean child;
 
-    public StreamEntityMapping(@NotNull File inputFile) {
-        this(inputFile, inputFile.getName());
+    public StreamEntityMapping(@NotNull Path inputFile) {
+        this(inputFile, inputFile.getFileName().toString());
     }
 
-    public StreamEntityMapping(@NotNull File inputFile, @NotNull String entityName) {
+    public StreamEntityMapping(@NotNull Path inputFile, @NotNull String entityName) {
         this(inputFile, entityName, false);
     }
 
-    public StreamEntityMapping(@NotNull File inputFile, @NotNull String entityName, boolean child) {
+    public StreamEntityMapping(@NotNull Path inputFile, @NotNull String entityName, boolean child) {
         this.inputFile = inputFile;
         this.entityName = entityName;
         this.dataSource = new StreamDataSource(entityName);
@@ -66,14 +67,14 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
         if (CommonUtils.isEmpty(inputFileName)) {
             inputFileName = this.entityName;
         }
-        this.inputFile = new File(inputFileName);
+        this.inputFile = IOUtils.getPathFromString(inputFileName);
 
         this.dataSource = new StreamDataSource(entityName);
         this.child = false;
     }
 
     @NotNull
-    public File getInputFile() {
+    public Path getInputFile() {
         return inputFile;
     }
 

@@ -40,11 +40,12 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.serialize.DTObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.serialize.SerializerContext;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 
 /**
@@ -112,8 +113,9 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         if (entityMapping == null) {
             return "";
         }
-        File inputFile = entityMapping.getInputFile();
-        return inputFile == null ? null : inputFile.getParentFile().getAbsolutePath();
+        Path inputFile = entityMapping.getInputFile();
+        Path parent = inputFile.getParent();
+        return parent == null ? inputFile.toAbsolutePath().toString() : parent.toAbsolutePath().toString();
     }
 
     @Override
@@ -126,7 +128,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         return entityMapping != null;
     }
 
-    public File getInputFile() {
+    public Path getInputFile() {
         return entityMapping == null ? null : entityMapping.getInputFile();
     }
 
@@ -154,7 +156,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         importer.init(site);
 
         // Perform transfer
-        try (InputStream is = new FileInputStream(entityMapping.getInputFile())) {
+        try (InputStream is = Files.newInputStream(entityMapping.getInputFile())) {
             importer.runImport(monitor, entityMapping.getDataSource(), is, consumer);
         } catch (IOException e) {
             throw new DBException("IO error", e);
@@ -176,7 +178,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         @Override
         public void serializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull DBTTask context, @NotNull StreamTransferProducer object, @NotNull Map<String, Object> state) {
             final StreamEntityMapping mapping = object.getEntityMapping();
-            state.put("file", mapping.getInputFile().getAbsolutePath());
+            state.put("file", mapping.getInputFile().toUri());
             state.put("name", mapping.getEntityName());
             state.put("child", mapping.isChild());
             if (object.defaultProcessor != null) {
@@ -203,7 +205,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
             }
             return new StreamTransferProducer(
                 new StreamEntityMapping(
-                    new File(CommonUtils.toString(state.get("file"))),
+                    IOUtils.getPathFromString(CommonUtils.toString(state.get("file"))),
                     CommonUtils.toString(state.get("name")),
                     CommonUtils.toBoolean(state.get("child"))
                 ),

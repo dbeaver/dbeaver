@@ -55,6 +55,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -149,12 +150,15 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                 DTUIMessages.stream_producer_select_input_file,
                 extensions.toArray(new String[0]));
             if (files != null && files.length > 0) {
-                initializer = monitor -> updateMultiConsumers(monitor, pipe, files);
+                initializer = monitor -> updateMultiConsumers(
+                    monitor,
+                    pipe,
+                    Arrays.stream(files).map(File::toPath).toArray(Path[]::new));
             }
         } else {
             File file = DialogUtils.openFile(getShell(), extensions.toArray(new String[0]));
             if (file != null) {
-                initializer = monitor -> updateSingleConsumer(monitor, pipe, file);
+                initializer = monitor -> updateSingleConsumer(monitor, pipe, file.toPath());
             }
         }
         if (initializer != null) {
@@ -174,11 +178,11 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
         updatePageCompletion();
     }
 
-    private void updateSingleConsumer(DBRProgressMonitor monitor, DataTransferPipe pipe, File file) {
+    private void updateSingleConsumer(DBRProgressMonitor monitor, DataTransferPipe pipe, Path path) {
         final StreamProducerSettings producerSettings = getWizard().getPageSettings(this, StreamProducerSettings.class);
 
         final StreamTransferProducer oldProducer = pipe.getProducer() instanceof StreamTransferProducer ? (StreamTransferProducer) pipe.getProducer() : null;
-        final StreamTransferProducer newProducer = new StreamTransferProducer(new StreamEntityMapping(file));
+        final StreamTransferProducer newProducer = new StreamTransferProducer(new StreamEntityMapping(path));
 
         pipe.setProducer(newProducer);
         producerSettings.updateProducerSettingsFromStream(monitor, newProducer, getWizard().getSettings());
@@ -205,7 +209,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                     StreamEntityMapping oldEntityMapping = (StreamEntityMapping) oldMappingContainer.getSource();
                     // Copy mappings from old producer if columns are the same
                     if (oldEntityMapping.isSameColumns(newProducer.getEntityMapping())) {
-                        StreamEntityMapping entityMapping = new StreamEntityMapping(file);
+                        StreamEntityMapping entityMapping = new StreamEntityMapping(path);
                         settings.addDataMappings(getWizard().getRunnableContext(), entityMapping, new DatabaseMappingContainer(oldMappingContainer, entityMapping));
 
                         StreamTransferProducer producer = new StreamTransferProducer(entityMapping);
@@ -220,7 +224,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
         }
     }
 
-    private void updateMultiConsumers(DBRProgressMonitor monitor, DataTransferPipe pipe, File[] files) {
+    private void updateMultiConsumers(DBRProgressMonitor monitor, DataTransferPipe pipe, Path[] files) {
         final StreamProducerSettings producerSettings = getWizard().getPageSettings(this, StreamProducerSettings.class);
         IDataTransferConsumer<?, ?> originalConsumer = pipe.getConsumer();
 

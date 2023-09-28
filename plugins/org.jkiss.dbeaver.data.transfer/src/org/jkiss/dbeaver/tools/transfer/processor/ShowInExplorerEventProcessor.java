@@ -24,8 +24,8 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
+import org.jkiss.utils.IOUtils;
 
-import java.io.File;
 import java.util.Map;
 
 public class ShowInExplorerEventProcessor implements IDataTransferEventProcessor<StreamTransferConsumer> {
@@ -36,7 +36,8 @@ public class ShowInExplorerEventProcessor implements IDataTransferEventProcessor
         if (!consumer.getSettings().isOutputClipboard()) {
             final String folder = consumer.getOutputFolder();
             final String filename = consumer.getOutputFileName();
-            DBWorkbench.getPlatformUI().showInSystemExplorer(new File(folder, filename).getAbsolutePath());
+            String finalPath = IOUtils.getPathFromString(folder).resolve(filename).toAbsolutePath().toString();
+            DBWorkbench.getPlatformUI().showInSystemExplorer(finalPath);
         }
     }
 }
