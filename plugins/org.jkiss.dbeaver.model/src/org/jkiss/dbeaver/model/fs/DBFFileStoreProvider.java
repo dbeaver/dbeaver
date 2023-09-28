@@ -17,32 +17,13 @@
 
 package org.jkiss.dbeaver.model.fs;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.eclipse.core.filesystem.IFileStore;
 
 /**
- * Virtual file system
+ * EFS file store provider. Can be implemented by EFS resource.
  */
-public interface DBFVirtualFileSystem {
+public interface DBFFileStoreProvider {
 
-    @NotNull
-    String getFileSystemDisplayName();
-
-    @NotNull
-    String getType();
-
-    String getDescription();
-
-    DBPImage getIcon();
-
-    @NotNull
-    String getId();
-
-    @NotNull
-    DBFVirtualFileSystemRoot[] getRootFolders(DBRProgressMonitor monitor, @NotNull DBPProject project) throws DBException;
-
+    IFileStore getFileStore();
 
 }

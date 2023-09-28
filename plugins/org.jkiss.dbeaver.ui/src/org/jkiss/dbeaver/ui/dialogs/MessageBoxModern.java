@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.layout.LayoutConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -39,9 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-final class MessageBoxModern extends Dialog {
-    @Nullable
-    private String title;
+final class MessageBoxModern extends BaseDialog {
     @Nullable
     private String message;
     @Nullable
@@ -56,11 +51,7 @@ final class MessageBoxModern extends Dialog {
     private List<Button> buttons;
 
     MessageBoxModern(@Nullable Shell parentShell) {
-        super(parentShell);
-    }
-
-    void setTitle(@Nullable String title) {
-        this.title = title;
+        super(parentShell, null, null);
     }
 
     void setMessage(@Nullable String message) {
@@ -111,7 +102,7 @@ final class MessageBoxModern extends Dialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent) {
+    protected Composite createDialogArea(Composite parent) {
         if (primaryImage != null) {
             Control imageLabel = UIUtils.createLabel(parent, primaryImage);
             GridData gd = new GridData();
@@ -179,12 +170,6 @@ final class MessageBoxModern extends Dialog {
         composite.setFont(parent.getFont());
         createButtonsForButtonBar(composite);
         return composite;
-    }
-
-    @Override
-    protected void configureShell(@NotNull Shell shell) {
-        super.configureShell(shell);
-        shell.setText(title);
     }
 
     @Override

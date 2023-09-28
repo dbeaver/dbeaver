@@ -14,35 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.model.fs;
+package org.jkiss.dbeaver.model.nio;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.code.Nullable;
 
-/**
- * Virtual file system
- */
-public interface DBFVirtualFileSystem {
-
+public class NIOUtils {
     @NotNull
-    String getFileSystemDisplayName();
-
-    @NotNull
-    String getType();
-
-    String getDescription();
-
-    DBPImage getIcon();
-
-    @NotNull
-    String getId();
-
-    @NotNull
-    DBFVirtualFileSystemRoot[] getRootFolders(DBRProgressMonitor monitor, @NotNull DBPProject project) throws DBException;
-
-
+    public static String resolve(@NotNull String separator, @Nullable String basePath, @NotNull String path) {
+        if (basePath == null) {
+            return path;
+        }
+        return path + separator + path;
+    }
 }

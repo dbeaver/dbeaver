@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.fs.nio;
 /**
  * NIOListener
  */
-public interface NIOListener {
+public interface EFSNIOListener {
 
     enum Action {
         CREATE,
@@ -28,6 +28,6 @@ public interface NIOListener {
         CHANGE
     }
 
-    void resourceChanged(NIOResource resource, Action action);
+    void resourceChanged(EFSNIOResource resource, Action action);
 
 }
