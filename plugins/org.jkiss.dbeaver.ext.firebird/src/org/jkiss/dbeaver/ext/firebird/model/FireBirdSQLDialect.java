@@ -44,11 +44,26 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     };
 
     private static final String[] FIREBIRD_KEYWORDS = new String[] {
+        "ACCENT",
+        "BLOCK",
+        "BREAK",
         "COMMENT",
+        "COMPUTED",
+        "CONTAINING",
         "CURRENT_USER",
         "CURRENT_ROLE",
+        "GENERATOR",
         "NCHAR",
-        "VALUE"
+        "STARTING",
+        "VALUE",
+        "WEEKDAY",
+        "YEARDAY",
+    };
+
+    private static final String[] FIREBIRD_FUNCTIONS = {
+        "DATEADD",
+        "DATEDIFF",
+        "IIF",
     };
 
     public FireBirdSQLDialect() {
@@ -75,6 +90,7 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
         super.initDriverSettings(session, dataSource, metaData);
         turnFunctionIntoKeyword("TRUNCATE");
         addKeywords(Arrays.asList(FIREBIRD_KEYWORDS), DBPKeywordType.KEYWORD);
+        addFunctions(Arrays.asList(FIREBIRD_FUNCTIONS));
     }
 
     @Override
