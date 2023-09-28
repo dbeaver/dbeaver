@@ -1600,7 +1600,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             if (aliasMode != SQLTableAliasInsertMode.NONE) {
                 String query = request.getActiveQuery().getText();
                 try {
-                    alias = getAliceFromQueryNTLR(tableName, query);
+                    alias = getAliceFromQueryANTLR(tableName, query);
                     objectName = String.format(TABLE_TO_ATTRIBUTE_PATTERN, alias, sqlDialect.getStructSeparator(), object.getName());
                     replaceString = objectName;
                 } catch (IOException e) {
@@ -1623,7 +1623,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     }
     
     @NotNull
-    private String getAliceFromQueryNTLR(
+    private String getAliceFromQueryANTLR(
         @NotNull String tableName,
         @NotNull String query) throws IOException {
         String alias = "";
