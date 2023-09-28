@@ -136,7 +136,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
 
     protected DBNFileSystemRoot[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
         List<DBNFileSystemRoot> result = new ArrayList<>();
-        for (DBFVirtualFileSystemRoot rootPath : fileSystem.getRootFolders(monitor)) {
+        for (DBFVirtualFileSystemRoot rootPath : fileSystem.getRootFolders(monitor, getOwnerProject())) {
             result.add(new DBNFileSystemRoot(this, rootPath));
         }
         if (result.isEmpty()) {

@@ -36,9 +36,9 @@ import java.nio.file.StandardCopyOption;
 /**
  * NIOFile
  */
-public final class NIOFile extends NIOResource implements IFile {
+public final class EFSNIOFile extends EFSNIOResource implements IFile {
 
-    public NIOFile(NIOFileSystemRoot root, Path backendFile) {
+    public EFSNIOFile(EFSNIOFileSystemRoot root, Path backendFile) {
         super(root, backendFile);
     }
 
@@ -62,7 +62,7 @@ public final class NIOFile extends NIOResource implements IFile {
         try {
             Files.copy(source, getNioPath(), StandardCopyOption.REPLACE_EXISTING);
 
-            NIOMonitor.notifyResourceChange(this, NIOListener.Action.CREATE);
+            EFSNIOMonitor.notifyResourceChange(this, EFSNIOListener.Action.CREATE);
         } catch (IOException e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
@@ -155,7 +155,7 @@ public final class NIOFile extends NIOResource implements IFile {
         try {
             Files.copy(source, getNioPath(), StandardCopyOption.REPLACE_EXISTING);
 
-            NIOMonitor.notifyResourceChange(this, NIOListener.Action.CHANGE);
+            EFSNIOMonitor.notifyResourceChange(this, EFSNIOListener.Action.CHANGE);
         } catch (IOException e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }

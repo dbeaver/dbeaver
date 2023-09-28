@@ -42,7 +42,6 @@ import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
@@ -606,8 +605,14 @@ public class NavigatorUtils {
                         if (curObject instanceof DBNNode) {
                             Collection<DBNNode> nodesToDrop = TreeNodeTransfer.getInstance().getObject();
                             try {
-                                ((DBNNode) curObject).dropNodes(nodesToDrop);
-                            } catch (DBException e) {
+                                UIUtils.runInProgressService(monitor -> {
+                                    try {
+                                        ((DBNNode) curObject).dropNodes(monitor, nodesToDrop);
+                                    } catch (Exception e) {
+                                        throw new InvocationTargetException(e);
+                                    }
+                                });
+                            } catch (Exception e) {
                                 DBWorkbench.getPlatformUI().showError("Drop error", "Can't drop node", e);
                                 return;
                             }

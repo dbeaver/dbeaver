@@ -110,4 +110,5 @@ public class GenericConstants {
 
     public static final String BASE_CONSTRAINT_NAME = "new_key";
 
+    public static final String DEFAULT_NULL_SCHEMA_NAME = "DEFAULT";
 }
