@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.resources;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
@@ -29,8 +30,7 @@ import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.ide.IDE;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.fs.nio.NIOFile;
-import org.jkiss.dbeaver.model.fs.nio.NIOFileStore;
+import org.jkiss.dbeaver.model.fs.DBFFileStoreProvider;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNNodeWithResource;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -104,8 +104,8 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
 
     @Override
     public void openResource(@NotNull IResource resource) throws CoreException, DBException {
-        if (resource instanceof NIOFile) {
-            NIOFileStore fileStore = new NIOFileStore(resource.getLocationURI(), ((NIOFile) resource).getNioPath());
+        if (resource instanceof DBFFileStoreProvider) {
+            IFileStore fileStore = ((DBFFileStoreProvider) resource).getFileStore();
 
             // open the editor on the file
             IEditorDescriptor editorDesc;

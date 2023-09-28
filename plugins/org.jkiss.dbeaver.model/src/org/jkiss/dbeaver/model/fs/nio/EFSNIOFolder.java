@@ -32,9 +32,9 @@ import java.nio.file.Path;
 /**
  * NIOFolder
  */
-public final class NIOFolder extends NIOContainer implements IFolder {
+public final class EFSNIOFolder extends EFSNIOContainer implements IFolder {
 
-    public NIOFolder(NIOFileSystemRoot root, Path backendFolder) {
+    public EFSNIOFolder(EFSNIOFileSystemRoot root, Path backendFolder) {
         super(root, backendFolder);
     }
 
@@ -50,7 +50,7 @@ public final class NIOFolder extends NIOContainer implements IFolder {
     public void create(int updateFlags, boolean local, IProgressMonitor monitor) throws CoreException {
         try {
             Files.createDirectory(getNioPath());
-            NIOMonitor.notifyResourceChange(this, NIOListener.Action.CREATE);
+            EFSNIOMonitor.notifyResourceChange(this, EFSNIOListener.Action.CREATE);
         } catch (IOException e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
@@ -67,7 +67,7 @@ public final class NIOFolder extends NIOContainer implements IFolder {
     public void delete(boolean force, boolean keepHistory, IProgressMonitor monitor) throws CoreException {
         try {
             Files.delete(getNioPath());
-            NIOMonitor.notifyResourceChange(this, NIOListener.Action.DELETE);
+            EFSNIOMonitor.notifyResourceChange(this, EFSNIOListener.Action.DELETE);
         } catch (IOException e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
