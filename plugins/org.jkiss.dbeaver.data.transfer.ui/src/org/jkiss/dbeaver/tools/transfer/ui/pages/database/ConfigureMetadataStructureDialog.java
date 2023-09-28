@@ -100,7 +100,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
 
         TabItem columnsMappingTab = new TabItem(configTabs, SWT.NONE);
         columnsMappingTab.setText(DTUIMessages.columns_mapping_dialog_shell_text);
-        ColumnsMappingDialog columnsMappingDialog = new ColumnsMappingDialog(wizard, settings, mapping);
+        ColumnsMappingDialog columnsMappingDialog = new ColumnsMappingDialog(settings, mapping);
         columnsMappingDialog.createControl(configTabs);
         columnsMappingTab.setData(columnsMappingDialog);
         Control pageControl = columnsMappingDialog.getControl();

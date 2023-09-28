@@ -30,7 +30,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.navigator.DBNNodeWithResource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -139,7 +139,7 @@ public final class NavigatorNodesDeletionConfirmations {
         );
         tableGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         Table objectsTable = new Table(tableGroup, SWT.BORDER | SWT.FULL_SELECTION);
-        objectsTable.setHeaderVisible(false);
+        objectsTable.setHeaderVisible(true);
         objectsTable.setLinesVisible(true);
         GridData gd = new GridData(GridData.FILL_BOTH);
         int fontHeight = UIUtils.getFontHeight(objectsTable);
@@ -157,12 +157,12 @@ public final class NavigatorNodesDeletionConfirmations {
             DBNNode node = (DBNNode) obj;
             TableItem item = new TableItem(objectsTable, SWT.NONE);
             item.setImage(DBeaverIcons.getImage(node.getNodeIcon()));
-            if (node instanceof DBNResource) {
+            if (node instanceof DBNNodeWithResource) {
                 item.setText(0, node.getName());
-                IResource resource = ((DBNResource) node).getResource();
+                IResource resource = ((DBNNodeWithResource) node).getResource();
                 IPath resLocation = resource.getLocation();
                 item.setText(1, "File");
-                item.setText(2, resLocation == null ? "" : resLocation.toFile().getAbsolutePath());
+                item.setText(2, resLocation == null ? "" : resLocation.toString());
             } else {
                 item.setText(0, node.getNodeFullName());
                 item.setText(1, node.getNodeType());
