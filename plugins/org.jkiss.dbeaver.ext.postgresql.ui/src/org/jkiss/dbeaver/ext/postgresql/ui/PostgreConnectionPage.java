@@ -55,11 +55,8 @@ import java.util.Locale;
 public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
     
     private Text urlText;
-    private Label hostLabel;
     private Text hostText;
-    private Label portLabel;
     private Text portText;
-    private Label dbLabel;
     private Text dbText;
     private Text roleText; //TODO: make it a combo and fill it with appropriate roles
     private ClientHomesSelector homesSelector;
@@ -74,7 +71,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
     public Image getImage() {
         final DBPDriver driver = site.getDriver();
 
-        PostgreServerType serverType = PostgreUtils.getServerType(driver);
+        PostgreServerType serverType = getServerType(driver);
         return DBeaverIcons.getImage(serverType.getIcon());
     }
 
@@ -121,9 +118,9 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         urlText.addModifyListener(e -> site.updateButtons());
 
         final DBPDriver driver = site.getDriver();
-        PostgreServerType serverType = PostgreUtils.getServerType(driver);
+        PostgreServerType serverType = getServerType(driver);
 
-        hostLabel = UIUtils.createControlLabel(
+        Label hostLabel = UIUtils.createControlLabel(
             addrGroup,
             serverType.isCloudServer()
                 ? PostgreMessages.dialog_setting_connection_cloud_instance
@@ -138,7 +135,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         addControlToGroup(GROUP_CONNECTION, hostText);
 
         if (serverType.needsPort()) {
-            portLabel = UIUtils.createControlLabel(addrGroup, PostgreMessages.dialog_setting_connection_port);
+            Label portLabel = UIUtils.createControlLabel(addrGroup, PostgreMessages.dialog_setting_connection_port);
             addControlToGroup(GROUP_CONNECTION, portLabel);
             portText = new Text(addrGroup, SWT.BORDER);
             gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
@@ -151,7 +148,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
             gd.horizontalSpan = 3;
         }
 
-        dbLabel = UIUtils.createControlLabel(addrGroup, PostgreMessages.dialog_setting_connection_database);
+        Label dbLabel = UIUtils.createControlLabel(addrGroup, PostgreMessages.dialog_setting_connection_database);
         addControlToGroup(GROUP_CONNECTION, dbLabel);
         dbText = new Text(addrGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -184,6 +181,10 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
 
         createDriverPanel(mainGroup);
         setControl(mainGroup);
+    }
+
+    public PostgreServerType getServerType(DBPDriver driver) {
+        return PostgreUtils.getServerType(driver);
     }
 
     protected boolean isSessionRoleSupported() {

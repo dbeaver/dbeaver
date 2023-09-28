@@ -305,7 +305,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         } else {
             getServerType().initDefaultSSLConfig(connectionInfo, props);
         }
-        PostgreServerType serverType = PostgreUtils.getServerType(getContainer().getDriver());
+        PostgreServerType serverType = getType();
         if (serverType.turnOffPreparedStatements()
             && !CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS))) {
             // Turn off prepared statements using, to avoid error: "ERROR: prepared statement "S_1" already exists" from PGBouncer #10742
@@ -726,7 +726,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     public PostgreServerExtension getServerType() {
         if (serverExtension == null) {
-            PostgreServerType serverType = PostgreUtils.getServerType(getContainer().getDriver());
+            PostgreServerType serverType = getType();
 
             try {
                 serverExtension = serverType.createServerExtension(this);
@@ -736,6 +736,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             }
         }
         return serverExtension;
+    }
+
+    public PostgreServerType getType() {
+        return PostgreUtils.getServerType(getContainer().getDriver());
     }
 
     public String getServerVersion() {
