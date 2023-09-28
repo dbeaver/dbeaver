@@ -113,8 +113,6 @@ public class NavigatorUtils {
 
     private static final String JOB_DIRECTORY = "Jobs";
 
-    private static final String SCHEMA_DIRECTORY = "Schemas";
-
     private static final String CH_SCHEMA_DIRECTORY = "模式";
 
     private static final String CREATE_NEW_JOB = "Create New Job";
@@ -133,13 +131,17 @@ public class NavigatorUtils {
 
     private static final String CH_DATABASE_LINK = "数据库连接";
 
-    private static final String YASHANDB_TABLE_CONSTRAINTS = "Table constraints";
+    private static final String CH_TABLE = "表";
 
-    private static final String YASHANDB_TABLE_TRIGGERS = "Triggers";
+    private static final String CH_VIEW = "视图";
 
-    private static final String CH_META_TABLE = "表";
+    private static final String CH_PHYSICAL_VIEW = "物化视图";
 
-    private static final String META_TABLE = "Tables";
+    private static final String CH_IMPORT = "导入数据";
+
+    private static final String CH_EXPORT = "导出数据";
+
+
     public static DBNNode getSelectedNode(ISelectionProvider selectionProvider)
     {
         if (selectionProvider == null) {
@@ -272,65 +274,54 @@ public class NavigatorUtils {
 
                 Menu m = (Menu)e.widget;
                 DBNNode node = getSelectedNode(viewer.getSelection());
-                if (node != null){
-
-                    if (node.getNodeItemPath().contains(DRIVER) &&
-                            (node.getParentNode().getName().equals(TYPE) ||
-                            node.getParentNode().getName().equals(CH_TYPE)) &&
-                            (node.getParentNode().getParentNode().getName().equals(GLOBAL_META) ||
-                            node.getParentNode().getParentNode().getName().equals(CH_GLOBAL_META))){
-
-                        for (MenuItem item: m.getItems()){
-                            if ( item.getText().equals(DELETE) || item.getText().equals(CH_DELETE)){
-                                item.setEnabled(false);
-                            }
-                        }
-
-                    }
-
-                    if (node.getNodeItemPath().contains(DRIVER) &&
-                            node.getName().contains(JOB_DIRECTORY)){
-                        for (MenuItem item: m.getItems()){
-                            if ( item.getText().contains(CREATE_NEW_JOB) || item.getText().contains(CH_CREATE_NEW_JOB)){
-                                item.setEnabled(false);
-                            }
-                        }
-                    }
-
-
-                    if (node.getNodeItemPath().contains(DRIVER) &&
-                             node.getName().equals(DATABASE_LINK)
-                            || node.getName().equals(CH_DATABASE_LINK)
-                            || node.getParentNode().getName().equals(DATABASE_LINK)
-                            || node.getParentNode().getName().equals(CH_DATABASE_LINK))   {
-                        for (MenuItem item: m.getItems()){
-                            if (item.getText().contains(CREATE_NEW_LINK) ||
-                                    item.getText().contains(DELETE) ||
-                                    item.getText().contains(CH_DELETE) ||
-                                    item.getText().contains(CH_CREATE_NEW_LINK)){
-                                item.setEnabled(false);
-                            }
-                        }
-                    }
-
-                    if (node.getParentNode().getName()!= null){
-                        String objectType = ((DBNDatabaseFolder) node.getParentNode()).getMeta().getType();
-                        //todo:目前表对象的导入导出数据功能无法完全保证可用，先屏蔽这功能
-                        if (objectType.contains("YashanDBMaterializedView") || objectType.contains("YashanDBView")
-                                || objectType.contains("YashanDBTable") || objectType.contains("YashanDBSchema")) {
-                            for (MenuItem item : m.getItems()) {
-                                String optionName = item.getText();
-                                if (optionName.equalsIgnoreCase("Import Data") || optionName.equalsIgnoreCase("Export Data")
-                                        || optionName.equalsIgnoreCase("导入数据") || optionName.equalsIgnoreCase("导出数据")) {
+                if (node != null && node.getNodeItemPath() != null && node.getNodeItemPath().contains(DRIVER)){
+                    if (node.getParentNode() != null && node.getParentNode().getName() != null && node.getName() != null){
+                        // 当前节点为类型，父节点为全局元数据时，隐藏删除按钮
+                        if ((node.getParentNode().getName().equals(TYPE) ||
+                                node.getParentNode().getName().equals(CH_TYPE)) &&
+                                (node.getParentNode().getParentNode().getName().equals(GLOBAL_META) ||
+                                        node.getParentNode().getParentNode().getName().equals(CH_GLOBAL_META))){
+                            for (MenuItem item: m.getItems()){
+                                if ( item.getText().equals(DELETE) || item.getText().equals(CH_DELETE)){
                                     item.setEnabled(false);
                                 }
                             }
                         }
-                    }
-                }else {
-                    for (MenuItem item: m.getItems()){
-                        if ( item.getText().contains(CREATE_NEW_JOB) || item.getText().contains(CH_CREATE_NEW_JOB)){
-                            item.setEnabled(false);
+                        // 当前节点或父节点为任务时，隐藏创建任务
+                        if (node.getName().contains(JOB_DIRECTORY) || node.getParentNode().getName().contains(JOB_DIRECTORY)){
+                            for (MenuItem item: m.getItems()){
+                                if ( item.getText().contains(CREATE_NEW_JOB) || item.getText().contains(CH_CREATE_NEW_JOB)){
+                                    item.setEnabled(false);
+                                }
+                            }
+                        }
+                        // 当前节点或父节点为数据库连接时，隐藏创建删除
+                        if (node.getName().equals(DATABASE_LINK)
+                                || node.getName().equals(CH_DATABASE_LINK)
+                                || node.getParentNode().getName().equals(DATABASE_LINK)
+                                || node.getParentNode().getName().equals(CH_DATABASE_LINK))   {
+                            for (MenuItem item: m.getItems()){
+                                if (item.getText().contains(CREATE_NEW_LINK) ||
+                                        item.getText().contains(DELETE) ||
+                                        item.getText().contains(CH_DELETE) ||
+                                        item.getText().contains(CH_CREATE_NEW_LINK)){
+                                    item.setEnabled(false);
+                                }
+                            }
+                        }
+                        // 当前节点为表，视图，物化视图或父节点为模式时隐藏导入导出
+                        if (node.getName().equals(CH_TABLE)
+                                || node.getParentNode().getName().equals(CH_TABLE)
+                                || node.getName().equals(CH_VIEW)
+                                || node.getParentNode().getName().equals(CH_VIEW)
+                                || node.getName().equals(CH_PHYSICAL_VIEW)
+                                || node.getParentNode().getName().equals(CH_PHYSICAL_VIEW)
+                                || node.getParentNode().getName().equals(CH_SCHEMA_DIRECTORY)){
+                            for (MenuItem item : m.getItems()) {
+                                if (item.getText().equalsIgnoreCase(CH_IMPORT) || item.getText().equalsIgnoreCase(CH_EXPORT)) {
+                                    item.setEnabled(false);
+                                }
+                            }
                         }
                     }
                 }
