@@ -178,6 +178,16 @@ public class BooleanStyleSet {
         }
     }
 
+    private static BooleanStyle getDefaultStyle(@NotNull BooleanState state, @NotNull RGB color) {
+        return BooleanStyle.usingText(state.choose(
+            "[v]",
+            "[ ]",
+            DBConstants.NULL_VALUE_LABEL),
+            UIElementAlignment.CENTER,
+            color,
+            UIElementFontStyle.NORMAL);
+    }
+
     @NotNull
     private static BooleanStyle getDefaultStyleLegacy(@NotNull DBPPreferenceStore store, @NotNull BooleanState state, @NotNull RGB color) {
         switch (store.getString(PREF_BOOLEAN_STYLE)) {
@@ -193,16 +203,6 @@ public class BooleanStyleSet {
             default:
                 return BooleanStyle.usingText(state.choose("[v]", "[ ]", DBConstants.NULL_VALUE_LABEL), UIElementAlignment.CENTER, color, UIElementFontStyle.NORMAL);
         }
-    }
-
-    private static BooleanStyle getDefaultStyle(@NotNull BooleanState state, @NotNull RGB color) {
-        return BooleanStyle.usingText(state.choose(
-            "[v]",
-            "[ ]",
-            DBConstants.NULL_VALUE_LABEL),
-            UIElementAlignment.CENTER,
-            color,
-            UIElementFontStyle.NORMAL);
     }
 
     private static void setDefaultStyle(@NotNull DBPPreferenceStore store, @NotNull BooleanStyle style, @NotNull BooleanState state, @NotNull RGB defaultColor) {
