@@ -38,6 +38,11 @@ public class EditorPartContextualProperty {
     
     private static final Map<String, EditorPartContextualProperty> knownProps = Collections.synchronizedMap(new HashMap<>());
     
+    public final String partPropName;
+    public final QualifiedName filePropName;
+    public final String globalPrefName;
+    public final String defaultValue;
+    
     public static class PartCustomPropertyValueInfo {
         public final String value;
         public final boolean isInitial;
@@ -47,11 +52,6 @@ public class EditorPartContextualProperty {
             this.isInitial = isInitial;
         }
     }
-    
-    public final String partPropName;
-    public final QualifiedName filePropName;
-    public final String globalPrefName;
-    public final String defaultValue;
     
     private EditorPartContextualProperty(
         @NotNull String partPropName,

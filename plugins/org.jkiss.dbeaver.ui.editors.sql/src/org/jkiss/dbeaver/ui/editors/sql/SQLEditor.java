@@ -268,10 +268,7 @@ public class SQLEditor extends SQLEditorBase implements
         public void widgetDisposed(DisposeEvent e) {
             Object data = e.widget.getData();
             if (data instanceof QueryResultsContainer) {
-                data = ((QueryResultsContainer) data).queryProcessor;
-            }
-            if (data instanceof QueryProcessor) {
-                QueryProcessor processor = (QueryProcessor) data;
+                QueryProcessor processor = ((QueryResultsContainer) data).queryProcessor;
                 List<QueryResultsContainer> containers = processor.getResultContainers();
                 for (int index = containers.indexOf(data) + 1; index < containers.size(); index++) {
                     QueryResultsContainer container = containers.get(index);
