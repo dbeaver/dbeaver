@@ -230,6 +230,22 @@ public class PrefPageOracle extends TargetPrefPage
     }
 
     @Override
+    protected void performDefaults() {
+        explainTableText.setText("");
+        rowidSupportCheck.setSelection(true);
+        enableDbmsOutputCheck.setSelection(true);
+        readAllSynonymsCheck.setSelection(true);
+        disableScriptEscapeProcessingCheck.setSelection(true);
+        useRuleHint.setSelection(false);
+        useOptimizerHint.setSelection(true);
+        useSimpleConstraints.setSelection(false);
+        useAlternativeTableMetadataQuery.setSelection(false);
+        searchInSynonyms.setSelection(false);
+        showDateAsDate.setSelection(false);
+        super.performDefaults();
+    }
+
+    @Override
     protected String getPropertyPageID()
     {
         return PAGE_ID;

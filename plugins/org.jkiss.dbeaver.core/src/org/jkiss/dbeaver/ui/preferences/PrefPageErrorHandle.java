@@ -158,6 +158,18 @@ public class PrefPageErrorHandle extends TargetPrefPage
     }
 
     @Override
+    protected void performDefaults() {
+        connectionOpenTimeout.setSelection(0);
+        connectionCloseTimeout.setSelection(5000);
+        connectionValidateTimeout.setSelection(10000);
+        rollbackOnErrorCheck.setSelection(false);
+        connectionAutoRecoverEnabled.setSelection(true);
+        connectionAutoRecoverRetryCount.setSelection(1);
+        cancelCheckTimeout.setSelection(0);
+        super.performDefaults();
+    }
+
+    @Override
     protected String getPropertyPageID()
     {
         return PAGE_ID;

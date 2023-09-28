@@ -260,11 +260,11 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     @Override
     protected void performDefaults()
     {
-        connectionDefaultNamePatternText.setText(ModelPreferences.getPreferences().getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
+        connectionDefaultNamePatternText.setText(GeneralUtils.variablePattern(DBPConnectionConfiguration.VAR_HOST_OR_DATABASE));
         sampleConnectionName.setText(GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver));
         connectionNamePattern = ModelPreferences.getPreferences().getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
         if (RuntimeUtils.isWindows() && useWinTrustStoreCheck != null) {
-            useWinTrustStoreCheck.setSelection(ModelPreferences.getPreferences().getDefaultBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE));
+            useWinTrustStoreCheck.setSelection(true);
         }
         updateCombosAndSettings();
     }

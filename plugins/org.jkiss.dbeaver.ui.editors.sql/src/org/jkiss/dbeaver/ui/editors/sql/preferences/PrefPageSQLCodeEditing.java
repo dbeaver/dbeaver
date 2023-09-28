@@ -148,6 +148,21 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
     }
 
     @Override
+    protected void performDefaults() {
+        csFoldingEnabled.setSelection(true);
+        csSmartWordsIterator.setSelection(true);
+        csMarkOccurrencesUnderCursor.setSelection(false);
+        csMarkOccurrencesForSelection.setSelection(true);
+        csProblemMarkersEnabled.setSelection(true);
+        acSingleQuotesCheck.setSelection(true);
+        acDoubleQuotesCheck.setSelection(true);
+        acBracketsCheck.setSelection(true);
+        afKeywordCase.setSelection(true);
+        afExtractFromSource.setSelection(false);
+        super.performDefaults();
+    }
+
+    @Override
     protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer container) {
         final DBPPreferenceStore store = container.getPreferenceStore();
         return store.contains(SQLPreferenceConstants.FOLDING_ENABLED)

@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
 import org.jkiss.dbeaver.model.sql.SQLTableAliasInsertMode;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
@@ -288,6 +289,31 @@ public class PrefPageSQLCompletion extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS);
         store.setToDefault(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT);
         store.setToDefault(SQLPreferenceConstants.SHOW_COLUMN_PROCEDURES);
+    }
+
+    @Override
+    protected void performDefaults() {
+        csAutoActivationCheck.setSelection(true);
+        csAutoActivationDelaySpinner.setSelection(0);
+        csAutoActivateOnKeystroke.setSelection(true);
+        csAutoInsertCheck.setSelection(true);
+        csTabChoice.setSelection(true);
+        csInsertCase.select(SQLCompletionContext.PROPOSAL_CASE_DEFAULT);
+        csReplaceWordAfter.setSelection(false);
+        csHideDuplicates.setSelection(false);
+        csShortName.setSelection(false);
+        csLongName.setSelection(false);
+        csInsertSpace.setSelection(true);
+        csSortAlphabetically.setSelection(true);
+        csShowServerHelpTopics.setSelection(false);
+        csShowValues.setSelection(true);
+        csInsertTableAlias.select(SQLTableAliasInsertMode.PLAIN.ordinal());
+        csMatchContains.setSelection(true);
+        csUseGlobalSearch.setSelection(false);
+        csShowColumnProcedures.setSelection(false);
+        csHippieActivation.setSelection(false);
+        csEnableExperimentalFeatures.setSelection(true);
+        super.performDefaults();
     }
 
     @Override

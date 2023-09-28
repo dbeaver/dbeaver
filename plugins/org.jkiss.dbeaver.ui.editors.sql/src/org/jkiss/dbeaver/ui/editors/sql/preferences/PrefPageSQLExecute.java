@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.model.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.ShellUtils;
@@ -385,6 +386,35 @@ public class PrefPageSQLExecute extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.BEEP_ON_QUERY_END);
         store.setToDefault(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE);
         store.setToDefault(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE);
+    }
+
+    @Override
+    protected void performDefaults() {
+        invalidateBeforeExecuteCheck.setSelection(false);
+        executeTimeoutText.setSelection(0);
+        soundOnQueryEnd.setSelection(false);
+        updateDefaultAfterExecute.setSelection(true);
+        clearOutputBeforeExecute.setSelection(false);
+        commitTypeCombo.select(SQLScriptCommitType.NO_COMMIT.ordinal());
+        errorHandlingCombo.select(SQLScriptErrorHandling.STOP_ROLLBACK.ordinal());
+        commitLinesText.setSelection(1000);
+        fetchResultSetsCheck.setSelection(true);
+        resetCursorCheck.setSelection(false);
+        maxEditorCheck.setSelection(true);
+        showStatisticsForQueriesWithResultsCheck.setSelection(true);
+        closeIncludedScriptAfterExecutionCheck.setSelection(true);
+        statementDelimiterText.setText(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
+        ignoreNativeDelimiter.setSelection(false);
+        blankLineDelimiter.setSelection(true);
+        removeTrailingDelimiter.setSelection(true);
+        enableSQLParameters.setSelection(true);
+        enableSQLAnonymousParameters.setSelection(false);
+        anonymousParameterMarkText.setText(String.valueOf(SQLConstants.DEFAULT_PARAMETER_MARK));
+        namedParameterPrefixText.setText(String.valueOf(SQLConstants.DEFAULT_PARAMETER_PREFIX));
+        controlCommandPrefixText.setText(SQLConstants.DEFAULT_CONTROL_COMMAND_PREFIX);
+        enableParametersInEmbeddedCode.setSelection(false);
+        enableVariables.setSelection(true);
+        super.performDefaults();
     }
 
     @Override

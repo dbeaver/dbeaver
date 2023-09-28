@@ -149,6 +149,15 @@ public class PrefPageMetaData extends TargetPrefPage
     }
 
     @Override
+    protected void performDefaults() {
+        readExpensiveCheck.setSelection(false);
+        separateMetaConnectionCombo.select(SeparateConnectionBehavior.DEFAULT.ordinal());
+        caseSensitiveNamesCheck.setSelection(false);
+        serverSideFiltersCheck.setSelection(true);
+        super.performDefaults();
+    }
+
+    @Override
     protected String getPropertyPageID()
     {
         return PAGE_ID;

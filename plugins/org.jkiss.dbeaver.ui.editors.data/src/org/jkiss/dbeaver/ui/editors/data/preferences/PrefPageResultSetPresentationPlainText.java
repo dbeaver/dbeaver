@@ -157,6 +157,21 @@ public class PrefPageResultSetPresentationPlainText extends TargetPrefPage
     }
 
     @Override
+    protected void performDefaults() {
+        textTabSize.setSelection(4);
+        textMaxColumnSize.setSelection(255);
+        textValueFormat.select(DBDDisplayFormat.EDIT);
+        showNulls.setSelection(false);
+        textDelimiterLeading.setSelection(false);
+        textDelimiterTrailing.setSelection(true);
+        textDelimiterTop.setSelection(false);
+        textDelimiterBottom.setSelection(false);
+        textExtraSpaces.setSelection(false);
+        textLineNumber.setSelection(false);
+        super.performDefaults();
+    }
+
+    @Override
     protected String getPropertyPageID()
     {
         return PAGE_ID;

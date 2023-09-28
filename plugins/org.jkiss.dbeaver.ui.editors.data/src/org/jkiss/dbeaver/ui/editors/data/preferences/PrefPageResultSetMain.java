@@ -367,6 +367,35 @@ public class PrefPageResultSetMain extends TargetPrefPage
     }
 
     @Override
+    protected void performDefaults() {
+        autoFetchNextSegmentCheck.setSelection(true);
+        rereadOnScrollingCheck.setSelection(true);
+        resultSetSize.setText("200");
+        resultSetUseSQLCheck.setSelection(false);
+        orderingModeCombo.select(ResultSetUtils.OrderingMode.SMART.ordinal());
+        readQueryMetadata.setSelection(true);
+        readQueryReferences.setSelection(true);
+        queryCancelTimeout.setText("5000");
+        filterForceSubselect.setSelection(false);
+        keepStatementOpenCheck.setSelection(false);
+        alwaysUseAllColumns.setSelection(false);
+        disableEditingOnMissingKey.setSelection(false);
+        newRowsAfter.setSelection(true);
+        refreshAfterUpdate.setSelection(true);
+        useNavigatorFilters.setSelection(true);
+        if (confirmDataSave != null) {
+            confirmDataSave.setSelection(false);
+        }
+        showErrorsInDialog.setSelection(false);
+        markCellValueOccurrences.setSelection(false);
+        advUseFetchSize.setSelection(false);
+        ignoreColumnLabelCheck.setSelection(false);
+        useDateTimeEditor.setSelection(false);
+        useBrowserCheckbox.setSelection(true);
+        super.performDefaults();
+    }
+
+    @Override
     protected String getPropertyPageID()
     {
         return PAGE_ID;

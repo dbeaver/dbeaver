@@ -166,6 +166,20 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
     }
 
     @Override
+    protected void performDefaults() {
+        showNonDefault.setSelection(false);
+        showTemplates.setSelection(false);
+        showUnavailable.setSelection(false);
+        showDatabaseStatistics.setSelection(false);
+        readAllDataTypes.setSelection(false);
+        readKeysWithColumns.setSelection(false);
+        ddPlainBehaviorCombo.select(1);
+        ddTagBehaviorCombo.select(1);
+        setCheckboxesState();
+        super.performDefaults();
+    }
+
+    @Override
     public void init(IWorkbench workbench) {
 
     }

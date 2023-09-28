@@ -121,6 +121,14 @@ public class SQLTerminalPreferencesPage extends TargetPrefPage {
         store.setToDefault(SQLTerminalPreferencesConstants.SHOW_SERVER_OUTPUT);
     }
 
+    @Override
+    protected void performDefaults() {
+        showTerminalViewByDefault.setSelection(false);
+        showQueryText.setSelection(true);
+        showServerOutput.setSelection(true);
+        super.performDefaults();
+    }
+
     @NotNull
     @Override
     protected String getPropertyPageID() {

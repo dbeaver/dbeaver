@@ -195,14 +195,12 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
 
     @Override
     protected void performDefaults() {
-        final DBPPreferenceStore preferences = DTActivator.getDefault().getPreferences();
-
         if (reconnectToLastDatabaseButton != null) {
-            reconnectToLastDatabaseButton.setSelection(preferences.getDefaultBoolean(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE));
+            reconnectToLastDatabaseButton.setSelection(false);
         }
         if (fallbackOutputDirectoryText != null) {
             fallbackOutputDirectoryText.setText("");
-            fallbackOutputDirectoryText.setMessage(preferences.getDefaultString(DTConstants.PREF_FALLBACK_OUTPUT_DIRECTORY));
+            fallbackOutputDirectoryText.setMessage(DTConstants.DEFAULT_FALLBACK_OUTPUT_DIRECTORY);
         }
         nameCaseCombo.select(0);
         replaceCombo.select(0);

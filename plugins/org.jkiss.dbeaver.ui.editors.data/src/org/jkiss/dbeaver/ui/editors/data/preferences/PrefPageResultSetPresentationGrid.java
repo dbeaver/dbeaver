@@ -270,6 +270,27 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage {
     }
 
     @Override
+    protected void performDefaults() {
+        gridShowOddRows.setSelection(true);
+        gridHighlightRowsWithSelectedCells.setSelection(true);
+        colorizeDataTypes.setSelection(false);
+        gridShowAttrIcons.setSelection(true);
+        gridShowAttrFilters.setSelection(true);
+        gridShowAttrOrder.setSelection(false);
+        useSmoothScrolling.setSelection(true);
+        showCollectionInline.setSelection(false);
+        showBooleanAsCheckbox.setSelection(true);
+        showWhitespaceCharacters.setSelection(false);
+        textValueFormat.select(DBDDisplayFormat.UI);
+        toggleBooleanOnClick.setSelection(true);
+        moveAfterInlineEnter.setSelection(false);
+        gridDoubleClickBehavior.select(Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.ordinal());
+        gridRowBatchSize.setText("1");
+        maxDefColumnWidth.setText("30");
+        super.performDefaults();
+    }
+
+    @Override
     protected String getPropertyPageID() {
         return PAGE_ID;
     }

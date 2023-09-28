@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.editors.data.preferences;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
@@ -261,6 +260,24 @@ public class PrefPageResultSetEditors extends TargetPrefPage
         store.setToDefault(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE);
         store.setToDefault(ResultSetPreferences.RS_COMMIT_ON_EDIT_APPLY);
         store.setToDefault(ResultSetPreferences.RS_COMMIT_ON_CONTENT_APPLY);
+    }
+
+    @Override
+    protected void performDefaults() {
+        stringUseEditorCheck.setSelection(false);
+        binaryPresentationCombo.select(0);
+        binaryEditorType.select(IValueController.EditType.EDITOR.ordinal());
+        binaryStringMaxLength.setSelection(32);
+        memoryContentSize.setSelection(10000);
+        UIUtils.setComboSelection(encodingCombo, GeneralUtils.getDefaultFileEncoding());
+        contentCacheClob.setSelection(true);
+        contentCacheBlob.setSelection(false);
+        contentCacheMaxSize.setSelection(1000000);
+        maxTextContentSize.setSelection(100);
+        editLongAsLobCheck.setSelection(true);
+        commitOnEditApplyCheck.setSelection(false);
+        commitOnContentApplyCheck.setSelection(false);
+        super.performDefaults();
     }
 
     @Override

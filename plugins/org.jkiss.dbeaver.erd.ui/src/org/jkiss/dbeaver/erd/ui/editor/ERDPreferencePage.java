@@ -205,8 +205,32 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     }
 
     @Override
-    protected void performDefaults()
-    {
+    protected void performDefaults() {
+        contentsShowViews.setSelection(true);
+        contentsShowPartitions.setSelection(false);
+        routingType.setText(ERDUIConstants.ROUTING_SHORTEST_PATH);
+        ERDNotationRegistry registry = ERDNotationRegistry.getInstance();
+        notationType.select(registry.getERDNotations().indexOf(registry.getDefaultNotation()));
+        changeBorderColors.setSelection(true);
+        changeHeaderColors.setSelection(true);
+        gridCheck.setSelection(false);
+        snapCheck.setSelection(true);
+        spinnerGridWidth.setSelection(20);
+        spinnerGridHeight.setSelection(20);
+        modeCombo.select(ERDUIConstants.PRINT_MODE_DEFAULT);
+        spinnerMarginTop.setSelection(ERDUIConstants.PRINT_MARGIN_DEFAULT);
+        spinnerMarginBottom.setSelection(ERDUIConstants.PRINT_MARGIN_DEFAULT);
+        spinnerMarginLeft.setSelection(ERDUIConstants.PRINT_MARGIN_DEFAULT);
+        spinnerMarginRight.setSelection(ERDUIConstants.PRINT_MARGIN_DEFAULT);
+        if (visibilityButtons.size() > 0) {
+            visibilityButtons.get(0).setSelection(true);
+        }
+        if (styleButtons.size() > 0) {
+            for (Button styleButton : styleButtons) {
+                styleButton.setSelection(false);
+            }
+            styleButtons.get(0).setSelection(true);
+        }
         super.performDefaults();
     }
 
@@ -248,6 +272,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         for (Button radio : visibilityButtons) {
             if (radio.getSelection()) {
                 ERDAttributeVisibility.setDefaultVisibility(store, (ERDAttributeVisibility) radio.getData());
+                break;
             }
         }
         List<ERDViewStyle> enabledStyles = new ArrayList<>();

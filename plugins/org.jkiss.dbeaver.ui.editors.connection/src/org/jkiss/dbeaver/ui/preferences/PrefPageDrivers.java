@@ -80,6 +80,7 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         {
             Group settings = UIUtils.createControlGroup(composite, UIConnectionMessages.pref_page_ui_general_group_settings, 2, GridData.FILL_HORIZONTAL, 300);
@@ -88,15 +89,27 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
 
         {
             Group proxyObjects = UIUtils.createControlGroup(composite, UIConnectionMessages.pref_page_ui_general_group_http_proxy, 4, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 300);
-            proxyHostText = UIUtils.createLabelText(proxyObjects, UIConnectionMessages.pref_page_ui_general_label_proxy_host, null); //$NON-NLS-2$
-            proxyPortSpinner = UIUtils.createLabelSpinner(proxyObjects, UIConnectionMessages.pref_page_ui_general_spinner_proxy_port, 0, 0, 65535);
-            proxyUserText = UIUtils.createLabelText(proxyObjects, UIConnectionMessages.pref_page_ui_general_label_proxy_user, null); //$NON-NLS-2$
+            proxyHostText = UIUtils.createLabelText(
+                proxyObjects,
+                UIConnectionMessages.pref_page_ui_general_label_proxy_host,
+                store.getString(ModelPreferences.UI_PROXY_HOST));
+            proxyPortSpinner = UIUtils.createLabelSpinner(
+                proxyObjects,
+                UIConnectionMessages.pref_page_ui_general_spinner_proxy_port,
+                store.getInt(ModelPreferences.UI_PROXY_PORT),
+                0,
+                65535);
+            proxyUserText = UIUtils.createLabelText(
+                proxyObjects,
+                UIConnectionMessages.pref_page_ui_general_label_proxy_user,
+                store.getString(ModelPreferences.UI_PROXY_USER));
             proxyPasswordText = UIUtils.createLabelText(proxyObjects, UIConnectionMessages.pref_page_ui_general_label_proxy_password, null, SWT.PASSWORD | SWT.BORDER); //$NON-NLS-2$
         }
 
         {
             Group drivers = UIUtils.createControlGroup(composite, UIConnectionMessages.pref_page_drivers_group_location, 2, GridData.FILL_HORIZONTAL, 300);
             customDriversHome = DialogUtils.createOutputFolderChooser(drivers, UIConnectionMessages.pref_page_drivers_local_folder, null);
+            customDriversHome.setText(store.getString(ModelPreferences.UI_DRIVERS_HOME));
         }
 
         {
@@ -149,12 +162,7 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
     }
 
     private void setValues() {
-        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        proxyHostText.setText(store.getString(ModelPreferences.UI_PROXY_HOST));
-        proxyPortSpinner.setSelection(store.getInt(ModelPreferences.UI_PROXY_PORT));
-        proxyUserText.setText(store.getString(ModelPreferences.UI_PROXY_USER));
-        // Load and decrypt password
-        String passwordString = store.getString(ModelPreferences.UI_PROXY_PASSWORD);
+        String passwordString = DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.UI_PROXY_PASSWORD);
         if (!CommonUtils.isEmpty(passwordString) && encrypter != null) {
             try {
                 passwordString = encrypter.decrypt(passwordString);
@@ -163,7 +171,6 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
             }
         }
         proxyPasswordText.setText(passwordString);
-        customDriversHome.setText(store.getString(ModelPreferences.UI_DRIVERS_HOME));
 
         sourceList.removeAll();
         for (String source : DriverDescriptor.getDriversSources()) {

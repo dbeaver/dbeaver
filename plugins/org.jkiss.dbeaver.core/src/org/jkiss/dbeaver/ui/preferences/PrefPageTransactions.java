@@ -220,6 +220,12 @@ public class PrefPageTransactions extends TargetPrefPage
     }
 
     @Override
+    protected void performDefaults() {
+        showTransactionNotificationsCheck.setSelection(true);
+        super.performDefaults();
+    }
+
+    @Override
     protected String getPropertyPageID()
     {
         return PAGE_ID;

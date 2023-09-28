@@ -148,6 +148,19 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     }
 
     @Override
+    protected void performDefaults() {
+        autoSwitchMode.setSelection(false);
+        showDescription.setSelection(false);
+        columnWidthByValue.setSelection(false);
+        showConnectionName.setSelection(false);
+        transformComplexTypes.setSelection(true);
+        rightJustifyNumbers.setSelection(true);
+        rightJustifyDateTime.setSelection(true);
+        autoCompleteProposal.setSelection(true);
+        super.performDefaults();
+    }
+
+    @Override
     protected String getPropertyPageID()
     {
         return PAGE_ID;
