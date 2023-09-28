@@ -1949,17 +1949,9 @@ public class UIUtils {
         final Rectangle bounds = parent.getBounds();
         final int x = bounds.x + bounds.width / 2 - 120;
         final int y = bounds.y + bounds.height / 2 - 170;
-        final Shell shell = new Shell(Display.getDefault());
-        shell.setBounds(x, y, 0, 0);
+        final Shell shell = new Shell(parent);
+        shell.setLocation(x, y);
         return shell;
-    }
-
-    public static void disposeCenteredShell(Shell shell) {
-        Composite parentShell = shell.getParent();
-        shell.dispose();
-        if (parentShell instanceof Shell) {
-            ((Shell) parentShell).setActive();
-        }
     }
 
     public static void centerShell(Shell parent, Shell shell) {
