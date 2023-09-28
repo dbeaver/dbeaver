@@ -23,7 +23,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -41,9 +44,13 @@ public class AIEngineRegistry {
     public static class EngineDescriptor extends AbstractDescriptor {
 
         private final IConfigurationElement contributorConfig;
+        private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
         protected EngineDescriptor(IConfigurationElement contributorConfig) {
             super(contributorConfig);
             this.contributorConfig = contributorConfig;
+            for (IConfigurationElement propGroup : ArrayUtils.safeArray(contributorConfig.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))) {
+                properties.addAll(PropertyDescriptor.extractProperties(propGroup));
+            }
         }
 
         public String getId() {
@@ -56,6 +63,10 @@ public class AIEngineRegistry {
 
         String getReplaces() {
             return contributorConfig.getAttribute("replaces");
+        }
+
+        public List<DBPPropertyDescriptor> getProperties() {
+            return properties;
         }
 
         public DAICompletionEngine createInstance() throws DBException {
@@ -106,6 +117,14 @@ public class AIEngineRegistry {
     }
 
     public DAICompletionEngine getCompletionEngine(String id) throws DBException {
+        EngineDescriptor descriptor = getEngineDescriptor(id);
+        if (descriptor == null) {
+            throw new DBException("AI engine '" + id + "' not found");
+        }
+        return descriptor.createInstance();
+    }
+
+    public EngineDescriptor getEngineDescriptor(String id) {
         while (true) {
             String replace = replaceMap.get(id);
             if (replace == null) {
@@ -113,11 +132,7 @@ public class AIEngineRegistry {
             }
             id = replace;
         }
-        EngineDescriptor descriptor = descriptorMap.get(id);
-        if (descriptor == null) {
-            throw new DBException("AI engine '" + id + "' not found");
-        }
-        return descriptor.createInstance();
+        return descriptorMap.get(id);
     }
 
 }
