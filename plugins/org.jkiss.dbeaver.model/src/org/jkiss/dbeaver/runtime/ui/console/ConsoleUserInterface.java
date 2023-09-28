@@ -269,6 +269,23 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
+    public boolean supportsMultiFileSystems() {
+        return false;
+    }
+
+    @Override
+    public String openFileSystemSelector(
+        @NotNull String title,
+        boolean folder,
+        int style,
+        boolean binary,
+        String[] filterExt,
+        String defaultValue
+    ) {
+        return null;
+    }
+
+    @Override
     public boolean readAndDispatchEvents() {
 
         return false;

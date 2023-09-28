@@ -174,5 +174,15 @@ public interface DBPPlatformUI {
 
     void showInSystemExplorer(@NotNull String path);
 
+    boolean supportsMultiFileSystems();
+
+    String openFileSystemSelector(
+        @NotNull String title,
+        boolean folder,
+        int style,
+        boolean binary,
+        String[] filterExt,
+        String defaultValue);
+
     boolean readAndDispatchEvents();
 }

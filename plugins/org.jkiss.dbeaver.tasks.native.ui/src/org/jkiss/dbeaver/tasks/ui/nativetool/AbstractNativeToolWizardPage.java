@@ -80,6 +80,8 @@ public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNative
             outputGroup,
             TaskNativeUIMessages.tools_wizard_page_dialog_folder_pattern,
             settings.getOutputFolderPattern(),
+            null,
+            false,
             e -> updateState());
         outputFileText = UIUtils.createLabelText(
             outputGroup,

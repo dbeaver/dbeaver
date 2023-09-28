@@ -106,7 +106,7 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
         traceGroup.setLayout(new GridLayout(2, false));
         traceGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        folderText = DialogUtils.createOutputFolderChooser(traceGroup, DB2Messages.db2_connection_trace_page_label_folder, null);
+        folderText = DialogUtils.createOutputFolderChooser(traceGroup, DB2Messages.db2_connection_trace_page_label_folder, null, null, false, null);
         fileNameText = UIUtils.createLabelText(traceGroup, DB2Messages.db2_connection_trace_page_label_file_name, DB2Messages.db2_connection_trace_page_string_trace);
         traceAppendCheck = UIUtils.createLabelCheckbox(traceGroup, DB2Messages.db2_connection_trace_page_checkbox_append, false);
 

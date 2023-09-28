@@ -167,7 +167,7 @@ public class DialogUtils {
 
     @NotNull
     public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable String value, @Nullable ModifyListener changeListener) {
-        return createOutputFolderChooser(parent, label, null, value, changeListener);
+        return createOutputFolderChooser(parent, label, null, value, true, changeListener);
     }
 
     @Nullable
@@ -196,6 +196,7 @@ public class DialogUtils {
         @Nullable String label,
         @Nullable String tooltip,
         @Nullable String value,
+        boolean multiFileSystem,
         @Nullable ModifyListener changeListener
     ) {
         final String message = label != null ? label : UIMessages.output_label_directory;
@@ -203,9 +204,19 @@ public class DialogUtils {
         final TextWithOpen directoryText = new TextWithOpen(parent) {
             @Override
             protected void openBrowser() {
-                final String text = openDirectoryDialog(parent.getShell(), message, getText());
-                if (text != null) {
-                    setText(text);
+                String fileName;
+                if (multiFileSystem && DBWorkbench.getPlatformUI().supportsMultiFileSystems()) {
+                    fileName = DBWorkbench.getPlatformUI().openFileSystemSelector(
+                        CommonUtils.toString(label, "Output folder"),
+                        true, SWT.SAVE, false, null, value);
+                    if (fileName != null) {
+                        setText(fileName);
+                    }
+                } else {
+                    fileName = openDirectoryDialog(parent.getShell(), message, getText());
+                }
+                if (fileName != null) {
+                    setText(fileName);
                 }
             }
         };

@@ -32,10 +32,11 @@ import java.nio.file.Path;
 import java.util.Base64;
 
 /**
- * TextWithOpen
+ * TextWithOpen.
+ *
+ * Styles: SWT.SAVE, SWT.OPEN, SWT.SINGLE
  */
-public class TextWithOpenFile extends TextWithOpen
-{
+public class TextWithOpenFile extends TextWithOpen {
     private final String title;
     private final String[] filterExt;
     private final int style;
@@ -76,40 +77,51 @@ public class TextWithOpenFile extends TextWithOpen
     }
 
     protected void openBrowser() {
-        String directory = getDialogDirectory();
         String selected;
-        if (openFolder) {
-            DirectoryDialog fd = new DirectoryDialog(getShell(), style);
-            if (directory != null) {
-                fd.setFilterPath(directory);
-            }
-            if (title != null) {
-                fd.setText(title);
-            }
-            selected = fd.open();
+        if (isMultiFileSystem() && DBWorkbench.getPlatformUI().supportsMultiFileSystems()) {
+            selected = DBWorkbench.getPlatformUI().openFileSystemSelector(
+                title,
+                openFolder,
+                style,
+                binary,
+                filterExt,
+                getText());
         } else {
-            FileDialog fd = new FileDialog(getShell(), style);
-            fd.setText(title);
-            fd.setFilterExtensions(filterExt);
-            if (directory != null) {
-                DialogUtils.setCurDialogFolder(directory);
-            }
-            selected = DialogUtils.openFileDialog(fd);
-
-            if (selected != null && isShowFileContentEditor()) {
-                Path filePath = Path.of(selected);
-                try {
-                    if (binary) {
-                        byte[] bytes = Files.readAllBytes(filePath);
-                        selected = Base64.getEncoder().encodeToString(bytes);
-                    } else {
-                        selected = Files.readString(filePath);
-                    }
-                } catch (IOException e) {
-                    DBWorkbench.getPlatformUI().showError("File read error", "Can't read file '" + filePath + "' contents", e);
+            String directory = getDialogDirectory();
+            if (openFolder) {
+                DirectoryDialog fd = new DirectoryDialog(getShell(), style);
+                if (directory != null) {
+                    fd.setFilterPath(directory);
                 }
+                if (title != null) {
+                    fd.setText(title);
+                }
+                selected = fd.open();
+            } else {
+                FileDialog fd = new FileDialog(getShell(), style);
+                fd.setText(title);
+                fd.setFilterExtensions(filterExt);
+                if (directory != null) {
+                    DialogUtils.setCurDialogFolder(directory);
+                }
+                selected = DialogUtils.openFileDialog(fd);
             }
         }
+
+        if (selected != null && isShowFileContentEditor()) {
+            Path filePath = IOUtils.getPathFromString(selected);
+            try {
+                if (binary) {
+                    byte[] bytes = Files.readAllBytes(filePath);
+                    selected = Base64.getEncoder().encodeToString(bytes);
+                } else {
+                    selected = Files.readString(filePath);
+                }
+            } catch (IOException e) {
+                DBWorkbench.getPlatformUI().showError("File read error", "Can't read file '" + filePath + "' contents", e);
+            }
+        }
+
         if (selected != null) {
             setText(selected);
         }

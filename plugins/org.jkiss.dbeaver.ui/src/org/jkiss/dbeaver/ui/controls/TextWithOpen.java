@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.utils.IOUtils;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,6 +46,7 @@ import java.nio.file.Path;
 public class TextWithOpen extends Composite {
     private final Text text;
     private final ToolBar toolbar;
+    private boolean multiFileSystem = false;
 
     public TextWithOpen(Composite parent) {
         this(parent, false);
@@ -120,7 +122,7 @@ public class TextWithOpen extends Composite {
                 }
             });
             TextWithOpen.this.text.addModifyListener(e -> {
-                Path targetFile = Path.of(TextWithOpen.this.text.getText().trim()).toAbsolutePath();
+                Path targetFile = IOUtils.getPathFromString(TextWithOpen.this.text.getText().trim()).toAbsolutePath();
                 editItem.setEnabled(Files.exists(targetFile) && !Files.isDirectory(targetFile));
             });
             editItem.setEnabled(false);
@@ -144,6 +146,14 @@ public class TextWithOpen extends Composite {
 
     protected boolean isBinaryContents() {
         return false;
+    }
+
+    public boolean isMultiFileSystem() {
+        return multiFileSystem;
+    }
+
+    public void setMultiFileSystem(boolean multiFileSystem) {
+        this.multiFileSystem = multiFileSystem;
     }
 
     protected void openBrowser() {
