@@ -16,10 +16,6 @@
  */
 package org.jkiss.dbeaver.model.sql.completion;
 
-import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.create.view.CreateView;
-import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.eclipse.jface.text.BadLocationException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -55,9 +51,26 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.create.view.CreateView;
+import net.sf.jsqlparser.util.TablesNamesFinder;
+
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * Completion analyzer
@@ -206,7 +219,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
         boolean procExec;
         if (!CommonUtils.isEmpty(prevWords) &&
-                (SQLConstants.KEYWORD_PROCEDURE.equals(previousWord) || SQLConstants.KEYWORD_FUNCTION.equals(previousWord))) {
+            (SQLConstants.KEYWORD_PROCEDURE.equals(previousWord) || SQLConstants.KEYWORD_FUNCTION.equals(previousWord))) {
             parameters.put(SQLCompletionProposalBase.PARAM_EXEC, false);
             procExec = false;
         } else {
@@ -221,13 +234,13 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 List<DBSObject> rootObjects = null;
                 if (queryType == SQLCompletionRequest.QueryType.COLUMN && dataSource instanceof DBSObjectContainer) {
                     // Try to detect current table
-                    rootObjects = getTableListFromAlias((DBSObjectContainer)dataSource, null);
-                    if (prevKeyWord!=null) {
+                    rootObjects = getTableListFromAlias((DBSObjectContainer) dataSource, null);
+                    if (prevKeyWord != null) {
                         switch (prevKeyWord) {
                             case SQLConstants.KEYWORD_ON:
                                 // Join?
-                                for (DBSObject obj: rootObjects) {
-                                 makeJoinColumnProposals((DBSObjectContainer) dataSource, (DBSEntity)obj);
+                                for (DBSObject obj : rootObjects) {
+                                    makeJoinColumnProposals((DBSObjectContainer) dataSource, (DBSEntity) obj);
                                 }
                                 // Fall-thru
                             case SQLConstants.KEYWORD_SET:
@@ -235,26 +248,25 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             case SQLConstants.KEYWORD_AND:
                             case SQLConstants.KEYWORD_OR:
                                 if (!request.isSimpleMode()) {
-                                    boolean isLike = SQLConstants.KEYWORD_LIKE.equals(previousWord) || SQLConstants.KEYWORD_ILIKE.equals(previousWord);
-                                    boolean waitsForValue =
-                                        isInLiteral || (
-                                            !CommonUtils.isEmpty(prevWords) &&
-                                            isLike || (
-                                                !CommonUtils.isEmpty(prevDelimiter) &&
-                                                !prevDelimiter.endsWith(")")));
+                                    boolean isLike = SQLConstants.KEYWORD_LIKE.equals(previousWord)
+                                        || SQLConstants.KEYWORD_ILIKE.equals(previousWord);
+                                    boolean waitsForValue = isInLiteral || (!CommonUtils.isEmpty(prevWords) &&
+                                        isLike
+                                        || (!CommonUtils.isEmpty(prevDelimiter) &&
+                                            !prevDelimiter.endsWith(")")));
                                     if (waitsForValue && request.getContext().isShowValues()) {
                                         for (DBSObject obj : rootObjects) {
                                             makeProposalsFromAttributeValues(
                                                 dataSource,
                                                 wordDetector,
                                                 isInLiteral || isNumber,
-                                                (DBSEntity)obj);
+                                                (DBSEntity) obj);
                                         }
                                     }
                                 }
                                 break;
-                           default:
-                               break;
+                            default:
+                                break;
                         }
                     }
                 } else if (dataSource instanceof DBSObjectContainer) {
@@ -280,7 +292,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         // get completion from data source
                         makeProposalsFromChildren(dataSource, null, false, parameters);
                     }
-                    if (queryType == SQLCompletionRequest.QueryType.JOIN && !proposals.isEmpty() && dataSource instanceof DBSObjectContainer) {
+                    if (queryType == SQLCompletionRequest.QueryType.JOIN && !proposals.isEmpty()
+                        && dataSource instanceof DBSObjectContainer) {
                         // Filter out non-joinable tables
                         DBSObject leftTable = getTableFromAlias((DBSObjectContainer) dataSource, null);
                         if (leftTable instanceof DBSEntity) {
@@ -1312,22 +1325,22 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 // If we replace short name with referenced object
                 // and current active schema (catalog) is not this object's container then
                 // replace with full qualified name
-                if (!request.getContext().isUseShortNames() && object instanceof DBSObjectReference) {
-                    if (request.getWordDetector().getFullWord()
+                if (!request.getContext().isUseShortNames()
+                    && object instanceof DBSObjectReference
+                    && request.getWordDetector().getFullWord()
                         .indexOf(request.getContext().getSyntaxManager().getStructSeparator()) == -1) {
-                        DBSObjectReference structObject = (DBSObjectReference) object;
-                        DBSObject objectContainer = structObject.getContainer();
-                        if (objectContainer != null) {
-                            DBSObject selectedObject = getActiveInstanceObject();
-                            if (selectedObject != null && selectedObject != objectContainer) {
-                                if (DBSProcedure.class.isAssignableFrom(structObject.getObjectClass())) {
-                                    // We do not need full routine name with parameters here
-                                    replaceString = DBUtils.getFullQualifiedName(dataSource, objectContainer, structObject);
-                                } else {
-                                    replaceString = structObject.getFullyQualifiedName(DBPEvaluationContext.DML);
-                                }
-                                isSingleObject = false;
+                    DBSObjectReference structObject = (DBSObjectReference) object;
+                    DBSObject objectContainer = structObject.getContainer();
+                    if (objectContainer != null) {
+                        DBSObject selectedObject = getActiveInstanceObject();
+                        if (selectedObject != null && selectedObject != objectContainer) {
+                            if (DBSProcedure.class.isAssignableFrom(structObject.getObjectClass())) {
+                                // We do not need full routine name with parameters here
+                                replaceString = DBUtils.getFullQualifiedName(dataSource, objectContainer, structObject);
+                            } else {
+                                replaceString = structObject.getFullyQualifiedName(DBPEvaluationContext.DML);
                             }
+                            isSingleObject = false;
                         }
                     }
                 }

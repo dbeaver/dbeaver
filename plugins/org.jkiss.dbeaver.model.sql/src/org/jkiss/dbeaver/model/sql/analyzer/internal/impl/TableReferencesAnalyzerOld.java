@@ -179,15 +179,12 @@ public class TableReferencesAnalyzerOld implements TableReferencesAnalyzer {
             log.debug(e);
         }
         return tableRefs;
-
     }
 
     @Override
     public Map<String, String> getTableAlicesFromQuery(String query) {
         return Collections.emptyMap();
     }
-
-
 
     private static boolean isTableQueryToken(TPToken tok, String value) {
         return tok.getData() == SQLTokenType.T_KEYWORD &&

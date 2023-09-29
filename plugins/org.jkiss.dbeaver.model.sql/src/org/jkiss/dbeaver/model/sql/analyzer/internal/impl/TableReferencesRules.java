@@ -17,15 +17,13 @@
 package org.jkiss.dbeaver.model.sql.analyzer.internal.impl;
 
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
+
 import java.util.Set;
+
 /**
  * Represents internal rules
  */
 public class TableReferencesRules {
-
-    private TableReferencesRules() {
-        // private
-    }
 
     public static final Set<String> expandRulesToTableRef = Set.of(
         STMKnownRuleNames.sqlQuery,
@@ -54,4 +52,8 @@ public class TableReferencesRules {
     public static final Set<String> extractRulesToTableName = Set.of(
         STMKnownRuleNames.tableName,
         STMKnownRuleNames.correlationName);
+
+    private TableReferencesRules() {
+        // private
+    }
 }

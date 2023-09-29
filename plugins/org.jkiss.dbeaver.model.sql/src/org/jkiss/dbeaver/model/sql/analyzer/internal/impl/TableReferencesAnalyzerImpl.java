@@ -99,6 +99,9 @@ public class TableReferencesAnalyzerImpl implements TableReferencesAnalyzer {
         return table2alias;
     }
 
+    /**
+     * The method designed to get table and aliases from source query
+     */
     @Nullable
     public Map<String, String> getTableAndAliasFromSources(STMTreeRuleNode query) {
         Map<String, String> result = new TreeMap<>();
