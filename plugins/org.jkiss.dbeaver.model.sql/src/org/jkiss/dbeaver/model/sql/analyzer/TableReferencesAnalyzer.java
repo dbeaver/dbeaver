@@ -17,11 +17,11 @@
 
 package org.jkiss.dbeaver.model.sql.analyzer;
 
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
+
+import java.util.Map;
 
 /**
  * Interface designed in order to provide reference implementation of analyzing
@@ -39,7 +39,7 @@ public interface TableReferencesAnalyzer {
      */
     @NotNull
     Map<String, String> getTableAlicesFromQuery(@NotNull String query);
-    
+
     /**
      * Checks if token is the name part token
      */

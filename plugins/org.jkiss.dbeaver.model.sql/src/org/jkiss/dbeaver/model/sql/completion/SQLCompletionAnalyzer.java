@@ -16,6 +16,10 @@
  */
 package org.jkiss.dbeaver.model.sql.completion;
 
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.create.view.CreateView;
+import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.eclipse.jface.text.BadLocationException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -50,11 +54,6 @@ import org.jkiss.dbeaver.model.text.TextUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
-
-import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.create.view.CreateView;
-import net.sf.jsqlparser.util.TablesNamesFinder;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -1236,9 +1235,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             SQLConstants.KEYWORD_INTO.equals(prevWord) ||
             SQLConstants.KEYWORD_JOIN.equals(prevWord)) {
             if (object instanceof DBSEntity) {
-                DBSEntity object2 = (DBSEntity) object;
                 aliasMode = SQLTableAliasInsertMode
-                    .fromPreferences(object2.getDataSource().getContainer().getPreferenceStore());
+                    .fromPreferences(((DBSEntity) object).getDataSource().getContainer().getPreferenceStore());
             }
             if (aliasMode != SQLTableAliasInsertMode.NONE) {
                 SQLDialect dialect = SQLUtils.getDialectFromObject(object);
@@ -1321,27 +1319,26 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
         if (replaceString == null || replaceString.isEmpty()) {
             DBPDataSource dataSource = request.getContext().getDataSource();
-            if (dataSource != null) {
-                // If we replace short name with referenced object
-                // and current active schema (catalog) is not this object's container then
-                // replace with full qualified name
-                if (!request.getContext().isUseShortNames()
-                    && object instanceof DBSObjectReference
-                    && request.getWordDetector().getFullWord()
-                        .indexOf(request.getContext().getSyntaxManager().getStructSeparator()) == -1) {
-                    DBSObjectReference structObject = (DBSObjectReference) object;
-                    DBSObject objectContainer = structObject.getContainer();
-                    if (objectContainer != null) {
-                        DBSObject selectedObject = getActiveInstanceObject();
-                        if (selectedObject != null && selectedObject != objectContainer) {
-                            if (DBSProcedure.class.isAssignableFrom(structObject.getObjectClass())) {
-                                // We do not need full routine name with parameters here
-                                replaceString = DBUtils.getFullQualifiedName(dataSource, objectContainer, structObject);
-                            } else {
-                                replaceString = structObject.getFullyQualifiedName(DBPEvaluationContext.DML);
-                            }
-                            isSingleObject = false;
+            // If we replace short name with referenced object
+            // and current active schema (catalog) is not this object's container then
+            // replace with full qualified name
+            if (dataSource != null
+                && !request.getContext().isUseShortNames()
+                && object instanceof DBSObjectReference
+                && request.getWordDetector().getFullWord()
+                    .indexOf(request.getContext().getSyntaxManager().getStructSeparator()) == -1) {
+                DBSObjectReference structObject = (DBSObjectReference) object;
+                DBSObject objectContainer = structObject.getContainer();
+                if (objectContainer != null) {
+                    DBSObject selectedObject = getActiveInstanceObject();
+                    if (selectedObject != null && selectedObject != objectContainer) {
+                        if (DBSProcedure.class.isAssignableFrom(structObject.getObjectClass())) {
+                            // We do not need full routine name with parameters here
+                            replaceString = DBUtils.getFullQualifiedName(dataSource, objectContainer, structObject);
+                        } else {
+                            replaceString = structObject.getFullyQualifiedName(DBPEvaluationContext.DML);
                         }
+                        isSingleObject = false;
                     }
                 }
             }
