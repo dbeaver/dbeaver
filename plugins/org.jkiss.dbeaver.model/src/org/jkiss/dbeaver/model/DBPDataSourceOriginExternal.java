@@ -17,6 +17,9 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
+
+import java.util.List;
 
 /**
  * External datasource provider origin.
@@ -28,5 +31,10 @@ public interface DBPDataSourceOriginExternal extends DBPDataSourceOrigin {
      */
     @Nullable
     DBPExternalConfiguration getExternalConfiguration();
+
+    /**
+     * Returns network profiles available in this origin
+     */
+    List<DBWNetworkProfile> getAvailableNetworkProfiles();
 
 }
