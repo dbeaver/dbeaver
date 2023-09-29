@@ -28,12 +28,10 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPResourceCreator;
-import org.jkiss.dbeaver.model.fs.nio.NIOFile;
-import org.jkiss.dbeaver.model.fs.nio.NIOFileStore;
+import org.jkiss.dbeaver.model.fs.DBFFileStoreProvider;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNNodeWithResource;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -52,8 +50,6 @@ import java.util.List;
  * Scripts handler
  */
 public class ScriptsHandlerImpl extends AbstractResourceHandler implements DBPResourceCreator {
-
-    private static final Log log = Log.getLog(ScriptsHandlerImpl.class);
 
     @Override
     public int getFeatures(IResource resource)
@@ -107,8 +103,8 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler implements DBPRe
     public void openResource(@NotNull IResource resource) throws CoreException, DBException
     {
         IEditorInput input = null;
-        if (resource instanceof NIOFile) {
-            input = new FileStoreEditorInput(new NIOFileStore(resource.getLocationURI(), ((NIOFile) resource).getNioPath()));
+        if (resource instanceof DBFFileStoreProvider) {
+            input = new FileStoreEditorInput(((DBFFileStoreProvider) resource).getFileStore());
         } else if (resource instanceof IFile) {
             input = new FileEditorInput((IFile) resource);
         }

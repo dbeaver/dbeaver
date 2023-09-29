@@ -116,43 +116,44 @@
     <extension point="org.jkiss.dbeaver.tools">
       <tools>
          <tool
-               class="org.jkiss.dbeaver.ext.exasol.ui.tools.ExasolExportTableTool"
                description="%tool.org.jkiss.dbeaver.ext.exasol.table.export.description"
                id="org.jkiss.dbeaver.ext.exasol.ui.tools.ExasolExportTableTool"
                label="%tool.org.jkiss.dbeaver.ext.exasol.table.export.name">
-            <objectType
-                  name="org.jkiss.dbeaver.ext.exasol.model.ExasolTable">
-            </objectType>
-            <objectType
-                  name="org.jkiss.dbeaver.ext.exasol.model.ExasolView">
-            </objectType>
-            <objectType
-                  name="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema">
-            </objectType>
+             <command id="org.jkiss.dbeaver.ext.exasol.ui.exportTable">
+                 <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolTable"/>
+                 <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolView"/>
+                 <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema"/>
+             </command>
          </tool>
          <tool
-               class="org.jkiss.dbeaver.ext.exasol.ui.tools.ExasolImportTableTool"
                description="%tool.org.jkiss.dbeaver.ext.exasol.table.import.description"
                id="org.jkiss.dbeaver.ext.exasol.ui.tools.ExasolImportTableTool"
                label="%tool.org.jkiss.dbeaver.ext.exasol.table.import.name">
-            <objectType
-                  name="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema">
-            </objectType>
-            <objectType
-                  name="org.jkiss.dbeaver.ext.exasol.model.ExasolTable">
-            </objectType>
+             <command id="org.jkiss.dbeaver.ext.exasol.ui.importTable">
+                 <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema"/>
+                 <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolTable"/>
+             </command>
          </tool>
 
           <tool
-               class="org.jkiss.dbeaver.ext.exasol.ui.tools.ExasolToolTruncate"
                description="Truncate table(s)"
                id="org.jkiss.dbeaver.ext.exasol.ui.tools.ExasolToolTruncate"
                group="org.jkiss.dbeaver.ext.exasol.ui.tools"
                label="Truncate"
                singleton="false">
-              <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolTable"/>
+              <task id="exasolToolTruncateTable"/>
           </tool>
       </tools>
+    </extension>
+
+    <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.ext.exasol.ui.exportTable" name="%tool.org.jkiss.dbeaver.ext.exasol.table.export.name"/>
+        <command id="org.jkiss.dbeaver.ext.exasol.ui.importTable" name="%tool.org.jkiss.dbeaver.ext.exasol.table.import.name"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.ext.exasol.ui.exportTable" class="org.jkiss.dbeaver.ext.exasol.ui.tools.ExasolExportTableToolCommandHandler"/>
+        <handler commandId="org.jkiss.dbeaver.ext.exasol.ui.importTable" class="org.jkiss.dbeaver.ext.exasol.ui.tools.ExasolImportTableToolCommandHandler"/>
     </extension>
 
 </plugin>

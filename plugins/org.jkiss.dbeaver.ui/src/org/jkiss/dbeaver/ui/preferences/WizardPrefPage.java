@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.eclipse.core.internal.runtime.Activator;
 import org.eclipse.jface.preference.IPreferencePage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.graphics.Image;
@@ -24,6 +23,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
@@ -165,7 +165,7 @@ public class WizardPrefPage extends WizardPage implements IDialogPageProvider {
         String pageName = pageId, pageDescription = pageId;
         try {
             Bundle pageBundle = FrameworkUtil.getBundle(ownerBundleClass);
-            ResourceBundle resourceBundle = Activator.getDefault().getLocalization(pageBundle, Locale.getDefault().getLanguage());
+            ResourceBundle resourceBundle = RuntimeUtils.getBundleLocalization(pageBundle, Locale.getDefault().getLanguage());
             try {
                 pageName = resourceBundle.getString("page." + pageId + ".name");
             } catch (Exception e) {

@@ -108,6 +108,26 @@
         </page>
     </extension>
 
+    <extension point="org.eclipse.ui.propertyPages">
+        <page category="org.jkiss.dbeaver.preferences.main.connections" class="org.jkiss.dbeaver.tools.transfer.ui.prefs.PrefPageDataTransfer"
+              id="org.jkiss.dbeaver.preferences.datatransfer" name="%pref.page.name.datatransfer">
+            <enabledWhen>
+                <reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/>
+            </enabledWhen>
+        </page>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.ui.dataSourceConfigurator">
+        <dataSourceConfigurator>
+            <dataSourcePage
+                    id="org.jkiss.dbeaver.preferences.datatransfer"
+                    after="org.jkiss.dbeaver.preferences.main.meta"
+                    class="org.jkiss.dbeaver.tools.transfer.ui.prefs.PrefPageDataTransfer"
+                    title="%pref.page.name.datatransfer"
+                    description="%pref.page.name.datatransfer"/>
+        </dataSourceConfigurator>
+    </extension>
+
     <extension point="org.eclipse.ui.keywords">
         <keyword id="org.jkiss.dbeaver.core.keyword.datatransfer" label="%keyword.org.jkiss.dbeaver.preferences.datatransfer"/>
     </extension>

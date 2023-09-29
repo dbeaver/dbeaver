@@ -204,7 +204,7 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
             return false;
         }
 
-        if (getCurrentTask() != null) {
+        if (getCurrentTask() != null && !isToolTask()) {
             return super.performFinish();
         }
 
