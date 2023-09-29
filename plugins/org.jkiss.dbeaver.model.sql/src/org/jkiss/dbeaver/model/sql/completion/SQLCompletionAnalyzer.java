@@ -285,6 +285,9 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         for (DBSObject obj : rootObjects) {
                             makeProposalsFromChildren(obj, null, false, parameters);
                         }
+                    } else if (getActiveInstanceObject() == null && dataSource != null) {
+                        // get completion from data source
+                        makeProposalsFromChildren(dataSource, null, false, parameters);
                     }
                     if (queryType == SQLCompletionRequest.QueryType.JOIN && !proposals.isEmpty() && dataSource instanceof DBSObjectContainer) {
                         // Filter out non-joinable tables
@@ -1485,8 +1488,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         DBPNamedObject object,
         boolean useShortName,
         @Nullable DBPImage objectIcon,
-        @NotNull Map<String, Object> params)
-    {
+        @NotNull Map<String, Object> params) {
         String alias = null;
         String objectName = null;
         String replaceString = null;
@@ -1495,16 +1497,18 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         String prevWord = request.getWordDetector().getPrevKeyWord();
         if (SQLConstants.KEYWORD_FROM.equals(prevWord) ||
             SQLConstants.KEYWORD_INTO.equals(prevWord) ||
-            SQLConstants.KEYWORD_JOIN.equals(prevWord)
-        ) {
+            SQLConstants.KEYWORD_JOIN.equals(prevWord)) {
             if (object instanceof DBSEntity) {
-                aliasMode = SQLTableAliasInsertMode.fromPreferences(((DBSEntity) object).getDataSource().getContainer().getPreferenceStore());
+                DBSEntity object2 = (DBSEntity) object;
+                aliasMode = SQLTableAliasInsertMode
+                    .fromPreferences(object2.getDataSource().getContainer().getPreferenceStore());
             }
             if (aliasMode != SQLTableAliasInsertMode.NONE) {
                 SQLDialect dialect = SQLUtils.getDialectFromObject(object);
                 if (dialect.supportsAliasInSelect() && request.getActiveQuery() != null) {
                     String firstKeyword = SQLUtils.getFirstKeyword(dialect, request.getActiveQuery().getText());
-                    if (dialect.supportsAliasInUpdate() || !ArrayUtils.contains(dialect.getDMLKeywords(), firstKeyword.toUpperCase(Locale.ENGLISH))) {
+                    if (dialect.supportsAliasInUpdate()
+                        || !ArrayUtils.contains(dialect.getDMLKeywords(), firstKeyword.toUpperCase(Locale.ENGLISH))) {
                         String queryText = request.getActiveQuery().getText();
                         Set<String> aliases = new LinkedHashSet<>();
                         if (request.getActiveQuery() instanceof SQLQuery) {
@@ -1521,8 +1525,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                                     @Override
                                     public void visit(@Nullable CreateView createView) {
                                         if (createView != null && createView.getView().getAlias() != null
-                                            && createView.getView().getName() != null
-                                        ) {
+                                            && createView.getView().getName() != null) {
                                             aliases.add(createView.getView().getAlias().getName().toLowerCase(Locale.ENGLISH));
                                         }
                                     }
@@ -1532,7 +1535,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         }
                         // It is table name completion after FROM. Auto-generate table alias
                         SQLDialect sqlDialect = SQLUtils.getDialectFromObject(object);
-                        alias = SQLUtils.generateEntityAlias((DBSEntity) object, s -> {
+                        DBSEntity object22 = (DBSEntity) object;
+                        alias = SQLUtils.generateEntityAlias(object22, s -> {
                             if (aliases.contains(s) || sqlDialect.getKeywordType(s) != null) {
                                 return true;
                             }
@@ -1545,18 +1549,54 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     }
                 }
             }
-              objectName = useShortName ?
-                object.getName() :
-                DBUtils.getObjectFullName(object, DBPEvaluationContext.DML);
-            
-            
+        }
+        if (SQLConstants.KEYWORD_WHERE.equals(prevWord)) {
+            String tableName = "";
+            if (object instanceof JDBCTableColumn<?>) {
+                aliasMode = SQLTableAliasInsertMode
+                    .fromPreferences(((JDBCTableColumn<?>) object).getDataSource().getContainer().getPreferenceStore());
+                JDBCTableColumn<?> tableColumn = (JDBCTableColumn<?>) object;
+                DBSEntity parentObject = tableColumn.getParentObject();
+                tableName = parentObject != null ? parentObject.getName() : tableColumn.getTable().getName();
+            } else if (object instanceof DBSEntityAttribute) {
+                DBSEntityAttribute entityAtrribute = (DBSEntityAttribute) object;
+                aliasMode = SQLTableAliasInsertMode
+                    .fromPreferences(entityAtrribute.getDataSource().getContainer().getPreferenceStore());
+                DBSEntityAttribute tableColumn = entityAtrribute;
+                DBSObject parentObject = tableColumn.getParentObject();
+                tableName = parentObject != null ? parentObject.getName() : tableColumn.getName();
+            }
+            SQLDialect sqlDialect = SQLUtils.getDialectFromObject(object);
+            if (aliasMode != SQLTableAliasInsertMode.NONE) {
+                String query = request.getActiveQuery().getText();
+                try {
+                    Map<String, String> table2Alices = getTableAlicesFromQueryByANTLRParser(tableRefsAnalyzer, query);
+                    alias = table2Alices.get(tableName);
+                    if (alias == null) {
+                        alias = tableName;
+                    }
+                    objectName = String.format(TABLE_TO_ATTRIBUTE_PATTERN, alias, sqlDialect.getStructSeparator(), object.getName());
+                    replaceString = objectName;
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            } else {
+                objectName = String.format(TABLE_TO_ATTRIBUTE_PATTERN, tableName, sqlDialect.getStructSeparator(), object.getName());
+                replaceString = objectName;
+            }
+        }
+        if (objectName == null || objectName.isEmpty()) {
+            objectName = useShortName ? object.getName() : DBUtils.getObjectFullName(object, DBPEvaluationContext.DML);
+        }
+        if (replaceString == null || replaceString.isEmpty()) {
             DBPDataSource dataSource = request.getContext().getDataSource();
             if (dataSource != null) {
                 // If we replace short name with referenced object
                 // and current active schema (catalog) is not this object's container then
                 // replace with full qualified name
                 if (!request.getContext().isUseShortNames() && object instanceof DBSObjectReference) {
-                    if (request.getWordDetector().getFullWord().indexOf(request.getContext().getSyntaxManager().getStructSeparator()) == -1) {
+                    if (request.getWordDetector().getFullWord()
+                        .indexOf(request.getContext().getSyntaxManager().getStructSeparator()) == -1) {
                         DBSObjectReference structObject = (DBSObjectReference) object;
                         DBSObject objectContainer = structObject.getContainer();
                         if (objectContainer != null) {
@@ -1573,45 +1613,23 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         }
                     }
                 }
-                if (replaceString == null) {
-                    if (request.getContext().isUseFQNames() && object instanceof DBPQualifiedObject) {
-                        replaceString = ((DBPQualifiedObject)object).getFullyQualifiedName(DBPEvaluationContext.DML);
-                    } else {
-                        replaceString = DBUtils.getQuotedIdentifier(dataSource, object.getName());
-                    }
-                }
-            } else {
-                replaceString = DBUtils.getObjectShortName(object);
             }
-            if (!CommonUtils.isEmpty(alias)) {
-                if (aliasMode == SQLTableAliasInsertMode.EXTENDED) {
-                    replaceString += " " + convertKeywordCase(request, "as", false);
+            if (replaceString == null) {
+                if (request.getContext().isUseFQNames() && object instanceof DBPQualifiedObject) {
+                    replaceString = ((DBPQualifiedObject) object).getFullyQualifiedName(DBPEvaluationContext.DML);
+                } else {
+                    replaceString = DBUtils.getQuotedIdentifier(dataSource, object.getName());
                 }
-                replaceString += " " + alias;
             }
         }
-        if (SQLConstants.KEYWORD_WHERE.equals(prevWord) && object instanceof JDBCTableColumn<?>) {
-            aliasMode = SQLTableAliasInsertMode
-                .fromPreferences(((JDBCTableColumn<?>) object).getDataSource().getContainer().getPreferenceStore());
-            JDBCTableColumn<?> tableColumn = (JDBCTableColumn<?>) object;
-            DBSEntity parentObject = tableColumn.getParentObject();
-            String tableName = parentObject != null ? parentObject.getName() : tableColumn.getTable().getName();
-            SQLDialect sqlDialect = SQLUtils.getDialectFromObject(object);
-            if (aliasMode != SQLTableAliasInsertMode.NONE) {
-                String query = request.getActiveQuery().getText();
-                try {
-                    alias = getAliceFromQueryANTLR(tableName, query);
-                    objectName = String.format(TABLE_TO_ATTRIBUTE_PATTERN, alias, sqlDialect.getStructSeparator(), object.getName());
-                    replaceString = objectName;
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e);
-                }
-            } else {
-                objectName = String.format(TABLE_TO_ATTRIBUTE_PATTERN, tableName, sqlDialect.getStructSeparator(), object.getName());
-                replaceString = objectName;
+        
+        if (!SQLConstants.KEYWORD_WHERE.equals(prevWord) && !CommonUtils.isEmpty(alias)) {
+            if (aliasMode == SQLTableAliasInsertMode.EXTENDED) {
+                replaceString += " " + convertKeywordCase(request, "as", false);
             }
+            replaceString += " " + alias;
         }
-         return createCompletionProposal(
+        return createCompletionProposal(
             request,
             replaceString,
             objectName,
@@ -1622,24 +1640,28 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             params);
     }
     
-    @NotNull
-    private String getAliceFromQueryANTLR(
-        @NotNull String tableName,
-        @NotNull String query) throws IOException {
-        String alias = "";
+    /**
+     * The method returns table to alias map
+     */
+    @Nullable
+    private Map<String, String> getTableAlicesFromQueryByANTLRParser(
+        @NotNull LSMTableReferencesAnalyzer tableRefsAnalyzer,
+        @NotNull String query)
+        throws IOException {
+        Map<String, String> table2alias = new HashMap<>();
         STMSource querySource = STMSource.fromReader(new StringReader(query));
-        LSMAnalyzer analyzer = LSMDialectRegistry.getInstance().getAnalyzerForDialect(request.getContext().getDataSource().getSQLDialect());
+        final LSMAnalyzer analyzer = LSMDialectRegistry.getInstance()
+            .getAnalyzerForDialect(request.getContext().getDataSource().getSQLDialect());
         STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
-        for (Pair<String, String> pair : getTableAndAliasFromSources(tree)) {
-            if (pair.getFirst().equals(tableName)) {
-                alias = pair.getSecond();
-                break;
-            }
+        List<Pair<String, String>> table2AliasesPairs = getTableAndAliasFromSources(tree);
+        // List<Pair<String, String>> table2AliasesPairs =
+        // tableRefsAnalyzer.getFilteredTableReferences(query, true);
+        if (table2AliasesPairs != null) {
+            table2AliasesPairs.stream().forEach(p -> {
+                table2alias.put(p.getFirst(), p.getSecond());
+            });
         }
-        if (alias.isEmpty()) {
-            alias = tableName;
-        }
-        return alias;
+        return table2alias;
     }
 
     /*

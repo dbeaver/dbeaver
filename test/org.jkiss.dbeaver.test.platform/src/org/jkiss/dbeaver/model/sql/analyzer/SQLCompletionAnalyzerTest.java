@@ -16,11 +16,13 @@
  */
 package org.jkiss.dbeaver.model.sql.analyzer;
 
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestResult;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -29,6 +31,34 @@ import java.util.List;
 import static org.jkiss.dbeaver.model.sql.analyzer.builder.Builder.Consumer.empty;
 
 public class SQLCompletionAnalyzerTest {
+    private static RequestResult modelDataRequest;
+
+    @Before
+    public void init() throws DBException {
+        if (Platform.isRunning()) {
+            modelDataRequest = RequestBuilder
+                .tables(t -> {
+
+                    t.table("table1", f -> {
+                        f.attribute("attribute-a");
+                        f.attribute("attribute-b");
+                        f.attribute("attribute-c");
+                    });
+                    t.table("table2", f -> {
+                        f.attribute("attribute-a");
+                        f.attribute("attribute-b");
+                        f.attribute("attribute-c");
+                    });
+                    t.table("table3", f -> {
+                        f.attribute("attribute-a");
+                        f.attribute("attribute-b");
+                        f.attribute("attribute-c");
+                    });
+                })
+                .prepare();
+        }
+    }
+    
     @Test
     public void testKeywordCompletion() throws DBException {
         final RequestResult request = RequestBuilder
@@ -421,4 +451,42 @@ public class SQLCompletionAnalyzerTest {
             Assert.assertEquals("Col3", proposals.get(2).getReplacementString());
         }
     }
+    
+    @Test
+    public void testCompleteTablesByAliasePositive() throws DBException {
+        List<SQLCompletionProposalBase> proposals = modelDataRequest
+            .request("SELECT * FROM table1 a, table2 b WHERE |");
+        Assert.assertEquals("a.attribute-a", proposals.get(0).getReplacementString());
+        Assert.assertEquals("a.attribute-b", proposals.get(1).getReplacementString());
+        Assert.assertEquals("a.attribute-c", proposals.get(2).getReplacementString());
+        Assert.assertEquals("b.attribute-a", proposals.get(3).getReplacementString());
+        Assert.assertEquals("b.attribute-b", proposals.get(4).getReplacementString());
+        Assert.assertEquals("b.attribute-c", proposals.get(5).getReplacementString());
+        
+        proposals = modelDataRequest
+            .request("SELECT * FROM table1 a, table2 b WHERE a.|");
+        Assert.assertEquals("a.attribute-a", proposals.get(0).getReplacementString());
+        Assert.assertEquals("a.attribute-b", proposals.get(1).getReplacementString());
+        Assert.assertEquals("a.attribute-c", proposals.get(2).getReplacementString());
+        
+        proposals = modelDataRequest
+            .request("SELECT * FROM table1 a, table2 b WHERE b.|");
+        Assert.assertEquals("b.attribute-a", proposals.get(0).getReplacementString());
+        Assert.assertEquals("b.attribute-b", proposals.get(1).getReplacementString());
+        Assert.assertEquals("b.attribute-c", proposals.get(2).getReplacementString());
+        
+       
+    }
+    
+    @Test
+    public void testCompleteTablesByAliaseNegative() throws DBException {
+        List<SQLCompletionProposalBase> proposals = modelDataRequest
+            .request("SELECT * FROM table1 a, table2 b WHERE unknow.|");
+        Assert.assertTrue(proposals.isEmpty());
+         
+        proposals = modelDataRequest
+            .request("SELECT * FROM table1 a, table2 b  WHERE a.a.|");
+        Assert.assertTrue(proposals.isEmpty());
+    }
+
 }
