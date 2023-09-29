@@ -975,7 +975,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             token = token.substring(0, token.length() - 1);
         }
 
-         final Map<String, String> names = tableRefsAnalyzer.getFilteredTableReferences(token, false);
+        final Map<String, String> names = tableRefsAnalyzer.getFilteredTableReferences(token, false);
         List<DBSObject> objects = new ArrayList<>();
         for (Entry<String, String> name : names.entrySet()) {
             if (name != null && CommonUtils.isNotEmpty(name.getKey())) {
@@ -988,8 +988,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     }
     
     @Nullable
-    private DBSObject getTableFromAlias(DBSObjectContainer sc, @Nullable String token)
-    {
+    private DBSObject getTableFromAlias(DBSObjectContainer sc, @Nullable String token) {
         if (token == null) {
             token = "";
         } else if (token.equals(ALL_COLUMNS_PATTERN)) {
@@ -1284,7 +1283,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 }
             }
         }
-        if (SQLConstants.KEYWORD_WHERE.equals(prevWord)) {
+        if (SQLConstants.KEYWORD_WHERE.equals(prevWord) ||
+            SQLConstants.KEYWORD_AND.equals(prevWord)) {
             String tableName = "";
             if (object instanceof JDBCTableColumn<?>) {
                 aliasMode = SQLTableAliasInsertMode
@@ -1351,7 +1351,9 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             }
         }
 
-        if (!SQLConstants.KEYWORD_WHERE.equals(prevWord) && !CommonUtils.isEmpty(alias)) {
+        if (!SQLConstants.KEYWORD_WHERE.equals(prevWord)
+            && !SQLConstants.KEYWORD_AND.equals(prevWord)
+            && !CommonUtils.isEmpty(alias)) {
             if (aliasMode == SQLTableAliasInsertMode.EXTENDED) {
                 replaceString += " " + convertKeywordCase(request, "as", false);
             }

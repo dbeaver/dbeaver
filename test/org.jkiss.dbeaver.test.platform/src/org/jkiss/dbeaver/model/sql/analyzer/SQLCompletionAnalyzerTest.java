@@ -478,6 +478,21 @@ public class SQLCompletionAnalyzerTest {
         Assert.assertEquals("attribute-a", proposals.get(0).getReplacementString());
         Assert.assertEquals("attribute-b", proposals.get(1).getReplacementString());
         Assert.assertEquals("attribute-c", proposals.get(2).getReplacementString());
+        
+        proposals = modelDataRequest
+            .request("SELECT * FROM table1 a, table2 b WHERE a.attribute-a=1 AND |");
+        Assert.assertEquals("a.attribute-a", proposals.get(0).getReplacementString());
+        Assert.assertEquals("a.attribute-b", proposals.get(1).getReplacementString());
+        Assert.assertEquals("a.attribute-c", proposals.get(2).getReplacementString());
+        Assert.assertEquals("b.attribute-a", proposals.get(3).getReplacementString());
+        Assert.assertEquals("b.attribute-b", proposals.get(4).getReplacementString());
+        Assert.assertEquals("b.attribute-c", proposals.get(5).getReplacementString());
+        
+        proposals = modelDataRequest
+            .request("SELECT * FROM table1 a, table2 b WHERE a.attribute-a=1 AND b.|");
+        Assert.assertEquals("attribute-a", proposals.get(0).getReplacementString());
+        Assert.assertEquals("attribute-b", proposals.get(1).getReplacementString());
+        Assert.assertEquals("attribute-c", proposals.get(2).getReplacementString());
 
     }
 
