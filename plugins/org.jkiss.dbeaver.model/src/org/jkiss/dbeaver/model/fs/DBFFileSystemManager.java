@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.fs;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.fs.event.DBFEventListener;
 import org.jkiss.dbeaver.model.fs.event.DBFEventManager;
@@ -29,7 +28,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.net.URI;
 import java.nio.file.Path;
-import java.nio.file.spi.FileSystemProvider;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -83,7 +81,7 @@ public class DBFFileSystemManager implements DBFEventListener {
     }
 
     @NotNull
-    public Collection<DBFVirtualFileSystem> getDbfFileSystems() {
+    public Collection<DBFVirtualFileSystem> getVirtualFileSystems() {
         return dbfFileSystems.values();
     }
 

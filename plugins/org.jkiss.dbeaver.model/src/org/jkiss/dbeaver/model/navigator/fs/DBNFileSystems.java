@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.fs.DBFFileSystemDescriptor;
 import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
@@ -32,7 +31,6 @@ import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -124,7 +122,7 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
             return new DBNFileSystem[0];
         }
 
-        for (DBFVirtualFileSystem fs : fileSystemManager.getDbfFileSystems()) {
+        for (DBFVirtualFileSystem fs : fileSystemManager.getVirtualFileSystems()) {
             DBNFileSystem newChild = new DBNFileSystem(this, fs);
             result.add(newChild);
         }
