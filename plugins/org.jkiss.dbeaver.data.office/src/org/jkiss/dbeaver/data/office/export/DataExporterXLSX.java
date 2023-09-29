@@ -417,8 +417,8 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         throws DBException, IOException {
 
         Worksheet wsh = getWsh(resultSet, row);
-
-        Row rowX = wsh.getSh().createRow(wsh.getCurrentRow());
+        final SXSSFSheet sh = (SXSSFSheet) wsh.getSh();
+        Row rowX = sh.createRow(wsh.getCurrentRow());
 
         int startCol = 0;
 
@@ -480,6 +480,14 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         }
         wsh.incRow();
         rowCount++;
+        if ((rowCount <= 100 && rowCount % 10 == 0) || rowCount % 100 == 0) {
+            // Let's auto-size columns any 10 rows before 100 and any 100 rows after it
+            sh.trackAllColumnsForAutoSizing();
+            for (int i = 0, columnsSize = row.length; i < columnsSize; i++) {
+                sh.autoSizeColumn(i);
+            }
+            sh.untrackAllColumnsForAutoSizing();
+        }
     }
 
     private CellType getCellType(DBDAttributeBinding column) {
