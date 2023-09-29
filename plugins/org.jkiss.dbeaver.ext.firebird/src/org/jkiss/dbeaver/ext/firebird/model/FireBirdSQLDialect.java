@@ -61,9 +61,21 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     };
 
     private static final String[] FIREBIRD_FUNCTIONS = {
+    	"CEIL",
+    	"CEILING",
+    	"COALESCE",
         "DATEADD",
         "DATEDIFF",
+        "EXTRACT",
         "IIF",
+        "MAXVALUE",
+        "MINVALUE",
+        "NULLIF",
+        "RAND",
+        "REVERSE",
+        "RPAD",
+        "SINH",
+        "TRUNC",
     };
 
     public FireBirdSQLDialect() {
