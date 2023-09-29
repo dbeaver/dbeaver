@@ -29,6 +29,7 @@ Export-Package: org.jkiss.dbeaver.erd.ui,
  org.jkiss.dbeaver.erd.ui.export,
  org.jkiss.dbeaver.erd.ui.figures,
  org.jkiss.dbeaver.erd.ui.model,
+ org.jkiss.dbeaver.erd.ui.notations,
  org.jkiss.dbeaver.erd.ui.part,
  org.jkiss.dbeaver.erd.ui.policy
 Automatic-Module-Name: org.jkiss.dbeaver.erd.ui

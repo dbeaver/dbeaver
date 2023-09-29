@@ -171,7 +171,7 @@ public class NavigatorObjectsDeleter {
                     for (Object obj: selection) {
                         if (obj instanceof DBNDatabaseNode) {
                             dbrMonitor.subTask("Delete database object '" + ((DBNDatabaseNode) obj).getNodeName() + "'");
-                            deleteDatabaseNode((DBNDatabaseNode)obj);
+                            UIUtils.asyncExec(() -> deleteDatabaseNode((DBNDatabaseNode)obj));
                         } else if (obj instanceof DBNNodeWithResource) {
                             dbrMonitor.subTask("Delete resource '" + ((DBNNodeWithResource) obj).getResource().getName() + "'");
                             deleteResource(dbrMonitor, ((DBNNodeWithResource) obj).getResource());
