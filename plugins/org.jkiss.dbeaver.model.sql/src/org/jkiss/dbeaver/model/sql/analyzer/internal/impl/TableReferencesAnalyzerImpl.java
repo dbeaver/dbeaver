@@ -47,14 +47,9 @@ public class TableReferencesAnalyzerImpl implements TableReferencesAnalyzer {
         this.request = request;
     }
 
-    private void prepareTableReferences() {
-        final SQLScriptElement activeQuery = request.getActiveQuery();
-        if (activeQuery == null) {
-            tableReferences = Collections.emptyMap();
-            return;
-        }
+    private void prepareTableReferences(String query) {
         try {
-            STMSource querySource = STMSource.fromReader(new StringReader(activeQuery.getText()));
+            STMSource querySource = STMSource.fromReader(new StringReader(query));
             LSMAnalyzer analyzer = LSMDialectRegistry.getInstance().getAnalyzerForDialect(
                 request.getContext().getDataSource().getSQLDialect());
             STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
@@ -69,8 +64,12 @@ public class TableReferencesAnalyzerImpl implements TableReferencesAnalyzer {
     @Override
     public Map<String, String> getFilteredTableReferences(@NotNull String tableAlias, boolean allowPartialMatch) {
         Map<String, String> result;
-        if (tableReferences == null) {
-            prepareTableReferences();
+        if (tableReferences == null || tableReferences.isEmpty()) {
+            final SQLScriptElement activeQuery = request.getActiveQuery();
+            if (activeQuery == null) {
+                return Collections.emptyMap();
+            }
+            prepareTableReferences(activeQuery.getText());
         }
         if (CommonUtils.isNotEmpty(tableAlias) && tableReferences != null && tableReferences.size() > 0) {
             result = tableReferences.entrySet().stream()
@@ -86,17 +85,12 @@ public class TableReferencesAnalyzerImpl implements TableReferencesAnalyzer {
 
     @Override
     public Map<String, String> getTableAlicesFromQuery(String query) {
-        Map<String, String> table2alias = new TreeMap<>();
         try {
-            STMSource querySource = STMSource.fromReader(new StringReader(query));
-            final LSMAnalyzer analyzer = LSMDialectRegistry.getInstance()
-                .getAnalyzerForDialect(request.getContext().getDataSource().getSQLDialect());
-            STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
-            table2alias = getTableAndAliasFromSources(tree);
+            prepareTableReferences(query);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
-        return table2alias;
+        return tableReferences;
     }
 
     /**
