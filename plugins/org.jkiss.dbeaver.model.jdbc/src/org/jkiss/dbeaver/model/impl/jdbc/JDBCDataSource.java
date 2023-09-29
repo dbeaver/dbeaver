@@ -189,11 +189,13 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 }
                 final String host = connectionInfo.getHostName();
                 final String port = connectionInfo.getHostPort();
+                final String database = connectionInfo.getDatabaseName();
                 authResult = authModel.initAuthentication(monitor, this, credentials, connectionInfo, connectProps);
                 if (!CommonUtils.equalObjects(host, connectionInfo.getHostName()) ||
-                    !CommonUtils.equalObjects(port, connectionInfo.getHostPort())) {
+                    !CommonUtils.equalObjects(port, connectionInfo.getHostPort()) ||
+                    !CommonUtils.equalObjects(database, connectionInfo.getDatabaseName())) {
                     url = getConnectionURL(connectionInfo);
-                    log.debug("Host or port were changed after auth initialization. Connection URL was updated to: " + url);
+                    log.debug("Configuration info was changed after auth initialization. Connection URL was updated to: " + url);
                 }
             } catch (DBException e) {
                 throw new DBCException("Authentication error: " + e.getMessage(), e);
@@ -238,7 +240,6 @@ public abstract class JDBCDataSource extends AbstractDataSource
                     // Use PrivilegedAction in case we have explicit subject
                     // Otherwise just open connection directly
                     PrivilegedExceptionAction<Connection> pa = () -> {
-                        log.debug("Connection final URL: " + urlFinal);
                         if (driverInstanceFinal == null) {
                             return DriverManager.getConnection(urlFinal, connectPropsFinal);
                         } else {
