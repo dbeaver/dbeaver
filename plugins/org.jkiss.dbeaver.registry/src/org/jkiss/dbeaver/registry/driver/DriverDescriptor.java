@@ -52,10 +52,7 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 import org.jkiss.utils.StandardConstants;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -1522,7 +1519,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                         monitor.subTask("Load driver file '" + fileInfo.id + "'");
                         byte[] fileData = fileController.loadFileData(DBFileController.TYPE_DATABASE_DRIVER, fileInfo.getFile().toString());
                         Files.write(localDriverFile, fileData, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
-
+                        fileInfo.setFileCRC(DriverDescriptor.calculateFileCRC(localDriverFile));
                         localFilePaths.add(localDriverFile);
                     } catch (Exception e) {
                         log.error("Error downloading driver file '" + fileInfo.getFile() + "'", e);
@@ -1539,18 +1536,31 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     public static long calculateFileCRC(Path localDriverFile) {
         try (InputStream is = Files.newInputStream(localDriverFile)) {
-            CRC32 crc = new CRC32();
-
-            byte[] buffer = new byte[65536];
-            int bytesRead;
-            while ((bytesRead = is.read(buffer)) != -1) {
-                crc.update(buffer, 0, bytesRead);
-            }
-            return crc.getValue();
+            return calculateCRC(is);
         } catch (IOException e) {
             log.error("Error reading file '" + localDriverFile + "', CRC calculation failed", e);
             return 0;
         }
+    }
+
+    public static long calculateBytesCRC(byte[] bytes) {
+        try (InputStream is = new ByteArrayInputStream(bytes)) {
+            return calculateCRC(is);
+        } catch (IOException e) {
+            log.error("CRC calculation failed from bytes", e);
+            return 0;
+        }
+    }
+
+    private static long calculateCRC(InputStream is) throws IOException {
+        CRC32 crc = new CRC32();
+
+        byte[] buffer = new byte[65536];
+        int bytesRead;
+        while ((bytesRead = is.read(buffer)) != -1) {
+            crc.update(buffer, 0, bytesRead);
+        }
+        return crc.getValue();
     }
 
     Path getWorkspaceStorageFolder() {
@@ -1742,14 +1752,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
                 if (Files.isDirectory(srcLocalFile)) {
                     Path targetFolder = targetFileLocation.resolve(targetPath);
-                    if (!Files.exists(targetFolder)) {
-                        try {
-                            Files.createDirectories(targetFolder);
-                        } catch (IOException e) {
-                            log.error("Error creating driver target directory '" + targetFolder + "'", e);
-                            return false;
-                        }
-                    }
 
                     try {
                         resolveDirectories(targetFileLocation, library, srcLocalFile, targetFolder, libraryFiles);
@@ -1758,14 +1760,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     }
                 } else {
                     Path trgLocalFile = targetFileLocation.resolve(targetPath);
-                    Path trgFolder = trgLocalFile.getParent();
-                    if (!Files.exists(trgFolder)) {
-                        try {
-                            Files.createDirectories(trgFolder);
-                        } catch (IOException e) {
-                            log.error("Error creating driver file directory '" + trgFolder + "'", e);
-                        }
-                    }
                     DriverFileInfo fileInfo = resolveFile(targetFileLocation, library, srcLocalFile, trgLocalFile);
                     if (fileInfo != null) {
                         libraryFiles.add(fileInfo);
@@ -1793,14 +1787,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     private void resolveDirectories(Path targetFileLocation, DBPDriverLibrary library, Path srcLocalFile, Path trgLocalFile, List<DriverFileInfo> libraryFiles) throws IOException {
-        if (!Files.exists(trgLocalFile)) {
-            try {
-                Files.createDirectories(trgLocalFile);
-            } catch (IOException e) {
-                log.error("Error creating driver library target directory '" + trgLocalFile + "'", e);
-                return;
-            }
-        }
         // Resolve directory contents
         List<Path> srcDirFiles = Files.list(srcLocalFile).collect(Collectors.toList());
         for (Path dirFile : srcDirFiles) {
@@ -1825,16 +1811,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         Path relPath = targetFileLocation.relativize(trgLocalFile);
         DriverFileInfo info = new DriverFileInfo(trgLocalFile.getFileName().toString(), null, library.getType(), relPath);
         info.fileCRC = calculateFileCRC(srcLocalFile);
-        long targetCRC = Files.exists(trgLocalFile) ? calculateFileCRC(trgLocalFile) : 0;
-        if (info.fileCRC != targetCRC) {
-            // Copy file
-            try {
-                Files.copy(srcLocalFile, trgLocalFile, StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
-                log.error("Error copying library file '" + srcLocalFile + "' into '" + trgLocalFile + "'", e);
-                return null;
-            }
-        }
         return info;
     }
 
