@@ -8,6 +8,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic;visibility:=reexport,
  com.google.guava;resolution:=optional,
+ com.google.gson,
  org.jkiss.bundle.antlr4
 Export-Package: org.jkiss.dbeaver.ext.clickhouse,
  org.jkiss.dbeaver.ext.clickhouse.model

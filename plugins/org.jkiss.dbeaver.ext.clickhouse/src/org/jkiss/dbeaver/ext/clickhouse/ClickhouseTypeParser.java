@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.clickhouse;
 
+import com.google.gson.Gson;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.jkiss.code.NotNull;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseMapType;
 import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseTupleType;
 import org.jkiss.dbeaver.ext.clickhouse.model.data.ClickhouseTupleValue;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -39,12 +41,15 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
+import java.io.StringReader;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ClickhouseTypeParser {
     private static final Log log = Log.getLog(ClickhouseTypeParser.class);
+
+    private static final Gson gson = new Gson();
 
     private ClickhouseTypeParser() {
         // prevents instantiation
@@ -89,6 +94,9 @@ public class ClickhouseTypeParser {
             final Object[] values;
             if (object instanceof Map) {
                 values = ((Map<?, ?>) object).entrySet().stream()
+                    .flatMap(e -> Stream.of(e.getKey(), e.getValue())).toArray();
+            } else if (object instanceof String) { 
+                values = JSONUtils.parseMap(gson, new StringReader((String) object)).entrySet().stream()
                     .flatMap(e -> Stream.of(e.getKey(), e.getValue())).toArray();
             } else {
                 values = ((Collection<?>) object).toArray();
