@@ -22,28 +22,28 @@ import java.util.List;
 /**
  * NIOContainer
  */
-public abstract class NIOMonitor {
+public abstract class EFSNIOMonitor {
 
-    private final static List<NIOListener> listeners = new ArrayList<>();
+    private final static List<EFSNIOListener> listeners = new ArrayList<>();
 
-    public static void addListener(NIOListener listener) {
+    public static void addListener(EFSNIOListener listener) {
         synchronized (listeners) {
             listeners.add(listener);
         }
     }
 
-    public static boolean removeListener(NIOListener listener) {
+    public static boolean removeListener(EFSNIOListener listener) {
         synchronized (listeners) {
             return listeners.remove(listener);
         }
     }
 
-    public static void notifyResourceChange(NIOResource resource, NIOListener.Action action) {
-        NIOListener[] lc;
+    public static void notifyResourceChange(EFSNIOResource resource, EFSNIOListener.Action action) {
+        EFSNIOListener[] lc;
         synchronized (listeners) {
-            lc = listeners.toArray(new NIOListener[0]);
+            lc = listeners.toArray(new EFSNIOListener[0]);
         }
-        for (NIOListener listener : lc) {
+        for (EFSNIOListener listener : lc) {
             listener.resourceChanged(resource, action);
         }
     }

@@ -247,9 +247,6 @@ public class CoreMessages extends NLS {
 	public static String dialog_scripts_import_wizard_title;
 	public static String dialog_scripts_import_wizard_window_title;
 
-	public static String dialog_tunnel_checkbox_use_handler;
-	public static String dialog_tunnel_title;
-
 	public static String dialog_version_update_available_new_version;
 	public static String dialog_version_update_ignore_version;
 	public static String dialog_version_update_button_more_info;
@@ -520,24 +517,6 @@ public class CoreMessages extends NLS {
 
 
 	public static String pref_page_connection_label_default_settings;
-
-	public static String pref_page_network_profiles_tool_create_title;
-	public static String pref_page_network_profiles_tool_create_text;
-	public static String pref_page_network_profiles_tool_create_dialog_profile_name;
-	public static String pref_page_network_profiles_tool_create_dialog_error_title;
-	public static String pref_page_network_profiles_tool_create_dialog_error_info;
-	public static String pref_page_network_profiles_tool_delete_title;
-	public static String pref_page_network_profiles_tool_delete_text;
-    public static String pref_page_network_profiles_tool_copy_title;
-    public static String pref_page_network_profiles_tool_copy_text;
-	public static String pref_page_network_profiles_tool_delete_dialog_error_title;
-	public static String pref_page_network_profiles_tool_delete_dialog_error_info;
-	public static String pref_page_network_profiles_tool_delete_confirmation_title;
-	public static String pref_page_network_profiles_tool_delete_confirmation_question;
-	public static String pref_page_network_profiles_tool_no_profile_error_title;
-	public static String pref_page_network_profiles_tool_no_profile_error_info;
-	public static String pref_page_network_profiles_tool_no_profile_error_information;
-
 
 	public static String transaction_info_dialog_checkbox_show_all_queries;
 
