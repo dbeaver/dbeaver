@@ -73,7 +73,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     protected OSDescriptor localSystem;
 
     private DBNModel navigatorModel;
-    private final DBFFileSystemManager fileSystemManager = new DBFFileSystemManager();
+    private DBFFileSystemManager fileSystemManager;
     private final List<IPluginService> activatedServices = new ArrayList<>();
     private DBFileController localFileController;
     private DBTTaskController localTaskController;
@@ -93,7 +93,8 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
             }
         });
 
-        this.fileSystemManager.reloadFileSystems(new LoggingProgressMonitor(),getWorkspace().getAuthContext());
+        this.fileSystemManager = new DBFFileSystemManager(getWorkspace().getAuthContext());
+        this.fileSystemManager.reloadFileSystems(new LoggingProgressMonitor());
         // Navigator model
         this.navigatorModel = new DBNModel(this, null);
         this.navigatorModel.setModelAuthContext(getWorkspace().getAuthContext());

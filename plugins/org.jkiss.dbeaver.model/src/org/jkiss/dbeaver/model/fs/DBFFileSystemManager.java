@@ -35,9 +35,15 @@ public class DBFFileSystemManager {
     private static final Log log = Log.getLog(DBFFileSystemManager.class);
     private final Map<String, FileSystemProvider> nioFileSystems = new LinkedHashMap<>();
     private final Map<String, DBFVirtualFileSystem> dbfFileSystems = new LinkedHashMap<>();
+    @NotNull
+    private final SMSessionContext sessionContext;
+
+    public DBFFileSystemManager(@NotNull SMSessionContext sessionContext) {
+        this.sessionContext = sessionContext;
+    }
 
 
-    public synchronized void reloadFileSystems(@NotNull DBRProgressMonitor monitor, @NotNull SMSessionContext sessionContext) {
+    public synchronized void reloadFileSystems(@NotNull DBRProgressMonitor monitor) {
         clear();
         var fsRegistry = DBWorkbench.getPlatform().getFileSystemRegistry();
         for (DBFFileSystemDescriptor fileSystemProviderDescriptor : fsRegistry.getFileSystemProviders()) {
@@ -62,8 +68,17 @@ public class DBFFileSystemManager {
         dbfFileSystems.clear();
     }
 
+    @NotNull
     public Path of(URI uri) throws DBException {
-        String fsId = uri.getScheme();
+        String fsType = uri.getScheme();
+        String fsId = uri.getHost();
+
+//        "s3://config/{something}"
+//        "gcp://config/{something}/{2}/{3}"
+//        "rm://project_id/"
+//        "rm://project_id/root/Scripts/folder/script.sql"
+
+        dbfFileSystems.get(fsId).of(uri);
         if (CommonUtils.isEmpty(fsId)) {
             throw new DBException("File system id not present in file uri: " + uri);
         }
@@ -71,13 +86,20 @@ public class DBFFileSystemManager {
         if (fs == null) {
             throw new DBException("File system not found" + fsId);
         }
-        return fs.getPath(uri);
+
+        try {
+            return fs.getPath(uri);
+        } catch (Throwable e) {
+            throw new DBException(String.format("Failed to get path from uri[%s]: %s", uri, e.getMessage()), e);
+        }
     }
 
+    @NotNull
     public Collection<DBFVirtualFileSystem> getDbfFileSystems() {
         return dbfFileSystems.values();
     }
 
+    @NotNull
     public Collection<FileSystemProvider> getNioFileSystems() {
         return nioFileSystems.values();
     }
