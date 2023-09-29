@@ -20,7 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.fs.event.DBFEventListener;
+import org.jkiss.dbeaver.model.fs.event.DBFEventManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -31,15 +34,14 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class DBFFileSystemManager {
-    private static final Log log = Log.getLog(DBFFileSystemManager.class);
-    private final Map<String, FileSystemProvider> nioFileSystems = new LinkedHashMap<>();
+public class DBFFileSystemManager implements DBFEventListener {
     private final Map<String, DBFVirtualFileSystem> dbfFileSystems = new LinkedHashMap<>();
     @NotNull
     private final SMSessionContext sessionContext;
 
     public DBFFileSystemManager(@NotNull SMSessionContext sessionContext) {
         this.sessionContext = sessionContext;
+        DBFEventManager.getInstance().addListener(this);
     }
 
 
@@ -48,15 +50,6 @@ public class DBFFileSystemManager {
         var fsRegistry = DBWorkbench.getPlatform().getFileSystemRegistry();
         for (DBFFileSystemDescriptor fileSystemProviderDescriptor : fsRegistry.getFileSystemProviders()) {
             var fsProvider = fileSystemProviderDescriptor.getInstance();
-            try {
-                FileSystemProvider nioFileSystem = fsProvider.createNioFileSystemProvider(monitor, sessionContext);
-                if (nioFileSystem == null) {
-                    continue;
-                }
-                nioFileSystems.put(nioFileSystem.getScheme(), nioFileSystem);
-            } catch (DBException e) {
-                log.error("Failed to create nio fs: " + e.getMessage(), e);
-            }
             for (DBFVirtualFileSystem dbfFileSystem : fsProvider.getAvailableFileSystems(monitor, sessionContext)) {
                 dbfFileSystems.put(dbfFileSystem.getId(), dbfFileSystem);
             }
@@ -64,31 +57,26 @@ public class DBFFileSystemManager {
     }
 
     public synchronized void clear() {
-        nioFileSystems.clear();
         dbfFileSystems.clear();
     }
 
     @NotNull
-    public Path of(URI uri) throws DBException {
+    public Path of(DBRProgressMonitor monitor, URI uri) throws DBException {
         String fsType = uri.getScheme();
-        String fsId = uri.getHost();
-
-//        "s3://config/{something}"
-//        "gcp://config/{something}/{2}/{3}"
-//        "rm://project_id/"
-//        "rm://project_id/root/Scripts/folder/script.sql"
-
-        dbfFileSystems.get(fsId).of(uri);
+        if (CommonUtils.isEmpty(fsType)) {
+            throw new DBException("File system type not present in the file uri: " + uri);
+        }
+        String fsId = uri.getAuthority();
         if (CommonUtils.isEmpty(fsId)) {
-            throw new DBException("File system id not present in file uri: " + uri);
+            throw new DBException("File system id not present in the file uri: " + uri);
         }
-        FileSystemProvider fs = nioFileSystems.get(fsId);
-        if (fs == null) {
-            throw new DBException("File system not found" + fsId);
-        }
+        DBFVirtualFileSystem fileSystem = dbfFileSystems.values().stream()
+            .filter(fs -> fs.getType().equals(fsType) && fs.getId().equals(fsId))
+            .findFirst()
+            .orElseThrow(() -> new DBException("Cannot find file system provider for the uri:" + uri));
 
         try {
-            return fs.getPath(uri);
+            return fileSystem.of(monitor, uri);
         } catch (Throwable e) {
             throw new DBException(String.format("Failed to get path from uri[%s]: %s", uri, e.getMessage()), e);
         }
@@ -99,8 +87,13 @@ public class DBFFileSystemManager {
         return dbfFileSystems.values();
     }
 
-    @NotNull
-    public Collection<FileSystemProvider> getNioFileSystems() {
-        return nioFileSystems.values();
+    @Override
+    public void handleFSEvent() {
+        reloadFileSystems(new LoggingProgressMonitor());
+    }
+
+   public void close() {
+        clear();
+        DBFEventManager.getInstance().removeListener(this);
     }
 }
