@@ -270,7 +270,7 @@ public class DatabaseTransferUtils {
      * @param skipCaseChanging true if we do not want to change name case
      * @return transformed target name (container or attribute)
      */
-    @Nullable
+    @NotNull
     public static String getTransformedName(@NotNull DBPDataSource dataSource, @NotNull String targetName, boolean skipCaseChanging) {
         String finalName = targetName;
         DBPPreferenceStore dbpPreferenceStore = dataSource.getContainer().getPreferenceStore();
@@ -295,7 +295,11 @@ public class DatabaseTransferUtils {
                 }
             }
         }
-        return finalName;
+        if (CommonUtils.isNotEmpty(finalName)) {
+            return DBUtils.getQuotedIdentifier(dataSource, finalName);
+        }
+        log.debug("Can't transform target attribute name");
+        return targetName;
     }
 
     private static void getTableFullName(@Nullable DBSObjectContainer schema, @NotNull DBPDataSource dataSource, @NotNull StringBuilder sql, @NotNull String tableName) {

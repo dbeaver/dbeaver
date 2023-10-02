@@ -22,7 +22,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
+import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 
 public class StreamDataImporterColumnInfo extends AbstractAttribute implements DBSEntityAttribute {
 
@@ -39,9 +42,26 @@ public class StreamDataImporterColumnInfo extends AbstractAttribute implements D
         this.dataKind = dataKind;
     }
 
-    public void updateMaxLength(long maxLength) {
-        if (getMaxLength() < maxLength) {
-            setMaxLength(roundToNextPowerOf2(maxLength));
+    public void updateMaxLength(@Nullable DBPDataSource dataSource, long maxLengthFromData) {
+        long maxLength = getMaxLength();
+        DBPPreferenceStore globalPreferenceStore = DTActivator.getDefault().getPreferences();
+        if (dataSource != null) {
+            // First check data source settings for max data type length
+            DBPPreferenceStore dataSourcePreferenceStore = dataSource.getContainer().getPreferenceStore();
+            if (dataSourcePreferenceStore.contains(DTConstants.PREF_MAX_TYPE_LENGTH) &&
+                maxLength > dataSourcePreferenceStore.getInt(DTConstants.PREF_MAX_TYPE_LENGTH)
+            ) {
+                setMaxLength(dataSourcePreferenceStore.getInt(DTConstants.PREF_MAX_TYPE_LENGTH));
+                return;
+            }
+        }
+        if (globalPreferenceStore.contains(DTConstants.PREF_MAX_TYPE_LENGTH) &&
+            maxLength > globalPreferenceStore.getInt(DTConstants.PREF_MAX_TYPE_LENGTH)
+        ) {
+            // Also change if global settings have max data type value
+            setMaxLength(globalPreferenceStore.getInt(DTConstants.PREF_MAX_TYPE_LENGTH));
+        } else if (maxLength < maxLengthFromData) {
+            setMaxLength(roundToNextPowerOf2(maxLengthFromData));
         }
     }
 

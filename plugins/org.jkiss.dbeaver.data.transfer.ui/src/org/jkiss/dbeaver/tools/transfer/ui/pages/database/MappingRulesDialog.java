@@ -23,9 +23,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -46,6 +48,8 @@ import java.util.Collection;
 import java.util.List;
 
 public class MappingRulesDialog extends BaseDialog {
+
+    private static final Log log = Log.getLog(MappingRulesDialog.class);
 
     private final DBPDataSource dataSource;
     private final List<Object> elementList;
@@ -193,7 +197,7 @@ public class MappingRulesDialog extends BaseDialog {
                     }
                     DBSAttributeBase source = mapping.getSource();
                     mapping.setTargetName(getTransformedName(
-                        source != null ? source.getName() : mapping.getTargetName()));
+                        source != null ? source.getName() : mapping.getTargetName(), changeNameCase));
                     if (changeDataTypeLength && source instanceof DBSTypedObjectExt2) {
                         int maxDataTypeLength = typeLengthSpinner.getSelection();
                         if (source.getMaxLength() > maxDataTypeLength) {
@@ -202,7 +206,7 @@ public class MappingRulesDialog extends BaseDialog {
                     }
                 }
                 if (mappingType == DatabaseMappingType.create && (changeNameCase || changeReplaceMechanism)) {
-                    container.setTargetName(getTransformedName(getOriginalTargetName(container)));
+                    container.setTargetName(getTransformedName(getOriginalTargetName(container), changeNameCase));
                 }
             }
         }
@@ -238,15 +242,15 @@ public class MappingRulesDialog extends BaseDialog {
     }
 
     @Nullable
-    private String getTransformedName(String targetName) {
+    private String getTransformedName(@Nullable String targetName, boolean caseChanged) {
         if (CommonUtils.isEmpty(targetName)) {
             return targetName;
         }
-        String finalName;
+        String finalName = targetName;
         MappingNameCase nameCase = MappingNameCase.getCaseBySelectionId(nameCaseCombo.getSelectionIndex());
         if (nameCase != MappingNameCase.DEFAULT) {
             finalName = nameCase.getIdentifierCase().transform(targetName);
-        } else {
+        } else if (caseChanged) {
             finalName = dataSource.getSQLDialect().storesUnquotedCase().transform(targetName);
         }
         if (CommonUtils.isNotEmpty(finalName) && finalName.contains(" ")) {
@@ -264,7 +268,11 @@ public class MappingRulesDialog extends BaseDialog {
                 }
             }
         }
-        return finalName;
+        if (CommonUtils.isNotEmpty(finalName)) {
+            return DBUtils.getQuotedIdentifier(dataSource, finalName);
+        }
+        log.debug("Can't transform target attribute name");
+        return targetName;
     }
 
     // Remove extensions from the file name if source is file

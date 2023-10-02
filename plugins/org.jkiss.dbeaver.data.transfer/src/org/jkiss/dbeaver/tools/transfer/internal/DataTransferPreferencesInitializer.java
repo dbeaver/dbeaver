@@ -32,7 +32,7 @@ public class DataTransferPreferencesInitializer extends AbstractPreferenceInitia
         final DBPPreferenceStore store = new BundlePreferenceStore(DTActivator.getDefault().getBundle());
         PrefUtils.setDefaultPreferenceValue(store, DTConstants.PREF_NAME_CASE_MAPPING, 0);
         PrefUtils.setDefaultPreferenceValue(store, DTConstants.PREF_REPLACE_MAPPING, 0);
-        PrefUtils.setDefaultPreferenceValue(store, DTConstants.PREF_MAX_TYPE_LENGTH, 2048);
+        PrefUtils.setDefaultPreferenceValue(store, DTConstants.PREF_MAX_TYPE_LENGTH, 32767);
         PrefUtils.setDefaultPreferenceValue(store, DTConstants.PREF_SAVE_LOCAL_SETTINGS, true);
     }
 }

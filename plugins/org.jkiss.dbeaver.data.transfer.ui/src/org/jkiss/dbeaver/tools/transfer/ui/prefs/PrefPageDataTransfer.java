@@ -36,7 +36,7 @@ import org.jkiss.utils.CommonUtils;
 
 public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPreferencePage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.datatransfer";
-    private static final int DEFAULT_MAX_TYPE_LENGTH = 2048;
+    private static final int DEFAULT_MAX_TYPE_LENGTH = 32767; // Max Oracle VARCHAR data type length
 
     private Button reconnectToLastDatabaseButton;
     private Text fallbackOutputDirectoryText;
