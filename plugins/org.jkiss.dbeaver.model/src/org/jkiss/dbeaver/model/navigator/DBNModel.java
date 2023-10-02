@@ -401,8 +401,9 @@ public class DBNModel implements IResourceChangeListener {
     private DBNNode findNodeByPath(DBRProgressMonitor monitor, NodePath nodePath, DBNNode curNode, int firstItem) throws DBException {
         //log.debug("findNodeByPath '" + nodePath + "' in '" + curNode.getNodeItemPath() + "'/" + firstItem);
 
-        for (int i = firstItem, itemsSize = nodePath.pathItems.size(); i < itemsSize; i++) {
-            String item = nodePath.pathItems.get(i).replace(SLASH_ESCAPE_TOKEN, "/");
+        final List<String> pathItems = nodePath.pathItems;
+        for (int i = firstItem, itemsSize = pathItems.size(); i < itemsSize; i++) {
+            String item = pathItems.get(i).replace(SLASH_ESCAPE_TOKEN, "/");
 
             DBNNode[] children = curNode.getChildren(monitor);
             DBNNode nextChild = null;
@@ -438,7 +439,7 @@ public class DBNModel implements IResourceChangeListener {
                 return null;
             }
         }
-        if (!nodeMatchesPath(nodePath, curNode, nodePath.pathItems.get(nodePath.pathItems.size() - 1))) {
+        if (!pathItems.isEmpty() && !nodeMatchesPath(nodePath, curNode, pathItems.get(pathItems.size() - 1))) {
             // Tail node doesn't match tail node from the desired path
             return null;
         }
