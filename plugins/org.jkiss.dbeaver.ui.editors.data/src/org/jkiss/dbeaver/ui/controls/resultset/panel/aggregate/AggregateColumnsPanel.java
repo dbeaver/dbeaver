@@ -251,8 +251,10 @@ public class AggregateColumnsPanel implements IResultSetPanel {
             for (Object element : selection.toList()) {
                 DBDAttributeBinding attr = selection.getElementAttribute(element);
                 ResultSetRow row = selection.getElementRow(element);
-                Object cellValue = model.getCellValue(attr, row);
-                allValues.add(cellValue);
+                if (row != null) {
+                    Object cellValue = model.getCellValue(attr, row);
+                    allValues.add(cellValue);
+                }
             }
             aggregateValues(null, allValues);
         }
