@@ -82,13 +82,12 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
     // Constructors
     // -----------------------
 
-    public DB2Trigger(DBRProgressMonitor monitor, DB2Schema schema, DB2Table table, ResultSet dbResult)
-    {
+    public DB2Trigger(@NotNull DB2Schema schema, @NotNull DB2Table table, @NotNull ResultSet dbResult) {
         super(schema, JDBCUtils.safeGetString(dbResult, "TRIGNAME"), true);
 
         this.table = table;
 
-        DB2DataSource db2DataSource = table.getDataSource();
+        DB2DataSource db2DataSource = schema.getDataSource();
 
         this.owner = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER);
         this.time = CommonUtils.valueOf(DB2TriggerTime.class, JDBCUtils.safeGetString(dbResult, "TRIGTIME"));
@@ -121,8 +120,7 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
         }
     }
 
-    public DB2Trigger(DB2Schema schema, DB2Table table, String name)
-    {
+    public DB2Trigger(@NotNull DB2Schema schema, @NotNull String name) {
         super(schema, name, false);
 
         this.ownerType = DB2OwnerType.U;
