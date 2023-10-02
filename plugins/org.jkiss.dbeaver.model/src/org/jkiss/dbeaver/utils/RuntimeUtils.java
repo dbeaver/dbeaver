@@ -16,8 +16,12 @@
  */
 package org.jkiss.dbeaver.utils;
 
+import org.eclipse.core.internal.runtime.Activator;
+import org.eclipse.core.internal.runtime.CommonMessages;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.osgi.service.localization.BundleLocalization;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -30,8 +34,10 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
+import org.osgi.framework.Bundle;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -504,6 +510,29 @@ public final class RuntimeUtils {
             }
         }
         return workingDirectory;
+    }
+
+    // Extraction from Eclipse source to support old and new API versions
+    // Activator.getLocalization became static after 2023-09
+    public static ResourceBundle getBundleLocalization(Bundle bundle, String locale) throws MissingResourceException {
+        Activator activator = Activator.getDefault();
+        if (activator == null) {
+            throw new MissingResourceException(CommonMessages.activator_resourceBundleNotStarted,
+                bundle.getSymbolicName(), ""); //$NON-NLS-1$
+        }
+        ServiceCaller<BundleLocalization> localizationTracker;
+        try {
+            localizationTracker = BeanUtils.getFieldValue(activator, "localizationTracker");
+        } catch (Throwable e) {
+            throw new MissingResourceException(NLS.bind(CommonMessages.activator_resourceBundleNotFound, locale), bundle.getSymbolicName(), e.getMessage());
+        }
+        BundleLocalization location = localizationTracker.current().orElse(null);
+        ResourceBundle result = null;
+        if (location != null)
+            result = location.getLocalization(bundle, locale);
+        if (result == null)
+            throw new MissingResourceException(NLS.bind(CommonMessages.activator_resourceBundleNotFound, locale), bundle.getSymbolicName(), ""); //$NON-NLS-1$
+        return result;
     }
 
     private enum CommandLineState {

@@ -16,9 +16,11 @@
  */
 package org.jkiss.dbeaver.model.fs.nio;
 
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.jkiss.dbeaver.model.fs.DBFFileStoreProvider;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -38,18 +40,18 @@ import java.util.Map;
 /**
  * NIOResource
  */
-public abstract class NIOResource extends PlatformObject implements IResource, IResourceProxy {
+public abstract class EFSNIOResource extends PlatformObject implements DBFFileStoreProvider, IResource, IResourceProxy {
     public static final QualifiedName NIO_RESOURCE_PROPERTY_NAME = new QualifiedName("org.jkiss.dbeaver.resources", "nioPath"); //$NON-NLS-1$ //$NON-NLS-2$
 
-    private final NIOFileSystemRoot root;
+    private final EFSNIOFileSystemRoot root;
     private final Path nioPath;
 
-    protected NIOResource(NIOFileSystemRoot root, Path nioPath) {
+    protected EFSNIOResource(EFSNIOFileSystemRoot root, Path nioPath) {
         this.root = root;
         this.nioPath = nioPath;
     }
 
-    public NIOFileSystemRoot getRoot() {
+    public EFSNIOFileSystemRoot getRoot() {
         return root;
     }
 
@@ -72,7 +74,7 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
     public void accept(final IResourceProxyVisitor visitor, int depth, int memberFlags) throws CoreException {
         accept(new IResourceVisitor() {
             public boolean visit(IResource resource) throws CoreException {
-                return visitor.visit((NIOResource) resource);
+                return visitor.visit((EFSNIOResource) resource);
             }
         }, depth, 0);
     }
@@ -158,7 +160,7 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
         try {
             Files.delete(getNioPath());
 
-            NIOMonitor.notifyResourceChange(this, NIOListener.Action.DELETE);
+            EFSNIOMonitor.notifyResourceChange(this, EFSNIOListener.Action.DELETE);
         } catch (IOException e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
@@ -180,10 +182,10 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof NIOResource)) {
+        if (!(obj instanceof EFSNIOResource)) {
             return false;
         }
-        NIOResource other = (NIOResource) obj;
+        EFSNIOResource other = (EFSNIOResource) obj;
         return nioPath.equals(other.nioPath);
     }
 
@@ -261,7 +263,7 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
             //
             return getProject();
         }
-        return new NIOFolder(root, parentPath);
+        return new EFSNIOFolder(root, parentPath);
     }
 
     public Map<QualifiedName, String> getPersistentProperties() throws CoreException {
@@ -478,4 +480,8 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
         return fileName.toString();
     }
 
+    @Override
+    public IFileStore getFileStore() {
+        return new EFSNIOFileStore(getLocationURI(), getNioPath());
+    }
 }

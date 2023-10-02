@@ -14,18 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.gpt3;
+package org.jkiss.dbeaver.model.fs.nio;
 
 /**
- * GPT preference constants
+ * NIOListener
  */
-public class GPTConstants {
+public interface EFSNIOListener {
 
-    public static final String OPENAI_ENGINE = "openai";
+    enum Action {
+        CREATE,
+        DELETE,
+        MOVE,
+        CHANGE
+    }
 
-    public static final String GPT_API_TOKEN = "gpt.token";
-    public static final String GPT_MODEL = "gpt.model";
-    public static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
-    public static final String GPT_LOG_QUERY = "gpt.log.query";
+    void resourceChanged(EFSNIOResource resource, Action action);
+
 }
-

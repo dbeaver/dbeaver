@@ -19,12 +19,14 @@ package org.jkiss.dbeaver.model.fs.nio;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.filesystem.provider.FileSystem;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystem;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystemRoot;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -39,13 +41,13 @@ import java.nio.file.Path;
  * URI format:  dbvfs://project-name/fs-type/fs-id/root-id
  *
  */
-public class NIOFileSystem extends FileSystem {
+public class EFSNIOFileSystem extends FileSystem {
 
     public static final String DBVFS_FS_ID = "dbvfs";
 
-    private static final Log log = Log.getLog(NIOFileSystem.class);
+    private static final Log log = Log.getLog(EFSNIOFileSystem.class);
 
-    public NIOFileSystem() {
+    public EFSNIOFileSystem() {
     }
 
     @Override
@@ -67,18 +69,26 @@ public class NIOFileSystem extends FileSystem {
                 if (projectNode != null) {
                     DBNFileSystems fileSystemsNode = projectNode.getExtraNode(DBNFileSystems.class);
                     if (fileSystemsNode != null) {
-                        DBNFileSystem fsNode = fileSystemsNode.getFileSystem(fsType, fsId);
-                        if (fsNode != null) {
-                            DBNFileSystemRoot fsNodeRoot = fsNode.getRoot(fsRootPath);
-                            if (fsNodeRoot != null) {
-                                try {
-                                    relPath = CommonUtils.removeLeadingSlash(relPath);
-                                    relPath = URLDecoder.decode(relPath, StandardCharsets.UTF_8);
-                                    path = fsNodeRoot.getPath().resolve(relPath);
-                                } catch (Exception e) {
-                                    log.debug("Error resolving path", e);
+                        try {
+                            fileSystemsNode.getChildren(new VoidProgressMonitor());
+                            DBNFileSystem fsNode = fileSystemsNode.getFileSystem(fsType, fsId);
+                            if (fsNode != null) {
+                                fsNode.getChildren(new VoidProgressMonitor());
+                                DBNFileSystemRoot fsNodeRoot = fsNode.getRoot(fsRootPath);
+                                if (fsNodeRoot != null) {
+                                    try {
+                                        relPath = CommonUtils.removeLeadingSlash(relPath);
+                                        relPath = URLDecoder.decode(relPath, StandardCharsets.UTF_8);
+                                        path = fsNodeRoot.getPath().resolve(relPath);
+                                    } catch (Exception e) {
+                                        log.debug("Error resolving path", e);
+                                    }
                                 }
+                            } else {
+                                log.debug("File system '" + fsType + ":" + fsId + "' not found");
                             }
+                        } catch (DBException e) {
+                            log.debug("Error reading file systems", e);
                         }
                     }
                 }
@@ -89,7 +99,7 @@ public class NIOFileSystem extends FileSystem {
             log.debug("Invalid " + DBVFS_FS_ID + " URI: " + uri);
             return EFS.getNullFileSystem().getStore(uri);
         }
-        return new NIOFileStore(uri, path);
+        return new EFSNIOFileStore(uri, path);
     }
 
 }

@@ -337,7 +337,9 @@
             label="MySQL data types provider">
 
             <datasource id="mysql"/>
-
+            <type name="FLOAT"/>
+            <type name="DOUBLE"/>
+            <type name="DOUBLE PRECISION"/>
             <type name="ENUM"/>
             <type name="SET"/>
             <type standard="DATE"/>
@@ -480,7 +482,6 @@
         </task>
         <task id="mysqlScriptExecute" name="%task.mysqlScriptExecute.name" description="%task.mysqlScriptExecute.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler">
             <datasource id="mysql"/>
-            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
         </task>
 

@@ -14,20 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.fs.nio;
+package org.jkiss.dbeaver.model.ai.openai.service;
 
-/**
- * NIOListener
- */
-public interface NIOListener {
+import com.theokanning.openai.OpenAiApi;
+import com.theokanning.openai.service.OpenAiService;
 
-    enum Action {
-        CREATE,
-        DELETE,
-        MOVE,
-        CHANGE
+import java.time.Duration;
+
+public class AdaptedOpenAiService extends OpenAiService implements GPTCompletionAdapter {
+    public AdaptedOpenAiService(String token) {
+        super(token);
     }
 
-    void resourceChanged(NIOResource resource, Action action);
+    public AdaptedOpenAiService(String token, Duration timeout) {
+        super(token, timeout);
+    }
 
 }
