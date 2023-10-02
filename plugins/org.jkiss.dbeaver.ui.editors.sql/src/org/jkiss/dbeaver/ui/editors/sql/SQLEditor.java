@@ -3475,7 +3475,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         private volatile SQLQueryJob curJob;
         private AtomicInteger curJobRunning = new AtomicInteger(0);
-        private final List<QueryResultsContainer> resultContainers = new ArrayList<>();
+        protected final List<QueryResultsContainer> resultContainers = new ArrayList<>();
         private volatile DBDDataReceiver curDataReceiver = null;
 
         QueryProcessor(boolean makeDefault) {
@@ -3762,13 +3762,6 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public void releaseDataReceiver(int resultSetNumber) {
-            if (resultContainers.size() > resultSetNumber) {
-                resultContainers.get(resultSetNumber).dispose();
-            }
-        }
-
-        @Override
         public boolean isSmartAutoCommit() {
             return SQLEditor.this.isSmartAutoCommit();
         }
@@ -3799,6 +3792,13 @@ public class SQLEditor extends SQLEditorBase implements
             @NotNull DBSDataContainer dataContainer
         ) {
             return new MultiTabsQueryResultsContainer(this, resultSetNumber, resultSetIndex, dataContainer);
+        }
+
+        @Override
+        public void releaseDataReceiver(int resultSetNumber) {
+            if (resultContainers.size() > resultSetNumber) {
+                resultContainers.get(resultSetNumber).dispose();
+            }
         }
     }
     
@@ -3874,6 +3874,11 @@ public class SQLEditor extends SQLEditorBase implements
             sectionsContainer.setLayout(new GridLayout(1, false));
             sectionsContainer.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
             tabContentScroller.setContent(sectionsContainer);
+        }
+        
+        @Override
+        public void releaseDataReceiver(int resultSetNumber) {
+            // don't know why it is needed in multitab case during history commands, but here we are just ignoring it
         }
     }
     
@@ -4507,7 +4512,7 @@ public class SQLEditor extends SQLEditorBase implements
 
             Listener displayListener = event -> { // for the contextual tool buttons it's critical for one result set to be focused
                 Control clickedWidget = (Control) event.widget;
-                if (clickedWidget.getShell() == control.getShell() && control.isVisible()) {
+                if (clickedWidget instanceof VerticalButton && clickedWidget.getShell() == control.getShell() && control.isVisible()) {
                     Point clickedPoint = clickedWidget.toDisplay(event.x, event.y);
                     if (control.getClientArea().contains(control.toControl(clickedPoint)) && !this.viewer.isPresentationInFocus()) {
                         for (Control c = control; c != null && !c.isFocusControl(); c = c.getParent()) {
