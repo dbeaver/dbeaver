@@ -117,10 +117,11 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
     protected DBNFileSystem[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
         monitor.beginTask("Read available file systems", 1);
         List<DBNFileSystem> result = new ArrayList<>();
-        DBFFileSystemManager fileSystemManager = getModel().getFileSystemManager();
-        if (fileSystemManager == null) {
+        var project = getOwnerProject();
+        if (project == null) {
             return new DBNFileSystem[0];
         }
+        DBFFileSystemManager fileSystemManager = project.getFileSystemManager();
 
         for (DBFVirtualFileSystem fs : fileSystemManager.getVirtualFileSystems()) {
             DBNFileSystem newChild = new DBNFileSystem(this, fs);

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.fs;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.fs.event.DBFEventListener;
 import org.jkiss.dbeaver.model.fs.event.DBFEventManager;
@@ -35,20 +36,18 @@ import java.util.Map;
 public class DBFFileSystemManager implements DBFEventListener {
     private final Map<String, DBFVirtualFileSystem> dbfFileSystems = new LinkedHashMap<>();
     @NotNull
-    private final SMSessionContext sessionContext;
+    private final DBPProject project;
 
-    public DBFFileSystemManager(@NotNull SMSessionContext sessionContext) {
-        this.sessionContext = sessionContext;
-        DBFEventManager.getInstance().addListener(this);
+    public DBFFileSystemManager(@NotNull DBPProject project) {
+        this.project = project;
     }
-
 
     public synchronized void reloadFileSystems(@NotNull DBRProgressMonitor monitor) {
         clear();
         var fsRegistry = DBWorkbench.getPlatform().getFileSystemRegistry();
         for (DBFFileSystemDescriptor fileSystemProviderDescriptor : fsRegistry.getFileSystemProviders()) {
             var fsProvider = fileSystemProviderDescriptor.getInstance();
-            for (DBFVirtualFileSystem dbfFileSystem : fsProvider.getAvailableFileSystems(monitor, sessionContext)) {
+            for (DBFVirtualFileSystem dbfFileSystem : fsProvider.getAvailableFileSystems(monitor, project)) {
                 dbfFileSystems.put(dbfFileSystem.getId(), dbfFileSystem);
             }
         }
