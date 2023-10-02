@@ -18,22 +18,28 @@ package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.swt.accessibility.*;
 import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.TabFolder;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.function.BooleanSupplier;
 
 public class EditorAccessibleAdapter extends AccessibleControlAdapter implements AccessibleListener {
+    // Defined in DBeaverPreferences.UI_ACCESSIBILITY_EXTENDED_JAWS_SUPPORT
+    private static final String PREF_UI_ACCESSIBILITY_EXTENDED_JAWS_SUPPORT = "ui.accessibility.extended.jaws.support"; //$NON-NLS-1$
     private static final String DATA_KEY = EditorAccessibleAdapter.class.getName();
 
-    private final WeakReference<Composite> composite;
+    private final WeakReference<Control> control;
+    private final BooleanSupplier enabled;
     private boolean active;
 
-    private EditorAccessibleAdapter(@NotNull Composite composite) {
-        this.composite = new WeakReference<>(composite);
+    private EditorAccessibleAdapter(@NotNull Control control, @NotNull BooleanSupplier enabled) {
+        this.control = new WeakReference<>(control);
+        this.enabled = enabled;
     }
 
     /**
@@ -41,10 +47,10 @@ public class EditorAccessibleAdapter extends AccessibleControlAdapter implements
      * <p>
      * In other words, if any method of this adapter was called at least once, it will be treated as "active".
      */
-    public static boolean isActive(@NotNull Composite composite) {
-        for (Composite c = composite; c != null; c = c.getParent()) {
+    public static boolean isActive(@NotNull Control control) {
+        for (Control c = control; c != null; c = c.getParent()) {
             final Object data = c.getData(DATA_KEY);
-            if (data instanceof EditorAccessibleAdapter && ((EditorAccessibleAdapter) data).active) {
+            if (data instanceof EditorAccessibleAdapter && ((EditorAccessibleAdapter) data).isActive()) {
                 return true;
             }
         }
@@ -55,32 +61,52 @@ public class EditorAccessibleAdapter extends AccessibleControlAdapter implements
     /**
      * Installs this accessible adapter on the given control.
      */
-    public static void install(@NotNull Composite composite) {
-        final EditorAccessibleAdapter adapter = new EditorAccessibleAdapter(composite);
+    public static void install(@NotNull Control control) {
+        install(control, () -> true);
+    }
 
-        final Accessible accessible = composite.getAccessible();
+    /**
+     * Installs this accessible adapter on the given control.
+     */
+    public static void install(@NotNull Control control, @NotNull BooleanSupplier enabled) {
+        final EditorAccessibleAdapter adapter = new EditorAccessibleAdapter(control, enabled);
+
+        final Accessible accessible = control.getAccessible();
         accessible.addAccessibleListener(adapter);
         accessible.addAccessibleControlListener(adapter);
 
-        composite.setData(DATA_KEY, adapter);
+        control.setData(DATA_KEY, adapter);
+    }
+
+    /**
+     * Checks if JAWS is enabled.
+     */
+    public static boolean isJawsEnabled() {
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_UI_ACCESSIBILITY_EXTENDED_JAWS_SUPPORT);
     }
 
     @Override
     public void getName(AccessibleEvent e) {
-        final Composite composite = this.composite.get();
+        if (!isEnabled()) {
+            return;
+        }
 
-        if (composite != null) {
-            e.result = getWorkbenchLocation(composite);
+        final Control control = this.control.get();
+        if (control != null && e.childID == ACC.CHILDID_SELF) {
+            e.result = getWorkbenchLocation(control);
             active = true;
         }
     }
 
     @Override
     public void getValue(AccessibleControlEvent e) {
-        final Composite composite = this.composite.get();
+        if (!isEnabled()) {
+            return;
+        }
 
-        if (composite != null) {
-            e.result = getWorkbenchLocation(composite);
+        final Control control = this.control.get();
+        if (control != null && e.childID == ACC.CHILDID_SELF) {
+            e.result = getWorkbenchLocation(control);
             active = true;
         }
     }
@@ -100,11 +126,19 @@ public class EditorAccessibleAdapter extends AccessibleControlAdapter implements
         // not implemented
     }
 
+    private boolean isEnabled() {
+        return enabled.getAsBoolean();
+    }
+
+    private boolean isActive() {
+        return isEnabled() && active;
+    }
+
     @NotNull
-    private static String getWorkbenchLocation(@NotNull Composite composite) {
+    private static String getWorkbenchLocation(@NotNull Control control) {
         final Deque<String> path = new ArrayDeque<>();
 
-        for (Composite c = composite; c != null; c = c.getParent()) {
+        for (Control c = control; c != null; c = c.getParent()) {
             if (c instanceof TabFolder) {
                 final TabFolder folder = (TabFolder) c;
                 final int index = folder.getSelectionIndex();

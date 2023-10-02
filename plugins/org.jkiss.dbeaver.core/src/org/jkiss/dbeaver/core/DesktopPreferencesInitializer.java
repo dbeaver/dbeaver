@@ -66,6 +66,7 @@ public class DesktopPreferencesInitializer extends AbstractPreferenceInitializer
 
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_KEEP_DATABASE_EDITORS_ON_DISCONNECT, true);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_ACCESSIBILITY_EXTENDED_JAWS_SUPPORT, false);
 
         // QM
         PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_HISTORY_DAYS, 90);

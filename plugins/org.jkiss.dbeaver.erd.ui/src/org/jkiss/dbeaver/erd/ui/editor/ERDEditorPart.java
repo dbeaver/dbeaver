@@ -16,11 +16,7 @@
  */
 package org.jkiss.dbeaver.erd.ui.editor;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.MultiStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.PrintFigureOperation;
@@ -103,6 +99,7 @@ import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.ui.editors.EditorAccessibleAdapter;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseModellerEditor;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
@@ -276,6 +273,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         if (hasProgressControl()) {
             progressControl.createProgressPanel();
         }
+
+        EditorAccessibleAdapter.install(getGraphicalControl(), EditorAccessibleAdapter::isJawsEnabled);
     }
 
     public DBECommandContext getCommandContext() {

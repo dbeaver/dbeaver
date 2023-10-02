@@ -78,6 +78,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     private boolean isStandalone = DesktopPlatform.isStandalone();
     private Combo browserCombo;
     private Button useEmbeddedBrowserAuth;
+    private Button enableExtendedJawsSupportCheck;
 
 
     public PrefPageDatabaseUserInterface()
@@ -215,6 +216,25 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 });
             }
         }
+
+        {
+            final Group group = UIUtils.createControlGroup(
+                composite,
+                "Accessibility",
+                1,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
+                0
+            );
+
+            enableExtendedJawsSupportCheck = UIUtils.createCheckbox(
+                group,
+                "Enable extended JAWS support",
+                "Enable extended support for JAWS screen reader. When enabled, other screen readers may stop working.",
+                false,
+                1
+            );
+        }
+
         performDefaults();
 
         return composite;
@@ -241,6 +261,8 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 clientTimezone.setText(TimezoneRegistry.getGMTString(timezone));
             }
         }
+
+        enableExtendedJawsSupportCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_ACCESSIBILITY_EXTENDED_JAWS_SUPPORT));
     }
 
     private boolean isWindowsDesktopClient() {
@@ -294,6 +316,8 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 DBWorkbench.getPlatformUI().showError("Change language", "Can't switch language to " + language, e);
             }
         }
+
+        store.setValue(DBeaverPreferences.UI_ACCESSIBILITY_EXTENDED_JAWS_SUPPORT, enableExtendedJawsSupportCheck.getSelection());
 
         return true;
     }
