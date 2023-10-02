@@ -340,9 +340,9 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
                 task.getProperties().put(TaskConstants.TOOL_TASK_PROP, true);
             }
             DBTTaskConfigurator configurator = TaskUIRegistry.getInstance().createConfigurator(taskType);
-            TaskConfigurationWizard configWizard = configurator.createTaskConfigWizard(task);
+            TaskConfigurationWizard<?> configWizard = configurator.createTaskConfigWizard(task);
 
-            TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(window, configWizard, selection);
+            TaskConfigurationWizardDialog dialog = configWizard.createWizardDialog(window, selection);
             return dialog.open();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Task create error", "Error creating task '" + taskTypeId + "'", e);
