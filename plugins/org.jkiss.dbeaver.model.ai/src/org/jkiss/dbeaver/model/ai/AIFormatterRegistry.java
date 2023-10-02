@@ -20,28 +20,18 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
+import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
-/**
- * AI engine settings
- */
-public class AIEngineRegistry {
-
-    private static final Log log = Log.getLog(AIEngineRegistry.class);
-
-    public static class EngineDescriptor extends AbstractDescriptor {
-
+public class AIFormatterRegistry {
+    public static class FormatterDescriptor extends AbstractDescriptor {
         private final IConfigurationElement contributorConfig;
-        protected EngineDescriptor(IConfigurationElement contributorConfig) {
+        protected FormatterDescriptor(IConfigurationElement contributorConfig) {
             super(contributorConfig);
             this.contributorConfig = contributorConfig;
         }
@@ -50,38 +40,33 @@ public class AIEngineRegistry {
             return contributorConfig.getAttribute("id");
         }
 
-        public String getLabel() {
-            return contributorConfig.getAttribute("label");
-        }
-
         String getReplaces() {
             return contributorConfig.getAttribute("replaces");
         }
 
-        public DAICompletionEngine<?> createInstance() throws DBException {
+        public IAIFormatter createInstance() throws DBException {
             ObjectType objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
-            return objectType.createInstance(DAICompletionEngine.class);
+            return objectType.createInstance(IAIFormatter.class);
         }
-
     }
 
-    private static AIEngineRegistry instance = null;
+    private static AIFormatterRegistry instance = null;
 
-    public synchronized static AIEngineRegistry getInstance() {
+    public synchronized static AIFormatterRegistry getInstance() {
         if (instance == null) {
-            instance = new AIEngineRegistry(Platform.getExtensionRegistry());
+            instance = new AIFormatterRegistry(Platform.getExtensionRegistry());
         }
         return instance;
     }
 
-    private final Map<String, EngineDescriptor> descriptorMap = new LinkedHashMap<>();
+    private final Map<String, AIFormatterRegistry.FormatterDescriptor> descriptorMap = new LinkedHashMap<>();
     private final Map<String, String> replaceMap = new LinkedHashMap<>();
 
-    public AIEngineRegistry(IExtensionRegistry registry) {
-        IConfigurationElement[] extElements = registry.getConfigurationElementsFor("com.dbeaver.ai.engine");
+    public AIFormatterRegistry(IExtensionRegistry registry) {
+        IConfigurationElement[] extElements = registry.getConfigurationElementsFor("com.dbeaver.ai.formatter");
         for (IConfigurationElement ext : extElements) {
-            if ("completionEngine".equals(ext.getName())) {
-                EngineDescriptor descriptor = new EngineDescriptor(ext);
+            if ("formatter".equals(ext.getName())) {
+                FormatterDescriptor descriptor = new FormatterDescriptor(ext);
                 descriptorMap.put(descriptor.getId(), descriptor);
 
                 String replaces = descriptor.getReplaces();
@@ -94,18 +79,7 @@ public class AIEngineRegistry {
         }
     }
 
-    public List<EngineDescriptor> getCompletionEngines() {
-        List<EngineDescriptor> list = new ArrayList<>();
-        for (Map.Entry<String, EngineDescriptor> entry : descriptorMap.entrySet()) {
-            if (replaceMap.containsKey(entry.getKey())) {
-                continue;
-            }
-            list.add(entry.getValue());
-        }
-        return list;
-    }
-
-    public DAICompletionEngine<?> getCompletionEngine(String id) throws DBException {
+    public IAIFormatter getFormatter(String id) throws DBException {
         while (true) {
             String replace = replaceMap.get(id);
             if (replace == null) {
@@ -113,11 +87,10 @@ public class AIEngineRegistry {
             }
             id = replace;
         }
-        EngineDescriptor descriptor = descriptorMap.get(id);
+        FormatterDescriptor descriptor = descriptorMap.get(id);
         if (descriptor == null) {
-            throw new DBException("AI engine '" + id + "' not found");
+            throw new DBException("AI formatter '" + id + "' not found");
         }
         return descriptor.createInstance();
     }
-
 }
