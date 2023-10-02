@@ -34,7 +34,7 @@ public abstract class ERDNotationBase {
 
     protected Font getFont() {
         final IThemeManager themeManager = PlatformUI.getWorkbench().getThemeManager();
-        return themeManager.getCurrentTheme().getFontRegistry().get(ERDUIConstants.PROP_DIAGRAM_FONT);
+        return themeManager.getCurrentTheme().getFontRegistry().get(ERDUIConstants.PROP_DIAGRAM_NOTATION_LABEL_FONT);
     }
 
     protected Label getLabel(String name, Color frgColor) {
