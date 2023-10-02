@@ -40,7 +40,7 @@ import java.util.Set;
 
 public class OrthogonalShortPathRouting extends AbstractRouter {
 
-    private static final double DELTA = 30.0;
+    private double indentation = 30.0;
     private static final int RIGHT = 180;
     private static final int LEFT = 0;
     private static final int UP = 90;
@@ -281,11 +281,11 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
                     direction2 = getDirection(bounds, points.getPoint(points.size() - 1).getCopy());
                 }
                 // from 1-->>2
-                int dx1 = (int) (Math.cos(Math.toRadians(direction1)) * DELTA);
-                int dy1 = (int) (Math.sin(Math.toRadians(direction1)) * DELTA);
+                int dx1 = (int) (Math.cos(Math.toRadians(direction1)) * indentation);
+                int dy1 = (int) (Math.sin(Math.toRadians(direction1)) * indentation);
                 // from 1<<--2
-                int dx2 = (int) (Math.cos(Math.toRadians(direction2)) * DELTA);
-                int dy2 = (int) (Math.sin(Math.toRadians(direction2)) * DELTA);
+                int dx2 = (int) (Math.cos(Math.toRadians(direction2)) * indentation);
+                int dy2 = (int) (Math.sin(Math.toRadians(direction2)) * indentation);
                 Point p1 = new Point(start.x + dx1, start.y - dy1);
                 modifiedPoints.addPoint(p1);
                 // add other middle points
@@ -363,7 +363,7 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
     }
 
     /**
-     * Return a container 
+     * Return a container
      */
     public IFigure getContainer() {
         return container;
@@ -418,4 +418,19 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
             addChild(child);
         }
     }
+
+    /**
+     * The method returns indentation value
+     */
+    public double getIndentation() {
+        return indentation;
+    }
+
+    /**
+     * Method design to specify indentation value
+     */
+    public void setIndentation(double indentation) {
+        this.indentation = indentation;
+    }
+
 }

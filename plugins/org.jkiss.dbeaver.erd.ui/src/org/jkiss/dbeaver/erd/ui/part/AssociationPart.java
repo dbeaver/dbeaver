@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationEditPolicy;
+import org.jkiss.dbeaver.erd.ui.router.OrthogonalShortPathRouting;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -148,23 +149,35 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             if (entityPart instanceof GraphicalEditPart && (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store))) {
                 // Self link
                 final IFigure entityFigure = ((GraphicalEditPart) entityPart).getFigure();
-                //EntityPart entity = (EntityPart) connEdge.source.getParent().data;
-                //final Dimension entitySize = entity.getFigure().getSize();
                 final Dimension figureSize = entityFigure.getMinimumSize();
                 int entityWidth = figureSize.width;
                 int entityHeight = figureSize.height;
 
                 List<RelativeBendpoint> bends = new ArrayList<>();
-                RelativeBendpoint bp1 = new RelativeBendpoint(conn);
                 int w2 = entityWidth / 2;
                 int h2 = entityHeight / 2;
-                bp1.setRelativeDimensions(new Dimension(w2, w2), new Dimension(entityWidth, -h2 / 2));
+                RelativeBendpoint bp1 = new RelativeBendpoint(conn);
+                bp1.setRelativeDimensions(new Dimension(entityWidth, h2), new Dimension(entityWidth, -h2+w2 ));
                 bends.add(bp1);
+                
                 RelativeBendpoint bp2 = new RelativeBendpoint(conn);
-                bp2.setRelativeDimensions(new Dimension(w2, w2), new Dimension(entityWidth, -h2));
+                bp2.setRelativeDimensions(new Dimension(entityWidth, h2), new Dimension(entityWidth+50, -h2+w2/2 ));
                 bends.add(bp2);
+                
+                RelativeBendpoint bp3 = new RelativeBendpoint(conn);
+                bp3.setRelativeDimensions(new Dimension(entityWidth, h2), new Dimension(entityWidth+50, -h2-w2/2 ));
+                bends.add(bp3);
+
+                RelativeBendpoint bp4 = new RelativeBendpoint(conn);
+                bp4.setRelativeDimensions(new Dimension(entityWidth, h2), new Dimension(entityWidth, -h2-w2));
+                bends.add(bp4);
                 conn.setRoutingConstraint(bends);
             }
+        }
+        if (cLayer.getConnectionRouter() instanceof OrthogonalShortPathRouting) {
+            ERDNotationDescriptor diagramNotationDescriptor = getDiagramPart().getDiagram().getDiagramNotation();
+            ((OrthogonalShortPathRouting) cLayer.getConnectionRouter())
+                .setIndentation(diagramNotationDescriptor.getNotation().getIndentation());
         }
     }
 

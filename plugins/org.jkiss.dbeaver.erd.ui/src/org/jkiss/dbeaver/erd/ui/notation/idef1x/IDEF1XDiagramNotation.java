@@ -73,4 +73,10 @@ public class IDEF1XDiagramNotation extends ERDNotationBase implements ERDNotatio
     public void applyNotationForEntities(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
         // nothing
     }
+
+    @Override
+    public double getIndentation() {
+        return 5;
+    }
+
 }

@@ -52,4 +52,11 @@ public interface ERDNotation {
         @NotNull ERDAssociation association,
         @NotNull Color bckColor,
         @NotNull Color frgColor);
+
+    /**
+     * Method designed to provide specific value of indentation
+     * 
+     * @return - value of indentation
+     */
+    public double getIndentation();
 }
