@@ -23,10 +23,12 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 
 public class DefaultRequestFormatter implements IAIFormatter {
     @Override
-    public String postProcessGeneratedQuery(DBRProgressMonitor monitor,
+    public String postProcessGeneratedQuery(
+        DBRProgressMonitor monitor,
         DBSObjectContainer mainObject,
         DBCExecutionContext executionContext,
-        String completionText) {
+        String completionText
+    ) {
         return null;
     }
 
@@ -39,10 +41,12 @@ public class DefaultRequestFormatter implements IAIFormatter {
     }
 
     @Override
-    public void addPromptExtra(DBRProgressMonitor monitor,
+    public void addPromptExtra(
+        DBRProgressMonitor monitor,
         DBSEntity object,
         StringBuilder description,
-        boolean firstAttr) {
+        boolean firstAttr
+    ) {
 
     }
 }

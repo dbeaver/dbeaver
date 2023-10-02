@@ -60,7 +60,8 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
         @NotNull DAICompletionRequest request,
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
-        @NotNull IAIFormatter formatter) throws DBException;
+        @NotNull IAIFormatter formatter
+    ) throws DBException;
 
     @NotNull
     protected DAICompletionResponse createCompletionResponse(
@@ -84,7 +85,8 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
     @NotNull
     protected DBSObjectContainer getScopeObject(
         @NotNull DAICompletionRequest request,
-        @NotNull DBCExecutionContext executionContext) {
+        @NotNull DBCExecutionContext executionContext
+    ) {
         DAICompletionScope scope = request.getScope();
         DBSObjectContainer mainObject = null;
         DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
@@ -119,12 +121,14 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
     protected abstract AIEngineSettings getSettings();
 
     @Nullable
-    protected String processCompletion(@NotNull DAICompletionRequest request,
+    protected String processCompletion(
+        @NotNull DAICompletionRequest request,
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSObjectContainer mainObject,
         @Nullable String completionText,
-        @NotNull IAIFormatter formatter) {
+        @NotNull IAIFormatter formatter
+    ) {
         if (completionText == null || CommonUtils.isEmpty(completionText)) {
             return null;
         }
