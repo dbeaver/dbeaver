@@ -54,7 +54,8 @@ public interface ERDNotation {
         @NotNull Color frgColor);
 
     /**
-     * Method designed to provide specific value of indentation
+     * Indentation value is a length of orthogonal line for source and target
+     * decorator. Each notation keeps own value to handle require behavior.
      *
      * @return - value of indentation
      */
