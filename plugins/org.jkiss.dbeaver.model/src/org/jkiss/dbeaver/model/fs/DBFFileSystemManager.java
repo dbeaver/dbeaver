@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.fs;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.fs.event.DBFEventListener;
 import org.jkiss.dbeaver.model.fs.event.DBFEventManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -40,6 +39,7 @@ public class DBFFileSystemManager implements DBFEventListener {
 
     public DBFFileSystemManager(@NotNull DBPProject project) {
         this.project = project;
+        DBFEventManager.getInstance().addListener(this);
     }
 
     public synchronized void reloadFileSystems(@NotNull DBRProgressMonitor monitor) {
@@ -73,7 +73,7 @@ public class DBFFileSystemManager implements DBFEventListener {
             .orElseThrow(() -> new DBException("Cannot find file system provider for the uri:" + uri));
 
         try {
-            return fileSystem.of(monitor, uri);
+            return fileSystem.getPathByURI(monitor, uri);
         } catch (Throwable e) {
             throw new DBException(String.format("Failed to get path from uri[%s]: %s", uri, e.getMessage()), e);
         }

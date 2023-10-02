@@ -46,5 +46,6 @@ public interface DBFVirtualFileSystem {
     @NotNull
     DBFVirtualFileSystemRoot[] getRootFolders(DBRProgressMonitor monitor) throws DBException;
 
-    Path of(DBRProgressMonitor monitor, URI uri) throws DBException;
+    @NotNull
+    Path getPathByURI(DBRProgressMonitor monitor, @NotNull URI uri) throws DBException;
 }
