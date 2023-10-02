@@ -78,7 +78,7 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
 
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_HIPPIE, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION, true);
-            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_EXPERIMENTAL_FEATURES, true);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_EXPERIMENTAL_FEATURES, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, 0);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO, true);

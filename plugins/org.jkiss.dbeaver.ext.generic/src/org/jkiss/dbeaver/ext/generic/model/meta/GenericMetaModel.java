@@ -55,7 +55,6 @@ import java.util.*;
 public class GenericMetaModel {
 
     private static final Log log = Log.getLog(GenericMetaModel.class);
-    private static final String DEFAULT_NULL_SCHEMA_NAME = "DEFAULT";
 
     // Tables types which are not actually a table
     // This is needed for some strange JDBC drivers which returns not a table objects
@@ -229,7 +228,7 @@ public class GenericMetaModel {
                     boolean nullSchema = false;
                     if (CommonUtils.isEmpty(schemaName)) {
                         if (supportsNullSchemas()) {
-                            schemaName = DEFAULT_NULL_SCHEMA_NAME;
+                            schemaName = GenericConstants.DEFAULT_NULL_SCHEMA_NAME;
                             nullSchema = true;
                         } else {
                             continue;
