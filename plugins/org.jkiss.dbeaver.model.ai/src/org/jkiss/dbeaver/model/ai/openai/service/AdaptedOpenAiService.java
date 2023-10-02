@@ -14,18 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.gpt3;
+package org.jkiss.dbeaver.model.ai.openai.service;
 
-/**
- * GPT preference constants
- */
-public class GPTConstants {
+import com.theokanning.openai.OpenAiApi;
+import com.theokanning.openai.service.OpenAiService;
 
-    public static final String OPENAI_ENGINE = "openai";
+import java.time.Duration;
 
-    public static final String GPT_API_TOKEN = "gpt.token";
-    public static final String GPT_MODEL = "gpt.model";
-    public static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
-    public static final String GPT_LOG_QUERY = "gpt.log.query";
+public class AdaptedOpenAiService extends OpenAiService implements GPTCompletionAdapter {
+    public AdaptedOpenAiService(String token) {
+        super(token);
+    }
+
+    public AdaptedOpenAiService(String token, Duration timeout) {
+        super(token, timeout);
+    }
+
 }
-

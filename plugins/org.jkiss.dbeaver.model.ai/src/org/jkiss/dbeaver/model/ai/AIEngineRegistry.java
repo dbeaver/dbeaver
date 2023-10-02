@@ -58,7 +58,7 @@ public class AIEngineRegistry {
         }
 
         public String getLabel() {
-            return contributorConfig.getAttribute("id");
+            return contributorConfig.getAttribute("label");
         }
 
         String getReplaces() {
@@ -69,7 +69,7 @@ public class AIEngineRegistry {
             return properties;
         }
 
-        public DAICompletionEngine createInstance() throws DBException {
+        public DAICompletionEngine<?> createInstance() throws DBException {
             ObjectType objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
             return objectType.createInstance(DAICompletionEngine.class);
         }
@@ -116,7 +116,7 @@ public class AIEngineRegistry {
         return list;
     }
 
-    public DAICompletionEngine getCompletionEngine(String id) throws DBException {
+    public DAICompletionEngine<?> getCompletionEngine(String id) throws DBException {
         EngineDescriptor descriptor = getEngineDescriptor(id);
         if (descriptor == null) {
             throw new DBException("AI engine '" + id + "' not found");
