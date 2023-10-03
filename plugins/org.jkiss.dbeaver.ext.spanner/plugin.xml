@@ -36,6 +36,7 @@
                     <file type="jar" path="maven:/com.google.cloud:google-cloud-spanner-jdbc:RELEASE[2.7.4]" bundle="!drivers.spanner"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.spanner"/>
                     <file type="jar" path="drivers/spanner" bundle="drivers.spanner"/>
+                    <file type="jar" path="drivers/google-jdbc-deps" bundle="drivers.spanner"/>
                     <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.spanner"/>
                 </driver>
                 

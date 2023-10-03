@@ -36,6 +36,7 @@
                     <file type="license" path="https://www.gnu.org/licenses/lgpl-3.0.txt" bundle="!drivers.bigquery"/>
 
                     <file type="jar" path="drivers/bigquery" bundle="drivers.bigquery"/>
+                    <file type="jar" path="drivers/google-jdbc-deps" bundle="drivers.bigquery"/>
                     <file type="license" path="drivers/bigquery/EULA.txt" bundle="drivers.bigquery"/>
 
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
