@@ -42,44 +42,39 @@
 								<artifact><id>com.ibm.icu:com.ibm.icu.base:58.2.0</id></artifact>
 
 								<!-- ANTLR -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.antlr4:LATEST</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.antlr4:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 
 								<!-- POI and dependencies -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.poi:LATEST</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.poi:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 
 								<!-- GIS -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gis:LATEST</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gis:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 
 								<!-- JFreeChart -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jfreechart:LATEST</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jfreechart:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 
 								<!-- SSH and BouncyCastle -->
-								<artifact>
-									<id>com.jcraft:jsch:0.2.8</id>
-									<transitive>false</transitive>
-									<source>false</source>
-									<override>false</override>
-								</artifact>
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:LATEST</id></artifact>
+								<artifact><id>com.jcraft:jsch:0.2.8</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 								<!-- Ant minimized -->
 								<artifact><id>org.jkiss.bundle:org.apache.ant:1.10.0</id></artifact>
 
 								<!-- Batik -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:LATEST</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 								<!-- GraphQL -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.graphql.java:LATEST</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.graphql.java:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 								<!-- DBCP -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.dbcp:LATEST</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.dbcp:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 
 								<!-- Jetty -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jetty.server:LATEST</id></artifact>
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jetty.websocket:LATEST</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jetty.server:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jetty.websocket:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 								<!-- GPT -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gpt3:LATEST</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gpt3:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 
 								<!-- Tests. Mockito-all is kept for old version build support. -->
 <!--								<artifact><id>org.mockito:mockito-all:1.10.19</id></artifact>-->
-								<artifact><id>org.mockito:mockito-core:4.6.1</id></artifact>
+								<artifact><id>org.mockito:mockito-core:4.6.1</id><transitive>false</transitive><source>false</source><override>false</override></artifact>
 							</artifacts>
 							<additionalArgs>-metadataRepositoryName "${repo-name}" -artifactRepositoryName "${repo-name}"</additionalArgs>
 
