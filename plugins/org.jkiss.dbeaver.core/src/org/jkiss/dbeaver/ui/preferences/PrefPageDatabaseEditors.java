@@ -193,13 +193,14 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
 
     @Override
     protected void performDefaults() {
-        keepEditorsOnRestart.setSelection(true);
-        keepEditorsOnDisconnect.setSelection(true);
-        refreshEditorOnOpen.setSelection(false);
-        editorFullName.setSelection(false);
-        showTableGrid.setSelection(true);
-        showPreviewOnSave.setSelection(true);
-        syncEditorDataSourceWithNavigator.setSelection(false);
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        keepEditorsOnRestart.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS));
+        keepEditorsOnDisconnect.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS_ON_DISCONNECT));
+        refreshEditorOnOpen.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN));
+        editorFullName.setSelection(store.getDefaultBoolean(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME));
+        showTableGrid.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID));
+        showPreviewOnSave.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_SQL_PREVIEW));
+        syncEditorDataSourceWithNavigator.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
 
         notifyBooleanStylesChanged(BooleanStyleSet.getDefaultStyleSet());
     }

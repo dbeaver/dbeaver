@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -221,7 +222,8 @@ public class PrefPageTransactions extends TargetPrefPage
 
     @Override
     protected void performDefaults() {
-        showTransactionNotificationsCheck.setSelection(true);
+        showTransactionNotificationsCheck.setSelection(
+            DBWorkbench.getPlatform().getPreferenceStore().getDefaultBoolean(ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS));
         super.performDefaults();
     }
 

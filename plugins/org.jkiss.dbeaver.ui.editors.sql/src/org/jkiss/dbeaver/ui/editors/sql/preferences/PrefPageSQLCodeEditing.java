@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
@@ -149,16 +150,17 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
 
     @Override
     protected void performDefaults() {
-        csFoldingEnabled.setSelection(true);
-        csSmartWordsIterator.setSelection(true);
-        csMarkOccurrencesUnderCursor.setSelection(false);
-        csMarkOccurrencesForSelection.setSelection(true);
-        csProblemMarkersEnabled.setSelection(true);
-        acSingleQuotesCheck.setSelection(true);
-        acDoubleQuotesCheck.setSelection(true);
-        acBracketsCheck.setSelection(true);
-        afKeywordCase.setSelection(true);
-        afExtractFromSource.setSelection(false);
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        csFoldingEnabled.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.FOLDING_ENABLED));
+        csSmartWordsIterator.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SMART_WORD_ITERATOR));
+        csMarkOccurrencesUnderCursor.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR));
+        csMarkOccurrencesForSelection.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
+        csProblemMarkersEnabled.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED));
+        acSingleQuotesCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES));
+        acDoubleQuotesCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
+        acBracketsCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS));
+        afKeywordCase.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO));
+        afExtractFromSource.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE));
         super.performDefaults();
     }
 

@@ -180,13 +180,14 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
 
     @Override
     protected void performDefaults() {
-        versionUpdateCheck.setSelection(false);
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        versionUpdateCheck.setSelection(store.getDefaultBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE));
 
-        proxyHostText.setText("");
-        proxyPortSpinner.setSelection(1080);
-        proxyUserText.setText("");
+        proxyHostText.setText(store.getDefaultString(ModelPreferences.UI_PROXY_HOST));
+        proxyPortSpinner.setSelection(store.getDefaultInt(ModelPreferences.UI_PROXY_PORT));
+        proxyUserText.setText(store.getDefaultString(ModelPreferences.UI_PROXY_USER));
         proxyPasswordText.setText("");
-        customDriversHome.setText(DriverDescriptor.getCustomDriversHome().toAbsolutePath().toString());
+        customDriversHome.setText(store.getDefaultString(ModelPreferences.UI_DRIVERS_HOME));
 
         sourceList.removeAll();
         for (String source : DriverDescriptor.getDriversSources()) {

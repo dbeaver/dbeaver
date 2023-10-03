@@ -250,12 +250,12 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
             }
         }
 
-        setValues(store);
+        setSettings(store);
 
         return composite;
     }
 
-    private void setValues(@NotNull DBPPreferenceStore store) {
+    private void setSettings(@NotNull DBPPreferenceStore store) {
         setScriptBindingTypes(SQLScriptBindingType.valueOf(store.getString(SQLPreferenceConstants.SCRIPT_BIND_COMMENT_TYPE)));
         enableCommentType();
         UIUtils.setComboSelection(deleteEmptyCombo, SQLPreferenceConstants.EmptyScriptCloseBehavior.getByName(
@@ -278,20 +278,22 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
 
     @Override
     protected void performDefaults() {
-        bindEmbeddedReadCheck.setSelection(true);
-        bindEmbeddedWriteCheck.setSelection(false);
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        bindEmbeddedReadCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ));
+        bindEmbeddedWriteCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_WRITE));
         setScriptBindingTypes(SQLScriptBindingType.NAME);
         enableCommentType();
 
-        deleteEmptyCombo.setText(SQLPreferenceConstants.EmptyScriptCloseBehavior.DELETE_NEW.name());
-        autoFoldersCheck.setSelection(false);
-        connectionFoldersCheck.setSelection(false);
-        scriptTitlePattern.setText(SQLEditor.DEFAULT_TITLE_PATTERN);
-        scriptFileNamePattern.setText(SQLEditor.DEFAULT_SCRIPT_FILE_NAME);
-        bigScriptFileSizeBoundarySpinner.setSelection((int) (SQLEditor.MAX_FILE_LENGTH_FOR_RULES / 1024));
+        deleteEmptyCombo.setText(store.getDefaultString(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY));
+        autoFoldersCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS));
+        connectionFoldersCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS));
+        scriptTitlePattern.setText(store.getDefaultString(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN));
+        scriptFileNamePattern.setText(store.getDefaultString(SQLPreferenceConstants.SCRIPT_FILE_NAME_PATTERN));
+        bigScriptFileSizeBoundarySpinner.setSelection(
+            (int) (store.getDefaultLong(SQLPreferenceConstants.SCRIPT_BIG_FILE_LENGTH_BOUNDARY) / 1024));
         setSQLTemplateText(
             SQLUtils.generateCommentLine(null, SQLEditorMessages.pref_page_sql_editor_new_script_template_template), false);
-        sqlTemplateEnabledCheckbox.setSelection(false);
+        sqlTemplateEnabledCheckbox.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.NEW_SCRIPT_TEMPLATE_ENABLED));
         UIUtils.enableWithChildren(sqlTemplateViewerComposite, sqlTemplateEnabledCheckbox.getSelection());
 
         super.performDefaults();

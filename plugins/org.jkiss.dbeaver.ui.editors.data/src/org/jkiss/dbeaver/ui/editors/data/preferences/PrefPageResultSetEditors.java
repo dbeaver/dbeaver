@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -264,19 +265,20 @@ public class PrefPageResultSetEditors extends TargetPrefPage
 
     @Override
     protected void performDefaults() {
-        stringUseEditorCheck.setSelection(false);
-        binaryPresentationCombo.select(0);
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        stringUseEditorCheck.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR));
+        binaryPresentationCombo.select(store.getDefaultInt(ModelPreferences.RESULT_SET_BINARY_PRESENTATION));
         binaryEditorType.select(IValueController.EditType.EDITOR.ordinal());
-        binaryStringMaxLength.setSelection(32);
-        memoryContentSize.setSelection(10000);
+        binaryStringMaxLength.setSelection(store.getDefaultInt(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN));
+        memoryContentSize.setSelection(store.getDefaultInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE));
         UIUtils.setComboSelection(encodingCombo, GeneralUtils.getDefaultFileEncoding());
-        contentCacheClob.setSelection(true);
-        contentCacheBlob.setSelection(false);
-        contentCacheMaxSize.setSelection(1000000);
-        maxTextContentSize.setSelection(100);
-        editLongAsLobCheck.setSelection(true);
-        commitOnEditApplyCheck.setSelection(false);
-        commitOnContentApplyCheck.setSelection(false);
+        contentCacheClob.setSelection(store.getDefaultBoolean(ModelPreferences.CONTENT_CACHE_CLOB));
+        contentCacheBlob.setSelection(store.getDefaultBoolean(ModelPreferences.CONTENT_CACHE_BLOB));
+        contentCacheMaxSize.setSelection(store.getDefaultInt(ModelPreferences.CONTENT_CACHE_MAX_SIZE));
+        maxTextContentSize.setSelection(store.getDefaultInt(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE));
+        editLongAsLobCheck.setSelection(store.getDefaultBoolean(ResultSetPreferences.RS_EDIT_LONG_AS_LOB));
+        commitOnEditApplyCheck.setSelection(store.getDefaultBoolean(ResultSetPreferences.RS_COMMIT_ON_EDIT_APPLY));
+        commitOnContentApplyCheck.setSelection(store.getDefaultBoolean(ResultSetPreferences.RS_COMMIT_ON_CONTENT_APPLY));
         super.performDefaults();
     }
 

@@ -216,12 +216,12 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 });
             }
         }
-        setValue();
+        setSettings();
 
         return composite;
     }
 
-    private void setValue() {
+    private void setSettings() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         if (isWindowsDesktopClient()) {
             SWTBrowserRegistry.getActiveBrowser();
@@ -244,15 +244,17 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
     @Override
     protected void performDefaults() {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         if (isStandalone) {
-            automaticUpdateCheck.setSelection(true);
+            automaticUpdateCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
+            useEmbeddedBrowserAuth.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
         }
         if (isWindowsDesktopClient()) {
             SWTBrowserRegistry.getActiveBrowser();
             browserCombo.select(SWTBrowserRegistry.getDefaultBrowser().ordinal());
         }
         if (clientTimezone != null) {
-            clientTimezone.setText(DBConstants.DEFAULT_TIMEZONE);
+            UIUtils.setComboSelection(clientTimezone, store.getDefaultString(ModelPreferences.CLIENT_TIMEZONE));
         }
     }
 

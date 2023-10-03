@@ -413,10 +413,12 @@ public class PrefPageDataFormat extends TargetPrefPage
         formatterProfile = null;
         refreshProfileList();
         setCurrentProfile(getDefaultProfile());
-        datetimeNativeFormatCheck.setSelection(false);
-        numericNativeFormatCheck.setSelection(false);
-        numericScientificFormatCheck.setSelection(false);
-        numericScientificFormatCheck.setEnabled(false);
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        datetimeNativeFormatCheck.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT));
+        numericNativeFormatCheck.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT));
+        boolean isNumericSc = store.getDefaultBoolean(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT);
+        numericScientificFormatCheck.setSelection(isNumericSc);
+        numericScientificFormatCheck.setEnabled(isNumericSc);
         reloadSample();
         super.performDefaults();
     }

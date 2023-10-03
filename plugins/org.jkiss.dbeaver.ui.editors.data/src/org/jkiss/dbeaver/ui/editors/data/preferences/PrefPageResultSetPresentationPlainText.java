@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ValueFormatSelector;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
@@ -158,16 +159,17 @@ public class PrefPageResultSetPresentationPlainText extends TargetPrefPage
 
     @Override
     protected void performDefaults() {
-        textTabSize.setSelection(4);
-        textMaxColumnSize.setSelection(255);
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        textTabSize.setSelection(store.getDefaultInt(ResultSetPreferences.RESULT_TEXT_TAB_SIZE));
+        textMaxColumnSize.setSelection(store.getDefaultInt(ResultSetPreferences.RESULT_TEXT_MAX_COLUMN_SIZE));
         textValueFormat.select(DBDDisplayFormat.EDIT);
-        showNulls.setSelection(false);
-        textDelimiterLeading.setSelection(false);
-        textDelimiterTrailing.setSelection(true);
-        textDelimiterTop.setSelection(false);
-        textDelimiterBottom.setSelection(false);
-        textExtraSpaces.setSelection(false);
-        textLineNumber.setSelection(false);
+        showNulls.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_TEXT_SHOW_NULLS));
+        textDelimiterLeading.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING));
+        textDelimiterTrailing.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING));
+        textDelimiterTop.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TOP));
+        textDelimiterBottom.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_BOTTOM));
+        textExtraSpaces.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES));
+        textLineNumber.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_TEXT_LINE_NUMBER));
         super.performDefaults();
     }
 

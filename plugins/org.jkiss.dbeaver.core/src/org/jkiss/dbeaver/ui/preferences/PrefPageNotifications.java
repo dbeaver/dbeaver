@@ -294,12 +294,14 @@ public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenc
             settings.setSoundFile(null);
         }
 
-        enablePopupsCheckbox.setSelection(true);
-        hideDelaySpinner.setSelection(3000);
-        enableSoundsCheckbox.setSelection(true);
-        soundVolumeSpinner.setSelection(100);
-        longOperationsCheck.setSelection(RuntimeUtils.isWindows());
-        longOperationsTimeout.setSelection(30);
+        final DBPPreferenceStore preferences = ModelPreferences.getPreferences();
+
+        enablePopupsCheckbox.setSelection(preferences.getDefaultBoolean(ModelPreferences.NOTIFICATIONS_ENABLED));
+        hideDelaySpinner.setSelection(preferences.getDefaultInt(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT));
+        enableSoundsCheckbox.setSelection(preferences.getDefaultBoolean(ModelPreferences.NOTIFICATIONS_SOUND_ENABLED));
+        soundVolumeSpinner.setSelection(preferences.getDefaultInt(ModelPreferences.NOTIFICATIONS_SOUND_VOLUME));
+        longOperationsCheck.setSelection(preferences.getDefaultBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY));
+        longOperationsTimeout.setSelection(preferences.getDefaultInt(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT));
 
         viewer.refresh();
 

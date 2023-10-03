@@ -112,12 +112,11 @@ public class PrefPageErrorLogs extends AbstractPrefPage implements IWorkbenchPre
 
     @Override
     protected void performDefaults() {
-        logsDebugEnabled.setSelection(true);
-        logsDebugLocation.setText("${" + SystemVariablesResolver.VAR_WORKSPACE + "}" +
-            File.separator + ".metadata" + File.separator + DBConstants.DEBUG_LOG_FILE_NAME);
-
-        logFilesMaxSizeSpinner.setSelection((int) (LogOutputStream.DEFAULT_MAX_LOG_SIZE / 1024));
-        logFilesMaxCountSpinner.setSelection(LogOutputStream.DEFAULT_MAX_LOG_FILES_COUNT);
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        logsDebugEnabled.setSelection(store.getDefaultBoolean(DBeaverPreferences.LOGS_DEBUG_ENABLED));
+        logsDebugLocation.setText(store.getDefaultString(DBeaverPreferences.LOGS_DEBUG_LOCATION));
+        logFilesMaxSizeSpinner.setSelection((int) store.getDefaultLong(LogOutputStream.LOGS_MAX_FILE_SIZE) / 1024);
+        logFilesMaxCountSpinner.setSelection(store.getDefaultInt(LogOutputStream.LOGS_MAX_FILES_COUNT));
 
         super.performDefaults();
     }

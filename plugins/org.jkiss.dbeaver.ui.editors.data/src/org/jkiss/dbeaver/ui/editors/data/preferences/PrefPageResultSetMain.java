@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
@@ -368,30 +369,31 @@ public class PrefPageResultSetMain extends TargetPrefPage
 
     @Override
     protected void performDefaults() {
-        autoFetchNextSegmentCheck.setSelection(true);
-        rereadOnScrollingCheck.setSelection(true);
-        resultSetSize.setText("200");
-        resultSetUseSQLCheck.setSelection(false);
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        autoFetchNextSegmentCheck.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT));
+        rereadOnScrollingCheck.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING));
+        resultSetSize.setText(String.valueOf(store.getDefaultInt(ModelPreferences.RESULT_SET_MAX_ROWS)));
+        resultSetUseSQLCheck.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL));
         orderingModeCombo.select(ResultSetUtils.OrderingMode.SMART.ordinal());
-        readQueryMetadata.setSelection(true);
-        readQueryReferences.setSelection(true);
-        queryCancelTimeout.setText("5000");
-        filterForceSubselect.setSelection(false);
-        keepStatementOpenCheck.setSelection(false);
-        alwaysUseAllColumns.setSelection(false);
-        disableEditingOnMissingKey.setSelection(false);
-        newRowsAfter.setSelection(true);
-        refreshAfterUpdate.setSelection(true);
-        useNavigatorFilters.setSelection(true);
+        readQueryMetadata.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_SET_READ_METADATA));
+        readQueryReferences.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_SET_READ_REFERENCES));
+        queryCancelTimeout.setText(String.valueOf(store.getDefaultInt(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT)));
+        filterForceSubselect.setSelection(store.getDefaultBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT));
+        keepStatementOpenCheck.setSelection(store.getDefaultBoolean(ResultSetPreferences.KEEP_STATEMENT_OPEN));
+        alwaysUseAllColumns.setSelection(store.getDefaultBoolean(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS));
+        disableEditingOnMissingKey.setSelection(store.getDefaultBoolean(ResultSetPreferences.RS_EDIT_DISABLE_IF_KEY_MISSING));
+        newRowsAfter.setSelection(store.getDefaultBoolean(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER));
+        refreshAfterUpdate.setSelection(store.getDefaultBoolean(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE));
+        useNavigatorFilters.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS));
         if (confirmDataSave != null) {
-            confirmDataSave.setSelection(false);
+            confirmDataSave.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_CONFIRM_BEFORE_SAVE));
         }
-        showErrorsInDialog.setSelection(false);
-        markCellValueOccurrences.setSelection(false);
-        advUseFetchSize.setSelection(false);
-        ignoreColumnLabelCheck.setSelection(false);
-        useDateTimeEditor.setSelection(false);
-        useBrowserCheckbox.setSelection(true);
+        showErrorsInDialog.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG));
+        markCellValueOccurrences.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES));
+        advUseFetchSize.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_SET_USE_FETCH_SIZE));
+        ignoreColumnLabelCheck.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL));
+        useDateTimeEditor.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR));
+        useBrowserCheckbox.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER));
         super.performDefaults();
     }
 

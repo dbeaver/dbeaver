@@ -134,12 +134,12 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
             Control infoLabel = UIUtils.createInfoLabel(storageSettings, CoreMessages.pref_page_query_manager_log_file_hint);
             infoLabel.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 2, 1));
         }
-        setValues();
+        setSettings();
 
         return composite;
     }
 
-    private void setValues() {
+    private void setSettings() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         Collection<QMObjectType> objectTypes = QMObjectType.fromString(store.getString(QMConstants.PROP_OBJECT_TYPES));
         Collection<String> queryTypes = CommonUtils.splitString(store.getString(QMConstants.PROP_QUERY_TYPES), ',');
@@ -175,11 +175,12 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         checkObjectTypes(objectTypes);
         checkQueryTypes(queryTypes);
 
-        textHistoryDays.setText("90");
-        textEntriesPerPage.setText("200");
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        textHistoryDays.setText(store.getDefaultString(QMConstants.PROP_HISTORY_DAYS));
+        textEntriesPerPage.setText(store.getDefaultString(QMConstants.PROP_ENTRIES_PER_PAGE));
 
-        checkStoreLog.setSelection(false);
-        textOutputFolder.setText(GeneralUtils.getMetadataFolder().toAbsolutePath().toString());
+        checkStoreLog.setSelection(store.getDefaultBoolean(QMConstants.PROP_STORE_LOG_FILE));
+        textOutputFolder.setText(store.getDefaultString(QMConstants.PROP_HISTORY_DAYS));
         UIUtils.enableWithChildren(textOutputFolder.getParent(), checkStoreLog.getSelection());
         UIUtils.enableWithChildren(textHistoryDays, checkStoreLog.getSelection());
 

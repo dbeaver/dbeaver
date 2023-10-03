@@ -68,9 +68,10 @@ public class PrefPageGIS extends AbstractPrefPage implements IWorkbenchPreferenc
 
     @Override
     protected void performDefaults() {
-        defaultSridText.setText(CommonUtils.toString(GisConstants.SRID_4326));
-        maxObjectsText.setText(CommonUtils.toString(GeometryViewerConstants.DEFAULT_MAX_OBJECTS_RENDER));
-        minZoomLevelSpinner.setSelection(GeometryViewerConstants.DEFAULT_MAX_ZOOM_LEVEL);
+        final DBPPreferenceStore preferences = GISViewerActivator.getDefault().getPreferences();
+        defaultSridText.setText(preferences.getDefaultString(GeometryViewerConstants.PREF_DEFAULT_SRID));
+        maxObjectsText.setText(preferences.getDefaultString(GeometryViewerConstants.PREF_MAX_OBJECTS_RENDER));
+        minZoomLevelSpinner.setSelection(preferences.getDefaultInt(GeometryViewerConstants.PREF_MIN_ZOOM_LEVEL));
     }
 
     @Override

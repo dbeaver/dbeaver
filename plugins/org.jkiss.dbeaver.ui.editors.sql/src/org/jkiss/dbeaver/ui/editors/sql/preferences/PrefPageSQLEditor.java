@@ -256,18 +256,19 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
     @Override
     protected void performDefaults() {
-        editorSeparateConnectionCombo.select(SeparateConnectionBehavior.DEFAULT.ordinal());
-        connectOnActivationCheck.setSelection(true);
-        connectOnExecuteCheck.setSelection(false);
-        autoSaveOnChange.setSelection(false);
-        saveOnQueryExecution.setSelection(false);
-        autoSaveOnClose.setSelection(false);
-        autoSaveActiveSchema.setSelection(true);
-        closeTabOnErrorCheck.setSelection(false);
-        resultsOrientationCombo.select(SQLEditor.ResultSetOrientation.HORIZONTAL.ordinal());
-        autoOpenOutputView.setSelection(true);
-        replaceCurrentTab.setSelection(true);
-        sizeWarningThresholdSpinner.setSelection(20);
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        UIUtils.setComboSelection(editorSeparateConnectionCombo, store.getDefaultString(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION));
+        connectOnActivationCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE));
+        connectOnExecuteCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE));
+        autoSaveOnChange.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CHANGE));
+        saveOnQueryExecution.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE));
+        autoSaveOnClose.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE));
+        autoSaveActiveSchema.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA));
+        closeTabOnErrorCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR));
+        UIUtils.setComboSelection(resultsOrientationCombo, SQLPreferenceConstants.RESULT_SET_ORIENTATION);
+        autoOpenOutputView.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW));
+        replaceCurrentTab.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.RESULT_SET_REPLACE_CURRENT_TAB));
+        sizeWarningThresholdSpinner.setSelection(store.getDefaultInt(SQLPreferenceConstants.RESULT_SET_MAX_TABS_PER_QUERY));
         super.performDefaults();
     }
 

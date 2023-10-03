@@ -227,12 +227,12 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             restoreStateDepthText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         }
 
-        setValue();
+        setSettings();
 
         return composite;
     }
 
-    private void setValue() {
+    private void setSettings() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         NavigatorPreferences.DoubleClickBehavior objDCB = CommonUtils.valueOf(
             NavigatorPreferences.DoubleClickBehavior.class,
@@ -260,25 +260,26 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
 
     @Override
     protected void performDefaults() {
-        expandOnConnectCheck.setSelection(false);
-        restoreFilterCheck.setSelection(false);
-        restoreStateDepthText.setText("0");
-        showObjectTipsCheck.setSelection(true);
-        showToolTipsCheck.setSelection(true);
-        showContentsInToolTipsContents.setSelection(false);
-        sortCaseInsensitiveCheck.setSelection(false);
-        sortFoldersFirstCheck.setSelection(true);
-        showConnectionHostCheck.setSelection(true);
-        showObjectsDescriptionCheck.setSelection(false);
-        showStatisticsCheck.setSelection(true);
-        showNodeActionsCheck.setSelection(true);
-        colorAllNodesCheck.setSelection(false);
-        showResourceFolderPlaceholdersCheck.setSelection(true);
-        groupByDriverCheck.setSelection(false);
-        longListFetchSizeText.setText("5000");
-        objDoubleClickBehavior.select(NavigatorPreferences.DoubleClickBehavior.EDIT.ordinal());
-        dsDoubleClickBehavior.select(NavigatorPreferences.DoubleClickBehavior.EXPAND.ordinal());
-        defaultEditorPageCombo.select(0);
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        expandOnConnectCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_EXPAND_ON_CONNECT));
+        restoreFilterCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_RESTORE_FILTER));
+        restoreStateDepthText.setText(String.valueOf(store.getDefaultInt(NavigatorPreferences.NAVIGATOR_RESTORE_STATE_DEPTH)));
+        showObjectTipsCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECT_TIPS));
+        showToolTipsCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_TOOLTIPS));
+        showContentsInToolTipsContents.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONTENTS_IN_TOOLTIP));
+        sortCaseInsensitiveCheck.setSelection(store.getDefaultBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY));
+        sortFoldersFirstCheck.setSelection(store.getDefaultBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST));
+        showConnectionHostCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME));
+        showObjectsDescriptionCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECTS_DESCRIPTION));
+        showStatisticsCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO));
+        showNodeActionsCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS));
+        colorAllNodesCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES));
+        showResourceFolderPlaceholdersCheck.setSelection(store.getDefaultBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS));
+        groupByDriverCheck.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER));
+        longListFetchSizeText.setText(String.valueOf(store.getDefaultInt(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE)));
+        UIUtils.setComboSelection(objDoubleClickBehavior, store.getDefaultString(NavigatorPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK));
+        UIUtils.setComboSelection(dsDoubleClickBehavior, store.getDefaultString(NavigatorPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
+        defaultEditorPageCombo.select(store.getDefaultInt(NavigatorPreferences.NAVIGATOR_DEFAULT_EDITOR_PAGE));
     }
 
     @Override

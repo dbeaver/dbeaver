@@ -25,6 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.terminal.internal.SQLTerminalMessages;
@@ -123,9 +124,10 @@ public class SQLTerminalPreferencesPage extends TargetPrefPage {
 
     @Override
     protected void performDefaults() {
-        showTerminalViewByDefault.setSelection(false);
-        showQueryText.setSelection(true);
-        showServerOutput.setSelection(true);
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        showTerminalViewByDefault.setSelection(store.getDefaultBoolean(SQLTerminalPreferencesConstants.SHOW_TERMINAL_VIEW_BY_DEFAULT));
+        showQueryText.setSelection(store.getDefaultBoolean(SQLTerminalPreferencesConstants.SHOW_QUERY_TEXT));
+        showServerOutput.setSelection(store.getDefaultBoolean(SQLTerminalPreferencesConstants.SHOW_SERVER_OUTPUT));
         super.performDefaults();
     }
 

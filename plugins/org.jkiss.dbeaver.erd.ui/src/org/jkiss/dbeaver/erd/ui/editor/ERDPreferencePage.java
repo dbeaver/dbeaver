@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -206,17 +207,18 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
 
     @Override
     protected void performDefaults() {
-        contentsShowViews.setSelection(true);
-        contentsShowPartitions.setSelection(false);
-        routingType.setText(ERDUIConstants.ROUTING_SHORTEST_PATH);
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        contentsShowViews.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS));
+        contentsShowPartitions.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS));
+        routingType.setText(store.getDefaultString(ERDUIConstants.PREF_ROUTING_TYPE));
         ERDNotationRegistry registry = ERDNotationRegistry.getInstance();
         notationType.select(registry.getERDNotations().indexOf(registry.getDefaultNotation()));
-        changeBorderColors.setSelection(true);
-        changeHeaderColors.setSelection(true);
-        gridCheck.setSelection(false);
-        snapCheck.setSelection(true);
-        spinnerGridWidth.setSelection(20);
-        spinnerGridHeight.setSelection(20);
+        changeBorderColors.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS));
+        changeHeaderColors.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS));
+        gridCheck.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_GRID_ENABLED));
+        snapCheck.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_GRID_SNAP_ENABLED));
+        spinnerGridWidth.setSelection(store.getDefaultInt(ERDUIConstants.PREF_GRID_WIDTH));
+        spinnerGridHeight.setSelection(store.getDefaultInt(ERDUIConstants.PREF_GRID_HEIGHT));
         modeCombo.select(ERDUIConstants.PRINT_MODE_DEFAULT);
         spinnerMarginTop.setSelection(ERDUIConstants.PRINT_MARGIN_DEFAULT);
         spinnerMarginBottom.setSelection(ERDUIConstants.PRINT_MARGIN_DEFAULT);

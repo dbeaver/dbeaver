@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -159,13 +160,14 @@ public class PrefPageErrorHandle extends TargetPrefPage
 
     @Override
     protected void performDefaults() {
-        connectionOpenTimeout.setSelection(0);
-        connectionCloseTimeout.setSelection(5000);
-        connectionValidateTimeout.setSelection(10000);
-        rollbackOnErrorCheck.setSelection(false);
-        connectionAutoRecoverEnabled.setSelection(true);
-        connectionAutoRecoverRetryCount.setSelection(1);
-        cancelCheckTimeout.setSelection(0);
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        connectionOpenTimeout.setSelection(store.getDefaultInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT));
+        connectionCloseTimeout.setSelection(store.getDefaultInt(ModelPreferences.CONNECTION_CLOSE_TIMEOUT));
+        connectionValidateTimeout.setSelection(store.getDefaultInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT));
+        rollbackOnErrorCheck.setSelection(store.getDefaultBoolean(ModelPreferences.QUERY_ROLLBACK_ON_ERROR));
+        connectionAutoRecoverEnabled.setSelection(store.getDefaultBoolean(ModelPreferences.EXECUTE_RECOVER_ENABLED));
+        connectionAutoRecoverRetryCount.setSelection(store.getDefaultInt(ModelPreferences.EXECUTE_RECOVER_RETRY_COUNT));
+        cancelCheckTimeout.setSelection(store.getDefaultInt(ModelPreferences.EXECUTE_CANCEL_CHECK_TIMEOUT));
         super.performDefaults();
     }
 

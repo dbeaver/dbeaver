@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -150,10 +151,11 @@ public class PrefPageMetaData extends TargetPrefPage
 
     @Override
     protected void performDefaults() {
-        readExpensiveCheck.setSelection(false);
-        separateMetaConnectionCombo.select(SeparateConnectionBehavior.DEFAULT.ordinal());
-        caseSensitiveNamesCheck.setSelection(false);
-        serverSideFiltersCheck.setSelection(true);
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        readExpensiveCheck.setSelection(store.getDefaultBoolean(ModelPreferences.READ_EXPENSIVE_PROPERTIES));
+        UIUtils.setComboSelection(separateMetaConnectionCombo, store.getDefaultString(ModelPreferences.META_SEPARATE_CONNECTION));
+        caseSensitiveNamesCheck.setSelection(store.getDefaultBoolean(ModelPreferences.META_CASE_SENSITIVE));
+        serverSideFiltersCheck.setSelection(store.getDefaultBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS));
         super.performDefaults();
     }
 
