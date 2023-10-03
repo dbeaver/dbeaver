@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
@@ -684,10 +685,10 @@ public class DesktopUI implements DBPPlatformUI {
     }
 
     @Override
-    public boolean supportsMultiFileSystems() {
+    public boolean supportsMultiFileSystems(@NotNull DBPProject project) {
         for (DBFFileSystemDescriptor fsProvider : DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProviders()) {
             DBFVirtualFileSystem[] fsList = fsProvider.getInstance().getAvailableFileSystems(
-                new VoidProgressMonitor(), DBWorkbench.getPlatform().getNavigatorModel().getModelAuthContext());
+                new VoidProgressMonitor(), project);
             // TODO: return real value
             if (!ArrayUtils.isEmpty(fsList) && false) {
                 return true;

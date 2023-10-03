@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.ide.IDE;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -46,7 +47,6 @@ import java.nio.file.Path;
 public class TextWithOpen extends Composite {
     private final Text text;
     private final ToolBar toolbar;
-    private boolean multiFileSystem = false;
 
     public TextWithOpen(Composite parent) {
         this(parent, false);
@@ -149,11 +149,11 @@ public class TextWithOpen extends Composite {
     }
 
     public boolean isMultiFileSystem() {
-        return multiFileSystem;
+        return false;
     }
 
-    public void setMultiFileSystem(boolean multiFileSystem) {
-        this.multiFileSystem = multiFileSystem;
+    public DBPProject getProject() {
+        return null;
     }
 
     protected void openBrowser() {

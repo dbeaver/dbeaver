@@ -111,7 +111,7 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
                     UIUtils.enableWithChildren(textHistoryDays, checkStoreLog.getSelection());
                 }
             });
-            textOutputFolder = DialogUtils.createOutputFolderChooser(storageSettings, CoreMessages.pref_page_query_manager_logs_folder, null);
+            textOutputFolder = DialogUtils.createOutputFolderChooser(storageSettings, CoreMessages.pref_page_query_manager_logs_folder, null, null);
             textHistoryDays = UIUtils.createLabelText(storageSettings, CoreMessages.pref_page_query_manager_label_days_to_store_log, "", SWT.BORDER, new GridData(50, SWT.DEFAULT)); //$NON-NLS-2$
 
             Control infoLabel = UIUtils.createInfoLabel(storageSettings, CoreMessages.pref_page_query_manager_log_file_hint);

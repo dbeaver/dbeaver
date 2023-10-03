@@ -78,7 +78,7 @@ public class TextWithOpenFile extends TextWithOpen {
 
     protected void openBrowser() {
         String selected;
-        if (isMultiFileSystem() && DBWorkbench.getPlatformUI().supportsMultiFileSystems()) {
+        if (isMultiFileSystem() && DBWorkbench.getPlatformUI().supportsMultiFileSystems(getProject())) {
             selected = DBWorkbench.getPlatformUI().openFileSystemSelector(
                 title,
                 openFolder,

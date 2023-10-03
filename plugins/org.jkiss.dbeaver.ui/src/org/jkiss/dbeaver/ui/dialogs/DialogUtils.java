@@ -26,6 +26,7 @@ import org.eclipse.ui.dialogs.PatternFilter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
@@ -161,13 +162,13 @@ public class DialogUtils {
     }
 
     @NotNull
-    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable ModifyListener changeListener) {
-        return createOutputFolderChooser(parent, label, null, changeListener);
+    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable DBPProject project, @Nullable ModifyListener changeListener) {
+        return createOutputFolderChooser(parent, label, null, project, changeListener);
     }
 
     @NotNull
-    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable String value, @Nullable ModifyListener changeListener) {
-        return createOutputFolderChooser(parent, label, null, value, true, changeListener);
+    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable String value, @Nullable DBPProject project, @Nullable ModifyListener changeListener) {
+        return createOutputFolderChooser(parent, label, null, value, project, changeListener);
     }
 
     @Nullable
@@ -196,7 +197,7 @@ public class DialogUtils {
         @Nullable String label,
         @Nullable String tooltip,
         @Nullable String value,
-        boolean multiFileSystem,
+        @Nullable DBPProject project,
         @Nullable ModifyListener changeListener
     ) {
         final String message = label != null ? label : UIMessages.output_label_directory;
@@ -205,7 +206,7 @@ public class DialogUtils {
             @Override
             protected void openBrowser() {
                 String fileName;
-                if (multiFileSystem && DBWorkbench.getPlatformUI().supportsMultiFileSystems()) {
+                if (project != null && DBWorkbench.getPlatformUI().supportsMultiFileSystems(project)) {
                     fileName = DBWorkbench.getPlatformUI().openFileSystemSelector(
                         CommonUtils.toString(label, "Output folder"),
                         true, SWT.SAVE, false, null, value);

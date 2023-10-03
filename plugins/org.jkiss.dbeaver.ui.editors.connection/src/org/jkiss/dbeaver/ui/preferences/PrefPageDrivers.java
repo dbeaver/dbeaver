@@ -96,7 +96,7 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
 
         {
             Group drivers = UIUtils.createControlGroup(composite, UIConnectionMessages.pref_page_drivers_group_location, 2, GridData.FILL_HORIZONTAL, 300);
-            customDriversHome = DialogUtils.createOutputFolderChooser(drivers, UIConnectionMessages.pref_page_drivers_local_folder, null, null, false, null);
+            customDriversHome = DialogUtils.createOutputFolderChooser(drivers, UIConnectionMessages.pref_page_drivers_local_folder, null, null, null, null);
         }
 
         {
