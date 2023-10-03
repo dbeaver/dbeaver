@@ -25,6 +25,12 @@
          unpack="false"/>
 
    <plugin
+           id="org.jkiss.dbeaver.ext.dameng.ui"
+           download-size="0"
+           install-size="0"
+           version="0.0.0"/>
+
+   <plugin
          id="org.jkiss.dbeaver.ext.db2.ui"
          download-size="0"
          install-size="0"

@@ -106,6 +106,7 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
         );
         tokenText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         tokenText.addModifyListener((e -> token = tokenText.getText()));
+        tokenText.setMessage("API access token");
         createURLInfoLink(parent);
     }
 
