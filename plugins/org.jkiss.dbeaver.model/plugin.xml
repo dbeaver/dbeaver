@@ -214,4 +214,10 @@
 
     </extension>
 
+
+    <extension point="org.jkiss.dbeaver.navigator">
+        <extender id="dbfs" root="true" class="org.jkiss.dbeaver.model.navigator.fs.DBFNavigatorExtender"/>
+    </extension>
+
+
 </plugin>

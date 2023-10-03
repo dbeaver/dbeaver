@@ -576,30 +576,19 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                     ResultSetViewer resultSetViewer = activePart.getAdapter(ResultSetViewer.class);
                     if (presentation instanceof SpreadsheetPresentation) {
                         SpreadsheetPresentation ssp = (SpreadsheetPresentation) presentation;
-                        RGB color;
-                        final Shell shell = UIUtils.createCenteredShell(resultSetViewer.getControl().getShell());
-                        try {
-                            ColorDialog cd = new ColorDialog(shell);
-                            color = cd.open();
-                            if (color == null) {
-                                return null;
+                        UIUtils.asyncExec(() -> {
+                            ColorDialog dialog = new ColorDialog(UIUtils.createCenteredShell(resultSetViewer.getControl().getShell()));
+                            RGB color = dialog.open();
+                            if (color != null) {
+                                final DBVEntity vEntity = getColorsVirtualEntity(resultSetViewer);
+                                final DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
+                                ResultSetCellLocation cellLocation = ssp.getCurrentCellLocation();
+                                Object cellValue = resultSetViewer.getContainer().getResultSetController().getModel()
+                                    .getCellValue(cellLocation);
+                                vEntity.setColorOverride(attr, cellValue, null, StringConverter.asString(color));
+                                updateColors(resultSetViewer, vEntity, true);
                             }
-                        } finally {
-                            UIUtils.disposeCenteredShell(shell);
-                        }
-                        try {
-                            final DBVEntity vEntity = getColorsVirtualEntity(resultSetViewer);
-                            final DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
-                            ResultSetCellLocation currentCellLocation = ssp.getCurrentCellLocation();
-                            Object cellValue = resultSetViewer.getContainer().getResultSetController().getModel()
-                                .getCellValue(currentCellLocation);
-                            vEntity.setColorOverride(attr, cellValue, null, StringConverter.asString(color));
-                            updateColors(resultSetViewer, vEntity, true);
-                        } catch (IllegalStateException e) {
-                            DBWorkbench.getPlatformUI().showError(
-                                ResultSetMessages.dialog_row_colors_error_message_title,
-                                ResultSetMessages.dialog_row_colors_error_message_text, e);
-                        }
+                        });
                     }
                 }
             }
