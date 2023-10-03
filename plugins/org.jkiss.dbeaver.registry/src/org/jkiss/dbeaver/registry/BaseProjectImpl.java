@@ -257,6 +257,9 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         if (properties != null) {
             return;
         }
+        if (isInMemory() || DBWorkbench.isDistributed()) {
+            return;
+        }
 
         synchronized (metadataSync) {
             Path settingsFile = getMetadataPath().resolve(SETTINGS_STORAGE_FILE);
@@ -275,7 +278,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     }
 
     private void saveProperties() {
-        if (isInMemory()) {
+        if (isInMemory() || DBWorkbench.isDistributed()) {
             return;
         }
 

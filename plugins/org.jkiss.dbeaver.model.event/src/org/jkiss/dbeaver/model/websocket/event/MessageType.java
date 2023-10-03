@@ -14,18 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.gpt3;
+package org.jkiss.dbeaver.model.websocket.event;
 
-/**
- * GPT preference constants
- */
-public class GPTConstants {
-
-    public static final String OPENAI_ENGINE = "openai";
-
-    public static final String GPT_API_TOKEN = "gpt.token";
-    public static final String GPT_MODEL = "gpt.model";
-    public static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
-    public static final String GPT_LOG_QUERY = "gpt.log.query";
+public enum MessageType {
+    DEBUG,
+    INFO,
+    WARNING,
+    ERROR
 }
-
