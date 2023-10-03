@@ -42,16 +42,22 @@ public class StreamDataImporterColumnInfo extends AbstractAttribute implements D
         this.dataKind = dataKind;
     }
 
+    /**
+     *
+     * Updates current data type max length if needed
+     *
+     * @param dataSource to search data source specific options
+     * @param maxLengthFromData the required length for correct data storing from foreign sources for this data type
+     */
     public void updateMaxLength(@Nullable DBPDataSource dataSource, long maxLengthFromData) {
         long maxLength = getMaxLength();
         DBPPreferenceStore globalPreferenceStore = DTActivator.getDefault().getPreferences();
         if (dataSource != null) {
             // First check data source settings for max data type length
             DBPPreferenceStore dataSourcePreferenceStore = dataSource.getContainer().getPreferenceStore();
-            if (dataSourcePreferenceStore.contains(DTConstants.PREF_MAX_TYPE_LENGTH) &&
-                maxLength > dataSourcePreferenceStore.getInt(DTConstants.PREF_MAX_TYPE_LENGTH)
-            ) {
-                setMaxLength(dataSourcePreferenceStore.getInt(DTConstants.PREF_MAX_TYPE_LENGTH));
+            int maxTypeLengthFromPref = dataSourcePreferenceStore.getInt(DTConstants.PREF_MAX_TYPE_LENGTH);
+            if (dataSourcePreferenceStore.contains(DTConstants.PREF_MAX_TYPE_LENGTH) && maxLength > maxTypeLengthFromPref) {
+                setMaxLength(maxTypeLengthFromPref);
                 return;
             }
         }

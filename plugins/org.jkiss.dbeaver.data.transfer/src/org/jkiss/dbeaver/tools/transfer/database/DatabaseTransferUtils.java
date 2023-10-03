@@ -296,6 +296,7 @@ public class DatabaseTransferUtils {
             }
         }
         if (CommonUtils.isNotEmpty(finalName)) {
+            // Add quotes for the result name if needed
             return DBUtils.getQuotedIdentifier(dataSource, finalName);
         }
         log.debug("Can't transform target attribute name");

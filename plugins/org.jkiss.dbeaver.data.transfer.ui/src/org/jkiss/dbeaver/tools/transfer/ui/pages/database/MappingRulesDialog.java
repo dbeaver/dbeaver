@@ -251,6 +251,7 @@ public class MappingRulesDialog extends BaseDialog {
         if (nameCase != MappingNameCase.DEFAULT) {
             finalName = nameCase.getIdentifierCase().transform(targetName);
         } else if (caseChanged) {
+            // Only if user changed upper/lower case to default manually - then transform to database case
             finalName = dataSource.getSQLDialect().storesUnquotedCase().transform(targetName);
         }
         if (CommonUtils.isNotEmpty(finalName) && finalName.contains(" ")) {
@@ -269,6 +270,7 @@ public class MappingRulesDialog extends BaseDialog {
             }
         }
         if (CommonUtils.isNotEmpty(finalName)) {
+            // Add quotes for the result name if needed
             return DBUtils.getQuotedIdentifier(dataSource, finalName);
         }
         log.debug("Can't transform target attribute name");
