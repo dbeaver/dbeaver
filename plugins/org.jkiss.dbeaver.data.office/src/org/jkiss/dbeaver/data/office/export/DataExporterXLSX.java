@@ -480,14 +480,6 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         }
         wsh.incRow();
         rowCount++;
-        if ((rowCount <= 100 && rowCount % 10 == 0) || rowCount % 100 == 0) {
-            // Let's auto-size columns any 10 rows before 100 and any 100 rows after it
-            sh.trackAllColumnsForAutoSizing();
-            for (int i = 0, columnsSize = row.length; i < columnsSize; i++) {
-                sh.autoSizeColumn(i);
-            }
-            sh.untrackAllColumnsForAutoSizing();
-        }
     }
 
     private CellType getCellType(DBDAttributeBinding column) {
@@ -505,6 +497,15 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
     @Override
     public void exportFooter(DBRProgressMonitor monitor) throws DBException, IOException {
+        if (wb != null) {
+            // Do it here because we can have a few sheets
+            SXSSFSheet sheet = wb.getSheetAt(sheetIndex);
+            sheet.trackAllColumnsForAutoSizing();
+            for (int i = 0; i < columns.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+            sheet.untrackAllColumnsForAutoSizing();
+        }
         if (rowCount == 0) {
             exportRow(null, null, new Object[columns.length]);
         }
