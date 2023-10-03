@@ -113,6 +113,7 @@ public interface DBPDriver extends DBPNamedObject
     boolean supportsDriverProperties();
 
     boolean isEmbedded();
+    boolean isPropagateDriverProperties();
     boolean isAnonymousAccess();
     boolean isAllowsEmptyPassword();
     boolean isLicenseRequired();

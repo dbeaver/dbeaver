@@ -2,6 +2,9 @@
 <?eclipse version="3.4"?>
 
 <plugin>
+	<extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+		<propertyConfigurator class="org.jkiss.dbeaver.model.ai.openai.OpenAICompletionEngine" uiClass="org.jkiss.dbeaver.ui.editors.sql.ai.openai.OpenAiConfigurator"/>
+	</extension>
 	<extension point="org.eclipse.core.runtime.preferences">
 		<initializer class="org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencesInitializer"/>
 	</extension>

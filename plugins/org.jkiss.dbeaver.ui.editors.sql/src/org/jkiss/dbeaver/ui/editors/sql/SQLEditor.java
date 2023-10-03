@@ -16,16 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.eclipse.core.commands.ParameterizedCommand;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFileState;
-import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.e4.ui.model.application.ui.menu.MHandledItem;
-import org.eclipse.e4.ui.workbench.renderers.swt.HandledContributionItem;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -53,6 +48,7 @@ import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.IMenuService;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.rulers.IColumnSupport;
@@ -848,10 +844,6 @@ public class SQLEditor extends SQLEditorBase implements
         if (QMUtils.isTransactionActive(executionContext)) {
             return true;
         }
-        if (isNonPersistentEditor()) {
-            // Console is never dirty
-            return false;
-        }
         if (extraPresentation instanceof ISaveablePart && ((ISaveablePart) extraPresentation).isDirty()) {
             return true;
         }
@@ -1605,35 +1597,13 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Nullable
     private ToolItem getViewToolItem(@NotNull String commandId) {
-        ToolItem viewItem = findViewItemByCommandId(topBarMan, commandId);
+        ToolItem viewItem = UIUtils.findToolItemByCommandId(topBarMan, commandId);
         if (viewItem == null) {
-            viewItem = findViewItemByCommandId(bottomBarMan, commandId);
+            viewItem = UIUtils.findToolItemByCommandId(bottomBarMan, commandId);
         }
         return viewItem;
     }
     
-    @Nullable
-    private ToolItem findViewItemByCommandId(@NotNull ToolBarManager toolbarManager, @NotNull String commandId) {
-        for (ToolItem item : toolbarManager.getControl().getItems()) {
-            Object data = item.getData();
-            if (data instanceof CommandContributionItem) {
-                ParameterizedCommand cmd = ((CommandContributionItem) data).getCommand(); 
-                if (cmd != null && commandId.equals(cmd.getId())) {
-                    return item;
-                }
-            } else if (data instanceof HandledContributionItem) {
-                MHandledItem model = ((HandledContributionItem) data).getModel();
-                if (model != null ) {
-                    ParameterizedCommand cmd = model.getWbCommand();
-                    if (cmd != null && commandId.equals(cmd.getId())) {
-                        return item;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
     private CTabItem getActiveResultsTab() {
         return activeResultsTab == null || activeResultsTab.isDisposed() ?
             (resultTabs == null ? null : resultTabs.getSelection()) : activeResultsTab;
@@ -3075,6 +3045,11 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public void doSave(IProgressMonitor monitor) {
+        if (isNonPersistentEditor()) {
+            saveAsNewScript();
+            return;
+        }
+
         if (!EditorUtils.isInAutoSaveJob()) {
             monitor.beginTask("Save data changes...", 1);
             try {
@@ -3189,7 +3164,6 @@ public class SQLEditor extends SQLEditorBase implements
             IEditorInput input = new FileStoreEditorInput(fileStore);
 
             EditorUtils.setInputDataSource(input, new SQLNavigatorContext(getDataSourceContainer(), getExecutionContext()));
-
             setInput(input);
         } catch (CoreException e) {
             DBWorkbench.getPlatformUI().showError("File save", "Can't open SQL editor from external file", e);
@@ -3199,6 +3173,27 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public void saveToExternalFile() {
         saveToExternalFile(getScriptDirectory());
+    }
+
+    public void saveAsNewScript() {
+        final SQLNavigatorContext context = new SQLNavigatorContext(getDataSourceContainer(), getExecutionContext());
+        final IDocument document = getDocument();
+
+        if (document == null) {
+            return;
+        }
+
+        try {
+            final IFile script = SQLEditorUtils.createNewScript(getProject(), null, context);
+            final byte[] contents = document.get().getBytes(ResourcesPlugin.getEncoding());
+            script.setContents(new ByteArrayInputStream(contents), IResource.FORCE, new NullProgressMonitor());
+
+            final FileEditorInput input = new FileEditorInput(script);
+            EditorUtils.setInputDataSource(input, context);
+            setInput(input);
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError("File save", "Can't save as new script file", e);
+        }
     }
 
     @Nullable
@@ -4777,7 +4772,8 @@ public class SQLEditor extends SQLEditorBase implements
             UIUtils.asyncExec(() -> {
                 currentOutputViewer.getViewer().scrollToEnd();
                 if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW)) {
-                    if (!getViewToolItem(SQLEditorCommands.CMD_SQL_SHOW_OUTPUT).getSelection()) {
+                    ToolItem toolItem = getViewToolItem(SQLEditorCommands.CMD_SQL_SHOW_OUTPUT);
+                    if (toolItem != null && !toolItem.getSelection()) {
                         showOutputPanel();
                     }
                 }

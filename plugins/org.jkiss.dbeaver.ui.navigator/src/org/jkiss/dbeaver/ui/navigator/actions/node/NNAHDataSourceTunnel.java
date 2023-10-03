@@ -55,7 +55,7 @@ public class NNAHDataSourceTunnel extends NavigatorNodeActionHandlerAbstract {
         StringBuilder tip = new StringBuilder("Network handlers enabled:");
         for (DBWHandlerConfiguration handler : ((DBNDataSource)node).getDataSourceContainer().getConnectionConfiguration().getHandlers()) {
             if (handler.isEnabled()) {
-                tip.append("\n  -").append(handler.getHandlerDescriptor().getLabel());
+                tip.append("\n  -").append(handler.getTitle());
                 String hostName = handler.getStringProperty(DBWHandlerConfiguration.PROP_HOST);
                 if (!CommonUtils.isEmpty(hostName)) {
                     tip.append(": ").append(hostName);
@@ -72,7 +72,7 @@ public class NNAHDataSourceTunnel extends NavigatorNodeActionHandlerAbstract {
 
             String nhId = null;
             for (DBWHandlerConfiguration nhc : dataSourceContainer.getConnectionConfiguration().getHandlers()) {
-                if (nhc.isEnabled() && nhc.getHandlerDescriptor().getType() == DBWHandlerType.TUNNEL) {
+                if (nhc.isEnabled() && nhc.getType() == DBWHandlerType.TUNNEL) {
                     nhId = nhc.getId();
                     break;
                 }

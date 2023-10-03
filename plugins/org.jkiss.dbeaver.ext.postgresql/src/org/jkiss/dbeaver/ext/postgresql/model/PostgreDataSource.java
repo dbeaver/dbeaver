@@ -96,6 +96,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private String serverVersion;
 
     private volatile boolean hasStatistics;
+    private boolean supportsEnumTable;
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -304,7 +305,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         } else {
             getServerType().initDefaultSSLConfig(connectionInfo, props);
         }
-        PostgreServerType serverType = PostgreUtils.getServerType(getContainer().getDriver());
+        PostgreServerType serverType = getType();
         if (serverType.turnOffPreparedStatements()
             && !CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS))) {
             // Turn off prepared statements using, to avoid error: "ERROR: prepared statement "S_1" already exists" from PGBouncer #10742
@@ -440,6 +441,13 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         } catch (Exception e) {
             log.debug("Error reading PostgreSQL version: " + e.getMessage());
             serverVersion = "";
+        }
+
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read pg_enum table availability")) {
+            supportsEnumTable = PostgreUtils.isMetaObjectExists(session, "pg_enum", "*");
+        } catch (Exception e) {
+            log.debug("Error reading pg_enum " + e.getMessage());
+            supportsEnumTable = false;
         }
 
         // Read databases
@@ -718,7 +726,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     public PostgreServerExtension getServerType() {
         if (serverExtension == null) {
-            PostgreServerType serverType = PostgreUtils.getServerType(getContainer().getDriver());
+            PostgreServerType serverType = getType();
 
             try {
                 serverExtension = serverType.createServerExtension(this);
@@ -728,6 +736,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             }
         }
         return serverExtension;
+    }
+
+    public PostgreServerType getType() {
+        return PostgreUtils.getServerType(getContainer().getDriver());
     }
 
     public String getServerVersion() {
@@ -891,5 +903,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     public boolean supportsReadingKeysWithColumns() {
         return CommonUtils.toBoolean(
             getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS));
+    }
+
+    public boolean isSupportsEnumTable() {
+        return supportsEnumTable;
     }
 }
