@@ -27,16 +27,20 @@ import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
@@ -48,13 +52,17 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.storage.StringContentStorage;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditorPersistent;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -67,10 +75,12 @@ import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.Stream;
 
 /**
 * AbstractTextPanelEditor
@@ -83,12 +93,13 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     private static final String PREF_TEXT_EDITOR_ENCODING = "content.text.editor.encoding";
 
     private static final Log log = Log.getLog(AbstractTextPanelEditor.class);
-    public static final int LONG_CONTENT_LENGTH = 10000;
+    
 
     private IValueController valueController;
     private IEditorSite subSite;
     private EDITOR editor;
     private Path tempFile;
+    private CLabel messageBar;
 
     @Override
     public StyledText createControl(IValueController valueController) {
@@ -101,14 +112,41 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
             valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
             return new StyledText(valueController.getEditPlaceholder(), SWT.NONE);
         }
-        editor.createPartControl(valueController.getEditPlaceholder());
+        GridLayout lt = new GridLayout(1, false);
+        lt.marginWidth = 0;
+        lt.marginHeight = 0;
+        valueController.getEditPlaceholder().setLayout(lt);
+
+        Composite cmpsBase = new Composite(valueController.getEditPlaceholder(), SWT.NONE);
+        cmpsBase.setLayout(lt);
+        cmpsBase.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+
+        Composite cmpsInternalBase = new Composite(cmpsBase, SWT.NONE);
+        cmpsInternalBase.setLayout(lt);
+        cmpsInternalBase.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+
+        editor.createPartControl(cmpsInternalBase);
+        reasignLayout(cmpsInternalBase);
+
         StyledText editorControl = editor.getEditorControl();
         assert editorControl != null;
         initEditorSettings(editorControl);
-
         editor.addContextMenuContributor(manager -> contributeTextEditorActions(manager, editorControl));
-
+        messageBar = createMessageBar(cmpsBase);
         return editorControl;
+    }
+
+    private void reasignLayout(Composite cmpsInternalBase) {
+        Control[] children = cmpsInternalBase.getChildren();
+        Stream.of(children).forEach(c -> c.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1)));
+    }
+
+    private CLabel createMessageBar(Composite cmpsBase) {
+        UIUtils.createHorizontalLine(cmpsBase);
+        messageBar = new CLabel(cmpsBase, SWT.RIGHT);
+        messageBar.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+        messageBar.setFont(UIUtils.getMonospaceFont());
+        return messageBar;
     }
 
     protected abstract EDITOR createEditorParty(IValueController valueController);
@@ -269,28 +307,65 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     }
 
     @Override
-    public void primeEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull StyledText control, @Nullable DBDContent value) throws DBException
-    {
+    public void primeEditorValue(
+        @NotNull DBRProgressMonitor monitor, 
+        @NotNull StyledText control, 
+        @Nullable DBDContent value)
+            throws DBException {
+        if (value == null) {
+            log.error("Content value (LOB) is null");
+            return;
+        }
         try {
-            // Load contents in two steps (empty + real in async mode). Workaround for some strange bug in StyledText in E4.13 (#6701)
-            final TextViewer textViewer = editor.getTextViewer();
-            final String encoding = getPanelSettings().get(PREF_TEXT_EDITOR_ENCODING);
-            final ContentEditorInput textInput = new ContentEditorInput(valueController, null, null, encoding, monitor);
-            boolean longContent = textInput.getContentLength() > LONG_CONTENT_LENGTH;
-            if (longContent) {
-                UIUtils.asyncExec(() -> {
-                    editor.setInput(new StringEditorInput("Empty", "", true, StandardCharsets.UTF_8.name()));
-                });
+            int maxContentLength = DBWorkbench.getPlatform().getPreferenceStore().getInt(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE) * 1000;
+            if (editor == null) {
+                log.error("Editor is null or undefined");
+                return;
             }
-            UIUtils.asyncExec(() -> {
+            resetEditorInput();
+            if (value.getContentLength() > maxContentLength) {
+                showLimitedContent(value, maxContentLength);
+            } else {
+                showRegularContent(monitor);
+            }
+        } catch (Exception e) {
+            throw new DBException("Error loading text value", e);
+        } finally {
+            monitor.done();
+        }
+    }
 
-                if (textViewer != null && editor != null) {
+    private void resetEditorInput() {
+        // Load contents in two steps (empty + real in async mode). Workaround for some
+        // strange bug in StyledText in E4.13 (#6701)
+        UIUtils.asyncExec(() -> {
+            if (editor != null) {
+                messageBar.setText("");
+                messageBar.setImage(null);
+                editor.setInput(new StringEditorInput("Empty", "", true, StandardCharsets.UTF_8.name()));
+            }
+        });
+    }
+
+    private void showRegularContent(@NotNull DBRProgressMonitor monitor) throws DBException {
+        String encoding = getPanelSettings().get(PREF_TEXT_EDITOR_ENCODING);
+        if (encoding == null) {
+            encoding = StandardCharsets.UTF_8.name();
+        }
+        final ContentEditorInput textInput = new ContentEditorInput(valueController, null, null, encoding, monitor);
+        UIUtils.asyncExec(() -> {
+            if (editor != null) {
+                final TextViewer textViewer = editor.getTextViewer();
+                if (textViewer != null) {
                     StyledText textWidget = textViewer.getTextWidget();
-                    if (textWidget != null && longContent) {
+                    if (textWidget != null) {
                         GC gc = new GC(textWidget);
                         try {
-                            UIUtils.drawMessageOverControl(textWidget, gc, NLS.bind(ResultSetMessages.panel_editor_text_loading_placeholder_label, textInput.getContentLength()), 0);
+                            UIUtils.drawMessageOverControl(textWidget, gc,
+                                NLS.bind(ResultSetMessages.panel_editor_text_loading_placeholder_label, textInput.getContentLength()), 0);
                             editor.setInput(textInput);
+                            messageBar.setForeground(UIStyles.getDefaultTextForeground());
+                            messageBar.setText(String.format("Content size: %s Bytes", textInput.getContentLength()));
                         } finally {
                             gc.dispose();
                         }
@@ -299,11 +374,28 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
                     }
                     applyEditorStyle();
                 }
-            });
-        } catch (Exception e) {
-            throw new DBException("Error loading text value", e);
-        } finally {
-            monitor.done();
+            }
+        });
+    }
+
+    private void showLimitedContent(@NotNull DBDContent value, int lengthInBytes) throws DBCException, IOException {
+        DBDContentStorage contents = value.getContents(new VoidProgressMonitor());
+        byte[] displaingContentBytes = new byte[lengthInBytes];
+        try (final InputStream stream = contents.getContentStream()) {
+            displaingContentBytes = stream.readNBytes(lengthInBytes);
+            if (displaingContentBytes != null && displaingContentBytes.length > 0) {
+                final String content = new String(displaingContentBytes);
+                UIUtils.asyncExec(() -> {
+                    if (editor != null) {
+                        String msg = NLS.bind(ResultSetMessages.panel_editor_text_content_limitation_lbl, lengthInBytes / 1000);
+                        editor.setInput(new StringEditorInput("Limited Content ", content, true,
+                            StandardCharsets.UTF_8.name()));
+                        messageBar.setForeground(UIStyles.getErrorTextForeground());
+                        messageBar.setText(msg);
+                        messageBar.setImage(UIUtils.getShardImage(ISharedImages.IMG_OBJS_WARN_TSK));
+                    }
+                });
+            }
         }
     }
 

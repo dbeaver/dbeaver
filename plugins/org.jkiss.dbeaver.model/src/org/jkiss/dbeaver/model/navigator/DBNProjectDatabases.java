@@ -177,7 +177,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     }
 
     @Override
-    public void dropNodes(Collection<DBNNode> nodes) throws DBException {
+    public void dropNodes(DBRProgressMonitor monitor, Collection<DBNNode> nodes) throws DBException {
         moveNodesToFolder(nodes, null);
     }
 

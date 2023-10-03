@@ -20,8 +20,6 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -29,15 +27,13 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
-import org.jkiss.dbeaver.model.fs.nio.NIOFile;
-import org.jkiss.dbeaver.model.fs.nio.NIOFileSystemRoot;
-import org.jkiss.dbeaver.model.fs.nio.NIOFolder;
-import org.jkiss.dbeaver.model.fs.nio.NIOResource;
+import org.jkiss.dbeaver.model.fs.nio.EFSNIOFile;
+import org.jkiss.dbeaver.model.fs.nio.EFSNIOFileSystemRoot;
+import org.jkiss.dbeaver.model.fs.nio.EFSNIOFolder;
+import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.ByteNumberFormat;
 
@@ -59,7 +55,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
 
     private static final DBNNode[] EMPTY_NODES = new DBNNode[0];
 
-    private final ByteNumberFormat numberFormat = new ByteNumberFormat();
+    private static final ByteNumberFormat numberFormat = new ByteNumberFormat();
 
     private DBNNode[] children;
     private DBPImage resImage;
@@ -105,7 +101,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     // Path's file name may be null (e.g. forFS root folder)
     // Then try to extract it from URI or from toString
     private String getFileName() {
-        return URLDecoder.decode(NIOResource.getPathFileNameOrHost(getPath()), StandardCharsets.UTF_8);
+        return URLDecoder.decode(EFSNIOResource.getPathFileNameOrHost(getPath()), StandardCharsets.UTF_8);
     }
 
     @Override
@@ -256,7 +252,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     }
 
     @Override
-    public void dropNodes(Collection<DBNNode> nodes) throws DBException {
+    public void dropNodes(DBRProgressMonitor monitor, Collection<DBNNode> nodes) throws DBException {
         IContainer folder;
         IResource thisResource = getResource();
         if (thisResource instanceof IContainer) {
@@ -267,44 +263,35 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
         if (!(folder instanceof IFolder)) {
             throw new DBException("Can't drop files into non-folder");
         }
-        new AbstractJob("Copy files to workspace") {
-            {
-                setUser(true);
-            }
-            @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
-                monitor.beginTask("Copy files", nodes.size());
+        monitor.beginTask("Copy files", nodes.size());
+        try {
+            for (DBNNode node : nodes) {
+                IResource resource = node.getAdapter(IResource.class);
+                if (resource == null || !resource.exists()) {
+                    continue;
+                }
+                if (!(resource instanceof IFile)) {
+                    continue;
+                }
+                monitor.subTask("Copy file " + resource.getName());
                 try {
-                    for (DBNNode node : nodes) {
-                        IResource resource = node.getAdapter(IResource.class);
-                        if (resource == null || !resource.exists()) {
-                            continue;
-                        }
-                        if (!(resource instanceof IFile)) {
-                            continue;
-                        }
-                        monitor.subTask("Copy file " + resource.getName());
-                        try {
-                            IFile targetFile = ((IFolder)folder).getFile(resource.getName());
-                            try (InputStream is = ((IFile) resource).getContents()) {
-                                if (targetFile.exists()) {
-                                    targetFile.setContents(is, true, false, monitor.getNestedMonitor());
-                                } else {
-                                    targetFile.create(is, true, monitor.getNestedMonitor());
-                                }
-                            }
-                        } finally {
-                            monitor.worked(1);
+                    IFile targetFile = ((IFolder)folder).getFile(resource.getName());
+                    try (InputStream is = ((IFile) resource).getContents()) {
+                        if (targetFile.exists()) {
+                            targetFile.setContents(is, true, false, monitor.getNestedMonitor());
+                        } else {
+                            targetFile.create(is, true, monitor.getNestedMonitor());
                         }
                     }
-                } catch (Exception e) {
-                    return GeneralUtils.makeExceptionStatus(e);
                 } finally {
-                    monitor.done();
+                    monitor.worked(1);
                 }
-                return Status.OK_STATUS;
             }
-        }.schedule();
+        } catch (Exception e) {
+            throw new DBException("Error creating NIO resource", e);
+        } finally {
+            monitor.done();
+        }
     }
 
     protected void filterChildren(List<DBNNode> list) {
@@ -375,9 +362,8 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
             if (rootNode == null) {
                 return null;
             }
-            Path rootPath = rootNode.getPath();
             DBFVirtualFileSystemRoot fsRoot = rootNode.getRoot();
-            NIOFileSystemRoot root = new NIOFileSystemRoot(
+            EFSNIOFileSystemRoot root = new EFSNIOFileSystemRoot(
                 getOwnerProject().getEclipseProject(),
                 fsRoot,
                 fsRoot.getFileSystem().getType() + "/" + fsRoot.getFileSystem().getId() + "/" + fsRoot.getRootId()
@@ -385,9 +371,9 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
             Path path = getPath();
             IResource resource;
             if (allowsChildren()) {
-                resource = new NIOFolder(root, path);
+                resource = new EFSNIOFolder(root, path);
             } else {
-                resource = new NIOFile(root, path);
+                resource = new EFSNIOFile(root, path);
             }
             return adapter.cast(resource);
         }

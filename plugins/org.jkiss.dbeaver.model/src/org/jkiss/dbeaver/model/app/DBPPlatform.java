@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.fs.DBFRegistry;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -70,6 +71,9 @@ public interface DBPPlatform {
 
     @NotNull
     DBFRegistry getFileSystemRegistry();
+
+    @NotNull
+    DBWHandlerRegistry getNetworkHandlerRegistry();
 
     @NotNull
     DBPPreferenceStore getPreferenceStore();
