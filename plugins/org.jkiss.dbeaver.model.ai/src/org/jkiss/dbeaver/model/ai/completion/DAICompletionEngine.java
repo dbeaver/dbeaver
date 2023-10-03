@@ -20,26 +20,23 @@ package org.jkiss.dbeaver.model.ai.completion;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Completion engine
  */
-public interface DAICompletionEngine {
+public interface DAICompletionEngine<SERVICE> {
 
     /**
      * Completion engine name
      */
     String getEngineName();
-
-    /**
-     * Completion model name
-     */
-    String getModelName();
 
     /**
      * Do query completion
@@ -50,9 +47,12 @@ public interface DAICompletionEngine {
         @Nullable DBSLogicalDataSource dataSource,
         @NotNull DBCExecutionContext executionContext,
         @NotNull DAICompletionRequest completionRequest,
+        @NotNull IAIFormatter formatter,
         boolean returnOnlyCompletion,
         int maxResults
     ) throws DBException;
 
     boolean isValidConfiguration();
+
+    Map<String, SERVICE> getServiceMap();
 }

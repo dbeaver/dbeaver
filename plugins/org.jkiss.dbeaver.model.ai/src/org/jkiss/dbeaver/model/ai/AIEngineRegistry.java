@@ -51,14 +51,14 @@ public class AIEngineRegistry {
         }
 
         public String getLabel() {
-            return contributorConfig.getAttribute("id");
+            return contributorConfig.getAttribute("label");
         }
 
         String getReplaces() {
             return contributorConfig.getAttribute("replaces");
         }
 
-        public DAICompletionEngine createInstance() throws DBException {
+        public DAICompletionEngine<?> createInstance() throws DBException {
             ObjectType objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
             return objectType.createInstance(DAICompletionEngine.class);
         }
@@ -105,7 +105,7 @@ public class AIEngineRegistry {
         return list;
     }
 
-    public DAICompletionEngine getCompletionEngine(String id) throws DBException {
+    public DAICompletionEngine<?> getCompletionEngine(String id) throws DBException {
         while (true) {
             String replace = replaceMap.get(id);
             if (replace == null) {

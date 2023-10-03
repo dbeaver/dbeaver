@@ -42,7 +42,6 @@ public class IDEF1XDiagramNotation extends ERDNotationBase implements ERDNotatio
             srcDec.setTemplate(PolygonDecoration.TRIANGLE_TIP);
             srcDec.setFill(true);
             srcDec.setBackgroundColor(bckColor);
-            srcDec.setScale(15, 5);
             conn.setTargetDecoration(srcDec);
         } else if (constraintType.isAssociation() &&
             association.getSourceEntity() instanceof ERDEntity &&

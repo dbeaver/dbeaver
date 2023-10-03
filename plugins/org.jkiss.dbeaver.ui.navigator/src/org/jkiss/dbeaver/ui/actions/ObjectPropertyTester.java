@@ -26,16 +26,13 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -179,7 +176,7 @@ public class ObjectPropertyTester extends PropertyTester {
                     if ((((DBNResource) node).getFeatures() & DBPResourceHandler.FEATURE_DELETE) != 0) {
                         return true;
                     }
-                } else if (node instanceof DBNPath) {
+                } else if (node instanceof DBNNodeWithResource) {
                     return true;
                 }
                 break;

@@ -123,7 +123,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             }
         }
 
-        if (pkTableName == null) {
+        if (CommonUtils.isEmpty(pkTableName)) {
             log.debug("Null PK table name");
             return null;
         }

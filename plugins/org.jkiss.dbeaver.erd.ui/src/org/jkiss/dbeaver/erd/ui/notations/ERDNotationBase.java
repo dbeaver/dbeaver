@@ -17,11 +17,30 @@
 
 package org.jkiss.dbeaver.erd.ui.notations;
 
+import org.eclipse.draw2d.Label;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.themes.IThemeManager;
+import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
+
 public abstract class ERDNotationBase {
     protected static final String LABEL_0_TO_1 = "0..1";
     protected static final String LABEL_1 = "1";
     protected static final String LABEL_1_TO_N = "1..n";
-    protected static final int LBL_V_DISTANCE = -10;
-    protected static final int LBL_U_DISTANCE = 5;
-    protected static final int CIRCLE_RADIUS = 5;
+    protected static final int LBL_V_DISTANCE = -3;
+    protected static final int LBL_U_DISTANCE = 3;
+    protected static final int CIRCLE_RADIUS = 4;
+
+    protected Font getFont() {
+        final IThemeManager themeManager = PlatformUI.getWorkbench().getThemeManager();
+        return themeManager.getCurrentTheme().getFontRegistry().get(ERDUIConstants.PROP_DIAGRAM_FONT);
+    }
+
+    protected Label getLabel(String name, Color frgColor) {
+        Label label = new Label(name);
+        label.setFont(getFont());
+        label.setForegroundColor(frgColor);
+        return label;
+    }
 }
