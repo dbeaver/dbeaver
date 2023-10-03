@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.ui.notifications.NotificationSettings;
 import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 import org.jkiss.dbeaver.ui.registry.NotificationDescriptor;
 import org.jkiss.dbeaver.ui.registry.NotificationRegistry;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.File;
 import java.util.ArrayList;
