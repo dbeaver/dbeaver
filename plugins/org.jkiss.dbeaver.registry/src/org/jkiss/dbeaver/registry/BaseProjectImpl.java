@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.impl.app.DefaultValueEncryptor;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretSubject;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
@@ -103,7 +102,6 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         this.workspace = workspace;
         this.sessionContext = sessionContext == null ? workspace.getAuthContext() : sessionContext;
         this.fileSystemManager = new DBFFileSystemManager(this);
-        fileSystemManager.reloadFileSystems(new LoggingProgressMonitor());
     }
 
     public void setInMemory(boolean inMemory) {

@@ -33,7 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class DBFFileSystemManager implements DBFEventListener {
-    private final Map<String, DBFVirtualFileSystem> dbfFileSystems = new LinkedHashMap<>();
+    private volatile Map<String, DBFVirtualFileSystem> dbfFileSystems;
     @NotNull
     private final DBPProject project;
 
@@ -43,7 +43,7 @@ public class DBFFileSystemManager implements DBFEventListener {
     }
 
     public synchronized void reloadFileSystems(@NotNull DBRProgressMonitor monitor) {
-        clear();
+        this.dbfFileSystems = new LinkedHashMap<>();
         var fsRegistry = DBWorkbench.getPlatform().getFileSystemRegistry();
         for (DBFFileSystemDescriptor fileSystemProviderDescriptor : fsRegistry.getFileSystemProviders()) {
             var fsProvider = fileSystemProviderDescriptor.getInstance();
@@ -51,10 +51,6 @@ public class DBFFileSystemManager implements DBFEventListener {
                 dbfFileSystems.put(dbfFileSystem.getId(), dbfFileSystem);
             }
         }
-    }
-
-    public synchronized void clear() {
-        dbfFileSystems.clear();
     }
 
     @NotNull
@@ -67,7 +63,8 @@ public class DBFFileSystemManager implements DBFEventListener {
         if (CommonUtils.isEmpty(fsId)) {
             throw new DBException("File system id not present in the file uri: " + uri);
         }
-        DBFVirtualFileSystem fileSystem = dbfFileSystems.values().stream()
+        DBFVirtualFileSystem fileSystem = getVirtualFileSystems()
+            .stream()
             .filter(fs -> fs.getType().equals(fsType) && fs.getId().equals(fsId))
             .findFirst()
             .orElseThrow(() -> new DBException("Cannot find file system provider for the uri:" + uri));
@@ -80,7 +77,10 @@ public class DBFFileSystemManager implements DBFEventListener {
     }
 
     @NotNull
-    public Collection<DBFVirtualFileSystem> getVirtualFileSystems() {
+    public synchronized Collection<DBFVirtualFileSystem> getVirtualFileSystems() {
+        if (dbfFileSystems == null) {
+            reloadFileSystems(new LoggingProgressMonitor());
+        }
         return dbfFileSystems.values();
     }
 
@@ -90,7 +90,6 @@ public class DBFFileSystemManager implements DBFEventListener {
     }
 
    public void close() {
-        clear();
         DBFEventManager.getInstance().removeListener(this);
     }
 }

@@ -18,19 +18,18 @@ package org.jkiss.dbeaver.model.navigator.fs;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
 import org.jkiss.dbeaver.model.navigator.DBNModelExtender;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.ArrayUtils;
 
 public class DBFNavigatorExtender implements DBNModelExtender {
     @Nullable
     @Override
     public DBNNode[] getExtraNodes(@NotNull DBNNode parentNode) {
         if (parentNode instanceof DBNProject) {
-            DBFFileSystemManager fileSystemManager = ((DBNProject) parentNode).getProject().getFileSystemManager();
-            if (CommonUtils.isEmpty(fileSystemManager.getVirtualFileSystems())) {
+            if (ArrayUtils.isEmpty(DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProviders())) {
                 return null;
             }
             return new DBNNode[]{new DBNFileSystems((DBNProject) parentNode)};
