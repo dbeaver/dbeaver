@@ -149,7 +149,7 @@
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeign" label="%tree.foreign.tables.node.name" icon="#folder_link" description="%tree.foreign.tables.node.tip" visibleIf="connected &amp;&amp; dataSource.serverType.supportsForeignServers()">
-                                    <items label="%tree.foreignTable.node.name" path="foreignTable" property="foreignTables" icon="#table">
+                                    <items label="%tree.foreign.table.node.name" path="foreignTable" property="foreignTables" icon="#table">
                                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip" visibleIf="!object.isPartition()">
                                             <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                             </items>
