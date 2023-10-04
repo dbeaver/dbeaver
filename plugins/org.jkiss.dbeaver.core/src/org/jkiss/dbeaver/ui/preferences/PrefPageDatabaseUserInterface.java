@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguageManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.registry.BaseApplicationImpl;
 import org.jkiss.dbeaver.registry.SWTBrowserRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageDescriptor;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
@@ -58,6 +59,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
+import java.nio.charset.Charset;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -179,15 +181,15 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 CoreMessages.pref_page_ui_general_combo_encoding_tooltip,
                 SWT.DROP_DOWN);
             cmbDefaultEncoding.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            for (String type : GeneralUtils.availableCharsets()) {
+            for (String type : availableCharsets()) {
                 cmbDefaultEncoding.add(type);
             }
-            cmbDefaultEncoding.select(GeneralUtils.availableCharsets().indexOf(System.getProperty(StandardConstants.ENV_FILE_ENCODING)));
+            cmbDefaultEncoding.select(availableCharsets().indexOf(System.getProperty(StandardConstants.ENV_FILE_ENCODING)));
             cmbDefaultEncoding.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     if (cmbDefaultEncoding.getSelectionIndex() == 0) {
-                        userEncoding = GeneralUtils.getSystemEncoding();
+                        userEncoding = BaseApplicationImpl.getInstance().getSystemEncoding();
                     } else {
                         userEncoding = cmbDefaultEncoding.getText();
                     }
@@ -338,5 +340,15 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     @Override
     public void setElement(IAdaptable element)
     {
+    }
+
+    /**
+     * Return available charsets with first item of system encoding
+     */
+    public static List<String> availableCharsets() {
+        List<String> charsetList = new ArrayList<>();
+        charsetList.add(String.format("%s (%s)", "Default encoding", BaseApplicationImpl.getInstance().getSystemEncoding()));
+        charsetList.addAll(Charset.availableCharsets().keySet());
+        return charsetList;
     }
 }

@@ -102,5 +102,14 @@ public interface DBPApplication {
      */
     long getApplicationStartTime();
 
+    /**
+     * Store system encoding specification
+     */
+    public void storeSystemEncoding(String encoding);
+
+    /**
+     * Method return stored system value of encoding
+     */
+    public String getSystemEncoding();
 
 }

@@ -40,6 +40,7 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
 
     private String applicationRunId;
     private final long applicationStartTime = System.currentTimeMillis();
+    private String systemFileEncoding;
 
     protected BaseApplicationImpl() {
         if (INSTANCE != null && !(INSTANCE instanceof EclipsePluginApplicationImpl)) {
@@ -143,6 +144,22 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
     @Override
     public void stop() {
 
+    }
+
+    /**
+     * Store system encoding specification
+     */
+    @Override
+    public void storeSystemEncoding(String encoding) {
+        systemFileEncoding = encoding;
+    }
+
+    /**
+     * Method return stored system value of encoding
+     */
+    @Override
+    public String getSystemEncoding() {
+        return systemFileEncoding;
     }
 
 }

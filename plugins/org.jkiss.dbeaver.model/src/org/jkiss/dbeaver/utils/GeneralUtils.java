@@ -62,7 +62,6 @@ public class GeneralUtils {
 
     public static final String UTF8_ENCODING = StandardCharsets.UTF_8.name();
     public static final String DEFAULT_ENCODING = UTF8_ENCODING;
-    private static String systemFileEncoding;
 
     public static final Charset UTF8_CHARSET = Charset.forName(UTF8_ENCODING);
     public static final Charset DEFAULT_FILE_CHARSET = UTF8_CHARSET;
@@ -846,30 +845,6 @@ public class GeneralUtils {
                 putLong(source.getLong());
         target.rewind();
         return new UUID(target.getLong(), target.getLong());
-    }
-
-    /**
-     * Store system encoding specification
-     */
-    public static void storeSystemEncoding(String encoding) {
-        systemFileEncoding = encoding;
-    }
-
-    /**
-     * Method return stored system value of encoding
-     */
-    public static String getSystemEncoding() {
-        return systemFileEncoding;
-    }
-
-    /**
-     * Return available charsets with first item of system encoding
-     */
-    public static List<String> availableCharsets() {
-        List<String> charsetList = new ArrayList<>();
-        charsetList.add(String.format("%s (%s)", "Default encoding", systemFileEncoding));
-        charsetList.addAll(Charset.availableCharsets().keySet());
-        return charsetList;
     }
 
 }
