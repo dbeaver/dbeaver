@@ -82,6 +82,7 @@ public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNative
             settings.getOutputFolderPattern(),
             null,
             null,
+            false,
             e -> updateState());
         outputFileText = UIUtils.createLabelText(
             outputGroup,

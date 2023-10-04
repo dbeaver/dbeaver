@@ -103,7 +103,7 @@ class CompareObjectsPageOutput extends ActiveWizardPage<CompareObjectsWizard> {
                 }
             });
 
-            outputFolderText = DialogUtils.createOutputFolderChooser(outputSettings, null, null, null);
+            outputFolderText = DialogUtils.createOutputFolderChooser(outputSettings, null, null, false, null);
             outputFolderText.setText(settings.getOutputFolder());
             UIUtils.enableWithChildren(outputFolderText.getParent(), settings.getOutputType() == CompareObjectsSettings.OutputType.FILE);
             outputFolderText.addModifyListener(new ModifyListener() {

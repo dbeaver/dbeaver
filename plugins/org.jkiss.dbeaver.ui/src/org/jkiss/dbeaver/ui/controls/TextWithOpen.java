@@ -52,13 +52,15 @@ public class TextWithOpen extends Composite {
 
     private final Text text;
     private final ToolBar toolbar;
+    private final boolean multiFS;
 
-    public TextWithOpen(Composite parent) {
-        this(parent, false);
+    public TextWithOpen(Composite parent, boolean multiFS) {
+        this(parent, multiFS, false);
     }
     
-    public TextWithOpen(Composite parent, boolean secured) {
+    public TextWithOpen(Composite parent, boolean multiFS, boolean secured) {
         super(parent, SWT.NONE);
+        this.multiFS = multiFS;
         final GridLayout gl = new GridLayout(2, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
@@ -97,15 +99,29 @@ public class TextWithOpen extends Composite {
             });
         }
         {
-            final ToolItem toolItem = new ToolItem(toolbar, SWT.NONE);
-            toolItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
-            toolItem.setToolTipText(UIMessages.text_with_open_dialog_browse);
-            toolItem.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    openBrowser();
-                }
-            });
+            if (!DBWorkbench.isDistributed() || !isMultiFileSystem()) {
+                // Local FS not available in TE when multi FS is applicable
+                final ToolItem toolItem = new ToolItem(toolbar, SWT.NONE);
+                toolItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
+                toolItem.setToolTipText(UIMessages.text_with_open_dialog_browse);
+                toolItem.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        openBrowser(false);
+                    }
+                });
+            }
+            if (isMultiFileSystem() && getProject() != null) {
+                final ToolItem remoteFsItem = new ToolItem(toolbar, SWT.NONE);
+                remoteFsItem.setImage(DBeaverIcons.getImage(DBIcon.TYPE_REFERENCE));
+                remoteFsItem.setToolTipText(UIMessages.text_with_open_dialog_browse_remote);
+                remoteFsItem.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        openBrowser(true);
+                    }
+                });
+            }
         }
 
         if (!useTextEditor && !isBinaryContents()) {
@@ -131,7 +147,7 @@ public class TextWithOpen extends Composite {
                 DBPProject project = getProject();
                 Path targetFile;
                 try {
-                    if (project != null) {
+                    if (project != null && isMultiFileSystem()) {
                         try {
                             targetFile = DBUtils.resolvePathFromString(new VoidProgressMonitor(), project, fileName);
                         } catch (DBException ex) {
@@ -171,14 +187,14 @@ public class TextWithOpen extends Composite {
     }
 
     public boolean isMultiFileSystem() {
-        return false;
+        return multiFS;
     }
 
     public DBPProject getProject() {
         return null;
     }
 
-    protected void openBrowser() {
+    protected void openBrowser(boolean remoteFS) {
 
     }
 

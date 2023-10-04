@@ -44,11 +44,11 @@ public class TextWithOpenFile extends TextWithOpen {
     private boolean openFolder = false;
 
     public TextWithOpenFile(Composite parent, String title, String[] filterExt, int style, boolean binary) {
-        this(parent, title, filterExt, style, binary, false);
+        this(parent, title, filterExt, style, binary, false, false);
     }
     
-    public TextWithOpenFile(Composite parent, String title, String[] filterExt, int style, boolean binary, boolean secured) {
-        super(parent, secured);
+    public TextWithOpenFile(Composite parent, String title, String[] filterExt, int style, boolean binary, boolean multiFS, boolean secured) {
+        super(parent, multiFS, secured);
         this.title = title;
         this.filterExt = filterExt;
         this.style = style;
@@ -64,7 +64,7 @@ public class TextWithOpenFile extends TextWithOpen {
     }
 
     public TextWithOpenFile(Composite parent, String title, String[] filterExt, boolean binary, boolean secured) {
-        this(parent, title, filterExt, SWT.SINGLE | SWT.OPEN, binary, secured);
+        this(parent, title, filterExt, SWT.SINGLE | SWT.OPEN, binary, false, secured);
     }
 
     public void setOpenFolder(boolean openFolder) {
@@ -76,9 +76,9 @@ public class TextWithOpenFile extends TextWithOpen {
         return binary;
     }
 
-    protected void openBrowser() {
+    protected void openBrowser(boolean remoteFS) {
         String selected;
-        if (isMultiFileSystem() && DBWorkbench.getPlatformUI().supportsMultiFileSystems(getProject())) {
+        if (remoteFS) {
             selected = DBWorkbench.getPlatformUI().openFileSystemSelector(
                 title,
                 openFolder,

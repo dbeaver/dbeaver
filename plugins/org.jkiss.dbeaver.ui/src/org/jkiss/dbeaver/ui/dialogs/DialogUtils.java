@@ -162,33 +162,13 @@ public class DialogUtils {
     }
 
     @NotNull
-    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable DBPProject project, @Nullable ModifyListener changeListener) {
-        return createOutputFolderChooser(parent, label, null, project, changeListener);
+    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable DBPProject project, boolean multiFS, @Nullable ModifyListener changeListener) {
+        return createOutputFolderChooser(parent, label, null, project, multiFS, changeListener);
     }
 
     @NotNull
-    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable String value, @Nullable DBPProject project, @Nullable ModifyListener changeListener) {
-        return createOutputFolderChooser(parent, label, null, value, project, changeListener);
-    }
-
-    @Nullable
-    public static String openDirectoryDialog(@NotNull Shell shell, @NotNull String message, @Nullable String directory) {
-        final DirectoryDialog dialog = new DirectoryDialog(shell);
-        dialog.setMessage("Choose target directory");
-        dialog.setText(message);
-
-        if (CommonUtils.isEmpty(directory)) {
-            directory = curDialogFolder;
-        }
-        if (!CommonUtils.isEmpty(directory)) {
-            dialog.setFilterPath(directory);
-        }
-        directory = dialog.open();
-        if (directory != null) {
-            setCurDialogFolder(directory);
-        }
-
-        return directory;
+    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable String value, @Nullable DBPProject project, boolean multiFS, @Nullable ModifyListener changeListener) {
+        return createOutputFolderChooser(parent, label, null, value, project, multiFS, changeListener);
     }
 
     @NotNull
@@ -198,15 +178,19 @@ public class DialogUtils {
         @Nullable String tooltip,
         @Nullable String value,
         @Nullable DBPProject project,
+        boolean multiFS,
         @Nullable ModifyListener changeListener
     ) {
+        if (multiFS) {
+            multiFS = project != null && DBWorkbench.getPlatformUI().supportsMultiFileSystems(project);
+        }
         final String message = label != null ? label : UIMessages.output_label_directory;
         UIUtils.createControlLabel(parent, message).setToolTipText(tooltip);
-        final TextWithOpen directoryText = new TextWithOpen(parent) {
+        final TextWithOpen directoryText = new TextWithOpen(parent, multiFS) {
             @Override
-            protected void openBrowser() {
+            protected void openBrowser(boolean remoteFS) {
                 String fileName;
-                if (project != null && DBWorkbench.getPlatformUI().supportsMultiFileSystems(project)) {
+                if (remoteFS && project != null) {
                     fileName = DBWorkbench.getPlatformUI().openFileSystemSelector(
                         CommonUtils.toString(label, "Output folder"),
                         true, SWT.SAVE, false, null, value);
@@ -235,6 +219,26 @@ public class DialogUtils {
         }
 
         return directoryText.getTextControl();
+    }
+
+    @Nullable
+    public static String openDirectoryDialog(@NotNull Shell shell, @NotNull String message, @Nullable String directory) {
+        final DirectoryDialog dialog = new DirectoryDialog(shell);
+        dialog.setMessage("Choose target directory");
+        dialog.setText(message);
+
+        if (CommonUtils.isEmpty(directory)) {
+            directory = curDialogFolder;
+        }
+        if (!CommonUtils.isEmpty(directory)) {
+            dialog.setFilterPath(directory);
+        }
+        directory = dialog.open();
+        if (directory != null) {
+            setCurDialogFolder(directory);
+        }
+
+        return directory;
     }
 
     public static TreeViewer createFilteredTree(Composite parent, int treeStyle, PatternFilter filter, String initialText) {

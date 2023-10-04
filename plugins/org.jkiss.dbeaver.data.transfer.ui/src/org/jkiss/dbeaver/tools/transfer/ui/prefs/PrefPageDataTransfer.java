@@ -95,6 +95,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
                 DTUIMessages.pref_data_transfer_options_fallback_directory_tip,
                 null,
                 null,
+                false,
                 null
             );
             fallbackOutputDirectoryText.setMessage(DTConstants.DEFAULT_FALLBACK_OUTPUT_DIRECTORY);
