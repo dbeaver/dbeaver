@@ -270,6 +270,14 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STORE_TYPE_WINDOWS);
         }
 
+        // Encoding initialization
+        String fileEncoding = GeneralUtils.getFileEncoding();
+        GeneralUtils.storeSystemEncoding(fileEncoding);
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        if (store != null) {
+            GeneralUtils.setFileEncoding(store.getString(DBeaverPreferences.FILE_ENCODING));
+        }
+
         // Prefs default
         PlatformUI.getPreferenceStore().setDefault(
             IWorkbenchPreferenceConstants.KEY_CONFIGURATION_ID,

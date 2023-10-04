@@ -463,6 +463,11 @@ public class CoreMessages extends NLS {
 	public static String pref_page_ui_general_label_options_take_effect_after_restart;
 	public static String pref_page_ui_general_label_settings;
 
+    // Encoding 
+    public static String pref_page_ui_general_combo_encoding;
+    public static String pref_page_ui_general_combo_encoding_tooltip;
+    public static String pref_page_ui_general_group_encoding;
+
 	public static String pref_page_notifications_group_global;
 	public static String pref_page_notifications_enable_notifications_label;
 	public static String pref_page_notifications_enable_notifications_label_tip;

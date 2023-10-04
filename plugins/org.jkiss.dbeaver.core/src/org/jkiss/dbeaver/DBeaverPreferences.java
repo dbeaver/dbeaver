@@ -57,5 +57,7 @@ public final class DBeaverPreferences
 
     public static final String LOGS_DEBUG_ENABLED = "logs.debug.enabled";
     public static final String LOGS_DEBUG_LOCATION = "logs.debug.location";
+    // Encoding
+    public static final String FILE_ENCODING = "user.file.encoding";
 
 }

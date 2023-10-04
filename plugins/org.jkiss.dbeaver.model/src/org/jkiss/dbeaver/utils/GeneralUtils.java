@@ -62,6 +62,7 @@ public class GeneralUtils {
 
     public static final String UTF8_ENCODING = StandardCharsets.UTF_8.name();
     public static final String DEFAULT_ENCODING = UTF8_ENCODING;
+    private static String systemFileEncoding;
 
     public static final Charset UTF8_CHARSET = Charset.forName(UTF8_ENCODING);
     public static final Charset DEFAULT_FILE_CHARSET = UTF8_CHARSET;
@@ -112,6 +113,23 @@ public class GeneralUtils {
             consoleEncoding = getDefaultFileEncoding();
         }
         return consoleEncoding;
+    }
+
+    public static void setFileEncoding(String string) {
+        Charset charset = Charset.availableCharsets().get(string);
+        if (charset != null) {
+            System.setProperty(StandardConstants.ENV_FILE_ENCODING, charset.name());
+        } else {
+            setDeafaultFileEncoding();
+        }
+    }
+
+    public static void setDeafaultFileEncoding() {
+        System.setProperty(StandardConstants.ENV_FILE_ENCODING, UTF8_ENCODING);
+    }
+
+    public static String getFileEncoding() {
+        return System.getProperty(StandardConstants.ENV_FILE_ENCODING);
     }
 
     public static String getDefaultLineSeparator() {
@@ -829,4 +847,56 @@ public class GeneralUtils {
         target.rewind();
         return new UUID(target.getLong(), target.getLong());
     }
+
+    /**
+     * Find index of item in set
+     */
+    public static <T> int getIndexInSet(Set<T> set, @Nullable T value) {
+        if (value == null) {
+            return -1;
+        }
+        int result = 0;
+        for (T t : set) {
+            if (t.equals(value)) {
+                return result;
+            }
+            result++;
+        }
+        return -1;
+    }
+
+    /**
+     * Store system encoding specification
+     */
+    public static void storeSystemEncoding(String encoding) {
+        systemFileEncoding = encoding;
+    }
+
+    /**
+     * Return available charsets with first item of system encoding
+     */
+    public static List<String> availableCharsets() {
+        List<String> charsetList = new ArrayList<>();
+        charsetList.add(String.format("%s (%s)", "Default encoding", systemFileEncoding));
+        charsetList.addAll(Charset.availableCharsets().keySet());
+        return charsetList;
+    }
+
+    /**
+     * Return index of charset specification
+     */
+    public static int getIndexOfAvailableCharset(String encoding) {
+        return availableCharsets().indexOf(encoding);
+    }
+
+    /**
+     * Return charset specification by index
+     */
+    public static String getCharsetByIndex(int index) {
+        if (index == 0) {
+            return systemFileEncoding;
+        }
+        return availableCharsets().get(index);
+    }
+
 }

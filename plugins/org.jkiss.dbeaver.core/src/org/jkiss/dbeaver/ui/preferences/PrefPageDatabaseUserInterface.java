@@ -74,11 +74,13 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
     @Nullable
     private Combo clientTimezone;
+    private Combo cmbDefaultEncoding;
 
     private boolean isStandalone = DesktopPlatform.isStandalone();
     private Combo browserCombo;
     private Button useEmbeddedBrowserAuth;
 
+    private String userEncoding;
 
     public PrefPageDatabaseUserInterface()
     {
@@ -109,12 +111,22 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
                 0
             );
+            Control tipLabel = UIUtils.createInfoLabel(regionalSettingsGroup,
+                CoreMessages.pref_page_ui_general_label_options_take_effect_after_restart
+            );
+            tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
+                GridData.VERTICAL_ALIGN_BEGINNING,
+                false,
+                false,
+                2,
+                1
+            ));
             workspaceLanguage = UIUtils.createLabelCombo(regionalSettingsGroup,
                 CoreMessages.pref_page_ui_general_combo_language,
                 CoreMessages.pref_page_ui_general_combo_language_tip,
                 SWT.READ_ONLY | SWT.DROP_DOWN
             );
-            workspaceLanguage.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            workspaceLanguage.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             List<PlatformLanguageDescriptor> languages = PlatformLanguageRegistry.getInstance().getLanguages();
             DBPPlatformLanguage pLanguage = DBPPlatformDesktop.getInstance().getLanguage();
             for (int i = 0; i < languages.size(); i++) {
@@ -133,7 +145,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 CoreMessages.pref_page_ui_general_combo_timezone_tip,
                 SWT.DROP_DOWN
             );
-            clientTimezone.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            clientTimezone.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             clientTimezone.add(DBConstants.DEFAULT_TIMEZONE);
             for (String timezoneName : TimezoneRegistry.getTimezoneNames()) {
                 clientTimezone.add(timezoneName);
@@ -156,17 +168,27 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             };
             ContentAssistUtils.installContentProposal(clientTimezone, new ComboContentAdapter(), proposalProvider);
 
-            Control tipLabel = UIUtils.createInfoLabel(regionalSettingsGroup,
-                CoreMessages.pref_page_ui_general_label_options_take_effect_after_restart
-            );
-            tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
-                GridData.VERTICAL_ALIGN_BEGINNING,
-                false,
-                false,
+            Group encodingSettingsGroup = UIUtils.createControlGroup(composite,
+                CoreMessages.pref_page_ui_general_group_encoding,
                 2,
-                1
-            ));
-
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
+                0);
+            cmbDefaultEncoding = UIUtils.createLabelCombo(encodingSettingsGroup,
+                CoreMessages.pref_page_ui_general_combo_encoding,
+                CoreMessages.pref_page_ui_general_combo_encoding_tooltip,
+                SWT.DROP_DOWN);
+            cmbDefaultEncoding.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            for (String type : GeneralUtils.availableCharsets()) {
+                cmbDefaultEncoding.add(type);
+            }
+            String fileEncoding = GeneralUtils.getFileEncoding();
+            cmbDefaultEncoding.select(GeneralUtils.getIndexOfAvailableCharset(fileEncoding));
+            cmbDefaultEncoding.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    userEncoding = GeneralUtils.getCharsetByIndex(cmbDefaultEncoding.getSelectionIndex());
+                }
+            });
         }
         Group groupObjects = UIUtils.createControlGroup(
             composite,
@@ -293,6 +315,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Change language", "Can't switch language to " + language, e);
             }
+        }
+        if (!userEncoding.isEmpty()) {
+            store.setValue(DBeaverPreferences.FILE_ENCODING, userEncoding);
+            GeneralUtils.setFileEncoding(userEncoding);
         }
 
         return true;
