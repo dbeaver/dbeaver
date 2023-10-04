@@ -36,7 +36,6 @@ import org.jkiss.utils.CommonUtils;
 
 public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPreferencePage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.datatransfer";
-    private static final int DEFAULT_MAX_TYPE_LENGTH = 2048;
 
     private Button reconnectToLastDatabaseButton;
     private Text fallbackOutputDirectoryText;
@@ -136,7 +135,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
             typeLengthSpinner = UIUtils.createSpinner(
                 mappingGroup,
                 DTUIMessages.pref_data_transfer_spanner_max_length_tip,
-                DEFAULT_MAX_TYPE_LENGTH,
+                DTConstants.DEFAULT_MAX_TYPE_LENGTH,
                 1,
                 Integer.MAX_VALUE);
         }
@@ -159,7 +158,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
         nameCaseCombo.select(preferences.getInt(DTConstants.PREF_NAME_CASE_MAPPING));
         replaceCombo.select(preferences.getInt(DTConstants.PREF_REPLACE_MAPPING));
         typeLengthSpinner.setSelection(preferences.contains(DTConstants.PREF_MAX_TYPE_LENGTH) ?
-            preferences.getInt(DTConstants.PREF_MAX_TYPE_LENGTH) : DEFAULT_MAX_TYPE_LENGTH);
+            preferences.getInt(DTConstants.PREF_MAX_TYPE_LENGTH) : DTConstants.DEFAULT_MAX_TYPE_LENGTH);
 
     }
 
