@@ -20,15 +20,16 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.awt.injector.ProxyInjector;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.browser.BrowsePeerMethods;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
+import org.jkiss.dbeaver.ui.browser.BrowsePeerMethods;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
+import java.awt.*;
 import java.io.PrintStream;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -70,8 +71,18 @@ public class DBeaverActivator extends AbstractUIPlugin {
         } catch (MissingResourceException x) {
             coreResourceBundle = null;
         }
-        if (DesktopPlatform.isStandalone()) {
-            injectProxyPeer();
+        if (DesktopPlatform.isStandalone() && getPreferenceStore().getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH)) {
+            try {
+                if (Desktop.isDesktopSupported()) {
+                    injectProxyPeer();
+                } else {
+                    getLog().warn("Desktop interface not available");
+                    getPreferenceStore().setValue(DBeaverPreferences.UI_USE_EMBEDDED_AUTH, false);
+                }
+            } catch (Throwable e) {
+                getLog().warn(e.getMessage());
+                getPreferenceStore().setValue(DBeaverPreferences.UI_USE_EMBEDDED_AUTH, false);
+            }
         }
     }
 

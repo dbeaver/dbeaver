@@ -601,13 +601,6 @@
              notation="org.jkiss.dbeaver.erd.ui.notation.idef1x.IDEF1XDiagramNotation">
        </erdNotation>
        <erdNotation
-             description="Charles Bachman diagram notation"
-             id="org.jkiss.dbeaver.erd.notaion.bachman"
-             isDefault="false"
-             name="Bachman"
-             notation="org.jkiss.dbeaver.erd.ui.notation.bachman.BachmanDiagramNotation">
-       </erdNotation>
-       <erdNotation
              description="Crow’s Foot diagram notation"
              id="org.jkiss.dbeaver.erd.notaion.crowsfoot"
              isDefault="false"

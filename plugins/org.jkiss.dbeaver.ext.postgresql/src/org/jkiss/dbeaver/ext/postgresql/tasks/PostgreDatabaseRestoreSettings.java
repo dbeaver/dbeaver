@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.postgresql.tasks;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -112,6 +113,9 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
                 }
             } else {
                 for (DBSObject object : getDatabaseObjects()) {
+                    if (object instanceof PostgreSchema) {
+                        object = ((PostgreSchema) object).getDatabase();
+                    } 
                     if (object instanceof PostgreDatabase) {
                         restoreInfo = new PostgreDatabaseRestoreInfo((PostgreDatabase) object);
                         break;

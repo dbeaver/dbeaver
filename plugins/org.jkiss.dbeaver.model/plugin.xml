@@ -41,7 +41,7 @@
 
     <extension point="org.eclipse.core.filesystem.filesystems">
         <filesystem scheme="dbvfs">
-            <run class="org.jkiss.dbeaver.model.fs.nio.NIOFileSystem"/>
+            <run class="org.jkiss.dbeaver.model.fs.nio.EFSNIOFileSystem"/>
         </filesystem>
     </extension>
 
@@ -213,5 +213,11 @@
         </transformer>
 
     </extension>
+
+
+    <extension point="org.jkiss.dbeaver.navigator">
+        <extender id="dbfs" root="true" class="org.jkiss.dbeaver.model.navigator.fs.DBFNavigatorExtender"/>
+    </extension>
+
 
 </plugin>

@@ -30,14 +30,18 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
+import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
 import org.jkiss.dbeaver.model.fs.DBFRegistry;
 import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.model.task.DBTTaskController;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
+import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -69,7 +73,6 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     protected OSDescriptor localSystem;
 
     private DBNModel navigatorModel;
-
     private final List<IPluginService> activatedServices = new ArrayList<>();
     private DBFileController localFileController;
     private DBTTaskController localTaskController;
@@ -145,6 +148,12 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     @Override
     public DBFRegistry getFileSystemRegistry() {
         return FileSystemProviderRegistry.getInstance();
+    }
+
+    @NotNull
+    @Override
+    public DBWHandlerRegistry getNetworkHandlerRegistry() {
+        return NetworkHandlerRegistry.getInstance();
     }
 
     @NotNull

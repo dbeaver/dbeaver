@@ -199,6 +199,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
                             if (delta.getKind() == IResourceDelta.REMOVED) {
                                 // Project deleted
                                 LocalProjectImpl projectMetadata = projects.remove(project);
+                                projectMetadata.dispose();
                                 fireProjectRemove(projectMetadata);
                                 if (projectMetadata == activeProject) {
                                     activeProject = null;
