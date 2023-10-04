@@ -12,3 +12,7 @@ Automatic-Module-Name: org.jkiss.dbeaver.ext.spanner
 Export-Package: org.jkiss.dbeaver.ext.spanner,
  org.jkiss.dbeaver.ext.spanner.model,
  org.jkiss.dbeaver.ext.spanner.auth
+Require-Bundle: org.jkiss.dbeaver.ext.generic;visibility:=reexport,
+ com.google.guava;visibility:=reexport,
+ com.google.gson;visibility:=reexport,
+ org.slf4j.api;visibility:=reexport
