@@ -207,8 +207,7 @@
                         defaultDataBase="SYSDBA"
                         defaultUser="SYSDBA"
                         webURL="https://eco.dameng.com/document/dm/zh-cn/pm/jdbc-rogramming-guide.html"
-                        description="%driver.dameng.description"
-                        promoted="1">
+                        description="%driver.dameng.description">
                     <file type="jar" path="maven:/com.dameng:DmJdbcDriver18:RELEASE[8.1.2.192]"/>
                     <file type="license" path="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
                 </driver>
