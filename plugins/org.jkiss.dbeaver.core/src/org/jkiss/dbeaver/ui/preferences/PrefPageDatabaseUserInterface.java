@@ -56,6 +56,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -181,12 +182,15 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             for (String type : GeneralUtils.availableCharsets()) {
                 cmbDefaultEncoding.add(type);
             }
-            String fileEncoding = GeneralUtils.getFileEncoding();
-            cmbDefaultEncoding.select(GeneralUtils.getIndexOfAvailableCharset(fileEncoding));
+            cmbDefaultEncoding.select(GeneralUtils.availableCharsets().indexOf(System.getProperty(StandardConstants.ENV_FILE_ENCODING)));
             cmbDefaultEncoding.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    userEncoding = GeneralUtils.getCharsetByIndex(cmbDefaultEncoding.getSelectionIndex());
+                    if (cmbDefaultEncoding.getSelectionIndex() == 0) {
+                        userEncoding = GeneralUtils.getSystemEncoding();
+                    } else {
+                        userEncoding = cmbDefaultEncoding.getText();
+                    }
                 }
             });
         }

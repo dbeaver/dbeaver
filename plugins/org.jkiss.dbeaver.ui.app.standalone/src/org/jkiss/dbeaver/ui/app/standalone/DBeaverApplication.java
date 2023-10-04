@@ -271,8 +271,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
 
         // Encoding initialization
-        String fileEncoding = GeneralUtils.getFileEncoding();
-        GeneralUtils.storeSystemEncoding(fileEncoding);
+        GeneralUtils.storeSystemEncoding(System.getProperty(StandardConstants.ENV_FILE_ENCODING));
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         if (store != null) {
             GeneralUtils.setFileEncoding(store.getString(DBeaverPreferences.FILE_ENCODING));

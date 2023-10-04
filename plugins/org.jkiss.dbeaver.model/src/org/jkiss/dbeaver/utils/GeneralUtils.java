@@ -873,6 +873,13 @@ public class GeneralUtils {
     }
 
     /**
+     * Method return stored system value of encoding
+     */
+    public static String getSystemEncoding() {
+        return systemFileEncoding;
+    }
+
+    /**
      * Return available charsets with first item of system encoding
      */
     public static List<String> availableCharsets() {
@@ -880,23 +887,6 @@ public class GeneralUtils {
         charsetList.add(String.format("%s (%s)", "Default encoding", systemFileEncoding));
         charsetList.addAll(Charset.availableCharsets().keySet());
         return charsetList;
-    }
-
-    /**
-     * Return index of charset specification
-     */
-    public static int getIndexOfAvailableCharset(String encoding) {
-        return availableCharsets().indexOf(encoding);
-    }
-
-    /**
-     * Return charset specification by index
-     */
-    public static String getCharsetByIndex(int index) {
-        if (index == 0) {
-            return systemFileEncoding;
-        }
-        return availableCharsets().get(index);
     }
 
 }
