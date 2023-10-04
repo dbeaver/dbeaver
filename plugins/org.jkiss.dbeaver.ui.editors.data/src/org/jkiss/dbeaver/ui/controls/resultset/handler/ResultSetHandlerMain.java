@@ -795,7 +795,14 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             @Override
             protected Control createDialogArea(Composite parent) {
                 Control result = super.createDialogArea(parent);
-                ContentAssistUtils.installContentProposal(this.getText(), new SmartTextContentAdapter(), proposalProvider, true);
+                ContentAssistUtils.installContentProposal(
+                    this.getText(),
+                    new SmartTextContentAdapter(),
+                    proposalProvider,
+                    null,
+                    true,
+                    true
+                );
                 return result;
             }
 
