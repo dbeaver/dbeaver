@@ -2359,6 +2359,7 @@ public class UIUtils {
     }
 
     public static void populateToolItemCommandIds(ToolBarManager toolbarManager) {
+        // used for accessibility automation, see dbeaver-qa-auto
         for (ToolItem item : toolbarManager.getControl().getItems()) {
             Object data = item.getData();
             if (data instanceof CommandContributionItem) {
