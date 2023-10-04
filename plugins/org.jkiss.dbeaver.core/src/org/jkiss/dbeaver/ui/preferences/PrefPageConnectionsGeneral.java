@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
@@ -258,13 +259,14 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     }
 
     @Override
-    protected void performDefaults()
-    {
-        connectionDefaultNamePatternText.setText(ModelPreferences.getPreferences().getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
+    protected void performDefaults() {
+        DBPPreferenceStore preferences = ModelPreferences.getPreferences();
+        connectionDefaultNamePatternText.setText(preferences.getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
         sampleConnectionName.setText(GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver));
-        connectionNamePattern = ModelPreferences.getPreferences().getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
+        connectionNamePattern = preferences.getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
         if (RuntimeUtils.isWindows() && useWinTrustStoreCheck != null) {
-            useWinTrustStoreCheck.setSelection(ModelPreferences.getPreferences().getDefaultBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE));
+            useWinTrustStoreCheck.setSelection(
+                preferences.getDefaultBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE));
         }
         updateCombosAndSettings();
     }
