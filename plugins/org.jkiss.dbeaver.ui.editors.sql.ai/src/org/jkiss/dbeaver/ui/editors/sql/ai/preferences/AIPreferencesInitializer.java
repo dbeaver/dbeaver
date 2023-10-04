@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.ui.editors.sql.ai.preferences;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.jkiss.dbeaver.model.ai.AICompletionConstants;
-import org.jkiss.dbeaver.model.ai.gpt3.GPTConstants;
-import org.jkiss.dbeaver.model.ai.gpt3.GPTModel;
+import org.jkiss.dbeaver.model.ai.AIConstants;
+import org.jkiss.dbeaver.model.ai.openai.GPTModel;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -34,8 +34,8 @@ public class AIPreferencesInitializer extends AbstractPreferenceInitializer {
         PrefUtils.setDefaultPreferenceValue(store, AICompletionConstants.AI_COMPLETION_MAX_CHOICES, 1);
         PrefUtils.setDefaultPreferenceValue(store, AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT, true);
 
-        PrefUtils.setDefaultPreferenceValue(store, GPTConstants.GPT_MODEL, GPTModel.GPT_TURBO16.getName());
-        PrefUtils.setDefaultPreferenceValue(store, GPTConstants.GPT_MODEL_TEMPERATURE, 0.0f);
-        PrefUtils.setDefaultPreferenceValue(store, GPTConstants.GPT_LOG_QUERY, false);
+        PrefUtils.setDefaultPreferenceValue(store, AIConstants.GPT_MODEL, GPTModel.GPT_TURBO16.getName());
+        PrefUtils.setDefaultPreferenceValue(store, AIConstants.GPT_MODEL_TEMPERATURE, 0.0f);
+        PrefUtils.setDefaultPreferenceValue(store, AIConstants.GPT_LOG_QUERY, false);
     }
 }
