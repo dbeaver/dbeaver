@@ -40,7 +40,7 @@ import java.util.Set;
 
 public class OrthogonalShortPathRouting extends AbstractRouter {
 
-    private static final double DELTA = 30.0;
+    private double indentation = 30.0;
     private static final int RIGHT = 180;
     private static final int LEFT = 0;
     private static final int UP = 90;
@@ -265,39 +265,54 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
                 points.setPoint(start, 0);
                 points.setPoint(end, points.size() - 1);
 
-                // first
-                PointList modifiedPoints = new PointList();
-                modifiedPoints.addPoint(points.getFirstPoint());
-                int direction1 = 0;
-                int direction2 = 0;
-                IFigure srcOwner = current.getSourceAnchor().getOwner();
-                if (srcOwner instanceof EntityFigure) {
-                    Rectangle bounds = ((EntityFigure) srcOwner).getBounds().getCopy();
-                    direction1 = 180 - getDirection(bounds, points.getPoint(0).getCopy());
+                if (indentation != 0) {
+                    // first
+                    PointList modifiedPoints = new PointList();
+                    modifiedPoints.addPoint(points.getFirstPoint());
+                    int direction1 = 0;
+                    int direction2 = 0;
+                    IFigure srcOwner = current.getSourceAnchor().getOwner();
+                    if (srcOwner instanceof EntityFigure) {
+                        Rectangle bounds = ((EntityFigure) srcOwner).getBounds().getCopy();
+                        direction1 = 180 - getDirection(bounds, points.getPoint(0).getCopy());
+                    }
+                    IFigure targetOwner = current.getTargetAnchor().getOwner();
+                    if (targetOwner instanceof EntityFigure) {
+                        Rectangle bounds = ((EntityFigure) targetOwner).getBounds().getCopy();
+                        direction2 = getDirection(bounds, points.getPoint(points.size() - 1).getCopy());
+                    }
+                    // from 1-->>2
+                    int dx1 = (int) (Math.cos(Math.toRadians(direction1)) * indentation);
+                    int dy1 = (int) (Math.sin(Math.toRadians(direction1)) * indentation);
+                    // from 1<<--2
+                    int dx2 = (int) (Math.cos(Math.toRadians(direction2)) * indentation);
+                    int dy2 = (int) (Math.sin(Math.toRadians(direction2)) * indentation);
+                    Point p1 = new Point(start.x + dx1, start.y - dy1);
+                    modifiedPoints.addPoint(p1);
+                    // add other middle points
+                    for (int i = 1; i < points.size() - 1; i++) {
+                        modifiedPoints.addPoint(points.getPoint(i));
+                    }
+                    // before end
+                    Point p2 = new Point(end.x - dx2, end.y - dy2);
+                    modifiedPoints.addPoint(p2);
+                    // end
+                    modifiedPoints.addPoint(points.getLastPoint());
+                    current.setPoints(modifiedPoints);
+                } else {
+                    int direction = 0;
+                    IFigure targetOwner = current.getTargetAnchor().getOwner();
+                    if (targetOwner instanceof EntityFigure) {
+                        Rectangle bounds = ((EntityFigure) targetOwner).getBounds().getCopy();
+                        direction = getDirection(bounds, points.getPoint(points.size() - 1).getCopy());
+                    }
+                    int dx = (int) (Math.cos(Math.toRadians(direction)) * 1);
+                    int dy = (int) (Math.sin(Math.toRadians(direction)) * 1);
+                    Point lastPoint = new Point(end.x + dx, end.y + dy);
+                    points.removePoint(points.size() - 1);
+                    points.addPoint(lastPoint);
+                    current.setPoints(points);
                 }
-                IFigure targetOwner = current.getTargetAnchor().getOwner();
-                if (targetOwner instanceof EntityFigure) {
-                    Rectangle bounds = ((EntityFigure) targetOwner).getBounds().getCopy();
-                    direction2 = getDirection(bounds, points.getPoint(points.size() - 1).getCopy());
-                }
-                // from 1-->>2
-                int dx1 = (int) (Math.cos(Math.toRadians(direction1)) * DELTA);
-                int dy1 = (int) (Math.sin(Math.toRadians(direction1)) * DELTA);
-                // from 1<<--2
-                int dx2 = (int) (Math.cos(Math.toRadians(direction2)) * DELTA);
-                int dy2 = (int) (Math.sin(Math.toRadians(direction2)) * DELTA);
-                Point p1 = new Point(start.x + dx1, start.y - dy1);
-                modifiedPoints.addPoint(p1);
-                // add other middle points
-                for (int i = 1; i < points.size() - 1; i++) {
-                    modifiedPoints.addPoint(points.getPoint(i));
-                }
-                // before end
-                Point p2 = new Point(end.x - dx2, end.y - dy2);
-                modifiedPoints.addPoint(p2);
-                // end
-                modifiedPoints.addPoint(points.getLastPoint());
-                current.setPoints(modifiedPoints);
             }
             ignoreInvalidate = false;
         }
@@ -363,7 +378,7 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
     }
 
     /**
-     * Return a container 
+     * Return a container
      */
     public IFigure getContainer() {
         return container;
@@ -418,4 +433,19 @@ public class OrthogonalShortPathRouting extends AbstractRouter {
             addChild(child);
         }
     }
+
+    /**
+     * The method returns indentation value
+     */
+    public double getIndentation() {
+        return indentation;
+    }
+
+    /**
+     * Method design to specify indentation value
+     */
+    public void setIndentation(double indentation) {
+        this.indentation = indentation;
+    }
+
 }

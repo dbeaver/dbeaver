@@ -126,37 +126,24 @@ public class DiagramPart extends PropertyAwarePart {
     }
 
     @Override
-    protected IFigure createFigure()
-    {
+    protected IFigure createFigure() {
         EntityDiagramFigure figure = new EntityDiagramFigure(this);
         delegatingLayoutManager = new DelegatingLayoutManager(this);
         figure.setLayoutManager(delegatingLayoutManager);
-
-/*
-        ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
-        ViewportAwareConnectionLayerClippingStrategy clippingStrategy = new ViewportAwareConnectionLayerClippingStrategy(cLayer);
-        figure.setClippingStrategy(clippingStrategy);
-*/
         Control control = getViewer().getControl();
         ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
         if ((control.getStyle() & SWT.MIRRORED) == 0) {
             cLayer.setAntialias(SWT.ON);
         }
 
-        FanRouter router = new FanRouter();
-        router.setSeparation(15);
+        ConnectionRouter router;
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        //router.setNextRouter(new BendpointConnectionRouter());
         if (store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)) {
-            router.setNextRouter(new MikamiTabuchiConnectionRouter(figure));
+            router = new MikamiTabuchiConnectionRouter(figure);
         } else {
-            router.setNextRouter(new OrthogonalShortPathRouting(figure));
+            router = new OrthogonalShortPathRouting(figure);
         }
-
-//        router.setNextRouter(new ManhattanConnectionRouter());
-        //router.setNextRouter(new BendpointConnectionRouter());
         cLayer.setConnectionRouter(router);
-
         return figure;
     }
 

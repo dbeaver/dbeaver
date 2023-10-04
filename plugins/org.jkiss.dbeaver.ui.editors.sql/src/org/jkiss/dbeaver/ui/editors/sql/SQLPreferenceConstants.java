@@ -124,6 +124,7 @@ public class SQLPreferenceConstants {
     public final static String RESULT_SET_REPLACE_CURRENT_TAB           = "SQLEditor.resultSet.replaceCurrentTab"; //$NON-NLS-1$
     public final static String RESULT_SET_ORIENTATION                   = "SQLEditor.resultSet.orientation";
     public static final String RESULTS_PANEL_RATIO                      = "SQLEditor.resultSet.ratio";
+    public static final String MULTIPLE_RESULTS_PER_TAB                 = "SQLEditor.resultSet.multipleResultsPerTab";
     public static final String EXTRA_PANEL_RATIO                        = "SQLEditor.extraPanels.ratio";
     public static final String EXTRA_PANEL_LOCATION                     = "SQLEditor.extraPanels.location";
     public static final String OUTPUT_PANEL_AUTO_SHOW                   = "SQLEditor.outputPanel.autoShow";

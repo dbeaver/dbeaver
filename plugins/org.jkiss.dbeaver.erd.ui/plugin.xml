@@ -189,6 +189,14 @@
                 defaultsTo="org.jkiss.dbeaver.dbeaver.ui.fonts.main">
             <description>%fontDefinition.org.jkiss.dbeaver.erd.diagram.font.description</description>
         </fontDefinition>
+        <fontDefinition
+                id="org.jkiss.dbeaver.erd.diagram.font.notation.label"
+                categoryId="org.jkiss.dbeaver.ui.fonts"
+                label="%fontDefinition.org.jkiss.dbeaver.erd.diagram.font.notation.label"
+                value="Segoe UI-regular-8">
+            <description>%fontDefinition.org.jkiss.dbeaver.erd.diagram.font.notation.description</description>
+            <fontValue os="macosx" value="Sans-regular-12"/>
+        </fontDefinition>
         <colorDefinition
                 label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.erd"

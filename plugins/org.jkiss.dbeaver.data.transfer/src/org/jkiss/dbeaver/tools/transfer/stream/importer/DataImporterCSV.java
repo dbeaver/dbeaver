@@ -118,7 +118,9 @@ public class DataImporterCSV extends StreamImporterAbstract {
 
                         switch (dataType.getFirst()) {
                             case STRING:
-                                columnInfo.updateMaxLength(columnIsByteLength ? line[i].getBytes(encoding).length : line[i].length());
+                                columnInfo.updateMaxLength(
+                                    entityMapping.getDataSource(),
+                                    columnIsByteLength ? line[i].getBytes(encoding).length : line[i].length());
                                 /* fall-through */
                             case NUMERIC:
                             case BOOLEAN:
