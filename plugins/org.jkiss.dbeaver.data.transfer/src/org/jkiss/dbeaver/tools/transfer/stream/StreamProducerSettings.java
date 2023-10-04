@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.util.*;
 
@@ -69,12 +71,17 @@ public class StreamProducerSettings implements IDataTransferSettings {
         setProcessorProperties(dataTransferSettings.getProcessorProperties());
 
         try {
-            for (Map<String, Object> mapping : JSONUtils.getObjectList(settings, "mappings")) {
-                StreamEntityMapping em = new StreamEntityMapping(mapping);
-                entityMapping.put(em.getEntityName(), em);
-            }
-            runnableContext.run(true, true, monitor ->
-                updateMappingsFromStream(monitor, dataTransferSettings));
+            runnableContext.run(true, true, monitor -> {
+                for (Map<String, Object> mapping : JSONUtils.getObjectList(settings, "mappings")) {
+                    try {
+                        StreamEntityMapping em = new StreamEntityMapping(monitor, dataTransferSettings.getProject(), mapping);
+                        entityMapping.put(em.getEntityName(), em);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+                updateMappingsFromStream(monitor, dataTransferSettings);
+            });
         } catch (Exception e) {
             log.error("Error loading stream producer settings", e);
         }

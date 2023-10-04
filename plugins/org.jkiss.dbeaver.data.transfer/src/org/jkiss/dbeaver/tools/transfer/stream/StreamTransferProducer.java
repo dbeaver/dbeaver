@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -40,7 +41,6 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.serialize.DTObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.serialize.SerializerContext;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -188,7 +188,12 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         }
 
         @Override
-        public StreamTransferProducer deserializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull SerializerContext serializeContext, @NotNull DBTTask objectContext, @NotNull Map<String, Object> state) {
+        public StreamTransferProducer deserializeObject(
+            @NotNull DBRRunnableContext runnableContext,
+            @NotNull SerializerContext serializeContext,
+            @NotNull DBTTask objectContext,
+            @NotNull Map<String, Object> state
+        ) throws DBException {
             String nodeId = CommonUtils.toString(state.get("node"));
             String processorId = CommonUtils.toString(state.get("processor"));
             DataTransferProcessorDescriptor processor = null;
@@ -205,7 +210,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
             }
             return new StreamTransferProducer(
                 new StreamEntityMapping(
-                    IOUtils.getPathFromString(CommonUtils.toString(state.get("file"))),
+                    DBUtils.resolvePathFromString(runnableContext, objectContext.getProject(), CommonUtils.toString(state.get("file"))),
                     CommonUtils.toString(state.get("name")),
                     CommonUtils.toBoolean(state.get("child"))
                 ),

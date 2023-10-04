@@ -203,7 +203,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     // First add footer for the previous file
                     exportFooterInFile(session.getProgressMonitor());
                     // Make new file with the header
-                    createNewOutFile();
+                    createNewOutFile(session.getProgressMonitor());
                     exportHeaderInFile(session);
                 }
             }
@@ -317,13 +317,13 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     private Path saveContentToFile(DBRProgressMonitor monitor, DBDContent content)
-        throws IOException, DBCException {
+        throws IOException, DBException {
         DBDContentStorage contents = content.getContents(monitor);
         if (DBUtils.isNullValue(contents)) {
             return null;
         }
         if (lobDirectory == null) {
-            lobDirectory = IOUtils.getPathFromString(getOutputFolder()).resolve(LOB_DIRECTORY_NAME);
+            lobDirectory = DBUtils.resolvePathFromString(monitor, getProject(), getOutputFolder()).resolve(LOB_DIRECTORY_NAME);
             if (!Files.exists(lobDirectory)) {
                 Files.createDirectory(lobDirectory);
             }
@@ -368,7 +368,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         // Open output streams
         boolean outputClipboard = settings.isOutputClipboard();
         if (parameters.isBinary || !outputClipboard) {
-            outputFile = makeOutputFile();
+            outputFile = makeOutputFile(session.getProgressMonitor());
             outputFiles.add(outputFile);
         } else {
             outputFile = null;
@@ -379,7 +379,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 this.outputBuffer = new StringWriter(2048);
                 this.writer = new PrintWriter(this.outputBuffer, true);
             } else {
-                openOutputStreams();
+                openOutputStreams(session.getProgressMonitor());
             }
         } catch (IOException e) {
             closeExporter();
@@ -475,7 +475,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return behavior;
     }
     
-    private void openOutputStreams() throws IOException {
+    private void openOutputStreams(DBRProgressMonitor monitor) throws IOException {
         final boolean truncate;
 
         boolean fileExists = Files.exists(outputFile);
@@ -487,7 +487,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     break;
                 case PATCHNAME:
                     truncate = false;
-                    outputFile = makeOutputFile("-" + System.currentTimeMillis());
+                    outputFile = makeOutputFile(monitor, "-" + System.currentTimeMillis());
                     break;
                 case OVERWRITE:
                     truncate = true;
@@ -566,15 +566,15 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
     }
 
-    private void createNewOutFile() throws IOException {
+    private void createNewOutFile(DBRProgressMonitor monitor) throws IOException {
         closeOutputStreams();
 
         bytesWritten = 0;
         multiFileNumber++;
-        outputFile = makeOutputFile();
+        outputFile = makeOutputFile(monitor);
         outputFiles.add(outputFile);
 
-        openOutputStreams();
+        openOutputStreams(monitor);
     }
 
     @Override
@@ -669,7 +669,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     @Override
     public String getObjectName() {
-        return settings.isOutputClipboard() ? "Clipboard" : makeOutputFile().getFileName().toString();
+        return settings.isOutputClipboard() ? "Clipboard" : getOutputFileName();
     }
 
     @Override
@@ -679,7 +679,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     @Override
     public String getObjectContainerName() {
-        return settings.isOutputClipboard() ? "Clipboard" : makeOutputFile().getParent().toAbsolutePath().toString();
+        return settings.isOutputClipboard() ? "Clipboard" : getOutputFolder();
     }
 
     @Override
@@ -740,19 +740,19 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @NotNull
-    public Path makeOutputFile() {
-        return makeOutputFile(null);
+    public Path makeOutputFile(@NotNull DBRProgressMonitor monitor) {
+        return makeOutputFile(monitor, null);
     }
     
     @NotNull
-    private Path makeOutputFile(@Nullable String suffix) {
-        final Path file = makeOutputFile(suffix, getOutputFolder());
+    private Path makeOutputFile(@NotNull DBRProgressMonitor monitor, @Nullable String suffix) {
+        final Path file = makeOutputFile(monitor, suffix, getOutputFolder());
 
         if (!Files.exists(file)) {
             try {
                 Files.createFile(file);
             } catch (IOException e) {
-                return makeOutputFile(suffix, getFallbackOutputFolder());
+                return makeOutputFile(monitor, suffix, getFallbackOutputFolder());
             } finally {
                 try {
                     Files.delete(file);
@@ -765,8 +765,14 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @NotNull
-    private Path makeOutputFile(@Nullable String suffix, @NotNull String outputFolder) {
-        Path dir = IOUtils.getPathFromString(outputFolder);
+    private Path makeOutputFile(@NotNull DBRProgressMonitor monitor, @Nullable String suffix, @NotNull String outputFolder) {
+        Path dir;
+        try {
+            dir = DBUtils.resolvePathFromString(monitor, getProject(), outputFolder);
+        } catch (Exception e) {
+            log.error("Error resolving output folder", e);
+            dir = Path.of(outputFolder);
+        }
         if (!Files.exists(dir)) {
             try {
                 Files.createDirectories(dir);
@@ -1123,7 +1129,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         @Override
-        public StreamTransferConsumer deserializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull SerializerContext serializeContext, @NotNull DBTTask objectContext, @NotNull Map<String, Object> state) {
+        public StreamTransferConsumer deserializeObject(@NotNull DBRRunnableContext runnableContext, @NotNull SerializerContext serializeContext, @NotNull DBTTask objectContext, @NotNull Map<String, Object> state) throws DBException {
             return new StreamTransferConsumer();
         }
     }

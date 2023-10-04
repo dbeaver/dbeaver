@@ -220,6 +220,11 @@ public class DialogUtils {
                     setText(fileName);
                 }
             }
+
+            @Override
+            public DBPProject getProject() {
+                return project;
+            }
         };
         directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (value != null) {

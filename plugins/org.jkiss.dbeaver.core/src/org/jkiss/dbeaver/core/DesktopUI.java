@@ -689,8 +689,7 @@ public class DesktopUI implements DBPPlatformUI {
         for (DBFFileSystemDescriptor fsProvider : DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProviders()) {
             DBFVirtualFileSystem[] fsList = fsProvider.getInstance().getAvailableFileSystems(
                 new VoidProgressMonitor(), project);
-            // TODO: return real value
-            if (!ArrayUtils.isEmpty(fsList) && false) {
+            if (!ArrayUtils.isEmpty(fsList)) {
                 return true;
             }
         }

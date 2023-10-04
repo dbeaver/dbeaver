@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -33,7 +34,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.stream.model.StreamDataSource;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -60,14 +60,18 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
         this.child = child;
     }
 
-    StreamEntityMapping(Map<String, Object> config) throws DBCException {
+    StreamEntityMapping(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBPProject project,
+        @NotNull Map<String, Object> config
+    ) throws DBException {
         this.entityName = CommonUtils.toString(config.get("entityId"));
 
         String inputFileName = CommonUtils.toString(config.get("inputFile"));
         if (CommonUtils.isEmpty(inputFileName)) {
             inputFileName = this.entityName;
         }
-        this.inputFile = IOUtils.getPathFromString(inputFileName);
+        this.inputFile = DBUtils.resolvePathFromString(monitor, project, inputFileName);
 
         this.dataSource = new StreamDataSource(entityName);
         this.child = false;

@@ -28,15 +28,18 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.ide.IDE;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
-import org.jkiss.utils.IOUtils;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,6 +48,8 @@ import java.nio.file.Path;
  * TextWithOpen
  */
 public class TextWithOpen extends Composite {
+    private static final Log log = Log.getLog(TextWithOpen.class);
+
     private final Text text;
     private final ToolBar toolbar;
 
@@ -122,8 +127,25 @@ public class TextWithOpen extends Composite {
                 }
             });
             TextWithOpen.this.text.addModifyListener(e -> {
-                Path targetFile = IOUtils.getPathFromString(TextWithOpen.this.text.getText().trim()).toAbsolutePath();
-                editItem.setEnabled(Files.exists(targetFile) && !Files.isDirectory(targetFile));
+                String fileName = TextWithOpen.this.text.getText().trim();
+                DBPProject project = getProject();
+                Path targetFile;
+                try {
+                    if (project != null) {
+                        try {
+                            targetFile = DBUtils.resolvePathFromString(new VoidProgressMonitor(), project, fileName);
+                        } catch (DBException ex) {
+                            log.debug("Error resolving URI: " + ex.getMessage());
+                            targetFile = Path.of(fileName);
+                        }
+                    } else {
+                        targetFile = Path.of(fileName);
+                    }
+                    editItem.setEnabled(Files.exists(targetFile) && !Files.isDirectory(targetFile));
+                } catch (Exception ex) {
+                    log.debug("Error getting file info: " + ex.getMessage());
+                    editItem.setEnabled(false);
+                }
             });
             editItem.setEnabled(false);
         }

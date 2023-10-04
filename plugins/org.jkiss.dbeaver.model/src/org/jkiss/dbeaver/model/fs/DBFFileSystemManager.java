@@ -54,7 +54,16 @@ public class DBFFileSystemManager implements DBFEventListener {
     }
 
     @NotNull
-    public Path of(DBRProgressMonitor monitor, URI uri) throws DBException {
+    public Path getPathFromString(DBRProgressMonitor monitor, String pathOrUri) throws DBException {
+        if (pathOrUri.contains("://")) {
+            return getPathFromURI(monitor, URI.create(pathOrUri));
+        } else {
+            return Path.of(pathOrUri);
+        }
+    }
+
+    @NotNull
+    public Path getPathFromURI(DBRProgressMonitor monitor, URI uri) throws DBException {
         String fsType = uri.getScheme();
         if (CommonUtils.isEmpty(fsType)) {
             throw new DBException("File system type not present in the file uri: " + uri);
@@ -67,12 +76,12 @@ public class DBFFileSystemManager implements DBFEventListener {
             .stream()
             .filter(fs -> fs.getType().equals(fsType) && fs.getId().equals(fsId))
             .findFirst()
-            .orElseThrow(() -> new DBException("Cannot find file system provider for the uri:" + uri));
+            .orElseThrow(() -> new DBException("Cannot find file system provider for the uri '" + uri + "'"));
 
         try {
             return fileSystem.getPathByURI(monitor, uri);
         } catch (Throwable e) {
-            throw new DBException(String.format("Failed to get path from uri[%s]: %s", uri, e.getMessage()), e);
+            throw new DBException("Failed to get path from uri '" + uri + "': " + e.getMessage(), e);
         }
     }
 
@@ -89,7 +98,8 @@ public class DBFFileSystemManager implements DBFEventListener {
         reloadFileSystems(new LoggingProgressMonitor());
     }
 
-   public void close() {
+    public void close() {
         DBFEventManager.getInstance().removeListener(this);
     }
+
 }
