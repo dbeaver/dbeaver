@@ -849,23 +849,6 @@ public class GeneralUtils {
     }
 
     /**
-     * Find index of item in set
-     */
-    public static <T> int getIndexInSet(Set<T> set, @Nullable T value) {
-        if (value == null) {
-            return -1;
-        }
-        int result = 0;
-        for (T t : set) {
-            if (t.equals(value)) {
-                return result;
-            }
-            result++;
-        }
-        return -1;
-    }
-
-    /**
      * Store system encoding specification
      */
     public static void storeSystemEncoding(String encoding) {
