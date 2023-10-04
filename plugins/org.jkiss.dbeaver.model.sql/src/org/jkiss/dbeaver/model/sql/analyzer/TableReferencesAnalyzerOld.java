@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql.analyzer.internal.impl;
+package org.jkiss.dbeaver.model.sql.analyzer;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -22,7 +22,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.model.sql.analyzer.TableReferencesAnalyzer;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
@@ -192,5 +191,14 @@ public class TableReferencesAnalyzerOld implements TableReferencesAnalyzer {
                 value.equalsIgnoreCase(SQLConstants.KEYWORD_UPDATE) ||
                 value.equalsIgnoreCase(SQLConstants.KEYWORD_JOIN) ||
                 value.equalsIgnoreCase(SQLConstants.KEYWORD_INTO));
+    }
+
+    private enum InlineState {
+        UNMATCHED,
+        TABLE_NAME,
+        TABLE_DOT,
+        ALIAS_AS,
+        ALIAS_NAME,
+        MATCHED
     }
 }

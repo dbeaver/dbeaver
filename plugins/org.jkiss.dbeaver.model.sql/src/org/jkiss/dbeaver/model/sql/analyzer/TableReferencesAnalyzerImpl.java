@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql.analyzer.internal.impl;
+package org.jkiss.dbeaver.model.sql.analyzer;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectRegistry;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.model.sql.analyzer.TableReferencesAnalyzer;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.stm.*;
 import org.jkiss.utils.CommonUtils;
