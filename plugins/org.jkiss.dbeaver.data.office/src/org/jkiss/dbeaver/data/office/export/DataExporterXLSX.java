@@ -83,6 +83,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
     private static final int EXCEL2007MAXROWS = 1048575;
     private static final int EXCEL_MAX_CELL_CHARACTERS = 32767; // Total number of characters that a cell can contain - 32,767 characters
+    public static final int MINIMUM_LENGTH = 256 * 8;
 
     enum FontStyleProp {NONE, BOLD, ITALIC, STRIKEOUT, UNDERLINE}
 
@@ -417,8 +418,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         throws DBException, IOException {
 
         Worksheet wsh = getWsh(resultSet, row);
-        final SXSSFSheet sh = (SXSSFSheet) wsh.getSh();
-        Row rowX = sh.createRow(wsh.getCurrentRow());
+        Row rowX = wsh.getSh().createRow(wsh.getCurrentRow());
 
         int startCol = 0;
 
@@ -503,6 +503,10 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
             sheet.trackAllColumnsForAutoSizing();
             for (int i = 0; i < columns.length; i++) {
                 sheet.autoSizeColumn(i);
+                if (sheet.getColumnWidth(i) < MINIMUM_LENGTH) {
+                    // Auto-size failed, use default minimum column width
+                    sheet.setColumnWidth(i, MINIMUM_LENGTH);
+                }
             }
             sheet.untrackAllColumnsForAutoSizing();
         }
