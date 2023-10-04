@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationDescriptor;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -205,8 +206,33 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     }
 
     @Override
-    protected void performDefaults()
-    {
+    protected void performDefaults() {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        contentsShowViews.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS));
+        contentsShowPartitions.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS));
+        routingType.setText(store.getDefaultString(ERDUIConstants.PREF_ROUTING_TYPE));
+        ERDNotationRegistry registry = ERDNotationRegistry.getInstance();
+        notationType.select(registry.getERDNotations().indexOf(registry.getDefaultNotation()));
+        changeBorderColors.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS));
+        changeHeaderColors.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS));
+        gridCheck.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_GRID_ENABLED));
+        snapCheck.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_GRID_SNAP_ENABLED));
+        spinnerGridWidth.setSelection(store.getDefaultInt(ERDUIConstants.PREF_GRID_WIDTH));
+        spinnerGridHeight.setSelection(store.getDefaultInt(ERDUIConstants.PREF_GRID_HEIGHT));
+        modeCombo.select(ERDUIConstants.PRINT_MODE_DEFAULT);
+        spinnerMarginTop.setSelection(ERDUIConstants.PRINT_MARGIN_DEFAULT);
+        spinnerMarginBottom.setSelection(ERDUIConstants.PRINT_MARGIN_DEFAULT);
+        spinnerMarginLeft.setSelection(ERDUIConstants.PRINT_MARGIN_DEFAULT);
+        spinnerMarginRight.setSelection(ERDUIConstants.PRINT_MARGIN_DEFAULT);
+        if (visibilityButtons.size() > 0) {
+            visibilityButtons.get(0).setSelection(true);
+        }
+        if (styleButtons.size() > 0) {
+            for (Button styleButton : styleButtons) {
+                styleButton.setSelection(false);
+            }
+            styleButtons.get(0).setSelection(true);
+        }
         super.performDefaults();
     }
 
@@ -248,6 +274,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         for (Button radio : visibilityButtons) {
             if (radio.getSelection()) {
                 ERDAttributeVisibility.setDefaultVisibility(store, (ERDAttributeVisibility) radio.getData());
+                break;
             }
         }
         List<ERDViewStyle> enabledStyles = new ArrayList<>();

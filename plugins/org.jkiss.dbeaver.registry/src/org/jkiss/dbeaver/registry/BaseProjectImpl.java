@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
 import org.jkiss.dbeaver.model.impl.app.DefaultValueEncryptor;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -82,6 +83,8 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     private final DBPWorkspace workspace;
     @NotNull
     private final SMSessionContext sessionContext;
+    @NotNull
+    private final DBFFileSystemManager fileSystemManager;
 
     private volatile ProjectFormat format = ProjectFormat.UNKNOWN;
     private volatile DBPDataSourceRegistry dataSourceRegistry;
@@ -98,6 +101,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     public BaseProjectImpl(@NotNull DBPWorkspace workspace, @Nullable SMSessionContext sessionContext) {
         this.workspace = workspace;
         this.sessionContext = sessionContext == null ? workspace.getAuthContext() : sessionContext;
+        this.fileSystemManager = new DBFFileSystemManager(this);
     }
 
     public void setInMemory(boolean inMemory) {
@@ -227,6 +231,12 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     @Override
     public SMSessionContext getSessionContext() {
         return sessionContext;
+    }
+
+    @NotNull
+    @Override
+    public DBFFileSystemManager getFileSystemManager() {
+        return fileSystemManager;
     }
 
     ////////////////////////////////////////////////////////
@@ -480,6 +490,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         if (dataSourceRegistry != null) {
             dataSourceRegistry.dispose();
         }
+        getFileSystemManager().close();
     }
 
     public ProjectFormat getFormat() {

@@ -193,6 +193,10 @@ public class UIIcon {
     public static final DBIcon SQL_EXECUTE = new DBIcon("sql_exec", "sql/sql_exec.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_SCRIPT_EXECUTE = new DBIcon("sql_script_exec", "sql/sql_script_exec.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_SCRIPT_EXECUTE_NATIVE = new DBIcon("sql_exec_native", "sql/sql_exec_native.png");//$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_MULTIPLE_RESULTS_PER_TAB_FALSE = new DBIcon(
+        "sql_tab_per_result_true", "sql/sql_multiple_results_per_tab_false.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_MULTIPLE_RESULTS_PER_TAB_TRUE = new DBIcon(
+        "sql_tab_per_result_false", "sql/sql_multiple_results_per_tab_true.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_ANALYSE = new DBIcon("sql_analyse", "sql/sql_analyse.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_EXPLAIN_PLAN = new DBIcon("sql_explain", "sql/sql_plan.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_VALIDATE = new DBIcon("sql_validate", "sql/sql_validate.png"); //$NON-NLS-1$ //$NON-NLS-2$

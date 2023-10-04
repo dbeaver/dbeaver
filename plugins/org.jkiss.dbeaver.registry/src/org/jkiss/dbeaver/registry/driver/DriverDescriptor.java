@@ -199,6 +199,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private int promoted;
 
     private Set<DBPDriverConfigurationType> configurationTypes = new HashSet<>(Collections.singleton(DBPDriverConfigurationType.MANUAL));
+    private Set<String> supportedPageFields = new HashSet<>(Set.of(DBConstants.PROP_HOST, DBConstants.PROP_PORT, DBConstants.PROP_DATABASE));
     private final List<DBPNativeClientLocation> nativeClientHomes = new ArrayList<>();
     private final List<DriverFileSource> fileSources = new ArrayList<>();
     private final List<DBPDriverLibrary> libraries = new ArrayList<>();
@@ -326,6 +327,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.defaultConnectionProperties.putAll(copyFrom.defaultConnectionProperties);
             this.customConnectionProperties.putAll(copyFrom.customConnectionProperties);
             this.configurationTypes.addAll(copyFrom.configurationTypes);
+            this.supportedPageFields.addAll(copyFrom.supportedPageFields);
             this.supportsDistributedMode = copyFrom.supportsDistributedMode;
             this.deprecationReason = copyFrom.deprecationReason;
         } else {
@@ -388,6 +390,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 .collect(Collectors.toSet());
         }
 
+        String[] supportedPageFields = CommonUtils.split(
+            config.getAttribute(RegistryConstants.ATTR_SUPPORTED_PAGE_FIELDS), ",");
+        if (supportedPageFields.length > 0) {
+            this.supportedPageFields = Stream.of(supportedPageFields).collect(Collectors.toSet());
+        }
         for (IConfigurationElement lib : config.getChildren(RegistryConstants.TAG_FILE_SOURCE)) {
             this.fileSources.add(new DriverFileSource(lib));
         }
@@ -1670,6 +1677,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     public Set<DBPDriverConfigurationType> getSupportedConfigurationTypes() {
         return configurationTypes;
+    }
+
+    @NotNull
+    public Set<String> getSupportedPageFields() {
+        return supportedPageFields;
     }
 
     public boolean isSupportsDistributedMode() {

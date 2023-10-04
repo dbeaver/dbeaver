@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -30,18 +31,9 @@ import java.nio.file.spi.FileSystemProvider;
  * Virtual file system provider
  */
 public interface DBFFileSystemProvider extends DBPObject {
-
-    @Nullable
-    // TODO: notnull after s3 nio refactoring?
-    default FileSystemProvider createNioFileSystemProvider(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull SMSessionContext sessionContext
-    ) throws DBException {
-        return null;
-    }
-
     DBFVirtualFileSystem[] getAvailableFileSystems(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull SMSessionContext sessionContext);
+        @NotNull DBPProject project
+    );
 
 }
