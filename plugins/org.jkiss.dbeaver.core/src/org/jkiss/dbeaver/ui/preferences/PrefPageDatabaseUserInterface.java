@@ -187,6 +187,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1
             ));
         }
+
         if (isStandalone) {
             useEmbeddedBrowserAuth = UIUtils.createCheckbox(groupObjects,
                 CoreMessages.pref_page_ui_general_check_browser_auth,
@@ -215,14 +216,12 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 });
             }
         }
-        performDefaults();
+        setSettings();
 
         return composite;
     }
 
-    @Override
-    protected void performDefaults()
-    {
+    private void setSettings() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         if (isWindowsDesktopClient()) {
             SWTBrowserRegistry.getActiveBrowser();
@@ -240,6 +239,22 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             } else {
                 clientTimezone.setText(TimezoneRegistry.getGMTString(timezone));
             }
+        }
+    }
+
+    @Override
+    protected void performDefaults() {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        if (isStandalone) {
+            automaticUpdateCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
+            useEmbeddedBrowserAuth.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
+        }
+        if (isWindowsDesktopClient()) {
+            SWTBrowserRegistry.getActiveBrowser();
+            browserCombo.select(SWTBrowserRegistry.getDefaultBrowser().ordinal());
+        }
+        if (clientTimezone != null) {
+            UIUtils.setComboSelection(clientTimezone, store.getDefaultString(ModelPreferences.CLIENT_TIMEZONE));
         }
     }
 

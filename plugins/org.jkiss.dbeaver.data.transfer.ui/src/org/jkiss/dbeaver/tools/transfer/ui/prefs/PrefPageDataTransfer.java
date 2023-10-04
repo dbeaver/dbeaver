@@ -196,7 +196,6 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
     @Override
     protected void performDefaults() {
         final DBPPreferenceStore preferences = DTActivator.getDefault().getPreferences();
-
         if (reconnectToLastDatabaseButton != null) {
             reconnectToLastDatabaseButton.setSelection(preferences.getDefaultBoolean(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE));
         }
@@ -204,8 +203,8 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
             fallbackOutputDirectoryText.setText("");
             fallbackOutputDirectoryText.setMessage(preferences.getDefaultString(DTConstants.PREF_FALLBACK_OUTPUT_DIRECTORY));
         }
-        nameCaseCombo.select(0);
-        replaceCombo.select(0);
-        typeLengthSpinner.setSelection(DEFAULT_MAX_TYPE_LENGTH);
+        nameCaseCombo.select(preferences.getDefaultInt(DTConstants.PREF_NAME_CASE_MAPPING));
+        replaceCombo.select(preferences.getDefaultInt(DTConstants.PREF_REPLACE_MAPPING));
+        typeLengthSpinner.setSelection(preferences.getDefaultInt(DTConstants.PREF_MAX_TYPE_LENGTH));
     }
 }
