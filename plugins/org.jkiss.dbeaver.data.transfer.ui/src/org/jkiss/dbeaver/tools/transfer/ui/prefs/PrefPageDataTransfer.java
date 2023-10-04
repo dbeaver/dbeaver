@@ -36,7 +36,6 @@ import org.jkiss.utils.CommonUtils;
 
 public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPreferencePage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.datatransfer";
-    private static final int DEFAULT_MAX_TYPE_LENGTH = 2048;
 
     private Button reconnectToLastDatabaseButton;
     private Text fallbackOutputDirectoryText;
@@ -138,7 +137,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
             typeLengthSpinner = UIUtils.createSpinner(
                 mappingGroup,
                 DTUIMessages.pref_data_transfer_spanner_max_length_tip,
-                DEFAULT_MAX_TYPE_LENGTH,
+                DTConstants.DEFAULT_MAX_TYPE_LENGTH,
                 1,
                 Integer.MAX_VALUE);
         }
@@ -161,7 +160,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
         nameCaseCombo.select(preferences.getInt(DTConstants.PREF_NAME_CASE_MAPPING));
         replaceCombo.select(preferences.getInt(DTConstants.PREF_REPLACE_MAPPING));
         typeLengthSpinner.setSelection(preferences.contains(DTConstants.PREF_MAX_TYPE_LENGTH) ?
-            preferences.getInt(DTConstants.PREF_MAX_TYPE_LENGTH) : DEFAULT_MAX_TYPE_LENGTH);
+            preferences.getInt(DTConstants.PREF_MAX_TYPE_LENGTH) : DTConstants.DEFAULT_MAX_TYPE_LENGTH);
 
     }
 
@@ -198,7 +197,6 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
     @Override
     protected void performDefaults() {
         final DBPPreferenceStore preferences = DTActivator.getDefault().getPreferences();
-
         if (reconnectToLastDatabaseButton != null) {
             reconnectToLastDatabaseButton.setSelection(preferences.getDefaultBoolean(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE));
         }
@@ -206,8 +204,8 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
             fallbackOutputDirectoryText.setText("");
             fallbackOutputDirectoryText.setMessage(preferences.getDefaultString(DTConstants.PREF_FALLBACK_OUTPUT_DIRECTORY));
         }
-        nameCaseCombo.select(0);
-        replaceCombo.select(0);
-        typeLengthSpinner.setSelection(DEFAULT_MAX_TYPE_LENGTH);
+        nameCaseCombo.select(preferences.getDefaultInt(DTConstants.PREF_NAME_CASE_MAPPING));
+        replaceCombo.select(preferences.getDefaultInt(DTConstants.PREF_REPLACE_MAPPING));
+        typeLengthSpinner.setSelection(preferences.getDefaultInt(DTConstants.PREF_MAX_TYPE_LENGTH));
     }
 }
