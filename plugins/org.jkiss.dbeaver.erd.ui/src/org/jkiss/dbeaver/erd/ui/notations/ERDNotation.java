@@ -52,4 +52,12 @@ public interface ERDNotation {
         @NotNull ERDAssociation association,
         @NotNull Color bckColor,
         @NotNull Color frgColor);
+
+    /**
+     * Indentation value is a length of orthogonal line for source and target
+     * decorator. Each notation keeps own value to handle require behavior.
+     *
+     * @return - value of indentation
+     */
+    public double getIndentation();
 }
