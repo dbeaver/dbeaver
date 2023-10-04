@@ -48,6 +48,8 @@ public class CustomCompositeElementHandler extends CSSPropertyBackgroundSWTHandl
             Color newColor = CSSUtils.getCurrentEditorConnectionColor(widget);
             if (newColor != null) {
                 applyCustomBackground(element, newColor);
+            } else {
+                super.applyCSSPropertyBackgroundColor(element, value, pseudo, engine);
             }
         } else {
             super.applyCSSPropertyBackgroundColor(element, value, pseudo, engine);
