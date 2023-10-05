@@ -14,21 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event.session;
+package org.jkiss.dbeaver.model.security.user.pagination;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.websocket.event.WSEventType;
+import org.jkiss.dbeaver.model.security.user.SMUserProvisioning;
 
-public class WSSessionExpiredEvent extends WSAbstractSessionEvent {
-    private final String sessionId;
-    public WSSessionExpiredEvent(String sessionId) {
-        super(WSEventType.SESSION_EXPIRED);
-        this.sessionId = sessionId;
+import java.util.List;
+
+public class UserPagination {
+
+    @Nullable
+    private final List<SMUserProvisioning> userProvisionings;
+    private PageInfo pageInfo;
+
+
+    public UserPagination(@NotNull List<SMUserProvisioning> userProvisionings, PageInfo pageInfo) {
+        this.userProvisionings = userProvisionings;
+        this.pageInfo = pageInfo;
     }
 
     @Nullable
-    @Override
-    public String getSessionId() {
-        return sessionId;
+    public List<SMUserProvisioning> getUserProvisionings() {
+        return userProvisionings;
+    }
+
+    public PageInfo getPageInfo() {
+        return pageInfo;
     }
 }
