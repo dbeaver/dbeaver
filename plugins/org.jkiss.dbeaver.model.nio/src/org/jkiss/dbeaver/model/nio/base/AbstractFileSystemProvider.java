@@ -21,9 +21,7 @@ import org.jkiss.code.Nullable;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.Path;
-import java.nio.file.ProviderMismatchException;
+import java.nio.file.*;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,17 +35,32 @@ public abstract class AbstractFileSystemProvider<
 
     @Override
     public FileSystem newFileSystem(URI uri, Map<String, ?> env) throws IOException {
-        throw new UnsupportedOperationException();
+        return newFileSystem(toPath(uri), env);
     }
 
     @Override
     public FileSystem newFileSystem(Path path, Map<String, ?> env) throws IOException {
-        throw new UnsupportedOperationException();
+        final Path realPath = path.toRealPath();
+
+        if (filesystems.containsKey(realPath)) {
+            throw new FileSystemAlreadyExistsException();
+        }
+
+        final FS filesystem = newFileSystemImpl(path, env);
+        filesystems.put(realPath, filesystem);
+
+        return filesystem;
     }
 
     @Override
     public FileSystem getFileSystem(URI uri) {
-        throw new UnsupportedOperationException();
+        final FileSystem filesystem = filesystems.get(getPath(uri));
+
+        if (filesystem == null) {
+            throw new FileSystemNotFoundException();
+        }
+
+        return filesystem;
     }
 
     public boolean isOpen(@NotNull AbstractFileSystem<P, FS, FP> fileSystem) {

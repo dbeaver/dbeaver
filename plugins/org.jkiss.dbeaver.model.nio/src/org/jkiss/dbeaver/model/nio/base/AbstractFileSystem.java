@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.UserPrincipalLookupService;
+import java.util.StringJoiner;
 
 public abstract class AbstractFileSystem<
     P extends AbstractPath<P, FS, FP>,
@@ -31,9 +32,13 @@ public abstract class AbstractFileSystem<
     FP extends AbstractFileSystemProvider<P, FS, FP>> extends FileSystem {
 
     protected final AbstractFileSystemProvider<P, FS, FP> provider;
+    protected final Path path;
+    protected final Path root;
 
-    public AbstractFileSystem(@NotNull AbstractFileSystemProvider<P, FS, FP> provider) {
+    public AbstractFileSystem(@NotNull AbstractFileSystemProvider<P, FS, FP> provider, @NotNull Path path) {
         this.provider = provider;
+        this.path = path;
+        this.root = provider.newPath(this, "/");
     }
 
     @Override
@@ -44,6 +49,23 @@ public abstract class AbstractFileSystem<
     @Override
     public String getSeparator() {
         return "/";
+    }
+
+    @NotNull
+    @Override
+    public Path getPath(@NotNull String first, String... more) {
+        if (more.length == 0) {
+            return provider.newPath(this, first);
+        }
+
+        final StringJoiner buffer = new StringJoiner("/");
+        buffer.add(first);
+
+        for (String part : more) {
+            buffer.add(part);
+        }
+
+        return provider.newPath(this, buffer.toString());
     }
 
     @Override
@@ -76,6 +98,13 @@ public abstract class AbstractFileSystem<
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public String toString() {
+        return path.toString();
+    }
+
     @NotNull
-    public abstract Path getRoot();
+    public Path getRoot() {
+        return root;
+    }
 }
