@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
 public class WSSessionExpiredEvent extends WSAbstractSessionEvent {
     private final String sessionId;
+
     public WSSessionExpiredEvent(String sessionId) {
         super(WSEventType.SESSION_EXPIRED);
         this.sessionId = sessionId;
