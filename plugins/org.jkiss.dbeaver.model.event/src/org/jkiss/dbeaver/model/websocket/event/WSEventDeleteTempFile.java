@@ -14,12 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event.session;
+package org.jkiss.dbeaver.model.websocket.event;
 
-import org.jkiss.dbeaver.model.websocket.event.WSEventType;
+import org.jkiss.code.Nullable;
 
-public class WSSessionExpiredEvent extends WSAbstractSessionEvent {
-    public WSSessionExpiredEvent() {
-        super(WSEventType.SESSION_EXPIRED);
+public class WSEventDeleteTempFile extends WSAbstractEvent {
+    private final String sessionId;
+
+    public WSEventDeleteTempFile(String sessionId) {
+        super(WSEventType.TEMP_FOLDER_DELETED);
+        this.sessionId = sessionId;
+    }
+
+    @Nullable
+    @Override
+    public String getSessionId() {
+        return sessionId;
     }
 }

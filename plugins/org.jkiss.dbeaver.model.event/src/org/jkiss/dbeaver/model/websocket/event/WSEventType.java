@@ -80,6 +80,8 @@ public enum WSEventType {
 
     WORKSPACE_CONFIG_CHANGED("cb_workspace_config_changed", WSEventTopic.WORKSPACE_CONFIG, WSWorkspaceConfigurationChangedEvent.class),
 
+    TEMP_FOLDER_DELETED("cb_temp_folder_deleted", WSEventTopic.TEMP_FOLDER, WSDataSourceEvent.class),
+
     DB_LOG_UPDATED("cb_database_output_log_updated", WSEventTopic.DB_OUTPUT_LOG, WSOutputDBLogEvent.class);
 
     private final String eventId;
