@@ -161,7 +161,7 @@ public class DesktopUI implements DBPPlatformUI {
             return;
         }
         if (TrayIconHandler.isSupported()) {
-            Display.getCurrent().beep();
+            UIUtils.syncExec(() -> Display.getCurrent().beep());
             getInstance().trayItem.notify(message, status);
         } else {
             DBeaverNotifications.showNotification(

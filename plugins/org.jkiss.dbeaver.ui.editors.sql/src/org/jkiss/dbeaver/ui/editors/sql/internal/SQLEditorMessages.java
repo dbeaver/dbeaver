@@ -258,7 +258,9 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_file_name_pattern_tip;
     public static String pref_page_sql_editor_checkbox_delete_empty_scripts;
     public static String pref_page_sql_editor_checkbox_put_new_scripts;
+    public static String pref_page_sql_editor_checkbox_put_new_scripts_tip;
     public static String pref_page_sql_editor_checkbox_create_script_folders;
+    public static String pref_page_sql_editor_checkbox_create_script_folders_tip;
     public static String pref_page_sql_editor_checkbox_reset_cursor;
     public static String pref_page_sql_editor_checkbox_max_editor_on_script_exec;
     public static String pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results;
@@ -370,6 +372,8 @@ public class SQLEditorMessages extends NLS {
     public static String sql_generator_nonsql_text;
 
     public static String sql_editor_separate_connection_no_editor_or_ds_selected;
+    public static String sql_editor_prefs_save_as_script_text;
+    public static String sql_editor_prefs_save_as_script_tip;
     public static String sql_editor_prefs_disable_services_text;
     public static String sql_editor_prefs_disable_services_tip;
     public static String sql_editor_prefs_script_advanced_settings;

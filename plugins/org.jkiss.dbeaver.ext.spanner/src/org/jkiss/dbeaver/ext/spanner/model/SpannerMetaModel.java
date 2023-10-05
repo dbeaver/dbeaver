@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.spanner.model;
 
+import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Spanner meta model
@@ -34,4 +36,11 @@ public class SpannerMetaModel extends GenericMetaModel {
         return true;
     }
 
+    @Override
+    public boolean isSystemSchema(GenericSchema schema) {
+        if (schema != null && CommonUtils.isNotEmpty(schema.getName())) {
+            return "INFORMATION_SCHEMA".equals(schema.getName()) || "SPANNER_SYS".equals(schema.getName());
+        }
+        return super.isSystemSchema(schema);
+    }
 }

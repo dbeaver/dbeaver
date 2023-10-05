@@ -52,10 +52,7 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 import org.jkiss.utils.StandardConstants;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -87,6 +84,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
      * Initializes upon the initialization of the very first driver.
      */
     private static ClassLoader rootClassLoader;
+    private boolean propagateDriverProperties;
+    private boolean origPropagateDriverProperties;
 
     public static class DriverFileInfo {
         private final String id;
@@ -197,6 +196,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private int promoted;
 
     private Set<DBPDriverConfigurationType> configurationTypes = new HashSet<>(Collections.singleton(DBPDriverConfigurationType.MANUAL));
+    private Set<String> supportedPageFields = new HashSet<>(Set.of(DBConstants.PROP_HOST, DBConstants.PROP_PORT, DBConstants.PROP_DATABASE));
     private final List<DBPNativeClientLocation> nativeClientHomes = new ArrayList<>();
     private final List<DriverFileSource> fileSources = new ArrayList<>();
     private final List<DBPDriverLibrary> libraries = new ArrayList<>();
@@ -293,6 +293,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.webURL = copyFrom.webURL;
             this.propertiesWebURL = copyFrom.webURL;
             this.embedded = copyFrom.embedded;
+            this.propagateDriverProperties = copyFrom.propagateDriverProperties;
             this.singleConnection = copyFrom.singleConnection;
             this.clientRequired = copyFrom.clientRequired;
             this.supportsDriverProperties = copyFrom.supportsDriverProperties;
@@ -323,6 +324,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.defaultConnectionProperties.putAll(copyFrom.defaultConnectionProperties);
             this.customConnectionProperties.putAll(copyFrom.customConnectionProperties);
             this.configurationTypes.addAll(copyFrom.configurationTypes);
+            this.supportedPageFields.addAll(copyFrom.supportedPageFields);
             this.supportsDistributedMode = copyFrom.supportsDistributedMode;
             this.deprecationReason = copyFrom.deprecationReason;
         } else {
@@ -361,6 +363,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.singleConnection = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SINGLE_CONNECTION));
         this.origAnonymousAccess = this.anonymousAccess = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ANONYMOUS));
         this.origAllowsEmptyPassword = this.allowsEmptyPassword = CommonUtils.getBoolean("allowsEmptyPassword");
+        this.origPropagateDriverProperties = this.propagateDriverProperties =
+            CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_PROPAGATE_DRIVER_PROPERTIES));
         this.licenseRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_LICENSE_REQUIRED));
         this.supportsDistributedMode = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE), true);
         this.deprecationReason = config.getAttribute(RegistryConstants.ATTR_DEPRECATED);
@@ -383,6 +387,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 .collect(Collectors.toSet());
         }
 
+        String[] supportedPageFields = CommonUtils.split(
+            config.getAttribute(RegistryConstants.ATTR_SUPPORTED_PAGE_FIELDS), ",");
+        if (supportedPageFields.length > 0) {
+            this.supportedPageFields = Stream.of(supportedPageFields).collect(Collectors.toSet());
+        }
         for (IConfigurationElement lib : config.getChildren(RegistryConstants.TAG_FILE_SOURCE)) {
             this.fileSources.add(new DriverFileSource(lib));
         }
@@ -844,6 +853,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     public void setEmbedded(boolean embedded) {
         this.embedded = embedded;
+    }
+
+    public boolean isPropagateDriverProperties() {
+        return propagateDriverProperties;
+    }
+
+    public void setPropagateDriverProperties(boolean propagateDriverProperties) {
+        this.propagateDriverProperties = propagateDriverProperties;
     }
 
     @Override
@@ -1509,7 +1526,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                         monitor.subTask("Load driver file '" + fileInfo.id + "'");
                         byte[] fileData = fileController.loadFileData(DBFileController.TYPE_DATABASE_DRIVER, fileInfo.getFile().toString());
                         Files.write(localDriverFile, fileData, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
-
+                        fileInfo.setFileCRC(DriverDescriptor.calculateFileCRC(localDriverFile));
                         localFilePaths.add(localDriverFile);
                     } catch (Exception e) {
                         log.error("Error downloading driver file '" + fileInfo.getFile() + "'", e);
@@ -1526,18 +1543,31 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     public static long calculateFileCRC(Path localDriverFile) {
         try (InputStream is = Files.newInputStream(localDriverFile)) {
-            CRC32 crc = new CRC32();
-
-            byte[] buffer = new byte[65536];
-            int bytesRead;
-            while ((bytesRead = is.read(buffer)) != -1) {
-                crc.update(buffer, 0, bytesRead);
-            }
-            return crc.getValue();
+            return calculateCRC(is);
         } catch (IOException e) {
             log.error("Error reading file '" + localDriverFile + "', CRC calculation failed", e);
             return 0;
         }
+    }
+
+    public static long calculateBytesCRC(byte[] bytes) {
+        try (InputStream is = new ByteArrayInputStream(bytes)) {
+            return calculateCRC(is);
+        } catch (IOException e) {
+            log.error("CRC calculation failed from bytes", e);
+            return 0;
+        }
+    }
+
+    private static long calculateCRC(InputStream is) throws IOException {
+        CRC32 crc = new CRC32();
+
+        byte[] buffer = new byte[65536];
+        int bytesRead;
+        while ((bytesRead = is.read(buffer)) != -1) {
+            crc.update(buffer, 0, bytesRead);
+        }
+        return crc.getValue();
     }
 
     Path getWorkspaceStorageFolder() {
@@ -1635,6 +1665,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return origEmbedded;
     }
 
+    public boolean isOrigPropagateDriverProperties() {
+        return origPropagateDriverProperties;
+    }
+
     public boolean isOrigAnonymousAccess() {
         return origAnonymousAccess;
     }
@@ -1653,6 +1687,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     public Set<DBPDriverConfigurationType> getSupportedConfigurationTypes() {
         return configurationTypes;
+    }
+
+    @NotNull
+    public Set<String> getSupportedPageFields() {
+        return supportedPageFields;
     }
 
     public boolean isSupportsDistributedMode() {
@@ -1725,14 +1764,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
                 if (Files.isDirectory(srcLocalFile)) {
                     Path targetFolder = targetFileLocation.resolve(targetPath);
-                    if (!Files.exists(targetFolder)) {
-                        try {
-                            Files.createDirectories(targetFolder);
-                        } catch (IOException e) {
-                            log.error("Error creating driver target directory '" + targetFolder + "'", e);
-                            return false;
-                        }
-                    }
 
                     try {
                         resolveDirectories(targetFileLocation, library, srcLocalFile, targetFolder, libraryFiles);
@@ -1741,14 +1772,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     }
                 } else {
                     Path trgLocalFile = targetFileLocation.resolve(targetPath);
-                    Path trgFolder = trgLocalFile.getParent();
-                    if (!Files.exists(trgFolder)) {
-                        try {
-                            Files.createDirectories(trgFolder);
-                        } catch (IOException e) {
-                            log.error("Error creating driver file directory '" + trgFolder + "'", e);
-                        }
-                    }
                     DriverFileInfo fileInfo = resolveFile(targetFileLocation, library, srcLocalFile, trgLocalFile);
                     if (fileInfo != null) {
                         libraryFiles.add(fileInfo);
@@ -1776,14 +1799,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     private void resolveDirectories(Path targetFileLocation, DBPDriverLibrary library, Path srcLocalFile, Path trgLocalFile, List<DriverFileInfo> libraryFiles) throws IOException {
-        if (!Files.exists(trgLocalFile)) {
-            try {
-                Files.createDirectories(trgLocalFile);
-            } catch (IOException e) {
-                log.error("Error creating driver library target directory '" + trgLocalFile + "'", e);
-                return;
-            }
-        }
         // Resolve directory contents
         List<Path> srcDirFiles = Files.list(srcLocalFile).collect(Collectors.toList());
         for (Path dirFile : srcDirFiles) {
@@ -1808,16 +1823,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         Path relPath = targetFileLocation.relativize(trgLocalFile);
         DriverFileInfo info = new DriverFileInfo(trgLocalFile.getFileName().toString(), null, library.getType(), relPath);
         info.fileCRC = calculateFileCRC(srcLocalFile);
-        long targetCRC = Files.exists(trgLocalFile) ? calculateFileCRC(trgLocalFile) : 0;
-        if (info.fileCRC != targetCRC) {
-            // Copy file
-            try {
-                Files.copy(srcLocalFile, trgLocalFile, StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
-                log.error("Error copying library file '" + srcLocalFile + "' into '" + trgLocalFile + "'", e);
-                return null;
-            }
-        }
         return info;
     }
 

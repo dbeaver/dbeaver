@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTaskSettings;
+import org.jkiss.dbeaver.model.task.DBTTaskSettingsInput;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.SecuredPasswordEncrypter;
 import org.jkiss.utils.CommonUtils;
@@ -40,7 +41,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> implements DBTTaskSettings<BASE_OBJECT> {
+public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
+    implements DBTTaskSettings<BASE_OBJECT>, DBTTaskSettingsInput<BASE_OBJECT> {
 
     private static final Log log = Log.getLog(AbstractNativeToolSettings.class);
 
@@ -254,5 +256,14 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
         if (clientHomeName != null) {
             preferenceStore.setValue("clientHomeName", clientHomeName);
         }
+    }
+    
+    @Override
+    public void loadSettingsFromInput(List<BASE_OBJECT> inputObjects) {
+        databaseObjects.addAll(inputObjects);
+    }
+
+    public boolean isMutatingTask() {
+        return false;
     }
 }

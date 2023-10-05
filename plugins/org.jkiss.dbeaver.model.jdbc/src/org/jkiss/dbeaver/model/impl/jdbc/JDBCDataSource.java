@@ -186,7 +186,16 @@ public abstract class JDBCDataSource extends AbstractDataSource
                     // Refresh credentials
                     authModel.refreshCredentials(monitor, container, connectionInfo, credentials);
                 }
+                final String host = connectionInfo.getHostName();
+                final String port = connectionInfo.getHostPort();
+                final String database = connectionInfo.getDatabaseName();
                 authResult = authModel.initAuthentication(monitor, this, credentials, connectionInfo, connectProps);
+                if (!CommonUtils.equalObjects(host, connectionInfo.getHostName()) ||
+                    !CommonUtils.equalObjects(port, connectionInfo.getHostPort()) ||
+                    !CommonUtils.equalObjects(database, connectionInfo.getDatabaseName())) {
+                    url = getConnectionURL(connectionInfo);
+                    log.debug("Configuration info was changed after auth initialization. Connection URL was updated to: " + url);
+                }
             } catch (DBException e) {
                 throw new DBCException("Authentication error: " + e.getMessage(), e);
             }

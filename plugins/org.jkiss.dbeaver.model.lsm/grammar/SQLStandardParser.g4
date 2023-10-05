@@ -49,11 +49,11 @@ public void setIsSupportSquareBracketQuotation(boolean value) { isSupportSquareB
 }
 
 // root rule for script
-sqlQueries: (sqlQuery Semicolon?)* EOF; // EOF - don't stop early. must match all input
+sqlQueries: sqlQuery (Semicolon sqlQuery)* Semicolon? EOF; // EOF - don't stop early. must match all input
 sqlQuery: directSqlDataStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|sqlDataStatement;
 
 directSqlDataStatement: (deleteStatement|selectStatement|insertStatement|updateStatement);
-selectStatement: queryExpression (orderByClause)?;
+selectStatement: withClause? queryExpression orderByClause?;
 
 // data type literals
 literal: (signedNumericLiteral|generalLiteral);
@@ -145,6 +145,12 @@ qualifier: (tableName|correlationName);
 correlationName: identifier;
 setFunctionSpecification: (COUNT LeftParen Asterisk RightParen|anyWordsWithProperty);
 
+withClause: WITH RECURSIVE? cteList;
+cteList: with_list_element (Comma with_list_element)*;
+with_list_element: queryName (LeftParen withColumnList RightParen)? AS anyWordsWithProperty? subquery;
+withColumnList: columnName (Comma columnName )*;
+queryName: Identifier;
+
 // select, subquery
 scalarSubquery: subquery;
 subquery: LeftParen queryExpression RightParen;
@@ -158,18 +164,18 @@ simpleTable: (querySpecification|tableValueConstructor|explicitTable);
 querySpecification: SELECT (setQuantifier)? selectList tableExpression?;
 setQuantifier: (DISTINCT|ALL);
 selectList: (Asterisk|selectSublist) (Comma selectSublist)*; // (Comma selectSublist)* contains any quantifier for error recovery;
-selectSublist: (qualifier Period Asterisk | derivedColumn)*; // * for whole rule to handle select fields autocompletion when from immediately after select
+selectSublist: (qualifier Period Asterisk | derivedColumn | (.*?)); // (.*?) for whole rule to handle select fields autocompletion when from immediately after select
 derivedColumn: valueExpression (asClause)?;
 asClause: (AS)? columnName;
-tableExpression: (.*?) fromClause (whereClause)? (groupByClause)? (havingClause)?; // (.*?) - for error recovery
+tableExpression: fromClause (whereClause)? (groupByClause)? (havingClause)?;
 queryPrimary: (nonJoinQueryPrimary|joinedTable);
 queryTerm: (nonJoinQueryTerm|joinedTable);
 queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
 
 // from
-fromClause: FROM tableReference ((Comma tableReference)+)?;
+fromClause: FROM tableReference (Comma tableReference)*;
 nonjoinedTableReference: (tableName (PARTITION anyProperty)? (correlationSpecification)?)|(derivedTable correlationSpecification);
-tableReference: (nonjoinedTableReference|joinedTable|tableReferenceHints)*; // * to handle incomplete queries
+tableReference: nonjoinedTableReference|joinedTable|tableReferenceHints|(.*?); // '.*' to handle incomplete queries
 tableReferenceHints: (tableHintKeywords|anyWord)+ anyProperty; // dialect-specific options, should be described and moved to dialects in future
 joinedTable: (nonjoinedTableReference|(LeftParen joinedTable RightParen)) (naturalJoinTerm|crossJoinTerm)+;
 correlationSpecification: (AS)? correlationName (LeftParen derivedColumnList RightParen)?;
@@ -190,8 +196,8 @@ joinColumnList: columnNameList;
 // conditions
 whereClause: WHERE searchCondition;
 groupByClause: GROUP BY groupingColumnReferenceList;
-groupingColumnReferenceList: groupingColumnReference ((Comma groupingColumnReference)+)?;
-groupingColumnReference: columnReference;
+groupingColumnReferenceList: groupingColumnReference (Comma groupingColumnReference)*;
+groupingColumnReference: columnReference | anyWordsWithProperty;
 havingClause: HAVING searchCondition;
 tableValueConstructor: VALUES tableValueConstructorList;
 tableValueConstructorList: rowValueConstructor ((Comma rowValueConstructor)+)?;
@@ -246,7 +252,7 @@ likePredicate: matchValue (NOT)? LIKE pattern (ESCAPE escapeCharacter)?;
 matchValue: characterValueExpression;
 pattern: characterValueExpression;
 escapeCharacter: characterValueExpression;
-nullPredicate: rowValueConstructor IS (NOT)? NULL;
+nullPredicate: rowValueConstructor IS (NOT? NULL | NOTNULL);
 quantifiedComparisonPredicate: rowValueConstructor compOp quantifier tableSubquery;
 quantifier: (all|some);
 all: ALL;
@@ -272,7 +278,7 @@ referencingColumns: referenceColumnList;
 orderByClause: ORDER BY sortSpecificationList;
 sortSpecificationList: sortSpecification ((Comma sortSpecification)+)?;
 sortSpecification: sortKey (orderingSpecification)?;
-sortKey: (columnReference|UnsignedInteger);
+sortKey: columnReference | UnsignedInteger | anyWordsWithProperty;
 orderingSpecification: (ASC|DESC);
 
 // schema definition
@@ -349,7 +355,7 @@ setLocalTimeZoneStatement: SET TIME ZONE setTimeZoneValue;
 setTimeZoneValue: (intervalValueExpression|LOCAL);
 
 // unknown keyword, data type or function name
-anyWord: Identifier;
+anyWord: actualIdentifier;
 anyValue: qualifiedName|literal|valueExpression|Comma;
 anyWordWithAnyValue: anyWord anyValue;
 anyProperty: LeftParen anyValue+ RightParen;

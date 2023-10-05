@@ -113,6 +113,7 @@ public class UINavigatorMessages extends NLS {
 
     // DatabaseNavigator
     public static String pref_page_database_general_label_expand_navigator_tree;
+    public static String pref_page_database_general_label_expand_navigator_tree_tip;
     public static String pref_page_database_general_label_restore_filter;
     public static String pref_page_database_general_label_restore_filter_tip;
     public static String pref_page_database_general_label_restore_state_depth;
@@ -124,6 +125,7 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_database_general_label_show_contents_in_tooltips;
     public static String pref_page_database_general_label_show_contents_in_tooltips_tip;
     public static String pref_page_database_general_label_order_elements_alphabetically;
+    public static String pref_page_database_general_label_order_elements_alphabetically_tip;
     public static String pref_page_database_general_label_folders_first;
     public static String pref_page_database_general_label_folders_first_tip;
     public static String pref_page_database_general_label_show_host_name;

@@ -37,6 +37,8 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class GreenplumSchema extends PostgreSchema {
 
@@ -67,6 +69,29 @@ public class GreenplumSchema extends PostgreSchema {
         return new ArrayList<>(getTableCache().getTypedObjects(monitor, this, GreenplumExternalTable.class));
     }
 
+    @Override
+    public List<? extends PostgreTable> getTables(DBRProgressMonitor monitor) throws DBException {
+        List<? extends PostgreTable> postgreTables = super.getTables(monitor);
+        // Remove external tables from the list. Store them in a different folder.
+        return postgreTables.stream()
+            .filter(e -> !(e instanceof GreenplumExternalTable))
+            .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    @Override
+    public List<? extends PostgreTable> getForeignTables(DBRProgressMonitor monitor) throws DBException {
+        List<? extends PostgreTable> foreignTables = super.getForeignTables(monitor);
+        GreenplumDataSource dataSource = getDataSource();
+        if (dataSource.isServerVersionAtLeast(7, 0) && dataSource.isHasAccessToExttable()) {
+            // Starting Greenplum version 7 external tables are marked as foreign tables.
+            // Lets's remove external tables from the list foreign tables. Store is the External tables folder.
+            return foreignTables.stream()
+                .filter(e -> !(e instanceof GreenplumExternalTable))
+                .collect(Collectors.toCollection(ArrayList::new));
+        }
+        return foreignTables;
+    }
+
     public class GreenplumTableCache extends TableCache {
 
         private boolean before7version;
@@ -85,7 +110,8 @@ public class GreenplumSchema extends PostgreSchema {
             boolean greenplumVersionAtLeast5 = dataSource.isGreenplumVersionAtLeast(5, 0);
             String uriLocationColumn = greenplumVersionAtLeast5 ? "urilocation" : "location";
             String execLocationColumn = greenplumVersionAtLeast5 ? "execlocation" : "location";
-            boolean hasAccessToExttable = dataSource.isHasAccessToExttable(session);
+            boolean hasAccessToExttable = dataSource.isHasAccessToExttable();
+            boolean supportsRelStorageColumn = dataSource.isServerSupportsRelstorageColumn(session);
             before7version = !dataSource.isGreenplumVersionAtLeast(7, 0);
             String sqlQuery = "SELECT c.oid,c.*,d.description,\n" +
                 (before7version ? "p.partitiontablename,p.partitionboundary as partition_expr," :
@@ -101,9 +127,11 @@ public class GreenplumSchema extends PostgreSchema {
                 "x.writable,\n" : "") +
                 (dataSource.isServerSupportFmterrtblColumn(session) ?
                     "case when x.fmterrtbl is not NULL then true else false end as \"is_logging_errors\",\n" : "") +
-                (dataSource.isServerSupportRelstorageColumn(session) ?
-                    "case when c.relstorage = 'x' then true else false end as \"is_ext_table\",\n" : "false as \"is_ext_table\",\n") +
-                "case when (ns.nspname !~ '^pg_toast' and ns.nspname like 'pg_temp%') then true else false end as \"is_temp_table\"\n" +
+                (supportsRelStorageColumn ? // We want to know about table external status
+                    "case when c.relstorage = 'x' then true else false end as \"is_ext_table\"" :
+                    hasAccessToExttable ? "\ncase when x.fmttype is not null then true else false end as \"is_ext_table\"" :
+                        "false as \"is_ext_table\"") +
+                "\n,case when (ns.nspname !~ '^pg_toast' and ns.nspname like 'pg_temp%') then true else false end as \"is_temp_table\"\n" +
                 (before7version ? "" : ", pa.amname\n") +
                 "\nFROM pg_catalog.pg_class c\n" +
                 "INNER JOIN pg_catalog.pg_namespace ns\n\ton ns.oid = c.relnamespace\n" +

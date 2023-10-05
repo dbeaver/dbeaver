@@ -22,6 +22,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.net.URI;
+import java.nio.file.Path;
+
 /**
  * Virtual file system
  */
@@ -43,4 +46,6 @@ public interface DBFVirtualFileSystem {
     @NotNull
     DBFVirtualFileSystemRoot[] getRootFolders(DBRProgressMonitor monitor) throws DBException;
 
+    @NotNull
+    Path getPathByURI(DBRProgressMonitor monitor, @NotNull URI uri) throws DBException;
 }

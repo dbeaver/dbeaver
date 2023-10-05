@@ -94,6 +94,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     private String url;
     private String clientHomeId;
 
+    private String configProfileSource;
     private String configProfileName;
 
     @NotNull
@@ -138,6 +139,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.userPassword = info.userPassword;
         this.url = info.url;
         this.clientHomeId = info.clientHomeId;
+        this.configProfileSource = info.configProfileSource;
         this.configProfileName = info.configProfileName;
         this.authModelId = info.authModelId;
         this.authProperties = info.authProperties == null ? null : new LinkedHashMap<>(info.authProperties);
@@ -411,6 +413,14 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.closeIdleInterval = closeIdleInterval;
     }
 
+    public String getConfigProfileSource() {
+        return configProfileSource;
+    }
+
+    public void setConfigProfileSource(String configProfileSource) {
+        this.configProfileSource = configProfileSource;
+    }
+
     public String getConfigProfileName() {
         return configProfileName;
     }
@@ -423,7 +433,8 @@ public class DBPConnectionConfiguration implements DBPObject {
         if (profile == null) {
             configProfileName = null;
         } else {
-            configProfileName = profile.getProfileName();
+            configProfileSource = profile.getProfileSource();
+            configProfileName = profile.getProfileId();
             for (DBWHandlerConfiguration handlerConfig : profile.getConfigurations()) {
                 if (handlerConfig.isEnabled()) {
                     updateHandler(new DBWHandlerConfiguration(handlerConfig));
@@ -521,6 +532,7 @@ public class DBPConnectionConfiguration implements DBPObject {
                 CommonUtils.equalOrEmptyStrings(this.url, source.url) &&
                 CommonUtils.equalObjects(this.configurationType, source.configurationType) &&
                 CommonUtils.equalObjects(this.clientHomeId, source.clientHomeId) &&
+                CommonUtils.equalObjects(this.configProfileSource, source.configProfileSource) &&
                 CommonUtils.equalObjects(this.configProfileName, source.configProfileName) &&
                 CommonUtils.equalObjects(this.authModelId, source.authModelId) &&
                 CommonUtils.equalObjects(this.authProperties, source.authProperties) &&

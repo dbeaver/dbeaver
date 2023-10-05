@@ -27,8 +27,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.model.sql.SQLScriptErrorHandling;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
@@ -385,6 +387,38 @@ public class PrefPageSQLExecute extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.BEEP_ON_QUERY_END);
         store.setToDefault(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE);
         store.setToDefault(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE);
+    }
+
+    @Override
+    protected void performDefaults() {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        invalidateBeforeExecuteCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE));
+        executeTimeoutText.setSelection(store.getDefaultInt(SQLPreferenceConstants.STATEMENT_TIMEOUT));
+        soundOnQueryEnd.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END));
+        updateDefaultAfterExecute.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE));
+        clearOutputBeforeExecute.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE));
+        UIUtils.setComboSelection(commitTypeCombo, store.getDefaultString(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE));
+        UIUtils.setComboSelection(errorHandlingCombo, store.getDefaultString(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING));
+        commitLinesText.setSelection(store.getDefaultInt(SQLPreferenceConstants.SCRIPT_COMMIT_LINES));
+        fetchResultSetsCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS));
+        resetCursorCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE));
+        maxEditorCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE));
+        showStatisticsForQueriesWithResultsCheck.setSelection(
+            store.getDefaultBoolean(SQLPreferenceConstants.SHOW_STATISTICS_FOR_QUERIES_WITH_RESULTS));
+        closeIncludedScriptAfterExecutionCheck.setSelection(
+            store.getDefaultBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION));
+        statementDelimiterText.setText(store.getDefaultString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER));
+        ignoreNativeDelimiter.setSelection(store.getDefaultBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER));
+        blankLineDelimiter.setSelection(store.getDefaultBoolean(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK));
+        removeTrailingDelimiter.setSelection(store.getDefaultBoolean(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER));
+        enableSQLParameters.setSelection(store.getDefaultBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED));
+        enableSQLAnonymousParameters.setSelection(store.getDefaultBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED));
+        anonymousParameterMarkText.setText(store.getDefaultString(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK));
+        namedParameterPrefixText.setText(store.getDefaultString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX));
+        controlCommandPrefixText.setText(store.getDefaultString(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX));
+        enableParametersInEmbeddedCode.setSelection(store.getDefaultBoolean(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED));
+        enableVariables.setSelection(store.getDefaultBoolean(ModelPreferences.SQL_VARIABLES_ENABLED));
+        super.performDefaults();
     }
 
     @Override

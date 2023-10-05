@@ -178,7 +178,18 @@ public interface RMController extends DBPObjectController {
      */
     RMResource[] getResourcePath(
         @NotNull String projectId,
-        @NotNull String resourcePath) throws DBException;
+        @NotNull String resourcePath
+    ) throws DBException;
+
+
+    /**
+     * Resource metainfo
+     */
+    @Nullable
+    RMResource getResource(
+        @NotNull String projectId,
+        @NotNull String resourcePath
+    ) throws DBException;
 
     /**
      * Reads resource data

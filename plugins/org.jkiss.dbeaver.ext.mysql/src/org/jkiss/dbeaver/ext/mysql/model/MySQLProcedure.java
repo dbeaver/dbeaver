@@ -230,7 +230,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
     public Collection<MySQLProcedureParameter> getParameters(DBRProgressMonitor monitor)
         throws DBException
     {
-        return getContainer().proceduresCache.getChildren(monitor, getContainer(), this);
+        return getContainer().getProceduresCache().getChildren(monitor, getContainer(), this);
     }
 
     @NotNull
@@ -257,7 +257,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return getContainer().proceduresCache.refreshObject(monitor, getContainer(), this);
+        return getContainer().getProceduresCache().refreshObject(monitor, getContainer(), this);
     }
 
     @Override

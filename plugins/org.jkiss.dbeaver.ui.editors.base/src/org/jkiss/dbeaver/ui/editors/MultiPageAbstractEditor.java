@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
@@ -58,6 +59,12 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
         }
         setPartName(input.getName());
         setTitleImage(input.getImageDescriptor());
+    }
+
+    @Override
+    protected CTabItem createItem(int index, Control control) {
+        EditorAccessibleAdapter.install((Composite) control);
+        return super.createItem(index, control);
     }
 
     protected void setTitleImage(ImageDescriptor titleImage) {

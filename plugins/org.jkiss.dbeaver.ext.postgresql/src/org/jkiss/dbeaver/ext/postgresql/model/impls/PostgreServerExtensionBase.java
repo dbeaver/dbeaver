@@ -583,4 +583,9 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     public boolean supportsAlterTableForViewRename() {
         return false;
     }
+
+    @Override
+    public boolean supportsNativeClient() {
+        return true;
+    }
 }

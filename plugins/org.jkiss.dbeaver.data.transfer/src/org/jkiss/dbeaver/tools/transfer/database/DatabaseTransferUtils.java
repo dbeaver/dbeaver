@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
+import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -190,7 +192,12 @@ public class DatabaseTransferUtils {
         DBPDataSource dataSource = executionContext.getDataSource();
         StringBuilder sql = new StringBuilder(500);
 
-        String tableName = DBObjectNameCaseTransformer.transformName(dataSource, containerMapping.getTargetName());
+        String tableName;
+        if (containerMapping.getMappingType() == DatabaseMappingType.create) {
+            tableName = getTransformedName(dataSource, containerMapping.getTargetName(), false);
+        } else {
+            tableName = DBObjectNameCaseTransformer.transformName(dataSource, containerMapping.getTargetName());
+        }
         containerMapping.setTargetName(tableName);
 
         if (CommonUtils.isEmpty(tableName)) {
@@ -253,6 +260,47 @@ public class DatabaseTransferUtils {
             }
         }
         return actions.toArray(new DBEPersistAction[0]);
+    }
+
+    /**
+     * Transform target mapping name by mapping rules (if we have them)
+     *
+     * @param dataSource for preferences and dialect info
+     * @param targetName name for transformation
+     * @param skipCaseChanging true if we do not want to change name case
+     * @return transformed target name (container or attribute)
+     */
+    @NotNull
+    public static String getTransformedName(@NotNull DBPDataSource dataSource, @NotNull String targetName, boolean skipCaseChanging) {
+        String finalName = targetName;
+        DBPPreferenceStore dbpPreferenceStore = dataSource.getContainer().getPreferenceStore();
+        DBPPreferenceStore store = DTActivator.getDefault().getPreferences();
+        MappingNameCase nameCase = MappingNameCase.getCaseFromPreferences(dbpPreferenceStore, store);
+        MappingReplaceMechanism mechanism = MappingReplaceMechanism.getCaseFromPreferences(dbpPreferenceStore, store);
+        if (nameCase != MappingNameCase.DEFAULT) {
+            finalName = nameCase.getIdentifierCase().transform(targetName);
+        } else if (!skipCaseChanging && mechanism != MappingReplaceMechanism.CAMELCASE) {
+            finalName = DBObjectNameCaseTransformer.transformName(dataSource, targetName);
+        }
+        if (mechanism != MappingReplaceMechanism.ABSENT && CommonUtils.isNotEmpty(finalName) && finalName.contains(" ")) {
+            if (MappingReplaceMechanism.UNDERSCORES == mechanism) {
+                finalName = finalName.replaceAll(" ", "_");
+            } else if (MappingReplaceMechanism.CAMELCASE == mechanism
+                && !(nameCase == MappingNameCase.DEFAULT && dataSource.getSQLDialect().storesUnquotedCase() == DBPIdentifierCase.UPPER)
+                && nameCase != MappingNameCase.UPPER // No need to transform upper case names
+            ) {
+                String camelCaseName = CommonUtils.toCamelCase(finalName);
+                if (CommonUtils.isNotEmpty(camelCaseName)) {
+                    finalName = camelCaseName.replaceAll(" ", "");
+                }
+            }
+        }
+        if (CommonUtils.isNotEmpty(finalName)) {
+            // Add quotes for the result name if needed
+            return DBUtils.getQuotedIdentifier(dataSource, finalName);
+        }
+        log.debug("Can't transform target attribute name");
+        return targetName;
     }
 
     private static void getTableFullName(@Nullable DBSObjectContainer schema, @NotNull DBPDataSource dataSource, @NotNull StringBuilder sql, @NotNull String tableName) {
@@ -343,7 +391,7 @@ public class DatabaseTransferUtils {
             {
                 table = tableManager.createNewObject(monitor, commandContext, schema, null, options);
                 applyPropertyChanges(monitor, changedProperties, commandContext, containerMapping, table);
-                tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table);
+                tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table, true);
                 createCommand = tableManager.makeCreateCommand(table, options);
             } else {
                 table = (DBSEntity) containerMapping.getTarget();
@@ -359,7 +407,7 @@ public class DatabaseTransferUtils {
                         null,
                         options);
                     applyPropertyChanges(monitor, changedProperties, commandContext, containerMapping, table);
-                    tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table);
+                    tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table, false);
                     createCommand = tableManager.makeCreateCommand(table, options);
                 } else {
                     tableFinalName = table.getName();
@@ -376,8 +424,7 @@ public class DatabaseTransferUtils {
                         throw new DBException("Table column name cannot be set for " + attrClass.getName());
                     }
                     ((DBPNamedObject2) newAttribute).setName(
-                        DBObjectNameCaseTransformer.transformName(newAttribute.getDataSource(),
-                            attributeMapping.getTargetName()));
+                        getTransformedName(newAttribute.getDataSource(), attributeMapping.getTargetName(), false));
 
                     // Set attribute properties
                     if (newAttribute instanceof DBSTypedObjectExt2) {
@@ -456,11 +503,24 @@ public class DatabaseTransferUtils {
         }
     }
 
-    private static String getTableFinalName(String targetName, @NotNull Class<? extends DBSObject> tableClass, DBSEntity table) throws DBException {
+    private static String getTableFinalName(
+        String targetName,
+        @NotNull Class<? extends DBSObject> tableClass,
+        DBSEntity table,
+        boolean extraTransform
+    ) throws DBException {
         if (table == null) {
             throw new DBException("Internal error - target table not set");
         }
-        String tableFinalName = DBObjectNameCaseTransformer.transformName(table.getDataSource(), targetName);
+        if (table.getDataSource() == null) {
+            return targetName;
+        }
+        String tableFinalName;
+        if (extraTransform) {
+            tableFinalName = getTransformedName(table.getDataSource(), targetName, false);
+        } else {
+            tableFinalName = DBObjectNameCaseTransformer.transformName(table.getDataSource(), targetName);
+        }
         if (table instanceof DBPNamedObject2) {
             ((DBPNamedObject2) table).setName(tableFinalName);
         } else {
@@ -479,7 +539,7 @@ public class DatabaseTransferUtils {
     }
 
     private static void appendAttributeClause(DBPDataSource dataSource, StringBuilder sql, DatabaseMappingAttribute attr) {
-        String attrName = DBObjectNameCaseTransformer.transformName(dataSource, attr.getTargetName());
+        String attrName = getTransformedName(dataSource, attr.getTargetName(), false);
         sql.append(DBUtils.getQuotedIdentifier(dataSource, attrName)).append(" ").append(attr.getTargetType(dataSource, true));
         if (SQLUtils.getDialectFromDataSource(dataSource).supportsNullability()) {
             if (attr.getSource().isRequired()) sql.append(" NOT NULL");

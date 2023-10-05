@@ -113,6 +113,7 @@ public interface DBPDriver extends DBPNamedObject
     boolean supportsDriverProperties();
 
     boolean isEmbedded();
+    boolean isPropagateDriverProperties();
     boolean isAnonymousAccess();
     boolean isAllowsEmptyPassword();
     boolean isLicenseRequired();
@@ -204,6 +205,9 @@ public interface DBPDriver extends DBPNamedObject
      * Show supported configuration types
      */
     Set<DBPDriverConfigurationType> getSupportedConfigurationTypes();
+
+    @NotNull
+    Set<String> getSupportedPageFields();
 
     default String getFullId() {
         return getProviderId() + ":" + getId();

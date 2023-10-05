@@ -17,11 +17,14 @@
  */
 package org.jkiss.dbeaver.tasks.ui.nativetool;
 
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -71,7 +74,12 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
 
     public AbstractNativeToolWizard(@NotNull DBTTask task) {
         super(task);
-        this.preferenceStore = new TaskPreferenceStore(task);
+        if (isToolTask()) {
+            // Use global store for tool tasks
+            this.preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+        } else {
+            this.preferenceStore = new TaskPreferenceStore(task);
+        }
         this.settings = createSettings();
         this.taskTitle = task.getType().getName();
         this.logPage = new NativeToolWizardPageLog(taskTitle);
@@ -204,7 +212,7 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
             return false;
         }
 
-        if (getCurrentTask() != null) {
+        if (getCurrentTask() != null && !isToolTask()) {
             return super.performFinish();
         }
 
@@ -264,5 +272,9 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
             SWT.ICON_ERROR);
     }
 
-
+    @NotNull
+    @Override
+    public TaskConfigurationWizardDialog createWizardDialog(@NotNull IWorkbenchWindow window, @Nullable IStructuredSelection selection) {
+        return new NativeToolWizardDialog(window, this, selection);
+    }
 }

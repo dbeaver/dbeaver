@@ -30,12 +30,12 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.ai.AICompletionConstants;
-import org.jkiss.dbeaver.model.ai.AIEngineRegistry;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionRequest;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionResponse;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
+import org.jkiss.dbeaver.model.ai.format.DefaultRequestFormatter;
 import org.jkiss.dbeaver.model.ai.translator.SimpleFilterManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -77,7 +77,7 @@ public class AITranslateHandler extends AbstractHandler {
 
         DAICompletionEngine engine;
         try {
-            engine = AIEngineRegistry.getInstance().getCompletionEngine("openai");
+            engine = AIEngineRegistry.getInstance().getCompletionEngine(AISettings.getSettings().getActiveEngine());
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("AI error", "Cannot determine AI engine", e);
             return null;
@@ -85,10 +85,6 @@ public class AITranslateHandler extends AbstractHandler {
 
         if (!engine.isValidConfiguration()) {
             UIUtils.showPreferencesFor(editor.getSite().getShell(), null, AIPreferencePage.PAGE_ID);
-        }
-        if (!engine.isValidConfiguration()) {
-            DBWorkbench.getPlatformUI().showError("Bad AI engine configuration", "You must specify OpenAI API token in preferences");
-            return null;
         }
         DBCExecutionContext executionContext = editor.getExecutionContext();
         if (executionContext == null) {
@@ -130,7 +126,7 @@ public class AITranslateHandler extends AbstractHandler {
 
         AISuggestionPopup aiCompletionPopup = new AISuggestionPopup(
             HandlerUtil.getActiveShell(event),
-            "ChatGPT smart completion",
+            "AI smart completion",
             historyManager,
             lDataSource,
             executionContext,
@@ -141,6 +137,16 @@ public class AITranslateHandler extends AbstractHandler {
             completionRequest.setPromptText(aiCompletionPopup.getInputText());
             completionRequest.setScope(aiCompletionPopup.getScope());
             completionRequest.setCustomEntities(aiCompletionPopup.getCustomEntities());
+            try {
+                engine = AIEngineRegistry.getInstance().getCompletionEngine(AISettings.getSettings().getActiveEngine());
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("AI error", "Cannot determine AI engine", e);
+                return null;
+            }
+            if (!engine.isValidConfiguration()) {
+                DBWorkbench.getPlatformUI().showError("Bad AI engine configuration", "You must specify OpenAI API token in preferences");
+                return null;
+            }
             doAutoCompletion(executionContext, historyManager, lDataSource, editor, engine, completionRequest);
         }
         return null;
@@ -164,7 +170,9 @@ public class AITranslateHandler extends AbstractHandler {
                 try {
                     completionResult.addAll(
                         engine.performQueryCompletion(
-                            monitor, lDataSource, executionContext, request, true, 100));
+                            monitor, lDataSource, executionContext, request,
+                            AIFormatterRegistry.getInstance().getFormatter(AIConstants.CORE_FORMATTER),
+                            true, 100));
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 }

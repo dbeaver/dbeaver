@@ -89,6 +89,7 @@ public class RegistryConstants {
     public static final String ATTR_ANONYMOUS = "anonymous"; //$NON-NLS-1$
     public static final String ATTR_LICENSE_REQUIRED = "licenseRequired"; //$NON-NLS-1$
     public static final String ATTR_EMBEDDED = "embedded"; //$NON-NLS-1$
+    public static final String ATTR_PROPAGATE_DRIVER_PROPERTIES = "propagateDriverProperties"; //$NON-NLS-1$
     public static final String ATTR_SINGLE_CONNECTION = "singleConnection"; //$NON-NLS-1$
     public static final String ATTR_CUSTOM_DRIVER_LOADER = "customDriverLoader"; //$NON-NLS-1$
     public static final String ATTR_USE_URL_TEMPLATE = "useURL"; //$NON-NLS-1$
@@ -118,6 +119,7 @@ public class RegistryConstants {
     public static final String ATTR_SINGLETON = "singleton"; //$NON-NLS-1$
     public static final String ATTR_IGNORE_ERRORS = "ignoreErrors"; //$NON-NLS-1$
     public static final String ATTR_DIALECT = "dialect"; //$NON-NLS-1$
+    public static final String ATTR_REQUIRES_MUTABILITY = "requiresMutability"; //$NON-NLS-1$
 
     public static final long DEFAULT_IDLE_TRANSACTION_PERIOD = 1800;
 
@@ -171,6 +173,7 @@ public class RegistryConstants {
     public static final String TAG_DATA_SOURCE = "data-source"; //$NON-NLS-1$
     public static final String TAG_EVENT = "event"; //$NON-NLS-1$
     public static final String TAG_EVENTS = "events"; //$NON-NLS-1$
+    public static final String TAG_AUTH_PROPERTIES = "auth-properties"; //$NON-NLS-1$
     public static final String TAG_PROVIDER_PROPERTIES = "provider-properties"; //$NON-NLS-1$
     public static final String TAG_PROVIDER_PROPERTY = "provider-property"; //$NON-NLS-1$
     public static final String TAG_CUSTOM_PROPERTY = "custom-property"; //$NON-NLS-1$
@@ -225,8 +228,11 @@ public class RegistryConstants {
     public static final String ATTR_WORKING_DIRECTORY = "workingDirectory";
     public static final String ATTR_COMMAND = "command";
     public static final String ATTR_SUPPORTED_CONFIGURATION_TYPES = "supportedConfigurationTypes";
+    public static final String ATTR_SUPPORTED_PAGE_FIELDS = "supportedPageFields";
     public static final String ATTR_CONFIGURATION_TYPE = "configurationType";
     public static final String ATTR_SUPPORTS_DISTRIBUTED_MODE = "supportsDistributedMode";
     public static final String ATTR_DEPRECATED = "deprecated";
+    public static final String ATTR_IS_DEFAULT = "isDefault"; // $NON-NLS-N$
+    public static final String ATTR_NOTATION = "notation"; // $NON-NLS-N$
 
 }
