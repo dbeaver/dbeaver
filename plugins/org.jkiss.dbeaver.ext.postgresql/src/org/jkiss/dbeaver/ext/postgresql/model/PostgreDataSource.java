@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
+import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -64,6 +65,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -94,9 +96,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private String activeDatabaseName;
     private PostgreServerExtension serverExtension;
     private String serverVersion;
-
     private volatile boolean hasStatistics;
     private boolean supportsEnumTable;
+
+    private static final String LEGACY_UA_TIMEZONE = "Europe/Kiev";
+    private static final String NEW_UA_TIMEZONE = "Europe/Kyiv";
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -505,7 +509,16 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         if (instance != null) {
             log.debug("Initiate connection to " + getServerType().getServerTypeName() + " database [" + instance.getName() + "@" + conConfig.getHostName() + "] for " + purpose);
         }
+        boolean timezoneOverridden = false;
+
         try {
+            // Old versions of postgres and some linux distributions, on which docker images are made, may not contain
+            // new timezone, which will lead to the error while connecting, there is no way to know before connecting
+            // so to be sure we will use the old name
+            if (NEW_UA_TIMEZONE.equals(TimeZone.getDefault().getID())) { //$NON-NLS-1$
+                timezoneOverridden = true;
+                TimezoneRegistry.setDefaultZone(ZoneId.of(LEGACY_UA_TIMEZONE)); //$NON-NLS-1$
+            }
             if (conConfig.getConfigurationType() != DBPDriverConfigurationType.URL &&
                 instance instanceof PostgreDatabase &&
                 !CommonUtils.equalObjects(instance.getName(), conConfig.getDatabaseName())
@@ -565,6 +578,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             }
 
             throw e;
+        } finally {
+            if (timezoneOverridden && LEGACY_UA_TIMEZONE.equals(TimeZone.getDefault().getID())) { //$NON-NLS-1$
+                TimezoneRegistry.setDefaultZone(ZoneId.of(NEW_UA_TIMEZONE)); //$NON-NLS-1$
+            }
         }
 
         if (getServerType().supportsClientInfo() && !getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {

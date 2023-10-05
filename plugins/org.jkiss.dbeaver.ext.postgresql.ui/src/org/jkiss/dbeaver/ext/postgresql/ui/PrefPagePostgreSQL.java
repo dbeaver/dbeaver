@@ -166,6 +166,21 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
     }
 
     @Override
+    protected void performDefaults() {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        showNonDefault.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB));
+        showTemplates.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
+        showUnavailable.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB));
+        showDatabaseStatistics.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS));
+        readAllDataTypes.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_READ_ALL_DATA_TYPES));
+        readKeysWithColumns.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS));
+        ddPlainBehaviorCombo.select(store.getDefaultInt(PostgreConstants.PROP_DD_PLAIN_STRING));
+        ddTagBehaviorCombo.select(store.getDefaultInt(PostgreConstants.PROP_DD_TAG_STRING));
+        setCheckboxesState();
+        super.performDefaults();
+    }
+
+    @Override
     public void init(IWorkbench workbench) {
 
     }

@@ -48,7 +48,10 @@ public class DBObjectNameCaseTransformer implements IPropertyValueTransformer<DB
         if (value == null) {
             return null;
         }
-
+        // condition added for mock test cases
+        if (dataSource == null) {
+            return "";
+        }
         final SQLDialect dialect = dataSource.getSQLDialect();
         final boolean isNameCaseSensitive = dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CASE_SENSITIVE) ||
             dialect.storesUnquotedCase() == DBPIdentifierCase.MIXED;
