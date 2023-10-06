@@ -128,6 +128,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private StreamConsumerSettings settings;
     private ConsumerRuntimeParameters runtimeParameters;
     private DBSDataContainer dataContainer;
+    @Nullable
+    private DBPProject project;
 
     private OutputStream outputStream;
     private ZipOutputStream zipStream;
@@ -580,16 +582,18 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     @Override
     public void initTransfer(
         @NotNull DBSObject sourceObject,
-        @NotNull StreamConsumerSettings settings,
+        @Nullable StreamConsumerSettings settings,
         @NotNull TransferParameters parameters,
-        @NotNull IStreamDataExporter processor,
-        @NotNull Map<String, Object> processorProperties
+        @Nullable IStreamDataExporter processor,
+        @Nullable Map<String, Object> processorProperties,
+        @Nullable DBPProject project
     ) {
         this.dataContainer = (DBSDataContainer) sourceObject;
         this.parameters = parameters;
         this.processor = processor;
         this.settings = settings;
         this.processorProperties = processorProperties;
+        this.project = project;
         
         if (runtimeParameters == null) {
             runtimeParameters = settings.prepareRuntimeParameters();
@@ -939,7 +943,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     @Nullable
     @Override
     public DBPProject getProject() {
-        return null;
+        return project;
     }
 
     public static Object[] fetchRow(DBCSession session, DBCResultSet resultSet, DBDAttributeBinding[] attributes) throws DBCException {
