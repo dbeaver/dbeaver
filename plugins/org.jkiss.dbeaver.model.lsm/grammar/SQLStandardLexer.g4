@@ -259,7 +259,7 @@ LineComment
 
 // special characters and character sequences
 fragment NonquoteCharacter: ~'\'';
-QuoteSymbol: SingleQuote SingleQuote;
+fragment QuoteSymbol: SingleQuote SingleQuote;
 Introducer: Underscore;
 fragment NewLine: ([\r][\n])|[\n]|[\r];
 Separator: (NewLine|Space)+ -> channel(HIDDEN);
@@ -281,8 +281,8 @@ fragment IdentifierPart: (IdentifierStart|Digit);
 
 
 // string literals
+fragment CharacterRepresentation: (NonquoteCharacter|QuoteSymbol);
 NationalCharacterStringLiteral: 'N' SingleQuote CharacterRepresentation* SingleQuote ((Separator)+ SingleQuote CharacterRepresentation* SingleQuote)*;
-CharacterRepresentation: (NonquoteCharacter|QuoteSymbol);
 BitStringLiteral: 'B' SingleQuote Bit* SingleQuote ((Separator)+ SingleQuote Bit* SingleQuote)*;
 HexStringLiteral: 'X' SingleQuote Hexit* SingleQuote ((Separator)+ SingleQuote Hexit* SingleQuote)*;
 StringLiteralContent: SingleQuote CharacterRepresentation* SingleQuote ((Separator)+ SingleQuote CharacterRepresentation* SingleQuote)*;
