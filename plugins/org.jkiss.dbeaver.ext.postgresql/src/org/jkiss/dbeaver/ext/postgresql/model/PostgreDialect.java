@@ -241,6 +241,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         //"USER_DEFINED_TYPE_CODE",
         //"USER_DEFINED_TYPE_NAME",
         //"USER_DEFINED_TYPE_SCHEMA",
+        "UUID",
         //"VALUE",
         //"VALUE_OF",
         "VERSIONING",
