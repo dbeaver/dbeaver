@@ -108,7 +108,6 @@ public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNative
             new StringContentProposalProvider(Arrays.stream(NativeToolUtils.LIMITED_VARIABLES)
                 .map(GeneralUtils::variablePattern)
                 .toArray(String[]::new)));
-        fixOutputFileExtension();
     }
 
     protected void createExtraArgsInput(Composite outputGroup) {
