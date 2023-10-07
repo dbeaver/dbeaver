@@ -27,7 +27,7 @@ You can find the list of all databases supported in commercial versions
 You can download prebuilt binaries from <a href="https://dbeaver.io/download" target="_blank">official website</a> or directly from <a href="https://github.com/dbeaver/dbeaver/releases">GitHub releases</a>.  
 You can also download <a href="https://dbeaver.io/files/ea" target="_blank">Early Access</a> version. We publish daily.  
 
-## Running
+## Running DBeaver
 
 Just run an installer (or unzip an archive) and run `dbeaver`.  
 
@@ -52,7 +52,7 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 - Follow us on [Twitter](https://twitter.com/dbeaver_news/) and [Facebook](https://www.facebook.com/DBeaverCorporation)
 - Thanks for using DBeaver! Star if you like it.
 
-## Contribution: help the Beaver!
+## Contribution: Help the Beaver!
 
 Hooray, we have reached 30k+ stars on GitHub and continue to grow!  
 That's really cool, and we are glad that you like DBeaver.
