@@ -2,8 +2,10 @@
 set -xe
 
 package_version=$1
+package_name_prefix=$2
+zip_basename=`basename ${package_name_prefix} *.zip`
 short_commit_id=$(git rev-parse --short HEAD)
-zip_package_name="DBeaver-For-YashanDB-${package_version}-${short_commit_id}.zip"
+zip_package_name="${zip_basename}-${package_version}-${short_commit_id}.zip"
 package_dir="product/community/target/products/org.jkiss.dbeaver.core.product"
 
 cd ${package_dir}

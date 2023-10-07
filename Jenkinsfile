@@ -22,6 +22,7 @@ pipeline{
         _date = "${date}"
         _version = "23.1"
         _merge_build = 'False'
+        _zip_pkg = "DBeaver-For-YashanDB*.zip"
     }
     stages {
         stage("build") {
@@ -76,8 +77,7 @@ pipeline{
             }
             steps {
                 script {
-                    _zip_pkg = "dbeaver*.zip"
-                    sh("sh package.sh ${_version}")
+                    sh("sh package.sh ${_version} ${_zip_pkg}")
                     sh("sshpass -p ${_file_browser_pwd} ssh root@192.168.19.121 'mkdir -p ${_export_path}/latest' ")
                     sh("sshpass -p ${_file_browser_pwd} ssh root@192.168.19.121 'rm -rf ${_export_path}/latest/dbeaver*' ")
                     sh("sshpass -p ${_file_browser_pwd} ssh root@192.168.19.121 'mkdir -p ${_export_path}/${_date}' ")
