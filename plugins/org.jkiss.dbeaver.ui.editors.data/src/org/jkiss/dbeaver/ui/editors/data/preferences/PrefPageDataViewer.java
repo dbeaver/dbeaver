@@ -166,6 +166,7 @@ public class PrefPageDataViewer extends TargetPrefPage {
     @Override
     protected void performDefaults() {
         maxAmountText.setText(getTargetPreferenceStore().getDefaultString(ModelPreferences.DICTIONARY_MAX_ROWS));
+        refPanelDescColumnKeywords.removeAll();
         for (String pattern : DBVEntity.DEFAULT_DESCRIPTION_COLUMN_PATTERNS) {
             refPanelDescColumnKeywords.add(pattern);
         }
