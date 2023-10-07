@@ -68,6 +68,9 @@ public class DBFFileSystemManager implements DBFEventListener {
         if (CommonUtils.isEmpty(fsType)) {
             throw new DBException("File system type not present in the file uri: " + uri);
         }
+        if (fsType.equals("file")) {
+            return Path.of(uri);
+        }
         String fsId = uri.getAuthority();
         if (CommonUtils.isEmpty(fsId)) {
             throw new DBException("File system id not present in the file uri: " + uri);
