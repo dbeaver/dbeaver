@@ -39,18 +39,17 @@ import java.nio.file.Path;
 import java.util.*;
 
 public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQualifiedObject {
+    @NotNull
     private final Path inputFile;
+    @NotNull
     private final DBPDataSource dataSource;
+    @NotNull
     private final String entityName;
     private final List<StreamDataImporterColumnInfo> streamColumns = new ArrayList<>();
     private final boolean child;
 
     public StreamEntityMapping(@NotNull Path inputFile) {
-        this(inputFile, inputFile.getFileName().toString());
-    }
-
-    public StreamEntityMapping(@NotNull Path inputFile, @NotNull String entityName) {
-        this(inputFile, entityName, false);
+        this(inputFile, inputFile.getFileName().toString(), false);
     }
 
     public StreamEntityMapping(@NotNull Path inputFile, @NotNull String entityName, boolean child) {
@@ -109,12 +108,12 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) {
         return null;
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) {
         return null;
     }
 
@@ -146,7 +145,7 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
     }
 
     @Override
-    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter, long flags) throws DBCException {
+    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter, long flags) {
         return -1;
     }
 

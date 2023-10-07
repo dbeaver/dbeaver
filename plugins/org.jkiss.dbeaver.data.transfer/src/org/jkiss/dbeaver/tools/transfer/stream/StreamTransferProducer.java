@@ -87,12 +87,13 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
     @Nullable
     @Override
     public DBPProject getProject() {
-        return null;
+        DBPDataSourceContainer dsContainer = getDataSourceContainer();
+        return dsContainer == null ? null : dsContainer.getProject();
     }
 
     @Override
     public DBPDataSourceContainer getDataSourceContainer() {
-        return entityMapping.getDataSource().getContainer();
+        return entityMapping == null ? null : entityMapping.getDataSource().getContainer();
     }
 
     @Override

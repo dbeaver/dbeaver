@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -118,7 +119,8 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                     }
                     TableItem item = filesTable.getItem(filesTable.getSelectionIndex());
                     DataTransferPipe pipe = (DataTransferPipe) item.getData();
-                    chooseSourceFile(pipe);                }
+                    chooseSourceFile(pipe);
+                }
             });
         }
 
@@ -128,7 +130,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
 
             propsEditor = new PropertyTreeViewer(exporterSettings, SWT.BORDER);
         }
-        settingsDivider.setWeights(new int[]{400, 600});
+        settingsDivider.setWeights(400, 600);
 
         setControl(settingsDivider);
 
@@ -142,6 +144,9 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             extensions.add("*." + ext);
         }
         extensions.add("*");
+
+        DBPProject project = pipe.getConsumer().getProject();
+        boolean supportsMultiFS = project != null && DBWorkbench.getPlatformUI().supportsMultiFileSystems(project);
 
         DBRRunnableWithProgress initializer = null;
         if (pipe.getConsumer() != null && pipe.getConsumer().getTargetObjectContainer() != null) {
@@ -342,10 +347,12 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                 for (DataTransferPipe pipe : dtSettings.getDataPipes()) {
                     if (pipe.getProducer() instanceof StreamTransferProducer) {
                         StreamTransferProducer producer = (StreamTransferProducer) pipe.getProducer();
-                        producerSettings.updateProducerSettingsFromStream(
-                            monitor,
-                            producer,
-                            dtSettings);
+                        if (producerSettings != null) {
+                            producerSettings.updateProducerSettingsFromStream(
+                                monitor,
+                                producer,
+                                dtSettings);
+                        }
 
                         if (consumerSettings instanceof DatabaseConsumerSettings) {
                             DatabaseMappingContainer mapping = ((DatabaseConsumerSettings) consumerSettings).getDataMapping(
