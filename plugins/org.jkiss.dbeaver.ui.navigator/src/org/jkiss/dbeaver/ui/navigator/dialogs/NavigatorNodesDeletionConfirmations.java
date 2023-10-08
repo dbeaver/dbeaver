@@ -177,7 +177,7 @@ public final class NavigatorNodesDeletionConfirmations {
             return;
         }
         IProject project = deleter.getProjectToDelete();
-        if (project == null) {
+        if (project == null || DBWorkbench.isDistributed()) {
             return;
         }
         Composite ph = UIUtils.createPlaceholder(parent, 2, 5);
@@ -194,13 +194,11 @@ public final class NavigatorNodesDeletionConfirmations {
                 deleter.setDeleteContents(deleteContentsCheck.getSelection());
             }
         });
-        if (!DBWorkbench.isDistributed()) {
-            UIUtils.createLabelText(ph,
-                UINavigatorMessages.confirm_deleting_project_location_label,
-                project.getLocation().toFile().getAbsolutePath(),
-                SWT.READ_ONLY
-            );
-        }
+        UIUtils.createLabelText(ph,
+            UINavigatorMessages.confirm_deleting_project_location_label,
+            project.getLocation().toFile().getAbsolutePath(),
+            SWT.READ_ONLY
+        );
     }
 
     private static void createCheckbox(

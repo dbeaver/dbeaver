@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.Arrays;
@@ -70,9 +71,25 @@ public abstract class NIOPath implements Path {
         return toUri().toString();
     }
 
+
+    @Override
+    public boolean startsWith(@NotNull Path other) {
+        if (getClass() != other.getClass()) {
+            return false;
+        }
+        return toString().startsWith(other.toString());
+    }
     @Override
     public boolean endsWith(@NotNull Path other) {
-        return toString().equals(other.toString());
+        if (getClass() != other.getClass()) {
+            return false;
+        }
+        return toString().endsWith(other.toUri().getPath());
+    }
+
+    @Override
+    public File toFile() {
+        throw new UnsupportedOperationException();
     }
 
     @Override
