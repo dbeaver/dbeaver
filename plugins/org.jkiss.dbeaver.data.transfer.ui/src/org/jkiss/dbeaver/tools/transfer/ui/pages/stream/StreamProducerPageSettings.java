@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.pages.stream;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
@@ -111,17 +111,12 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                 UIUtils.createTableColumn(filesTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_target);
             }
 
-            filesTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetDefaultSelected(SelectionEvent e) {
-                    if (filesTable.getSelectionIndex() < 0) {
-                        return;
-                    }
-                    TableItem item = filesTable.getItem(filesTable.getSelectionIndex());
-                    DataTransferPipe pipe = (DataTransferPipe) item.getData();
-                    chooseSourceFile(pipe);
-                }
+            filesTable.addSelectionListener(SelectionListener.widgetDefaultSelectedAdapter(
+                selectionEvent -> new SelectInputFileAction().run()));
+            UIUtils.setControlContextMenu(filesTable, manager -> {
+                manager.add(new SelectInputFileAction());
             });
+
         }
 
         {
@@ -444,4 +439,19 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
         return isProducerOfType(StreamTransferProducer.class);
     }
 
+    private class SelectInputFileAction extends Action {
+        public SelectInputFileAction() {
+            super("Choose local file");
+        }
+
+        @Override
+        public void run() {
+            if (filesTable.getSelectionIndex() < 0) {
+                return;
+            }
+            TableItem item = filesTable.getItem(filesTable.getSelectionIndex());
+            DataTransferPipe pipe = (DataTransferPipe) item.getData();
+            chooseSourceFile(pipe);
+        }
+    }
 }
