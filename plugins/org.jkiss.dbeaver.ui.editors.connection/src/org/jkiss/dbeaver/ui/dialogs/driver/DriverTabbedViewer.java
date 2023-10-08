@@ -78,7 +78,7 @@ public class DriverTabbedViewer extends StructuredViewer {
         List<DBPDriver> ratedDrivers = new ArrayList<>(allDrivers);
         //DriverUtils.sortDriversByRating(dataSources, ratedDrivers);
 
-        List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 12);
+        List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 13);
 
         folderComposite = new TabbedFolderComposite(parent, style) {
             @Override

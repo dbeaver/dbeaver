@@ -524,6 +524,7 @@
                         iconBig="icons/yashandb_big@2x.png"
                         description="yashandb"
                         webURL="https://doc.yashandb.com/"
+                        promoted="2"
                         categories="sql,analytic,columns">
                     <replace provider="generic" driver="yashandb"/>
                     <file type="jar" path="platform:/plugin/org.jkiss.dbeaver.ext.yashandb/driver/yashandb-jdbc-1.5.jar"
