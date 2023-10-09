@@ -6,8 +6,6 @@ import com.yashandb.jdbc.DebugFrame;
 import com.yashandb.jdbc.DebugVar;
 import com.yashandb.jdbc.YasConnection;
 import com.yashandb.jdbc.YasDebugCallableStatement;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.dbeaver.DBException;
@@ -20,7 +18,6 @@ import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGSessionInfo;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
-import org.jkiss.dbeaver.debug.core.DebugUtils;
 import org.jkiss.dbeaver.debug.jdbc.DBGJDBCSession;
 import org.jkiss.dbeaver.ext.yashandb.debug.YashanDBDebugConstants;
 import org.jkiss.dbeaver.ext.yashandb.debug.core.YashanDBDebugCore;
@@ -31,7 +28,6 @@ import org.jkiss.dbeaver.ext.yashandb.model.YashanDBDataSource;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBDataType;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBProcedureArgument;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBProcedureStandalone;
-import org.jkiss.dbeaver.ext.yashandb.model.YashanDBSchema;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBSourceType;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -820,13 +816,14 @@ public class YashanDBDebugSession extends DBGJDBCSession {
                     }
                     //TODO: 暂时用下标, 实在不行用map
                     parameterIndex++;
-                }else {
+                }else if (inOutParamParameterKind.equals(DBSProcedureParameterKind.OUT) || inOutParamParameterKind.equals(DBSProcedureParameterKind.INOUT)){
                     //out
                     if (NOT_COMMAS_VALUE_TYPES.contains(dataType) || COMMAS_VALUE_TYPES.contains(dataType)
                             || dataType.equals(YashanDBDebugConstants.YASHANDB_JSON)
                             || dataType.equals(YashanDBDebugConstants.YASHANDB_INTERVAL_YEAR_TO_MONTH)
                             || dataType.equals(YashanDBDebugConstants.YASHANDB_INTERVAL_DAY_TO_SECOND)){
-                        startSql.append(paramName).append(" ").append(parameterTypes.get(parameterIndex)).append(";\n");
+
+                        startSql.append(paramName).append(" ").append(outParamResolver(typeID, dataType, dataLengthFromAllArguments)).append(";\n");
                     } else {
                         throw new DBGException("param inOutParamType error");
                     }
@@ -862,6 +859,20 @@ public class YashanDBDebugSession extends DBGJDBCSession {
             startSql.append("); \n end;\n");
         }
         return startSql;
+    }
+
+    //todo more data type need to be tested。
+    private static String  outParamResolver(int typeId, String dataType, long maxLength) {
+        StringBuilder typeBuilder = new StringBuilder(dataType);
+        switch (typeId){
+            case Types.VARCHAR:
+            case Types.CHAR:
+                typeBuilder.append("(")
+                        .append(maxLength)
+                        .append(")");
+
+        }
+        return typeBuilder.toString();
     }
 
     /**
