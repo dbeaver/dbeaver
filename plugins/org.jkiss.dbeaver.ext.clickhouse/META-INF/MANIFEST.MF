@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Clickhouse Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.clickhouse;singleton:=true
 Bundle-Version: 1.0.121.qualifier
-Bundle-Release-Date: 20230209
+Bundle-Release-Date: 20231009
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic;visibility:=reexport,
