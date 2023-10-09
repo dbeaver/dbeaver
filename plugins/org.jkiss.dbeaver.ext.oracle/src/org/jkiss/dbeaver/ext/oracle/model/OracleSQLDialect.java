@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.SecurityUtils;
 
 import java.util.Arrays;
 import java.util.Locale;
@@ -773,6 +774,6 @@ public class OracleSQLDialect extends JDBCSQLDialect
     @NotNull
     @Override
     public String getCreateSchemaQuery(@NotNull String schemaName) {
-        return "CREATE USER \"" + schemaName + "\" IDENTIFIED BY \"" + UUID.randomUUID() + "\"";
+        return "CREATE USER \"" + schemaName + "\" IDENTIFIED BY \"" + SecurityUtils.generatePassword(10) + "\"";
     }
 }
