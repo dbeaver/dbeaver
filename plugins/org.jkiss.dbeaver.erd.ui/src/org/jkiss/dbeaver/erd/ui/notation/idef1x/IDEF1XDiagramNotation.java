@@ -57,7 +57,7 @@ public class IDEF1XDiagramNotation extends ERDNotationBase implements ERDNotatio
                 conn.setTargetDecoration(targetDecor);
             }
         }
-        conn.setLineWidth(2);
+        conn.setLineWidth(1);
         if (!identifying || constraintType.isLogical()) {
             final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
             if (store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)) {
@@ -73,4 +73,10 @@ public class IDEF1XDiagramNotation extends ERDNotationBase implements ERDNotatio
     public void applyNotationForEntities(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
         // nothing
     }
+
+    @Override
+    public double getIndentation() {
+        return 0;
+    }
+
 }

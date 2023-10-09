@@ -230,6 +230,23 @@ public class PrefPageOracle extends TargetPrefPage
     }
 
     @Override
+    protected void performDefaults() {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        explainTableText.setText(store.getDefaultString(OracleConstants.PREF_EXPLAIN_TABLE_NAME));
+        rowidSupportCheck.setSelection(store.getDefaultBoolean(OracleConstants.PREF_SUPPORT_ROWID));
+        enableDbmsOutputCheck.setSelection(store.getDefaultBoolean(OracleConstants.PREF_DBMS_OUTPUT));
+        readAllSynonymsCheck.setSelection(store.getDefaultBoolean(OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS));
+        disableScriptEscapeProcessingCheck.setSelection(store.getDefaultBoolean(OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING));
+        useRuleHint.setSelection(store.getDefaultBoolean(OracleConstants.PROP_USE_RULE_HINT));
+        useOptimizerHint.setSelection(store.getDefaultBoolean(OracleConstants.PROP_USE_META_OPTIMIZER));
+        useSimpleConstraints.setSelection(store.getDefaultBoolean(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS));
+        useAlternativeTableMetadataQuery.setSelection(store.getDefaultBoolean(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY));
+        searchInSynonyms.setSelection(store.getDefaultBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS));
+        showDateAsDate.setSelection(store.getDefaultBoolean(OracleConstants.PROP_SHOW_DATE_AS_DATE));
+        super.performDefaults();
+    }
+
+    @Override
     protected String getPropertyPageID()
     {
         return PAGE_ID;

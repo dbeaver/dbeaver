@@ -122,6 +122,23 @@ public class BooleanStyleSet {
         }
     }
 
+    /**
+     * Default styles set for default preferences
+     *
+     * @return Default styles set
+     */
+    @NotNull
+    public static BooleanStyleSet getDefaultStyleSet() {
+        final RGB defaultColor = UIStyles.getDefaultTextForeground().getRGB();
+
+        return new BooleanStyleSet(
+            getDefaultStyle(BooleanState.CHECKED, defaultColor),
+            getDefaultStyle(BooleanState.UNCHECKED, defaultColor),
+            getDefaultStyle(BooleanState.NULL, defaultColor),
+            defaultColor
+        );
+    }
+
     public static void setDefaultStyles(@NotNull DBPPreferenceStore store, @NotNull BooleanStyleSet set) {
         store.setValue(PREF_BOOLEAN_STYLE + '.' + PROP_MODE, set.getMode().name());
         setDefaultStyle(store, set.getCheckedStyle(), BooleanState.CHECKED, set.getDefaultColor());
@@ -159,6 +176,16 @@ public class BooleanStyleSet {
             final UIElementAlignment alignment = CommonUtils.valueOf(UIElementAlignment.class, store.getString(namespace + PROP_ALIGN), UIElementAlignment.CENTER);
             return BooleanStyle.usingIcon(state.getIcon(), alignment);
         }
+    }
+
+    private static BooleanStyle getDefaultStyle(@NotNull BooleanState state, @NotNull RGB color) {
+        return BooleanStyle.usingText(state.choose(
+            "[v]",
+            "[ ]",
+            DBConstants.NULL_VALUE_LABEL),
+            UIElementAlignment.CENTER,
+            color,
+            UIElementFontStyle.NORMAL);
     }
 
     @NotNull

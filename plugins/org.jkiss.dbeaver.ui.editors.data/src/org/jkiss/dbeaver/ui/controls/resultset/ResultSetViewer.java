@@ -3104,7 +3104,8 @@ public class ResultSetViewer extends Viewer
 
         navigateMenu.add(new Separator());
         navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FOCUS_FILTER));
-        navigateMenu.add(ActionUtils.makeCommandContribution(site, ITextEditorActionDefinitionIds.LINE_GOTO));
+        navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_GO_TO_ROW));
+        navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_GO_TO_COLUMN));
         navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_FIRST));
         navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_PREVIOUS));
         navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_NEXT));

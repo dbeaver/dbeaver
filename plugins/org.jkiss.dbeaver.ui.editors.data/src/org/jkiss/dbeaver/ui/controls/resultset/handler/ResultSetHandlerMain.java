@@ -26,6 +26,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.fieldassist.IContentProposal;
+import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.StringConverter;
@@ -35,11 +37,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.widgets.ColorDialog;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -51,8 +49,7 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueDefaultGenerator;
@@ -67,7 +64,6 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
@@ -75,6 +71,9 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentProposalExt;
+import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation;
@@ -84,11 +83,11 @@ import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * ResultSetHandlerMain
@@ -139,8 +138,10 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
     public static final String CMD_ZOOM_OUT = "org.eclipse.ui.edit.text.zoomOut";
 
     public static final String CMD_TOGGLE_ORDER = "org.jkiss.dbeaver.core.resultset.toggleOrder";
-    public static final String CMD_SELECT_ROW_COLOR = "org.jkiss.dbeaver.core.resultset.grid.selectRowColor"; 
+    public static final String CMD_SELECT_ROW_COLOR = "org.jkiss.dbeaver.core.resultset.grid.selectRowColor";
 
+    public static final String CMD_GO_TO_COLUMN = "org.jkiss.dbeaver.core.resultset.grid.gotoColumn";
+    public static final String CMD_GO_TO_ROW = "org.jkiss.dbeaver.core.resultset.grid.gotoRow";
     public static final String PARAM_EXPORT_WITH_PARAM = "exportWithParameter";
 
     @Nullable
@@ -473,7 +474,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 }
                 break;
             }
-            case ITextEditorActionDefinitionIds.LINE_GOTO: {
+            case CMD_GO_TO_ROW: {
                 ResultSetRow currentRow = rsv.getCurrentRow();
                 final int rowCount = rsv.getModel().getRowCount();
                 if (rowCount <= 0) {
@@ -499,6 +500,15 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 if (d.open() == Window.OK) {
                     int line = Integer.parseInt(d.getValue());
                     rsv.setCurrentRow(rsv.getModel().getRow(line - 1));
+                    rsv.getActivePresentation().scrollToRow(IResultSetPresentation.RowPosition.CURRENT);
+                }
+                break;
+            }
+            case CMD_GO_TO_COLUMN: {
+                var currentAttribute = rsv.getActivePresentation().getCurrentAttribute();
+                DBDAttributeBinding targetAttribute = askForColumnToGo(activeShell, currentAttribute, rsv.getModel().getAttributes());
+                if (targetAttribute != null) {
+                    rsv.getActivePresentation().setCurrentAttribute(targetAttribute);
                     rsv.getActivePresentation().scrollToRow(IResultSetPresentation.RowPosition.CURRENT);
                 }
                 break;
@@ -697,7 +707,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
     }
 
     static class GotoLineDialog extends InputDialog {
-        private static final String DIALOG_ID = "ResultSetHandlerMain.GotoLineDialog";
+        private static final String DIALOG_ID = "ResultSetHandlerMain.GotoLineDialog"; //NON-NLS-1
 
         public GotoLineDialog(Shell parent, String title, String message, String initialValue, IInputValidator validator) {
             super(parent, title, message, initialValue, validator);
@@ -708,4 +718,106 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
         }
     }
 
+    @NotNull
+    private static DBPImage obtainAttributeIcon(@NotNull DBDAttributeBinding attr) {
+        DBPImage image = DBValueFormatting.getObjectImage(attr.getAttribute());
+
+        if (DBExecUtils.isAttributeReadOnly(attr)) {
+            image = new DBIconComposite(image, false, null, null, null, DBIcon.OVER_LOCK);
+        }
+
+        return image;
+    }
+
+    @Nullable
+    private static DBDAttributeBinding askForColumnToGo(
+        @NotNull Shell activeShell,
+        @Nullable DBDAttributeBinding currentAttribute,
+        @NotNull DBDAttributeBinding[] attributes
+    ) {
+        final String DIALOG_ID = "ResultSetHandlerMain.GotoColumnDialog"; //NON-NLS-1
+
+        Map<String, Pair<DBDAttributeBinding, IContentProposal>> attrsByName = Arrays.stream(attributes).collect(Collectors.toMap(
+            a -> a.getName().toUpperCase(), 
+            a -> new Pair<>(a, new ContentProposalExt(a.getName(), a.getLabel(), a.getDescription(), obtainAttributeIcon(a))), 
+            (x, y) -> x
+        ));
+
+        String initialValue = currentAttribute != null ? currentAttribute.getName() : "";
+
+        IInputValidator inputValidator = newText -> {
+            if (attrsByName.containsKey(newText.toUpperCase())) {
+                return null;
+            } else {
+                try {
+                    int index = Integer.parseInt(newText);
+                    if (index >= 1 && index <= attributes.length) {
+                        return null;
+                    }
+                } catch (Throwable ex) {
+                    // ignoring meaningless invalid input
+                }
+                return "Unknown column name"; //NON-NLS-1
+            }
+        };
+        IContentProposalProvider proposalProvider = new IContentProposalProvider() {
+            @Override
+            public IContentProposal[] getProposals(String contents, int position) {
+                String pattern = contents.substring(0, position).toUpperCase();
+                // Our existing trie (used in SQL parsing) works fine but only for prefix-based lookups, but here we want suffix lookups.
+                // Should use suffix tree instead of this for faster lookups on large attributes set:
+                //     O(patternLength+resultsCount) for suffix tree VS O(patternLength*totalKnownAttrsCount) for present solution
+                // See pretty dumb scale-irrelevant illustration
+                //     at https://www.wolframalpha.com/input?i=Plot%5B%7Bn%2Bn*10%2Cn*n%7D%2C%7Bn%2C0%2C30%7D%5D
+                // The same for MetaDataPanel::refresh(..)
+                // Correctly used suffix tree also capable of giving results sorting for free, while here we are sorting explicitly.
+                List<IContentProposal> entries = attrsByName.entrySet().stream()
+                        .filter(kv -> kv.getKey().contains(pattern))
+                        .map(kv -> kv.getValue().getSecond())
+                        .collect(Collectors.toCollection(() -> new ArrayList<>(attrsByName.size())));
+                entries.sort((a, b) -> { // list sorting works inplace instead of additional temporary buffer for streams
+                    String x = a.getContent();
+                    String y = b.getContent();
+                    boolean xs = x.startsWith(pattern);
+                    boolean ys = y.startsWith(pattern);
+                    return (xs ^ ys) ? (xs ? -1 : 1) : x.compareToIgnoreCase(y);
+                });
+                return entries.toArray(new IContentProposal[entries.size()]);
+            }
+        };
+        InputDialog dialog = new InputDialog(
+            activeShell,
+            ResultSetMessages.results_goto_column_dialog_title,
+            ResultSetMessages.results_goto_column_dialog_message,
+            initialValue,
+            inputValidator
+        ) {
+            @Override
+            protected Control createDialogArea(Composite parent) {
+                Control result = super.createDialogArea(parent);
+                ContentAssistUtils.installContentProposal(
+                    this.getText(),
+                    new SmartTextContentAdapter(),
+                    proposalProvider,
+                    null,
+                    true,
+                    true
+                );
+                return result;
+            }
+
+            @Override
+            protected IDialogSettings getDialogBoundsSettings() {
+                return UIUtils.getDialogSettings(DIALOG_ID);
+            }
+        };
+
+        if (dialog.open() == Window.OK) {
+            String value = dialog.getValue();
+            Pair<DBDAttributeBinding, IContentProposal> selectedByName = attrsByName.get(value.toUpperCase());
+            return selectedByName != null ?  selectedByName.getFirst() : attributes[Integer.parseInt(value) - 1];
+        } else {
+            return null;
+        }
+    }
 }
