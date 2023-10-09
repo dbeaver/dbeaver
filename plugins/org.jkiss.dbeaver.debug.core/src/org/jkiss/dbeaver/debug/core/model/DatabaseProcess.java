@@ -88,7 +88,7 @@ public class DatabaseProcess implements IProcess {
         try {
             final ByteArrayInputStream stdout = new ByteArrayInputStream("你好, YashanDB Console...".getBytes(StandardCharsets.UTF_8));
             process = new MockProcess(stdout, null, 0);
-            final StreamsProxy streamProxy = new StreamsProxy(process, "UTF_8");
+            final StreamsProxy streamProxy = new StreamsProxy(process, StandardCharsets.UTF_8.name());
 
             //TODO:YANGMENG
             //new Thread("console"){
