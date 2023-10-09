@@ -1,4 +1,4 @@
-本文档介绍了如何在Linux系统安装DBeaver。
+本文档介绍如何在Linux系统安装DBeaver。
 
 ## 前置条件
 DBeaver的运行依赖于Java环境，本文档中介绍的DBeaver版本为V23.1，依赖于JDK17及以上版本的Java环境。如果系统尚未配置Java环境，可以[下载JDK](https://learn.microsoft.com/zh-cn/java/openjdk/download)并安装后再配置相应环境。

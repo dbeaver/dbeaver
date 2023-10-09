@@ -1,4 +1,4 @@
-本文档介绍了如何在Mac系统安装DBeaver。
+本文档介绍如何在Mac系统安装DBeaver。
 
 ## 前置条件
 DBeaver的运行依赖于Java环境，本文档中介绍的DBeaver版本为V23.1，依赖于JDK17及以上版本的Java环境。  
