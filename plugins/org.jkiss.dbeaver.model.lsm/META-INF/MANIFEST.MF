@@ -10,7 +10,7 @@ Require-Bundle: org.jkiss.bundle.antlr4,
  org.jkiss.dbeaver.model,
  org.jkiss.utils,
  org.eclipse.core.runtime
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: org.jkiss.dbeaver.model.lsm,
  org.jkiss.dbeaver.model.lsm.mapping,
  org.jkiss.dbeaver.model.lsm.mapping.internal,

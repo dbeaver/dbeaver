@@ -12,6 +12,6 @@ Require-Bundle: org.eclipse.ui,
  com.sun.jna,
  com.sun.jna.platform
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
 Automatic-Module-Name: org.jkiss.dbeaver.ext.test

@@ -30,7 +30,7 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.data.gis,
  com.google.gson
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.mysql.ui

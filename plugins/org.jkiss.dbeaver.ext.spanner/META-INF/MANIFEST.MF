@@ -6,7 +6,7 @@ Bundle-Version: 1.0.103.qualifier
 Bundle-Release-Date: 20231009
 Require-Bundle: org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
 Automatic-Module-Name: org.jkiss.dbeaver.ext.spanner
 Export-Package: org.jkiss.dbeaver.ext.spanner,

@@ -15,7 +15,7 @@ Require-Bundle: org.eclipse.core.runtime,
 Export-Package: org.jkiss.dbeaver.ext.tidb,
  org.jkiss.dbeaver.ext.tidb.mysql.model
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.tidb
