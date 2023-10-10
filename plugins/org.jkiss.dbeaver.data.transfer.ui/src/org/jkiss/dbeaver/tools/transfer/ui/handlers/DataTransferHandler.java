@@ -16,45 +16,35 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.handlers;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.policy.BasePolicyDataProvider;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class DataTransferHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
-        if (policyProvider.isExportDataDisabled()) {
-            MessageDialog.open(MessageDialog.WARNING,
-                HandlerUtil.getActiveShell(event),
-                DTUIMessages.dialog_policy_data_export_title,
-                DTUIMessages.dialog_policy_data_export_msg, 0);
-            return null;
-        }
         final IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         if (!(selection instanceof IStructuredSelection)) {
             return null;
         }
-        IStructuredSelection ss = (IStructuredSelection) selection;
+        IStructuredSelection ss = (IStructuredSelection)selection;
         final List<IDataTransferProducer<?>> producers = new ArrayList<>();
-        final List<IDataTransferConsumer<?, ?>> consumers = new ArrayList<>();
+        final List<IDataTransferConsumer<?,?>> consumers = new ArrayList<>();
         for (Object object : ss) {
             IDataTransferNode<?> node = adaptTransferNode(object);
             if (node instanceof IDataTransferProducer) {
@@ -72,12 +62,10 @@ public abstract class DataTransferHandler extends AbstractHandler {
                     producers,
                     consumers);
             } catch (Exception e) {
-                DBWorkbench.getPlatformUI().showError(DTUIMessages.data_transfer_handler_title_data_transfer_error,
-                    DTUIMessages.data_transfer_handler_message_data_transfer_error, e);
+                DBWorkbench.getPlatformUI().showError(DTUIMessages.data_transfer_handler_title_data_transfer_error, DTUIMessages.data_transfer_handler_message_data_transfer_error, e);
             }
         } else {
-            DBWorkbench.getPlatformUI().showError(DTUIMessages.data_transfer_handler_title_data_transfer_error,
-                "Can't perform data transfer: selected objects are not recognized as data producers or data consumers");
+            DBWorkbench.getPlatformUI().showError(DTUIMessages.data_transfer_handler_title_data_transfer_error, "Can't perform data transfer: selected objects are not recognized as data producers or data consumers");
         }
 
         return null;

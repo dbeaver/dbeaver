@@ -16,22 +16,40 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.handlers;
 
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.runtime.policy.BasePolicyDataProvider;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 public class DataExportHandler extends DataTransferHandler {
 
     @Override
-    protected IDataTransferNode<?> adaptTransferNode(Object object)
-    {
+    protected IDataTransferNode<?> adaptTransferNode(Object object) {
         final DBSDataContainer adapted = RuntimeUtils.getObjectAdapter(object, DBSDataContainer.class);
         if (adapted != null) {
             return new DatabaseTransferProducer(adapted);
         } else {
             return null;
         }
+    }
+
+    @Override
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
+        if (policyProvider.isExportDataDisabled()) {
+            MessageDialog.open(MessageDialog.WARNING,
+                HandlerUtil.getActiveShell(event),
+                DTUIMessages.dialog_policy_data_export_title,
+                DTUIMessages.dialog_policy_data_export_msg, 0);
+            return null;
+        }
+        return super.execute(event);
     }
 
 }
