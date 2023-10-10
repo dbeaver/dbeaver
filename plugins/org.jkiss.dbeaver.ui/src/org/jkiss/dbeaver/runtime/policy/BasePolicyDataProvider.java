@@ -16,19 +16,13 @@
  */
 package org.jkiss.dbeaver.runtime.policy;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * Cashed data policy provider designed to provide specific policy property
- * value
+ * Base data policy provider designed to provide specific policy property value
  */
-public class CachedPolicyDataProvider extends AbstractPolicyDataProvider {
+public class BasePolicyDataProvider extends AbstractPolicyDataProvider {
 
     private static final String POLICY_DATA_EXPORT = "policy.data.export.disabled"; //$NON-NLS-1$
     private static final String POLICY_DATA_COPY = "policy.data.copy.disabled"; //$NON-NLS-1$
-
-    private static Map<String, Boolean> policy2value = new HashMap<>();
 
     /**
      * The method return true if export data procedure disabled
@@ -36,7 +30,7 @@ public class CachedPolicyDataProvider extends AbstractPolicyDataProvider {
      * @return boolean value
      */
     public boolean isExportDataDisabled() {
-        return policy2value.computeIfAbsent(POLICY_DATA_EXPORT, p -> isDataPolicyEnabled(POLICY_DATA_EXPORT));
+        return isDataPolicyEnabled(POLICY_DATA_EXPORT);
     }
 
     /**
@@ -45,7 +39,6 @@ public class CachedPolicyDataProvider extends AbstractPolicyDataProvider {
      * @return boolean value
      */
     public boolean isCopyDataDisabled() {
-        return policy2value.computeIfAbsent(POLICY_DATA_COPY, p -> isDataPolicyEnabled(POLICY_DATA_COPY));
+        return isDataPolicyEnabled(POLICY_DATA_COPY);
     }
-
 }

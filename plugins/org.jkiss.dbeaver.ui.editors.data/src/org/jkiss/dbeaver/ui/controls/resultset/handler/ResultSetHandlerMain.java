@@ -65,7 +65,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
-import org.jkiss.dbeaver.runtime.policy.CachedPolicyDataProvider;
+import org.jkiss.dbeaver.runtime.policy.BasePolicyDataProvider;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
@@ -198,7 +198,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
         String actionId = event.getCommand().getId();
         IResultSetPresentation presentation = rsv.getActivePresentation();
         DBPDataSource dataSource = rsv.getDataSource();
-        CachedPolicyDataProvider policyProvider = new CachedPolicyDataProvider();
+        BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
         switch (actionId) {
             case IWorkbenchCommandConstants.FILE_REFRESH:
                 rsv.refreshData(null);

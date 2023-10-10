@@ -30,7 +30,7 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.runtime.policy.CachedPolicyDataProvider;
+import org.jkiss.dbeaver.runtime.policy.BasePolicyDataProvider;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ValueFormatSelector;
@@ -52,7 +52,7 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        CachedPolicyDataProvider policyProvider = new CachedPolicyDataProvider();
+        BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
         if (policyProvider.isCopyDataDisabled()) {
             MessageDialog.open(MessageDialog.WARNING,
                 HandlerUtil.getActiveShell(event),
