@@ -16,9 +16,10 @@
  */
 package org.jkiss.dbeaver.runtime.policy;
 
+import org.eclipse.core.runtime.Platform;
+
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
-import org.eclipse.core.runtime.Platform;
 
 /**
  * Abstract specification of policy data provider
@@ -50,26 +51,26 @@ public abstract class AbstractPolicyDataProvider implements PolicyDataProvider {
     @Override
     public boolean getDataPolicyFromRegistry(String property) {
         if (Platform.OS_WIN32.equals(Platform.getOS())) {
-            if (Advapi32Util.registryKeyExists(WinReg.HKEY_CURRENT_USER, DBEAVER_REGESTRY_POLICY_NODE)) {
-                String propRegisrtryValue = Advapi32Util.registryGetStringValue(
-                    WinReg.HKEY_CURRENT_USER,
-                    DBEAVER_REGESTRY_POLICY_NODE,
-                    property);
-                Boolean isPolicyEnable = Boolean.valueOf(propRegisrtryValue);
-                if (isPolicyEnable) {
-                    return isPolicyEnable;
-                }
+            boolean isPolicyEnabled = getBooleanFromWinRegitryNode(WinReg.HKEY_CURRENT_USER, property);
+            if (isPolicyEnabled) {
+                return isPolicyEnabled;
             }
-            if (Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, DBEAVER_REGESTRY_POLICY_NODE)) {
-                String propRegisrtryValue = Advapi32Util.registryGetStringValue(
-                    WinReg.HKEY_LOCAL_MACHINE,
-                    DBEAVER_REGESTRY_POLICY_NODE,
-                    property);
-                Boolean isPolicyEnable = Boolean.valueOf(propRegisrtryValue);
-                if (isPolicyEnable) {
-                    return isPolicyEnable;
-                }
+            isPolicyEnabled = getBooleanFromWinRegitryNode(WinReg.HKEY_LOCAL_MACHINE, property);
+            if (isPolicyEnabled) {
+                return isPolicyEnabled;
             }
+        }
+        return false;
+    }
+
+    private boolean getBooleanFromWinRegitryNode(WinReg.HKEY root, String property) {
+        if (Advapi32Util.registryKeyExists(root, DBEAVER_REGESTRY_POLICY_NODE) &&
+            Advapi32Util.registryValueExists(root, DBEAVER_REGESTRY_POLICY_NODE, property)) {
+            String propRegisrtryValue = Advapi32Util.registryGetStringValue(
+                root,
+                DBEAVER_REGESTRY_POLICY_NODE,
+                property);
+            return Boolean.valueOf(propRegisrtryValue);
         }
         return false;
     }
