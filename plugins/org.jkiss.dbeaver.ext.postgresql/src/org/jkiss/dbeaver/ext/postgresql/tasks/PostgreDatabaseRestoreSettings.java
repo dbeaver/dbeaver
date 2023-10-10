@@ -83,7 +83,6 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
-        super.loadSettings(runnableContext, store);
         inputFile = store.getString("pg.restore.inputFile");
         cleanFirst = store.getBoolean("pg.restore.cleanFirst");
         noOwner = store.getBoolean("pg.restore.noOwner");
@@ -127,6 +126,7 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
         if (restoreInfo == null) {
             throw new DBException("Cannot find database for restoring");
         }
+        super.loadSettings(runnableContext, store);
     }
 
     @Override

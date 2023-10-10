@@ -217,7 +217,6 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
-        super.loadSettings(runnableContext, store);
         method = CommonUtils.valueOf(DumpMethod.class, store.getString("MySQL.export.method"), DumpMethod.NORMAL);
         noCreateStatements = CommonUtils.getBoolean(store.getString("MySQL.export.noCreateStatements"), false);
         addDropStatements = CommonUtils.getBoolean(store.getString("MySQL.export.addDropStatements"), true);
@@ -251,6 +250,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
                 }
             }
         }
+        super.loadSettings(runnableContext, store);
     }
 
     private MySQLDatabaseExportInfo loadDatabaseExportInfo(DBRRunnableContext runnableContext, String catalogId, List<String> tableNames) {

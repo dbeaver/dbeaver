@@ -187,7 +187,6 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
-        super.loadSettings(runnableContext, store);
         encoding = store.getString(PROP_EXPORT_ALL_ENCODING);
         exportOnlyMetadata = store.getBoolean(PROP_EXPORT_ALL_EXPORT_ONLY_METADATA);
         exportOnlyGlobals = store.getBoolean(PROP_EXPORT_ALL_ONLY_GLOBALS);
@@ -213,6 +212,7 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
                 }
             }
         }
+        super.loadSettings(runnableContext, store);
     }
 
     private PostgreDatabaseBackupAllInfo loadDatabaseExportInfo(

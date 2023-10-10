@@ -172,7 +172,6 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
-        super.loadSettings(runnableContext, store);
         compression = store.getString("pg.export.compression");
         encoding = store.getString("pg.export.encoding");
         showViews = store.getBoolean("pg.export.showViews");
@@ -199,6 +198,7 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
                 }
             }
         }
+        super.loadSettings(runnableContext, store);
     }
 
 
