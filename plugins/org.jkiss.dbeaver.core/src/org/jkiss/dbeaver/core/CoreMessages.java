@@ -618,6 +618,8 @@ public class CoreMessages extends NLS {
     public static String pref_page_logs_files_max_size_label;
     public static String pref_page_logs_files_max_count_label;
 
+	public static String popup_open_browser_open_external_browser;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, CoreMessages.class);
