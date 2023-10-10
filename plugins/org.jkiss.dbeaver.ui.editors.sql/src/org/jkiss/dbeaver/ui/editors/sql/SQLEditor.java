@@ -2783,12 +2783,10 @@ public class SQLEditor extends SQLEditorBase implements
 
     private int closeExtraResultTabs(@Nullable QueryProcessor queryProcessor, boolean confirmClose, boolean keepFirstTab) {
         List<CTabItem> tabsToClose = new ArrayList<>();
-        QueryResultsContainer resultsContainer = null;
         QueryProcessor processor = null;
         for (CTabItem item : resultTabs.getItems()) {
             if (item.getData() instanceof QueryResultsContainer) {
-                resultsContainer = (QueryResultsContainer) item.getData();
-                processor = resultsContainer.queryProcessor;
+                processor = ((QueryResultsContainer) item.getData()).queryProcessor;
             } else if (item.getData() instanceof QueryProcessor) {
                 processor = (QueryProcessor) item.getData();
             }
