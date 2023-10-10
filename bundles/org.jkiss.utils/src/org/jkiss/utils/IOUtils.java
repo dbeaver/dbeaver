@@ -429,4 +429,7 @@ public final class IOUtils {
     }
 
 
+    public static boolean isLocalFile(String filePath) {
+        return !filePath.contains("://") || filePath.startsWith("file:");
+    }
 }
