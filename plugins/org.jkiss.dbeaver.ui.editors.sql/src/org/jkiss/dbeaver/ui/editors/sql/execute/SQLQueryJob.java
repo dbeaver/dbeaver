@@ -739,9 +739,10 @@ public class SQLQueryJob extends DataSourceJob
                 if (resultSetNumber <= 0 || statistics.getRowsUpdated() >= 0) {
                     // If there are no results or we have updated some rows, always display statistics
                     return true;
+                } else {
+                    // Otherwise, display statistics if the option is set
+                    return statistics.getStatementsCount() > 1;
                 }
-                // Otherwise, display statistics if the option is set
-                return statistics.getStatementsCount() > 1;
             default:
                 return false;
         }
