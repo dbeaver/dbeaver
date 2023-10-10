@@ -5,7 +5,7 @@ Bundle-Name: DBeaver UI Editors - JSON
 Bundle-SymbolicName: org.jkiss.dbeaver.ui.editors.json;singleton:=true
 Bundle-Version: 1.0.100.qualifier
 Bundle-Release-Date: 20231009
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Require-Bundle: com.google.gson,
  org.eclipse.core.runtime,
