@@ -18,18 +18,22 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 
 public interface SQLEditorPresentation {
 
     void createPresentation(Composite parent, SQLEditor editor);
 
+    default void showPresentation(@NotNull SQLEditor editor, boolean isNew) {
+        // do nothing by default
+    }
+
+    default boolean hidePresentation(@NotNull SQLEditor editor) {
+        // do nothing by default
+        return true;
+    }
+
     void dispose();
 
     ISelectionProvider getSelectionProvider();
-
-    enum ActivationType {
-        HIDDEN,
-        VISIBLE,
-        MAXIMIZED,
-    }
 }
