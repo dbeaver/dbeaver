@@ -272,77 +272,81 @@ public class NavigatorUtils {
             public void menuShown(MenuEvent e)
             {
 
-                Menu m = (Menu)e.widget;
-                DBNNode node = getSelectedNode(viewer.getSelection());
-                if (node != null && node.getNodeItemPath() != null && node.getNodeItemPath().contains(DRIVER)){
-                    if (node.getParentNode() != null && node.getParentNode().getName() != null && node.getName() != null){
-                        // 当前节点为类型，父节点为全局元数据时，隐藏删除按钮
-                        if ((node.getParentNode().getName().equals(TYPE) ||
-                                node.getParentNode().getName().equals(CH_TYPE)) &&
-                                (node.getParentNode().getParentNode().getName().equals(GLOBAL_META) ||
-                                        node.getParentNode().getParentNode().getName().equals(CH_GLOBAL_META))){
-                            for (MenuItem item: m.getItems()){
-                                if ( item.getText().equals(DELETE) || item.getText().equals(CH_DELETE)){
-                                    item.setEnabled(false);
+                try {
+                    Menu m = (Menu)e.widget;
+                    DBNNode node = getSelectedNode(viewer.getSelection());
+                    if (node != null && node.getNodeItemPath() != null && node.getNodeItemPath().contains(DRIVER)){
+                        if (node.getParentNode() != null && node.getParentNode().getName() != null && node.getName() != null){
+                            // 当前节点为类型，父节点为全局元数据时，隐藏删除按钮
+                            if ((node.getParentNode().getName().equals(TYPE) ||
+                                    node.getParentNode().getName().equals(CH_TYPE)) &&
+                                    (node.getParentNode().getParentNode().getName().equals(GLOBAL_META) ||
+                                            node.getParentNode().getParentNode().getName().equals(CH_GLOBAL_META))){
+                                for (MenuItem item: m.getItems()){
+                                    if ( item.getText().equals(DELETE) || item.getText().equals(CH_DELETE)){
+                                        item.setEnabled(false);
+                                    }
                                 }
                             }
-                        }
-                        // 当前节点或父节点为任务时，隐藏创建任务
-                        if (node.getName().contains(JOB_DIRECTORY) || node.getParentNode().getName().contains(JOB_DIRECTORY)){
-                            for (MenuItem item: m.getItems()){
-                                if ( item.getText().contains(CREATE_NEW_JOB) || item.getText().contains(CH_CREATE_NEW_JOB)){
-                                    item.setEnabled(false);
+                            // 当前节点或父节点为任务时，隐藏创建任务
+                            if (node.getName().contains(JOB_DIRECTORY) || node.getParentNode().getName().contains(JOB_DIRECTORY)){
+                                for (MenuItem item: m.getItems()){
+                                    if ( item.getText().contains(CREATE_NEW_JOB) || item.getText().contains(CH_CREATE_NEW_JOB)){
+                                        item.setEnabled(false);
+                                    }
                                 }
                             }
-                        }
-                        // 当前节点或父节点为数据库连接时，隐藏创建删除
-                        if (node.getName().equals(DATABASE_LINK)
-                                || node.getName().equals(CH_DATABASE_LINK)
-                                || node.getParentNode().getName().equals(DATABASE_LINK)
-                                || node.getParentNode().getName().equals(CH_DATABASE_LINK))   {
-                            for (MenuItem item: m.getItems()){
-                                if (item.getText().contains(CREATE_NEW_LINK) ||
-                                        item.getText().contains(DELETE) ||
-                                        item.getText().contains(CH_DELETE) ||
-                                        item.getText().contains(CH_CREATE_NEW_LINK)){
-                                    item.setEnabled(false);
+                            // 当前节点或父节点为数据库连接时，隐藏创建删除
+                            if (node.getName().equals(DATABASE_LINK)
+                                    || node.getName().equals(CH_DATABASE_LINK)
+                                    || node.getParentNode().getName().equals(DATABASE_LINK)
+                                    || node.getParentNode().getName().equals(CH_DATABASE_LINK))   {
+                                for (MenuItem item: m.getItems()){
+                                    if (item.getText().contains(CREATE_NEW_LINK) ||
+                                            item.getText().contains(DELETE) ||
+                                            item.getText().contains(CH_DELETE) ||
+                                            item.getText().contains(CH_CREATE_NEW_LINK)){
+                                        item.setEnabled(false);
+                                    }
                                 }
                             }
-                        }
-                        // 当前节点为表，视图，物化视图或父节点为模式时隐藏导入导出
-                        if (node.getName().equals(CH_TABLE)
-                                || node.getParentNode().getName().equals(CH_TABLE)
-                                || node.getName().equals(CH_VIEW)
-                                || node.getParentNode().getName().equals(CH_VIEW)
-                                || node.getName().equals(CH_PHYSICAL_VIEW)
-                                || node.getParentNode().getName().equals(CH_PHYSICAL_VIEW)
-                                || node.getParentNode().getName().equals(CH_SCHEMA_DIRECTORY)){
-                            for (MenuItem item : m.getItems()) {
-                                if (item.getText().equalsIgnoreCase(CH_IMPORT) || item.getText().equalsIgnoreCase(CH_EXPORT)) {
-                                    item.setEnabled(false);
+                            // 当前节点为表，视图，物化视图或父节点为模式时隐藏导入导出
+                            if (node.getName().equals(CH_TABLE)
+                                    || node.getParentNode().getName().equals(CH_TABLE)
+                                    || node.getName().equals(CH_VIEW)
+                                    || node.getParentNode().getName().equals(CH_VIEW)
+                                    || node.getName().equals(CH_PHYSICAL_VIEW)
+                                    || node.getParentNode().getName().equals(CH_PHYSICAL_VIEW)
+                                    || node.getParentNode().getName().equals(CH_SCHEMA_DIRECTORY)){
+                                for (MenuItem item : m.getItems()) {
+                                    if (item.getText().equalsIgnoreCase(CH_IMPORT) || item.getText().equalsIgnoreCase(CH_EXPORT)) {
+                                        item.setEnabled(false);
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                if (node != null && !node.isLocked() && node.allowsOpen()) {
-                    String commandID = NavigatorUtils.getNodeActionCommand(DBXTreeNodeHandler.Action.open, node, NavigatorCommands.CMD_OBJECT_OPEN);
-                    // Dirty hack
-                    // Get contribution item from menu item and check it's ID
-                    try {
-                        for (MenuItem item : m.getItems()) {
-                            Object itemData = item.getData();
-                            if (itemData instanceof IContributionItem) {
-                                String contribId = ((IContributionItem)itemData).getId();
-                                if (contribId != null && contribId.equals(commandID)) {
-                                    m.setDefaultItem(item);
+                    if (node != null && !node.isLocked() && node.allowsOpen()) {
+                        String commandID = NavigatorUtils.getNodeActionCommand(DBXTreeNodeHandler.Action.open, node, NavigatorCommands.CMD_OBJECT_OPEN);
+                        // Dirty hack
+                        // Get contribution item from menu item and check it's ID
+                        try {
+                            for (MenuItem item : m.getItems()) {
+                                Object itemData = item.getData();
+                                if (itemData instanceof IContributionItem) {
+                                    String contribId = ((IContributionItem)itemData).getId();
+                                    if (contribId != null && contribId.equals(commandID)) {
+                                        m.setDefaultItem(item);
+                                    }
                                 }
                             }
+                        } catch (Exception ex) {
+                            log.debug(ex);
                         }
-                    } catch (Exception ex) {
-                        log.debug(ex);
                     }
+                } catch (Exception ex) {
+                    log.error(ex);
                 }
             }
         });
