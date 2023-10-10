@@ -12,4 +12,3 @@ Export-Package: org.slf4j.impl
 Fragment-Host: slf4j.api
 Automatic-Module-Name: org.jkiss.dbeaver.slf4j
 Provide-Capability: osgi.serviceloader;osgi.serviceloader="org.slf4j.spi.SLF4JServiceProvider"
-Require-Capability: osgi.extender;filter:="(osgi.extender=osgi.serviceloader.registrar)"
