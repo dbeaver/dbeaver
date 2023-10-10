@@ -415,10 +415,9 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             }
             case IWorkbenchCommandConstants.EDIT_COPY:
                 if (policyProvider.isCopyDataDisabled()) {
-                    MessageDialog.open(MessageDialog.WARNING,
-                        HandlerUtil.getActiveShell(event),
+                    MessageDialog.openWarning(HandlerUtil.getActiveShell(event),
                         ResultSetMessages.dialog_policy_data_copy_title,
-                        ResultSetMessages.dialog_policy_data_copy_msg, 0);
+                        ResultSetMessages.dialog_policy_data_copy_msg);
                 } else {
                     ResultSetUtils.copyToClipboard(
                         presentation.copySelection(
@@ -553,10 +552,9 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             }
             case CMD_EXPORT: {
                 if (policyProvider.isExportDataDisabled()) {
-                    MessageDialog.open(MessageDialog.WARNING,
-                        HandlerUtil.getActiveShell(event),
+                    MessageDialog.openWarning(HandlerUtil.getActiveShell(event),
                         ResultSetMessages.dialog_policy_data_export_title,
-                        ResultSetMessages.dialog_policy_data_export_msg, 0);
+                        ResultSetMessages.dialog_policy_data_export_msg);
                 } else {
                     if (event.getParameter(PARAM_EXPORT_WITH_PARAM) != null) {
                         String defProc = ResultSetHandlerOpenWith.getDefaultOpenWithProcessor();

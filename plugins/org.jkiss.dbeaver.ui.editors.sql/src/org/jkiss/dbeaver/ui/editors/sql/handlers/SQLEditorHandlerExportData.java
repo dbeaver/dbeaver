@@ -20,6 +20,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
@@ -38,10 +39,9 @@ public class SQLEditorHandlerExportData extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
         if (policyProvider.isExportDataDisabled()) {
-            MessageDialog.open(MessageDialog.WARNING,
-                HandlerUtil.getActiveShell(event),
+            MessageDialog.openWarning(HandlerUtil.getActiveShell(event),
                 ResultSetMessages.dialog_policy_data_export_title,
-                ResultSetMessages.dialog_policy_data_export_msg, 0);
+                ResultSetMessages.dialog_policy_data_export_msg);
             return null;
         }
 

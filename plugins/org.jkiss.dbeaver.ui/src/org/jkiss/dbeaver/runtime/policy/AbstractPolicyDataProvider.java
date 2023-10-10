@@ -16,10 +16,9 @@
  */
 package org.jkiss.dbeaver.runtime.policy;
 
-import org.eclipse.core.runtime.Platform;
-
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
+import org.eclipse.core.runtime.Platform;
 
 /**
  * Abstract specification of policy data provider
@@ -39,7 +38,6 @@ public abstract class AbstractPolicyDataProvider implements PolicyDataProvider {
         return policyEnabled;
     }
 
-    @Override
     public boolean getDataPolicyFromSystem(String property) {
         String isDisabledPropValue = System.getProperty(property);
         if (isDisabledPropValue != null && !isDisabledPropValue.isEmpty()) {
@@ -48,14 +46,13 @@ public abstract class AbstractPolicyDataProvider implements PolicyDataProvider {
         return false;
     }
 
-    @Override
     public boolean getDataPolicyFromRegistry(String property) {
         if (Platform.OS_WIN32.equals(Platform.getOS())) {
-            boolean isPolicyEnabled = getBooleanFromWinRegitryNode(WinReg.HKEY_CURRENT_USER, property);
+            boolean isPolicyEnabled = getBooleanFromWinRegistryNode(WinReg.HKEY_CURRENT_USER, property);
             if (isPolicyEnabled) {
                 return isPolicyEnabled;
             }
-            isPolicyEnabled = getBooleanFromWinRegitryNode(WinReg.HKEY_LOCAL_MACHINE, property);
+            isPolicyEnabled = getBooleanFromWinRegistryNode(WinReg.HKEY_LOCAL_MACHINE, property);
             if (isPolicyEnabled) {
                 return isPolicyEnabled;
             }
@@ -63,7 +60,7 @@ public abstract class AbstractPolicyDataProvider implements PolicyDataProvider {
         return false;
     }
 
-    private boolean getBooleanFromWinRegitryNode(WinReg.HKEY root, String property) {
+    private boolean getBooleanFromWinRegistryNode(WinReg.HKEY root, String property) {
         if (Advapi32Util.registryKeyExists(root, DBEAVER_REGESTRY_POLICY_NODE) &&
             Advapi32Util.registryValueExists(root, DBEAVER_REGESTRY_POLICY_NODE, property)) {
             String propRegisrtryValue = Advapi32Util.registryGetStringValue(

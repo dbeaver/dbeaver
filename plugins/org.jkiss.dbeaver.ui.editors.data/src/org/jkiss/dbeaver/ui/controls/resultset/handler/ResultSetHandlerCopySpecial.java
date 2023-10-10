@@ -21,6 +21,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -54,10 +55,10 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
     public Object execute(ExecutionEvent event) throws ExecutionException {
         BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
         if (policyProvider.isCopyDataDisabled()) {
-            MessageDialog.open(MessageDialog.WARNING,
+            MessageDialog.openWarning(
                 HandlerUtil.getActiveShell(event),
                 ResultSetMessages.dialog_policy_data_copy_title,
-                ResultSetMessages.dialog_policy_data_copy_msg, 0);
+                ResultSetMessages.dialog_policy_data_copy_msg);
             return null;
         }
 
