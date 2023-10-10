@@ -730,16 +730,17 @@ public class SQLQueryJob extends DataSourceJob
         final DBPPreferenceStore store = getDataSourceContainer().getPreferenceStore();
         StatisticsTabOnExecutionBehavior statisticsTabOnExecutionBehavior = StatisticsTabOnExecutionBehavior.getByName(
             store.getString(SQLPreferenceConstants.SHOW_STATISTICS_ON_EXECUTION));
-//      if (resultSetNumber <= 0 || statistics.getRowsUpdated() >= 0) {
-//      // If there are no results or we have updated some rows, always display statistics
-//      return true;
-//  }
         switch (statisticsTabOnExecutionBehavior) {
             case ALWAYS:
                 return true;
             case NEVER:
                 return false;
             case FOR_MULTIPLE_QUERIES:
+                if (resultSetNumber <= 0 || statistics.getRowsUpdated() >= 0) {
+                    // If there are no results or we have updated some rows, always display statistics
+                    return true;
+                }
+                // Otherwise, display statistics if the option is set
                 return statistics.getStatementsCount() > 1;
             default:
                 return false;

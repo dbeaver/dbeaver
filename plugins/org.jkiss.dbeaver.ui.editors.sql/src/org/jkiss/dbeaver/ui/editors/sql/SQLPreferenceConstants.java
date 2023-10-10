@@ -108,6 +108,7 @@ public class SQLPreferenceConstants {
     public final static String RESET_CURSOR_ON_EXECUTE                  = "SQLEditor.resetCursorOnExecute";
     public final static String MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE        = "SQLEditor.maxEditorOnScriptExecute";
     public static final String SHOW_STATISTICS_ON_EXECUTION             = "SQLEditor.showStatisticsForQueriesWithResults";
+    public static final String SET_SELECTION_TO_STATISTICS_TAB          = "SQLEditor.setSelectionToStatisticsTab";
     public static final String CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION    = "SQLEditor.closeIncludedScriptAfterExecution";
 
     public final static String SQL_FORMAT_KEYWORD_CASE_AUTO             = "SQLEditor.format.keywordCaseAuto";
@@ -175,7 +176,7 @@ public class SQLPreferenceConstants {
 
     public enum StatisticsTabOnExecutionBehavior {
         NEVER("Never"),
-        FOR_MULTIPLE_QUERIES("For multiple queries"),
+        FOR_MULTIPLE_QUERIES("For multiple queries with results"),
         ALWAYS("Always");
 
         private final String title;

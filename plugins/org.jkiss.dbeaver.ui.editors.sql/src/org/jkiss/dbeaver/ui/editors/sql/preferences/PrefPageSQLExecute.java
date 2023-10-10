@@ -63,6 +63,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
     private Button resetCursorCheck;
     private Button maxEditorCheck;
     private Combo showStatisticsCombo;
+    private Button setSelectionToStatisticsTabCheck;
     private Button closeIncludedScriptAfterExecutionCheck;
 
     private Text statementDelimiterText;
@@ -222,6 +223,13 @@ public class PrefPageSQLExecute extends TargetPrefPage
             for (StatisticsTabOnExecutionBehavior statisticsTabOnExecution : StatisticsTabOnExecutionBehavior.values()) {
                 showStatisticsCombo.add(statisticsTabOnExecution.getTitle());
             }
+            setSelectionToStatisticsTabCheck = UIUtils.createCheckbox(
+                    scriptsGroup,
+                    SQLEditorMessages.pref_page_sql_editor_checkbox_select_statistics_tab,
+                    SQLEditorMessages.pref_page_sql_editor_checkbox_select_statistics_tab_tip,
+                    true,
+                    2
+            );
             closeIncludedScriptAfterExecutionCheck = UIUtils.createCheckbox(
                 scriptsGroup,
                 SQLEditorMessages.pref_page_sql_editor_checkbox_close_included_script_after_execution,
@@ -295,10 +303,12 @@ public class PrefPageSQLExecute extends TargetPrefPage
             UIUtils.setComboSelection(showStatisticsCombo, StatisticsTabOnExecutionBehavior.getByName(
                 store.getString(SQLPreferenceConstants.SHOW_STATISTICS_ON_EXECUTION)).getTitle()
             );
+            setSelectionToStatisticsTabCheck.setSelection(
+                store.getBoolean(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB)
+            );
             closeIncludedScriptAfterExecutionCheck.setSelection(
                 store.getBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION)
             );
-
             statementDelimiterText.setText(store.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER));
             ignoreNativeDelimiter.setSelection(store.getBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER));
             blankLineDelimiter.setSelection(store.getBoolean(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK));
@@ -335,6 +345,10 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.setValue(
                 SQLPreferenceConstants.SHOW_STATISTICS_ON_EXECUTION,
                 StatisticsTabOnExecutionBehavior.getByTitle(showStatisticsCombo.getText()).name()
+            );
+            store.setValue(
+                    SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB,
+                    setSelectionToStatisticsTabCheck.getSelection()
             );
             store.setValue(
                 SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION,
@@ -408,6 +422,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
         UIUtils.setComboSelection(showStatisticsCombo, StatisticsTabOnExecutionBehavior.getByName(
             store.getString(SQLPreferenceConstants.SHOW_STATISTICS_ON_EXECUTION)).getTitle()
         );
+        setSelectionToStatisticsTabCheck.setSelection(
+                store.getDefaultBoolean(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB));
         closeIncludedScriptAfterExecutionCheck.setSelection(
             store.getDefaultBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION));
         statementDelimiterText.setText(store.getDefaultString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER));
