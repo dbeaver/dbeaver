@@ -107,7 +107,7 @@ public class SQLPreferenceConstants {
 
     public final static String RESET_CURSOR_ON_EXECUTE                  = "SQLEditor.resetCursorOnExecute";
     public final static String MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE        = "SQLEditor.maxEditorOnScriptExecute";
-    public static final String SHOW_STATISTICS_FOR_QUERIES_WITH_RESULTS = "SQLEditor.showStatisticsForQueriesWithResults";
+    public static final String SHOW_STATISTICS_ON_EXECUTION             = "SQLEditor.showStatisticsForQueriesWithResults";
     public static final String CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION    = "SQLEditor.closeIncludedScriptAfterExecution";
 
     public final static String SQL_FORMAT_KEYWORD_CASE_AUTO             = "SQLEditor.format.keywordCaseAuto";
@@ -173,4 +173,43 @@ public class SQLPreferenceConstants {
     public static final String LOCATION_BOTTOM      = "bottom";
     public static final String LOCATION_RESULTS     = "results";
 
+    public enum StatisticsTabOnExecutionBehavior {
+        NEVER("Never"),
+        FOR_MULTIPLE_QUERIES("For multiple queries"),
+        ALWAYS("Always");
+
+        private final String title;
+
+        StatisticsTabOnExecutionBehavior(String title) {
+            this.title = title;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public static StatisticsTabOnExecutionBehavior getByTitle(String title) {
+            for (StatisticsTabOnExecutionBehavior statisticsTabOnExecution : values()) {
+                if (statisticsTabOnExecution.getTitle().equals(title)) {
+                    return statisticsTabOnExecution;
+                }
+            }
+            return StatisticsTabOnExecutionBehavior.NEVER;
+        }
+        public static StatisticsTabOnExecutionBehavior getByName(String name) {
+            switch (name) {
+                case "true":
+                    return StatisticsTabOnExecutionBehavior.FOR_MULTIPLE_QUERIES;
+                case "false":
+                    return StatisticsTabOnExecutionBehavior.NEVER;
+                default:
+                    try {
+                        return StatisticsTabOnExecutionBehavior.valueOf(name);
+                    } catch (IllegalArgumentException e) {
+                        return StatisticsTabOnExecutionBehavior.NEVER;
+                    }
+            }
+        }
+
+    }
 }

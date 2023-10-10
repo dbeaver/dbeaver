@@ -27,13 +27,13 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.model.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.StatisticsTabOnExecutionBehavior;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
@@ -62,7 +62,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
     private Button fetchResultSetsCheck;
     private Button resetCursorCheck;
     private Button maxEditorCheck;
-    private Button showStatisticsForQueriesWithResultsCheck;
+    private Combo showStatisticsCombo;
     private Button closeIncludedScriptAfterExecutionCheck;
 
     private Text statementDelimiterText;
@@ -213,13 +213,15 @@ public class PrefPageSQLExecute extends TargetPrefPage
             fetchResultSetsCheck = UIUtils.createCheckbox(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_fetch_resultsets, null, false, 2);
             resetCursorCheck = UIUtils.createCheckbox(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_reset_cursor, null, false, 2);
             maxEditorCheck = UIUtils.createCheckbox(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_max_editor_on_script_exec, null, false, 2);
-            showStatisticsForQueriesWithResultsCheck = UIUtils.createCheckbox(
+            showStatisticsCombo = UIUtils.createLabelCombo(
                 scriptsGroup,
                 SQLEditorMessages.pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results,
                 SQLEditorMessages.pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results_tip,
-                false,
-                2
+                SWT.DROP_DOWN | SWT.BORDER
             );
+            for (StatisticsTabOnExecutionBehavior statisticsTabOnExecution : StatisticsTabOnExecutionBehavior.values()) {
+                showStatisticsCombo.add(statisticsTabOnExecution.getTitle());
+            }
             closeIncludedScriptAfterExecutionCheck = UIUtils.createCheckbox(
                 scriptsGroup,
                 SQLEditorMessages.pref_page_sql_editor_checkbox_close_included_script_after_execution,
@@ -290,8 +292,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
             fetchResultSetsCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS));
             resetCursorCheck.setSelection(store.getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE));
             maxEditorCheck.setSelection(store.getBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE));
-            showStatisticsForQueriesWithResultsCheck.setSelection(
-                store.getBoolean(SQLPreferenceConstants.SHOW_STATISTICS_FOR_QUERIES_WITH_RESULTS)
+            UIUtils.setComboSelection(showStatisticsCombo, StatisticsTabOnExecutionBehavior.getByName(
+                store.getString(SQLPreferenceConstants.SHOW_STATISTICS_ON_EXECUTION)).getTitle()
             );
             closeIncludedScriptAfterExecutionCheck.setSelection(
                 store.getBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION)
@@ -331,8 +333,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE, resetCursorCheck.getSelection());
             store.setValue(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE, maxEditorCheck.getSelection());
             store.setValue(
-                SQLPreferenceConstants.SHOW_STATISTICS_FOR_QUERIES_WITH_RESULTS,
-                showStatisticsForQueriesWithResultsCheck.getSelection()
+                SQLPreferenceConstants.SHOW_STATISTICS_ON_EXECUTION,
+                StatisticsTabOnExecutionBehavior.getByTitle(showStatisticsCombo.getText()).name()
             );
             store.setValue(
                 SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION,
@@ -403,8 +405,9 @@ public class PrefPageSQLExecute extends TargetPrefPage
         fetchResultSetsCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS));
         resetCursorCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE));
         maxEditorCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE));
-        showStatisticsForQueriesWithResultsCheck.setSelection(
-            store.getDefaultBoolean(SQLPreferenceConstants.SHOW_STATISTICS_FOR_QUERIES_WITH_RESULTS));
+        UIUtils.setComboSelection(showStatisticsCombo, StatisticsTabOnExecutionBehavior.getByName(
+            store.getString(SQLPreferenceConstants.SHOW_STATISTICS_ON_EXECUTION)).getTitle()
+        );
         closeIncludedScriptAfterExecutionCheck.setSelection(
             store.getDefaultBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION));
         statementDelimiterText.setText(store.getDefaultString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER));
