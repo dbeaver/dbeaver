@@ -11,7 +11,7 @@ Export-Package: org.jkiss.dbeaver.ui.editors.sql.ai.format,
  org.jkiss.dbeaver.ui.editors.sql.ai.popup,
  org.jkiss.dbeaver.ui.editors.sql.ai.preferences
 Bundle-Release-Date: 20231009
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.bundle.gpt3,

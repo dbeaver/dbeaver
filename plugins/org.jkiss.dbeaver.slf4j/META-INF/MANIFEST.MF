@@ -6,8 +6,9 @@ Bundle-Version: 2.0.86.qualifier
 Bundle-Release-Date: 20231009
 Require-Bundle: org.jkiss.dbeaver.model
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
 Export-Package: org.slf4j.impl
-Fragment-Host: org.slf4j.api
+Fragment-Host: slf4j.api
 Automatic-Module-Name: org.jkiss.dbeaver.slf4j
+Provide-Capability: osgi.serviceloader;osgi.serviceloader="org.slf4j.spi.SLF4JServiceProvider"

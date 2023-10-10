@@ -12,7 +12,7 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.ext.generic.ui
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.dameng.ui
