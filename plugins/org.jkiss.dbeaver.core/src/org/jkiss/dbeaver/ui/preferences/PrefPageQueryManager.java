@@ -180,7 +180,7 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         textEntriesPerPage.setText(store.getDefaultString(QMConstants.PROP_ENTRIES_PER_PAGE));
 
         checkStoreLog.setSelection(store.getDefaultBoolean(QMConstants.PROP_STORE_LOG_FILE));
-        textOutputFolder.setText(store.getDefaultString(QMConstants.PROP_HISTORY_DAYS));
+        textOutputFolder.setText(store.getDefaultString(QMConstants.PROP_LOG_DIRECTORY));
         UIUtils.enableWithChildren(textOutputFolder.getParent(), checkStoreLog.getSelection());
         UIUtils.enableWithChildren(textHistoryDays, checkStoreLog.getSelection());
 
