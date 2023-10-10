@@ -156,4 +156,8 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     @NotNull
     DBFFileSystemManager getFileSystemManager();
 
+    /**
+     * close project and all related resources
+     */
+    void dispose();
 }
