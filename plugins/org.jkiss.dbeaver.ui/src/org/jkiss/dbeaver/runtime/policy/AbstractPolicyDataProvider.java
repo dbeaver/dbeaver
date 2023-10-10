@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.runtime.policy;
 
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
-
 import org.eclipse.core.runtime.Platform;
 
 /**
