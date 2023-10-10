@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.data.office.export;
 
+import org.apache.poi.hssf.usermodel.HSSFFormulaEvaluator;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
@@ -83,6 +84,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
     private static final int EXCEL2007MAXROWS = 1048575;
     private static final int EXCEL_MAX_CELL_CHARACTERS = 32767; // Total number of characters that a cell can contain - 32,767 characters
+    private static final int MINIMUM_LENGTH = 256 * 10;
 
     enum FontStyleProp {NONE, BOLD, ITALIC, STRIKEOUT, UNDERLINE}
 
@@ -417,7 +419,6 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         throws DBException, IOException {
 
         Worksheet wsh = getWsh(resultSet, row);
-
         Row rowX = wsh.getSh().createRow(wsh.getCurrentRow());
 
         int startCol = 0;
@@ -497,6 +498,20 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
     @Override
     public void exportFooter(DBRProgressMonitor monitor) throws DBException, IOException {
+        if (wb != null) {
+            // Do it here because we can have a few sheets
+            SXSSFSheet sheet = wb.getSheetAt(sheetIndex);
+            HSSFFormulaEvaluator.evaluateAllFormulaCells(wb);
+            sheet.trackAllColumnsForAutoSizing();
+            for (int i = 0; i < columns.length; i++) {
+                sheet.autoSizeColumn(i);
+                if (sheet.getColumnWidth(i) < MINIMUM_LENGTH) {
+                    // Auto-size failed, use default minimum column width
+                    sheet.setColumnWidth(i, MINIMUM_LENGTH);
+                }
+            }
+            sheet.untrackAllColumnsForAutoSizing();
+        }
         if (rowCount == 0) {
             exportRow(null, null, new Object[columns.length]);
         }

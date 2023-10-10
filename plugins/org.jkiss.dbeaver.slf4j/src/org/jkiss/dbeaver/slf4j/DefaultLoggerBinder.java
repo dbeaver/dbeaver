@@ -14,34 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.slf4j.impl;
+package org.jkiss.dbeaver.slf4j;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.slf4j.SLFLogger;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
-import org.slf4j.spi.LoggerFactoryBinder;
 
-/**
- * SLF logger binder for dbeaver
- */
-public class StaticLoggerBinder implements LoggerFactoryBinder, ILoggerFactory {
+public class DefaultLoggerBinder implements ILoggerFactory {
 
-    private static final Log log = Log.getLog(StaticLoggerBinder.class);
+    private static final Log log = Log.getLog(DefaultLoggerBinder.class);
 
-    private static final StaticLoggerBinder SINGLETON = new StaticLoggerBinder();
+    private static final DefaultLoggerBinder SINGLETON = new DefaultLoggerBinder();
 
-    public static StaticLoggerBinder getSingleton() {
+    public static DefaultLoggerBinder getSingleton() {
         return SINGLETON;
-    }
-
-    public ILoggerFactory getLoggerFactory() {
-        return this;
-    }
-
-    @Override
-    public String getLoggerFactoryClassStr() {
-        return StaticLoggerBinder.class.getName();
     }
 
     @Override
