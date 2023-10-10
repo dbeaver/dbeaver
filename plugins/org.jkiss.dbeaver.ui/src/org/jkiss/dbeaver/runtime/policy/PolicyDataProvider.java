@@ -22,14 +22,16 @@ package org.jkiss.dbeaver.runtime.policy;
 public interface PolicyDataProvider {
 
     /**
-     * 
+     * Retrieve policy value from system environment 
+     *
      * @param propertyName - data policy
      * @return - boolean policy value
      */
     boolean getDataPolicyFromSystem(String propertyName);
 
     /**
-     * 
+     * Retrieve policy value from OS registry
+     *
      * @param propertyName - data policy
      * @return - boolean policy value
      */

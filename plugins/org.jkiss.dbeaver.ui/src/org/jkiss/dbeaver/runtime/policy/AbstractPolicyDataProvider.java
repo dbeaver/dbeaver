@@ -16,14 +16,17 @@
  */
 package org.jkiss.dbeaver.runtime.policy;
 
-import java.util.prefs.Preferences;
+import com.sun.jna.platform.win32.Advapi32Util;
+import com.sun.jna.platform.win32.WinReg;
+
+import org.eclipse.core.runtime.Platform;
 
 /**
  * Abstract specification of policy data provider
  */
 public abstract class AbstractPolicyDataProvider implements PolicyDataProvider {
 
-    private static final String DBEAVER_APPLICATION_POLICY_NODE = "dbeaver/application/policy"; //$NON-NLS-1$
+    private static final String DBEAVER_REGESTRY_POLICY_NODE = "Software\\DBeaver Corp\\DBeaver\\policy"; //$NON-NLS-1$
 
     @Override
     public boolean isDataPolicyEnabled(String propertyName) {
@@ -47,9 +50,27 @@ public abstract class AbstractPolicyDataProvider implements PolicyDataProvider {
 
     @Override
     public boolean getDataPolicyFromRegistry(String property) {
-        Preferences preference = Preferences.userRoot().node(DBEAVER_APPLICATION_POLICY_NODE);
-        if (preference != null) {
-            return preference.getBoolean(property, false);
+        if (Platform.OS_WIN32.equals(Platform.getOS())) {
+            if (Advapi32Util.registryKeyExists(WinReg.HKEY_CURRENT_USER, DBEAVER_REGESTRY_POLICY_NODE)) {
+                String propRegisrtryValue = Advapi32Util.registryGetStringValue(
+                    WinReg.HKEY_CURRENT_USER,
+                    DBEAVER_REGESTRY_POLICY_NODE,
+                    property);
+                Boolean isPolicyEnable = Boolean.valueOf(propRegisrtryValue);
+                if (isPolicyEnable) {
+                    return isPolicyEnable;
+                }
+            }
+            if (Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, DBEAVER_REGESTRY_POLICY_NODE)) {
+                String propRegisrtryValue = Advapi32Util.registryGetStringValue(
+                    WinReg.HKEY_LOCAL_MACHINE,
+                    DBEAVER_REGESTRY_POLICY_NODE,
+                    property);
+                Boolean isPolicyEnable = Boolean.valueOf(propRegisrtryValue);
+                if (isPolicyEnable) {
+                    return isPolicyEnable;
+                }
+            }
         }
         return false;
     }
