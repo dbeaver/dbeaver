@@ -5008,16 +5008,21 @@ public class SQLEditor extends SQLEditorBase implements
             if (presentationStack == null || activePresentationDescriptor == null) {
                 return null;
             }
-
             final int index = presentationStackIndices.get(activePresentationDescriptor);
             return presentationStack.getChildren()[index];
         }
 
         public void dispose() {
-            if (activePresentation != null) {
-                activePresentation.dispose();
-                activePresentation = null;
+            activePresentationDescriptor = null;
+            activePresentation = null;
+            activePresentationPanel = null;
+
+            for (SQLEditorPresentation presentation : presentations.values()) {
+                presentation.dispose();
             }
+
+            presentations.clear();
+            panels.clear();
         }
     }
 
