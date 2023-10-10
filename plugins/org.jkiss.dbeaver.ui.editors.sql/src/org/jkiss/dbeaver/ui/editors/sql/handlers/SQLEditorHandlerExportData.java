@@ -19,9 +19,12 @@ package org.jkiss.dbeaver.ui.editors.sql.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
+import org.jkiss.dbeaver.runtime.policy.CachedPolicyDataProvider;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorParametersProvider;
@@ -33,6 +36,15 @@ public class SQLEditorHandlerExportData extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
+        CachedPolicyDataProvider policyProvider = new CachedPolicyDataProvider();
+        if (policyProvider.isExportDataDisabled()) {
+            MessageDialog.open(MessageDialog.WARNING,
+                HandlerUtil.getActiveShell(event),
+                ResultSetMessages.dialog_policy_data_export_title,
+                ResultSetMessages.dialog_policy_data_export_msg, 0);
+            return null;
+        }
+
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
         if (editor != null) {
             editor.exportDataFromQuery(new ExportDataSQLScriptContext(editor));

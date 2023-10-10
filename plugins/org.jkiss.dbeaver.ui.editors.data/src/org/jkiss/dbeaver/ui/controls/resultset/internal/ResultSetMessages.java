@@ -477,8 +477,13 @@ public class ResultSetMessages extends NLS {
     public static String reference_value_editor_current_page_value;
     public static String reference_value_editor_current_pagination_value;
     public static String reference_value_editor_define_description_value;
-    public static String reference_value_editor_search_hint_value;    
-    
+    public static String reference_value_editor_search_hint_value;
+
+    public static String dialog_policy_data_export_msg;
+    public static String dialog_policy_data_export_title;
+    public static String dialog_policy_data_copy_msg;
+    public static String dialog_policy_data_copy_title;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, ResultSetMessages.class);
