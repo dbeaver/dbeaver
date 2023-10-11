@@ -5,7 +5,7 @@ Bundle-Vendor: DBeaver Corp
 Bundle-SymbolicName: org.jkiss.utils
 Bundle-Version: 2.1.199.qualifier
 Bundle-Release-Date: 20231009
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: com.google.gson
 Export-Package: org.jkiss.code,
  org.jkiss.utils,

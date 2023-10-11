@@ -10,7 +10,7 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.core,
  org.eclipse.core.resources
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
 Export-Package: org.jkiss.dbeaver.ext.import_config.wizards
 Automatic-Module-Name: org.jkiss.dbeaver.ext.import_config

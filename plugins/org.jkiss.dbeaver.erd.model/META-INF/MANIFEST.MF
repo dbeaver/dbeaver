@@ -5,7 +5,7 @@ Bundle-Name: DBeaver ERD Model
 Bundle-SymbolicName: org.jkiss.dbeaver.erd.model;singleton:=true
 Bundle-Version: 1.0.76.qualifier
 Bundle-Release-Date: 20231009
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
