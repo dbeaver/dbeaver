@@ -144,6 +144,8 @@ public class AltibaseConstants {
         }
     }
     
+    public static final String SQL_STATE_TOO_LONG = "22026";
+    
     /*
      * Password grace time
      */

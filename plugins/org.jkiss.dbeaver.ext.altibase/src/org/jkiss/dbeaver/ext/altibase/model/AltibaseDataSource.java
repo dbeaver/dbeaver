@@ -26,9 +26,11 @@ import org.jkiss.dbeaver.ext.altibase.model.session.AltibaseServerSessionManager
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericSynonym;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -45,6 +47,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -66,6 +69,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     final TablespaceCache tablespaceCache = new TablespaceCache();
     final UserCache userCache = new UserCache();
     final RoleCache roleCache = new RoleCache();
+    final ReplicationCache replCache;
     private boolean hasStatistics;
     
     private GenericSchema publicSchema;
@@ -80,6 +84,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         super(monitor, container, metaModel, new AltibaseSQLDialect());
         
         queryGetActiveDB = CommonUtils.toString(container.getDriver().getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB));
+        replCache = new ReplicationCache(this);
     }
     
     @Override
@@ -109,6 +114,11 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
             context,
             outputReader.isServerOutputEnabled());
     }
+    
+    @NotNull
+    public AltibaseMetaModel getMetaModel() {
+        return (AltibaseMetaModel) super.getMetaModel();
+    }
 
     /**
      * Get database name.
@@ -133,8 +143,12 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         super.refreshObject(monitor);
         
         this.tablespaceCache.clearCache();
+        this.userCache.clearCache();
+        this.roleCache.clearCache();
+        this.replCache.clearCache();
+        
         hasStatistics = false;
-
+        
         this.initialize(monitor);
 
         return this;
@@ -318,6 +332,76 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         }
         return roleCache.getObject(monitor, this, name);
     }
+    
+    /**
+     * Get Replication Cache
+     */
+    
+    public ReplicationCache getReplicationCache() {
+        return replCache;
+    }
+    
+    static class ReplicationCache extends JDBCStructLookupCache<GenericStructContainer, AltibaseReplication, AltibaseReplicationItem> {
+        
+        final AltibaseDataSource dataSource;
+        
+        protected ReplicationCache(AltibaseDataSource dataSource)
+        {
+            super("Replication");
+            this.dataSource = dataSource;
+            setListOrderComparator(DBUtils.<AltibaseReplication>nameComparatorIgnoreCase());
+        }
+        
+        public AltibaseDataSource getDataSource()
+        {
+            return dataSource;
+        }
+        
+        @NotNull
+        @Override
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable AltibaseReplication object, @Nullable String objectName) throws SQLException {
+            return dataSource.getMetaModel().prepareReplicationLoadStatement(session, owner, object, objectName);
+        }
+        
+        @Nullable
+        @Override
+        protected AltibaseReplication fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return getDataSource().getMetaModel().createReplicationImpl(session, owner, dbResult);
+        }
+        
+        @Override
+        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull AltibaseReplication forTable)
+            throws SQLException
+        {
+            return dataSource.getMetaModel().prepareReplicationItemLoadStatement(session, owner, forTable);
+        }
+        
+        @Override
+        protected AltibaseReplicationItem fetchChild(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull AltibaseReplication replication, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return getDataSource().getMetaModel().createReplicationItemImpl(session, replication, dbResult);
+        }
+    }
+    
+    @Association
+    public Collection<AltibaseReplication> getReplications(DBRProgressMonitor monitor) throws DBException {
+        return replCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public AltibaseReplication getReplication(DBRProgressMonitor monitor, String name) throws DBException {
+        return replCache.getObject(monitor, this, name);
+    }
+    
+    /*
+    @Association
+    public List<AltibaseReplicationItem> getReplicationItem(DBRProgressMonitor monitor, @NotNull AltibaseReplication replication) throws DBException {
+        return replCache.getChildren(monitor, this, replication);
+    }
+    */
     
     ///////////////////////////////////////////////
     // Statistics

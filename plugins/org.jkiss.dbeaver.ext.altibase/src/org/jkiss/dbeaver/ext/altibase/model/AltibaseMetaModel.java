@@ -74,7 +74,6 @@ import java.util.Map;
 public class AltibaseMetaModel extends GenericMetaModel {
 
     private static final Log log = Log.getLog(AltibaseMetaModel.class);
-    //public static boolean DBMS_METADATA = true;
 
     public AltibaseMetaModel() {
     }
@@ -967,6 +966,84 @@ public class AltibaseMetaModel extends GenericMetaModel {
         return dbStat;
     }
 
+    //////////////////////////////////////////////////////
+    // Replication
+    
+    public JDBCPreparedStatement prepareReplicationLoadStatement(JDBCSession session, 
+            GenericStructContainer container, AltibaseReplication object, String objectName) throws SQLException {
+        
+        String replName = (object != null) ? object.getName():"";
+        final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT"
+                        + " r.replication_name,"
+                        + " DECODE( r.is_started,"
+                            + " 0, 'Stop', "
+                            + " 1,'Start', "
+                            + " 'Unknown') AS status,"
+                        + " DECODE( r.conflict_resolution,"
+                            + " 0, 'Default', "
+                            + " 1, 'Master', "
+                            + " 2, 'Slave', "
+                            + " 'Unknown') AS conflict_resolution,"
+                        + " DECODE( r.repl_mode, "
+                            + " 0, 'Lazy', "
+                            + " 2,'Eager', "
+                            + " 'Unknown') AS repl_mode, "
+                        + " DECODE( r.role,"
+                            + " 0, 'General',"
+                            + " 1, 'Log Analyzer',"
+                            + " 2, 'Propagable Logging',"
+                            + " 3, 'Propagation',"
+                            + " 4, 'Propagation for Log Analyzer ',"
+                            + " 'Unknown') AS role,"
+                        + " r.options,"
+                        + " DECODE( r.invalid_recovery,"
+                            + " 0, 'Valid',"
+                            + " 1, 'Invalid',"
+                            + " 'Unknown') AS recoverable,"
+                        + " parallel_applier_count,"
+                        + " rh.host_ip || ':' || rh.port_no AS remote_addr,"
+                        + " rh.conn_type AS remote_conn_type,"
+                        + " r.xsn,"
+                        + " r.remote_last_ddl_xsn,"
+                        + " r.remote_fault_detect_time,"
+                        + " r.give_up_time,"
+                        + " r.give_up_xsn,"
+                        + " r.remote_xsn,"
+                        + " r.applier_init_buffer_size,"
+                        + " r.peer_replication_name"
+                    + " FROM system_.sys_replications_ r, system_.sys_repl_hosts_ rh"
+                    + " WHERE"
+                        + " r.replication_name = rh.replication_name"
+                        + (CommonUtils.isEmpty(replName) ? "": " AND r.replication_name = ?")
+                    + " ORDER BY r.replication_name"
+                );
+        
+        if (!CommonUtils.isEmpty(replName)) {
+            dbStat.setString(1, replName);
+        }
+        return dbStat;
+    }
+    
+    public AltibaseReplication createReplicationImpl(JDBCSession session, GenericStructContainer owner, JDBCResultSet dbResult) {
+        return new AltibaseReplication(owner, dbResult);
+    }
+    
+    public JDBCPreparedStatement prepareReplicationItemLoadStatement(JDBCSession session, GenericStructContainer owner, 
+            AltibaseReplication replication) throws SQLException {
+        final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT * FROM system_.sys_repl_items_"
+                + " WHERE replication_name = ?"
+                + " ORDER BY local_user_name, local_table_name, local_partition_name, "
+                + " remote_user_name, remote_table_name, remote_partition_name");
+        dbStat.setString(1, replication.getName());
+        return dbStat;
+    }
+    
+    public AltibaseReplicationItem createReplicationItemImpl(JDBCSession session, AltibaseReplication owner, JDBCResultSet dbResult) {
+        return new AltibaseReplicationItem(owner, dbResult);
+    }
+    
     /**
      * Get DDL source for View/Procedure/Function/Typeset
      */
@@ -1059,7 +1136,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
             }
         } catch (SQLException se) {
             // Invalid data length.
-            if (se.getSQLState().equals("22026")) {
+            if (se.getSQLState().equals(AltibaseConstants.SQL_STATE_TOO_LONG)) {
                 ddl = "-- DDL is too long to be fetched.";
             }
         } catch (Exception e) {
