@@ -199,7 +199,8 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                         settings,
                         new IDataTransferConsumer.TransferParameters(processor.isBinaryFormat(), processor.isHTMLFormat()),
                         exporter,
-                        properties);
+                        properties,
+                        null);
 
                     DBDDataFilter dataFilter = resultSet.getModel().getDataFilter();
                     DatabaseTransferProducer producer = new DatabaseTransferProducer(dataContainer, dataFilter);
