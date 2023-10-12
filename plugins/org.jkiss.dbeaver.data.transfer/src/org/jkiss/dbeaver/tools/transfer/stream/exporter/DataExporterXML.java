@@ -31,9 +31,6 @@ import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -146,24 +143,6 @@ public class DataExporterXML extends StreamExporterAbstract {
         if (value != null) {
             value = value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
             getWriter().write(value);
-        }
-    }
-
-    private void writeImageCell(File file) throws DBException
-    {
-        if (file != null && file.exists()) {
-            Image image = null;
-            try {
-                image = ImageIO.read(file);
-            } catch (IOException e) {
-                throw new DBException("Can't read an exported image " + image, e);
-            }
-
-            if (image != null) {
-                String imagePath = file.getAbsolutePath();
-                imagePath = "files/" + imagePath.substring(imagePath.lastIndexOf(File.separator));
-                getWriter().write(imagePath);
-            }
         }
     }
 

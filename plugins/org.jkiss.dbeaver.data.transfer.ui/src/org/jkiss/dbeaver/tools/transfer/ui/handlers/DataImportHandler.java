@@ -80,7 +80,7 @@ public class DataImportHandler extends DataTransferHandler {
         DataTransferProcessorDescriptor processor = getProcessorByFile(file);
         if (processor != null) {
             return new StreamTransferProducer(
-                new StreamEntityMapping(file.getFullPath().toFile()),
+                new StreamEntityMapping(file.getFullPath().toFile().toPath()),
                 processor);
         }
         return null;

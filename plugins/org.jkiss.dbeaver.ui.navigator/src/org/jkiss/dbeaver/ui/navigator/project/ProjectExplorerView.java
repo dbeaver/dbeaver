@@ -69,8 +69,9 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
 
     @Override
     public DBNNode getRootNode() {
-        DBNProject projectNode = getModel().getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
-        return projectNode != null ? projectNode : getModel().getRoot();
+        DBNModel model = getGlobalNavigatorModel();
+        DBNProject projectNode = model.getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
+        return projectNode != null ? projectNode : model.getRoot();
     }
 
     @Override
