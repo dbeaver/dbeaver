@@ -175,6 +175,10 @@ public interface SMController extends DBPObjectController,
     @NotNull
     List<SMObjectPermissions> getAllAvailableObjectsPermissions(@NotNull SMObjectType objectType) throws DBException;
 
+    /**
+     * @deprecated use {@link SMAdminController#addObjectPermissions} or {@link SMAdminController#deleteObjectPermissions}
+     */
+    @Deprecated
     void setObjectPermissions(
         @NotNull Set<String> objectIds,
         @NotNull SMObjectType objectType,

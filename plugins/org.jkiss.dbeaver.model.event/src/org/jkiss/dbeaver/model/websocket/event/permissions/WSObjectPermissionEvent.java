@@ -52,6 +52,21 @@ public class WSObjectPermissionEvent extends WSAbstractEvent {
         );
     }
 
+    public static WSObjectPermissionEvent delete(
+        @Nullable String sessionId,
+        @Nullable String userId,
+        @NotNull SMObjectType objectType,
+        @NotNull String objectId
+    ) {
+        return new WSObjectPermissionEvent(
+            WSEventType.OBJECT_PERMISSIONS_DELETED,
+            objectType,
+            objectId,
+            sessionId,
+            userId
+        );
+    }
+
     public SMObjectType getSmObjectType() {
         return smObjectType;
     }
