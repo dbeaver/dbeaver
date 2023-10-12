@@ -188,7 +188,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             ));
         }
 
-        if (isStandalone && !RuntimeUtils.isLinux()) {
+        if (isStandalone) {
             useEmbeddedBrowserAuth = UIUtils.createCheckbox(groupObjects,
                 CoreMessages.pref_page_ui_general_check_browser_auth,
                 CoreMessages.pref_page_ui_general_check_browser_auth_tip,

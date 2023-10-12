@@ -75,7 +75,6 @@ public class DBeaverActivator extends AbstractUIPlugin {
         if (
                 DesktopPlatform.isStandalone()
                 && getPreferenceStore().getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH)
-                && !RuntimeUtils.isLinux()
         ) {
             try {
                 if (Desktop.isDesktopSupported()) {
