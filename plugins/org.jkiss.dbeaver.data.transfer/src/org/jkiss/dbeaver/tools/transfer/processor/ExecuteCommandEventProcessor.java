@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.processor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
@@ -27,7 +28,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Map;
 
 public class ExecuteCommandEventProcessor implements IDataTransferEventProcessor<StreamTransferConsumer> {
@@ -37,7 +38,11 @@ public class ExecuteCommandEventProcessor implements IDataTransferEventProcessor
 
     @Override
     public void processEvent(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull StreamTransferConsumer consumer, @Nullable DBTTask task, @NotNull Map<String, Object> processorSettings) throws DBException {
-        final String commandLine = consumer.translatePattern(CommonUtils.toString(processorSettings.get(PROP_COMMAND)), new File(consumer.getOutputFolder(), consumer.getOutputFileName()));
+        Path folderPath = DBUtils.resolvePathFromString(
+            monitor, task == null ? null : task.getProject(), consumer.getOutputFolder());
+        final String commandLine = consumer.translatePattern(
+            CommonUtils.toString(processorSettings.get(PROP_COMMAND)),
+            folderPath.resolve(consumer.getOutputFileName()));
         final String workingDirectory = CommonUtils.toString(processorSettings.get(PROP_WORKING_DIRECTORY));
 
         final DBRShellCommand command = new DBRShellCommand(commandLine);
