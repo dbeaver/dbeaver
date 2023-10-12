@@ -1185,6 +1185,7 @@
                         webURL="https://documentation.progress.com/output/ua/OpenEdge_latest/dmsdv/connecting-from-a-java-application-using-a-url.html#"
                         categories="sql">
 <!--                    <file type="jar" path="maven:/org.apache.solr:solr-solrj:RELEASE"/>-->
+                    <parameter name="omit-single-catalog" value="true"/>
                 </driver>
 
                 <!-- MonetDB -->
