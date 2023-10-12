@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver SQL Server Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.mssql;singleton:=true
-Bundle-Version: 1.0.210.qualifier
-Bundle-Release-Date: 20231009
+Bundle-Version: 1.0.211.qualifier
+Bundle-Release-Date: 20231023
 Bundle-Activator: org.jkiss.dbeaver.ext.mssql.internal.SQLServerActivator
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model;visibility:=reexport,
@@ -20,7 +20,7 @@ Export-Package: org.jkiss.dbeaver.ext.mssql,
  org.jkiss.dbeaver.ext.mssql.model.generic,
  org.jkiss.dbeaver.ext.mssql.model.session
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Bundle-Localization: OSGI-INF/l10n/bundle

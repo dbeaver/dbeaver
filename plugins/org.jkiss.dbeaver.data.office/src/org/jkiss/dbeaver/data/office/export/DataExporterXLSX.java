@@ -43,10 +43,10 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.awt.Color;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -519,12 +519,14 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
     @Override
     public void importData(@NotNull IStreamDataExporterSite site) throws DBException {
-        final File file = site.getOutputFile();
-        if (file == null || !file.exists()) {
+        final Path file = site.getOutputFile();
+        if (file == null || !Files.exists(file)) {
             return;
         }
         try {
-            wb = new SXSSFWorkbook(new XSSFWorkbook(new FileInputStream(file)));
+            wb = new SXSSFWorkbook(
+                new XSSFWorkbook(
+                    Files.newInputStream(file)));
         } catch (Exception e) {
             throw new DBException("Error opening workbook", e);
         }

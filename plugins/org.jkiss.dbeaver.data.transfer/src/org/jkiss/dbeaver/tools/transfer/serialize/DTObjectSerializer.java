@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.tools.transfer.serialize;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 
 import java.util.Map;
@@ -38,6 +38,6 @@ public interface DTObjectSerializer<CONTEXT_TYPE, OBJECT_TYPE> {
         @NotNull DBRRunnableContext runnableContext,
         @NotNull SerializerContext serializeContext,
         @NotNull CONTEXT_TYPE objectContext,
-        @NotNull Map<String, Object> state) throws DBCException;
+        @NotNull Map<String, Object> state) throws DBException;
 
 }

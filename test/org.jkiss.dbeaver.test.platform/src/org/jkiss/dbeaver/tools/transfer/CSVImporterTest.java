@@ -31,15 +31,15 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CSVImporterTest {
-    private static final File DUMMY_FILE = new File("dummy");
+    private static final Path DUMMY_FILE = Path.of("dummy");
 
     private final DataImporterCSV importer = new DataImporterCSV();
     private final StreamEntityMapping mapping = new StreamEntityMapping(DUMMY_FILE);
