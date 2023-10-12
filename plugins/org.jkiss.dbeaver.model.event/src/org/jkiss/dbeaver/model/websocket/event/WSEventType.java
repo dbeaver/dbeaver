@@ -66,7 +66,16 @@ public enum WSEventType {
         WSDatasourceFolderEvent.class
     ),
 
-    OBJECT_PERMISSIONS_UPDATED("cb_object_permissions_updated", WSEventTopic.OBJECT_PERMISSIONS, WSObjectPermissionEvent.class),
+    OBJECT_PERMISSIONS_UPDATED(
+        "cb_object_permissions_updated",
+        WSEventTopic.OBJECT_PERMISSIONS,
+        WSObjectPermissionEvent.class
+    ),
+    OBJECT_PERMISSIONS_DELETED(
+        "cb_object_permissions_deleted",
+        WSEventTopic.OBJECT_PERMISSIONS,
+        WSObjectPermissionEvent.class
+    ),
     SUBJECT_PERMISSIONS_UPDATED("cb_subject_permissions_updated", WSEventTopic.SUBJECT_PERMISSIONS, WSSubjectPermissionEvent.class),
 
     DATASOURCE_SECRET_UPDATED("cb_user_secret_updated", WSEventTopic.USER_SECRET, WSUserSecretEvent.class),
