@@ -126,7 +126,6 @@ public class PrefPageSQLExecute extends TargetPrefPage
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        //Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
         Composite leftPane = UIUtils.createComposite(composite, 1);
         leftPane.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
