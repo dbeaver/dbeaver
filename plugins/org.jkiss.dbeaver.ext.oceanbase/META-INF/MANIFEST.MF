@@ -16,7 +16,7 @@ Export-Package: org.jkiss.dbeaver.ext.oceanbase,
  org.jkiss.dbeaver.ext.oceanbase.model.auth,
  org.jkiss.dbeaver.ext.oceanbase.model
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.oceanbase

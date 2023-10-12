@@ -16,7 +16,7 @@ Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  com.sun.jna.platform,
  org.jkiss.dbeaver.model.sql
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.ext.postgresql,

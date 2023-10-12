@@ -6,7 +6,7 @@ Bundle-Version: 1.0.161.qualifier
 Bundle-Release-Date: 20231009
 Bundle-Vendor: DBeaver Corp
 Bundle-Authors: Andrew Khitrin
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.ui,

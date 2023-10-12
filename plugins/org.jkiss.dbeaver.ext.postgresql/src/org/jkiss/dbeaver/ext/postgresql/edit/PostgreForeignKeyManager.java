@@ -90,12 +90,6 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
             }
         }*/
         StringBuilder sql = super.getNestedDeclaration(monitor, owner, command, options);
-
-        if (fk.getMatchType().equals(PostgreTableForeignKey.MatchType.f)) {
-            //Foreign key match types: f = full, p = partial (not implemented yet), s = simple (u == s in old PG versions - default value)
-            sql.append(" MATCH FULL");
-        }
-
         if (fk.isDeferrable()) {
             sql.append(" DEFERRABLE");
         }
@@ -104,6 +98,15 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
         }
 
         return sql;
+    }
+
+    @Override
+    protected void appendUpdateDeleteRule(PostgreTableForeignKey foreignKey, StringBuilder decl) {
+        if (foreignKey.getMatchType().equals(PostgreTableForeignKey.MatchType.f)) {
+            //Foreign key match types: f = full, p = partial (not implemented yet), s = simple (u == s in old PG versions - default value)
+            decl.append(" MATCH FULL");
+        }
+        super.appendUpdateDeleteRule(foreignKey, decl);
     }
 
     @Override
