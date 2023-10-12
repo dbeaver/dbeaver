@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.tools.transfer.ui.handlers;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -26,6 +25,7 @@ import org.jkiss.dbeaver.runtime.policy.BasePolicyDataProvider;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 public class DataExportHandler extends DataTransferHandler {
@@ -44,10 +44,11 @@ public class DataExportHandler extends DataTransferHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
         if (policyProvider.isExportDataDisabled()) {
-            MessageDialog.openWarning(
+            UIUtils.showMessageBox(
                 HandlerUtil.getActiveShell(event),
                 DTUIMessages.dialog_policy_data_export_title,
-                DTUIMessages.dialog_policy_data_export_msg);
+                DTUIMessages.dialog_policy_data_export_msg,
+                SWT.ICON_WARNING);
             return null;
         }
         return super.execute(event);

@@ -25,6 +25,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
 import org.jkiss.dbeaver.runtime.policy.BasePolicyDataProvider;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
@@ -39,9 +40,10 @@ public class SQLEditorHandlerExportData extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
         if (policyProvider.isExportDataDisabled()) {
-            MessageDialog.openWarning(HandlerUtil.getActiveShell(event),
+            UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
                 ResultSetMessages.dialog_policy_data_export_title,
-                ResultSetMessages.dialog_policy_data_export_msg);
+                ResultSetMessages.dialog_policy_data_export_msg,
+                SWT.ICON_WARNING);
             return null;
         }
 

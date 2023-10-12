@@ -55,10 +55,10 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
     public Object execute(ExecutionEvent event) throws ExecutionException {
         BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
         if (policyProvider.isCopyDataDisabled()) {
-            MessageDialog.openWarning(
-                HandlerUtil.getActiveShell(event),
+            UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
                 ResultSetMessages.dialog_policy_data_copy_title,
-                ResultSetMessages.dialog_policy_data_copy_msg);
+                ResultSetMessages.dialog_policy_data_copy_msg,
+                SWT.ICON_WARNING);
             return null;
         }
 
