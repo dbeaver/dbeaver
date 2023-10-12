@@ -32,10 +32,11 @@ import java.nio.file.Path;
 import java.util.Base64;
 
 /**
- * TextWithOpen
+ * TextWithOpen.
+ *
+ * Styles: SWT.SAVE, SWT.OPEN, SWT.SINGLE
  */
-public class TextWithOpenFile extends TextWithOpen
-{
+public class TextWithOpenFile extends TextWithOpen {
     private final String title;
     private final String[] filterExt;
     private final int style;
@@ -43,11 +44,11 @@ public class TextWithOpenFile extends TextWithOpen
     private boolean openFolder = false;
 
     public TextWithOpenFile(Composite parent, String title, String[] filterExt, int style, boolean binary) {
-        this(parent, title, filterExt, style, binary, false);
+        this(parent, title, filterExt, style, binary, false, false);
     }
     
-    public TextWithOpenFile(Composite parent, String title, String[] filterExt, int style, boolean binary, boolean secured) {
-        super(parent, secured);
+    public TextWithOpenFile(Composite parent, String title, String[] filterExt, int style, boolean binary, boolean multiFS, boolean secured) {
+        super(parent, multiFS, secured);
         this.title = title;
         this.filterExt = filterExt;
         this.style = style;
@@ -63,7 +64,7 @@ public class TextWithOpenFile extends TextWithOpen
     }
 
     public TextWithOpenFile(Composite parent, String title, String[] filterExt, boolean binary, boolean secured) {
-        this(parent, title, filterExt, SWT.SINGLE | SWT.OPEN, binary, secured);
+        this(parent, title, filterExt, SWT.SINGLE | SWT.OPEN, binary, false, secured);
     }
 
     public void setOpenFolder(boolean openFolder) {
@@ -75,41 +76,52 @@ public class TextWithOpenFile extends TextWithOpen
         return binary;
     }
 
-    protected void openBrowser() {
-        String directory = getDialogDirectory();
+    protected void openBrowser(boolean remoteFS) {
         String selected;
-        if (openFolder) {
-            DirectoryDialog fd = new DirectoryDialog(getShell(), style);
-            if (directory != null) {
-                fd.setFilterPath(directory);
-            }
-            if (title != null) {
-                fd.setText(title);
-            }
-            selected = fd.open();
+        if (remoteFS) {
+            selected = DBWorkbench.getPlatformUI().openFileSystemSelector(
+                title,
+                openFolder,
+                style,
+                binary,
+                filterExt,
+                getText());
         } else {
-            FileDialog fd = new FileDialog(getShell(), style);
-            fd.setText(title);
-            fd.setFilterExtensions(filterExt);
-            if (directory != null) {
-                DialogUtils.setCurDialogFolder(directory);
-            }
-            selected = DialogUtils.openFileDialog(fd);
-
-            if (selected != null && isShowFileContentEditor()) {
-                Path filePath = Path.of(selected);
-                try {
-                    if (binary) {
-                        byte[] bytes = Files.readAllBytes(filePath);
-                        selected = Base64.getEncoder().encodeToString(bytes);
-                    } else {
-                        selected = Files.readString(filePath);
-                    }
-                } catch (IOException e) {
-                    DBWorkbench.getPlatformUI().showError("File read error", "Can't read file '" + filePath + "' contents", e);
+            String directory = getDialogDirectory();
+            if (openFolder) {
+                DirectoryDialog fd = new DirectoryDialog(getShell(), style);
+                if (directory != null) {
+                    fd.setFilterPath(directory);
                 }
+                if (title != null) {
+                    fd.setText(title);
+                }
+                selected = fd.open();
+            } else {
+                FileDialog fd = new FileDialog(getShell(), style);
+                fd.setText(title);
+                fd.setFilterExtensions(filterExt);
+                if (directory != null) {
+                    DialogUtils.setCurDialogFolder(directory);
+                }
+                selected = DialogUtils.openFileDialog(fd);
             }
         }
+
+        if (selected != null && isShowFileContentEditor()) {
+            Path filePath = IOUtils.getPathFromString(selected);
+            try {
+                if (binary) {
+                    byte[] bytes = Files.readAllBytes(filePath);
+                    selected = Base64.getEncoder().encodeToString(bytes);
+                } else {
+                    selected = Files.readString(filePath);
+                }
+            } catch (IOException e) {
+                DBWorkbench.getPlatformUI().showError("File read error", "Can't read file '" + filePath + "' contents", e);
+            }
+        }
+
         if (selected != null) {
             setText(selected);
         }

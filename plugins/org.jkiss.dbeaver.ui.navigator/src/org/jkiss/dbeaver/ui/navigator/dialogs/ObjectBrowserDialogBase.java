@@ -182,6 +182,8 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
             }
         } else if (node instanceof DBNObjectNode) {
             return matchesType(((DBNObjectNode) node).getNodeObject(), true);
+        } else {
+            return matchesType(node, true);
         }
         return false;
     }
