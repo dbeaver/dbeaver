@@ -126,12 +126,17 @@ public class PrefPageSQLExecute extends TargetPrefPage
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
+        //Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
+        Composite leftPane = UIUtils.createComposite(composite, 1);
+        leftPane.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        Composite rightPane = UIUtils.createComposite(composite, 1);
+        rightPane.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
         // General settings
         {
             Composite commonGroup = UIUtils.createControlGroup(
-                composite,
+                leftPane,
                 SQLEditorMessages.pref_page_sql_editor_group_common,
                 2,
                 GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
@@ -181,7 +186,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
 
         // Scripts
         {
-            Composite scriptsGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_scripts, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite scriptsGroup = UIUtils.createControlGroup(rightPane, SQLEditorMessages.pref_page_sql_editor_group_scripts, 2, GridData.FILL_HORIZONTAL, 0);
             {
                 UIUtils.createControlLabel(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_label_commit_type);
 
@@ -240,7 +245,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
         }
         // Parameters
         {
-            Composite paramsGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_parameters, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite paramsGroup = UIUtils.createControlGroup(leftPane, SQLEditorMessages.pref_page_sql_editor_group_parameters, 2, GridData.VERTICAL_ALIGN_FILL, 0);
             enableSQLParameters = UIUtils.createCheckbox(paramsGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_enable_sql_parameters, null, false, 2);
             enableSQLAnonymousParameters = UIUtils.createCheckbox(paramsGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters, null, false, 2);
             anonymousParameterMarkText = UIUtils.createLabelText(paramsGroup, SQLEditorMessages.pref_page_sql_editor_text_anonymous_parameter_mark, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
@@ -253,6 +258,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
 
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
+            gd.verticalIndent = 12;
 
             UIUtils.createLink(paramsGroup, SQLEditorMessages.pref_page_sql_editor_text_explanation_link, new SelectionAdapter() {
                 @Override
@@ -273,7 +279,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
 
         // Delimiters
         {
-            Composite delimGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_delimiters, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite delimGroup = UIUtils.createControlGroup(rightPane, SQLEditorMessages.pref_page_sql_editor_group_delimiters, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
             statementDelimiterText = UIUtils.createLabelText(delimGroup, SQLEditorMessages.pref_page_sql_editor_text_statement_delimiter, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
             //statementDelimiterText.setTextLimit(1);
             ignoreNativeDelimiter = UIUtils.createCheckbox(delimGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_ignore_native_delimiter, SQLEditorMessages.pref_page_sql_editor_checkbox_ignore_native_delimiter_tip, false, 2);
