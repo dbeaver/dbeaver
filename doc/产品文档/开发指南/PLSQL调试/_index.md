@@ -1,4 +1,4 @@
 initno:-
 
-filename:断点管理,调试,变量信息查询
+filename:调试,断点管理,变量信息查询
 
