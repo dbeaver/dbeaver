@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.runtime.policy;
 
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
-
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 /**
@@ -39,10 +38,16 @@ public abstract class AbstractPolicyDataProvider implements PolicyDataProvider {
         return policyEnabled;
     }
 
+    /**
+     * Get boolean value of policy data property from system environment
+     *
+     * @param property - property name
+     * @return - boolean value
+     */
     public boolean getDataPolicyFromSystem(String property) {
-        String isDisabledPropValue = System.getProperty(property);
-        if (isDisabledPropValue != null && !isDisabledPropValue.isEmpty()) {
-            return Boolean.valueOf(isDisabledPropValue);
+        String policyValue = System.getProperty(property);
+        if (policyValue != null && !policyValue.isEmpty()) {
+            return Boolean.valueOf(policyValue);
         }
         return false;
     }
