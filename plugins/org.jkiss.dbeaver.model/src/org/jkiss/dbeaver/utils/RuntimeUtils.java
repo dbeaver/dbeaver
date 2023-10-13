@@ -76,15 +76,15 @@ public final class RuntimeUtils {
     }
 
     public static DBRProgressMonitor makeMonitor(IProgressMonitor monitor) {
-        if (monitor instanceof DBRProgressMonitor) {
-            return (DBRProgressMonitor) monitor;
+        if (monitor instanceof DBRProgressMonitor monitor1) {
+            return monitor1;
         }
         return new DefaultProgressMonitor(monitor);
     }
 
     public static IProgressMonitor getNestedMonitor(DBRProgressMonitor monitor) {
-        if (monitor instanceof IProgressMonitor) {
-            return (IProgressMonitor) monitor;
+        if (monitor instanceof IProgressMonitor monitor1) {
+            return monitor1;
         }
         return monitor.getNestedMonitor();
     }
@@ -158,7 +158,7 @@ public final class RuntimeUtils {
             }
             return new MultiStatus(status.getPlugin(), status.getCode(), children, status.getMessage(), null);
         } else if (status instanceof Status) {
-            String messagePrefix = "";
+            String messagePrefix;
             if (status.getException() != null && (CommonUtils.isEmpty(status.getException().getMessage()))) {
                 messagePrefix = status.getException().getClass().getName() + ": ";
                 return new Status(status.getSeverity(), status.getPlugin(), status.getCode(), messagePrefix + status.getMessage(), null);
@@ -300,7 +300,7 @@ public final class RuntimeUtils {
                     return err.toString();
                 }
 
-                return out.length() == 0 ? null: out.toString();
+                return out.toString();
             } finally {
                 p.destroy();
             }
@@ -318,8 +318,8 @@ public final class RuntimeUtils {
             return getProcessResults(p);
         }
         catch (Exception ex) {
-            if (ex instanceof DBException) {
-                throw (DBException) ex;
+            if (ex instanceof DBException dbe) {
+                throw dbe;
             }
             throw new DBException("Error executing process " + binPath, ex);
         }
