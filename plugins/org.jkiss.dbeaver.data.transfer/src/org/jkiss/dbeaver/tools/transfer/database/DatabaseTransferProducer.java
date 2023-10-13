@@ -104,7 +104,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
     @Nullable
     @Override
     public DBPProject getProject() {
-        return DBUtils.getObjectOwnerProject(dataContainer);
+        return dataContainer == null ? null : DBUtils.getObjectOwnerProject(dataContainer);
     }
 
     @Override
