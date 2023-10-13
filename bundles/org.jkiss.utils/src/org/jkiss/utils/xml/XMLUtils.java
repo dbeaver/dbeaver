@@ -173,8 +173,8 @@ public class XMLUtils {
         List<Element> list = new ArrayList<>();
         for (Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
             if (node.getNodeType() == Node.ELEMENT_NODE) {
-                for (int i = 0; i < nodeNameList.length; i++) {
-                    if (node.getNodeName().equals(nodeNameList[i])) {
+                for (String s : nodeNameList) {
+                    if (node.getNodeName().equals(s)) {
                         list.add((Element) node);
                     }
                 }
@@ -242,20 +242,14 @@ public class XMLUtils {
      * @return XML-encoded text
      */
     public static String encodeXMLChar(char ch) {
-        switch (ch) {
-            case '&':
-                return "&amp;";
-            case '\"':
-                return "&quot;";
-            case '\'':
-                return "&#39;";
-            case '<':
-                return "&lt;";
-            case '>':
-                return "&gt;";
-            default:
-                return null;
-        }
+        return switch (ch) {
+            case '&' -> "&amp;";
+            case '\"' -> "&quot;";
+            case '\'' -> "&#39;";
+            case '<' -> "&lt;";
+            case '>' -> "&gt;";
+            default -> null;
+        };
     }
 
     public static XMLException adaptSAXException(Exception toCatch) {
