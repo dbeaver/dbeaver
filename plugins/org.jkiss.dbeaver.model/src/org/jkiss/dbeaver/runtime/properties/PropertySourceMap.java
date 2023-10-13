@@ -115,6 +115,11 @@ public class PropertySourceMap implements DBPPropertySource {
         }
 
         @Override
+        public String getHint() {
+            return null;
+        }
+
+        @Override
         public Class<?> getDataType() {
             return Object.class;
         }
