@@ -36,10 +36,7 @@ import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
-import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryType;
@@ -60,6 +57,7 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -2540,6 +2538,46 @@ public final class DBUtils {
             }
         }
         return dataSource.isConnected();
+    }
+
+    @NotNull
+    public static Path resolvePathFromString(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBPProject project,
+        @NotNull String pathOrUri
+    ) throws DBException {
+        if (project != null) {
+            return project.getFileSystemManager().getPathFromString(monitor, pathOrUri);
+        } else {
+            return Path.of(pathOrUri);
+        }
+    }
+
+    @NotNull
+    public static Path resolvePathFromString(
+        @NotNull DBRRunnableContext runnableContext,
+        @Nullable DBPProject project,
+        @NotNull String pathOrUri
+    ) throws DBException {
+        if (project != null) {
+            try {
+                Path[] result = new Path[1];
+                runnableContext.run(true, true, monitor -> {
+                    try {
+                        result[0] = project.getFileSystemManager().getPathFromString(monitor, pathOrUri);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+                return result[0];
+            } catch (InvocationTargetException e) {
+                throw new DBException("Error getting path", e.getTargetException());
+            } catch (InterruptedException e) {
+                throw new DBException("Canceled");
+            }
+        } else {
+            return Path.of(pathOrUri);
+        }
     }
 
     public interface ChildExtractor<PARENT, CHILD> {
