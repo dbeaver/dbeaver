@@ -28,7 +28,7 @@ import java.text.SimpleDateFormat;
 
 public class AltibaseDateValueHandler extends JDBCDateTimeValueHandler {
     
-    private final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new ExtendedDateFormat("''yyyy-MM-dd HH:mm:ss.ffffff''");
+    private final SimpleDateFormat defaultDateTimeFormat = new ExtendedDateFormat("''yyyy-MM-dd HH:mm:ss.ffffff''");
 
     public AltibaseDateValueHandler(DBDFormatSettings formatSettings) {
         super(formatSettings);
@@ -37,10 +37,11 @@ public class AltibaseDateValueHandler extends JDBCDateTimeValueHandler {
     @Nullable
     @Override
     public Format getNativeValueFormat(DBSTypedObject type) {
-        switch (type.getTypeID()) {
-            case Types.TIMESTAMP:
-                return DEFAULT_DATETIME_FORMAT;
+        
+        if (type.getTypeID() == Types.TIMESTAMP) {
+            return defaultDateTimeFormat;
         }
+
         return super.getNativeValueFormat(type);
     }
 }

@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.altibase.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -35,7 +34,8 @@ import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 import java.sql.SQLException;
 import java.util.Collection;
 
-public abstract class AltibaseGrantee extends AltibaseGlobalObject implements DBAUser, DBSObjectLazy<AltibaseDataSource>, DBPRefreshableObject {
+public abstract class AltibaseGrantee extends AltibaseGlobalObject 
+    implements DBAUser, DBSObjectLazy<AltibaseDataSource>, DBPRefreshableObject {
     
     protected String name;
     
@@ -48,21 +48,27 @@ public abstract class AltibaseGrantee extends AltibaseGlobalObject implements DB
         this.name = name;
     }
     
+    /**
+     * Returns role(s) belongs to a user 
+     */
     @Association
-    public Collection<AltibasePrivRole> getRolePrivs(DBRProgressMonitor monitor) throws DBException
-    {
+    public Collection<AltibasePrivRole> getRolePrivs(DBRProgressMonitor monitor) throws DBException {
         return rolePrivCache.getAllObjects(monitor, this);
     }
     
+    /**
+     * Returns system privileges belongs to a user 
+     */
     @Association
-    public Collection<AltibasePrivSystem> getSystemPrivs(DBRProgressMonitor monitor) throws DBException
-    {
+    public Collection<AltibasePrivSystem> getSystemPrivs(DBRProgressMonitor monitor) throws DBException {
         return systemPrivCache.getAllObjects(monitor, this);
     }
 
+    /**
+     * Returns object privileges belongs to a user 
+     */
     @Association
-    public Collection<AltibasePrivObject> getObjectPrivs(DBRProgressMonitor monitor) throws DBException
-    {
+    public Collection<AltibasePrivObject> getObjectPrivs(DBRProgressMonitor monitor) throws DBException {
         return objectPrivCache.getAllObjects(monitor, this);
     }
 
@@ -80,8 +86,7 @@ public abstract class AltibaseGrantee extends AltibaseGlobalObject implements DB
     static class RolePrivCache extends JDBCObjectCache<AltibaseGrantee, AltibasePrivRole> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull AltibaseGrantee owner) throws SQLException
-        {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull AltibaseGrantee owner) throws SQLException {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT"
                             + " ur.user_name AS role_name"
@@ -103,8 +108,8 @@ public abstract class AltibaseGrantee extends AltibaseGlobalObject implements DB
         }
 
         @Override
-        protected AltibasePrivRole fetchObject(@NotNull JDBCSession session, @NotNull AltibaseGrantee owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
-        {
+        protected AltibasePrivRole fetchObject(@NotNull JDBCSession session, @NotNull AltibaseGrantee owner, 
+                @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new AltibasePrivRole(owner, resultSet);
         }
     }
@@ -112,36 +117,23 @@ public abstract class AltibaseGrantee extends AltibaseGlobalObject implements DB
     static class SystemPrivCache extends JDBCObjectCache<AltibaseGrantee, AltibasePrivSystem> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull AltibaseGrantee owner) throws SQLException
-        {
-            String sql;
-            
-            /*
-            String userName = owner.getName();
-            if (AltibaseConstants.USER_SYSTEM_.equals(userName)) {
-                sql = "SELECT 'ALL' AS priv_name, 'SYSTEM_' AS grantor_name FROM DUAL WHERE '_' NOT LIKE ?";
-            } else if (AltibaseConstants.USER_SYS.equals(userName)) {
-                sql = "SELECT 'SYSDBA' AS priv_name, 'SYSTEM_' AS grantor_name FROM DUAL WHERE '_' NOT LIKE ?";
-            }
-            
-            else {
-            */
-                sql = "SELECT p.priv_name, gr.grantor_name "
-                        + "FROM system_.sys_privileges_ p LEFT OUTER JOIN "
-                        + "(SELECT priv_id, u1.user_name AS grantor_name "
-                        + "FROM system_.sys_users_ u1,  system_.sys_users_ u2, system_.sys_grant_system_ g "
-                        + "WHERE g.grantee_id = u2.user_id and u2.user_name = ? and u1.user_id = g.grantor_id"
-                        + ") gr ON p.priv_id = gr.priv_id "
-                        + "WHERE p.priv_type = 2 "
-                        + "ORDER BY p.priv_name";
-            final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull AltibaseGrantee owner) throws SQLException {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT p.priv_name, gr.grantor_name "
+                    + "FROM system_.sys_privileges_ p LEFT OUTER JOIN "
+                    + "(SELECT priv_id, u1.user_name AS grantor_name "
+                    + "FROM system_.sys_users_ u1,  system_.sys_users_ u2, system_.sys_grant_system_ g "
+                    + "WHERE g.grantee_id = u2.user_id and u2.user_name = ? and u1.user_id = g.grantor_id"
+                    + ") gr ON p.priv_id = gr.priv_id "
+                    + "WHERE p.priv_type = 2 "
+                    + "ORDER BY p.priv_name");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }
 
         @Override
-        protected AltibasePrivSystem fetchObject(@NotNull JDBCSession session, @NotNull AltibaseGrantee owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
-        {
+        protected AltibasePrivSystem fetchObject(@NotNull JDBCSession session, @NotNull AltibaseGrantee owner, 
+                @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new AltibasePrivSystem(owner, resultSet);
         }
     }
@@ -149,8 +141,7 @@ public abstract class AltibaseGrantee extends AltibaseGlobalObject implements DB
     static class ObjectPrivCache extends JDBCObjectCache<AltibaseGrantee, AltibasePrivObject> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull AltibaseGrantee owner) throws SQLException
-        {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull AltibaseGrantee owner) throws SQLException {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT * FROM"
                             + " ((SELECT"
@@ -270,8 +261,8 @@ public abstract class AltibaseGrantee extends AltibaseGlobalObject implements DB
         }
 
         @Override
-        protected AltibasePrivObject fetchObject(@NotNull JDBCSession session, @NotNull AltibaseGrantee owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
-        {
+        protected AltibasePrivObject fetchObject(@NotNull JDBCSession session, @NotNull AltibaseGrantee owner, 
+                @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new AltibasePrivObject(owner, resultSet);
         }
     }

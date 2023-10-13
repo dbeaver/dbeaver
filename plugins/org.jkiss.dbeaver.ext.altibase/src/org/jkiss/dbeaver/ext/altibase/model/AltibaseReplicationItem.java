@@ -13,7 +13,7 @@ public class AltibaseReplicationItem extends AltibaseObject<AltibaseReplication>
     private String replObjFrom;
     private String replObjTo;
 
-    private boolean isPartitionedTable;
+    //private boolean isPartitionedTable;
     private boolean isPartitionedRepl;
     private long invalidMaxSn;
 
@@ -22,7 +22,7 @@ public class AltibaseReplicationItem extends AltibaseObject<AltibaseReplication>
 
         tableOid = JDBCUtils.safeGetString(resultSet, "TABLE_OID");
         
-        isPartitionedTable = JDBCUtils.safeGetBoolean(resultSet, "IS_PARTITION", "Y");
+        //isPartitionedTable = JDBCUtils.safeGetBoolean(resultSet, "IS_PARTITION", "Y");
         isPartitionedRepl = JDBCUtils.safeGetBoolean(resultSet, "REPLICATION_UNIT", "P");
         
         invalidMaxSn = JDBCUtils.safeGetLong(resultSet, "INVALID_MAX_SN");
@@ -38,7 +38,7 @@ public class AltibaseReplicationItem extends AltibaseObject<AltibaseReplication>
     
     private String getDottedName(String schema, String table, String partition) {
         return new StringBuilder().append(schema).append(".").append(table)
-                .append(CommonUtils.isEmpty(partition)? "":"." + partition).toString();
+                .append(CommonUtils.isEmpty(partition) ? "" : "." + partition).toString();
     }
 
     @NotNull

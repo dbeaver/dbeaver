@@ -969,10 +969,15 @@ public class AltibaseMetaModel extends GenericMetaModel {
     //////////////////////////////////////////////////////
     // Replication
     
+    /**
+     * 
+     * Returns JDBCPreparedStatement to fetch replication list or a specific replication (object)
+     * 
+     */
     public JDBCPreparedStatement prepareReplicationLoadStatement(JDBCSession session, 
             GenericStructContainer container, AltibaseReplication object, String objectName) throws SQLException {
         
-        String replName = (object != null) ? object.getName():"";
+        String replName = (object != null) ? object.getName() : "";
         final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT"
                         + " r.replication_name,"
@@ -1015,20 +1020,26 @@ public class AltibaseMetaModel extends GenericMetaModel {
                     + " FROM system_.sys_replications_ r, system_.sys_repl_hosts_ rh"
                     + " WHERE"
                         + " r.replication_name = rh.replication_name"
-                        + (CommonUtils.isEmpty(replName) ? "": " AND r.replication_name = ?")
+                        + (CommonUtils.isEmpty(replName) ? "" : " AND r.replication_name = ?")
                     + " ORDER BY r.replication_name"
                 );
         
-        if (!CommonUtils.isEmpty(replName)) {
+        if (CommonUtils.isNotEmpty(replName)) {
             dbStat.setString(1, replName);
         }
         return dbStat;
     }
     
+    /**
+     * Returns a replication object 
+     */
     public AltibaseReplication createReplicationImpl(JDBCSession session, GenericStructContainer owner, JDBCResultSet dbResult) {
         return new AltibaseReplication(owner, dbResult);
     }
-    
+
+    /**
+     * Return a JDBCPreparedStatement to fetch replication items belongs to a replication
+     */
     public JDBCPreparedStatement prepareReplicationItemLoadStatement(JDBCSession session, GenericStructContainer owner, 
             AltibaseReplication replication) throws SQLException {
         final JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -1040,6 +1051,9 @@ public class AltibaseMetaModel extends GenericMetaModel {
         return dbStat;
     }
     
+    /**
+     * Return a Replication Item
+     */
     public AltibaseReplicationItem createReplicationItemImpl(JDBCSession session, AltibaseReplication owner, JDBCResultSet dbResult) {
         return new AltibaseReplicationItem(owner, dbResult);
     }
@@ -1071,7 +1085,7 @@ public class AltibaseMetaModel extends GenericMetaModel {
      */
     private String geDDLFromCatalog(DBRProgressMonitor monitor, DBSObject sourceObject, String schemaName, String sql, 
             String colname, boolean hasDbmsMetdata) {
-        StringBuilder ddl = new StringBuilder( hasDbmsMetdata ? "" : AltibaseConstants.NO_DBMS_METADATA );
+        StringBuilder ddl = new StringBuilder(hasDbmsMetdata ? "" : AltibaseConstants.NO_DBMS_METADATA);
         String content = null;
         JDBCPreparedStatement jpstmt = null;
         JDBCResultSet jrs = null;

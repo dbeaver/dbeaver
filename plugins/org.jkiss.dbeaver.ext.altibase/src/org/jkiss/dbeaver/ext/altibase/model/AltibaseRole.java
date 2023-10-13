@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.altibase.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.access.DBARole;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -39,11 +38,9 @@ import java.util.Collection;
 /**
  * AltibaseRole
  */
-public class AltibaseRole extends AltibaseGrantee implements DBARole
-{
-    private static final Log log = Log.getLog(AltibaseRole.class);
+public class AltibaseRole extends AltibaseGrantee implements DBARole {
 
-    private final UserCache userCache = new UserCache();
+    private final UserPrivCache userPrivCache = new UserPrivCache();
 
     public AltibaseRole(AltibaseDataSource dataSource, ResultSet resultSet) {
         super(dataSource, JDBCUtils.safeGetString(resultSet, "USER_NAME"));
@@ -56,24 +53,25 @@ public class AltibaseRole extends AltibaseGrantee implements DBARole
         return name;
     }
 
+    /**
+     * Get grantee and grantor pair
+     */
     @Association
-    public Collection<AltibasePrivUser> getUserPrivs(DBRProgressMonitor monitor) throws DBException
-    {
-        return userCache.getAllObjects(monitor, this);
+    public Collection<AltibasePrivUser> getUserPrivs(DBRProgressMonitor monitor) throws DBException {
+        return userPrivCache.getAllObjects(monitor, this);
     }
 
     @Nullable
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        userCache.clearCache();
+        userPrivCache.clearCache();
         return super.refreshObject(monitor);
     }
 
-    static class UserCache extends JDBCObjectCache<AltibaseRole, AltibasePrivUser> {
+    static class UserPrivCache extends JDBCObjectCache<AltibaseRole, AltibasePrivUser> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull AltibaseRole owner) throws SQLException
-        {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull AltibaseRole owner) throws SQLException {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT"
                             + " ge.user_name AS grantee_name"
@@ -94,15 +92,14 @@ public class AltibaseRole extends AltibaseGrantee implements DBARole
         }
 
         @Override
-        protected AltibasePrivUser fetchObject(@NotNull JDBCSession session, @NotNull AltibaseRole owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
-        {
+        protected AltibasePrivUser fetchObject(@NotNull JDBCSession session, @NotNull AltibaseRole owner, 
+                @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new AltibasePrivUser(owner, resultSet);
         }
     }
 
     @Override
     public Object getLazyReference(Object propertyId) {
-        // TODO Auto-generated method stub
         return null;
     }
 

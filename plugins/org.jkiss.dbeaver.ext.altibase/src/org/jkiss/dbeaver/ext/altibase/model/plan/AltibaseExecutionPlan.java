@@ -18,10 +18,10 @@ package org.jkiss.dbeaver.ext.altibase.model.plan;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataTypeDomain;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants.ExplainPlan;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataSource;
+import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataTypeDomain;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;

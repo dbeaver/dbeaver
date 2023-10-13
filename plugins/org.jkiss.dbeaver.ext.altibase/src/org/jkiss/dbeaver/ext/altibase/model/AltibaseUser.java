@@ -83,15 +83,13 @@ public class AltibaseUser extends AltibaseGrantee {
     
     @Property(viewable = true, order = 5)
     @LazyProperty(cacheValidator = AltibaseTablespace.TablespaceReferenceValidator.class)
-    public Object getDefaultTablespace(DBRProgressMonitor monitor) throws DBException
-    {
+    public Object getDefaultTablespace(DBRProgressMonitor monitor) throws DBException {
         return AltibaseTablespace.resolveTablespaceReference(monitor, this, "defaultTablespace");
     }
 
     @Property(viewable = true, order = 6)
     @LazyProperty(cacheValidator = AltibaseTablespace.TablespaceReferenceValidator.class)
-    public Object getTempTablespace(DBRProgressMonitor monitor) throws DBException
-    {
+    public Object getTempTablespace(DBRProgressMonitor monitor) throws DBException {
         return AltibaseTablespace.resolveTablespaceReference(monitor, this, "tempTablespace");
     }
     
@@ -116,8 +114,7 @@ public class AltibaseUser extends AltibaseGrantee {
     }
     
     @Override
-    public Object getLazyReference(Object propertyId)
-    {
+    public Object getLazyReference(Object propertyId) {
         if ("defaultTablespace".equals(propertyId)) {
             return defaultTablespace;
         } else if ("tempTablespace".equals(propertyId)) {

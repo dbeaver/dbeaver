@@ -90,6 +90,9 @@ public class AltibaseUtils {
         return ddl.substring(0, last);
     }
     
+    /**
+     * Convert to string with multiple lines of comments 
+     */
     public static StringBuilder getMultiLineCommentedString(StringBuilder sb) {
         return new StringBuilder("/*").append(AltibaseConstants.NEW_LINE).append(sb)
                 .append(AltibaseConstants.NEW_LINE).append("*/");

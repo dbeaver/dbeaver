@@ -486,16 +486,15 @@ public class AltibaseTablespace extends AltibaseGlobalObject implements DBPRefre
         }
     }
 
-    static Object resolveTablespaceReference(DBRProgressMonitor monitor, DBSObjectLazy<AltibaseDataSource> referrer, @Nullable Object propertyId) throws DBException
-    {
+    static Object resolveTablespaceReference(DBRProgressMonitor monitor, DBSObjectLazy<AltibaseDataSource> referrer, 
+            @Nullable Object propertyId) throws DBException {
         final AltibaseDataSource dataSource = referrer.getDataSource();
         return AltibaseUtils.resolveLazyReference(monitor, dataSource, dataSource.tablespaceCache, referrer, propertyId);
     }
 
     public static class TablespaceReferenceValidator implements IPropertyCacheValidator<DBSObjectLazy<AltibaseDataSource>> {
         @Override
-        public boolean isPropertyCached(DBSObjectLazy<AltibaseDataSource> object, Object propertyId)
-        {
+        public boolean isPropertyCached(DBSObjectLazy<AltibaseDataSource> object, Object propertyId) {
             return
                 object.getLazyReference(propertyId) instanceof AltibaseTablespace ||
                 object.getLazyReference(propertyId) == null ||

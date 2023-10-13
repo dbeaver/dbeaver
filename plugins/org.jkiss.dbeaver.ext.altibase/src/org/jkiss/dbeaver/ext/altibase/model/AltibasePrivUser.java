@@ -44,24 +44,22 @@ public class AltibasePrivUser extends AltibasePriv implements DBSObjectLazy<Alti
     public String getName() {
         return super.getName();
     }
-
-    @Property(viewable = true, order = 3)
-    public String getGrantor() {
-        return grantor;
-    }
     
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 2, supportsPreview = true)
-    public Object getUser(DBRProgressMonitor monitor) throws DBException
-    {
+    public Object getUser(DBRProgressMonitor monitor) throws DBException {
         if (monitor == null) {
             return user;
         }
         return AltibaseUtils.resolveLazyReference(monitor, getDataSource(), getDataSource().userCache, this, null);
     }
-
+    
+    @Property(viewable = true, order = 3)
+    public String getGrantor() {
+        return grantor;
+    }
+    
     @Override
-    public Object getLazyReference(Object propertyId)
-    {
+    public Object getLazyReference(Object propertyId) {
         return this.user;
     }
 

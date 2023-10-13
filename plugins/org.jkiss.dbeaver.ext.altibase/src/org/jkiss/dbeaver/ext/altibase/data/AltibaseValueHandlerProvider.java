@@ -17,12 +17,12 @@
 package org.jkiss.dbeaver.ext.altibase.data;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataTypeDomain;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataTypeDomain;
 
 public class AltibaseValueHandlerProvider implements DBDValueHandlerProvider {
 

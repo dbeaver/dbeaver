@@ -271,7 +271,8 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     static class UserCache extends JDBCObjectCache<AltibaseDataSource, AltibaseUser> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull AltibaseDataSource owner) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, 
+                @NotNull AltibaseDataSource owner) throws SQLException {
             return session.prepareStatement(
                 "SELECT u.*, tbs1.name AS default_tbs_name, tbs2.name AS temp_tbs_name "
                 + "FROM SYSTEM_.SYS_USERS_ u, V$TABLESPACES tbs1, V$TABLESPACES tbs2 "
@@ -280,28 +281,36 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         }
 
         @Override
-        protected AltibaseUser fetchObject(@NotNull JDBCSession session, @NotNull AltibaseDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected AltibaseUser fetchObject(@NotNull JDBCSession session, @NotNull AltibaseDataSource owner, 
+                @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new AltibaseUser(owner, resultSet);
         }
     }
-    
+
+    /**
+     * Returns Altibase users. 
+     */
     @Association
     public Collection<AltibaseUser> getUsers(DBRProgressMonitor monitor) throws DBException {
         return userCache.getAllObjects(monitor, this);
     }
 
+    /**
+     * Returns a specific Altibase user. 
+     */
     @Association
     public AltibaseUser getUser(DBRProgressMonitor monitor, String name) throws DBException {
         return userCache.getObject(monitor, this, name);
     }
     
     /**
-     * Get Role cache
+     * Altibase Roles
      */
     static class RoleCache extends JDBCObjectCache<AltibaseDataSource, AltibaseRole> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull AltibaseDataSource owner) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, 
+                @NotNull AltibaseDataSource owner) throws SQLException {
             return session.prepareStatement(
                 "SELECT * "
                 + " FROM SYSTEM_.SYS_USERS_ u "
@@ -310,21 +319,31 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         }
 
         @Override
-        protected AltibaseRole fetchObject(@NotNull JDBCSession session, @NotNull AltibaseDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected AltibaseRole fetchObject(@NotNull JDBCSession session, @NotNull AltibaseDataSource owner, 
+                @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new AltibaseRole(owner, resultSet);
         }
     }
     
+    /**
+     * Returns Altibase roles 
+     */
     @Association
     public Collection<AltibaseRole> getRoles(DBRProgressMonitor monitor) throws DBException {
         return roleCache.getAllObjects(monitor, this);
     }
 
+    /**
+     * Returns a specific Altibase role.
+     */
     @Association
     public AltibaseRole getRole(DBRProgressMonitor monitor, String name) throws DBException {
         return roleCache.getObject(monitor, this, name);
     }
     
+    /**
+     * Returns Altibase grantee. 
+     */
     public AltibaseGrantee getGrantee(DBRProgressMonitor monitor, String name) throws DBException {
         AltibaseUser user = userCache.getObject(monitor, this, name);
         if (user != null) {
@@ -345,63 +364,59 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
         
         final AltibaseDataSource dataSource;
         
-        protected ReplicationCache(AltibaseDataSource dataSource)
-        {
+        protected ReplicationCache(AltibaseDataSource dataSource) {
             super("Replication");
             this.dataSource = dataSource;
             setListOrderComparator(DBUtils.<AltibaseReplication>nameComparatorIgnoreCase());
         }
         
-        public AltibaseDataSource getDataSource()
-        {
+        public AltibaseDataSource getDataSource() {
             return dataSource;
         }
         
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable AltibaseReplication object, @Nullable String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, 
+                @Nullable AltibaseReplication object, @Nullable String objectName) throws SQLException {
             return dataSource.getMetaModel().prepareReplicationLoadStatement(session, owner, object, objectName);
         }
         
         @Nullable
         @Override
-        protected AltibaseReplication fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull JDBCResultSet dbResult)
-            throws SQLException, DBException
-        {
+        protected AltibaseReplication fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, 
+                @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
             return getDataSource().getMetaModel().createReplicationImpl(session, owner, dbResult);
         }
         
         @Override
-        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull AltibaseReplication forTable)
-            throws SQLException
-        {
+        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, 
+                @NotNull AltibaseReplication forTable) throws SQLException {
             return dataSource.getMetaModel().prepareReplicationItemLoadStatement(session, owner, forTable);
         }
         
         @Override
-        protected AltibaseReplicationItem fetchChild(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull AltibaseReplication replication, @NotNull JDBCResultSet dbResult)
-            throws SQLException, DBException
-        {
+        protected AltibaseReplicationItem fetchChild(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, 
+                @NotNull AltibaseReplication replication, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
             return getDataSource().getMetaModel().createReplicationItemImpl(session, replication, dbResult);
         }
     }
-    
+
+    /**
+     * Return all cached replications.
+     */
     @Association
     public Collection<AltibaseReplication> getReplications(DBRProgressMonitor monitor) throws DBException {
         return replCache.getAllObjects(monitor, this);
     }
 
+    /**
+     * Return a specific cached replication.
+     */
     @Association
     public AltibaseReplication getReplication(DBRProgressMonitor monitor, String name) throws DBException {
         return replCache.getObject(monitor, this, name);
     }
-    
-    /*
-    @Association
-    public List<AltibaseReplicationItem> getReplicationItem(DBRProgressMonitor monitor, @NotNull AltibaseReplication replication) throws DBException {
-        return replCache.getChildren(monitor, this, replication);
-    }
-    */
+
     
     ///////////////////////////////////////////////
     // Statistics

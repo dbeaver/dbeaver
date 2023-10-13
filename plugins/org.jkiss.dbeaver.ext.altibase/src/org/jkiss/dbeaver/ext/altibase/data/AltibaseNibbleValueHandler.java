@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStringValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 
@@ -39,12 +40,13 @@ public class AltibaseNibbleValueHandler extends JDBCStringValueHandler {
         DBCSession session,
         JDBCResultSet resultSet,
         DBSTypedObject type,
-        int index)
-        throws SQLException
-    {
+        int index) throws SQLException {
+        
         String value = resultSet.getString(index);
         
-        value = (value != null)? value.toUpperCase():value;
+        if (CommonUtils.isNotEmpty(value)) {
+            value = value.toUpperCase();
+        }
         
         return value;
         
@@ -57,6 +59,7 @@ public class AltibaseNibbleValueHandler extends JDBCStringValueHandler {
             DBSTypedObject paramType,
             int paramIndex, 
             Object value) throws SQLException {
+        
         if (value == null) {
             statement.setNull(paramIndex, paramType.getTypeID());
         } else {

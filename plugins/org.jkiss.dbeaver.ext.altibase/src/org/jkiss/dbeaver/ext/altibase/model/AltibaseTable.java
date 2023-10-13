@@ -135,6 +135,8 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
         getTableSize(monitor);
         getTablespace(monitor);
 
+        tablePrivCache.clearCache();
+        
         return super.refreshObject(monitor);
     }
     
@@ -230,17 +232,19 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
         return null;
     }
     
+    /**
+     * Returns object privileges on a table: SELECT, UPDATE, INSERT, DELETE
+     */
     @Association
-    public Collection<AltibasePrivTable> getTablePrivs(DBRProgressMonitor monitor) throws DBException
-    {
+    public Collection<AltibasePrivTable> getTablePrivs(DBRProgressMonitor monitor) throws DBException {
         return tablePrivCache.getAllObjects(monitor, this);
     }
     
     static class TablePrivCache extends JDBCObjectCache<AltibaseTable, AltibasePrivTable> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull AltibaseTable tableBase) throws SQLException
-        {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, 
+                @NotNull AltibaseTable tableBase) throws SQLException {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT"
                     + " grantor.user_name AS grantor_name"
@@ -268,12 +272,11 @@ public class AltibaseTable extends GenericTable implements DBPNamedObject2, DBPO
             dbStat.setString(2, tableBase.getName());
             return dbStat;
         }
-
+        
         @Override
-        protected AltibasePrivTable fetchObject(@NotNull JDBCSession session, @NotNull AltibaseTable tableBase, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
-        {
+        protected AltibasePrivTable fetchObject(@NotNull JDBCSession session, @NotNull AltibaseTable tableBase, 
+                @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new AltibasePrivTable(tableBase, resultSet);
         }
     }
-
 }

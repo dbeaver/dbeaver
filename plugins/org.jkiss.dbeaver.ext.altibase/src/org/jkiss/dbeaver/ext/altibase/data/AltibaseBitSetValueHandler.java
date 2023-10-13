@@ -64,9 +64,7 @@ public class AltibaseBitSetValueHandler extends JDBCObjectValueHandler {
         JDBCPreparedStatement statement,
         DBSTypedObject paramType,
         int paramIndex,
-        Object value)
-        throws DBCException, SQLException
-    {
+        Object value) throws DBCException, SQLException {
         if (value == null) {
             statement.setNull(paramIndex, paramType.getTypeID());
         } else {

@@ -52,8 +52,7 @@ public class AltibasePrivRole extends AltibasePriv implements DBSObjectLazy<Alti
     }
 
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 2, supportsPreview = true)
-    public Object getRole(DBRProgressMonitor monitor) throws DBException
-    {
+    public Object getRole(DBRProgressMonitor monitor) throws DBException {
         if (monitor == null) {
             return role;
         }
@@ -61,8 +60,7 @@ public class AltibasePrivRole extends AltibasePriv implements DBSObjectLazy<Alti
     }
 
     @Override
-    public Object getLazyReference(Object propertyId)
-    {
+    public Object getLazyReference(Object propertyId) {
         return this.role;
     }
 

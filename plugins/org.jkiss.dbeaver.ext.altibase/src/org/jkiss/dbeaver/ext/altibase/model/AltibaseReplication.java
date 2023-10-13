@@ -51,14 +51,14 @@ public class AltibaseReplication extends AltibaseGlobalObject implements DBSObje
     private Timestamp remoteFaultDetectTime;
     
     protected AltibaseReplication(GenericStructContainer owner, JDBCResultSet resultSet) {
-        super((AltibaseDataSource)owner.getDataSource(), true);
+        super((AltibaseDataSource) owner.getDataSource(), true);
         
         name = JDBCUtils.safeGetString(resultSet, "REPLICATION_NAME");
         
         status = JDBCUtils.safeGetString(resultSet, "STATUS");
         conflictResolution = JDBCUtils.safeGetString(resultSet, "CONFLICT_RESOLUTION");
         mode = JDBCUtils.safeGetString(resultSet, "REPL_MODE");
-        role= JDBCUtils.safeGetString(resultSet, "ROLE");
+        role = JDBCUtils.safeGetString(resultSet, "ROLE");
         options = JDBCUtils.safeGetInt(resultSet, "OPTIONS");
         recoverable = JDBCUtils.safeGetString(resultSet, "RECOVERABLE");
         parallelApplierCount = JDBCUtils.safeGetInt(resultSet, "PARALLEL_APPLIER_COUNT");
@@ -163,8 +163,10 @@ public class AltibaseReplication extends AltibaseGlobalObject implements DBSObje
         return null;
     }
     
-    public List<AltibaseReplicationItem> getReplicationItems(DBRProgressMonitor monitor) throws DBException
-    {
+    /**
+     * Returns a replication's children: replication item
+     */
+    public List<AltibaseReplicationItem> getReplicationItems(DBRProgressMonitor monitor) throws DBException {
         return this.getDataSource().getReplicationCache().getChildren(monitor, this.getDataSource(), this);
     }
 }

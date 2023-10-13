@@ -51,8 +51,7 @@ public class AltibasePrivTable extends AltibaseObject<AltibaseTable> implements 
     }
     
     @Property(viewable = true, order = 10)
-    public Object getGrantor(DBRProgressMonitor monitor) throws DBException
-    {
+    public Object getGrantor(DBRProgressMonitor monitor) throws DBException {
         if (monitor == null) {
             return grantor;
         }
@@ -60,8 +59,7 @@ public class AltibasePrivTable extends AltibaseObject<AltibaseTable> implements 
     }
     
     @Property(viewable = true, order = 11)
-    public Object getGrantee(DBRProgressMonitor monitor) throws DBException
-    {
+    public Object getGrantee(DBRProgressMonitor monitor) throws DBException {
         if (monitor == null) {
             return grantee;
         }
@@ -70,14 +68,12 @@ public class AltibasePrivTable extends AltibaseObject<AltibaseTable> implements 
 
     
     @Property(viewable = true, order = 12)
-    public String getGranteeType() throws DBException
-    {
+    public String getGranteeType() throws DBException {
         return granteeType;
     }
     
     @Property(viewable = true, order = 13)
-    public boolean isGrantable()
-    {
+    public boolean isGrantable() {
         return grantable;
     }
 
