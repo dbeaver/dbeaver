@@ -175,7 +175,7 @@ public class SQLPreferenceConstants {
     public static final String LOCATION_RESULTS     = "results";
 
     public enum StatisticsTabOnExecutionBehavior {
-        NEVER("Never"),
+        NEVER("Only when no data"),
         FOR_MULTIPLE_QUERIES("For multiple queries with results"),
         ALWAYS("Always");
 

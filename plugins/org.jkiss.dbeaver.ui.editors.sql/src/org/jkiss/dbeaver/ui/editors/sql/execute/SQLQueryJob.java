@@ -734,7 +734,7 @@ public class SQLQueryJob extends DataSourceJob
             case ALWAYS:
                 return true;
             case NEVER:
-                return false;
+                return resultSetNumber <= 0 || statistics.getRowsFetched() <= 0;
             case FOR_MULTIPLE_QUERIES:
                 if (resultSetNumber <= 0 || statistics.getRowsUpdated() >= 0) {
                     // If there are no results or we have updated some rows, always display statistics
