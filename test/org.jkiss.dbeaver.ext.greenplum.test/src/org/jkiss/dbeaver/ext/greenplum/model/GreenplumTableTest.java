@@ -79,6 +79,7 @@ public class GreenplumTableTest {
         Mockito.when(mockSchema.getName()).thenReturn(exampleSchemaName);
         Mockito.when(mockSchema.getTableCache()).thenReturn(mockTableCache);
         Mockito.when(mockSchema.getConstraintCache()).thenReturn(mockConstraintCache);
+        Mockito.when(mockSchema.getDatabase()).thenReturn(mockDatabase);
 
         Mockito.when(mockDataSource.getSQLDialect()).thenReturn(new PostgreDialect());
         Mockito.when(mockDataSource.isServerVersionAtLeast(Mockito.anyInt(), Mockito.anyInt())).thenReturn(false);
