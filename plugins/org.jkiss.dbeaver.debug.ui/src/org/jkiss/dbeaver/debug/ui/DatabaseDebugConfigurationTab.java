@@ -186,6 +186,7 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
             for (Control c : typesGroup.getChildren()) {
                 if (c instanceof Button && c.getData() == debugPanel) {
                     ((Button) c).setSelection(true);
+                    typesGroup.getParent().layout(true, true);
                     break;
                 }
             }

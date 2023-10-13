@@ -45,7 +45,6 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -690,53 +689,34 @@ public class YashanDBDebugSession extends DBGJDBCSession {
 
             //parameter init
             YashanDBProcedureStandalone function = YashanDBDebugCore.resolveFunction(monitor, controllerConnection.getDataSource().getContainer(), configuration, null, null);
-            List<String> parameterValues = (List<String>) configuration.get(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS);
-            List<String> parameterTypes=(List<String>) configuration.get(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS_TYPE);
+            Map<String, String> valueParams = (Map<String, String>) configuration.get(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS);
+            Map<String, String> typeParams = (Map<String, String>) configuration.get(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS_TYPE);
 
-            //param vaild
+            //param validation
             List<YashanDBProcedureArgument> inputParams = function.getInputParams();
-            if (inputParams.size() != parameterValues.size()) {
-                String unmatched = "Parameter value count (" + parameterValues.size() + ") doesn't match actual function parameters (" + inputParams.size() + ")";
+            if (inputParams.size() != valueParams.size() || inputParams.size() !=  typeParams.size()) {
+                String unmatched = "Parameter value count (" + valueParams.size() + ") doesn't match actual function parameters (" + inputParams.size() + ")";
                 log.error(unmatched);
                 throw new DBGException(unmatched);
             }
 
-            //TODO: 后续处理大小写
-            Collection<YashanDBProcedureArgument> parameters = function.getParameters(monitor);
-            List<YashanDBProcedureArgument> inOutParams = parameters.stream()
-                    .filter(t -> t.getParameterKind().equals(DBSProcedureParameterKind.IN) ||
-                            t.getParameterKind().equals(DBSProcedureParameterKind.OUT) ||
-                            t.getParameterKind().equals(DBSProcedureParameterKind.INOUT)).collect(Collectors.toList());
-
-            //不管是函数还是存储过程, 都区分有参数和无参数
-            StringBuilder startSql = null;
-            if (function.getSourceType().equals(YashanDBSourceType.UDF)){
-                startSql = getAnonymousSqlBuilder(yashanDBDebugObjectDescriptor, parameterValues, parameterTypes, inOutParams, true);
-            }else {
-                startSql = getAnonymousSqlBuilder(yashanDBDebugObjectDescriptor, parameterValues, parameterTypes, inOutParams, false);
+            for (YashanDBProcedureArgument inputParam : inputParams) {
+                String name = inputParam.getName();
+                inputParam.setValue(valueParams.get(name));
+                inputParam.setParamType(typeParams.get(name));
             }
 
-            log.debug("YashanDB debug start sql: \t"+startSql);
+            // 获取原始参数sql，按照默认参数的maxLength设置
+            String declareSql = getAnonymousSqlBuilder(yashanDBDebugObjectDescriptor, inputParams, YashanDBSourceType.UDF.equals(function.getSourceType()));
 
-            //Connection connection1 = executionContext.getConnection(monitor);
-            //
-            //Method createDebugStatement = connection1.getClass()
-            //        .getMethod("createDebugStatement", String.class, long.class, int.class, int.class);
-            //
-            ////ConnectionImpl connection2 =
-            ////YasDebugCallableStatement yasDebugCallableStatement = new YasDebugCallableStatement();
-            //
-            //sessionStatement = (YasDebugCallableStatement) createDebugStatement
-            //        .invoke( connection1, startSql.toString(), yashanDBDebugObjectDescriptor.getOid(),
-            //                yashanDBDebugObjectDescriptor.getSubprogramId(),
-            //                yashanDBDebugObjectDescriptor.getVersion());
+            log.debug("YashanDB debug start sql: \t" + declareSql);
 
             DBPConnectionConfiguration connectionConfiguration = getController().getDataSourceContainer().getConnectionConfiguration();
 
             //TODO:临时办法, 缺点: 会多用一个connect
             yasConnection=(YasConnection) getYSConnection(connectionConfiguration.getUrl(),
                     connectionConfiguration.getUserName(), connectionConfiguration.getUserPassword());
-            sessionStatement = yasConnection.createDebugStatement(startSql.toString(), yashanDBDebugObjectDescriptor.getOid(),
+            sessionStatement = yasConnection.createDebugStatement(declareSql, yashanDBDebugObjectDescriptor.getOid(),
                     yashanDBDebugObjectDescriptor.getSubprogramId(),
                     yashanDBDebugObjectDescriptor.getVersion());
 
@@ -757,137 +737,131 @@ public class YashanDBDebugSession extends DBGJDBCSession {
         }
     }
 
-    /**
-     * 获取匿名块调用
-     *
-     * @param yashanDBDebugObjectDescriptor yashanDBDebugObjectDescriptor
-     * @param parameterValues               parameterValues
-     * @param inOutParams                   inOutParams
-     * @param isFunction                    isFunction
-     * @return sql
-     * @throws DBGException DBGException
-     */
-    private static StringBuilder getAnonymousSqlBuilder(YashanDBDebugObjectDescriptor yashanDBDebugObjectDescriptor,
-                                                        List<String> parameterValues,
-                                                        List<String> parameterTypes,
-                                                        List<YashanDBProcedureArgument> inOutParams,
-                                                        boolean isFunction) throws DBGException {
-        StringBuilder startSql;
-        //default length, TODO: 后续如果有特殊变化需要修改, SQL DEV默认是200, 但是可以手动修改
-        String varcharLength = "10000";
-        if (inOutParams.size()>0){
-            startSql = new StringBuilder("\ndeclare \n");
-            startSql.append("v_result varchar(" + varcharLength + ");\n");
-            List<Integer> chars = List.of(Types.CHAR, Types.VARCHAR, Types.NVARCHAR, Types.LONGNVARCHAR, Types.LONGVARCHAR, Types.NCHAR);
+    private String getAnonymousSqlBuilder(YashanDBDebugObjectDescriptor yashanDBDebugObjectDescriptor, List<YashanDBProcedureArgument> params, boolean isFunction) {
 
-            int parameterIndex=0;
-            for (YashanDBProcedureArgument inOutParam : inOutParams) {
-                //param besic info
-                DBSProcedureParameterKind inOutParamParameterKind = inOutParam.getParameterKind();
-                int inOutParamTypeID = inOutParam.getTypeID();
-                String dataType = inOutParam.getType().toString();
-                YashanDBDataType inOutParamType = (YashanDBDataType)inOutParam.getType();
-                String paramName = inOutParam.getName();
-                int typeID = inOutParamType.getTypeID();
+        assert  params != null;
+        YashanDBProcedureArgument returnArg = params.parallelStream()
+                .filter(p -> DBSProcedureParameterKind.RETURN.getTitle().equals(p.getParameterKind().getTitle()))
+                .findFirst()
+                .orElse(null);
 
+        String returnType = returnArg == null ? "VARCHAR(32000)" : returnArg.getParamType();
+        StringBuilder buildSQL = new StringBuilder("\ndeclare\nv_result ").append(returnType).append(";\n");
 
-                //in out
-                long dataLengthFromAllArguments = inOutParam.getMaxLength();
-                if (inOutParamParameterKind.equals(DBSProcedureParameterKind.IN) || inOutParamParameterKind.equals(DBSProcedureParameterKind.INOUT)){
-                    //TODO: maybe null
-                    if (NOT_COMMAS_VALUE_TYPES.contains(dataType)){
-                        startSql.append(paramName).append(" ").append(parameterTypes.get(parameterIndex)).append(":=")
-                                .append(parameterValues.get(parameterIndex)).append(";\n");
-                    } else if (COMMAS_VALUE_TYPES.contains(dataType)) {
-                        startSql.append(paramName).append(" ").append(parameterTypes.get(parameterIndex)).append(":=")
-                                .append('\'').append(parameterValues.get(parameterIndex)).append('\'').append(";\n");
-                    } else if (dataType.equals(YashanDBDebugConstants.YASHANDB_JSON)
-                            || dataType.equals(YashanDBDebugConstants.YASHANDB_INTERVAL_YEAR_TO_MONTH)
-                            || dataType.equals(YashanDBDebugConstants.YASHANDB_INTERVAL_DAY_TO_SECOND)) {
-                        if (parameterValues.get(parameterIndex).startsWith("JSON(\'{") || parameterValues.get(parameterIndex).startsWith("INTERVAL ") ){
-                            startSql.append(paramName).append(" ").append(parameterTypes.get(parameterIndex)).append(":=")
-                                    .append(parameterValues.get(parameterIndex)).append(";\n");
-                        } else {
-                            startSql.append(paramName).append(" ").append(parameterTypes.get(parameterIndex)).append(":=")
-                                    .append('\'').append(parameterValues.get(parameterIndex)).append('\'').append(";\n");
-                        }
-                    } else {
-                        throw new DBGException("param inOutParamType error");
-                    }
-                    //TODO: 暂时用下标, 实在不行用map
-                    parameterIndex++;
-                }else if (inOutParamParameterKind.equals(DBSProcedureParameterKind.OUT) || inOutParamParameterKind.equals(DBSProcedureParameterKind.INOUT)){
-                    //out
-                    if (NOT_COMMAS_VALUE_TYPES.contains(dataType) || COMMAS_VALUE_TYPES.contains(dataType)
-                            || dataType.equals(YashanDBDebugConstants.YASHANDB_JSON)
-                            || dataType.equals(YashanDBDebugConstants.YASHANDB_INTERVAL_YEAR_TO_MONTH)
-                            || dataType.equals(YashanDBDebugConstants.YASHANDB_INTERVAL_DAY_TO_SECOND)){
+        List<YashanDBProcedureArgument> arguments = params.stream()
+                .filter(p -> p.getParameterKind().isInput()
+                        || (p.getParameterKind().isOutput()))
+                .collect(Collectors.toList());
 
-                        startSql.append(paramName).append(" ").append(outParamResolver(typeID, dataType, dataLengthFromAllArguments)).append(";\n");
-                    } else {
-                        throw new DBGException("param inOutParamType error");
-                    }
-                }
-            }
-            startSql.append("begin \n");
+        arguments.remove(returnArg);
 
-            //p_salaries_out :=debug_Stepinto_func3(p_name,p_bonus,p_salaries_out);
-            startSql.append(" -- Dynamic PL/SQL block invokes subprogram:\n");
-            if (isFunction)
-                startSql.append("v_result := ");
-            startSql.append(yashanDBDebugObjectDescriptor.getOwner()).append(".")
+        if(arguments.isEmpty()){
+
+            buildBegin(buildSQL, isFunction);
+            buildSQL.append(yashanDBDebugObjectDescriptor.getOwner())
+                    .append(".")
                     .append(yashanDBDebugObjectDescriptor.getName())
-                    .append(" (");
-
-            //加入参数
-            for (int i = 0; i < inOutParams.size(); i++) {
-                startSql.append(inOutParams.get(i).getName());
-                if (i != inOutParams.size() - 1){
-                    startSql.append(",");
-                }
-            }
-            startSql.append("); \n end;\n");
+                    .append("();\nend;\n");
         }else {
-            startSql = new StringBuilder("\n declare\n");
-            startSql.append("v_result varchar("+varcharLength+");\n");
-            startSql.append(" begin \n");
-            if (isFunction)
-                startSql.append("v_result :=");
-            startSql.append(yashanDBDebugObjectDescriptor.getOwner()).append(".")
+
+            for (YashanDBProcedureArgument argument : arguments) {
+
+                DBSProcedureParameterKind parameterKind = argument.getParameterKind();
+                if(!(argument.getType() instanceof YashanDBDataType)){
+                    throw new RuntimeException("Param type is error ! it's not a YashanDBDataType");
+                }
+                String fullDataType = argument.getParamType();
+                String dataType = ((YashanDBDataType) argument.getType()).getName();
+                String name = argument.getName();
+
+                if(parameterKind.isInput()){
+                    buildSQL.append(name)
+                            .append(" ")
+                            .append(fullDataType)
+                            .append(":=");
+
+                    switch (dataType){
+                        case YashanDBDebugConstants.YASHANDB_TINYINT:
+                        case YashanDBDebugConstants.YASHANDB_SMALLINT:
+                        case YashanDBDebugConstants.YASHANDB_INT:
+                        case YashanDBDebugConstants.YASHANDB_INTEGER:
+                        case YashanDBDebugConstants.YASHANDB_BIGINT:
+                        case YashanDBDebugConstants.YASHANDB_FLOAT:
+                        case YashanDBDebugConstants.YASHANDB_DOUBLE:
+                        case YashanDBDebugConstants.YASHANDB_NUMBER:
+                            buildSQL.append(argument.getValue());
+                            break;
+                        case YashanDBDebugConstants.YASHANDB_CHAR:
+                        case YashanDBDebugConstants.YASHANDB_VARCHAR:
+                        case YashanDBDebugConstants.YASHANDB_NCHAR:
+                        case YashanDBDebugConstants.YASHANDB_NVARCHAR:
+                        case YashanDBDebugConstants.YASHANDB_BOOLEAN:
+                        case YashanDBDebugConstants.YASHANDB_DATE:
+                        case YashanDBDebugConstants.YASHANDB_TIME:
+                        case YashanDBDebugConstants.YASHANDB_TIMESTAMP:
+                        case YashanDBDebugConstants.YASHANDB_BLOB:
+                        case YashanDBDebugConstants.YASHANDB_CLOB:
+                        case YashanDBDebugConstants.YASHANDB_NCLOB:
+                        case YashanDBDebugConstants.YASHANDB_RAW:
+                        case YashanDBDebugConstants.YASHANDB_ROWID:
+                        case YashanDBDebugConstants.YASHANDB_UROWID:
+                            buildSQL.append("'")
+                                    .append(argument.getValue())
+                                    .append("'");
+                            break;
+                        case YashanDBDebugConstants.YASHANDB_JSON:
+                        case YashanDBDebugConstants.YASHANDB_INTERVAL_YEAR_TO_MONTH:
+                        case YashanDBDebugConstants.YASHANDB_INTERVAL_DAY_TO_SECOND:
+                            if (argument.getValue().startsWith("JSON('{") || argument.getValue().startsWith("INTERVAL ") ){
+                                buildSQL.append(argument.getValue());
+                            }else {
+                                buildSQL.append("'")
+                                        .append(argument.getValue())
+                                        .append("'");
+                            }
+                            break;
+                        default:
+                            throw new RuntimeException("Parse inOutParam error !");
+                    }
+                    buildSQL.append(";\n");
+
+                } else if (parameterKind.isOutput()) {
+
+                    if(DBSProcedureParameterKind.RETURN.getTitle().equals(parameterKind.getTitle())){
+                        continue;
+                    }
+                    buildSQL.append(name)
+                            .append(" ")
+                            .append(fullDataType)
+                            .append(";\n");
+                }
+
+            }
+            buildBegin(buildSQL, isFunction);
+            buildSQL.append(yashanDBDebugObjectDescriptor.getOwner())
+                    .append(".")
                     .append(yashanDBDebugObjectDescriptor.getName())
-                    .append(" (");
-            startSql.append("); \n end;\n");
+                    .append(" (")
+                    .append(arguments.parallelStream().map(YashanDBProcedureArgument::getName).collect(Collectors.joining(",")))
+                    .append(");\nend;\n");
         }
-        return startSql;
+        return buildSQL.toString();
     }
 
-    //todo more data type need to be tested。
-    private static String  outParamResolver(int typeId, String dataType, long maxLength) {
-        StringBuilder typeBuilder = new StringBuilder(dataType);
-        switch (typeId){
-            case Types.VARCHAR:
-            case Types.CHAR:
-                typeBuilder.append("(")
-                        .append(maxLength)
-                        .append(")");
-
+    private static void buildBegin(StringBuilder buildSQL, boolean isFunction) {
+        buildSQL.append("begin \n")
+                .append("-- Dynamic PL/SQL block invokes subprogram:\n");
+        if (isFunction) {
+            buildSQL.append("v_result := ");
         }
-        return typeBuilder.toString();
     }
 
     /**
      * TMP
      * @return Connection
      */
-    public static Connection getYSConnection( String url,  String user,   String password) {
-        Connection conn = null;
-        try {
-            conn = DriverManager.getConnection(url, user, password);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return conn;
+    public static Connection getYSConnection( String url, String user, String password) throws SQLException {
+        return DriverManager.getConnection(url, user, password);
     }
-
 
 }
