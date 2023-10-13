@@ -25,6 +25,8 @@ import java.util.List;
 public class YashanDBProcedureArgument implements DBSProcedureParameter, DBSTypedObject {
     private final YashanDBProcedureBase procedure;
     private String name;
+    private String value;
+    private String paramType;
     private int position;
     private int dataLevel;
     private int sequence;
@@ -209,5 +211,21 @@ public class YashanDBProcedureArgument implements DBSProcedureParameter, DBSType
     @Override
     public DBSTypedObject getParameterType() {
         return this;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public String getParamType() {
+        return paramType;
+    }
+
+    public void setParamType(String paramType) {
+        this.paramType = paramType;
     }
 }

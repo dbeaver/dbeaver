@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanel;
 import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanelContainer;
 import org.jkiss.dbeaver.ext.yashandb.debug.YashanDBDebugConstants;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -41,20 +43,22 @@ import org.jkiss.dbeaver.ui.controls.CSmartSelector;
 import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class YashanDBDebugPanelFunction implements DBGConfigurationPanel {
     private DBGConfigurationPanelContainer container;
     private CSmartCombo<YashanDBProcedureStandalone> functionCombo;
     private YashanDBProcedureStandalone selectedFunction;
-    private Map<DBSProcedureParameter, Object> parameterValues = new HashMap<>();
-    private Map<DBSProcedureParameter, Object> parameterTypes = new HashMap<>();
     private Table parametersTable;
+    private final Map<String, YashanDBProcedureArgument> paramsCache = new ConcurrentHashMap<>();
+    private final Log log = Log.getLog(YashanDBDebugPanelFunction.class);
 
     @Override
     public void createPanel(Composite parent, DBGConfigurationPanelContainer container) {
@@ -99,7 +103,6 @@ public class YashanDBDebugPanelFunction implements DBGConfigurationPanel {
                             selectedFunction = (YashanDBProcedureStandalone) ((DBNDatabaseNode) node).getObject();
                             functionCombo.addItem(selectedFunction);
                             functionCombo.select(selectedFunction);
-                            updateParametersTable();
                             container.updateDialogState();
                         }
                         parametersTable.setEnabled(selectedFunction != null);
@@ -195,10 +198,12 @@ public class YashanDBDebugPanelFunction implements DBGConfigurationPanel {
     }
 
     private void createParametersGroup(Composite parent) {
-        Group composite = UIUtils.createControlGroup(parent, "Function parameters", 2, GridData.FILL_BOTH, SWT.DEFAULT);
+        Group composite = UIUtils.createControlGroup(parent, "Function parameters", 1, GridData.FILL_BOTH, SWT.DEFAULT);
 
         parametersTable = new Table(composite, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+        parametersTable.setSize(1000, 800);
         final GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.minimumHeight = 200;
         parametersTable.setLayoutData(gd);
         parametersTable.setHeaderVisible(true);
         parametersTable.setLinesVisible(true);
@@ -221,34 +226,50 @@ public class YashanDBDebugPanelFunction implements DBGConfigurationPanel {
 
             @Override
             protected Control createEditor(Table table, int index, TableItem item) {
+
                 if (index != 1 && index != 2) {
                     return null;
                 }
-                if(index==1) {
-                    DBSProcedureParameter param = (DBSProcedureParameter) item.getData();
-                    Text editor = new Text(table, SWT.BORDER);
-                    editor.setText(CommonUtils.toString(parameterValues.get(param), ""));
-                    editor.selectAll();
-                    return editor;
-                }else {
-                    DBSProcedureParameter param = (DBSProcedureParameter) item.getData();
-                    Text editor = new Text(table, SWT.BORDER);
-                    editor.setText(CommonUtils.toString(parameterTypes.get(param), ""));
-                    editor.selectAll();
-                    return editor;
+
+                DBSProcedureParameter param = (DBSProcedureParameter) item.getData();
+                DBSProcedureParameterKind parameterKind = param.getParameterKind();
+                if(!parameterKind.isInput() && index != 2){
+                    return null;
                 }
+
+                String name = param.getName();
+                Text editor = new Text(table, SWT.BORDER);
+                YashanDBProcedureArgument argument = paramsCache.get(name);
+                switch (index) {
+                    // edit value
+                    case 1:
+                        editor.setText(CommonUtils.toString(argument.getValue(), ""));
+                        break;
+                    // edit type
+                    case 2:
+                        editor.setText(CommonUtils.toString(argument.getParamType(), ""));
+                        break;
+
+                }
+                editor.addModifyListener(e -> {
+                    // Save value immediately. This solves MacOS problems with focus events.
+                    saveEditorValue(editor, index, item);
+                });
+                return editor;
             }
 
             @Override
             protected void saveEditorValue(Control control, int index, TableItem item) {
-                DBSProcedureParameter param = (DBSProcedureParameter) item.getData();
+                YashanDBProcedureArgument param = (YashanDBProcedureArgument) item.getData();
+
                 String newValue = ((Text) control).getText();
                 item.setText(index, newValue);
-                if(index==1) {
-                    parameterValues.put(param, newValue);
-                }else if(index==2){
-                    parameterTypes.put(param,newValue);
+                if (1 == index){
+                    param.setValue(newValue);
+                } else if (2 == index) {
+                    param.setParamType(newValue);
                 }
+                paramsCache.put(param.getName(), param);
                 container.updateDialogState();
             }
         };
@@ -274,110 +295,81 @@ public class YashanDBDebugPanelFunction implements DBGConfigurationPanel {
             }
         }
 
-        if (selectedFunction != null) {
-            @SuppressWarnings("unchecked")
-            List<String> paramValues = (List<String>) configuration.get(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS);
-            if (paramValues != null) {
-                List<YashanDBProcedureArgument> parameters = selectedFunction.getInputParams();
-                if (parameters.size() == paramValues.size()) {
-                    for (int i = 0; i < parameters.size(); i++) {
-                        YashanDBProcedureArgument param = parameters.get(i);
-                        parameterValues.put(param, paramValues.get(i));
-                    }
-                }
-            }
+        Map<String, String> valueMap = (Map<String, String>) configuration.get(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS);
+        Map<String, String> typeMap = (Map<String, String>) configuration.get(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS_TYPE);
 
-            @SuppressWarnings("unchecked")
-            List<String> paramTypes = (List<String>) configuration.get(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS_TYPE);
-            if (paramTypes != null) {
-                List<YashanDBProcedureArgument> parameters = selectedFunction.getInputParams();
-                if (parameters.size() == paramTypes.size()) {
-                    for (int i = 0; i < parameters.size(); i++) {
-                        YashanDBProcedureArgument param = parameters.get(i);
-                        parameterTypes.put(param, paramTypes.get(i));
-                    }
-                }
-            }
-
-            updateParametersTable();
+        if(selectedFunction != null){
+            saveTableItem(valueMap, typeMap);
         }
+
         if (selectedFunction != null) {
             functionCombo.addItem(selectedFunction);
             functionCombo.select(selectedFunction);
         }
     }
 
-    private void updateParametersTable() {
-        parametersTable.removeAll();
-        for (DBSProcedureParameter param : selectedFunction.getInputParams()) {
-            TableItem item = new TableItem(parametersTable, SWT.NONE);
-            item.setData(param);
-            item.setImage(DBeaverIcons.getImage(DBIcon.TREE_ATTRIBUTE));
-            item.setText(0, param.getName());
-            Object value = parameterValues.get(param);
-            item.setText(1, CommonUtils.toString(value, ""));
-            Object type=parameterTypes.get(param);
-            if (type == null) {
-                Field[] fields = param.getClass().getDeclaredFields();
-                for(Field field: fields) {
-                    field.setAccessible(true);
-                    if(field.getName().equals("type")){
-                        try {
-                            type = field.get(param);
-                        } catch (IllegalAccessException e) {
-                            throw new RuntimeException(e);
-                        }
+    private void saveTableItem(Map<String, String> valueMap, Map<String, String> typeMap){
+
+        List<YashanDBProcedureArgument> params = selectedFunction.getParams();
+
+        assert params != null;
+        if(params.isEmpty()){
+            return;
+        }
+
+        if(paramsCache.isEmpty()){
+            // save origin data to cache.
+            for (YashanDBProcedureArgument param : params) {
+                if(param.getParameterKind().isInput() || param.getParameterKind().isOutput()){
+                    String paramType = param.getFullTypeName();
+                    String value = "";
+                    if(valueMap != null){
+                        value = valueMap.get(param.getName());
+                    }
+                    if(typeMap != null){
+                        paramType = typeMap.get(param.getName());
+                    }
+                    param.setParamType(paramType);
+                    param.setValue(value);
+                    YashanDBProcedureArgument absent = paramsCache.putIfAbsent(param.getName(), param);
+                    if(absent != null){
+                        log.warn("Init param error, old param is present! The param is : " + absent.getName());
                     }
                 }
             }
-            item.setText(2, CommonUtils.toString(type, ""));
-            item.setText(3, param.getParameterKind().getTitle());
         }
 
-        parametersTable.select(0);
+        List<YashanDBProcedureArgument> arguments = paramsCache.values().stream().sorted(Comparator.comparingInt(YashanDBProcedureArgument::getPosition)).collect(Collectors.toList());
+        for (YashanDBProcedureArgument argument : arguments) {
+            if(argument.getParameterKind().isInput() || argument.getParameterKind().isOutput()){
+                TableItem tableItem = new TableItem(parametersTable, SWT.NONE);
+                tableItem.setData(argument);
+                tableItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_ATTRIBUTE));
+                tableItem.setText(0, argument.getName());
+                tableItem.setText(1, argument.getValue());
+                tableItem.setText(2, argument.getParamType());
+                tableItem.setText(3, argument.getParameterKind().getTitle());
+            }
+        }
     }
 
     @Override
     public void saveConfiguration(DBPDataSourceContainer dataSource, Map<String, Object> configuration) {
-//        configuration.put(PostgreDebugConstants.ATTR_ATTACH_KIND,
-//            kindGlobal.getSelection() ? PostgreDebugConstants.ATTACH_KIND_GLOBAL : PostgreDebugConstants.ATTACH_KIND_LOCAL);
-//        configuration.put(PostgreDebugConstants.ATTR_ATTACH_PROCESS, processIdText.getText());
 
         if (selectedFunction != null) {
             configuration.put(YashanDBDebugConstants.ATTR_FUNCTION_OID, selectedFunction.getObjectId());
-//            configuration.put(YashanDBDebugConstants.ATTR_DATABASE_NAME, selectedFunction.getDatabase().getName());
             configuration.put(YashanDBDebugConstants.ATTR_SCHEMA_NAME, selectedFunction.getSchema().getName());
-            List<String> paramValues = new ArrayList<>();
-            List<String> paramTypes=new ArrayList<>();
-            for (YashanDBProcedureArgument param : selectedFunction.getInputParams()) {
 
-                Object value = parameterValues.get(param);
-                paramValues.add(value == null ? null : value.toString());
-
-                Object type = parameterTypes.get(param);
-                if(type == null) {
-                    Object dataType = param.getType();
-                    if(dataType instanceof YashanDBDataType){
-                        String name = ((YashanDBDataType) dataType).getName();
-                        paramTypes.add(name);
-                    }else {
-                        paramTypes.add(String.valueOf(dataType));
-                    }
-                } else {
-                    paramTypes.add(type.toString());
-                }
+            HashMap<String, String> valueMap = new HashMap<>();
+            HashMap<String, String> typeMap = new HashMap<>();
+            for (YashanDBProcedureArgument argument : paramsCache.values()) {
+                valueMap.put(argument.getName(), argument.getValue());
+                typeMap.put(argument.getName(), argument.getParamType());
             }
-            configuration.put(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS, paramValues);
-            configuration.put(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS_TYPE,paramTypes);
-
-            //YANGMENG,可以会返回参数名字
-            //LinkedHashMap<String, String> params =
-            //        parameterValues.entrySet().stream().collect(Collectors.toMap(t -> t.getKey().getName(), a -> a.getValue().toString(), (a, b) -> a,
-            //                LinkedHashMap::new));
-            //configuration.put(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS, params);
+            configuration.put(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS, valueMap);
+            configuration.put(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS_TYPE, typeMap);
         } else {
             configuration.remove(YashanDBDebugConstants.ATTR_FUNCTION_OID);
-//            configuration.remove(YashanDBDebugConstants.ATTR_DATABASE_NAME);
             configuration.remove(YashanDBDebugConstants.ATTR_SCHEMA_NAME);
             configuration.remove(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS);
             configuration.remove(YashanDBDebugConstants.ATTR_FUNCTION_PARAMETERS_TYPE);

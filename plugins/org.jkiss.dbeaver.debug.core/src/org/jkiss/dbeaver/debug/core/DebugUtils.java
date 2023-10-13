@@ -173,7 +173,9 @@ public class DebugUtils {
             } else if (value instanceof Boolean) {
                 configuration.setAttribute(entry.getKey(), (Boolean) value);
             } else if (value instanceof List) {
-                configuration.setAttribute(entry.getKey(), (List<String>)value);
+                configuration.setAttribute(entry.getKey(), (List<String>) value);
+            } else if (value instanceof Map) {
+                configuration.setAttribute(entry.getKey(), (Map<String, String>) value);
             } else {
                 configuration.setAttribute(entry.getKey(), value.toString());
             }

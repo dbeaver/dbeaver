@@ -33,7 +33,7 @@ public class YashanDBProcedureStandalone extends YashanDBProcedureBase<YashanDBS
     private String sourceDeclaration;
 
     private  int subprogramId;;
-    private List<YashanDBProcedureArgument> params=new ArrayList<>();
+    private List<YashanDBProcedureArgument> params = new ArrayList<>();
 
     public YashanDBProcedureStandalone(
             DBRProgressMonitor monitor,
@@ -53,6 +53,10 @@ public class YashanDBProcedureStandalone extends YashanDBProcedureBase<YashanDBS
         } catch (DBException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public List<YashanDBProcedureArgument> getParams() {
+        return params;
     }
 
     public int getSubprogramId() {
@@ -155,9 +159,9 @@ public class YashanDBProcedureStandalone extends YashanDBProcedureBase<YashanDBS
     public List<YashanDBProcedureArgument> getInputParams(){
         List<YashanDBProcedureArgument> inputParams=new ArrayList<>();
         for (YashanDBProcedureArgument param : params) {
-            if(param.getParameterKind().equals(DBSProcedureParameterKind.IN) ||
-            param.getParameterKind().equals(DBSProcedureParameterKind.INOUT))
+            if(param.getParameterKind().isInput() || param.getParameterKind().isOutput()){
                 inputParams.add(param);
+            }
         }
         return inputParams;
     }
