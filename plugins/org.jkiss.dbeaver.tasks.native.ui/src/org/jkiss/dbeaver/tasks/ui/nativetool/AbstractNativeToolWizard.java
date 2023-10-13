@@ -74,7 +74,12 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
 
     public AbstractNativeToolWizard(@NotNull DBTTask task) {
         super(task);
-        this.preferenceStore = new TaskPreferenceStore(task);
+        if (isToolTask()) {
+            // Use global store for tool tasks
+            this.preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+        } else {
+            this.preferenceStore = new TaskPreferenceStore(task);
+        }
         this.settings = createSettings();
         this.taskTitle = task.getType().getName();
         this.logPage = new NativeToolWizardPageLog(taskTitle);

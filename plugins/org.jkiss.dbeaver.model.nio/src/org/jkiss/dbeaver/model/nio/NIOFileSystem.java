@@ -23,7 +23,7 @@ import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.Set;
 
 public abstract class NIOFileSystem extends FileSystem {
-    private static final String SEPARATOR = "/";
+    public static final String SEPARATOR = "/";
 
     @Override
     public String getSeparator() {

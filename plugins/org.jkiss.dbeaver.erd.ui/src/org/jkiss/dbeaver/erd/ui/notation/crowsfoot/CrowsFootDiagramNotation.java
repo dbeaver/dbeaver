@@ -80,4 +80,10 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
     public void applyNotationForEntities(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
         // nothing
     }
+
+    @Override
+    public double getIndentation() {
+        return 30;
+    }
+
 }

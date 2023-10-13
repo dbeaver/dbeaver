@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
@@ -145,6 +146,20 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         store.setToDefault(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME);
         store.setToDefault(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES);  
         store.setToDefault(ResultSetPreferences.RESULT_SET_FILTER_AUTO_COMPLETE_PROPOSIAL);
+    }
+
+    @Override
+    protected void performDefaults() {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        autoSwitchMode.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE));
+        showDescription.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION));
+        columnWidthByValue.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES));
+        showConnectionName.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME));
+        transformComplexTypes.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES));
+        rightJustifyNumbers.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS));
+        rightJustifyDateTime.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME));
+        autoCompleteProposal.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_FILTER_AUTO_COMPLETE_PROPOSIAL));
+        super.performDefaults();
     }
 
     @Override

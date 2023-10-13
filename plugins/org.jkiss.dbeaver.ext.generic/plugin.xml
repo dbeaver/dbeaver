@@ -568,7 +568,6 @@
                         anonymous="true"
                         description="DuckDB JDBC driver"
                         supportedConfigurationTypes="MANUAL,URL"
-                        promoted="1"
                         categories="sql,embedded">
                     <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:RELEASE" bundle="!drivers.duckdb"/>
                     <file type="license" path="https://raw.githubusercontent.com/duckdb/duckdb/master/LICENSE" bundle="!drivers.duckdb"/>
@@ -1186,6 +1185,7 @@
                         webURL="https://documentation.progress.com/output/ua/OpenEdge_latest/dmsdv/connecting-from-a-java-application-using-a-url.html#"
                         categories="sql">
 <!--                    <file type="jar" path="maven:/org.apache.solr:solr-solrj:RELEASE"/>-->
+                    <parameter name="omit-single-catalog" value="true"/>
                 </driver>
 
                 <!-- MonetDB -->

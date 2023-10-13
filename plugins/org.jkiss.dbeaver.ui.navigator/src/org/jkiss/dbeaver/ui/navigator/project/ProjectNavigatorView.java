@@ -71,7 +71,7 @@ public class ProjectNavigatorView extends DecoratedProjectView
     @Override
     public DBNNode getRootNode()
     {
-        return getModel().getRoot();
+        return getGlobalNavigatorModel().getRoot();
     }
 
     @Override

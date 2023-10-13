@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.tools.transfer.stream.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -48,7 +49,9 @@ import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -58,7 +61,9 @@ import java.util.List;
  */
 class StreamDataSourceContainer implements DBPDataSourceContainer {
 
-    private File inputFile;
+    private static final Log log = Log.getLog(StreamDataSourceContainer.class);
+
+    private Path inputFile;
     private String name;
     private final DBPExclusiveResource exclusiveLock = new SimpleExclusiveLock();
     private final DBVModel virtualModel;
@@ -71,7 +76,7 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @NotNull
     @Override
     public String getId() {
-        return inputFile == null ? name : inputFile.getName();
+        return inputFile == null ? name : inputFile.getFileName().toString();
     }
 
     @NotNull
@@ -328,7 +333,14 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     @Override
     public Date getConnectTime() {
-        return inputFile == null ? new Date() : new Date(inputFile.lastModified());
+        if (inputFile != null) {
+            try {
+                return new Date(Files.getLastModifiedTime(inputFile).toMillis());
+            } catch (IOException e) {
+                log.debug(e);
+            }
+        }
+        return new Date();
     }
 
     @NotNull
@@ -380,7 +392,7 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @NotNull
     @Override
     public String getName() {
-        return inputFile == null ? name : inputFile.getName();
+        return inputFile == null ? name : inputFile.getFileName().toString();
     }
 
     @Nullable
