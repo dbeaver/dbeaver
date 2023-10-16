@@ -579,7 +579,7 @@
                 pinned="true"
                 order="100"
                 handlerClass="org.jkiss.dbeaver.ext.mssql.model.SQLServerSSLHandlerImpl">
-            <propertyGroup label="SSL Settings">
+            <propertyGroup label="Parameters">
                 <property id="ssl.keystore.value" label="Keystore" type="file" features="secured,password,file"/>
                 <property id="ssl.keystore.password" label="Keystore password" type="string" features="secured,password"/>
                 <property id="sslKeyStoreHostname" label="Certificate hostname" type="string"/>
