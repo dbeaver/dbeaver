@@ -190,9 +190,11 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                 false,
                 extensions.toArray(new String[0]),
                 pipe.getConsumer().getObjectName());
-            initializer = monitor -> {
-                updateSingleConsumer(monitor, pipe, selected.getPath());
-            };
+            if (selected != null) {
+                initializer = monitor -> {
+                    updateSingleConsumer(monitor, pipe, selected.getPath());
+                };
+            }
         } else if (pipe.getConsumer() != null && pipe.getConsumer().getTargetObjectContainer() != null) {
             File[] files = DialogUtils.openFileList(
                 getShell(),
@@ -323,19 +325,23 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     }
 
     private void updateItemData(TableItem item, DataTransferPipe pipe) {
-        if (isInvalidDataTransferNode(pipe.getProducer())) {
+        IDataTransferProducer<?> producer = pipe.getProducer();
+        if (isInvalidDataTransferNode(producer)) {
             item.setImage(0, null);
             item.setText(0, DTUIMessages.stream_consumer_page_settings_item_text_none);
         } else {
             item.setImage(0, DBeaverIcons.getImage(getProducerProcessor().getIcon()));
-            item.setText(0, String.valueOf(pipe.getProducer().getObjectName()));
+            item.setText(0, producer instanceof StreamTransferProducer stp ?
+                stp.getInputFile().toString() : String.valueOf(producer.getObjectName()));
         }
-        if (isInvalidDataTransferNode(pipe.getConsumer())) {
+
+        IDataTransferConsumer<?, ?> consumer = pipe.getConsumer();
+        if (isInvalidDataTransferNode(consumer)) {
             item.setImage(1, null);
             item.setText(1, DTUIMessages.stream_consumer_page_settings_item_text_none);
         } else {
             item.setImage(1, DBeaverIcons.getImage(getWizard().getSettings().getConsumer().getIcon()));
-            item.setText(1, String.valueOf(pipe.getConsumer().getObjectName()));
+            item.setText(1, String.valueOf(consumer.getObjectName()));
         }
     }
 

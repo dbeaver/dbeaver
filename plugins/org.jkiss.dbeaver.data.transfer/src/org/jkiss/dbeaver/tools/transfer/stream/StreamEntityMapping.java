@@ -49,7 +49,7 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
     private final boolean child;
 
     public StreamEntityMapping(@NotNull Path inputFile) {
-        this(inputFile, inputFile.getFileName().toString(), false);
+        this(inputFile, inputFile.toString(), false);
     }
 
     public StreamEntityMapping(@NotNull Path inputFile, @NotNull String entityName, boolean child) {
