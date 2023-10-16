@@ -886,9 +886,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 case VARIABLE_SCRIPT_FILE: {
                     final SQLQueryContainer container = DBUtils.getAdapter(SQLQueryContainer.class, dataContainer);
                     if (container != null) {
-                        final File file = container.getScriptContext().getSourceFile();
+                        final Path file = container.getScriptContext().getSourceFile();
                         if (file != null) {
-                            String filename = file.getName();
+                            String filename = file.getFileName().toString();
                             if (filename.indexOf('.') >= 0) {
                                 filename = filename.substring(0, filename.lastIndexOf('.'));
                             }

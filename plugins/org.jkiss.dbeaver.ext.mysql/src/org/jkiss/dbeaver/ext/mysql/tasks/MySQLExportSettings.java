@@ -33,8 +33,8 @@ import org.jkiss.dbeaver.tasks.nativetool.AbstractImportExportSettings;
 import org.jkiss.dbeaver.tasks.nativetool.ExportSettingsExtension;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -43,7 +43,7 @@ import java.util.Map;
 public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         implements MySQLNativeCredentialsSettings, ExportSettingsExtension<MySQLDatabaseExportInfo> {
     private static final Log log = Log.getLog(MySQLExportSettings.class);
-    private File outputFolder;
+    private Path outputFolder;
 
     public enum DumpMethod {
         ONLINE("--single-transaction"),
@@ -323,17 +323,17 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
 
 
     @NotNull
-    public File getOutputFolder(@NotNull MySQLDatabaseExportInfo info) {
+    public Path getOutputFolder(@NotNull MySQLDatabaseExportInfo info) {
         if (outputFolder == null) {
-            outputFolder = new File(resolveVars(info.getDatabase(), null, info.getTables(), getOutputFolderPattern()));
+            outputFolder = Path.of(resolveVars(info.getDatabase(), null, info.getTables(), getOutputFolderPattern()));
         }
         return outputFolder;
     }
 
     @NotNull
-    public File getOutputFile(@NotNull MySQLDatabaseExportInfo info) {
+    public Path getOutputFile(@NotNull MySQLDatabaseExportInfo info) {
         String outFileName = resolveVars(info.getDatabase(), null, info.getTables(), getOutputFilePattern());
-        return new File(getOutputFolder(info), outFileName);
+        return getOutputFolder(info).resolve(outFileName);
     }
 
 }

@@ -29,8 +29,9 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -53,10 +54,12 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
     protected boolean validateTaskParameters(DBTTask task, PostgreDatabaseBackupSettings settings, Log log) {
         if (task.getType().getId().equals(PostgreSQLTasks.TASK_DATABASE_BACKUP)) {
             for (PostgreDatabaseBackupInfo exportObject : settings.getExportObjects()) {
-                final File dir = settings.getOutputFolder(exportObject);
-                if (!dir.exists()) {
-                    if (!dir.mkdirs()) {
-                        log.error("Can't create directory '" + dir.getAbsolutePath() + "'");
+                final Path dir = settings.getOutputFolder(exportObject);
+                if (!Files.exists(dir)) {
+                    try {
+                        Files.createDirectories(dir);
+                    } catch (IOException e) {
+                        log.error("Can't create directory '" + dir + "'", e);
                         return false;
                     }
                 }
@@ -114,7 +117,7 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
 
         if (!USE_STREAM_MONITOR || settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
             cmd.add("--file");
-            cmd.add(settings.getOutputFile(arg).getAbsolutePath());
+            cmd.add(settings.getOutputFile(arg).toAbsolutePath().toString());
         }
 
         // Objects
@@ -145,10 +148,10 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
     }
 
     @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, PostgreDatabaseBackupSettings settings, PostgreDatabaseBackupInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
+    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, PostgreDatabaseBackupSettings settings, PostgreDatabaseBackupInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException, DBException {
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
         if (USE_STREAM_MONITOR && settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
-            File outFile = settings.getOutputFile(arg);
+            Path outFile = settings.getOutputFile(arg);
             DumpCopierJob job = new DumpCopierJob(monitor, "Export database", process.getInputStream(), outFile, log);
             job.start();
         }

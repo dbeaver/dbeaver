@@ -26,8 +26,9 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -56,10 +57,14 @@ public class PostgreDatabaseBackupAllHandler
     protected boolean validateTaskParameters(DBTTask task, PostgreBackupAllSettings settings, Log log) {
         if (PostgreSQLTasks.TASK_DATABASE_BACKUP_ALL.equals(task.getType().getId())) {
             for (PostgreDatabaseBackupAllInfo exportObject : settings.getExportObjects()) {
-                final File dir = settings.getOutputFolder(exportObject);
-                if (!dir.exists() && !dir.mkdirs()) {
-                    log.error("Can't create directory '" + dir.getAbsolutePath() + "'");
-                    return false;
+                final Path dir = settings.getOutputFolder(exportObject);
+                if (!Files.exists(dir)) {
+                    try {
+                        Files.createDirectories(dir);
+                    } catch (IOException e) {
+                        log.error("Can't create directory '" + dir + "'", e);
+                        return false;
+                    }
                 }
             }
         }
@@ -117,7 +122,7 @@ public class PostgreDatabaseBackupAllHandler
         }
 
         cmd.add("--file");
-        cmd.add(settings.getOutputFile(arg).getAbsolutePath());
+        cmd.add(settings.getOutputFile(arg).toAbsolutePath().toString());
 
         // Databases
         if (settings.getExportObjects().isEmpty()) {

@@ -31,8 +31,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tasks.nativetool.ExportSettingsExtension;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -53,7 +53,7 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
     private boolean dropObjects;
     private boolean outputFolderNeedsToBeRecreated;
     private boolean createDatabase;
-    private File outputFolder;
+    private Path outputFolder;
 
     @NotNull
     public List<PostgreDatabaseBackupInfo> getExportObjects() {
@@ -288,16 +288,16 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
     }
 
     @NotNull
-    public File getOutputFile(@NotNull PostgreDatabaseBackupInfo info) {
+    public Path getOutputFile(@NotNull PostgreDatabaseBackupInfo info) {
         String outputFileName = resolveVars(info.getDatabase(), info.getSchemas(), info.getTables(), getOutputFilePattern());
-        return new File(getOutputFolder(info), outputFileName);
+        return getOutputFolder(info).resolve(outputFileName);
     }
 
     @NotNull
     @Override
-    public File getOutputFolder(@NotNull PostgreDatabaseBackupInfo info) {
+    public Path getOutputFolder(@NotNull PostgreDatabaseBackupInfo info) {
         if (outputFolder == null || outputFolderNeedsToBeRecreated ) {
-            outputFolder = new File(resolveVars(info.getDatabase(), info.getSchemas(), info.getTables(), getOutputFolderPattern()));
+            outputFolder = Path.of(resolveVars(info.getDatabase(), info.getSchemas(), info.getTables(), getOutputFolderPattern()));
         }
         return outputFolder;
     }

@@ -57,6 +57,7 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -2550,6 +2551,19 @@ public final class DBUtils {
             return project.getFileSystemManager().getPathFromString(monitor, pathOrUri);
         } else {
             return Path.of(pathOrUri);
+        }
+    }
+
+    @NotNull
+    public static Path resolvePathFromURI(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBPProject project,
+        @NotNull URI uri
+    ) throws DBException {
+        if (project != null) {
+            return project.getFileSystemManager().getPathFromURI(monitor, uri);
+        } else {
+            return Path.of(uri);
         }
     }
 

@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -32,6 +33,8 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -112,10 +115,18 @@ public class OracleScriptExecuteHandler extends AbstractNativeToolHandler<Oracle
     }
 
     @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, OracleScriptExecuteSettings settings, OracleDataSource arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
-        final File inputFile = new File(settings.getInputFile());
-        if (!inputFile.exists()) {
-            throw new IOException("File '" + inputFile.getAbsolutePath() + "' doesn't exist");
+    protected void startProcessHandler(
+        DBRProgressMonitor monitor,
+        DBTTask task,
+        OracleScriptExecuteSettings settings,
+        OracleDataSource arg,
+        ProcessBuilder processBuilder,
+        Process process,
+        Log log
+    ) throws IOException, DBException {
+        Path inputFile = DBUtils.resolvePathFromString(monitor, task.getProject(), settings.getInputFile());
+        if (!Files.exists(inputFile)) {
+            throw new IOException("File '" + inputFile + "' doesn't exist");
         }
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
         new BinaryFileTransformerJob(monitor, task, inputFile, process.getOutputStream(), log).start();

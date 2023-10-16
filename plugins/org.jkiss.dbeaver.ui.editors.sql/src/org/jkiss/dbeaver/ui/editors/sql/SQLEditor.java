@@ -36,11 +36,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -142,8 +138,8 @@ import org.jkiss.utils.Pair;
 import java.io.*;
 import java.net.URI;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -2112,7 +2108,7 @@ public class SQLEditor extends SQLEditorBase implements
         this.globalScriptContext = new SQLScriptContext(
             parentContext,
             this,
-            EditorUtils.getLocalFileFromInput(getEditorInput()),
+            EditorUtils.getPathFromInput(getEditorInput()),
             new OutputLogWriter(),
             new SQLEditorParametersProvider(getSite()));
 
@@ -2769,8 +2765,13 @@ public class SQLEditor extends SQLEditorBase implements
 
     @NotNull
     private SQLScriptContext createScriptContext() {
-        File localFile = EditorUtils.getLocalFileFromInput(getEditorInput());
-        return new SQLScriptContext(globalScriptContext, SQLEditor.this, localFile, new OutputLogWriter(), new SQLEditorParametersProvider(getSite()));
+        java.nio.file.Path localFile = EditorUtils.getPathFromInput(getEditorInput());
+        return new SQLScriptContext(
+            globalScriptContext,
+            SQLEditor.this,
+            localFile,
+            new OutputLogWriter(),
+            new SQLEditorParametersProvider(getSite()));
     }
 
     private void setStatus(String status, DBPMessageType messageType)

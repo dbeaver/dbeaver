@@ -108,7 +108,7 @@ public class PostgreBackupAllWizard  extends AbstractNativeExportWizard<PostgreB
         getSettings().getExportObjects().stream()
             .map(it -> getSettings().getOutputFolder(it))
             .distinct()
-            .forEach(it -> ShellUtils.launchProgram(it.getAbsolutePath()));
+            .forEach(it -> ShellUtils.launchProgram(it.toAbsolutePath().toString()));
     }
 
     @Override

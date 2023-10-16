@@ -32,6 +32,8 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.List;
@@ -59,10 +61,12 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
     protected boolean validateTaskParameters(DBTTask task, MySQLExportSettings settings, Log log) {
         if (task.getType().getId().equals(MySQLTasks.TASK_DATABASE_BACKUP)) {
             for (MySQLDatabaseExportInfo exportObject : settings.getExportObjects()) {
-                final File dir = settings.getOutputFolder(exportObject);
-                if (!dir.exists()) {
-                    if (!dir.mkdirs()) {
-                        log.error("Can't create directory '" + dir.getAbsolutePath() + "'");
+                final Path dir = settings.getOutputFolder(exportObject);
+                if (!Files.exists(dir)) {
+                    try {
+                        Files.createDirectories(dir);
+                    } catch (IOException e) {
+                        log.error("Can't create directory '" + dir + "'");
                         return false;
                     }
                 }
@@ -140,10 +144,10 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
     }
 
     @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, MySQLExportSettings settings, final MySQLDatabaseExportInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
+    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, MySQLExportSettings settings, final MySQLDatabaseExportInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException, DBException {
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
-        File outFile = settings.getOutputFile(arg);
-        if (outFile.exists()) {
+        Path outFile = settings.getOutputFile(arg);
+        if (Files.exists(outFile)) {
             // Unlike pg_dump, mysqldump happily overrides files which can easily lead to a lost dump.
             // We prevent that with our manual check
             // https://github.com/dbeaver/dbeaver/issues/11532
@@ -160,7 +164,7 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
     static class DumpFilterJob extends DumpJob {
         private final Pattern DEFINER_PATTER = Pattern.compile("DEFINER\\s*=\\s*`[^*]*`@`[0-9a-z\\-_\\.%]*`", Pattern.CASE_INSENSITIVE);
 
-        DumpFilterJob(DBRProgressMonitor monitor, InputStream stream, File outFile, Log log) {
+        DumpFilterJob(DBRProgressMonitor monitor, InputStream stream, Path outFile, Log log) {
             super("MySQL databasse dump filter", monitor, stream, outFile, log);
         }
 
@@ -172,7 +176,7 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
                 NumberFormat numberFormat = NumberFormat.getInstance();
 
                 LineNumberReader reader = new LineNumberReader(new InputStreamReader(input, GeneralUtils.DEFAULT_ENCODING));
-                try (OutputStream output = new FileOutputStream(outFile)) {
+                try (OutputStream output = Files.newOutputStream(outFile)) {
                     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output, GeneralUtils.DEFAULT_ENCODING));
                     for (; ; ) {
                         String line = reader.readLine();

@@ -25,7 +25,9 @@ import org.jkiss.dbeaver.tasks.nativetool.ExportSettingsExtension;
 import org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 
 public abstract class AbstractNativeExportWizard<SETTINGS extends AbstractImportExportSettings<DBSObject> & ExportSettingsExtension<INFO>, INFO>
@@ -44,14 +46,18 @@ public abstract class AbstractNativeExportWizard<SETTINGS extends AbstractImport
         //verify that output files do not yet exist
         SETTINGS settings = getSettings();
         for (INFO info: settings.getExportObjects()) {
-            File dir = getSettings().getOutputFolder(info);
-            if (!dir.exists() && !dir.mkdirs()) {
-                logPage.setMessage("Can't create directory '" + dir.getAbsolutePath() + "'", IMessageProvider.ERROR);
-                getContainer().updateMessage();
-                continue;
+            Path dir = getSettings().getOutputFolder(info);
+            if (!Files.exists(dir)) {
+                try {
+                    Files.createDirectories(dir);
+                } catch (IOException e) {
+                    logPage.setMessage("Can't create directory '" + dir.toString() + "': " + e.getMessage(), IMessageProvider.ERROR);
+                    getContainer().updateMessage();
+                    continue;
+                }
             }
-            File file = settings.getOutputFile(info);
-            if (!file.exists() || file.isDirectory()) {
+            Path file = settings.getOutputFile(info);
+            if (!Files.exists(file) || Files.isDirectory(file)) {
                 continue;
             }
             boolean deleteFile = UIUtils.confirmAction(
@@ -61,11 +67,13 @@ public abstract class AbstractNativeExportWizard<SETTINGS extends AbstractImport
             if (!deleteFile) {
                 return false;
             }
-            boolean fileDeleted = file.delete();
-            if (!fileDeleted) {
+            try {
+                Files.delete(file);
+            } catch (IOException e) {
                 DBWorkbench.getPlatformUI().showError(
                     TaskNativeUIMessages.tools_db_export_wizard_file_have_not_been_deleted_title,
-                    TaskNativeUIMessages.tools_db_export_wizard_file_have_not_been_deleted_message
+                    TaskNativeUIMessages.tools_db_export_wizard_file_have_not_been_deleted_message,
+                    e
                 );
                 return false;
             }

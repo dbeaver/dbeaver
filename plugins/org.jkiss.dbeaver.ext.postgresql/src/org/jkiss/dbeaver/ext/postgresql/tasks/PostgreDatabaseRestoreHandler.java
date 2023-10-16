@@ -32,6 +32,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -132,10 +134,10 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
     }
 
     @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, PostgreDatabaseRestoreSettings settings, PostgreDatabaseRestoreInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
-        final File inputFile = new File(settings.getInputFile());
-        if (!inputFile.exists()) {
-            throw new IOException("File '" + inputFile.getAbsolutePath() + "' doesn't exist");
+    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, PostgreDatabaseRestoreSettings settings, PostgreDatabaseRestoreInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException, DBException {
+        final Path inputFile = DBUtils.resolvePathFromString(monitor, task.getProject(), settings.getInputFile());
+        if (!Files.exists(inputFile)) {
+            throw new IOException("File '" + inputFile + "' doesn't exist");
         }
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
         if (USE_STREAM_MONITOR && settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {

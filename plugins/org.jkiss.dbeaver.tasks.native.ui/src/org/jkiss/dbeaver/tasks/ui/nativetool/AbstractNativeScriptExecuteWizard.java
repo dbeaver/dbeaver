@@ -29,7 +29,8 @@ import org.jkiss.dbeaver.tasks.nativetool.AbstractScriptExecuteSettings;
 import org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 
 public abstract class AbstractNativeScriptExecuteWizard<SETTINGS extends AbstractScriptExecuteSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG>
@@ -39,7 +40,7 @@ public abstract class AbstractNativeScriptExecuteWizard<SETTINGS extends Abstrac
         super(dbObject, task);
     }
 
-    protected AbstractNativeScriptExecuteWizard(Collection<BASE_OBJECT> dbObject, String task, @Nullable File file) {
+    protected AbstractNativeScriptExecuteWizard(Collection<BASE_OBJECT> dbObject, String task, @Nullable Path file) {
         super(dbObject, task);
         updateFileSettings(file);
     }
@@ -74,8 +75,8 @@ public abstract class AbstractNativeScriptExecuteWizard<SETTINGS extends Abstrac
                         SWT.ICON_INFORMATION);
     }
 
-    protected void updateFileSettings(@Nullable File file) {
-        getSettings().setInputFile(file != null && file.exists() ? file.getAbsolutePath() : null);
+    protected void updateFileSettings(@Nullable Path file) {
+        getSettings().setInputFile(file != null && Files.exists(file) ? file.toAbsolutePath().toString() : null);
     }
 
 }

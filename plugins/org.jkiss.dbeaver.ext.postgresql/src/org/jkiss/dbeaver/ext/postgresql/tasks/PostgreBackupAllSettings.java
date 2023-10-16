@@ -33,8 +33,8 @@ import org.jkiss.dbeaver.tasks.nativetool.AbstractImportExportSettings;
 import org.jkiss.dbeaver.tasks.nativetool.ExportSettingsExtension;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 import java.util.*;
 
 public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSObject>
@@ -54,7 +54,7 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
     private static final String PROP_DATASOURCE = "datasource";
     private static final String PROP_DATABASES = "databases";
 
-    private List<PostgreDatabaseBackupAllInfo> exportObjects = new ArrayList<>();
+    private final List<PostgreDatabaseBackupAllInfo> exportObjects = new ArrayList<>();
 
     private String encoding;
     private boolean exportOnlyMetadata;
@@ -64,18 +64,18 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
     private boolean noPrivileges;
     private boolean noOwner;
     private boolean addRolesPasswords;
-    private File outputFolder;
+    private Path outputFolder;
 
     @NotNull
     @Override
-    public File getOutputFile(@NotNull PostgreDatabaseBackupAllInfo info) {
+    public Path getOutputFile(@NotNull PostgreDatabaseBackupAllInfo info) {
         DBSObjectContainer container = getContainerObject(info.getDatabases());
         String outputFileName = resolveVars(
             container != null ? container : info.getDataSource(),
             null,
             null,
             getOutputFilePattern());
-        return new File(getOutputFolder(info), outputFileName);
+        return getOutputFolder(info).resolve(outputFileName);
     }
 
     @NotNull
@@ -86,10 +86,10 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
 
     @NotNull
     @Override
-    public File getOutputFolder(@NotNull PostgreDatabaseBackupAllInfo info) {
+    public Path getOutputFolder(@NotNull PostgreDatabaseBackupAllInfo info) {
         if (outputFolder == null) {
             DBSObjectContainer container = getContainerObject(info.getDatabases());
-            outputFolder = new File(resolveVars(
+            outputFolder = Path.of(resolveVars(
                 container != null ? container : info.getDataSource(), null, null, getOutputFolderPattern()));
         }
         return outputFolder;
