@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskRunStatus;
 import org.jkiss.dbeaver.runtime.policy.BasePolicyDataProvider;
+
 import java.io.PrintStream;
 import java.util.Locale;
 
