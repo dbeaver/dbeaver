@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionPersistent;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -59,6 +60,7 @@ public class AISettings {
         this.aiDisabled = aiDisabled;
     }
 
+    @Property
     public String getActiveEngine() {
         return activeEngine;
     }
@@ -118,7 +120,7 @@ public class AISettings {
                 settings = ((SMSessionPersistent) session).getAttribute(AISettings.class.getName());
             }
             if (settings == null) {
-                String content = DBWorkbench.getPlatform().getProductConfigurationController().loadConfigurationFile(AI_CONFIGURATION_JSON);
+                String content = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(AI_CONFIGURATION_JSON);
                 if (CommonUtils.isEmpty(content)) {
                     settings = new AISettings();
                 } else {
@@ -144,7 +146,7 @@ public class AISettings {
     public void saveSettings() {
         try {
             String content = gson.toJson(this, AISettings.class);
-            DBWorkbench.getPlatform().getProductConfigurationController().saveConfigurationFile(AI_CONFIGURATION_JSON, content);
+            DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_JSON, content);
             DBWorkbench.getPlatform().getPreferenceStore().setValue(AICompletionConstants.AI_DISABLED, aiDisabled);
         } catch (Exception e) {
             log.error(e);
