@@ -62,13 +62,13 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
 
     @Override
     public String getNodeType() {
-        return "FileSystemRoot";
+        return "dbfs";
     }
 
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
     public String getNodeName() {
-        return "File Systems";
+        return "Remote file systems";
     }
 
     @Override
