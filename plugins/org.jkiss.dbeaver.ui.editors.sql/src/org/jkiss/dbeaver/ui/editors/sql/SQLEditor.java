@@ -5023,7 +5023,9 @@ public class SQLEditor extends SQLEditorBase implements
             activePresentationPanel = null;
 
             for (SQLEditorPresentation presentation : presentations.values()) {
-                presentation.dispose();
+                if (presentation != null) {
+                    presentation.dispose();
+                }
             }
 
             presentations.clear();
