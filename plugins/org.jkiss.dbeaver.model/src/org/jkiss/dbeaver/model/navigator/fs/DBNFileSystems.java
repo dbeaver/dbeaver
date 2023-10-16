@@ -137,10 +137,15 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
         return result.toArray(new DBNFileSystem[0]);
     }
 
-    public DBNPathBase findNodeByPath(DBRProgressMonitor monitor, String path) throws DBException {
-        getChildren(monitor);
+    public DBNPathBase findNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull String path) throws DBException {
+        return findNodeByPath(monitor, path, false);
+    }
 
-        //DBNFileSystemRoot fsNode = null;
+    public DBNPathBase findNodeByPath(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String path,
+        boolean shortPath
+    ) throws DBException {
         DBNNode curPath = null;
         URI uri;
         try {
@@ -156,7 +161,11 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
             {
                 if (curPath == null) {
                     this.getChildren(monitor);
-                    curPath = this.getFileSystem(uri.getScheme(), name);
+                    if (!shortPath) {
+                        curPath = this.getFileSystem(uri.getScheme(), name);
+                    } else {
+                        curPath = this.getRootFolder(monitor, name);
+                    }
                 } else if (curPath instanceof DBNFileSystem fsNode) {
                     fsNode.getChildren(monitor);
                     curPath = fsNode.getRoot(name);
