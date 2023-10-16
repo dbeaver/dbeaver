@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.task;
 
-import java.io.PrintStream;
-import java.util.Locale;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -25,8 +23,8 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskRunStatus;
 import org.jkiss.dbeaver.runtime.policy.BasePolicyDataProvider;
-
-
+import java.io.PrintStream;
+import java.util.Locale;
 
 /**
  * DTTaskHandlerExport

@@ -52,6 +52,12 @@ public abstract class AbstractPolicyDataProvider implements PolicyDataProvider {
         return false;
     }
 
+    /**
+     * Get boolean value of policy data property from win registry
+     *
+     * @param property - property name
+     * @return - boolean value
+     */
     public boolean getDataPolicyFromRegistry(String property) {
         if (RuntimeUtils.isWindows()) {
             boolean isPolicyEnabled = getBooleanFromWinRegistryNode(WinReg.HKEY_CURRENT_USER, property);
