@@ -51,21 +51,11 @@ public class CommonUtils {
         for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);
             switch (c) {
-                case '"':
-                    res.append("\\\"");
-                    break;
-                case '\n':
-                    res.append("\\n");
-                    break;
-                case '\r':
-                    res.append("\\r");
-                    break;
-                case '\t':
-                    res.append("\\t");
-                    break;
-                default:
-                    res.append(c);
-                    break;
+                case '"' -> res.append("\\\"");
+                case '\n' -> res.append("\\n");
+                case '\r' -> res.append("\\r");
+                case '\t' -> res.append("\\t");
+                default -> res.append(c);
             }
         }
         return res.toString();
@@ -285,8 +275,8 @@ public class CommonUtils {
     public static boolean getBoolean(@Nullable Object value, boolean defaultValue) {
         if (value == null) {
             return defaultValue;
-        } else if (value instanceof Boolean) {
-            return (Boolean) value;
+        } else if (value instanceof Boolean b) {
+            return b;
         } else {
             return getBoolean(value.toString(), defaultValue);
         }
@@ -304,9 +294,8 @@ public class CommonUtils {
         for (; ; ) {
             if (rootCause.getCause() != null) {
                 rootCause = rootCause.getCause();
-            } else if (rootCause instanceof InvocationTargetException
-                && ((InvocationTargetException) rootCause).getTargetException() != null) {
-                rootCause = ((InvocationTargetException) rootCause).getTargetException();
+            } else if (rootCause instanceof InvocationTargetException ite && ite.getTargetException() != null) {
+                rootCause = ite.getTargetException();
             } else {
                 break;
             }
@@ -350,8 +339,8 @@ public class CommonUtils {
     public static String toString(@Nullable Object object) {
         if (object == null) {
             return "";
-        } else if (object instanceof String) {
-            return (String) object;
+        } else if (object instanceof String s) {
+            return s;
         } else {
             String strValue = object.toString();
             return strValue == null ? "" : strValue;
@@ -361,8 +350,8 @@ public class CommonUtils {
     public static String toString(@Nullable Object object, String def) {
         if (object == null) {
             return def;
-        } else if (object instanceof String) {
-            return (String) object;
+        } else if (object instanceof String s) {
+            return s;
         } else {
             return object.toString();
         }
@@ -375,8 +364,8 @@ public class CommonUtils {
     public static int toInt(@Nullable Object object, int def) {
         if (object == null) {
             return def;
-        } else if (object instanceof Number) {
-            return ((Number) object).intValue();
+        } else if (object instanceof Number n) {
+            return n.intValue();
         } else {
             try {
                 return Integer.parseInt(toString(object));
@@ -416,8 +405,8 @@ public class CommonUtils {
     public static long toLong(@Nullable Object object, long defValue) {
         if (object == null) {
             return defValue;
-        } else if (object instanceof Number) {
-            return ((Number) object).longValue();
+        } else if (object instanceof Number n) {
+            return n.longValue();
         } else {
             try {
                 return Long.parseLong(toString(object));
@@ -1022,8 +1011,8 @@ public class CommonUtils {
      */
     @NotNull
     public static String replaceAll(@NotNull String input, @NotNull String regex, @NotNull Function<Matcher, String> replacer) {
-        final Matcher matcher = Pattern.compile(regex).matcher(input);
-        final StringBuffer sb = new StringBuffer();
+        Matcher matcher = Pattern.compile(regex).matcher(input);
+        StringBuilder sb = new StringBuilder();
         while (matcher.find()) {
             matcher.appendReplacement(sb, replacer.apply(matcher));
         }

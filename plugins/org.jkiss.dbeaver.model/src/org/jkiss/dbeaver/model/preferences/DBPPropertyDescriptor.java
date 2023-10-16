@@ -56,6 +56,12 @@ public interface DBPPropertyDescriptor {
     String getDescription();
 
     /**
+     * Returns a hint of this property.
+     */
+    @Nullable
+    String getHint();
+
+    /**
      * Returns the type of this property. Types is a java class.
      */
     @Nullable

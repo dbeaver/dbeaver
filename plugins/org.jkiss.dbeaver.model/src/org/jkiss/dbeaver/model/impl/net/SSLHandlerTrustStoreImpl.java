@@ -17,10 +17,10 @@
 package org.jkiss.dbeaver.model.impl.net;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
+import org.jkiss.dbeaver.model.impl.AbstractDataSource;
 import org.jkiss.dbeaver.model.impl.app.CertificateGenHelper;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -72,6 +72,7 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
 
         final String selfSignedCert = sslConfig.getStringProperty(PROP_SSL_SELF_SIGNED_CERT);
         final String keyStore = sslConfig.getStringProperty(PROP_SSL_KEYSTORE);
+        final String keyStoreData = sslConfig.getSecureProperty(PROP_SSL_KEYSTORE_VALUE);
 
         final SSLConfigurationMethod method = CommonUtils.valueOf(
             SSLConfigurationMethod.class,
@@ -79,14 +80,22 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
             SSLConfigurationMethod.CERTIFICATES);
 
         {
-            if (method == SSLConfigurationMethod.KEYSTORE && keyStore != null) {
+            if (method == SSLConfigurationMethod.KEYSTORE) {
                 monitor.subTask("Load keystore");
                 final String password = sslConfig.getPassword() == null ?
                     sslConfig.getSecureProperty(PROP_SSL_KEYSTORE_PASSWORD) :
                     sslConfig.getPassword();
-
                 char[] keyStorePasswordData = CommonUtils.isEmpty(password) ? new char[0] : password.toCharArray();
-                securityManager.addCertificate(dataSource.getContainer(), CERT_TYPE, keyStore, keyStorePasswordData);
+                if (keyStore != null) {
+                    securityManager.addCertificate(dataSource.getContainer(), CERT_TYPE, keyStore, keyStorePasswordData);
+                } else if (keyStoreData != null) {
+                    securityManager.addCertificate(
+                        dataSource.getContainer(),
+                        CERT_TYPE,
+                        Base64.getDecoder().decode(keyStoreData),
+                        keyStorePasswordData
+                    );
+                }
             } else if (CommonUtils.toBoolean(selfSignedCert)) {
                 monitor.subTask("Generate self-signed certificate");
                 securityManager.addSelfSignedCertificate(dataSource.getContainer(), CERT_TYPE, "CN=" + dataSource.getContainer().getActualConnectionConfiguration().getHostName());
