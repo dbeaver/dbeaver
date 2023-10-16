@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionContext;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionRequest;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionSession;
@@ -115,8 +114,6 @@ public class MetadataProcessor {
         @Nullable DAICompletionSession session,
         int maxTokens
     ) throws DBException {
-        final DAICompletionContext context = session != null ? session.getContext() : request.getContext();
-
         if (mainObject == null || mainObject.getDataSource() == null) {
             throw new DBException("Invalid completion request");
         }
@@ -134,7 +131,7 @@ public class MetadataProcessor {
         }
         int maxRequestLength = maxTokens - additionalMetadata.length() - tail.length() - 20 - MAX_RESPONSE_TOKENS;
 
-        if (context.getScope() != DAICompletionScope.CUSTOM) {
+        if (request.getContext().getScope() != DAICompletionScope.CUSTOM) {
             additionalMetadata.append(MetadataProcessor.INSTANCE.generateObjectDescription(
                 monitor,
                 mainObject,
@@ -144,7 +141,7 @@ public class MetadataProcessor {
                 false
             ));
         } else {
-            for (DBSEntity entity : context.getCustomEntities()) {
+            for (DBSEntity entity : request.getContext().getCustomEntities()) {
                 additionalMetadata.append(generateObjectDescription(
                     monitor,
                     entity,

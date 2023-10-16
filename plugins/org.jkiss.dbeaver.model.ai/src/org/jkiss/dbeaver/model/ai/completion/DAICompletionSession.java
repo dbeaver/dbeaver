@@ -25,11 +25,9 @@ import java.util.List;
  * Completion session
  */
 public class DAICompletionSession {
-    private final DAICompletionContext context;
     private final List<DAICompletionRequest> requests;
 
-    public DAICompletionSession(@NotNull DAICompletionContext context) {
-        this.context = context;
+    public DAICompletionSession() {
         this.requests = new ArrayList<>();
     }
 
@@ -39,11 +37,6 @@ public class DAICompletionSession {
 
     public void clear() {
         requests.clear();
-    }
-
-    @NotNull
-    public DAICompletionContext getContext() {
-        return context;
     }
 
     @NotNull
