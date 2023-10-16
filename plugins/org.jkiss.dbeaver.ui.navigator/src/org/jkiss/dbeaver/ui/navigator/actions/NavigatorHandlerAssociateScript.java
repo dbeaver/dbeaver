@@ -81,7 +81,9 @@ public class NavigatorHandlerAssociateScript extends NavigatorHandlerObjectBase 
                 } else  {
                     project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(script.getProject());
                 }
-                DBNUtils.refreshNavigatorResource(project, script, dataSource);
+                if (project != null) {
+                    DBNUtils.refreshNavigatorResource(project, script, dataSource);
+                }
             }
         }
         return null;
