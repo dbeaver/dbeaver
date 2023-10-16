@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
@@ -113,7 +114,14 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 }
                 @Override
                 public Image getImage(Object element) {
-                    return DBeaverIcons.getImage(((DBNNode)element).getNodeIconDefault());
+                    DBNNode node = (DBNNode) element;
+                    DBPImage icon;
+                    if (node instanceof DBNPathBase path) {
+                        icon = DBIcon.TREE_SCRIPT;
+                    } else {
+                        icon = node.getNodeIconDefault();
+                    }
+                    return DBeaverIcons.getImage(icon);
                 }
             });
             scriptsViewer.addDoubleClickListener(event -> {
