@@ -17,21 +17,24 @@
 package org.jkiss.dbeaver.model.rm;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Set;
@@ -118,7 +121,17 @@ public class RMUtils {
         return project;
     }
 
-    public static String readScriptContents(@NotNull DBPProject project, @NotNull String filePath) throws Exception {
+    public static String readScriptContents(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPProject project,
+        @NotNull String filePath
+    ) throws DBException, IOException {
+        Path nioPath = DBUtils.resolvePathFromString(monitor, project, filePath);
+        if (!IOUtils.isLocalPath(nioPath)) {
+            // Remote file
+            return Files.readString(nioPath);
+        }
+
         RMControllerProvider rmControllerProvider = DBUtils.getAdapter(RMControllerProvider.class, project);
         if (rmControllerProvider != null) {
             var rmController = rmControllerProvider.getResourceController();
@@ -136,10 +149,9 @@ public class RMUtils {
             try (Reader fileReader = new InputStreamReader(sqlStream, sqlFile.getCharset())) {
                 return IOUtils.readToString(fileReader);
             }
-        } catch (Exception e) {
-            throw new InvocationTargetException(e);
+        } catch (CoreException e) {
+            throw new IOException(e);
         }
-
     }
 
     public static IFile findEclipseProjectFile(@NotNull DBPProject project, @NotNull String filePath) {

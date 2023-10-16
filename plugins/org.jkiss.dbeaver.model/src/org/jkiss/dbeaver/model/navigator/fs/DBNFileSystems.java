@@ -34,6 +34,8 @@ import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -140,7 +142,14 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
 
         DBNFileSystemRoot fsNode = null;
         DBNPathBase curPath = null;
-        for (String name : path.split("/")) {
+        URI uri;
+        try {
+            uri = new URI(path);
+        } catch (URISyntaxException e) {
+            throw new DBException("Bad path: " + path, e);
+        }
+        String plainPath = uri.getSchemeSpecificPart();
+        for (String name : plainPath.split("/")) {
             if (name.isEmpty() || (curPath == null && name.endsWith(":"))) {
                 continue;
             }

@@ -29,8 +29,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -183,7 +183,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
 
         DBPProject project = pipe.getConsumer().getProject();
         if (remoteFS && project != null) {
-            String selected = DBWorkbench.getPlatformUI().openFileSystemSelector(
+            DBNPath selected = DBWorkbench.getPlatformUI().openFileSystemSelector(
                 DTUIMessages.stream_producer_select_input_file,
                 false,
                 SWT.OPEN,
@@ -191,12 +191,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                 extensions.toArray(new String[0]),
                 pipe.getConsumer().getObjectName());
             initializer = monitor -> {
-                try {
-                    Path path = DBUtils.resolvePathFromString(monitor, project, selected);
-                    updateSingleConsumer(monitor, pipe, path);
-                } catch (Exception e) {
-                    log.error(e);
-                }
+                updateSingleConsumer(monitor, pipe, selected.getPath());
             };
         } else if (pipe.getConsumer() != null && pipe.getConsumer().getTargetObjectContainer() != null) {
             File[] files = DialogUtils.openFileList(

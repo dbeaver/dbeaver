@@ -27,6 +27,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
@@ -191,9 +192,10 @@ public class DialogUtils {
             protected void openBrowser(boolean remoteFS) {
                 String fileName;
                 if (remoteFS && project != null) {
-                    fileName = DBWorkbench.getPlatformUI().openFileSystemSelector(
+                    DBNPath pathNode = DBWorkbench.getPlatformUI().openFileSystemSelector(
                         CommonUtils.toString(label, "Output folder"),
                         true, SWT.SAVE, false, null, value);
+                    fileName = pathNode == null ? null : pathNode.getPath().toString();
                     if (fileName != null) {
                         setText(fileName);
                     }

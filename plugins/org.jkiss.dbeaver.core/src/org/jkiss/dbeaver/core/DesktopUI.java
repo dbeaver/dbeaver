@@ -697,7 +697,7 @@ public class DesktopUI implements DBPPlatformUI {
     }
 
     @Override
-    public String openFileSystemSelector(
+    public DBNPath openFileSystemSelector(
         @NotNull String title,
         boolean folder,
         int style,
@@ -713,8 +713,8 @@ public class DesktopUI implements DBPPlatformUI {
             null,
             new Class[] { DBNPath.class },
             null);
-        if (object instanceof DBNPath) {
-            return ((DBNPath) object).getPath().toString();
+        if (object instanceof DBNPath path) {
+            return path;
         }
         return null;
     }

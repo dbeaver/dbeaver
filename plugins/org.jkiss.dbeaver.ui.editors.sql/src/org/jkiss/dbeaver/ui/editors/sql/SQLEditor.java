@@ -133,6 +133,7 @@ import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.Pair;
 
 import java.io.*;
@@ -3285,7 +3286,7 @@ public class SQLEditor extends SQLEditorBase implements
         final IFolder root = workspace.getResourceDefaultRoot(workspace.getActiveProject(), ScriptsHandlerImpl.class, false);
         if (root != null) {
             URI locationURI = root.getLocationURI();
-            if (locationURI.getScheme().equals("file")) {
+            if (IOUtils.isLocalURI(locationURI)) {
                 return new File(locationURI).toString();
             }
         }
