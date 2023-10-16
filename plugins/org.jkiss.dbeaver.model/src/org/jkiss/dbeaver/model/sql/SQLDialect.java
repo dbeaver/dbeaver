@@ -484,6 +484,8 @@ public interface SQLDialect {
 
     boolean supportsInsertAllDefaultValuesStatement();
 
+    boolean supportsUuid();
+
     /**
      * Generates a set of connection-specific dialect features which require special handling during SQL parsing
      * (empty by default)

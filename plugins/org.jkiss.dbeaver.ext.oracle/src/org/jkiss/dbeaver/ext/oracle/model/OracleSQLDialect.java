@@ -498,6 +498,11 @@ public class OracleSQLDialect extends JDBCSQLDialect
         return preferenceStore == null || preferenceStore.getBoolean(OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING);
     }
 
+    @Override
+    public boolean supportsUuid() {
+        return false;
+    }
+
     @NotNull
     @Override
     public String[] getScriptDelimiters() {

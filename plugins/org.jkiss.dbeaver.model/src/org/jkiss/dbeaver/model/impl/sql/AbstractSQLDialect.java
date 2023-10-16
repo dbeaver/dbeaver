@@ -984,6 +984,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return false;
     }
 
+    @Override
+    public boolean supportsUuid() {
+        return true;
+    }
+
     @NotNull
     @Override
     public SQLTokenPredicateSet getSkipTokenPredicates() {

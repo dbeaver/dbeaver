@@ -824,8 +824,8 @@ public class JDBCUtils {
         return null;
     }
 
-    public static long executeInsertAutoIncrement(Connection session, String sql, Object... params) throws SQLException {
-        try (PreparedStatement dbStat = session.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+    public static long executeInsertAutoIncrement(Connection session, String sql, String[] columnIdList, Object... params) throws SQLException {
+        try (PreparedStatement dbStat = session.prepareStatement(sql, columnIdList)) {
             if (params != null) {
                 for (int i = 0; i < params.length; i++) {
                     dbStat.setObject(i + 1, params[i]);
