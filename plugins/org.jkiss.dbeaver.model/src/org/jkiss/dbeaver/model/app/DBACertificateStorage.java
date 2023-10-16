@@ -43,6 +43,12 @@ public interface DBACertificateStorage
         @NotNull String keyStorePath,
         @NotNull char[] keyStorePassword) throws DBException;
 
+    void addCertificate(
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull String certType,
+        @NotNull byte[] keyStoreData,
+        @NotNull char[] keyStorePassword) throws DBException;
+
     void addSelfSignedCertificate(
         @NotNull DBPDataSourceContainer dataSource,
         @NotNull String certType,
