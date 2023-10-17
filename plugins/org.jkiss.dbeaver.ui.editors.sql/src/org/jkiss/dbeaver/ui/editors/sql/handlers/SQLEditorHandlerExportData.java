@@ -19,13 +19,9 @@ package org.jkiss.dbeaver.ui.editors.sql.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.swt.SWT;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
-import org.jkiss.dbeaver.runtime.policy.BasePolicyDataProvider;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorParametersProvider;
@@ -35,18 +31,8 @@ import java.io.StringWriter;
 
 public class SQLEditorHandlerExportData extends AbstractHandler {
 
-    private BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
-
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-
-        if (policyProvider.isExportDataDisabled()) {
-            UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
-                ResultSetMessages.dialog_policy_data_export_title,
-                ResultSetMessages.dialog_policy_data_export_msg,
-                SWT.ICON_WARNING);
-            return null;
-        }
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
         if (editor != null) {
             editor.exportDataFromQuery(new ExportDataSQLScriptContext(editor));

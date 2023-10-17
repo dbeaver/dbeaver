@@ -73,7 +73,6 @@ import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.runtime.policy.BasePolicyDataProvider;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.TabFolderReorder;
@@ -237,7 +236,6 @@ public class ResultSetViewer extends Viewer
     private long lastThemeUpdateTime;
 
     private volatile boolean nextSegmentReadingBlocked;
-    private BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container) {
         super();
@@ -1742,10 +1740,7 @@ public class ResultSetViewer extends Viewer
 
         {
             ToolBarManager addToolbBarManagerar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            if (!policyProvider.isExportDataDisabled()) {
-                menuService.populateContributionManager(addToolbBarManagerar, TOOLBAR_EXPORT_CONTRIBUTION_ID);
-            }
-
+            menuService.populateContributionManager(addToolbBarManagerar, TOOLBAR_EXPORT_CONTRIBUTION_ID);
             addToolbBarManagerar.add(new GroupMarker(TOOLBAR_GROUP_PRESENTATIONS));
             addToolbBarManagerar.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
 
@@ -2865,9 +2860,7 @@ public class ResultSetViewer extends Viewer
 
         // Fill general menu
         if (dataContainer != null) {
-            if (!policyProvider.isExportDataDisabled()) {
-                manager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT));
-            }
+            manager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT));
             MenuManager openWithMenu = new MenuManager(ActionUtils.findCommandName(ResultSetHandlerOpenWith.CMD_OPEN_WITH));
             openWithMenu.setRemoveAllWhenShown(true);
             openWithMenu.addMenuListener(manager1 -> ResultSetHandlerOpenWith.fillOpenWithMenu(ResultSetViewer.this, manager1));

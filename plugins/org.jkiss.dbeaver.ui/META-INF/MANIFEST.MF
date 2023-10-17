@@ -9,7 +9,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Activator: org.jkiss.dbeaver.ui.internal.UIActivator
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.runtime,
- org.jkiss.dbeaver.runtime.policy,
  org.jkiss.dbeaver.runtime.ui,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.css,
@@ -43,6 +42,5 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.eclipse.ui.forms,
  org.eclipse.ui.workbench.texteditor,
- org.eclipse.e4.ui.model.workbench,
- com.sun.jna.platform
+ org.eclipse.e4.ui.model.workbench
 Automatic-Module-Name: org.jkiss.dbeaver.ui

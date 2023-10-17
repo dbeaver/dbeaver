@@ -24,7 +24,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,
  org.eclipse.core.resources,
  org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.model.sql,
- org.jkiss.dbeaver.ui
+ org.jkiss.dbeaver.model.sql
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.data.transfer

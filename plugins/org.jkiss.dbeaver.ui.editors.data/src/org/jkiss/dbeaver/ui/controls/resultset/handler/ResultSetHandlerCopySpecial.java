@@ -49,8 +49,8 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
     public static final String CMD_COPY_SPECIAL = IActionConstants.CMD_COPY_SPECIAL;
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-
+    public Object execute(ExecutionEvent event) throws ExecutionException
+    {
         IResultSetController resultSet = getActiveResultSet(HandlerUtil.getActivePart(event));
         if (resultSet == null) {
             return null;
