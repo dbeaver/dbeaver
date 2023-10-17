@@ -1745,6 +1745,7 @@ public class ResultSetViewer extends Viewer
             if (!policyProvider.isExportDataDisabled()) {
                 menuService.populateContributionManager(addToolbBarManagerar, TOOLBAR_EXPORT_CONTRIBUTION_ID);
             }
+
             addToolbBarManagerar.add(new GroupMarker(TOOLBAR_GROUP_PRESENTATIONS));
             addToolbBarManagerar.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
 
