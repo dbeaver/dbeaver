@@ -60,13 +60,13 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
 
     @Override
     public String getNodeType() {
-        return "FileSystemRoot";
+        return "dbvfs";
     }
 
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
     public String getNodeName() {
-        return "File Systems";
+        return "dbvfs";
     }
 
     @Override
@@ -183,7 +183,7 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
 
     @Override
     public String getNodeItemPath() {
-        return NodePathType.dbvfs.getPrefix() + ((DBNProject)getParentNode()).getRawNodeItemPath() + "/" + getNodeName();
+        return NodePathType.ext.getPrefix() + ((DBNProject) getParentNode()).getProject().getId() + "/" + getNodeName();
     }
 
     @Override
