@@ -239,6 +239,9 @@ public class DTUIMessages extends NLS {
     public static String mappings_rules_dialog_confirmation_title;
     public static String mappings_rules_dialog_confirmation_message;
 
+    public static String dialog_policy_data_export_title;
+    public static String dialog_policy_data_export_msg;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, DTUIMessages.class);
