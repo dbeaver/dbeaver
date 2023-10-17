@@ -413,16 +413,9 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 break;
             }
             case IWorkbenchCommandConstants.EDIT_COPY:
-                if (policyProvider.isCopyDataDisabled()) {
-                    UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
-                        ResultSetMessages.dialog_policy_data_copy_title,
-                        ResultSetMessages.dialog_policy_data_copy_msg,
-                        SWT.ICON_WARNING);
-                } else {
-                    ResultSetUtils.copyToClipboard(
-                        presentation.copySelection(
-                            new ResultSetCopySettings(false, false, false, true, false, null, null, null, DBDDisplayFormat.EDIT)));
-                }
+                ResultSetUtils.copyToClipboard(
+                    presentation.copySelection(
+                        new ResultSetCopySettings(false, false, false, true, false, null, null, null, DBDDisplayFormat.EDIT)));
                 break;
             case IWorkbenchCommandConstants.EDIT_PASTE:
                 if (presentation instanceof IResultSetEditor) {

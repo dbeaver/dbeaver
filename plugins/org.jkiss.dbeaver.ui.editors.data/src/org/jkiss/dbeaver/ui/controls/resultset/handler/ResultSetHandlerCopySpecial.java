@@ -20,7 +20,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -30,7 +29,6 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.runtime.policy.BasePolicyDataProvider;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ValueFormatSelector;
@@ -49,18 +47,9 @@ import java.util.Map;
 public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements IElementUpdater {
 
     public static final String CMD_COPY_SPECIAL = IActionConstants.CMD_COPY_SPECIAL;
-    private BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-
-        if (policyProvider.isCopyDataDisabled()) {
-            UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
-                ResultSetMessages.dialog_policy_data_copy_title,
-                ResultSetMessages.dialog_policy_data_copy_msg,
-                SWT.ICON_WARNING);
-            return null;
-        }
 
         IResultSetController resultSet = getActiveResultSet(HandlerUtil.getActivePart(event));
         if (resultSet == null) {
