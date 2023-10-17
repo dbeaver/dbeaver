@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -126,7 +127,7 @@ public class RMUtils {
         @NotNull DBPProject project,
         @NotNull String filePath
     ) throws DBException, IOException {
-        Path nioPath = DBUtils.resolvePathFromString(monitor, project, filePath);
+        Path nioPath = DBFUtils.resolvePathFromString(monitor, project, filePath);
         if (!IOUtils.isLocalPath(nioPath)) {
             // Remote file
             return Files.readString(nioPath);

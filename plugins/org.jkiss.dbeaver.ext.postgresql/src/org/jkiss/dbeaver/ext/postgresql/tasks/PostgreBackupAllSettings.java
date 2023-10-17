@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.tasks.nativetool.ExportSettingsExtension;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Path;
 import java.util.*;
 
 public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSObject>
@@ -64,18 +63,18 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
     private boolean noPrivileges;
     private boolean noOwner;
     private boolean addRolesPasswords;
-    private Path outputFolder;
 
     @NotNull
     @Override
-    public Path getOutputFile(@NotNull PostgreDatabaseBackupAllInfo info) {
+    public String getOutputFile(@NotNull PostgreDatabaseBackupAllInfo info) {
         DBSObjectContainer container = getContainerObject(info.getDatabases());
         String outputFileName = resolveVars(
             container != null ? container : info.getDataSource(),
             null,
             null,
             getOutputFilePattern());
-        return getOutputFolder(info).resolve(outputFileName);
+        String outputFolder = getOutputFolder(info);
+        return makeOutFilePath(outputFolder, outputFileName);
     }
 
     @NotNull
@@ -86,13 +85,10 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
 
     @NotNull
     @Override
-    public Path getOutputFolder(@NotNull PostgreDatabaseBackupAllInfo info) {
-        if (outputFolder == null) {
-            DBSObjectContainer container = getContainerObject(info.getDatabases());
-            outputFolder = Path.of(resolveVars(
-                container != null ? container : info.getDataSource(), null, null, getOutputFolderPattern()));
-        }
-        return outputFolder;
+    public String getOutputFolder(@NotNull PostgreDatabaseBackupAllInfo info) {
+        DBSObjectContainer container = getContainerObject(info.getDatabases());
+        return resolveVars(
+            container != null ? container : info.getDataSource(), null, null, getOutputFolderPattern());
     }
 
     @Nullable

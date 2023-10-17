@@ -31,8 +31,8 @@ import org.eclipse.ui.ide.IDE;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -149,7 +149,7 @@ public class TextWithOpen extends Composite {
                 try {
                     if (project != null && isMultiFileSystem()) {
                         try {
-                            targetFile = DBUtils.resolvePathFromString(new VoidProgressMonitor(), project, fileName);
+                            targetFile = DBFUtils.resolvePathFromString(new VoidProgressMonitor(), project, fileName);
                         } catch (DBException ex) {
                             log.debug("Error resolving URI: " + ex.getMessage());
                             targetFile = Path.of(fileName);

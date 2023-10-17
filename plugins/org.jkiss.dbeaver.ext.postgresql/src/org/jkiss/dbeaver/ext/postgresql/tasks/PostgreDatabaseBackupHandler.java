@@ -22,8 +22,10 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
@@ -54,14 +56,16 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
     protected boolean validateTaskParameters(DBTTask task, PostgreDatabaseBackupSettings settings, Log log) {
         if (task.getType().getId().equals(PostgreSQLTasks.TASK_DATABASE_BACKUP)) {
             for (PostgreDatabaseBackupInfo exportObject : settings.getExportObjects()) {
-                final Path dir = settings.getOutputFolder(exportObject);
-                if (!Files.exists(dir)) {
-                    try {
-                        Files.createDirectories(dir);
-                    } catch (IOException e) {
-                        log.error("Can't create directory '" + dir + "'", e);
-                        return false;
+                final String dir = settings.getOutputFolder(exportObject);
+                try {
+                    Path outputFolderPath = DBFUtils.resolvePathFromString(new VoidProgressMonitor(), task.getProject(), dir);
+                    if (!Files.exists(outputFolderPath)) {
+                        Files.createDirectories(outputFolderPath);
                     }
+                }
+                catch (Exception e) {
+                    log.error("Can't create directory '" + dir + "'", e);
+                    return false;
                 }
             }
         }
@@ -115,9 +119,11 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
             cmd.add("--create");
         }
 
-        if (!USE_STREAM_MONITOR || settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
+        if (!isUseStreamTransfer(settings.getOutputFile(arg)) ||
+            settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.DIRECTORY
+        ) {
             cmd.add("--file");
-            cmd.add(settings.getOutputFile(arg).toAbsolutePath().toString());
+            cmd.add(settings.getOutputFile(arg));
         }
 
         // Objects
@@ -150,8 +156,9 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
     @Override
     protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, PostgreDatabaseBackupSettings settings, PostgreDatabaseBackupInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException, DBException {
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
-        if (USE_STREAM_MONITOR && settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
-            Path outFile = settings.getOutputFile(arg);
+        String outFileName = settings.getOutputFile(arg);
+        if (isUseStreamTransfer(outFileName) && settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
+            Path outFile = DBFUtils.resolvePathFromString(monitor, task.getProject(), outFileName);
             DumpCopierJob job = new DumpCopierJob(monitor, "Export database", process.getInputStream(), outFile, log);
             job.start();
         }

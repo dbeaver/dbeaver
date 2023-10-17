@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -119,7 +120,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
 
             DBPProject project = getWizard().getProject();
             boolean showLocalFS = !DBWorkbench.isDistributed();
-            boolean showRemoteFS = project != null && DBWorkbench.getPlatformUI().supportsMultiFileSystems(project);
+            boolean showRemoteFS = project != null && DBFUtils.supportsMultiFileSystems(project);
 
             UIUtils.setControlContextMenu(filesTable, manager -> {
                 if (showLocalFS) {

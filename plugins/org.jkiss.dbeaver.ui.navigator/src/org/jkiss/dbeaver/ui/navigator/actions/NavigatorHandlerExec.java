@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -97,7 +98,7 @@ public class NavigatorHandlerExec extends AbstractHandler {
                     SQLNativeExecutorDescriptor executorDescriptor = SQLNativeExecutorRegistry.getInstance()
                         .getExecutorDescriptor(container);
                     if (executorDescriptor != null && executorDescriptor.getNativeExecutor() != null) {
-                        Path file = DBUtils.resolvePathFromURI(monitor, project, script.getLocationURI());
+                        Path file = DBFUtils.resolvePathFromURI(monitor, project, script.getLocationURI());
 
                         SQLScriptExecutor<DBSObject> nativeExecutor =
                             (SQLScriptExecutor<DBSObject>) executorDescriptor.getNativeExecutor();

@@ -58,7 +58,6 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
 
     private String taskErrorMessage;
 
-
     @Override
     @NotNull
     public DBTTaskRunStatus executeTask(

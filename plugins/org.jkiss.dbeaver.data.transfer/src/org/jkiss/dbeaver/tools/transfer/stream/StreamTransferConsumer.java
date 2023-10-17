@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -325,7 +326,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             return null;
         }
         if (lobDirectory == null) {
-            lobDirectory = DBUtils.resolvePathFromString(monitor, getProject(), getOutputFolder()).resolve(LOB_DIRECTORY_NAME);
+            lobDirectory = DBFUtils.resolvePathFromString(monitor, getProject(), getOutputFolder()).resolve(LOB_DIRECTORY_NAME);
             if (!Files.exists(lobDirectory)) {
                 Files.createDirectory(lobDirectory);
             }
@@ -772,7 +773,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private Path makeOutputFile(@NotNull DBRProgressMonitor monitor, @Nullable String suffix, @NotNull String outputFolder) {
         Path dir;
         try {
-            dir = DBUtils.resolvePathFromString(monitor, getProject(), outputFolder);
+            dir = DBFUtils.resolvePathFromString(monitor, getProject(), outputFolder);
         } catch (Exception e) {
             log.error("Error resolving output folder", e);
             dir = Path.of(outputFolder);

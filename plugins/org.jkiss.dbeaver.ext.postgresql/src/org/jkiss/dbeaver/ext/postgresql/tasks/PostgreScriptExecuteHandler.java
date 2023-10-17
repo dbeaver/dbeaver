@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.tasks;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -98,7 +98,7 @@ public class PostgreScriptExecuteHandler extends PostgreNativeToolHandler<Postgr
         Process process,
         Log log
     ) throws IOException, DBException {
-        final Path inputFile = DBUtils.resolvePathFromString(monitor, task.getProject(), settings.getInputFile());
+        final Path inputFile = DBFUtils.resolvePathFromString(monitor, task.getProject(), settings.getInputFile());
         if (!Files.exists(inputFile)) {
             throw new IOException("File '" + inputFile + "' doesn't exist");
         }

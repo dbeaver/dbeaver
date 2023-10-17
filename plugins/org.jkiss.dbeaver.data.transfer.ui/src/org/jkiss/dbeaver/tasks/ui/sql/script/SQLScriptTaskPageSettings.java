@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
@@ -163,7 +164,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                     }
                 }
             });
-            if (DBWorkbench.getPlatformUI().supportsMultiFileSystems(sqlWizard.getProject())) {
+            if (DBFUtils.supportsMultiFileSystems(sqlWizard.getProject())) {
                 UIUtils.createToolItem(buttonsToolbar, UIMessages.text_with_open_dialog_browse_remote, DBIcon.TYPE_REFERENCE, new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {

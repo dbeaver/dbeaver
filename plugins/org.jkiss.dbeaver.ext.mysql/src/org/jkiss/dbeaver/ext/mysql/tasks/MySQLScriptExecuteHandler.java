@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -104,7 +105,7 @@ public class MySQLScriptExecuteHandler extends MySQLNativeToolHandler<MySQLScrip
         Process process,
         Log log
     ) throws IOException, DBException {
-        Path inputFile = DBUtils.resolvePathFromString(monitor, task.getProject(), settings.getInputFile());
+        Path inputFile = DBFUtils.resolvePathFromString(monitor, task.getProject(), settings.getInputFile());
         if (!Files.exists(inputFile)) {
             throw new IOException("File '" + inputFile + "' doesn't exist");
         }

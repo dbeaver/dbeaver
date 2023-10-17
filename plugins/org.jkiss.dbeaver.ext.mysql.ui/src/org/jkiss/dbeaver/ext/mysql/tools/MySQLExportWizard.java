@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -114,7 +113,7 @@ class MySQLExportWizard extends AbstractNativeExportWizard<MySQLExportSettings, 
             CommonUtils.truncateString(NLS.bind(MySQLUIMessages.tools_db_export_wizard_message_export_completed, getObjectsName()), 255),
             SWT.ICON_INFORMATION);
 
-        Set<Path> set = getSettings().getExportObjects().stream().map(it -> getSettings().getOutputFolder(it)).collect(Collectors.toSet());
-        set.forEach(it -> ShellUtils.launchProgram(it.toAbsolutePath().toString()));
+        Set<String> set = getSettings().getExportObjects().stream().map(it -> getSettings().getOutputFolder(it)).collect(Collectors.toSet());
+        set.forEach(ShellUtils::launchProgram);
 	}
 }

@@ -27,6 +27,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -183,7 +184,7 @@ public class DialogUtils {
         @Nullable ModifyListener changeListener
     ) {
         if (multiFS) {
-            multiFS = project != null && DBWorkbench.getPlatformUI().supportsMultiFileSystems(project);
+            multiFS = project != null && DBFUtils.supportsMultiFileSystems(project);
         }
         final String message = label != null ? label : UIMessages.output_label_directory;
         UIUtils.createControlLabel(parent, message).setToolTipText(tooltip);

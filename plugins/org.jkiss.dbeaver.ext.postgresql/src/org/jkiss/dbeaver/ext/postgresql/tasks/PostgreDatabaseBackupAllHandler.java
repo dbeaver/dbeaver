@@ -20,7 +20,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
@@ -57,14 +59,15 @@ public class PostgreDatabaseBackupAllHandler
     protected boolean validateTaskParameters(DBTTask task, PostgreBackupAllSettings settings, Log log) {
         if (PostgreSQLTasks.TASK_DATABASE_BACKUP_ALL.equals(task.getType().getId())) {
             for (PostgreDatabaseBackupAllInfo exportObject : settings.getExportObjects()) {
-                final Path dir = settings.getOutputFolder(exportObject);
-                if (!Files.exists(dir)) {
-                    try {
-                        Files.createDirectories(dir);
-                    } catch (IOException e) {
-                        log.error("Can't create directory '" + dir + "'", e);
-                        return false;
+                String dir = settings.getOutputFolder(exportObject);
+                try {
+                    Path outputFolderPath = DBFUtils.resolvePathFromString(new VoidProgressMonitor(), task.getProject(), dir);
+                    if (!Files.exists(outputFolderPath)) {
+                            Files.createDirectories(outputFolderPath);
                     }
+                } catch (Exception e) {
+                    log.error("Can't create directory '" + dir + "'", e);
+                    return false;
                 }
             }
         }
@@ -122,7 +125,7 @@ public class PostgreDatabaseBackupAllHandler
         }
 
         cmd.add("--file");
-        cmd.add(settings.getOutputFile(arg).toAbsolutePath().toString());
+        cmd.add(settings.getOutputFile(arg));
 
         // Databases
         if (settings.getExportObjects().isEmpty()) {

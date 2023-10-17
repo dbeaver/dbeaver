@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -116,7 +117,9 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
         if (!CommonUtils.isEmpty(databaseObjects)) {
             cmd.add("--dbname=" + databaseObjects.get(0).getName());
         }
-        if (!USE_STREAM_MONITOR || settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
+        if (!isUseStreamTransfer(settings.getInputFile()) ||
+            settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.DIRECTORY
+        ) {
             cmd.add(settings.getInputFile());
         }
 
@@ -135,12 +138,12 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
 
     @Override
     protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, PostgreDatabaseRestoreSettings settings, PostgreDatabaseRestoreInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException, DBException {
-        final Path inputFile = DBUtils.resolvePathFromString(monitor, task.getProject(), settings.getInputFile());
+        final Path inputFile = DBFUtils.resolvePathFromString(monitor, task.getProject(), settings.getInputFile());
         if (!Files.exists(inputFile)) {
             throw new IOException("File '" + inputFile + "' doesn't exist");
         }
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
-        if (USE_STREAM_MONITOR && settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
+        if (isUseStreamTransfer(inputFile.toString()) && settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
             new BinaryFileTransformerJob(monitor, task, inputFile, process.getOutputStream(), log).start();
         }
     }

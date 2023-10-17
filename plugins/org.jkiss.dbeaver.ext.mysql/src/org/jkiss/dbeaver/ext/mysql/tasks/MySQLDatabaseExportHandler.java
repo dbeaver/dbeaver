@@ -22,8 +22,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
@@ -61,14 +63,15 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
     protected boolean validateTaskParameters(DBTTask task, MySQLExportSettings settings, Log log) {
         if (task.getType().getId().equals(MySQLTasks.TASK_DATABASE_BACKUP)) {
             for (MySQLDatabaseExportInfo exportObject : settings.getExportObjects()) {
-                final Path dir = settings.getOutputFolder(exportObject);
-                if (!Files.exists(dir)) {
-                    try {
-                        Files.createDirectories(dir);
-                    } catch (IOException e) {
-                        log.error("Can't create directory '" + dir + "'");
-                        return false;
+                final String dir = settings.getOutputFolder(exportObject);
+                try {
+                    Path outFile = DBFUtils.resolvePathFromString(new VoidProgressMonitor(), task.getProject(), dir);
+                    if (!Files.exists(outFile)) {
+                        Files.createDirectories(outFile);
                     }
+                } catch (Exception e) {
+                    log.error("Can't create directory '" + dir + "'");
+                    return false;
                 }
             }
         }
@@ -146,7 +149,8 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
     @Override
     protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, MySQLExportSettings settings, final MySQLDatabaseExportInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException, DBException {
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
-        Path outFile = settings.getOutputFile(arg);
+        String outFileStr = settings.getOutputFile(arg);
+        Path outFile = DBFUtils.resolvePathFromString(monitor, task.getProject(), outFileStr);
         if (Files.exists(outFile)) {
             // Unlike pg_dump, mysqldump happily overrides files which can easily lead to a lost dump.
             // We prevent that with our manual check
