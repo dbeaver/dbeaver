@@ -161,6 +161,11 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsDefaultPrivileges() {
+        return dataSource.isServerVersionAtLeast(12, 0);
+    }
+
+    @Override
     public boolean supportsCopyFromStdIn() {
         return true;
     }
