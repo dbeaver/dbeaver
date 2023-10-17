@@ -268,6 +268,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
             return;
         }
         if (isInMemory() || DBWorkbench.isDistributed()) {
+            properties = new LinkedHashMap<>();
             return;
         }
 
