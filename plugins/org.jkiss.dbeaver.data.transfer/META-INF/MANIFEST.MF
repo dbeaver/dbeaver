@@ -8,11 +8,12 @@ Bundle-Release-Date: 20231009
 Bundle-Activator: org.jkiss.dbeaver.tools.transfer.internal.DTActivator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Export-Package: org.jkiss.dbeaver.tools.sql,
+Export-Package: org.jkiss.dbeaver.runtime.policy,
+ org.jkiss.dbeaver.tools.sql,
  org.jkiss.dbeaver.tools.transfer,
  org.jkiss.dbeaver.tools.transfer.database,
- org.jkiss.dbeaver.tools.transfer.processor,
  org.jkiss.dbeaver.tools.transfer.internal,
+ org.jkiss.dbeaver.tools.transfer.processor,
  org.jkiss.dbeaver.tools.transfer.registry,
  org.jkiss.dbeaver.tools.transfer.serialize,
  org.jkiss.dbeaver.tools.transfer.stream,
@@ -25,6 +26,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
- org.jkiss.dbeaver.ui
+ com.sun.jna.platform
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.data.transfer
