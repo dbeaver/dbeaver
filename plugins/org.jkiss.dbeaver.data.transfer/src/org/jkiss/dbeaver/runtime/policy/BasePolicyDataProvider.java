@@ -23,6 +23,8 @@ public class BasePolicyDataProvider extends AbstractPolicyDataProvider {
 
     private static final String POLICY_DATA_EXPORT = "policy.data.export.disabled"; //$NON-NLS-1$
     private static final String POLICY_DATA_COPY = "policy.data.copy.disabled"; //$NON-NLS-1$
+    private static final String POLICY_SOFTWARE_INSTALL = "policy.software.install.disabled"; //$NON-NLS-1$
+    private static final String POLICY_SOFTWARE_UPDATE = "policy.software.update.disabled"; //$NON-NLS-1$
 
     /**
      * The method return true if export data procedure disabled
@@ -40,5 +42,23 @@ public class BasePolicyDataProvider extends AbstractPolicyDataProvider {
      */
     public boolean isCopyDataDisabled() {
         return isDataPolicyEnabled(POLICY_DATA_COPY);
+    }
+
+    /**
+     * The method return true if install new software procedure disabled
+     *
+     * @return boolean value
+     */
+    public boolean isInstallSoftwareDisabled() {
+        return isDataPolicyEnabled(POLICY_SOFTWARE_INSTALL);
+    }
+
+    /**
+     * The method return true if update new software procedure disabled
+     *
+     * @return boolean value
+     */
+    public boolean isUpdateSoftwareDisabled() {
+        return isDataPolicyEnabled(POLICY_SOFTWARE_UPDATE);
     }
 }
