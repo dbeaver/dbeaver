@@ -31,6 +31,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.navigator,
  org.jkiss.dbeaver.ui.editors.base,
- org.jkiss.dbeaver.ui.editors.connection
+ org.jkiss.dbeaver.ui.editors.connection,
+ org.jkiss.dbeaver.registry
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.data.transfer.ui

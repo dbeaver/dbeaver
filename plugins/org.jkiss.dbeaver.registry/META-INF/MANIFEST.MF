@@ -18,7 +18,8 @@ Export-Package: org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.registry.rm,
  org.jkiss.dbeaver.registry.storage,
  org.jkiss.dbeaver.registry.task,
- org.jkiss.dbeaver.registry.updater
+ org.jkiss.dbeaver.registry.updater,
+ org.jkiss.dbeaver.runtime.policy
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.filesystem,
@@ -30,6 +31,7 @@ Require-Bundle: org.eclipse.core.runtime,
  com.google.gson,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.dpi.model,
- org.jkiss.dbeaver.model.sql;visibility:=reexport
+ org.jkiss.dbeaver.model.sql;visibility:=reexport,
+ com.sun.jna.platform
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.registry

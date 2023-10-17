@@ -24,7 +24,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.navigator,
- com.google.gson
+ com.google.gson,
+ org.jkiss.dbeaver.registry
 Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.registry.functions,
  org.jkiss.dbeaver.ui.controls,
