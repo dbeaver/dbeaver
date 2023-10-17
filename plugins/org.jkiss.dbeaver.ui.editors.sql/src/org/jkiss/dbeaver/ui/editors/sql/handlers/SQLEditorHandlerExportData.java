@@ -35,9 +35,11 @@ import java.io.StringWriter;
 
 public class SQLEditorHandlerExportData extends AbstractHandler {
 
+    private BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
+
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
+
         if (policyProvider.isExportDataDisabled()) {
             UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
                 ResultSetMessages.dialog_policy_data_export_title,
@@ -45,7 +47,6 @@ public class SQLEditorHandlerExportData extends AbstractHandler {
                 SWT.ICON_WARNING);
             return null;
         }
-
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
         if (editor != null) {
             editor.exportDataFromQuery(new ExportDataSQLScriptContext(editor));

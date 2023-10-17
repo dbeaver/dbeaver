@@ -32,10 +32,11 @@ import java.util.Locale;
  */
 public class DTTaskHandlerExport extends DTTaskHandlerTransfer {
 
+    private BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
+
     @Override
     public DBTTaskRunStatus executeTask(DBRRunnableContext runnableContext, DBTTask task, Locale locale, Log log, PrintStream logStream,
         DBTTaskExecutionListener listener) throws DBException {
-        BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
         if (policyProvider.isExportDataDisabled()) {
             throw new DBException("Error: Data export operation is restricted by policy"); //$NON-NLS-1$
         }

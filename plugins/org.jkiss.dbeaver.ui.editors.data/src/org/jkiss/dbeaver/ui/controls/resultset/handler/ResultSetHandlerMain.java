@@ -144,7 +144,8 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
     public static final String CMD_GO_TO_COLUMN = "org.jkiss.dbeaver.core.resultset.grid.gotoColumn";
     public static final String CMD_GO_TO_ROW = "org.jkiss.dbeaver.core.resultset.grid.gotoRow";
     public static final String PARAM_EXPORT_WITH_PARAM = "exportWithParameter";
-
+    private BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
+    
     @Nullable
     public static IResultSetController getActiveResultSet(@Nullable IWorkbenchPart activePart) {
         return getActiveResultSet(activePart, false);
@@ -197,7 +198,6 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
         String actionId = event.getCommand().getId();
         IResultSetPresentation presentation = rsv.getActivePresentation();
         DBPDataSource dataSource = rsv.getDataSource();
-        BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
         switch (actionId) {
             case IWorkbenchCommandConstants.FILE_REFRESH:
                 rsv.refreshData(null);

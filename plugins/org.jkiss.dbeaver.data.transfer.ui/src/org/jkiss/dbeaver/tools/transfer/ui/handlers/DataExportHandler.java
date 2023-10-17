@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 public class DataExportHandler extends DataTransferHandler {
 
+    private BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
+
     @Override
     protected IDataTransferNode<?> adaptTransferNode(Object object) {
         final DBSDataContainer adapted = RuntimeUtils.getObjectAdapter(object, DBSDataContainer.class);
@@ -42,7 +44,7 @@ public class DataExportHandler extends DataTransferHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
+
         if (policyProvider.isExportDataDisabled()) {
             UIUtils.showMessageBox(
                 HandlerUtil.getActiveShell(event),

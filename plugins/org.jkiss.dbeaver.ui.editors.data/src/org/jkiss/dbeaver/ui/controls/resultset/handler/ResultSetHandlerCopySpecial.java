@@ -49,10 +49,11 @@ import java.util.Map;
 public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements IElementUpdater {
 
     public static final String CMD_COPY_SPECIAL = IActionConstants.CMD_COPY_SPECIAL;
+    private BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
+
         if (policyProvider.isCopyDataDisabled()) {
             UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
                 ResultSetMessages.dialog_policy_data_copy_title,
