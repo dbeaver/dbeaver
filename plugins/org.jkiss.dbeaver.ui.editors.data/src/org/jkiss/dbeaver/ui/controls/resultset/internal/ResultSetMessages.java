@@ -481,8 +481,6 @@ public class ResultSetMessages extends NLS {
 
     public static String dialog_policy_data_export_msg;
     public static String dialog_policy_data_export_title;
-    public static String dialog_policy_data_copy_msg;
-    public static String dialog_policy_data_copy_title;
 
     static {
         // initialize resource bundle
