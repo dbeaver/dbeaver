@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
@@ -140,7 +141,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                 tiOpenLocal.setEnabled(false);
             }
             if (showRemoteFS) {
-                tiOpenRemote = UIUtils.createToolItem(tb, UIMessages.text_with_open_dialog_browse_remote, UIMessages.text_with_open_dialog_browse_remote, DBIcon.TYPE_REFERENCE,
+                tiOpenRemote = UIUtils.createToolItem(tb, UIMessages.text_with_open_dialog_browse_remote, UIMessages.text_with_open_dialog_browse_remote, UIIcon.OPEN_EXTERNAL,
                     SelectionListener.widgetSelectedAdapter(selectionEvent -> new SelectInputFileAction(true).run()));
                 tiOpenRemote.setEnabled(false);
             }

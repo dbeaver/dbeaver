@@ -165,7 +165,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 }
             });
             if (DBFUtils.supportsMultiFileSystems(sqlWizard.getProject())) {
-                UIUtils.createToolItem(buttonsToolbar, UIMessages.text_with_open_dialog_browse_remote, DBIcon.TYPE_REFERENCE, new SelectionAdapter() {
+                UIUtils.createToolItem(buttonsToolbar, UIMessages.text_with_open_dialog_browse_remote, UIIcon.OPEN_EXTERNAL, new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         DBNPath selected = DBWorkbench.getPlatformUI().openFileSystemSelector(
