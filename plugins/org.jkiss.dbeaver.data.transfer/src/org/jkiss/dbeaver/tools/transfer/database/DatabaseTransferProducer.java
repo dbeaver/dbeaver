@@ -104,7 +104,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
     @Nullable
     @Override
     public DBPProject getProject() {
-        return DBUtils.getObjectOwnerProject(dataContainer);
+        return dataContainer == null ? null : DBUtils.getObjectOwnerProject(dataContainer);
     }
 
     @Override
@@ -376,7 +376,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
             @NotNull SerializerContext serializeContext,
             @NotNull DBTTask objectContext,
             @NotNull Map<String, Object> state
-        ) throws DBCException {
+        ) throws DBException {
             DatabaseTransferProducer producer = new DatabaseTransferProducer();
             try {
                 runnableContext.run(true, true, monitor -> {

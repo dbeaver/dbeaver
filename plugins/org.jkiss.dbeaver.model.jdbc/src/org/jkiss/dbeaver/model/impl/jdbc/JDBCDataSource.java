@@ -89,7 +89,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     private int databaseMinorVersion = 0;
 
     private final transient List<Connection> closingConnections = new ArrayList<>();
-    private List<Path> tempFiles;
+    protected List<Path> tempFiles;
 
 
     protected JDBCDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull SQLDialect dialect)
@@ -187,7 +187,16 @@ public abstract class JDBCDataSource extends AbstractDataSource
                     // Refresh credentials
                     authModel.refreshCredentials(monitor, container, connectionInfo, credentials);
                 }
+                final String host = connectionInfo.getHostName();
+                final String port = connectionInfo.getHostPort();
+                final String database = connectionInfo.getDatabaseName();
                 authResult = authModel.initAuthentication(monitor, this, credentials, connectionInfo, connectProps);
+                if (!CommonUtils.equalObjects(host, connectionInfo.getHostName()) ||
+                    !CommonUtils.equalObjects(port, connectionInfo.getHostPort()) ||
+                    !CommonUtils.equalObjects(database, connectionInfo.getDatabaseName())) {
+                    url = getConnectionURL(connectionInfo);
+                    log.debug("Configuration info was changed after auth initialization. Connection URL was updated to: " + url);
+                }
             } catch (DBException e) {
                 throw new DBCException("Authentication error: " + e.getMessage(), e);
             }
@@ -822,12 +831,20 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return certPath.toAbsolutePath().toString();
     }
 
+    protected String saveTrustStoreToFile(byte[] trustStoreData) throws IOException {
+        Path trustStorePath = Files.createTempFile(
+            DBWorkbench.getPlatform().getCertificateStorage().getStorageFolder(),
+            getContainer().getDriver().getId() + "-" + getContainer().getId(),
+            ".jks");
+        Files.write(trustStorePath, trustStoreData);
+        trackTempFile(trustStorePath);
+        return trustStorePath.toAbsolutePath().toString();
+    }
+
     public void trackTempFile(Path file) {
         if (this.tempFiles == null) {
             this.tempFiles = new ArrayList<>();
         }
         this.tempFiles.add(file);
     }
-
-
 }

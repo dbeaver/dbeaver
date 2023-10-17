@@ -244,7 +244,11 @@ public class DTUtils {
             return null;
         }
         Map<String, Object> location = JSONUtils.getObject(objectConfig, "location");
-        return serializer.deserializeObject(runnableContext, serializeContext, objectContext, location);
+        try {
+            return serializer.deserializeObject(runnableContext, serializeContext, objectContext, location);
+        } catch (DBException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static <OBJECT_CONTEXT, OBJECT_TYPE> Map<String, Object> serializeObject(

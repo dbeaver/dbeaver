@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
@@ -266,6 +267,23 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     @Override
     public void showInSystemExplorer(@NotNull String path) {
         // do nothing
+    }
+
+    @Override
+    public boolean supportsMultiFileSystems(@NotNull DBPProject project) {
+        return false;
+    }
+
+    @Override
+    public String openFileSystemSelector(
+        @NotNull String title,
+        boolean folder,
+        int style,
+        boolean binary,
+        String[] filterExt,
+        String defaultValue
+    ) {
+        return null;
     }
 
     @Override

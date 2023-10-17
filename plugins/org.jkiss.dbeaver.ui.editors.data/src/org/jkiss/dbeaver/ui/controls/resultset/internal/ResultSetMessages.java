@@ -357,7 +357,6 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_database_general_label_result_set_max_size;
     public static String pref_page_database_general_label_result_set_cancel_timeout;
     public static String pref_page_database_general_label_result_set_cancel_timeout_tip;
-    public static String pref_page_content_editor_group_representation_content;
 
     public static String pref_page_results_group_advanced;
     public static String pref_page_sql_editor_group_misc;
@@ -374,6 +373,8 @@ public class ResultSetMessages extends NLS {
     public static String results_decorator_grouping_is_not_supported;
     public static String results_decorator_no_connected_to_db;
     public static String results_decorator_no_groupings;
+    public static String results_goto_column_dialog_title;
+    public static String results_goto_column_dialog_message;
     
     public static String virtual_edit_columns_page_add;
     public static String virtual_edit_columns_page_table_column_name;
@@ -466,6 +467,9 @@ public class ResultSetMessages extends NLS {
     public static String generate_ddl_by_result_set_tip;
     public static String meta_data_panel_action_copy_column_text;
     public static String result_set_viewer_selection_stat_tooltip;
+
+    public static String panel_metadata_filter_label;
+    public static String panel_metadata_filter_hint;
 
 
     public static String reference_value_editor_value_label;

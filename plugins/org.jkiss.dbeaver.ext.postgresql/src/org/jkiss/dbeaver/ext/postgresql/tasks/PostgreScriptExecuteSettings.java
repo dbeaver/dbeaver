@@ -47,32 +47,33 @@ public class PostgreScriptExecuteSettings extends AbstractScriptExecuteSettings<
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
         super.loadSettings(runnableContext, store);
+        String databaseId = null;
         if (store instanceof DBPPreferenceMap) {
-            String databaseId = store.getString("pg.script.database");
-
-            if (!CommonUtils.isEmpty(databaseId)) {
-                try {
-                    runnableContext.run(true, true, monitor -> {
-                        try {
-                            database = (PostgreDatabase) DBUtils.findObjectById(monitor, getProject(), databaseId);
-                            if (database == null) {
-                                throw new DBException("Database " + databaseId + " not found");
-                            }
-                        } catch (Throwable e) {
-                            throw new InvocationTargetException(e);
+            databaseId = store.getString("pg.script.database");
+        }
+        if (!CommonUtils.isEmpty(databaseId)) {
+            try {
+                String finalDatabaseId = databaseId;
+                runnableContext.run(true, true, monitor -> {
+                    try {
+                        database = (PostgreDatabase) DBUtils.findObjectById(monitor, getProject(), finalDatabaseId);
+                        if (database == null) {
+                            throw new DBException("Database " + finalDatabaseId + " not found");
                         }
-                    });
-                } catch (InvocationTargetException e) {
-                    log.error("Error loading objects configuration", e);
-                } catch (InterruptedException e) {
-                    // Ignore
-                }
-            } else {
-                for (DBSObject object : getDatabaseObjects()) {
-                    if (object instanceof PostgreDatabase) {
-                        database = (PostgreDatabase) object;
-                        break;
+                    } catch (Throwable e) {
+                        throw new InvocationTargetException(e);
                     }
+                });
+            } catch (InvocationTargetException e) {
+                log.error("Error loading objects configuration", e);
+            } catch (InterruptedException e) {
+                // Ignore
+            }
+        } else {
+            for (DBSObject object : getDatabaseObjects()) {
+                if (object instanceof PostgreDatabase) {
+                    database = (PostgreDatabase) object;
+                    break;
                 }
             }
         }

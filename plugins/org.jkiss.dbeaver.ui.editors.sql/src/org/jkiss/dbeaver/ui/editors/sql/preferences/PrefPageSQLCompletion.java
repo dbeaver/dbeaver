@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
 import org.jkiss.dbeaver.model.sql.SQLTableAliasInsertMode;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
@@ -288,6 +290,32 @@ public class PrefPageSQLCompletion extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS);
         store.setToDefault(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT);
         store.setToDefault(SQLPreferenceConstants.SHOW_COLUMN_PROCEDURES);
+    }
+
+    @Override
+    protected void performDefaults() {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        csAutoActivationCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
+        csAutoActivationDelaySpinner.setSelection(store.getDefaultInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
+        csAutoActivateOnKeystroke.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION));
+        csAutoInsertCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
+        csTabChoice.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.TAB_AUTOCOMPLETION));
+        csInsertCase.select(store.getDefaultInt(SQLPreferenceConstants.PROPOSAL_INSERT_CASE));
+        csReplaceWordAfter.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.PROPOSAL_REPLACE_WORD));
+        csHideDuplicates.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS));
+        csShortName.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.PROPOSAL_SHORT_NAME));
+        csLongName.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ));
+        csInsertSpace.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS));
+        csSortAlphabetically.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY));
+        csShowServerHelpTopics.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS));
+        csShowValues.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SHOW_VALUES));
+        csInsertTableAlias.select(store.getDefaultInt(SQLModelPreferences.SQL_PROPOSAL_INSERT_TABLE_ALIAS));
+        csMatchContains.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS));
+        csUseGlobalSearch.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT));
+        csShowColumnProcedures.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SHOW_COLUMN_PROCEDURES));
+        csHippieActivation.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.ENABLE_HIPPIE));
+        csEnableExperimentalFeatures.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.ENABLE_EXPERIMENTAL_FEATURES));
+        super.performDefaults();
     }
 
     @Override

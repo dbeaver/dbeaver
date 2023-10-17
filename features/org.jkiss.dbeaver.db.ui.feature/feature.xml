@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.db.ui.feature"
       label="%featureName"
-      version="1.0.106.qualifier"
+      version="1.0.108.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -23,6 +23,12 @@
          install-size="0"
          version="0.0.0"
          unpack="false"/>
+
+   <plugin
+           id="org.jkiss.dbeaver.ext.dameng.ui"
+           download-size="0"
+           install-size="0"
+           version="0.0.0"/>
 
    <plugin
          id="org.jkiss.dbeaver.ext.db2.ui"

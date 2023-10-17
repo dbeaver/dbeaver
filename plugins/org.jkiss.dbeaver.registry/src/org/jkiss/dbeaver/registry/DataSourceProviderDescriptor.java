@@ -249,10 +249,10 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         return id;
     }
 
+    @NotNull
     @Override
-    public String getName()
-    {
-        return name;
+    public String getName() {
+        return CommonUtils.toString(name, id);
     }
 
     @Override

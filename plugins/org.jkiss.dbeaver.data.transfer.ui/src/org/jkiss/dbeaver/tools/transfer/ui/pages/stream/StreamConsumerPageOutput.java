@@ -204,7 +204,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
             // Output path/pattern
 
-            directoryText = DialogUtils.createOutputFolderChooser(generalSettings, null, e -> {
+            directoryText = DialogUtils.createOutputFolderChooser(generalSettings, null, getWizard().getProject(), true, e -> {
                 settings.setOutputFolder(directoryText.getText());
                 updatePageCompletion();
             });
