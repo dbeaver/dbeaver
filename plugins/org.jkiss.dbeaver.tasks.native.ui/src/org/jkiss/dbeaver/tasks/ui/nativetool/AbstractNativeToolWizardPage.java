@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Arrays;
 
-public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNativeToolWizard> extends ActiveWizardPage {
+public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNativeToolWizard> extends ActiveWizardPage<WIZARD> {
 
     protected final WIZARD wizard;
 

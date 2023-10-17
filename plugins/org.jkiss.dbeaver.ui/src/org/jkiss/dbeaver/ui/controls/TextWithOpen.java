@@ -111,7 +111,7 @@ public class TextWithOpen extends Composite {
                     }
                 });
             }
-            if (isMultiFileSystem() && getProject() != null) {
+            if (isMultiFileSystem()) {
                 final ToolItem remoteFsItem = new ToolItem(toolbar, SWT.NONE);
                 remoteFsItem.setImage(DBeaverIcons.getImage(DBIcon.TYPE_REFERENCE));
                 remoteFsItem.setToolTipText(UIMessages.text_with_open_dialog_browse_remote);
