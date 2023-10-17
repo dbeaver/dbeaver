@@ -30,6 +30,9 @@ import java.util.Objects;
  * MySQL session
  */
 public class MySQLSession extends AbstractServerSession {
+
+    static final String CAT_PERFORMANCE = "Performance";
+
     private final long pid;
     private String user;
     private String host;
@@ -139,87 +142,87 @@ public class MySQLSession extends AbstractServerSession {
         return info;
     }
 
-    @Property(visibleIf = PerformanceReadingValueValidator.class, order = 9)
+    @Property(category = CAT_PERFORMANCE, visibleIf = PerformanceReadingValueValidator.class, order = 9)
     public String getStatementLatency() {
         return statementLatency;
     }
 
-    @Property(visibleIf = PerformanceReadingValueValidator.class, order = 10)
+    @Property(category = CAT_PERFORMANCE, visibleIf = PerformanceReadingValueValidator.class, order = 10)
     public String getLockLatency() {
         return lockLatency;
     }
 
-    @Property(visibleIf = PerformanceReadingValueValidator.class, order = 11)
+    @Property(category = CAT_PERFORMANCE, visibleIf = PerformanceReadingValueValidator.class, order = 11)
     public long getRowsExamined() {
         return rowsExamined;
     }
 
-    @Property(visibleIf = PerformanceReadingValueValidator.class, order = 12)
+    @Property(category = CAT_PERFORMANCE, visibleIf = PerformanceReadingValueValidator.class, order = 12)
     public long getRowsSent() {
         return rowsSent;
     }
 
-    @Property(visibleIf = PerformanceReadingValueValidator.class, order = 13)
+    @Property(category = CAT_PERFORMANCE, visibleIf = PerformanceReadingValueValidator.class, order = 13)
     public long getRowsAffected() {
         return rowsAffected;
     }
 
-    @Property(visibleIf = PerformanceReadingValueValidator.class, order = 14)
+    @Property(category = CAT_PERFORMANCE, visibleIf = PerformanceReadingValueValidator.class, order = 14)
     public long getTmpTables() {
         return tmpTables;
     }
 
-    @Property(visibleIf = PerformanceReadingValueValidator.class, order = 15)
+    @Property(category = CAT_PERFORMANCE, visibleIf = PerformanceReadingValueValidator.class, order = 15)
     public long getTmpDiskTables() {
         return tmpDiskTables;
     }
 
-    @Property(visibleIf = PerformanceReadingValueValidator.class, order = 16)
+    @Property(category = CAT_PERFORMANCE, visibleIf = PerformanceReadingValueValidator.class, order = 16)
     public String getFullScan() {
         return fullScan;
     }
 
-    @Property(visibleIf = PerformanceReadingValueValidator.class, order = 17)
+    @Property(category = CAT_PERFORMANCE, visibleIf = PerformanceReadingValueValidator.class, order = 17)
     public String getLastStatement() {
         return lastStatement;
     }
 
-    @Property(visibleIf = PerformanceReadingValueValidator.class, order = 18)
+    @Property(category = CAT_PERFORMANCE, visibleIf = PerformanceReadingValueValidator.class, order = 18)
     public String getLastStatementLatency() {
         return lastStatementLatency;
     }
 
-    @Property(visibleIf = PerformanceReadingValueValidator.class, order = 19)
+    @Property(category = CAT_PERFORMANCE, visibleIf = PerformanceReadingValueValidator.class, order = 19)
     public String getCurrentMemory() {
         return currentMemory;
     }
 
-    @Property(visibleIf = PerformanceReadingValueValidator.class, order = 20)
+    @Property(category = CAT_PERFORMANCE, visibleIf = PerformanceReadingValueValidator.class, order = 20)
     public String getTrxLatency() {
         return trxLatency;
     }
 
-    @Property(visibleIf = PerformanceReadingValueValidator.class, order = 21)
+    @Property(category = CAT_PERFORMANCE, visibleIf = PerformanceReadingValueValidator.class, order = 21)
     public String getTrxState() {
         return trxState;
     }
 
-    @Property(visibleIf = PerformanceReadingValueValidator.class, order = 22)
+    @Property(category = CAT_PERFORMANCE, visibleIf = PerformanceReadingValueValidator.class, order = 22)
     public String getTrxAutocommit() {
         return trxAutocommit;
     }
 
-    @Property(visibleIf = PerformanceReadingValueValidator.class, order = 23)
+    @Property(category = CAT_PERFORMANCE, visibleIf = PerformanceReadingValueValidator.class, order = 23)
     public long getProgress() {
         return progress;
     }
 
-    @Property(visibleIf = PerformanceReadingValueValidator.class, order = 24)
+    @Property(category = CAT_PERFORMANCE, visibleIf = PerformanceReadingValueValidator.class, order = 24)
     public String getSource() {
         return source;
     }
 
-    @Property(visibleIf = PerformanceReadingValueValidator.class, order = 25)
+    @Property(category = CAT_PERFORMANCE, visibleIf = PerformanceReadingValueValidator.class, order = 25)
     public String getProgramName() {
         return programName;
     }
