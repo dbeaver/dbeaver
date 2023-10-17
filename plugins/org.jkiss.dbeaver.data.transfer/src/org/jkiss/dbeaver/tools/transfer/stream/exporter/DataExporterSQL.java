@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -349,6 +350,9 @@ public class DataExporterSQL extends StreamExporterAbstract implements IAppendab
             } else if (value instanceof File) {
                 out.write("@");
                 out.write(((File) value).getAbsolutePath());
+            } else if (value instanceof Path) {
+                out.write("@");
+                out.write(value.toString());
             } else {
                 // If we have disabled "Native Date/Time format" option then we
                 // use UI format + enquote value

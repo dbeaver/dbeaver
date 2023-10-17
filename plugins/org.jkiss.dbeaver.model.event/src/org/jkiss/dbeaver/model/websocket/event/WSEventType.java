@@ -66,7 +66,16 @@ public enum WSEventType {
         WSDatasourceFolderEvent.class
     ),
 
-    OBJECT_PERMISSIONS_UPDATED("cb_object_permissions_updated", WSEventTopic.OBJECT_PERMISSIONS, WSObjectPermissionEvent.class),
+    OBJECT_PERMISSIONS_UPDATED(
+        "cb_object_permissions_updated",
+        WSEventTopic.OBJECT_PERMISSIONS,
+        WSObjectPermissionEvent.class
+    ),
+    OBJECT_PERMISSIONS_DELETED(
+        "cb_object_permissions_deleted",
+        WSEventTopic.OBJECT_PERMISSIONS,
+        WSObjectPermissionEvent.class
+    ),
     SUBJECT_PERMISSIONS_UPDATED("cb_subject_permissions_updated", WSEventTopic.SUBJECT_PERMISSIONS, WSSubjectPermissionEvent.class),
 
     DATASOURCE_SECRET_UPDATED("cb_user_secret_updated", WSEventTopic.USER_SECRET, WSUserSecretEvent.class),
@@ -79,6 +88,8 @@ public enum WSEventType {
     RM_PROJECT_REMOVED("cb_rm_project_removed", WSEventTopic.PROJECTS, WSProjectUpdateEvent.class),
 
     WORKSPACE_CONFIG_CHANGED("cb_workspace_config_changed", WSEventTopic.WORKSPACE_CONFIG, WSWorkspaceConfigurationChangedEvent.class),
+
+    TEMP_FOLDER_DELETED("cb_temp_folder_deleted", WSEventTopic.TEMP_FOLDER, WSDataSourceEvent.class),
 
     DB_LOG_UPDATED("cb_database_output_log_updated", WSEventTopic.DB_OUTPUT_LOG, WSOutputDBLogEvent.class);
 

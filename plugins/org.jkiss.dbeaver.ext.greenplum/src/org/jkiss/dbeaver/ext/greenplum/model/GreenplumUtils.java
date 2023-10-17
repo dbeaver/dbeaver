@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableReal;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -115,8 +116,10 @@ public class GreenplumUtils {
     private static String getPartitionData(@NotNull DBRProgressMonitor monitor, @NotNull PostgreTableReal table) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Read Greenplum table partition data")) {
             try (JDBCStatement dbStat = session.createStatement()) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT pg_get_partition_def('" + table.getSchema().getName() + "." + table.getName() + "'::regclass, true, false);")) {
-                    if (dbResult.next()) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT pg_get_partition_def('" +
+                    table.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'::regclass, true, false);")
+                ) {
+                    if (dbResult != null && dbResult.next()) {
                         String result = dbResult.getString(1);
                         if (result != null && result.startsWith("PARTITION ")) {
                             return result;

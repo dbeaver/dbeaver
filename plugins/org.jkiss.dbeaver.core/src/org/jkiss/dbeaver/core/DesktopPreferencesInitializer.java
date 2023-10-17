@@ -61,8 +61,7 @@ public class DesktopPreferencesInitializer extends AbstractPreferenceInitializer
         PrefUtils.setDefaultPreferenceValue(
             store,
             DBeaverPreferences.UI_USE_EMBEDDED_AUTH,
-            !SWTBrowserRegistry.getActiveBrowser().equals(SWTBrowserRegistry.BrowserSelection.IE)
-                    && !RuntimeUtils.isLinux()
+            false
         );
 
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, true);
