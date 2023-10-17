@@ -357,7 +357,6 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_database_general_label_result_set_max_size;
     public static String pref_page_database_general_label_result_set_cancel_timeout;
     public static String pref_page_database_general_label_result_set_cancel_timeout_tip;
-    public static String pref_page_content_editor_group_representation_content;
 
     public static String pref_page_results_group_advanced;
     public static String pref_page_sql_editor_group_misc;

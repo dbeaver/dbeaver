@@ -158,7 +158,8 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
                         settings,
                         new IDataTransferConsumer.TransferParameters(processor.isBinaryFormat(), processor.isHTMLFormat()),
                         exporter,
-                        properties);
+                        properties,
+                        null);
 
                     DBDDataFilter dataFilter = resultSet.getModel().getDataFilter();
                     DatabaseTransferProducer producer = new DatabaseTransferProducer(dataContainer, dataFilter);

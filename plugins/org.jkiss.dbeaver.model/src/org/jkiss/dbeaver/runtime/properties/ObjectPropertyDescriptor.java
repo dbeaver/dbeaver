@@ -56,6 +56,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     private final Property propInfo;
     private final String propName;
     private final String propDescription;
+    private final String propHint;
     private Method setter;
     private IPropertyValueTransformer valueTransformer;
     private IPropertyValueTransformer valueRenderer;
@@ -119,6 +120,9 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         this.propDescription = CommonUtils.isEmpty(propInfo.description()) ?
                 propName :
                 getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_DESCRIPTION, propName, false, locale);
+        this.propHint = CommonUtils.isEmpty(propInfo.hint()) ?
+            null :
+            getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_HINT, propName, false, locale);
     }
 
     @Override
@@ -344,6 +348,12 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     public String getDescription()
     {
         return propDescription;
+    }
+
+    @Override
+    public String getHint()
+    {
+        return propHint;
     }
 
     @NotNull
