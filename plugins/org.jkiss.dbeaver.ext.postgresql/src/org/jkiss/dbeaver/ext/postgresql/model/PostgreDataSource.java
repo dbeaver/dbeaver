@@ -59,6 +59,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -327,7 +329,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private void initServerSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws DBException {
         props.put(PostgreConstants.PROP_SSL, "true");
 
-        if (!DBWorkbench.isDistributed() && !DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+        if (!isMultiUserOrDistributed()) {
             // Local FS mode
             final String rootCertProp;
             final String clientCertProp;
@@ -382,6 +384,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             props.put("sslfactory", factoryProp);
         }
         props.put("sslpasswordcallback", DefaultCallbackHandler.class.getName());
+    }
+
+    private boolean isMultiUserOrDistributed() {
+        return DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser();
     }
 
     private void initProxySSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) {
@@ -552,7 +558,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
             if ("sun.security.util.DerValue".equals(element.getClassName())) { //$NON-NLS-1$
                 final DBWHandlerConfiguration handler = Objects.requireNonNull(conConfig.getHandler(PostgreConstants.HANDLER_SSL));
-                final String key = handler.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
                 final Path dst;
 
                 try {
@@ -562,9 +567,19 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                     throw e;
                 }
 
-                try (Reader reader = Files.newBufferedReader(Path.of(key))) {
-                    Files.write(dst, DefaultCertificateStorage.loadDerFromPem(reader));
-                    handler.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, dst.toAbsolutePath().toString());
+                try {
+                    final byte[] key = SSLHandlerTrustStoreImpl.readCertificate(handler, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
+                    if (isMultiUserOrDistributed()) {
+                        handler.setSecureProperty(
+                            SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY_VALUE,
+                            new String(key, StandardCharsets.UTF_8)
+                        );
+                    } else {
+                        final Reader reader = new StringReader(new String(key, StandardCharsets.UTF_8));
+                        Files.write(dst, DefaultCertificateStorage.loadDerFromPem(reader));
+                        String derCertPath = dst.toAbsolutePath().toString();
+                        handler.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, derCertPath);
+                    }
                 } catch (IOException ex) {
                     log.error("Error converting SSL key", ex);
                     throw e;
