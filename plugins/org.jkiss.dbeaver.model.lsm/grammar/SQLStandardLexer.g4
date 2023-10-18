@@ -254,8 +254,7 @@ fragment Bit: ('0'|'1');
 DecimalLiteral: (UnsignedInteger Period UnsignedInteger)|(UnsignedInteger Period)|(Period UnsignedInteger);
 UnsignedInteger: (Digit)+;
 ApproximateNumericLiteral: (UnsignedInteger|DecimalLiteral) 'E' SignedInteger;
-fragment SignedInteger: (Sign)? UnsignedInteger;
-Sign: (PlusSign|MinusSign);
+fragment SignedInteger: (PlusSign|MinusSign)? UnsignedInteger;
 
 LineComment
    : '--' ~ [\r\n]* -> channel (HIDDEN)

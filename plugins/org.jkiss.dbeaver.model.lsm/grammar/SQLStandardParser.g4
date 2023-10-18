@@ -56,17 +56,18 @@ directSqlDataStatement: (deleteStatement|selectStatement|insertStatement|updateS
 selectStatement: withClause? queryExpression;
 
 // data type literals
+sign: PlusSign|MinusSign;
 literal: (signedNumericLiteral|generalLiteral);
 unsignedNumericLiteral: (UnsignedInteger|DecimalLiteral|ApproximateNumericLiteral);
-signedNumericLiteral: (Sign)? unsignedNumericLiteral;
+signedNumericLiteral: sign? unsignedNumericLiteral;
 characterStringLiteral: (Introducer characterSetSpecification)? StringLiteralContent;
 generalLiteral: (characterStringLiteral|NationalCharacterStringLiteral|BitStringLiteral|HexStringLiteral|datetimeLiteral|intervalLiteral);
 datetimeLiteral: (dateLiteral|timeLiteral|timestampLiteral);
 dateLiteral: DATE StringLiteralContent;
 timeLiteral: TIME StringLiteralContent;
 timestampLiteral: TIMESTAMP StringLiteralContent;
-// intervalLiteral: INTERVAL (Sign)? StringLiteralContent intervalQualifier;
-intervalLiteral: INTERVAL (Sign)? valueExpressionPrimary intervalQualifier;
+// intervalLiteral: INTERVAL sign? StringLiteralContent intervalQualifier;
+intervalLiteral: INTERVAL sign? valueExpressionPrimary intervalQualifier;
 
 // identifiers
 characterSetSpecification: characterSetName;
@@ -118,7 +119,7 @@ referentialAction: (CASCADE|SET NULL|SET DEFAULT|NO ACTION);
 deleteRule: ON DELETE referentialAction;
 
 // search conditions
-searchCondition: (booleanTerm (OR booleanTerm)*)? (.*?); // (.*?) - for error recovery
+searchCondition: (booleanTerm (OR booleanTerm)*)? anyUnexpected??; // (.*?) - for error recovery
 booleanTerm: booleanFactor (AND booleanFactor)*;
 booleanFactor: (NOT)? booleanTest;
 booleanTest: booleanPrimary (IS (NOT)? truthValue)?;
@@ -179,7 +180,7 @@ simpleTable: (querySpecification|tableValueConstructor|explicitTable);
 querySpecification: SELECT (setQuantifier)? selectList tableExpression?;
 setQuantifier: (DISTINCT|ALL);
 selectList: (Asterisk|selectSublist) (Comma selectSublist)*; // (Comma selectSublist)* contains any quantifier for error recovery;
-selectSublist: (derivedColumn|qualifier Period Asterisk)? (.*?); // (.*?) for whole rule to handle select fields autocompletion when from immediately after select
+selectSublist: (derivedColumn|qualifier Period Asterisk)? anyUnexpected??; // (.*?) for whole rule to handle select fields autocompletion when from immediately after select
 derivedColumn: valueExpression (asClause)?;
 asClause: (AS)? columnName;
 tableExpression: fromClause whereClause? groupByClause? havingClause? orderByClause? limitClause?;
@@ -190,7 +191,7 @@ queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
 // from
 fromClause: FROM tableReference (Comma tableReference)*;
 nonjoinedTableReference: (tableName (PARTITION anyProperty)? (correlationSpecification)?)|(derivedTable correlationSpecification);
-tableReference: nonjoinedTableReference|joinedTable|tableReferenceHints|(.*?); // '.*' to handle incomplete queries
+tableReference: nonjoinedTableReference|joinedTable|tableReferenceHints|anyUnexpected??; // '.*' to handle incomplete queries
 tableReferenceHints: (tableHintKeywords|anyWord)+ anyProperty; // dialect-specific options, should be described and moved to dialects in future
 joinedTable: (nonjoinedTableReference|(LeftParen joinedTable RightParen)) (naturalJoinTerm|crossJoinTerm)+;
 correlationSpecification: (AS)? correlationName (LeftParen derivedColumnList RightParen)?;
@@ -200,7 +201,7 @@ tableSubquery: subquery;
 
 //joins
 crossJoinTerm: CROSS JOIN tableReference;
-naturalJoinTerm: (NATURAL)? (joinType)? JOIN tableReference (joinSpecification)? (.*?); // (.*?) - for error recovery
+naturalJoinTerm: (NATURAL)? (joinType)? JOIN tableReference (joinSpecification)? anyUnexpected??; // (.*?) - for error recovery
 joinType: (INNER|outerJoinType (OUTER)?|UNION);
 outerJoinType: (LEFT|RIGHT|FULL);
 joinSpecification: (joinCondition|namedColumnsJoin);
@@ -236,39 +237,39 @@ valueExpression: valueExpressionPrimaryBased|extractExpressionBased|anyWordsWith
                   |valueExpressionPrimarySignedBased|extractExpressionSignedBased|anyWordsWithPropertySignedBased
                   |intervalExpressionBased|valueExpressionPrimary;
 
-valueExpressionPrimarySignedBased: Sign valueExpressionPrimary (                       numericOperation|intervalOperation|intervalOperation2);
+valueExpressionPrimarySignedBased: sign valueExpressionPrimary (                       numericOperation|intervalOperation|intervalOperation2);
       valueExpressionPrimaryBased:      valueExpressionPrimary (concatenationOperation|numericOperation|intervalOperation|intervalOperation2);
-     extractExpressionSignedBased: Sign extractExpression      (                       numericOperation|                  intervalOperation2);
+     extractExpressionSignedBased: sign extractExpression      (                       numericOperation|                  intervalOperation2);
            extractExpressionBased:      extractExpression      (                       numericOperation|                  intervalOperation2);
-  anyWordsWithPropertySignedBased: Sign anyWordsWithProperty   (                       numericOperation|                  intervalOperation2);
+  anyWordsWithPropertySignedBased: sign anyWordsWithProperty   (                       numericOperation|                  intervalOperation2);
         anyWordsWithPropertyBased:      anyWordsWithProperty   (concatenationOperation|numericOperation|                  intervalOperation2);
-          intervalExpressionBased: (LeftParen datetimeValueExpression MinusSign anyWordsWithProperty RightParen intervalQualifier) ((PlusSign|MinusSign) intervalTerm)*;
+          intervalExpressionBased: (LeftParen datetimeValueExpression MinusSign anyWordsWithProperty RightParen intervalQualifier) (sign intervalTerm)*;
 
 concatenationOperation: (ConcatenationOperator characterPrimary)+;
-numericOperation:                           (((Asterisk|Solidus) factor)+ ((PlusSign|MinusSign) term)*)|(((PlusSign|MinusSign) term)+);
+numericOperation:                           (((Asterisk|Solidus) factor)+ (sign term)*)|((sign term)+);
 
-intervalOperation:       intervalQualifier?((((Asterisk|Solidus) factor)+ ((PlusSign|MinusSign) intervalTerm)*)|(((PlusSign|MinusSign) intervalTerm)+));
-intervalOperation2: Asterisk intervalFactor((((Asterisk|Solidus) factor)+ ((PlusSign|MinusSign) intervalTerm)*)|(((PlusSign|MinusSign) intervalTerm)+));
+intervalOperation:       intervalQualifier?((((Asterisk|Solidus) factor)+ (sign intervalTerm)*)|((sign intervalTerm)+));
+intervalOperation2: Asterisk intervalFactor((((Asterisk|Solidus) factor)+ (sign intervalTerm)*)|((sign intervalTerm)+));
 
 valueExpressionPrimary: unsignedNumericLiteral|generalLiteral|generalValueSpecification|countAllExpression
     |scalarSubquery|caseExpression|LeftParen valueExpression RightParen|castSpecification
     |anyWordsWithProperty|columnReference;
 
-// 1
-numericPrimary: (valueExpressionPrimary|extractExpression|anyWordsWithProperty); // U
-factor: (Sign)? numericPrimary; // L
-term: factor ((Asterisk|Solidus) factor)*; // L
-numericValueExpression: term ((PlusSign|MinusSign) term)*; // U
-// 2
-characterPrimary: (valueExpressionPrimary|anyWordsWithProperty); // U
-characterValueExpression: characterPrimary (ConcatenationOperator characterPrimary)*; // M
-// 3
-intervalPrimary: valueExpressionPrimary (intervalQualifier)?; // U
-intervalFactor: (Sign)? intervalPrimary; // U
-intervalTerm: ((intervalFactor)|(term Asterisk intervalFactor)) ((Asterisk|Solidus) factor)*; // L
-intervalValueExpression: ((intervalTerm)|(LeftParen datetimeValueExpression MinusSign anyWordsWithProperty RightParen intervalQualifier)) ((PlusSign|MinusSign) intervalTerm)*; // M
-// 4
-datetimeValueExpression: (anyWordsWithProperty|(intervalValueExpression PlusSign anyWordsWithProperty)) ((PlusSign|MinusSign) intervalTerm)*; // L
+
+numericPrimary: (valueExpressionPrimary|extractExpression|anyWordsWithProperty);
+factor: sign? numericPrimary;
+term: factor ((Asterisk|Solidus) factor)*;
+numericValueExpression: term (sign term)*;
+
+characterPrimary: (valueExpressionPrimary|anyWordsWithProperty);
+characterValueExpression: characterPrimary (ConcatenationOperator characterPrimary)*;
+
+intervalPrimary: valueExpressionPrimary (intervalQualifier)?;
+intervalFactor: sign? intervalPrimary;
+intervalTerm: ((intervalFactor)|(term Asterisk intervalFactor)) ((Asterisk|Solidus) factor)*;
+intervalValueExpression: ((intervalTerm)|(LeftParen datetimeValueExpression MinusSign anyWordsWithProperty RightParen intervalQualifier)) (sign intervalTerm)*;
+
+datetimeValueExpression: (anyWordsWithProperty|(intervalValueExpression PlusSign anyWordsWithProperty)) (sign intervalTerm)*;
 extractSource: (datetimeValueExpression|intervalValueExpression); // L
 
 countAllExpression: COUNT LeftParen Asterisk RightParen;
@@ -374,6 +375,8 @@ anyValue: rowValueConstructor|searchCondition;
 anyWordWithAnyValue: anyWord anyValue;
 anyProperty: LeftParen (anyValue (Comma anyValue)*) RightParen;
 anyWordsWithProperty: anyWord+ anyProperty?;
+
+anyUnexpected: (~(LeftParen|RightParen|Period))+;
 
 tableHintKeywords: WITH | UPDATE | IN | KEY | JOIN | ORDER BY | GROUP BY;
 
