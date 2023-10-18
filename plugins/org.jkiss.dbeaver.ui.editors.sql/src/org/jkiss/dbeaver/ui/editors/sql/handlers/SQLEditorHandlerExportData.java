@@ -24,7 +24,6 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
 import org.jkiss.dbeaver.registry.BasePolicyDataProvider;
-import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -36,9 +35,11 @@ import java.io.StringWriter;
 
 public class SQLEditorHandlerExportData extends AbstractHandler {
 
+    private static final String POLICY_DATA_EXPORT = "policy.data.export.disabled"; //$NON-NLS-1$
+
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        if (BasePolicyDataProvider.getInstance().isPolicyEnabled(RegistryConstants.POLICY_DATA_EXPORT)) {
+        if (BasePolicyDataProvider.getInstance().isPolicyEnabled(POLICY_DATA_EXPORT)) {
             UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
                 ResultSetMessages.dialog_policy_data_export_title,
                 ResultSetMessages.dialog_policy_data_export_msg,

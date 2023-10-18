@@ -235,9 +235,4 @@ public class RegistryConstants {
     public static final String ATTR_IS_DEFAULT = "isDefault"; // $NON-NLS-N$
     public static final String ATTR_NOTATION = "notation"; // $NON-NLS-N$
 
-    public static final String POLICY_DATA_EXPORT = "policy.data.export.disabled"; //$NON-NLS-1$
-    public static final String POLICY_DATA_COPY = "policy.data.copy.disabled"; //$NON-NLS-1$
-    public static final String POLICY_SOFTWARE_INSTALL = "policy.software.install.disabled"; //$NON-NLS-1$
-    public static final String POLICY_SOFTWARE_UPDATE = "policy.software.update.disabled"; //$NON-NLS-1$
-
 }

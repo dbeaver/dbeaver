@@ -42,7 +42,7 @@ public class BasePolicyDataProvider {
     /**
      * Return boolean value of policy data property
      *
-     * @param propertyName
+     * @param propertyName - property name
      * @return - boolean value
      */
     public boolean isPolicyEnabled(String propertyName) {

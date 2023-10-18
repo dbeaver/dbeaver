@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.BasePolicyDataProvider;
-import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
@@ -78,6 +77,8 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
 
     public static final String PARAM_ACTIVE_APP = "org.jkiss.dbeaver.core.resultset.openWith.currentApp";
     public static final String PREF_OPEN_WITH_DEFAULT_PROCESSOR = "org.jkiss.dbeaver.core.resultset.openWith.defaultprocessor";
+
+    private static final String POLICY_DATA_EXPORT = "policy.data.export.disabled"; //$NON-NLS-1$
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
@@ -308,7 +309,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
             }
             ContributionManager menu = new MenuManager();
             // Def processor is null
-            if (!BasePolicyDataProvider.getInstance().isPolicyEnabled(RegistryConstants.POLICY_DATA_EXPORT)) {
+            if (!BasePolicyDataProvider.getInstance().isPolicyEnabled(POLICY_DATA_EXPORT)) {
                 menu.add(new Action(ActionUtils.findCommandDescription(
                     ResultSetHandlerMain.CMD_EXPORT, rsv.getSite(), false),
                     Action.AS_RADIO_BUTTON) {

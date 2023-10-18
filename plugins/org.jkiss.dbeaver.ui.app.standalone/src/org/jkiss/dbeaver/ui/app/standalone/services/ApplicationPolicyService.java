@@ -20,7 +20,6 @@ import org.eclipse.core.commands.Command;
 import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.registry.BasePolicyDataProvider;
-import org.jkiss.dbeaver.registry.RegistryConstants;
 
 public class ApplicationPolicyService {
 
@@ -28,6 +27,8 @@ public class ApplicationPolicyService {
 
     private static final String INSTALL_NEW_SOFTWARE_COMMAND = "org.eclipse.equinox.p2.ui.sdk.install"; //$NON-NLS-1$
     private static final String UPDATE_SOFTWARE_COMMAND = "org.eclipse.equinox.p2.ui.sdk.update"; //$NON-NLS-1$
+    private static final String POLICY_SOFTWARE_INSTALL = "policy.software.install.disabled"; //$NON-NLS-1$
+    private static final String POLICY_SOFTWARE_UPDATE = "policy.software.update.disabled"; //$NON-NLS-1$
 
     private ApplicationPolicyService() {
         // no implementation
@@ -45,13 +46,13 @@ public class ApplicationPolicyService {
     /**
      * The method designed to reconcile standard command by specific
      *
-     * @param handlerService - handler service
+     * @param commandService - service
      */
     public void disableStandardProductModification(@NotNull ICommandService commandService) {
-        if (BasePolicyDataProvider.getInstance().isPolicyEnabled(RegistryConstants.POLICY_SOFTWARE_INSTALL)) {
+        if (BasePolicyDataProvider.getInstance().isPolicyEnabled(POLICY_SOFTWARE_INSTALL)) {
             disableCommand(commandService, INSTALL_NEW_SOFTWARE_COMMAND);
         }
-        if (BasePolicyDataProvider.getInstance().isPolicyEnabled(RegistryConstants.POLICY_SOFTWARE_UPDATE)) {
+        if (BasePolicyDataProvider.getInstance().isPolicyEnabled(POLICY_SOFTWARE_UPDATE)) {
             disableCommand(commandService, UPDATE_SOFTWARE_COMMAND);
         }
     }

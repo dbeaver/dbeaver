@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskRunStatus;
 import org.jkiss.dbeaver.registry.BasePolicyDataProvider;
-import org.jkiss.dbeaver.registry.RegistryConstants;
 
 import java.io.PrintStream;
 import java.util.Locale;
@@ -33,10 +32,12 @@ import java.util.Locale;
  */
 public class DTTaskHandlerExport extends DTTaskHandlerTransfer {
 
+    private static final String POLICY_DATA_EXPORT = "policy.data.export.disabled"; //$NON-NLS-1$
+
     @Override
     public DBTTaskRunStatus executeTask(DBRRunnableContext runnableContext, DBTTask task, Locale locale, Log log, PrintStream logStream,
         DBTTaskExecutionListener listener) throws DBException {
-        if (BasePolicyDataProvider.getInstance().isPolicyEnabled(RegistryConstants.POLICY_DATA_EXPORT)) {
+        if (BasePolicyDataProvider.getInstance().isPolicyEnabled(POLICY_DATA_EXPORT)) {
             throw new DBException("Error: Data export operation is restricted by policy"); //$NON-NLS-1$
         }
         return super.executeTask(runnableContext, task, locale, log, logStream, listener);
