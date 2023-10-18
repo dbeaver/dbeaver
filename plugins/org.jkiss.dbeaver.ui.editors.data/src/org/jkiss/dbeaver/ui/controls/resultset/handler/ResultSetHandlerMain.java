@@ -41,9 +41,9 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.NotNull;
@@ -64,6 +64,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.dbeaver.runtime.policy.BasePolicyDataProvider;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
@@ -143,7 +144,8 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
     public static final String CMD_GO_TO_COLUMN = "org.jkiss.dbeaver.core.resultset.grid.gotoColumn";
     public static final String CMD_GO_TO_ROW = "org.jkiss.dbeaver.core.resultset.grid.gotoRow";
     public static final String PARAM_EXPORT_WITH_PARAM = "exportWithParameter";
-
+    private BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
+    
     @Nullable
     public static IResultSetController getActiveResultSet(@Nullable IWorkbenchPart activePart) {
         return getActiveResultSet(activePart, false);
@@ -152,7 +154,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
     public static IResultSetController getActiveResultSet(@Nullable IWorkbenchPart activePart, boolean underMouseCursor) {
         if (activePart != null) {
             IWorkbenchPartSite site = activePart.getSite();
-            if (site != null && site.getPart() != null && !Workbench.getInstance().isClosing()) {
+            if (site != null && site.getPart() != null && PlatformUI.isWorkbenchRunning()) {
                 Shell shell = site.getShell();
                 if (shell != null) {
                     Display display = shell.getDisplay();
@@ -542,31 +544,37 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 break;
             }
             case CMD_EXPORT: {
-                if (event.getParameter(PARAM_EXPORT_WITH_PARAM) != null) {
-                    String defProc = ResultSetHandlerOpenWith.getDefaultOpenWithProcessor();
-                    if (!CommonUtils.isEmpty(defProc)) {
-                        // Run "open with"
-                        ActionUtils.runCommand(
-                            ResultSetHandlerOpenWith.CMD_OPEN_WITH, null, Map.of(ResultSetHandlerOpenWith.PARAM_PROCESSOR_ID, defProc), rsv.getSite());
-                        return null;
+                if (policyProvider.isExportDataDisabled()) {
+                    UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
+                        ResultSetMessages.dialog_policy_data_export_title,
+                        ResultSetMessages.dialog_policy_data_export_msg,
+                        SWT.ICON_WARNING);
+                } else {
+                    if (event.getParameter(PARAM_EXPORT_WITH_PARAM) != null) {
+                        String defProc = ResultSetHandlerOpenWith.getDefaultOpenWithProcessor();
+                        if (!CommonUtils.isEmpty(defProc)) {
+                            // Run "open with"
+                            ActionUtils.runCommand(
+                                ResultSetHandlerOpenWith.CMD_OPEN_WITH, null, Map.of(ResultSetHandlerOpenWith.PARAM_PROCESSOR_ID, defProc),
+                                rsv.getSite());
+                            return null;
+                        }
                     }
+                    List<Integer> selectedRows = new ArrayList<>();
+                    for (ResultSetRow selectedRow : rsv.getSelection().getSelectedRows()) {
+                        selectedRows.add(selectedRow.getRowNumber());
+                    }
+                    ResultSetDataContainerOptions options = new ResultSetDataContainerOptions();
+                    options.setSelectedRows(selectedRows);
+                    options.setSelectedColumns(rsv.getSelection().getSelectedAttributes());
+                    ResultSetDataContainer dataContainer = new ResultSetDataContainer(rsv, options);
+                    DataTransferWizard.openWizard(
+                        HandlerUtil.getActiveWorkbenchWindow(event),
+                        Collections.singletonList(
+                            new DatabaseTransferProducer(dataContainer, rsv.getModel().getDataFilter())),
+                        null,
+                        rsv.getSelection());
                 }
-                List<Integer> selectedRows = new ArrayList<>();
-                for (ResultSetRow selectedRow : rsv.getSelection().getSelectedRows()) {
-                    selectedRows.add(selectedRow.getRowNumber());
-                }
-
-                ResultSetDataContainerOptions options = new ResultSetDataContainerOptions();
-                options.setSelectedRows(selectedRows);
-                options.setSelectedColumns(rsv.getSelection().getSelectedAttributes());
-
-                ResultSetDataContainer dataContainer = new ResultSetDataContainer(rsv, options);
-                DataTransferWizard.openWizard(
-                    HandlerUtil.getActiveWorkbenchWindow(event),
-                    Collections.singletonList(
-                        new DatabaseTransferProducer(dataContainer, rsv.getModel().getDataFilter())),
-                    null,
-                    rsv.getSelection());
                 break;
             }
             case CMD_ZOOM_IN:

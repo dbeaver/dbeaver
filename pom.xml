@@ -9,15 +9,15 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>23.2.2</dbeaver-version>
+        <dbeaver-version>23.2.3</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
         <tycho-version>3.0.1</tycho-version>
-        <eclipse-version>2023-06</eclipse-version>
+        <eclipse-version>2023-09</eclipse-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
 
         <local-p2-repo.url>https://p2.dev.dbeaver.com/eclipse-repo/</local-p2-repo.url>
         <eclipse-p2-repo.url>https://download.eclipse.org/releases/${eclipse-version}/</eclipse-p2-repo.url>
@@ -106,16 +106,9 @@
                 <version>${tycho-version}</version>
                 <configuration>
                     <useProjectSettings>false</useProjectSettings>
-                    <source>11</source>
-                    <target>11</target>
-                    <compilerVersion>11</compilerVersion>
-                    <compilerArgs>
-                        <!--
-                            Java 11-compatibility options.
-                            ignore.symbol.file is a legacy flag
-                        -->
-                        <compilerArg>-XDignore.symbol.file=true</compilerArg>
-                    </compilerArgs>
+                    <source>17</source>
+                    <target>17</target>
+                    <compilerVersion>17</compilerVersion>
                 </configuration>
             </plugin>
 

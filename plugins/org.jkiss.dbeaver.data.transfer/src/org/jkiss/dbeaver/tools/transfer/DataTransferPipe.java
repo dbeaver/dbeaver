@@ -76,7 +76,8 @@ public class DataTransferPipe {
             processor,
             processor == null ?
                 null :
-                settings.getProcessorProperties());
+                settings.getProcessorProperties(),
+            producer == null ? null : producer.getProject());
 
     }
 }

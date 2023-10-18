@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.navigator.fs;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
@@ -41,6 +42,7 @@ import java.util.List;
  */
 public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOListener {
 
+    private static final Log log = Log.getLog(DBNFileSystems.class);
 
     private DBNFileSystem[] children;
 
@@ -205,12 +207,14 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
                 if (rootNode != null) {
                     String[] pathSegments = resource.getFullPath().segments();
                     DBNPathBase parentNode = rootNode;
-                    for (int i = 1; i < pathSegments.length - 1; i++) {
+                    for (int i = 2; i < pathSegments.length - 1; i++) {
                         String itemName = pathSegments[i];
-                        parentNode = parentNode.getChild(itemName);
-                        if (parentNode == null) {
+                        DBNPathBase childNode = parentNode.getChild(itemName);
+                        if (childNode == null) {
+                            log.debug("Cannot find child node '" + itemName + "' in '" + parentNode.getNodeItemPath() + "'");
                             return;
                         }
+                        parentNode = childNode;
                     }
 
                     switch (action) {

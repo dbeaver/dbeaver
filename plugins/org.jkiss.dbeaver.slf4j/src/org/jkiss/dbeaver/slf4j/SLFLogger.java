@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.slf4j.impl;
+package org.jkiss.dbeaver.slf4j;
 
 import org.jkiss.dbeaver.Log;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.slf4j.helpers.MessageFormatter;
 
-class SLFLogger implements Logger {
+public class SLFLogger implements Logger {
     private final Log log;
 
     public SLFLogger(String name) {

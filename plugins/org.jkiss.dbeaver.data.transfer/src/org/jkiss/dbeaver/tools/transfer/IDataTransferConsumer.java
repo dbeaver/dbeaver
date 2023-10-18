@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.transfer;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -49,7 +50,13 @@ public interface IDataTransferConsumer<SETTINGS extends IDataTransferSettings, P
         }
     }
 
-    void initTransfer(DBSObject sourceObject, SETTINGS settings, TransferParameters parameters, PROCESSOR processor, Map<String, Object> processorProperties);
+    void initTransfer(
+        @NotNull DBSObject sourceObject,
+        @Nullable SETTINGS settings,
+        @NotNull TransferParameters parameters,
+        @Nullable PROCESSOR processor,
+        @Nullable Map<String, Object> processorProperties,
+        @Nullable DBPProject project);
 
     void startTransfer(DBRProgressMonitor monitor) throws DBException;
 
