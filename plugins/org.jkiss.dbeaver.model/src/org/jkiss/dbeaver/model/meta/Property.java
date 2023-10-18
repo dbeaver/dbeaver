@@ -34,6 +34,7 @@ public @interface Property
     String DEFAULT_LOCAL_STRING = "#"; //NON-NLS-1
     String RESOURCE_TYPE_NAME = "name"; //NON-NLS-1
     String RESOURCE_TYPE_DESCRIPTION = "description"; //NON-NLS-1
+    String RESOURCE_TYPE_HINT = "hint"; //NON-NLS-1
 
     /**
      * Property unique ID (unique within class)
@@ -67,6 +68,12 @@ public @interface Property
      * @return description
      */
     String description() default DEFAULT_LOCAL_STRING;
+
+    /**
+     * Property hint (optional)
+     * @return hint
+     */
+    String hint() default DEFAULT_LOCAL_STRING;
 
     /**
      * Editable flag. If set to true then property may be edited for new objects.

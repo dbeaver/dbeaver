@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -34,46 +35,49 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.stream.model.StreamDataSource;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.*;
 
 public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQualifiedObject {
-    private final File inputFile;
+    @NotNull
+    private final Path inputFile;
+    @NotNull
     private final DBPDataSource dataSource;
+    @NotNull
     private final String entityName;
     private final List<StreamDataImporterColumnInfo> streamColumns = new ArrayList<>();
     private final boolean child;
 
-    public StreamEntityMapping(@NotNull File inputFile) {
-        this(inputFile, inputFile.getName());
+    public StreamEntityMapping(@NotNull Path inputFile) {
+        this(inputFile, inputFile.getFileName().toString(), false);
     }
 
-    public StreamEntityMapping(@NotNull File inputFile, @NotNull String entityName) {
-        this(inputFile, entityName, false);
-    }
-
-    public StreamEntityMapping(@NotNull File inputFile, @NotNull String entityName, boolean child) {
+    public StreamEntityMapping(@NotNull Path inputFile, @NotNull String entityName, boolean child) {
         this.inputFile = inputFile;
         this.entityName = entityName;
         this.dataSource = new StreamDataSource(entityName);
         this.child = child;
     }
 
-    StreamEntityMapping(Map<String, Object> config) throws DBCException {
+    StreamEntityMapping(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBPProject project,
+        @NotNull Map<String, Object> config
+    ) throws DBException {
         this.entityName = CommonUtils.toString(config.get("entityId"));
 
         String inputFileName = CommonUtils.toString(config.get("inputFile"));
         if (CommonUtils.isEmpty(inputFileName)) {
             inputFileName = this.entityName;
         }
-        this.inputFile = new File(inputFileName);
+        this.inputFile = DBUtils.resolvePathFromString(monitor, project, inputFileName);
 
         this.dataSource = new StreamDataSource(entityName);
         this.child = false;
     }
 
     @NotNull
-    public File getInputFile() {
+    public Path getInputFile() {
         return inputFile;
     }
 
@@ -104,12 +108,12 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) {
         return null;
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) {
         return null;
     }
 
@@ -141,7 +145,7 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
     }
 
     @Override
-    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter, long flags) throws DBCException {
+    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter, long flags) {
         return -1;
     }
 
