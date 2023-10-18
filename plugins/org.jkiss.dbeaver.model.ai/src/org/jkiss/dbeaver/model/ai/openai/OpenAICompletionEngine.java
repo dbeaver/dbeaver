@@ -316,6 +316,10 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
                             log.debug(e);
                         }
                     }
+                } else if (exception instanceof RuntimeException &&
+                    !(exception instanceof OpenAiHttpException) &&
+                    exception.getCause() != null) {
+                    throw new DBException("AI service error: " + exception.getCause().getMessage(), exception.getCause());
                 }
                 throw exception;
             }
@@ -347,9 +351,9 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
             model = GPTModel.GPT_TURBO16;
         }
         if (model.isChatAPI()) {
-            return buildChatRequest(request, responseSize, temperature, modelId);
+            return buildChatRequest(request, responseSize, temperature, model.getName());
         } else {
-            return buildLegacyAPIRequest(request, responseSize, temperature, modelId);
+            return buildLegacyAPIRequest(request, responseSize, temperature, model.getName());
         }
     }
 

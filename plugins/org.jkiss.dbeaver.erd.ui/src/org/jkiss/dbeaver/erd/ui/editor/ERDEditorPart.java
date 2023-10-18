@@ -239,14 +239,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException
     {
-        try {
-            // Use reflection to make it compile with older Eclipse versions
-            rootPart = ScalableFreeformRootEditPart.class
-                .getConstructor(Boolean.TYPE)
-                .newInstance(false);
-        } catch (Throwable e) {
-            rootPart = new ScalableFreeformRootEditPart();
-        }
+        rootPart = new ScalableFreeformRootEditPart();
         editDomain = new DefaultEditDomain(this);
         setEditDomain(editDomain);
 

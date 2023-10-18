@@ -141,7 +141,12 @@ public abstract class AbstractAICompletionEngine<SERVICE, REQUEST> implements DA
             StringBuilder completionTextBuilder = new StringBuilder(completionText);
             for (String line : lines) {
                 if (!CommonUtils.isEmpty(line)) {
-                    completionTextBuilder.insert(0, "-- " + line.trim() + "\n");
+                    String[] singleLineComments = mainObject.getDataSource().getSQLDialect().getSingleLineComments();
+                    if (singleLineComments == null || singleLineComments.length == 0) {
+                        completionTextBuilder.insert(0, "-- " + line.trim() + "\n");
+                    } else {
+                        completionTextBuilder.insert(0, singleLineComments[0] + " " + line.trim() + "\n");
+                    }
                 }
             }
             completionText = completionTextBuilder.toString();
