@@ -86,12 +86,6 @@ public class YashanDBTableColumn extends JDBCTableColumn<YashanDBTableBase> impl
         }else {
             setPrecision(JDBCUtils.safeGetInteger(dbResult, "DATA_PRECISION"));
         }
-
-        this.type = YashanDBDataType.resolveDataType(
-                monitor,
-                getDataSource(),
-                JDBCUtils.safeGetString(dbResult, "DATA_TYPE_OWNER"),
-                this.typeName);
         this.typeMod = YashanDBDataTypeModifier.resolveTypeModifier(JDBCUtils.safeGetString(dbResult, "DATA_TYPE_MOD"));
         if (this.type != null) {
             this.typeName = type.getFullyQualifiedName(DBPEvaluationContext.DDL);
