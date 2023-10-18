@@ -190,7 +190,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                     ISelection selection = scriptsViewer.getSelection();
                     if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
                         for (Object element : ((IStructuredSelection) selection).toArray()) {
-                            if (element instanceof DBNResource) {
+                            if (element instanceof DBNNodeWithResource) {
                                 selectedScripts.remove(element);
                             }
                         }
