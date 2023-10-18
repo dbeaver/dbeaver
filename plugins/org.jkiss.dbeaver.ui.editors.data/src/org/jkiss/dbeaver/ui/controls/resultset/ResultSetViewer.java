@@ -238,7 +238,7 @@ public class ResultSetViewer extends Viewer
 
     private volatile boolean nextSegmentReadingBlocked;
 
-    public static final String POLICY_DATA_EXPORT = "policy.data.export.disabled"; //$NON-NLS-1$
+    private static final String POLICY_DATA_EXPORT = "policy.data.export.disabled"; //$NON-NLS-1$
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container) {
         super();
