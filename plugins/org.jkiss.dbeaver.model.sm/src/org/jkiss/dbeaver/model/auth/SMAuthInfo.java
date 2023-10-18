@@ -35,8 +35,6 @@ public class SMAuthInfo {
 
     @Nullable
     private final String redirectUrl;
-    @Nullable
-    private final String signOutLink;
 
     @Nullable
     private final String smAccessToken;
@@ -60,8 +58,7 @@ public class SMAuthInfo {
         @Nullable String error,
         @NotNull String authAttemptId,
         @NotNull Map<SMAuthConfigurationReference, Object> authData,
-        @Nullable String smSignInLink,
-        @Nullable String smSignOutLink,
+        @Nullable String redirectUrl,
         @Nullable String smAccessToken,
         @Nullable String smRefreshToken,
         @Nullable String authRole,
@@ -71,8 +68,7 @@ public class SMAuthInfo {
         this.error = error;
         this.authAttemptId = authAttemptId;
         this.authData = authData;
-        this.redirectUrl = smSignInLink;
-        this.signOutLink = smSignOutLink;
+        this.redirectUrl = redirectUrl;
         this.smAccessToken = smAccessToken;
         this.smRefreshToken = smRefreshToken;
         this.authRole = authRole;
@@ -103,15 +99,13 @@ public class SMAuthInfo {
 
     public static SMAuthInfo inProgress(
         @NotNull String authAttemptId,
-        @Nullable String signInLink,
-        @Nullable String signOutLink,
+        @Nullable String redirectUrl,
         @NotNull Map<SMAuthConfigurationReference, Object> authData
     ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.IN_PROGRESS)
             .setAuthAttemptId(authAttemptId)
-            .setSignInLink(signInLink)
-            .setSignOutLink(signInLink)
+            .setRedirectUrl(redirectUrl)
             .setAuthData(authData)
             .build();
     }
@@ -191,16 +185,6 @@ public class SMAuthInfo {
     }
 
     @Nullable
-    public String getSignInLink() {
-        return redirectUrl;
-    }
-
-    @Nullable
-    public String getSignOutLink() {
-        return signOutLink;
-    }
-
-    @Nullable
     public String getError() {
         return error;
     }
@@ -210,8 +194,7 @@ public class SMAuthInfo {
         private String error;
         private String authAttemptId;
         private Map<SMAuthConfigurationReference, Object> authData;
-        private String signInLink;
-        private String signOutLink;
+        private String redirectUrl;
         private String smAccessToken;
         private String smRefreshToken;
         private String authRole;
@@ -240,13 +223,8 @@ public class SMAuthInfo {
             return this;
         }
 
-        public Builder setSignInLink(String signInLink) {
-            this.signInLink = signInLink;
-            return this;
-        }
-
-        public Builder setSignOutLink(String signOutLink) {
-            this.signOutLink = signOutLink;
+        public Builder setRedirectUrl(String redirectUrl) {
+            this.redirectUrl = redirectUrl;
             return this;
         }
 
@@ -276,8 +254,7 @@ public class SMAuthInfo {
                 error,
                 authAttemptId,
                 authData,
-                signInLink,
-                signOutLink,
+                redirectUrl,
                 smAccessToken,
                 smRefreshToken,
                 authRole,
