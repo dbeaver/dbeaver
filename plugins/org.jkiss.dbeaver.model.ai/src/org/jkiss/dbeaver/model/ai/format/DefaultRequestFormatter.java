@@ -29,7 +29,7 @@ public class DefaultRequestFormatter implements IAIFormatter {
         DBCExecutionContext executionContext,
         String completionText
     ) {
-        return null;
+        return completionText;
     }
 
     @Override
