@@ -172,7 +172,6 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
-        super.loadSettings(runnableContext, store);
         compression = store.getString("pg.export.compression");
         encoding = store.getString("pg.export.encoding");
         showViews = store.getBoolean("pg.export.showViews");
@@ -182,6 +181,7 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
         dropObjects = store.getBoolean("pg.export.dropObjects");
         createDatabase = store.getBoolean("pg.export.createDatabase");
 
+        super.loadSettings(runnableContext, store);
         if (store instanceof DBPPreferenceMap) {
             // Save input objects to task properties
             List<Map<String, Object>> objectList = ((DBPPreferenceMap) store).getObject("exportObjects");

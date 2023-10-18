@@ -70,7 +70,6 @@ public abstract class AbstractImportExportSettings<BASE_OBJECT extends DBSObject
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
-        super.loadSettings(runnableContext, store);
         this.outputFilePattern = store.getString("export.outputFilePattern");
         if (CommonUtils.isEmpty(this.outputFilePattern)) {
             this.outputFilePattern = "dump-${database}-${timestamp}.sql";
@@ -79,6 +78,7 @@ public abstract class AbstractImportExportSettings<BASE_OBJECT extends DBSObject
         if (CommonUtils.isEmpty(this.outputFolderPattern)) {
             this.outputFolderPattern = RuntimeUtils.getUserHomeDir().getAbsolutePath();
         }
+        super.loadSettings(runnableContext, store);
     }
 
     @Override
