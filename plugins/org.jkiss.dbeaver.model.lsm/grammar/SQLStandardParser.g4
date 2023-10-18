@@ -376,7 +376,14 @@ anyWordWithAnyValue: anyWord anyValue;
 anyProperty: LeftParen (anyValue (Comma anyValue)*) RightParen;
 anyWordsWithProperty: anyWord+ anyProperty?;
 
-anyUnexpected: (~(LeftParen|RightParen|Period))+;
+/*
+All the logical boundary terms between query construct levels should be explicitly mentioned here for the anyUnexpected to NOT cross them
+MATCH path = (a:RuleEnd)-[r:BeginAlternative|EndAlternativeBranch|EnterRule|ExitRule|Skip|Default*]->(b)-[t:Term]->(c),rrr2 = (f:RuleContainer)-[:RuleContains]->(a)
+WHERE f.payload in ['naturalJoinTerm','searchCondition','selectSublist','tableReference'] return distinct t.payload
+*/
+anyUnexpected: ((~(LeftParen|RightParen|Period|Semicolon|Comma|
+THEN|GROUP|HAVING|UNION|EXCEPT|WITH|INTERSECT|ORDER|ON|USING|WHERE|INTO|FROM
+))|(identifier Period))+;
 
 tableHintKeywords: WITH | UPDATE | IN | KEY | JOIN | ORDER BY | GROUP BY;
 
