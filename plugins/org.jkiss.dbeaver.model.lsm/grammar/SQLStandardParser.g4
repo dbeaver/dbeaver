@@ -53,7 +53,7 @@ sqlQueries: sqlQuery (Semicolon sqlQuery)* Semicolon? EOF; // EOF - don't stop e
 sqlQuery: directSqlDataStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|sqlDataStatement;
 
 directSqlDataStatement: (deleteStatement|selectStatement|insertStatement|updateStatement);
-selectStatement: withClause? queryExpression orderByClause?;
+selectStatement: withClause? queryExpression;
 
 // data type literals
 literal: (signedNumericLiteral|generalLiteral);
@@ -182,7 +182,7 @@ selectList: (Asterisk|selectSublist) (Comma selectSublist)*; // (Comma selectSub
 selectSublist: (derivedColumn|qualifier Period Asterisk)? (.*?); // (.*?) for whole rule to handle select fields autocompletion when from immediately after select
 derivedColumn: valueExpression (asClause)?;
 asClause: (AS)? columnName;
-tableExpression: fromClause (whereClause)? (groupByClause)? (havingClause)?;
+tableExpression: fromClause whereClause? groupByClause? havingClause? orderByClause?;
 queryPrimary: (nonJoinQueryPrimary|joinedTable);
 queryTerm: (nonJoinQueryTerm|joinedTable);
 queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
@@ -250,7 +250,9 @@ numericOperation:                           (((Asterisk|Solidus) factor)+ ((Plus
 intervalOperation:       intervalQualifier?((((Asterisk|Solidus) factor)+ ((PlusSign|MinusSign) intervalTerm)*)|(((PlusSign|MinusSign) intervalTerm)+));
 intervalOperation2: Asterisk intervalFactor((((Asterisk|Solidus) factor)+ ((PlusSign|MinusSign) intervalTerm)*)|(((PlusSign|MinusSign) intervalTerm)+));
 
-valueExpressionPrimary: (unsignedNumericLiteral|generalLiteral|generalValueSpecification|columnReference|setFunctionSpecification|scalarSubquery|caseExpression|LeftParen valueExpression RightParen|castSpecification);
+valueExpressionPrimary: unsignedNumericLiteral|generalLiteral|generalValueSpecification|countAllExpression
+    |scalarSubquery|caseExpression|LeftParen valueExpression RightParen|castSpecification
+    |anyWordsWithProperty|columnReference;
 
 // 1
 numericPrimary: (valueExpressionPrimary|extractExpression|anyWordsWithProperty); // U
@@ -269,7 +271,7 @@ intervalValueExpression: ((intervalTerm)|(LeftParen datetimeValueExpression Minu
 datetimeValueExpression: (anyWordsWithProperty|(intervalValueExpression PlusSign anyWordsWithProperty)) ((PlusSign|MinusSign) intervalTerm)*; // L
 extractSource: (datetimeValueExpression|intervalValueExpression); // L
 
-setFunctionSpecification: (COUNT LeftParen Asterisk RightParen|anyWordsWithProperty); // U
+countAllExpression: COUNT LeftParen Asterisk RightParen;
 extractExpression: EXTRACT LeftParen extractField FROM extractSource RightParen;
 extractField: (datetimeField|timeZoneField);
 datetimeField: (nonSecondDatetimeField|SECOND);
