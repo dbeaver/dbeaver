@@ -181,6 +181,7 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
         dropObjects = store.getBoolean("pg.export.dropObjects");
         createDatabase = store.getBoolean("pg.export.createDatabase");
 
+        super.loadSettings(runnableContext, store);
         if (store instanceof DBPPreferenceMap) {
             // Save input objects to task properties
             List<Map<String, Object>> objectList = ((DBPPreferenceMap) store).getObject("exportObjects");
@@ -198,7 +199,6 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
                 }
             }
         }
-        super.loadSettings(runnableContext, store);
     }
 
 

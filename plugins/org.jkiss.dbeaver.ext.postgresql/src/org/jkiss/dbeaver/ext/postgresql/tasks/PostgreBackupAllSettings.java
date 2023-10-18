@@ -196,6 +196,7 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
         noOwner = store.getBoolean(PROP_EXPORT_ALL_NO_OWNER);
         addRolesPasswords = store.getBoolean(PROP_EXPORT_ALL_ADD_ROLES_PASSWORDS);
 
+        super.loadSettings(runnableContext, store);
         if (store instanceof DBPPreferenceMap) {
             // Save input objects to task properties
             List<Map<String, Object>> objectList = ((DBPPreferenceMap) store).getObject(PROP_EXPORT_OBJECTS_ALL);
@@ -212,7 +213,6 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
                 }
             }
         }
-        super.loadSettings(runnableContext, store);
     }
 
     private PostgreDatabaseBackupAllInfo loadDatabaseExportInfo(

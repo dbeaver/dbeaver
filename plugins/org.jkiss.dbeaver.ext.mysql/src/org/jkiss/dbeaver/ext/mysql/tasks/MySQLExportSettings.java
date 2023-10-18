@@ -234,6 +234,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
             setExtraCommandArgs(store.getString("MySQL.export.extraArgs"));
         }
 
+        super.loadSettings(runnableContext, store);
         if (store instanceof DBPPreferenceMap) {
             // Save input objects to task properties
             List<Map<String, Object>> objectList = ((DBPPreferenceMap) store).getObject("exportObjects");
@@ -250,7 +251,6 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
                 }
             }
         }
-        super.loadSettings(runnableContext, store);
     }
 
     private MySQLDatabaseExportInfo loadDatabaseExportInfo(DBRRunnableContext runnableContext, String catalogId, List<String> tableNames) {

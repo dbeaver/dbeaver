@@ -88,6 +88,7 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
         noOwner = store.getBoolean("pg.restore.noOwner");
         createDatabase = store.getBoolean("pg.restore.createDatabase");
 
+        super.loadSettings(runnableContext, store);
         String catalogId = null;
         if (store instanceof DBPPreferenceMap) {
             catalogId = store.getString("pg.restore.database");
@@ -126,7 +127,6 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
         if (restoreInfo == null) {
             throw new DBException("Cannot find database for restoring");
         }
-        super.loadSettings(runnableContext, store);
     }
 
     @Override
