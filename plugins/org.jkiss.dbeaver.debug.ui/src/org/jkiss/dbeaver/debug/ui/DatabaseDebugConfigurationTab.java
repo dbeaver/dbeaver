@@ -148,7 +148,7 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
             }
         }
         setDebugType(dataSource, null);
-        typesGroup.getParent().layout(true, true);
+        //typesGroup.getParent().layout(true, true);
     }
 
     private void setDebugType(DBPDataSourceContainer dataSource, DebugConfigurationPanelDescriptor debugPanel) {
