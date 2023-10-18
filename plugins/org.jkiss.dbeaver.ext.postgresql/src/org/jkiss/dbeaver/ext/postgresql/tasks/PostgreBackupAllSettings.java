@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.tasks.nativetool.AbstractImportExportSettings;
 import org.jkiss.dbeaver.tasks.nativetool.ExportSettingsExtension;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -54,7 +53,7 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
     private static final String PROP_DATASOURCE = "datasource";
     private static final String PROP_DATABASES = "databases";
 
-    private List<PostgreDatabaseBackupAllInfo> exportObjects = new ArrayList<>();
+    private final List<PostgreDatabaseBackupAllInfo> exportObjects = new ArrayList<>();
 
     private String encoding;
     private boolean exportOnlyMetadata;
@@ -64,18 +63,18 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
     private boolean noPrivileges;
     private boolean noOwner;
     private boolean addRolesPasswords;
-    private File outputFolder;
 
     @NotNull
     @Override
-    public File getOutputFile(@NotNull PostgreDatabaseBackupAllInfo info) {
+    public String getOutputFile(@NotNull PostgreDatabaseBackupAllInfo info) {
         DBSObjectContainer container = getContainerObject(info.getDatabases());
         String outputFileName = resolveVars(
             container != null ? container : info.getDataSource(),
             null,
             null,
             getOutputFilePattern());
-        return new File(getOutputFolder(info), outputFileName);
+        String outputFolder = getOutputFolder(info);
+        return makeOutFilePath(outputFolder, outputFileName);
     }
 
     @NotNull
@@ -86,13 +85,10 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
 
     @NotNull
     @Override
-    public File getOutputFolder(@NotNull PostgreDatabaseBackupAllInfo info) {
-        if (outputFolder == null) {
-            DBSObjectContainer container = getContainerObject(info.getDatabases());
-            outputFolder = new File(resolveVars(
-                container != null ? container : info.getDataSource(), null, null, getOutputFolderPattern()));
-        }
-        return outputFolder;
+    public String getOutputFolder(@NotNull PostgreDatabaseBackupAllInfo info) {
+        DBSObjectContainer container = getContainerObject(info.getDatabases());
+        return resolveVars(
+            container != null ? container : info.getDataSource(), null, null, getOutputFolderPattern());
     }
 
     @Nullable

@@ -156,7 +156,7 @@ public class RestClient {
                 HttpResponse.BodyHandler<String> readerBodyHandler =
                     info -> BodySubscribers.ofString(StandardCharsets.UTF_8);
                 String requestString = gson.toJson(values);
-System.out.println("REQUEST: " + requestString);
+
                 HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(URI.create(url.toString()))
                     .header("Content-Type", "application/json")
@@ -187,7 +187,7 @@ System.out.println("REQUEST: " + requestString);
                         returnType = bounds[0];
                     }
                 }
-System.out.println("RESPONSE: " + contents);
+
                 return gson.fromJson(contents, returnType);
             } catch (RuntimeException e) {
                 throw e;

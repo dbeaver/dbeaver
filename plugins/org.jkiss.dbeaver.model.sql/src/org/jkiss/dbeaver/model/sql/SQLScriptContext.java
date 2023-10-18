@@ -35,9 +35,9 @@ import org.jkiss.dbeaver.model.sql.registry.SQLVariablesRegistry;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -58,17 +58,17 @@ public class SQLScriptContext implements DBCScriptContext {
     @NotNull
     private final DBPContextProvider contextProvider;
     @Nullable
-    private final File sourceFile;
+    private final Path sourceFile;
     @NotNull
     private final DBCOutputWriter outputWriter;
 
-    private SQLParametersProvider parametersProvider;
+    private final SQLParametersProvider parametersProvider;
     private boolean ignoreParameters;
 
     public SQLScriptContext(
         @Nullable SQLScriptContext parentContext,
         @NotNull DBPContextProvider contextProvider,
-        @Nullable File sourceFile,
+        @Nullable Path sourceFile,
         @NotNull Writer outputWriter,
         @Nullable SQLParametersProvider parametersProvider)
     {
@@ -78,7 +78,7 @@ public class SQLScriptContext implements DBCScriptContext {
     public SQLScriptContext(
         @Nullable SQLScriptContext parentContext,
         @NotNull DBPContextProvider contextProvider,
-        @Nullable File sourceFile,
+        @Nullable Path sourceFile,
         @NotNull DBCOutputWriter outputWriter,
         @Nullable SQLParametersProvider parametersProvider
     ) {
@@ -100,7 +100,7 @@ public class SQLScriptContext implements DBCScriptContext {
     }
 
     @Nullable
-    public File getSourceFile() {
+    public Path getSourceFile() {
         return sourceFile;
     }
 

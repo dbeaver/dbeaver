@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.tasks.nativetool;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -266,4 +267,11 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
     public boolean isMutatingTask() {
         return false;
     }
+
+    @NotNull
+    protected String makeOutFilePath(String outputFolder, String outputFileName) {
+        if (!outputFolder.endsWith("/")) outputFolder += "/";
+        return outputFolder + outputFileName;
+    }
+
 }
