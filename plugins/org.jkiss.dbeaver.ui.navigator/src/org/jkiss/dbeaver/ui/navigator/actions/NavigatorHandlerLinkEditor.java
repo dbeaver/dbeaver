@@ -106,7 +106,7 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
                         showObject = ((DBPDataSource) showObject).getContainer();
                     }
 
-                    DBNDatabaseNode objectNode = view.getModel().getNodeByObject(
+                    DBNDatabaseNode objectNode = NavigatorViewBase.getGlobalNavigatorModel().getNodeByObject(
                         monitor,
                         showObject,
                         true
@@ -123,7 +123,7 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
     }
 
     private void showResourceInNavigator(NavigatorViewBase activePart, IFile editorFile) {
-        DBNProject projectNode = activePart.getModel().getRoot().getProjectNode(editorFile.getProject());
+        DBNProject projectNode = activePart.getGlobalNavigatorModel().getRoot().getProjectNode(editorFile.getProject());
         if (projectNode != null) {
             DBNResource resource = projectNode.findResource(editorFile);
             if (resource != null) {

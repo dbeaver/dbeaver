@@ -194,4 +194,20 @@ public interface SMAdminController extends SMController {
         @NotNull String subjectId,
         @NotNull SMObjectType smObjectType
     ) throws DBException;
+
+
+    void addObjectPermissions(
+        @NotNull Set<String> objectIds,
+        @NotNull SMObjectType objectType,
+        @NotNull Set<String> subjectIds,
+        @NotNull Set<String> permissions,
+        @NotNull String grantor
+    ) throws DBException;
+
+    void deleteObjectPermissions(
+        @NotNull Set<String> objectIds,
+        @NotNull SMObjectType objectType,
+        @NotNull Set<String> subjectIds,
+        @NotNull Set<String> permissions
+    ) throws DBException;
 }

@@ -32,6 +32,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -74,7 +75,15 @@ public class NavigatorHandlerAssociateScript extends NavigatorHandlerObjectBase 
             for (IFile script : selectedScripts) {
                 EditorUtils.setFileDataSource(script, new SimpleDatabaseEditorContext(dataSource));
                 setEditorDataSource(script, dataSource);
-                DBNUtils.refreshNavigatorResource(dataSource.getProject(), script, dataSource);
+                DBPProject project;
+                if (dataSource != null) {
+                    project = dataSource.getProject();
+                } else  {
+                    project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(script.getProject());
+                }
+                if (project != null) {
+                    DBNUtils.refreshNavigatorResource(project, script, dataSource);
+                }
             }
         }
         return null;

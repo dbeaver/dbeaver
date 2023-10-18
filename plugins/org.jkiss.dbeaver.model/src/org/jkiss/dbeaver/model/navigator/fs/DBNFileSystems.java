@@ -19,8 +19,9 @@ package org.jkiss.dbeaver.model.navigator.fs;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.fs.DBFFileSystemDescriptor;
+import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOListener;
@@ -31,7 +32,6 @@ import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -42,6 +42,7 @@ import java.util.List;
  */
 public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOListener {
 
+    private static final Log log = Log.getLog(DBNFileSystems.class);
 
     private DBNFileSystem[] children;
 
@@ -118,14 +119,17 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
     protected DBNFileSystem[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
         monitor.beginTask("Read available file systems", 1);
         List<DBNFileSystem> result = new ArrayList<>();
-        for (DBFFileSystemDescriptor fsProvider : DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProviders()) {
-            DBFVirtualFileSystem[] fsList = fsProvider.getInstance().getAvailableFileSystems(
-                monitor, getModel().getModelAuthContext());
-            for (DBFVirtualFileSystem fs : fsList) {
-                DBNFileSystem newChild = new DBNFileSystem(this, fs);
-                result.add(newChild);
-            }
+        var project = getOwnerProject();
+        if (project == null) {
+            return new DBNFileSystem[0];
         }
+        DBFFileSystemManager fileSystemManager = project.getFileSystemManager();
+
+        for (DBFVirtualFileSystem fs : fileSystemManager.getVirtualFileSystems()) {
+            DBNFileSystem newChild = new DBNFileSystem(this, fs);
+            result.add(newChild);
+        }
+
         result.sort(DBUtils.nameComparatorIgnoreCase());
         monitor.done();
         return result.toArray(new DBNFileSystem[0]);
@@ -203,12 +207,14 @@ public class DBNFileSystems extends DBNNode implements DBPHiddenObject, EFSNIOLi
                 if (rootNode != null) {
                     String[] pathSegments = resource.getFullPath().segments();
                     DBNPathBase parentNode = rootNode;
-                    for (int i = 1; i < pathSegments.length - 1; i++) {
+                    for (int i = 2; i < pathSegments.length - 1; i++) {
                         String itemName = pathSegments[i];
-                        parentNode = parentNode.getChild(itemName);
-                        if (parentNode == null) {
+                        DBNPathBase childNode = parentNode.getChild(itemName);
+                        if (childNode == null) {
+                            log.debug("Cannot find child node '" + itemName + "' in '" + parentNode.getNodeItemPath() + "'");
                             return;
                         }
+                        parentNode = childNode;
                     }
 
                     switch (action) {
