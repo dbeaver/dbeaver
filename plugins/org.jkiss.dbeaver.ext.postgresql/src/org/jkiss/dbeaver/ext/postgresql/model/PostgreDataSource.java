@@ -365,8 +365,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 if (!CommonUtils.isEmpty(clientCertProp)) {
                     props.put("sslcert", saveCertificateToFile(clientCertProp));
                 }
+                String keyCertDer = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
                 String keyCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY_VALUE);
-                if (!CommonUtils.isEmpty(keyCertProp)) {
+                if (CommonUtils.isNotEmpty(keyCertDer)) { // may be after exception
+                    props.put("sslkey", keyCertDer);
+                } else if (CommonUtils.isNotEmpty(keyCertProp)) {
                     props.put("sslkey", saveCertificateToFile(keyCertProp));
                 }
             } catch (IOException e) {
@@ -568,18 +571,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 }
 
                 try {
-                    final byte[] key = SSLHandlerTrustStoreImpl.readCertificate(handler, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
-                    if (isMultiUserOrDistributed()) {
-                        handler.setSecureProperty(
-                            SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY_VALUE,
-                            new String(key, StandardCharsets.UTF_8)
-                        );
-                    } else {
-                        final Reader reader = new StringReader(new String(key, StandardCharsets.UTF_8));
-                        Files.write(dst, DefaultCertificateStorage.loadDerFromPem(reader));
-                        String derCertPath = dst.toAbsolutePath().toString();
-                        handler.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, derCertPath);
-                    }
+                    SSLHandlerTrustStoreImpl.loadDerFromPem(handler, dst);
                 } catch (IOException ex) {
                     log.error("Error converting SSL key", ex);
                     throw e;

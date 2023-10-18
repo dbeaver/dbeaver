@@ -18,17 +18,24 @@ package org.jkiss.dbeaver.model.impl.net;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.AbstractDataSource;
 import org.jkiss.dbeaver.model.impl.app.CertificateGenHelper;
+import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import javax.net.ssl.*;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,6 +44,7 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Default Java SSL Handler. Saves certificate in local trust store
@@ -194,6 +202,24 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
 
     public static SSLSocketFactory createTrustStoreSslSocketFactory(DBPDataSource dataSource, DBWHandlerConfiguration sslConfig) throws Exception {
         return createTrustStoreSslContext(dataSource, sslConfig).getSocketFactory();
+    }
+
+    public static void loadDerFromPem(
+        final @NotNull DBWHandlerConfiguration handler,
+        final @NotNull Path tempDerFile
+    ) throws IOException {
+        final byte[] key = SSLHandlerTrustStoreImpl.readCertificate(handler, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
+        final Reader reader = new StringReader(new String(key, StandardCharsets.UTF_8));
+        Files.write(tempDerFile, DefaultCertificateStorage.loadDerFromPem(reader));
+        String derCertPath = tempDerFile.toAbsolutePath().toString();
+        if (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            handler.setSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, derCertPath);
+        } else {
+            handler.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, derCertPath);
+        }
+        // Unfortunately, we can't delete the temp file here.
+        // The chain is built asynchronously by the driver, and we don't know at which moment in time it will happen.
+        // It will still be deleted during shutdown.
     }
 
     /**
