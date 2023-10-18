@@ -14,21 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.runtime.policy;
+package org.jkiss.dbeaver.registry;
+
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 /**
- * Abstract specification of policy data provider
+ * Base data policy provider designed to provide specific policy property value.
+ * The general logic catch policy value in .ini file as system property next in
+ * windows registry under HKEY_CURRENT_USER and HKEY_LOCAL_MACHINE nodes.
  */
-public abstract class AbstractPolicyDataProvider implements PolicyDataProvider {
+public class BasePolicyDataProvider {
 
     private static final String DBEAVER_REGESTRY_POLICY_NODE = "Software\\DBeaver Corp\\DBeaver\\policy"; //$NON-NLS-1$
+    private static BasePolicyDataProvider instance = new BasePolicyDataProvider();
 
-    @Override
-    public boolean isDataPolicyEnabled(String propertyName) {
+    public static BasePolicyDataProvider getInstance() {
+        return instance;
+    }
+
+    private BasePolicyDataProvider() {
+        // private constructor
+    }
+
+    /**
+     * Return boolean value of policy data property
+     *
+     * @param propertyName
+     * @return - boolean value
+     */
+    public boolean isPolicyEnabled(String propertyName) {
         boolean policyEnabled = false;
         policyEnabled = getDataPolicyFromSystem(propertyName);
         if (policyEnabled) {
@@ -44,7 +61,7 @@ public abstract class AbstractPolicyDataProvider implements PolicyDataProvider {
      * @param property - property name
      * @return - boolean value
      */
-    public boolean getDataPolicyFromSystem(String property) {
+    private boolean getDataPolicyFromSystem(String property) {
         String policyValue = System.getProperty(property);
         if (policyValue != null && !policyValue.isEmpty()) {
             return Boolean.valueOf(policyValue);
@@ -58,7 +75,7 @@ public abstract class AbstractPolicyDataProvider implements PolicyDataProvider {
      * @param property - property name
      * @return - boolean value
      */
-    public boolean getDataPolicyFromRegistry(String property) {
+    private boolean getDataPolicyFromRegistry(String property) {
         if (RuntimeUtils.isWindows()) {
             boolean isPolicyEnabled = getBooleanFromWinRegistryNode(WinReg.HKEY_CURRENT_USER, property);
             if (isPolicyEnabled) {
@@ -83,5 +100,4 @@ public abstract class AbstractPolicyDataProvider implements PolicyDataProvider {
         }
         return false;
     }
-
 }

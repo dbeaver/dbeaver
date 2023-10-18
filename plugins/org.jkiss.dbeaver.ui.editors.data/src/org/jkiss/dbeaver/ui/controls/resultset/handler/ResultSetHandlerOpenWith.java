@@ -41,8 +41,9 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.BasePolicyDataProvider;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.policy.BasePolicyDataProvider;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
@@ -298,8 +299,6 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
     public static class OpenWithMenuDefaultContributor extends CompoundContributionItem
     {
 
-        private BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
-
         @Override
         protected IContributionItem[] getContributionItems() {
             final ResultSetViewer rsv = (ResultSetViewer) ResultSetHandlerMain.getActiveResultSet(
@@ -309,7 +308,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
             }
             ContributionManager menu = new MenuManager();
             // Def processor is null
-            if (!policyProvider.isExportDataDisabled()) {
+            if (!BasePolicyDataProvider.getInstance().isPolicyEnabled(RegistryConstants.POLICY_DATA_EXPORT)) {
                 menu.add(new Action(ActionUtils.findCommandDescription(
                     ResultSetHandlerMain.CMD_EXPORT, rsv.getSite(), false),
                     Action.AS_RADIO_BUTTON) {
