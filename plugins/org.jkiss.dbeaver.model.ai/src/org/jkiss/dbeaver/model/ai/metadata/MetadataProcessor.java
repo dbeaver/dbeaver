@@ -153,22 +153,45 @@ public class MetadataProcessor {
             }
         }
 
-        final StringJoiner promptBuilder = new StringJoiner("\n");
-        if (session != null) {
-            for (DAICompletionRequest r : session.getRequests()) {
-                promptBuilder.add(r.getPromptText());
-            }
-        }
-        promptBuilder.add(request.getPromptText());
+        final String prompt = generatePrompt(request, session, maxRequestLength);
 
         additionalMetadata
             .append(tail).append("#\n###")
-            .append(formatter.postProcessPrompt(monitor, mainObject, executionContext, promptBuilder.toString()))
+            .append(formatter.postProcessPrompt(monitor, mainObject, executionContext, prompt))
             .append("\nSELECT");
 
         return additionalMetadata.toString();
     }
 
+    @NotNull
+    private static String generatePrompt(DAICompletionRequest request, @Nullable DAICompletionSession session, int maxRequestLength) {
+        final StringJoiner sb = new StringJoiner("\n");
+
+        if (session != null && !session.getRequests().isEmpty()) {
+            final List<DAICompletionRequest> requests = session.getRequests();
+            int capacity = maxRequestLength - request.getPromptText().length();
+            int index = requests.size() - 1;
+
+            for (; index > 0; index--) {
+                final String prompt = requests.get(index).getPromptText();
+                final int length = prompt.length();
+
+                if (capacity > length) {
+                    capacity -= length;
+                } else {
+                    break;
+                }
+            }
+
+            for (int i = index; i < requests.size(); i++) {
+                sb.add(requests.get(i).getPromptText());
+            }
+        }
+
+        sb.add(request.getPromptText());
+
+        return sb.toString();
+    }
 
     protected boolean addPromptAttributes(
         DBRProgressMonitor monitor,
