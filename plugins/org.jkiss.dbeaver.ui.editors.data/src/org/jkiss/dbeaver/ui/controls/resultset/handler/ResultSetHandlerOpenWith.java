@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.policy.BasePolicyDataProvider;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
@@ -296,6 +297,9 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
 
     public static class OpenWithMenuDefaultContributor extends CompoundContributionItem
     {
+
+        private BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
+
         @Override
         protected IContributionItem[] getContributionItems() {
             final ResultSetViewer rsv = (ResultSetViewer) ResultSetHandlerMain.getActiveResultSet(
@@ -305,16 +309,21 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
             }
             ContributionManager menu = new MenuManager();
             // Def processor is null
-            menu.add(new Action(ActionUtils.findCommandDescription(ResultSetHandlerMain.CMD_EXPORT, rsv.getSite(), false), Action.AS_RADIO_BUTTON) {
-                {
-                    setChecked(CommonUtils.isEmpty(getDefaultOpenWithProcessor()));
-                }
-                @Override
-                public void run() {
-                    DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_OPEN_WITH_DEFAULT_PROCESSOR, "");
-                    updateResultSetToolbar(rsv);
-                }
-            });
+            if (!policyProvider.isExportDataDisabled()) {
+                menu.add(new Action(ActionUtils.findCommandDescription(
+                    ResultSetHandlerMain.CMD_EXPORT, rsv.getSite(), false),
+                    Action.AS_RADIO_BUTTON) {
+                    {
+                        setChecked(CommonUtils.isEmpty(getDefaultOpenWithProcessor()));
+                    }
+
+                    @Override
+                    public void run() {
+                        DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_OPEN_WITH_DEFAULT_PROCESSOR, "");
+                        updateResultSetToolbar(rsv);
+                    }
+                });
+            }
             for (DataTransferProcessorDescriptor processor : getDataFileTransferProcessors(rsv)) {
                 Action setDefaultAction = new Action(processor.getAppName(), Action.AS_RADIO_BUTTON) {
                     {

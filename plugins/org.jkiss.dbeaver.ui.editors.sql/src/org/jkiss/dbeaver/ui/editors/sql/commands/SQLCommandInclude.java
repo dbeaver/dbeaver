@@ -16,12 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.commands;
 
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IURIEditorInput;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.*;
 import org.eclipse.ui.ide.IDEEncoding;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -40,8 +35,13 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Control command handler
@@ -64,12 +64,12 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         fileName = GeneralUtils.replaceVariables(fileName, new ScriptVariablesResolver(scriptContext), true).trim();
         fileName = DBUtils.getUnQuotedIdentifier(scriptContext.getExecutionContext().getDataSource(), fileName);
 
-        File curFile = scriptContext.getSourceFile();
-        File incFile = curFile == null ? new File(fileName) : new File(curFile.getParent(), fileName);
-        if (!incFile.exists()) {
-            incFile = new File(fileName);
+        Path curFile = scriptContext.getSourceFile();
+        Path incFile = curFile == null ? Path.of(fileName) : curFile.getParent().resolve(fileName);
+        if (!Files.exists(incFile)) {
+            incFile = Path.of(fileName);
         }
-        if (!incFile.exists()) {
+        if (!Files.exists(incFile)) {
             throw new DBException("File '" + fileName + "' not found");
         }
 
@@ -81,13 +81,13 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         }
 
         final String fileContents;
-        try (InputStream is = new FileInputStream(incFile)) {
+        try (InputStream is = Files.newInputStream(incFile)) {
             Reader reader = new InputStreamReader(is, getResourceEncoding());
             fileContents = IOUtils.readToString(reader);
         } catch (IOException e) {
             throw new DBException("IO error reading file '" + fileName + "'", e);
         }
-        final File finalIncFile = incFile;
+        final Path finalIncFile = incFile;
         final boolean[] statusFlag = new boolean[1];
         UIUtils.syncExec(() -> {
             try {
@@ -95,9 +95,8 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
                 for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
                     for (IWorkbenchPage page : window.getPages()) {
                         for (IEditorReference editorReference : page.getEditorReferences()) {
-                            if (editorReference.getEditorInput() instanceof IncludeEditorInput) {
-                                IncludeEditorInput includeInput = (IncludeEditorInput) editorReference.getEditorInput();
-                                if (includeInput.incFile.getAbsolutePath().equals(finalIncFile.getAbsolutePath())) {
+                            if (editorReference.getEditorInput() instanceof IncludeEditorInput includeInput) {
+                                if (includeInput.incFile.toAbsolutePath().toString().equals(finalIncFile.toAbsolutePath().toString())) {
                                     UIUtils.syncExec(
                                         () -> page.closeEditor(editorReference.getEditor(false), false));
                                 }
@@ -172,16 +171,16 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
 
     private static class IncludeEditorInput extends StringEditorInput implements IURIEditorInput {
 
-        private final File incFile;
+        private final Path incFile;
 
-        IncludeEditorInput(File incFile, CharSequence value) {
-            super(incFile.getName(), value, true, GeneralUtils.DEFAULT_ENCODING);
+        IncludeEditorInput(Path incFile, CharSequence value) {
+            super(incFile.getFileName().toString(), value, true, GeneralUtils.DEFAULT_ENCODING);
             this.incFile = incFile;
         }
 
         @Override
         public URI getURI() {
-            return incFile.toURI();
+            return incFile.toUri();
         }
     }
 }

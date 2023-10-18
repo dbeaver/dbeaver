@@ -44,13 +44,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
-import org.jkiss.dbeaver.model.fs.DBFFileSystemDescriptor;
-import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
 import org.jkiss.dbeaver.model.runtime.*;
@@ -75,7 +72,6 @@ import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 import org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -685,19 +681,7 @@ public class DesktopUI implements DBPPlatformUI {
     }
 
     @Override
-    public boolean supportsMultiFileSystems(@NotNull DBPProject project) {
-        for (DBFFileSystemDescriptor fsProvider : DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProviders()) {
-            DBFVirtualFileSystem[] fsList = fsProvider.getInstance().getAvailableFileSystems(
-                new VoidProgressMonitor(), project);
-            if (!ArrayUtils.isEmpty(fsList)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public String openFileSystemSelector(
+    public DBNPath openFileSystemSelector(
         @NotNull String title,
         boolean folder,
         int style,
@@ -713,8 +697,8 @@ public class DesktopUI implements DBPPlatformUI {
             null,
             new Class[] { DBNPath.class },
             null);
-        if (object instanceof DBNPath) {
-            return ((DBNPath) object).getPath().toString();
+        if (object instanceof DBNPath path) {
+            return path;
         }
         return null;
     }
