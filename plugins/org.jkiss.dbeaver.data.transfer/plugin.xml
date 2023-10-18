@@ -267,7 +267,7 @@
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
         </task>
         <task id="dataImport" name="%task.name.import" description="%task.description.import" icon="icons/import.png" type="common"
-              handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerImport" supportsDistributedMode="false">
+              handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerImport">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
         </task>
 
@@ -286,8 +286,7 @@
         <serializer id="databaseTransferConsumer"
                     class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumerSerializer"/>
         <serializer id="streamTransferConsumer"
-                    class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer$ObjectSerializer"
-                    supportsDistributedMode="false"/>
+                    class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer$ObjectSerializer"/>
     </extension>
 
     <extension point="org.eclipse.core.runtime.preferences">

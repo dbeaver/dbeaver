@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.processor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
@@ -38,7 +38,7 @@ public class ExecuteCommandEventProcessor implements IDataTransferEventProcessor
 
     @Override
     public void processEvent(@NotNull DBRProgressMonitor monitor, @NotNull Event event, @NotNull StreamTransferConsumer consumer, @Nullable DBTTask task, @NotNull Map<String, Object> processorSettings) throws DBException {
-        Path folderPath = DBUtils.resolvePathFromString(
+        Path folderPath = DBFUtils.resolvePathFromString(
             monitor, task == null ? null : task.getProject(), consumer.getOutputFolder());
         final String commandLine = consumer.translatePattern(
             CommonUtils.toString(processorSettings.get(PROP_COMMAND)),

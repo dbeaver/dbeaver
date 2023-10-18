@@ -59,6 +59,8 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
@@ -156,7 +158,13 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
                                 if (s3Node instanceof DBNPathBase) {
                                     String newS3Path = ((DBNPathBase) s3Node).getPath().toString();
                                     if (newS3Path.startsWith("s3:/")) {
-                                        s3LocationText.setText(newS3Path);
+                                        try {
+                                            URI uri = new URI(newS3Path);
+                                            URI patchedURI = new URI(uri.getScheme(), null, null, 0, uri.getPath(), uri.getQuery(), null);
+                                            s3LocationText.setText(patchedURI.toString());
+                                        } catch (URISyntaxException ex) {
+                                            DBWorkbench.getPlatformUI().showError("Bad URI", "Bad URI '" + newS3Path + "'", ex);
+                                        }
                                     }
                                 }
                             }
@@ -183,7 +191,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
         final DBNPathBase[] result = new DBNPathBase[1];
         RuntimeUtils.runTask(monitor -> {
             try {
-                result[0] = fsRootNode.findNodeByPath(monitor, s3Path);
+                result[0] = fsRootNode.findNodeByPath(monitor, s3Path, true);
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
             }

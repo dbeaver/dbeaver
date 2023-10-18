@@ -56,7 +56,12 @@ public class SQLEditorHandlerExportData extends AbstractHandler {
 
     private static class ExportDataSQLScriptContext extends SQLScriptContext {
         public ExportDataSQLScriptContext(SQLEditor editor) {
-            super(null, new DataSourceContextProvider(editor.getDataSource()), EditorUtils.getLocalFileFromInput(editor.getEditorInput()), new StringWriter(), new SQLEditorParametersProvider(editor.getSite()));
+            super(
+                null,
+                new DataSourceContextProvider(editor.getDataSource()),
+                EditorUtils.getPathFromInput(editor.getEditorInput()),
+                new StringWriter(),
+                new SQLEditorParametersProvider(editor.getSite()));
         }
 
         @Override

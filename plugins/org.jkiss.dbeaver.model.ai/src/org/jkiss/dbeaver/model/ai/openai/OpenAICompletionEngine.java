@@ -132,7 +132,7 @@ public class OpenAICompletionEngine extends AbstractAICompletionEngine<GPTComple
     }
 
     public String getModelName() {
-        return DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.GPT_MODEL);
+        return CommonUtils.toString(getSettings().getProperties().get(AIConstants.GPT_MODEL), GPTModel.GPT_TURBO16.getName());
     }
 
     public boolean isValidConfiguration() {
