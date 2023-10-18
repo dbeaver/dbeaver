@@ -134,6 +134,7 @@ KEY: K E Y ;
 LEFT: L E F T ;
 LEVEL: L E V E L ;
 LIKE: L I K E ;
+LIMIT: L I M I T ;
 LOCAL: L O C A L ;
 MATCH: M A T C H ;
 MINUTE: M I N U T E ;
@@ -145,6 +146,7 @@ NOT: N O T ;
 NOTNULL: N O T N U L L;
 NULL: N U L L ;
 NULLIF: N U L L I F ;
+OFFSET: O F F S E T;
 ON: O N ;
 ONLY: O N L Y ;
 OPTION: O P T I O N ;
@@ -159,6 +161,7 @@ PRIMARY: P R I M A R Y ;
 READ: R E A D ;
 RECURSIVE: R E C U R S I V E;
 REFERENCES: R E F E R E N C E S ;
+REGEXP: R E G E X P;
 REPEATABLE: R E P E A T A B L E ;
 RESTRICT: R E S T R I C T ;
 RIGHT: R I G H T ;
@@ -232,6 +235,7 @@ PlusSign: '+';
 QuestionMark: '?';
 Underscore: '_';
 VerticalBar: '|';
+Tilda: '~';
 
 
 // characters

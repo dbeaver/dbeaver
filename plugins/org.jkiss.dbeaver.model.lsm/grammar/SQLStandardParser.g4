@@ -134,7 +134,7 @@ quantifiedComparisonPredicate: compOp quantifier tableSubquery;
 matchPredicate: MATCH (UNIQUE)? (matchType)? tableSubquery;
 overlapsPredicate: OVERLAPS rowValueConstructor;
 
-compOp: (EqualsOperator|NotEqualsOperator|LessThanOperator|GreaterThanOperator|LessThanOrEqualsOperator|GreaterThanOrEqualsOperator);
+compOp: (EqualsOperator|NotEqualsOperator|LessThanOperator|GreaterThanOperator|LessThanOrEqualsOperator|GreaterThanOrEqualsOperator|Tilda|REGEXP);
 quantifier: (ALL|SOME|ANY);
 truthValue: (TRUE|FALSE|UNKNOWN);
 existsPredicate: EXISTS tableSubquery;
@@ -142,7 +142,7 @@ likePredicate: matchValue (NOT)? LIKE pattern (ESCAPE escapeCharacter)?;
 matchValue: characterValueExpression;
 pattern: characterValueExpression;
 escapeCharacter: characterValueExpression;
-inPredicateValue: (tableSubquery|LeftParen (valueExpression (Comma valueExpression)+) RightParen);
+inPredicateValue: (tableSubquery|(LeftParen (valueExpression (Comma valueExpression)*) RightParen));
 
 rowValueConstructor: (rowValueConstructorElement|LeftParen rowValueConstructorList RightParen|rowSubquery);
 rowValueConstructorElement: (valueExpression|nullSpecification|defaultSpecification);
@@ -182,7 +182,7 @@ selectList: (Asterisk|selectSublist) (Comma selectSublist)*; // (Comma selectSub
 selectSublist: (derivedColumn|qualifier Period Asterisk)? (.*?); // (.*?) for whole rule to handle select fields autocompletion when from immediately after select
 derivedColumn: valueExpression (asClause)?;
 asClause: (AS)? columnName;
-tableExpression: fromClause whereClause? groupByClause? havingClause? orderByClause?;
+tableExpression: fromClause whereClause? groupByClause? havingClause? orderByClause? limitClause?;
 queryPrimary: (nonJoinQueryPrimary|joinedTable);
 queryTerm: (nonJoinQueryTerm|joinedTable);
 queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
@@ -289,6 +289,7 @@ referencingColumns: referenceColumnList;
 
 // order by
 orderByClause: ORDER BY sortSpecificationList;
+limitClause: LIMIT valueExpression (OFFSET valueExpression)? (Comma valueExpression)?;
 sortSpecificationList: sortSpecification (Comma sortSpecification)*;
 sortSpecification: sortKey (orderingSpecification)?;
 sortKey: columnReference | UnsignedInteger | anyWordsWithProperty;
@@ -369,7 +370,7 @@ setTimeZoneValue: (intervalValueExpression|LOCAL);
 
 // unknown keyword, data type or function name
 anyWord: actualIdentifier;
-anyValue: qualifiedName|literal|valueExpression;
+anyValue: rowValueConstructor|searchCondition;
 anyWordWithAnyValue: anyWord anyValue;
 anyProperty: LeftParen (anyValue (Comma anyValue)*) RightParen;
 anyWordsWithProperty: anyWord+ anyProperty?;
