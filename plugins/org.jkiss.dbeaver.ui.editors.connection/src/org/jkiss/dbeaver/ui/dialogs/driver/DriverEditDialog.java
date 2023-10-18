@@ -821,6 +821,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
     private void resetLibraries() {
         libraries.clear();
+        driver.resetDriverInstance();
         libraries.addAll(driver.getOrigFiles());
     }
 
