@@ -20,9 +20,9 @@ import java.util.List;
 
 public class FinishConfigBody {
 
-    String user;
-    String password;
-    List<AuthInfo> authInfos;
+    private final String user;
+    private final String password;
+    private final List<AuthInfo> authInfos;
 
     public FinishConfigBody(String user, String password, List<AuthInfo> authInfos) {
         this.user = user;
