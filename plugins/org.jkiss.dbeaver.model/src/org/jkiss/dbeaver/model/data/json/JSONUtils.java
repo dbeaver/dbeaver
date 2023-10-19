@@ -27,6 +27,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.lang.reflect.Type;
 import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -46,6 +47,7 @@ public class JSONUtils {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
         .ofPattern("yyyy-MM-dd['T'HH:mm:ss['.'SSS]['Z']]")
         .withZone(ZoneId.of("UTC"));
+    public static final Type MAP_TYPE_TOKEN = new TypeToken<Map<String, Object>>() {}.getType();
 
     public static String formatDate(Date date) {
         try {
@@ -284,7 +286,7 @@ public class JSONUtils {
 
     @NotNull
     public static Map<String, Object> parseMap(@NotNull Gson gson, @NotNull Reader reader) {
-        Map<String, Object> result = gson.fromJson(reader, new TypeToken<Map<String, Object>>() {}.getType());
+        Map<String, Object> result = gson.fromJson(reader, MAP_TYPE_TOKEN);
         if (result == null) {
             return new LinkedHashMap<>();
         }
