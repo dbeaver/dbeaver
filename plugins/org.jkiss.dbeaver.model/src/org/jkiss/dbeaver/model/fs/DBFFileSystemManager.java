@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.net.URI;
 import java.nio.file.Path;
@@ -64,12 +65,12 @@ public class DBFFileSystemManager implements DBFEventListener {
 
     @NotNull
     public Path getPathFromURI(DBRProgressMonitor monitor, URI uri) throws DBException {
+        if (IOUtils.isLocalURI(uri)) {
+            return Path.of(uri);
+        }
         String fsType = uri.getScheme();
         if (CommonUtils.isEmpty(fsType)) {
             throw new DBException("File system type not present in the file uri: " + uri);
-        }
-        if (fsType.equals("file")) {
-            return Path.of(uri);
         }
         String fsId = uri.getAuthority();
         if (CommonUtils.isEmpty(fsId)) {

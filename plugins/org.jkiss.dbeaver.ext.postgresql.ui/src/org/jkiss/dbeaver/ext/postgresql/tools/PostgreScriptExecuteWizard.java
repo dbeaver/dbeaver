@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.tools;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbench;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
@@ -31,7 +30,7 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeScriptExecuteWizard;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 
@@ -48,7 +47,7 @@ class PostgreScriptExecuteWizard extends AbstractNativeScriptExecuteWizard<Postg
         getSettings().setDatabase(catalog);
     }
 
-    PostgreScriptExecuteWizard(@Nullable PostgreDatabase catalog, @Nullable File file) {
+    PostgreScriptExecuteWizard(@Nullable PostgreDatabase catalog, @Nullable Path file) {
         super(Collections.singleton(catalog), PostgreMessages.wizard_script_title_execute_script, file);
 
         getSettings().setDatabase(catalog);

@@ -101,13 +101,12 @@ public class MySQLScriptExecuteSettings extends AbstractScriptExecuteSettings<My
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) throws DBException {
-        super.loadSettings(runnableContext, preferenceStore);
-
         isImport = CommonUtils.getBoolean(preferenceStore.getString(PREFERENCE_IS_IMPORT), isImport);
         logLevel = CommonUtils.valueOf(LogLevel.class, preferenceStore.getString(PREFERENCE_LOG_LEVEL), LogLevel.Normal);
         noBeep = CommonUtils.toBoolean(preferenceStore.getString(PREFERENCE_NO_BEEP));
         isForeignKeyCheckDisabled = CommonUtils.toBoolean(preferenceStore.getString(PREFERENCE_DISABLE_FOREIGN_KEY));
         overrideCredentials = CommonUtils.toBoolean(preferenceStore.getString(MySQLNativeCredentialsSettings.PREFERENCE_NAME));
+        super.loadSettings(runnableContext, preferenceStore);
     }
 
     @Override

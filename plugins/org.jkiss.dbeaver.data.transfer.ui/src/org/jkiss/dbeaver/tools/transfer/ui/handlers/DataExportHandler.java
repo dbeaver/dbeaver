@@ -21,7 +21,8 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.runtime.policy.BasePolicyDataProvider;
+import org.jkiss.dbeaver.registry.BasePolicyDataProvider;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
@@ -29,8 +30,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 public class DataExportHandler extends DataTransferHandler {
-
-    private BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
 
     @Override
     protected IDataTransferNode<?> adaptTransferNode(Object object) {
@@ -44,8 +43,7 @@ public class DataExportHandler extends DataTransferHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-
-        if (policyProvider.isExportDataDisabled()) {
+        if (BasePolicyDataProvider.getInstance().isPolicyEnabled(DTConstants.POLICY_DATA_EXPORT)) {
             UIUtils.showMessageBox(
                 HandlerUtil.getActiveShell(event),
                 DTUIMessages.dialog_policy_data_export_title,

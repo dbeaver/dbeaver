@@ -83,12 +83,12 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
-        super.loadSettings(runnableContext, store);
         inputFile = store.getString("pg.restore.inputFile");
         cleanFirst = store.getBoolean("pg.restore.cleanFirst");
         noOwner = store.getBoolean("pg.restore.noOwner");
         createDatabase = store.getBoolean("pg.restore.createDatabase");
 
+        super.loadSettings(runnableContext, store);
         String catalogId = null;
         if (store instanceof DBPPreferenceMap) {
             catalogId = store.getString("pg.restore.database");
@@ -113,19 +113,23 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
                 // Ignore
             }
         } else {
-            for (DBSObject object : getDatabaseObjects()) {
-                if (object instanceof PostgreSchema) {
-                    object = ((PostgreSchema) object).getDatabase();
-                }
-                if (object instanceof PostgreDatabase) {
-                    restoreInfo = new PostgreDatabaseRestoreInfo((PostgreDatabase) object);
-                    break;
-                }
-            }
+            findRestoreInfo();
         }
 
         if (restoreInfo == null) {
             throw new DBException("Cannot find database for restoring");
+        }
+    }
+
+    private void findRestoreInfo() {
+        for (DBSObject object : getDatabaseObjects()) {
+            if (object instanceof PostgreSchema) {
+                object = ((PostgreSchema) object).getDatabase();
+            }
+            if (object instanceof PostgreDatabase) {
+                restoreInfo = new PostgreDatabaseRestoreInfo((PostgreDatabase) object);
+                break;
+            }
         }
     }
 
@@ -136,6 +140,9 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
         store.setValue("pg.restore.cleanFirst", cleanFirst);
         store.setValue("pg.restore.noOwner", noOwner);
         store.setValue("pg.restore.createDatabase", createDatabase);
+        if (restoreInfo == null) {
+            findRestoreInfo();
+        }
         store.setValue("pg.restore.database", DBUtils.getObjectFullId(restoreInfo.getDatabase()));
     }
 

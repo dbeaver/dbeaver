@@ -60,6 +60,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
 /**
  * EditorUtils
@@ -185,6 +186,18 @@ public class EditorUtils {
             }
         }
         return null;
+    }
+
+    public static Path getPathFromInput(Object element) {
+        if (element instanceof IEditorInput) {
+            IFile file = getFileFromInput((IEditorInput) element);
+            if (file != null) {
+                IPath location = file.getLocation();
+                return location == null ? null : location.toPath();
+            }
+        }
+        File localFile = getLocalFileFromInput(element);
+        return localFile == null ? null : localFile.toPath();
     }
 
     //////////////////////////////////////////////////////////

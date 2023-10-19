@@ -64,7 +64,8 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
-import org.jkiss.dbeaver.runtime.policy.BasePolicyDataProvider;
+import org.jkiss.dbeaver.registry.BasePolicyDataProvider;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
@@ -144,8 +145,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
     public static final String CMD_GO_TO_COLUMN = "org.jkiss.dbeaver.core.resultset.grid.gotoColumn";
     public static final String CMD_GO_TO_ROW = "org.jkiss.dbeaver.core.resultset.grid.gotoRow";
     public static final String PARAM_EXPORT_WITH_PARAM = "exportWithParameter";
-    private BasePolicyDataProvider policyProvider = new BasePolicyDataProvider();
-    
+
     @Nullable
     public static IResultSetController getActiveResultSet(@Nullable IWorkbenchPart activePart) {
         return getActiveResultSet(activePart, false);
@@ -544,7 +544,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 break;
             }
             case CMD_EXPORT: {
-                if (policyProvider.isExportDataDisabled()) {
+                if (BasePolicyDataProvider.getInstance().isPolicyEnabled(DTConstants.POLICY_DATA_EXPORT)) {
                     UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
                         ResultSetMessages.dialog_policy_data_export_title,
                         ResultSetMessages.dialog_policy_data_export_msg,

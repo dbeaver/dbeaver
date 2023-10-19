@@ -70,12 +70,7 @@ public class PostgreScriptExecuteSettings extends AbstractScriptExecuteSettings<
                 // Ignore
             }
         } else {
-            for (DBSObject object : getDatabaseObjects()) {
-                if (object instanceof PostgreDatabase) {
-                    database = (PostgreDatabase) object;
-                    break;
-                }
-            }
+            findDatabase();
         }
 
         if (database == null) {
@@ -83,10 +78,21 @@ public class PostgreScriptExecuteSettings extends AbstractScriptExecuteSettings<
         }
     }
 
+    private void findDatabase() {
+        for (DBSObject object : getDatabaseObjects()) {
+            if (object instanceof PostgreDatabase) {
+                database = (PostgreDatabase) object;
+                break;
+            }
+        }
+    }
+
     @Override
     public void saveSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) {
         super.saveSettings(runnableContext, store);
-
+        if (database == null) {
+            findDatabase();
+        }
         store.setValue("pg.script.database", DBUtils.getObjectFullId(database));
     }
 }
