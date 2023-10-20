@@ -1827,16 +1827,15 @@ public class SQLEditor extends SQLEditorBase implements
 
             // Show presentation panels
             boolean sideBarChanged = false;
-            if (extraPresentationManager.activePresentation == null) {
+
+            {
                 // Remove all presentation panel toggles
-                //for (SQLPresentationPanelDescriptor panelDescriptor : extraPresentationDescriptor.getPanels()) {
-                    for (Control vb : presentationSwitchFolder.getChildren()) {
-                        if (vb.getData() instanceof SQLPresentationPanelDescriptor) { // || vb instanceof Label
-                            vb.dispose();
-                            sideBarChanged = true;
-                        }
+                for (Control vb : presentationSwitchFolder.getChildren()) {
+                    if (vb.getData() instanceof SQLPresentationPanelDescriptor) { // || vb instanceof Label
+                        vb.dispose();
+                        sideBarChanged = true;
                     }
-                //}
+                }
                 // Close all panels
                 for (CTabItem tabItem : resultTabs.getItems()) {
                     if (tabItem.getData() instanceof SQLEditorPresentationPanel) {
@@ -1844,10 +1843,12 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
                 extraPresentationManager.activePresentationPanel = null;
-            } else {
+            }
+
+            if (extraPresentationManager.activePresentation != null) {
                 // Check and add presentation panel toggles
-                UIUtils.createEmptyLabel(presentationSwitchFolder, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
-                for (SQLPresentationPanelDescriptor panelDescriptor : extraPresentationManager.activePresentationDescriptor.getPanels()) {
+                final List<SQLPresentationPanelDescriptor> panels = extraPresentationManager.activePresentationDescriptor.getPanels();
+                for (SQLPresentationPanelDescriptor panelDescriptor : panels) {
                     removeToggleLayoutButton();
                     sideBarChanged = true;
                     PresentationPanelToggleAction toggleAction = new PresentationPanelToggleAction(panelDescriptor);
@@ -1869,6 +1870,7 @@ public class SQLEditor extends SQLEditorBase implements
                 button.setChecked(presentation != null && button.getData() == presentation);
             }
 
+            presentationSwitchFolder.layout(true);
             presentationSwitchFolder.redraw();
 
             if (sideBarChanged) {
