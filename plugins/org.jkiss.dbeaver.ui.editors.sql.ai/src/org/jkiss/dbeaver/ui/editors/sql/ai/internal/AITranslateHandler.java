@@ -145,6 +145,8 @@ public class AITranslateHandler extends AbstractHandler {
                 .setContext(new DAICompletionContext.Builder()
                     .setScope(aiCompletionPopup.getScope())
                     .setCustomEntities(aiCompletionPopup.getCustomEntities())
+                    .setDataSource(lDataSource)
+                    .setExecutionContext(executionContext)
                     .build())
                 .build();
 
