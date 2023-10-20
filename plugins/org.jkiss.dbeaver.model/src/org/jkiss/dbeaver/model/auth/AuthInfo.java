@@ -16,13 +16,15 @@
  */
 package org.jkiss.dbeaver.model.auth;
 
+import org.jkiss.code.NotNull;
+
 import java.util.Map;
 
 public class AuthInfo {
     private final String authProvider;
     private transient Map<String, Object> userCredentials;
 
-    public AuthInfo(String authProvider, Map<String, Object> userCredentials) {
+    public AuthInfo(@NotNull String authProvider, @NotNull Map<String, Object> userCredentials) {
         this.authProvider = authProvider;
         this.userCredentials = userCredentials;
     }
