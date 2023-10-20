@@ -172,6 +172,19 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
     }
 
     @Override
+    public void addCertificate(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType, @NotNull byte[] keyStoreData, @NotNull char[] keyStorePassword) throws DBException {
+        final Path keyStorePath = getKeyStorePath(dataSource, certType);
+        if (!Files.exists(keyStorePath)) {
+            try {
+                Files.write(keyStorePath, keyStoreData);
+            } catch (Throwable e) {
+                throw new DBException("Error adding certificate to keystore", e);
+            }
+        }
+        userDefinedKeystores.put(getKeyStoreName(dataSource, certType), new UserDefinedKeystore(keyStorePath.toFile(), keyStorePassword));
+    }
+
+    @Override
     public void addSelfSignedCertificate(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType, @NotNull String certDN) throws DBException {
         if (userDefinedKeystores.containsKey(getKeyStoreName(dataSource, certType))) {
             throw new DBException("Adding new certificates would override user-specified keystore");

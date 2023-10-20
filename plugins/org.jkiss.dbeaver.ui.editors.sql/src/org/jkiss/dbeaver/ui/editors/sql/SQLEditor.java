@@ -133,6 +133,7 @@ import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.Pair;
 
 import java.io.*;
@@ -2063,7 +2064,7 @@ public class SQLEditor extends SQLEditorBase implements
         this.globalScriptContext = new SQLScriptContext(
             parentContext,
             this,
-            EditorUtils.getLocalFileFromInput(getEditorInput()),
+            EditorUtils.getPathFromInput(getEditorInput()),
             new OutputLogWriter(),
             new SQLEditorParametersProvider(getSite()));
 
@@ -2720,8 +2721,13 @@ public class SQLEditor extends SQLEditorBase implements
 
     @NotNull
     private SQLScriptContext createScriptContext() {
-        File localFile = EditorUtils.getLocalFileFromInput(getEditorInput());
-        return new SQLScriptContext(globalScriptContext, SQLEditor.this, localFile, new OutputLogWriter(), new SQLEditorParametersProvider(getSite()));
+        java.nio.file.Path localFile = EditorUtils.getPathFromInput(getEditorInput());
+        return new SQLScriptContext(
+            globalScriptContext,
+            SQLEditor.this,
+            localFile,
+            new OutputLogWriter(),
+            new SQLEditorParametersProvider(getSite()));
     }
 
     private void setStatus(String status, DBPMessageType messageType)
@@ -3233,7 +3239,7 @@ public class SQLEditor extends SQLEditorBase implements
         final IFolder root = workspace.getResourceDefaultRoot(workspace.getActiveProject(), ScriptsHandlerImpl.class, false);
         if (root != null) {
             URI locationURI = root.getLocationURI();
-            if (locationURI.getScheme().equals("file")) {
+            if (IOUtils.isLocalURI(locationURI)) {
                 return new File(locationURI).toString();
             }
         }

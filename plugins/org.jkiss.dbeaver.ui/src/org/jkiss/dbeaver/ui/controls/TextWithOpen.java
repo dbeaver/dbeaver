@@ -31,8 +31,8 @@ import org.eclipse.ui.ide.IDE;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -111,9 +111,9 @@ public class TextWithOpen extends Composite {
                     }
                 });
             }
-            if (isMultiFileSystem() && getProject() != null) {
+            if (isMultiFileSystem()) {
                 final ToolItem remoteFsItem = new ToolItem(toolbar, SWT.NONE);
-                remoteFsItem.setImage(DBeaverIcons.getImage(DBIcon.TYPE_REFERENCE));
+                remoteFsItem.setImage(DBeaverIcons.getImage((getStyle() & SWT.OPEN) != 0 ? UIIcon.OPEN_EXTERNAL : UIIcon.SAVE_EXTERNAL));
                 remoteFsItem.setToolTipText(UIMessages.text_with_open_dialog_browse_remote);
                 remoteFsItem.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -149,7 +149,7 @@ public class TextWithOpen extends Composite {
                 try {
                     if (project != null && isMultiFileSystem()) {
                         try {
-                            targetFile = DBUtils.resolvePathFromString(new VoidProgressMonitor(), project, fileName);
+                            targetFile = DBFUtils.resolvePathFromString(new VoidProgressMonitor(), project, fileName);
                         } catch (DBException ex) {
                             log.debug("Error resolving URI: " + ex.getMessage());
                             targetFile = Path.of(fileName);

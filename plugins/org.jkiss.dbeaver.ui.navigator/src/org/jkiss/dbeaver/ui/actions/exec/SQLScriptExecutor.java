@@ -21,9 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import org.jkiss.dbeaver.ui.UIUtils;
-
-import java.io.File;
+import java.nio.file.Path;
 
 /**
  * Allows opening native execution wizards
@@ -38,6 +36,6 @@ public interface SQLScriptExecutor<CONTAINER extends DBSObject> {
      * @param file SQL file
      * @throws DBException if failed to open the wizard
      */
-    void execute(@NotNull CONTAINER container, @Nullable File file) throws DBException;
+    void execute(@NotNull CONTAINER container, @Nullable Path file) throws DBException;
 
 }

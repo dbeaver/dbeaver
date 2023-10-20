@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.net.ssh;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -90,7 +89,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     {
         final Composite composite = new Composite(parent, SWT.NONE);
         final GridData gridData = new GridData(GridData.FILL_BOTH);
-        gridData.widthHint = UIUtils.getFontHeight(composite) * 80;
+        //gridData.widthHint = UIUtils.getFontHeight(composite) * 80;
         composite.setLayoutData(gridData);
         composite.setLayout(new GridLayout(1, false));
         {

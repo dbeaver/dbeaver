@@ -18,15 +18,13 @@ package org.jkiss.dbeaver.tasks.nativetool;
 
 import org.jkiss.code.NotNull;
 
-import java.io.File;
-
 public interface ExportSettingsExtension<INFO> {
     @NotNull
     Iterable<INFO> getExportObjects();
 
     @NotNull
-    File getOutputFile(@NotNull INFO info);
+    String getOutputFile(@NotNull INFO info);
 
     @NotNull
-    File getOutputFolder(@NotNull INFO info);
+    String getOutputFolder(@NotNull INFO info);
 }

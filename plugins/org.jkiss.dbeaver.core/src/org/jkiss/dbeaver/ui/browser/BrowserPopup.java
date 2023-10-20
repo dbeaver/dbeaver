@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.browser;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
@@ -24,6 +25,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 
@@ -73,8 +76,24 @@ public class BrowserPopup extends AbstractPopupPanel {
         super(parentShell, "Browser");
         this.id = id;
         this.url = url;
-        setModeless(true);
+        setModeless(false);
         setShellStyle(SWT.CLOSE | SWT.MAX | SWT.TITLE | SWT.BORDER | SWT.RESIZE);
+    }
+
+    @Override
+    protected void createButtonsForButtonBar(@NotNull Composite parent, int alignment) {
+        if (alignment == SWT.LEFT) {
+            createButton(parent, IDialogConstants.DETAILS_ID, CoreMessages.popup_open_browser_open_external_browser, false);
+        }
+    }
+
+    @Override
+    protected void buttonPressed(int buttonId) {
+        if (buttonId == IDialogConstants.DETAILS_ID) {
+            ShellUtils.launchProgram(url.toString());
+            close();
+        }
+        super.buttonPressed(buttonId);
     }
 
     @Override
