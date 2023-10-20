@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
 import org.jkiss.dbeaver.ui.controls.SelectDataSourceCombo;
 import org.jkiss.utils.CommonUtils;
 
@@ -65,6 +66,18 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
     private SelectDataSourceCombo connectionCombo;
     private Group typesGroup;
     private Composite panelPlaceholder;
+    private CustomTableEditor editor;
+
+    public void setEditor(CustomTableEditor editor) {
+        this.editor = editor;
+    }
+
+    @Override
+    public void postApply() {
+        if(editor != null){
+            editor.closeEditor();
+        }
+    }
 
     @Override
     public void createControl(Composite parent) {
