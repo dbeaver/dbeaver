@@ -91,8 +91,7 @@ public class DBFUtils {
         @Nullable DBPProject project,
         @NotNull String pathOrUri
     ) throws DBException {
-        if (!IOUtils.isLocalFile(pathOrUri) &&
-            (project != null && DBFUtils.supportsMultiFileSystems(project))) {
+        if (!IOUtils.isLocalFile(pathOrUri) && project != null && DBFUtils.supportsMultiFileSystems(project)) {
             try {
                 Path[] result = new Path[1];
                 runnableContext.run(true, true, monitor -> {
