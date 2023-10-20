@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.fs;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.net.URI;
@@ -31,14 +30,15 @@ import java.nio.file.Path;
 public interface DBFVirtualFileSystem {
 
     @NotNull
+    DBFFileSystemProvider getProvider();
+
+    @NotNull
     String getFileSystemDisplayName();
 
     @NotNull
     String getType();
 
     String getDescription();
-
-    DBPImage getIcon();
 
     @NotNull
     String getId();

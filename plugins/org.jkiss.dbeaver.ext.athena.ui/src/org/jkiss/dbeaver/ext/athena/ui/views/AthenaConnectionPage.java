@@ -110,7 +110,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
             s3LocationText.addModifyListener(textListener);
             s3LocationText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            if (FileSystemProviderRegistry.getInstance().getProvider("aws-s3") != null) {
+            if (FileSystemProviderRegistry.getInstance().getFileSystemProvider("aws-s3") != null) {
                 ((GridLayout) s3Group.getLayout()).numColumns++;
                 UIUtils.createPushButton(s3Group, UIConnectionMessages.controls_client_home_selector_browse, DBeaverIcons.getImage(DBIcon.TREE_FOLDER), new SelectionAdapter() {
                     @Override

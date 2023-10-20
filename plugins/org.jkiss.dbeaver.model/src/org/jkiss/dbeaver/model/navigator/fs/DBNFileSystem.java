@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.fs.DBFFileSystemDescriptor;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -42,11 +44,13 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
     private static final Log log = Log.getLog(DBNFileSystem.class);
 
     private DBFVirtualFileSystem fileSystem;
+    private DBFFileSystemDescriptor fileSystemProvider;
     private DBNFileSystemRoot[] children;
 
     public DBNFileSystem(@NotNull DBNNode parentNode, @NotNull DBFVirtualFileSystem fileSystem) {
         super(parentNode);
         this.fileSystem = fileSystem;
+        this.fileSystemProvider = DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProvider(fileSystem.getProvider().getId());
     }
 
     @NotNull
@@ -109,7 +113,11 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
 
     @Override
     public DBPImage getNodeIcon() {
-        return DBIcon.TREE_FOLDER_LINK;
+        if (fileSystemProvider != null && fileSystemProvider.getIcon() != null) {
+            return fileSystemProvider.getIcon();
+        } else {
+            return DBIcon.TREE_FOLDER_LINK;
+        }
     }
 
     @Override

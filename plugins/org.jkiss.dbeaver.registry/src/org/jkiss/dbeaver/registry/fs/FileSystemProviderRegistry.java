@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.registry.fs;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.fs.DBFFileSystemDescriptor;
 import org.jkiss.dbeaver.model.fs.DBFRegistry;
 
@@ -51,7 +53,9 @@ public class FileSystemProviderRegistry implements DBFRegistry {
         return descriptors;
     }
 
-    public FileSystemProviderDescriptor getProvider(String id) {
+    @Nullable
+    @Override
+    public DBFFileSystemDescriptor getFileSystemProvider(@NotNull String id) {
         for (FileSystemProviderDescriptor descriptor : descriptors) {
             if (descriptor.getId().equals(id)) {
                 return descriptor;

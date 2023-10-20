@@ -17,6 +17,9 @@
 
 package org.jkiss.dbeaver.model.fs;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 /**
  * Virtual file system registry
  */
@@ -24,4 +27,6 @@ public interface DBFRegistry {
 
     DBFFileSystemDescriptor[] getFileSystemProviders();
 
+    @Nullable
+    DBFFileSystemDescriptor getFileSystemProvider(@NotNull String id);
 }
