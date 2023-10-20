@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.pde.ui.RuntimeWorkbench">
-    <booleanAttribute key="append.args" value="true"/>
     <stringAttribute key="application" value="org.jkiss.dbeaver.ui.app.standalone.standalone"/>
+    <stringAttribute key="configLocation" value="${workspace_loc}/.metadata/.plugins/org.eclipse.pde.core/DBeaver.product"/>
+    <stringAttribute key="location" value="${workspace_loc}/../runtime-DBeaver.product"/>
+    <stringAttribute key="product" value="org.jkiss.dbeaver.ui.app.standalone.product"/>
+    <stringAttribute key="productFile" value="\org.jkiss.dbeaver.ce.standalone\DBeaver.product"/>
+
+    <booleanAttribute key="append.args" value="true"/>
     <booleanAttribute key="askclear" value="true"/>
     <booleanAttribute key="automaticAdd" value="false"/>
     <booleanAttribute key="automaticValidate" value="true"/>
@@ -10,11 +15,8 @@
     <booleanAttribute key="clearConfig" value="false"/>
     <booleanAttribute key="clearws" value="false"/>
     <booleanAttribute key="clearwslog" value="false"/>
-    <stringAttribute key="configLocation" value="${workspace_loc}/.metadata/.plugins/org.eclipse.pde.core/DBeaver.product"/>
     <booleanAttribute key="default" value="false"/>
-    <setAttribute key="deselected_workspace_bundles"/>
     <booleanAttribute key="includeOptional" value="true"/>
-    <stringAttribute key="location" value="${workspace_loc}/../runtime-DBeaver.product"/>
     <booleanAttribute key="org.eclipse.debug.core.ATTR_FORCE_SYSTEM_CONSOLE_ENCODING" value="false"/>
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_ATTR_USE_ARGFILE" value="false"/>
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_SHOW_CODEDETAILS_IN_EXCEPTION_MESSAGES" value="true"/>
@@ -24,18 +26,25 @@
     <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.pde.ui.workbenchClasspathProvider"/>
     <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-XX:+IgnoreUnrecognizedVMOptions -Dfile.encoding=UTF-8 --add-modules=ALL-SYSTEM -Xms64m -Xmx1024m"/>
     <stringAttribute key="pde.version" value="3.3"/>
-    <stringAttribute key="product" value="org.jkiss.dbeaver.ui.app.standalone.product"/>
-    <stringAttribute key="productFile" value="\org.jkiss.dbeaver.ce.standalone\DBeaver.product"/>
+    <booleanAttribute key="show_selected_only" value="false"/>
+    <booleanAttribute key="tracing" value="false"/>
+    <booleanAttribute key="useCustomFeatures" value="false"/>
+    <booleanAttribute key="useDefaultConfig" value="true"/>
+    <booleanAttribute key="useDefaultConfigArea" value="true"/>
+    <booleanAttribute key="useProduct" value="true"/>
+    <booleanAttribute key="usefeatures" value="false"/>
+    <setAttribute key="deselected_workspace_bundles"/>
     <setAttribute key="selected_target_bundles">
         <setEntry value="bcpg@default:default"/>
         <setEntry value="bcprov@default:default"/>
         <setEntry value="com.github.jsqlparser@default:default"/>
         <setEntry value="com.google.gson@default:default"/>
-        <setEntry value="com.google.guava*32.1.2.jre@default:default"/>
+        <setEntry value="com.google.guava@default:default"/>
         <setEntry value="com.ibm.icu@default:default"/>
         <setEntry value="com.jcraft.jsch@default:default"/>
-        <setEntry value="com.sun.jna.platform@default:default"/>
-        <setEntry value="com.sun.jna@default:default"/>
+        <setEntry value="com.sun.jna*5.12.1@default:default"/>
+        <setEntry value="com.sun.jna.platform*5.12.1@default:default"/>
+        <setEntry value="javaewah@default:default"/>
         <setEntry value="javax.annotation@default:default"/>
         <setEntry value="javax.inject@default:default"/>
         <setEntry value="javax.xml@default:default"/>
@@ -56,6 +65,8 @@
         <setEntry value="org.apache.felix.scr@1:true"/>
         <setEntry value="org.apache.xml.serializer@default:default"/>
         <setEntry value="org.apache.xmlgraphics@default:default"/>
+        <setEntry value="org.bouncycastle.bcpkix@default:default"/>
+        <setEntry value="org.bouncycastle.bcutil@default:default"/>
         <setEntry value="org.eclipse.compare.core@default:default"/>
         <setEntry value="org.eclipse.compare@default:default"/>
         <setEntry value="org.eclipse.core.commands@default:default"/>
@@ -201,7 +212,7 @@
         <setEntry value="org.jkiss.bundle.gis@default:default"/>
         <setEntry value="org.jkiss.bundle.jfreechart@default:default"/>
         <setEntry value="org.jkiss.bundle.sshj@default:default"/>
-        <setEntry value="org.objectweb.asm@default:default"/>
+        <setEntry value="org.objectweb.asm*9.4.0.v20221107-1714@default:default"/>
         <setEntry value="org.osgi.annotation.bundle@default:default"/>
         <setEntry value="org.osgi.annotation.versioning@default:default"/>
         <setEntry value="org.osgi.service.cm@default:default"/>
@@ -223,12 +234,12 @@
         <setEntry value="org.osgi.util.xml@default:default"/>
         <setEntry value="org.sat4j.core@default:default"/>
         <setEntry value="org.sat4j.pb@default:default"/>
+        <setEntry value="slf4j.api@default:default"/>
         <setEntry value="org.tukaani.xz@default:default"/>
         <setEntry value="org.w3c.css.sac@default:default"/>
         <setEntry value="org.w3c.dom.events@default:default"/>
         <setEntry value="org.w3c.dom.smil@default:default"/>
         <setEntry value="org.w3c.dom.svg@default:default"/>
-        <setEntry value="slf4j.api@default:default"/>
     </setAttribute>
     <setAttribute key="selected_workspace_bundles">
         <setEntry value="org.jkiss.dbeaver.cmp.simple.ui@default:default"/>
@@ -337,11 +348,4 @@
         <setEntry value="org.jkiss.utils@default:default"/>
         <setEntry value="org.jkiss.wmi@default:default"/>
     </setAttribute>
-    <booleanAttribute key="show_selected_only" value="false"/>
-    <booleanAttribute key="tracing" value="false"/>
-    <booleanAttribute key="useCustomFeatures" value="false"/>
-    <booleanAttribute key="useDefaultConfig" value="true"/>
-    <booleanAttribute key="useDefaultConfigArea" value="true"/>
-    <booleanAttribute key="useProduct" value="true"/>
-    <booleanAttribute key="usefeatures" value="false"/>
 </launchConfiguration>
