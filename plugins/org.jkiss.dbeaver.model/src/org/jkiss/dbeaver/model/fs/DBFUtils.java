@@ -20,15 +20,18 @@ package org.jkiss.dbeaver.model.fs;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 
 /**
@@ -36,6 +39,7 @@ import java.nio.file.Path;
  */
 public class DBFUtils {
 
+    private static final Log log = Log.getLog(DBFUtils.class);
     private static volatile Boolean SUPPORT_MULTI_FS = null;
 
     public static boolean supportsMultiFileSystems(@NotNull DBPProject project) {
@@ -87,7 +91,8 @@ public class DBFUtils {
         @Nullable DBPProject project,
         @NotNull String pathOrUri
     ) throws DBException {
-        if (project != null && DBFUtils.supportsMultiFileSystems(project)) {
+        if (!IOUtils.isLocalFile(pathOrUri) &&
+            (project != null && DBFUtils.supportsMultiFileSystems(project))) {
             try {
                 Path[] result = new Path[1];
                 runnableContext.run(true, true, monitor -> {
@@ -104,6 +109,13 @@ public class DBFUtils {
                 throw new DBException("Canceled");
             }
         } else {
+            if (pathOrUri.startsWith("file:")) {
+                try {
+                    return Path.of(new URI(pathOrUri));
+                } catch (URISyntaxException e) {
+                    log.debug(e);
+                }
+            }
             return Path.of(pathOrUri);
         }
     }
