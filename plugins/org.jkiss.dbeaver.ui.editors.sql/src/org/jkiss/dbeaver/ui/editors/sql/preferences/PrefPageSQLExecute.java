@@ -222,7 +222,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
                 scriptsGroup,
                 SQLEditorMessages.pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results,
                 SQLEditorMessages.pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results_tip,
-                SWT.DROP_DOWN | SWT.BORDER
+                SWT.DROP_DOWN | SWT.BORDER | SWT.READ_ONLY
             );
             for (StatisticsTabOnExecutionBehavior statisticsTabOnExecution : StatisticsTabOnExecutionBehavior.values()) {
                 showStatisticsCombo.add(statisticsTabOnExecution.getTitle());
