@@ -21,9 +21,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanel;
 import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanelContainer;
+import org.jkiss.dbeaver.debug.ui.DatabaseDebugConfigurationTab;
 import org.jkiss.dbeaver.ext.yashandb.debug.YashanDBDebugConstants;
 import org.jkiss.dbeaver.ext.yashandb.debug.core.YashanDBDebugCore;
-import org.jkiss.dbeaver.ext.yashandb.model.YashanDBDataType;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBProcedureArgument;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBProcedureStandalone;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -201,9 +201,7 @@ public class YashanDBDebugPanelFunction implements DBGConfigurationPanel {
         Group composite = UIUtils.createControlGroup(parent, "Function parameters", 1, GridData.FILL_BOTH, SWT.DEFAULT);
 
         parametersTable = new Table(composite, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-        parametersTable.setSize(1000, 800);
         final GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.minimumHeight = 200;
         parametersTable.setLayoutData(gd);
         parametersTable.setHeaderVisible(true);
         parametersTable.setLinesVisible(true);
@@ -217,7 +215,7 @@ public class YashanDBDebugPanelFunction implements DBGConfigurationPanel {
         final TableColumn kindColumn = UIUtils.createTableColumn(parametersTable, SWT.LEFT, "Kind");
         kindColumn.setWidth(100);
 
-        new CustomTableEditor(parametersTable) {
+        CustomTableEditor customTableEditor = new CustomTableEditor(parametersTable) {
             {
                 firstTraverseIndex = 1;
                 lastTraverseIndex = 1;
@@ -273,6 +271,10 @@ public class YashanDBDebugPanelFunction implements DBGConfigurationPanel {
                 container.updateDialogState();
             }
         };
+        if(container instanceof DatabaseDebugConfigurationTab){
+            DatabaseDebugConfigurationTab configurationTab = (DatabaseDebugConfigurationTab) container;
+            configurationTab.setEditor(customTableEditor);
+        }
     }
 
     @Override
