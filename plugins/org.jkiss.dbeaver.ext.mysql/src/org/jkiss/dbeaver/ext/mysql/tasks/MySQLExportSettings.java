@@ -242,7 +242,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
                     if (!CommonUtils.isEmpty(catalogId)) {
                         List<String> tableNames = (List<String>) object.get("tables");
                         MySQLDatabaseExportInfo exportInfo = loadDatabaseExportInfo(runnableContext, catalogId, tableNames);
-                        if (exportInfo != null) {
+                        if (exportInfo != null && !exportObjects.contains(exportInfo)) {
                             exportObjects.add(exportInfo);
                         }
                     }
