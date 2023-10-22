@@ -145,7 +145,7 @@ pattern: characterValueExpression;
 escapeCharacter: characterValueExpression;
 inPredicateValue: (tableSubquery|(LeftParen (valueExpression (Comma valueExpression)*) RightParen));
 
-rowValueConstructor: (rowValueConstructorElement|LeftParen rowValueConstructorList RightParen|rowSubquery);
+rowValueConstructor: (rowValueConstructorElement|LeftParen rowValueConstructorList anyUnexpected?? RightParen|rowSubquery);
 rowValueConstructorElement: (valueExpression|nullSpecification|defaultSpecification);
 nullSpecification: NULL;
 defaultSpecification: DEFAULT;
@@ -235,7 +235,7 @@ castOperand: (valueExpression|NULL);
 
 valueExpression: valueExpressionPrimaryBased|extractExpressionBased|anyWordsWithPropertyBased
                   |valueExpressionPrimarySignedBased|extractExpressionSignedBased|anyWordsWithPropertySignedBased
-                  |intervalExpressionBased|valueExpressionPrimary;
+                  |intervalExpressionBased|(sign? valueExpressionPrimary);
 
 valueExpressionPrimarySignedBased: sign valueExpressionPrimary (                       numericOperation|intervalOperation|intervalOperation2);
       valueExpressionPrimaryBased:      valueExpressionPrimary (concatenationOperation|numericOperation|intervalOperation|intervalOperation2);
@@ -252,7 +252,7 @@ intervalOperation:       intervalQualifier?((((Asterisk|Solidus) factor)+ (sign 
 intervalOperation2: Asterisk intervalFactor((((Asterisk|Solidus) factor)+ (sign intervalTerm)*)|((sign intervalTerm)+));
 
 valueExpressionPrimary: unsignedNumericLiteral|generalLiteral|generalValueSpecification|countAllExpression
-    |scalarSubquery|caseExpression|LeftParen valueExpression RightParen|castSpecification
+    |scalarSubquery|caseExpression|LeftParen valueExpression anyUnexpected?? RightParen|castSpecification
     |anyWordsWithProperty|columnReference;
 
 
@@ -383,7 +383,7 @@ WHERE f.payload in ['naturalJoinTerm','searchCondition','selectSublist','tableRe
 */
 anyUnexpected: ((~(LeftParen|RightParen|Period|Semicolon|Comma|
 THEN|GROUP|HAVING|UNION|EXCEPT|WITH|INTERSECT|ORDER|ON|USING|WHERE|INTO|FROM
-))|(identifier Period))+;
+))|(identifier Period)|(LeftParen anyUnexpected* RightParen))+;
 
 tableHintKeywords: WITH | UPDATE | IN | KEY | JOIN | ORDER BY | GROUP BY;
 
