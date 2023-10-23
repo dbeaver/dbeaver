@@ -681,10 +681,6 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         super.addFunctions(Arrays.asList(functions));
     }
     
-    public void addDataTypes(String... dataTypes) {
-        super.addDataTypes(Arrays.asList(dataTypes));
-    }
-
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
 
@@ -931,7 +927,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     protected void loadDataTypesFromDatabase(JDBCDataSource dataSource) {
         super.loadDataTypesFromDatabase(dataSource);
         addDataTypes(PostgreConstants.DATA_TYPE_ALIASES.keySet());
-        addDataTypes(POSTGRE_EXTRA_TYPES);
+        addDataTypes(Arrays.asList(POSTGRE_EXTRA_TYPES));
     }
 
     @NotNull
