@@ -333,8 +333,22 @@ public class DBNModel implements IResourceChangeListener {
                     throw new DBException("Multi-project workspace. Extension nodes not supported");
                 }
             }
-            return findNodeByPath(monitor, nodePath,
-                projects[0], 0);
+            var projectId = nodePath.first();
+            DBNProject parentProjectNode = projectId == null
+                ? null
+                : Arrays.stream(projects)
+                .filter(dbnProject -> dbnProject.getProject().getId().equals(projectId))
+                .findFirst()
+                .orElse(null);
+            int firstItem = 0;
+            //backward compatibility
+            if (parentProjectNode == null) {
+                parentProjectNode = projects[0];
+            } else {
+                // cause projectId included in the path
+                firstItem = 1;
+            }
+            return findNodeByPath(monitor, nodePath, parentProjectNode, firstItem);
         } else if (nodePath.type == DBNNode.NodePathType.other) {
             return findNodeByPath(monitor, nodePath,
                 root, 0);
