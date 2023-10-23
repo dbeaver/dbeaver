@@ -27,6 +27,12 @@
             namespace="org.jkiss.dbeaver.task"
             properties="scheduled,editable"
             type="org.jkiss.dbeaver.model.task.DBTTask"/>
+        <propertyTester
+            class="org.jkiss.dbeaver.tasks.ui.SchedulerPropertyTester"
+            id="org.jkiss.dbeaver.tasks.ui.SchedulerPropertyTester"
+            namespace="org.jkiss.dbeaver.task.scheduler"
+            properties="canOpenExternalSettings"
+            type="java.lang.Object"/>
     </extension>
 
     <extension point="org.eclipse.ui.commands">
