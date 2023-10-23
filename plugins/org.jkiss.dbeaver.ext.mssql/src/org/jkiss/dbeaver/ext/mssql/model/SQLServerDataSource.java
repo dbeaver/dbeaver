@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -238,7 +239,16 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
             final String keystoreFileProp;
             final String keystorePasswordProp;
 
-            if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
+            if (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+                var trustStoreData = SSLHandlerTrustStoreImpl.readTrustStoreData(
+                    sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_KEYSTORE);
+                if (trustStoreData != null && trustStoreData.length != 0) {
+                    keystoreFileProp = saveTrustStoreToFile(trustStoreData);
+                } else {
+                    keystoreFileProp = null;
+                }
+                keystorePasswordProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_KEYSTORE_PASSWORD);
+            } else if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
                 // Backward compatibility
                 keystoreFileProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE);
                 keystorePasswordProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE_PASSWORD);

@@ -150,4 +150,12 @@ public class BaseDialog extends Dialog
     protected Button getButton(int id) {
         return super.getButton(id);
     }
+
+    protected void enableButton(int buttonID, boolean enabled) {
+        Button button = getButton(buttonID);
+        if (button != null) {
+            button.setEnabled(enabled);
+        }
+    }
+
 }

@@ -929,4 +929,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-mysql-fetch-transform"), true);
     }
 
+    public boolean supportsSysSchema() {
+        return isMariaDB() ? isServerVersionAtLeast(10, 6) : isServerVersionAtLeast(5, 7);
+    }
+
 }

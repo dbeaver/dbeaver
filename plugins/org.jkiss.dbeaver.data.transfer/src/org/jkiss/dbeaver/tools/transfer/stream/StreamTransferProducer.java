@@ -24,8 +24,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -211,7 +211,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
             }
             return new StreamTransferProducer(
                 new StreamEntityMapping(
-                    DBUtils.resolvePathFromString(runnableContext, objectContext.getProject(), CommonUtils.toString(state.get("file"))),
+                    DBFUtils.resolvePathFromString(runnableContext, objectContext.getProject(), CommonUtils.toString(state.get("file"))),
                     CommonUtils.toString(state.get("name")),
                     CommonUtils.toBoolean(state.get("child"))
                 ),

@@ -145,7 +145,7 @@ public final class NavigatorNodesDeletionConfirmations {
         int fontHeight = UIUtils.getFontHeight(objectsTable);
         int rowCount = selectedObjects.size();
         gd.widthHint = fontHeight * 7;
-        gd.heightHint = rowCount < 6 ? fontHeight * 2 * rowCount : fontHeight * 10;
+        //gd.heightHint = rowCount < 6 ? fontHeight * 2 * rowCount : fontHeight * 10;
         objectsTable.setLayoutData(gd);
         UIUtils.createTableColumn(objectsTable, SWT.LEFT, UINavigatorMessages.confirm_deleting_multiple_objects_column_name);
         UIUtils.createTableColumn(objectsTable, SWT.LEFT, "Type");

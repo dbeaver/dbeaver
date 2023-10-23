@@ -122,8 +122,6 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
                 }
             });
             textOutputFolder = DialogUtils.createOutputFolderChooser(storageSettings, CoreMessages.pref_page_query_manager_logs_folder, null, false, null);
-            textHistoryDays = UIUtils.createLabelText(storageSettings, CoreMessages.pref_page_query_manager_label_days_to_store_log, "", SWT.BORDER, new GridData(50, SWT.DEFAULT)); //$NON-NLS-2$
-            textOutputFolder = DialogUtils.createOutputFolderChooser(storageSettings, CoreMessages.pref_page_query_manager_logs_folder, null, false, null);
             textOutputFolder.setText(store.getString(QMConstants.PROP_LOG_DIRECTORY));
             textHistoryDays = UIUtils.createLabelText(
                 storageSettings,
