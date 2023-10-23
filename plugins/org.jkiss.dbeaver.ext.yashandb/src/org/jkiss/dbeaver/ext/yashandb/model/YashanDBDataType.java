@@ -492,6 +492,7 @@ public class YashanDBDataType extends YashanDBObject<DBSObject> implements DBSDa
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull YashanDBDataType owner) throws SQLException {
+            String argumentView = getDataSource().isAdminVisible() ? "DBA_ARGUMENTS" : "ALL_ARGUMENTS";
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                     //todo:yashandb目前没有ALL_METHOD_RESULTS视图，查询会报错。先使用DBA_ARGUMENTS替代查询RESULT_TYPE_NAME属性
 //                    "SELECT m.*,r.RESULT_TYPE_OWNER,RESULT_TYPE_NAME,RESULT_TYPE_MOD\n" +
@@ -500,7 +501,7 @@ public class YashanDBDataType extends YashanDBObject<DBSObject> implements DBSDa
 //                            "WHERE m.OWNER=? AND m.TYPE_NAME=?\n" +
 //                            "ORDER BY m.METHOD_NO"
                             "SELECT m.*,a.DATA_TYPE AS RESULT_TYPE_NAME\n" +
-                                    "FROM ALL_TYPE_METHODS m LEFT JOIN DBA_ARGUMENTS a ON m.OWNER =a.OWNER AND m.TYPE_NAME =a.OBJECT_NAME AND a.IN_OUT ='OUT'"+
+                                    "FROM ALL_TYPE_METHODS m LEFT JOIN "  + argumentView + " a ON m.OWNER =a.OWNER AND m.TYPE_NAME =a.OBJECT_NAME AND a.IN_OUT ='OUT'"+
                                     "WHERE m.OWNER=? AND m.TYPE_NAME=?\n" +
                                     "ORDER BY m.METHOD_NO");
             dbStat.setString(1, YashanDBDataType.this.parent.getName());
