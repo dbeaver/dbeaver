@@ -20,6 +20,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.utils.CommonUtils;
@@ -79,13 +80,14 @@ public class TextWithOpenFile extends TextWithOpen {
     protected void openBrowser(boolean remoteFS) {
         String selected;
         if (remoteFS) {
-            selected = DBWorkbench.getPlatformUI().openFileSystemSelector(
+            DBNPath selPath = DBWorkbench.getPlatformUI().openFileSystemSelector(
                 title,
                 openFolder,
                 style,
                 binary,
                 filterExt,
                 getText());
+            selected = selPath != null ? selPath.getPath().toString() : null;
         } else {
             String directory = getDialogDirectory();
             if (openFolder) {

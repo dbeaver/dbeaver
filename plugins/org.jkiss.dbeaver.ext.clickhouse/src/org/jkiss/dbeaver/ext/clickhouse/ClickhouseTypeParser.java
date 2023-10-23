@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeMap;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -76,21 +77,9 @@ public class ClickhouseTypeParser {
             return null;
         }
 
-        if (type instanceof ClickhouseMapType) {
-            final ClickhouseMapType map = (ClickhouseMapType) type;
-            final List<Object> values = new ArrayList<>();
-
-            for (Map.Entry<?, ?> entry : ((Map<?, ?>) object).entrySet()) {
-                values.add(new ClickhouseTupleValue(
-                    session.getProgressMonitor(),
-                    map,
-                    new Object[]{entry.getKey(), entry.getValue()}
-                ));
-            }
-
-            return new JDBCCollection(session.getProgressMonitor(), map, DBUtils.findValueHandler(session, map), values.toArray());
-        } else if (type instanceof ClickhouseTupleType) {
-            final ClickhouseTupleType tuple = (ClickhouseTupleType) type;
+        if (type instanceof ClickhouseMapType map) {
+            return new JDBCCompositeMap(session, map, ((Map<?, ?>) object));
+        } else if (type instanceof ClickhouseTupleType tuple) {
             final Object[] values;
             if (object instanceof Map) {
                 values = ((Map<?, ?>) object).entrySet().stream()

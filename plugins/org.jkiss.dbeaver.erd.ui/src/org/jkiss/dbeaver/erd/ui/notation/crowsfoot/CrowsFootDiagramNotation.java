@@ -20,60 +20,99 @@ import org.eclipse.draw2d.ConnectionEndpointLocator;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDUtils;
 import org.jkiss.dbeaver.erd.ui.notations.ERDAssociationType;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotation;
 import org.jkiss.dbeaver.erd.ui.notations.ERDNotationBase;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNotation {
+
+    private static final Log log = Log.getLog(CrowsFootDiagramNotation.class);
+
     @Override
     public void applyNotationForArrows(PolylineConnection conn, ERDAssociation association, Color bckColor, Color frgColor) {
         DBSEntityConstraintType constraintType = association.getObject().getConstraintType();
         if (constraintType == DBSEntityConstraintType.PRIMARY_KEY) {
             // source 0..1
-            final CrowsFootPolylineDecoration sourceDecor = new CrowsFootPolylineDecoration(ERDAssociationType.ZERO_OR_ONE);
-            sourceDecor.setFill(true);
-            sourceDecor.setBackgroundColor(bckColor);
-            conn.setSourceDecoration(sourceDecor);
+            createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ZERO_OR_ONE, LABEL_0_TO_1);
         } else if (constraintType.isAssociation() &&
             association.getSourceEntity() instanceof ERDEntity &&
             association.getTargetEntity() instanceof ERDEntity) {
             // source - 1..n
-            final CrowsFootPolylineDecoration sourceDecor = new CrowsFootPolylineDecoration(ERDAssociationType.ONE_OR_MANY);
-            sourceDecor.setFill(true);
-            sourceDecor.setBackgroundColor(bckColor);
-            conn.setSourceDecoration(sourceDecor);
-            ConnectionEndpointLocator srcEndpointLocator = new ConnectionEndpointLocator(conn, false);
-            srcEndpointLocator.setVDistance(LBL_V_DISTANCE);
-            srcEndpointLocator.setUDistance(LBL_U_DISTANCE);
-            conn.add(getLabel(LABEL_1_TO_N, frgColor), srcEndpointLocator);
-            if (ERDUtils.isOptionalAssociation(association)) {
-                // target - 0..1
-                final CrowsFootPolylineDecoration targetDecor = new CrowsFootPolylineDecoration(ERDAssociationType.ZERO_OR_ONE);
-                targetDecor.setFill(true);
-                targetDecor.setBackgroundColor(bckColor);
-                ConnectionEndpointLocator trgEndpointLocator = new ConnectionEndpointLocator(conn, true);
-                trgEndpointLocator.setVDistance(LBL_V_DISTANCE);
-                trgEndpointLocator.setUDistance(LBL_U_DISTANCE);
-                conn.add(getLabel(LABEL_0_TO_1, frgColor), trgEndpointLocator);
-                conn.setTargetDecoration(targetDecor);
-            } else {
-                // target - 1
-                final CrowsFootPolylineDecoration targetDecor = new CrowsFootPolylineDecoration(ERDAssociationType.ONE_ONLY);
-                targetDecor.setFill(true);
-                targetDecor.setBackgroundColor(bckColor);
-                ConnectionEndpointLocator trgEndpointLocator = new ConnectionEndpointLocator(conn, true);
-                trgEndpointLocator.setVDistance(LBL_V_DISTANCE);
-                trgEndpointLocator.setUDistance(LBL_U_DISTANCE);
-                conn.add(getLabel(LABEL_1, frgColor), trgEndpointLocator);
-                conn.setTargetDecoration(targetDecor);
+            try {
+                ERDEntity src = (ERDEntity) association.getSourceEntity();
+                DBSEntity entity = src.getObject();
+                VoidProgressMonitor monitor = new VoidProgressMonitor();
+                Collection<? extends DBSTableIndex> indexes = ((DBSTable) entity).getIndexes(monitor);
+                if (!CommonUtils.isEmpty(indexes)) {
+                    for (DBSTableIndex index : indexes) {
+                        if (DBUtils.isIdentifierIndex(monitor, index)) {
+                            List<DBSEntityAttribute> entityIdentifierAttributes = DBUtils.getEntityAttributes(monitor, index);
+                            List<DBSEntityAttribute> sourceAttributes = association.getSourceAttributes().stream().map(s -> {
+                                return s.getObject();
+                            }).collect(Collectors.toList());
+                            if (sourceAttributes.containsAll(entityIdentifierAttributes)) {
+                                createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_ONLY, LABEL_1);
+                            } else {
+                                createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_OR_MANY, LABEL_1_TO_N);
+                            }
+                        }
+                    }
+                } else {
+                    createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_OR_MANY, LABEL_1_TO_N);
+                }
+                if (ERDUtils.isOptionalAssociation(association)) {
+                    // target - 0..1
+                    createTargetDecorator(conn, bckColor, frgColor, ERDAssociationType.ZERO_OR_ONE, LABEL_0_TO_1);
+                } else {
+                    // target - 1
+                    createTargetDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_ONLY, LABEL_1);
+                }
+            } catch (DBException e) {
+                log.error(e.getMessage(), e);
             }
         }
         conn.setLineWidth(1);
         conn.setLineStyle(SWT.LINE_CUSTOM);
+    }
+
+    private void createSourceDecorator(PolylineConnection conn, Color bckColor, Color frgColor, ERDAssociationType type, String label) {
+        CrowsFootPolylineDecoration sourceDecor;
+        sourceDecor = new CrowsFootPolylineDecoration(type);
+        sourceDecor.setFill(true);
+        sourceDecor.setBackgroundColor(bckColor);
+        conn.setSourceDecoration(sourceDecor);
+        ConnectionEndpointLocator srcEndpointLocator = new ConnectionEndpointLocator(conn, false);
+        srcEndpointLocator.setVDistance(LBL_V_DISTANCE);
+        srcEndpointLocator.setUDistance(LBL_U_DISTANCE);
+        conn.add(getLabel(label, frgColor), srcEndpointLocator);
+    }
+
+    private void createTargetDecorator(PolylineConnection conn, Color bckColor, Color frgColor, ERDAssociationType type, String label) {
+        final CrowsFootPolylineDecoration targetDecor = new CrowsFootPolylineDecoration(type);
+        targetDecor.setFill(true);
+        targetDecor.setBackgroundColor(bckColor);
+        ConnectionEndpointLocator trgEndpointLocator = new ConnectionEndpointLocator(conn, true);
+        trgEndpointLocator.setVDistance(LBL_V_DISTANCE);
+        trgEndpointLocator.setUDistance(LBL_U_DISTANCE);
+        conn.add(getLabel(label, frgColor), trgEndpointLocator);
+        conn.setTargetDecoration(targetDecor);
     }
 
     @Override

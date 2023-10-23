@@ -67,7 +67,15 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         return DBTTaskRunStatus.makeStatisticsStatus(totalStatistics);
     }
 
-    private void executeWithSettings(@NotNull DBRRunnableContext runnableContext, DBTTask task, @NotNull Locale locale, @NotNull Log log, PrintStream logStream, @NotNull DBTTaskExecutionListener listener, SQLScriptExecuteSettings settings) throws DBException {
+    private void executeWithSettings(
+        @NotNull DBRRunnableContext runnableContext,
+        @NotNull DBTTask task,
+        @NotNull Locale locale,
+        @NotNull Log log,
+        @NotNull PrintStream logStream,
+        @NotNull DBTTaskExecutionListener listener,
+        @NotNull SQLScriptExecuteSettings settings
+    ) throws DBException {
         log.debug("SQL Scripts Execute");
 
         // Start consumers
@@ -100,7 +108,7 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         for (String filePath : settings.getScriptFiles()) {
             try {
                 for (DBPDataSourceContainer dataSourceContainer : dataSources) {
-                    var sqlScriptContent = RMUtils.readScriptContents(task.getProject(), filePath);
+                    var sqlScriptContent = RMUtils.readScriptContents(monitor, task.getProject(), filePath);
                     if (!dataSourceContainer.isConnected()) {
                         dataSourceContainer.connect(monitor, true, true);
                     }
