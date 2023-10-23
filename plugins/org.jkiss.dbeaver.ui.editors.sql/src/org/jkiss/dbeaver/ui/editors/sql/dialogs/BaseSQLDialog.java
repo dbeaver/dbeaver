@@ -141,9 +141,12 @@ public abstract class BaseSQLDialog extends BaseDialog {
 
     protected abstract String getSQLText();
 
-    protected void createCopyButton(Composite parent)
-    {
+    protected void createCopyButton(Composite parent) {
         createButton(parent, IDialogConstants.DETAILS_ID, SQLEditorMessages.dialog_view_sql_button_copy, false);
+    }
+    
+    protected void createRefreshButton(Composite parent) {
+        createButton(parent, IDialogConstants.RETRY_ID, SQLEditorMessages.dialog_view_sql_button_refresh, false);
     }
 
     protected void saveToClipboard()
